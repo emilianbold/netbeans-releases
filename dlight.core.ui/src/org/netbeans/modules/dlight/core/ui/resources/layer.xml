@@ -39,13 +39,14 @@
         <folder name="Modes">
             <folder name="explorer">
                 <file name="DLightToolsTopComponent.wstcref" url="DLightToolsTopComponentWstcref.xml"/>
+                <file name="DLightIndicatorsTopComponent.wstcref" url="DLightIndicatorsTopComponentWstcref.xml"/>
             </folder>
             <folder name="rightSlidingSide">
                 <file name="DLightSessionsTopComponent.wstcref" url="DLightSessionsTopComponentWstcref.xml"/>
             </folder>
-            <folder name="navigator">
-                <file name="DLightIndicatorsTopComponent.wstcref" url="DLightIndicatorsTopComponentWstcref.xml"/>
-            </folder>
+<!--            <folder name="explorer">
+
+            </folder>-->
         </folder>
     </folder>
     <folder name="Menu">

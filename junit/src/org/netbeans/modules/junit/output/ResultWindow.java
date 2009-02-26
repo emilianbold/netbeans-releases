@@ -45,6 +45,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.lang.ref.WeakReference;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -124,6 +126,11 @@ public final class ResultWindow extends TopComponent {
                 NbBundle.getMessage(getClass(), "ACSN_TestResults"));   //NOI18N
         accessibleContext.setAccessibleDescription(
                 NbBundle.getMessage(getClass(), "ACSD_TestResults"));   //NOI18N
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            JPanel panel = new JPanel();
+            panel.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            add( panel );
+        }
     }
 
     /**

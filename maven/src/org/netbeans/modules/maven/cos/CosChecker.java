@@ -79,6 +79,7 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.classpath.AbstractProjectClassPathImpl;
+import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.classpath.RuntimeClassPathImpl;
 import org.netbeans.modules.maven.classpath.TestRuntimeClassPathImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
@@ -232,7 +233,7 @@ public class CosChecker implements PrerequisitesChecker {
   //                      System.out.println("relpath=" + relPath);
                         FileObject fo = outputDir.getFileObject(relPath);
                         if (fo == null) {
-                            File outFileDir = new File(FileUtil.toFile(outputDir), relPath).getParentFile();
+                            File outFileDir = FileUtil.normalizeFile(new File(FileUtil.toFile(outputDir), relPath).getParentFile());
                             outFileDir.mkdirs();
                             FileUtil.refreshFor(outFileDir);
                             FileObject parentDir = FileUtil.toFileObject(outFileDir);
@@ -311,8 +312,12 @@ public class CosChecker implements PrerequisitesChecker {
                     }
                     String[] appargs = args[2].split(" ");
                     params.put(JavaRunner.PROP_APPLICATION_ARGS, Arrays.asList(appargs));
-                    //jvm args, add and for debugging, remove the debugging ones..
-                    params.put(JavaRunner.PROP_RUN_JVMARGS, extractDebugJVMOptions(args[2]));
+                    try {
+                        //jvm args, add and for debugging, remove the debugging ones..
+                        params.put(JavaRunner.PROP_RUN_JVMARGS, extractDebugJVMOptions(args[2]));
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
                 if (params.get(JavaRunner.PROP_EXECUTE_FILE) != null ||
                         params.get(JavaRunner.PROP_CLASSNAME) != null) {
@@ -378,9 +383,24 @@ public class CosChecker implements PrerequisitesChecker {
                 return true;
             }
 
-
-            params.put(JavaRunner.PROP_EXECUTE_FILE, config.getSelectedFileObject());
-
+            //#
+            FileObject selected = config.getSelectedFileObject();
+            ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
+            ClassPath srcs = cpp.getProjectSourcesClassPath(ClassPath.SOURCE);
+            String path = srcs.getResourceName(selected);
+            if (path != null) {
+                //now we have a source file, need to convert to testSource..
+                String nameExt = selected.getNameExt().replace(".java", "Test.java"); //NOI18N
+                path = path.replace(selected.getNameExt(), nameExt);
+                ClassPath[] cps = cpp.getProjectClassPaths(ClassPath.SOURCE);
+                ClassPath cp = ClassPathSupport.createProxyClassPath(cps);
+                FileObject testFo = cp.findResource(path);
+                if (testFo != null) {
+                    selected = testFo;
+                }
+            }
+            params.put(JavaRunner.PROP_EXECUTE_FILE, selected);
+            
             List<String> jvmProps = new ArrayList<String>();
             Set<String> jvmPropNames = new HashSet<String>();
             params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
@@ -408,6 +428,16 @@ public class CosChecker implements PrerequisitesChecker {
             //add properties from action config,
             if (config.getProperties() != null) {
                 for (Map.Entry entry : config.getProperties().entrySet()) {
+                    //#158039
+                    if ("maven.surefire.debug".equals(entry.getKey())) { //NOI18N
+                        continue;
+                    }
+                    if ("jpda.listen".equals(entry.getKey())) {//NOI18N
+                        continue;
+                    }
+                    if ("jpda.stopclass".equals(entry.getKey())) {//NOI18N
+                        continue;
+                    }
                     //TODO do these have preference to ones defined in surefire plugin?
                     if (!jvmPropNames.contains((String) entry.getKey())) {
                         jvmProps.add("-D" + entry.getKey() + "=" + entry.getValue());
@@ -430,7 +460,11 @@ public class CosChecker implements PrerequisitesChecker {
                 //add and for debugging, remove the debugging ones..
                 argLine = config.getProperties().getProperty("argLine");
                 if (argLine != null) {
-                    jvmProps.addAll(extractDebugJVMOptions(argLine));
+                    try {
+                        jvmProps.addAll(extractDebugJVMOptions(argLine));
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
 
@@ -632,8 +666,8 @@ public class CosChecker implements PrerequisitesChecker {
     }
 
 
-    static List<String> extractDebugJVMOptions(String argLine) {
-        String[] split = argLine.split(" ");
+    static List<String> extractDebugJVMOptions(String argLine) throws Exception {
+        String[] split = CommandLineUtils.translateCommandline(argLine);
         List<String> toRet = new ArrayList<String>();
         for (String arg : split) {
             if ("-Xdebug".equals(arg)) { //NOI18N

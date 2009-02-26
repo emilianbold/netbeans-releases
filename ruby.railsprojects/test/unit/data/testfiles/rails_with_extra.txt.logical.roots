@@ -11,14 +11,9 @@ rootnames:
   Logs
   Public
   RSpec
-  Unit Tests
-  Functional Tests
-  Test Fixtures
-  Test Mocks
-  Integration Tests
+  Test Files
   Scripts
   Documentation
-  test/othertests
   Vendor
   selenium
 rootProperties:
@@ -34,14 +29,9 @@ rootProperties:
   log
   public
   spec
-  test/unit
-  test/functional
-  test/fixtures
-  test/mocks
-  test/integration
+  test
   script
   doc
-  test/othertests
   vendor
   selenium
 rootFiles:
@@ -51,21 +41,15 @@ rootFiles:
   controllers
   db
   doc
-  fixtures
-  functional
   helpers
-  integration
   lib
   log
-  mocks
   models
-  othertests
   public
   script
   selenium
   spec
   test
-  unit
   vendor
   views
 extraFiles:

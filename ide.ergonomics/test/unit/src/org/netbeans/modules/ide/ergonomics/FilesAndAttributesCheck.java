@@ -38,7 +38,10 @@
  */
 package org.netbeans.modules.ide.ergonomics;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +52,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
 
 /**
  *
@@ -62,7 +67,15 @@ public class FilesAndAttributesCheck extends NbTestCase {
     }
 
     public void testGetAllTemplates() throws Exception {
+        clearWorkDir();
+       
         FileObject orig = FileUtil.getConfigFile("Templates");
+
+        LocalFileSystem lfs = new LocalFileSystem();
+        final File lfsRoot = new File(getWorkDir(), "copies");
+        lfsRoot.mkdirs();
+        lfs.setRootDirectory(lfsRoot);
+        System.setProperty("fileCopies", lfsRoot.getPath());
 
         Enumeration<? extends FileObject> allTemplates = orig.getChildren(true);
         StringBuilder errors = new StringBuilder();
@@ -94,12 +107,27 @@ public class FilesAndAttributesCheck extends NbTestCase {
                 }
             }
             System.setProperty(dynVery + fo.getPath(), String.valueOf(cnt));
+            String locName = getDisplayName(fo);
+            System.setProperty(dynName + fo.getPath(), locName);
+
+            if (fo.isData()) {
+                FileObject newfo = FileUtil.createData(lfs.getRoot(), fo.getPath());
+                final OutputStream os = newfo.getOutputStream();
+                final InputStream is = fo.getInputStream();
+                FileUtil.copy(is, os);
+                is.close();
+                os.close();
+                FileUtil.copyAttributes(fo, newfo);
+                assertEquals("Old and new mimetypes are same for " + fo, fo.getMIMEType(), newfo.getMIMEType());
+                newfo.setAttribute("computedMimeType", fo.getMIMEType());
+            }
         }
 
         if (errors.length() > 0) {
             fail(errors.toString());
         }
     }
+    private static final String dynName = "dynamic/name/";
     private static final String dynVery = "dynamic/verify/";
     private static final String dynAttr = "dynamic/attr/";
 
@@ -144,7 +172,14 @@ public class FilesAndAttributesCheck extends NbTestCase {
                 errors.append("Both files exist: " + fo + "\n");
                 continue;
             }
-
+            if (!clone.getPath().startsWith("Templates/Privileged/")) {
+                String locName = System.getProperties().getProperty(dynName + clone.getPath());
+                assertNotNull("Localized name is recorded: " + clone, locName);
+                String newName = getDisplayName(clone);
+                if (!locName.equals(newName)) {
+                    errors.append("Localized name for " + clone + " does not match " + locName + " != " + newName + "\n");
+                }
+            }
             Enumeration<String> allAttributes = Collections.enumeration(filesAndAttribs.get(fo));
             while (allAttributes.hasMoreElements()) {
                 String name = allAttributes.nextElement();
@@ -173,6 +208,53 @@ public class FilesAndAttributesCheck extends NbTestCase {
             allTemplates.remove();
         }
 
+
+        LocalFileSystem lfs = new LocalFileSystem();
+        final File lfsRoot = new File(System.getProperty("fileCopies"));
+        lfs.setRootDirectory(lfsRoot);
+        System.setProperty("fileCopies", lfsRoot.getPath());
+
+        int cnt = 0;
+        Enumeration<? extends FileObject> en = lfs.getRoot().getChildren(true);
+        while (en.hasMoreElements()) {
+            FileObject fo = en.nextElement();
+            if (!fo.isData()) {
+                continue;
+            }
+
+            String exp = (String) fo.getAttribute("computedMimeType");
+            assertNotNull("mimetype found for " + fo, exp);
+            assertEquals("mimetype remains the same for " + fo, exp, fo.getMIMEType());
+            cnt++;
+        }
+        if (cnt == 0) {
+            fail("Expected some files for mimetype check");
+        }
+
+        Enumeration<? extends FileObject> en2 = FileUtil.getConfigFile("Services/MIMEResolver").getChildren(true);
+        while (en2.hasMoreElements()) {
+            FileObject fo = en2.nextElement();
+            if (!fo.isData()) {
+                continue;
+            }
+
+            int read = -1;
+            InputStream is = null;
+            try {
+                is = fo.getInputStream();
+                read = is.read(new byte[4096]);
+            } catch (IOException ex) {
+                errors.append(ex.getMessage()).append('\n');
+            } finally {
+                if (is != null) {
+                    is.close();
+                }
+            }
+            if (read <= 0) {
+                errors.append("Content shall exist: " + fo + "\n");
+            }
+        }
+
         if (errors.length() > 0) {
             fail(errors.toString());
         }
@@ -180,5 +262,11 @@ public class FilesAndAttributesCheck extends NbTestCase {
         if (!filesAndAttribs.isEmpty()) {
             fail("All should be empty: " + filesAndAttribs);
         }
+    }
+
+    private static String getDisplayName(FileObject f) throws FileStateInvalidException {
+        return f.getFileSystem().getStatus().annotateName(
+            f.getNameExt(), Collections.<FileObject>singleton(f)
+        );
     }
 }

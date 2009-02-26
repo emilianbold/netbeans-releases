@@ -76,7 +76,7 @@ import org.openide.filesystems.FileObject;
 public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresenter {
 
     private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/screen/broken-image.png"; // NOI18N
-    private static final Icon ICON_BROKEN = new ImageIcon(ImageUtilities.loadImage(ICON_BROKEN_PATH));
+    private static final Icon ICON_BROKEN = ImageUtilities.loadImageIcon(ICON_BROKEN_PATH, false);
     private JPanel view;
     private JLabel state;
     private JLabel image;

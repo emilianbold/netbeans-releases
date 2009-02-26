@@ -65,18 +65,10 @@ made subject to such option by the copyright holder.
             <xsl:element name="target">
                 <xsl:attribute name="name">jaxb-code-generation</xsl:attribute>
                 <xsl:attribute name="depends">xjc-typedef-target,-do-init,-init-macrodef-javac</xsl:attribute>
-                <mkdir dir="build/generated/addons/jaxb"/>
+                <mkdir dir="${{build.generated.sources.dir}}/jaxb"/>
                 <mkdir dir="build/generated/jaxbCache"/>
-                <mkdir dir="${{build.classes.dir}}"/>
                 <xsl:apply-templates select="s:schemas/s:schema"/>
                 <xsl:comment>*** EJB project javac macro does not support sourcepath attribute, so do not pass "sourcepath=${src.dir}"</xsl:comment>
-                <xsl:element name="javac" namespace="http://www.netbeans.org/ns/j2ee-ejbjarproject/2">
-                    <xsl:attribute name="includes"></xsl:attribute>
-                    <xsl:attribute name="excludes"></xsl:attribute>
-                    <xsl:attribute name="destdir">${build.classes.dir}</xsl:attribute>
-                    <xsl:attribute name="srcdir">build/generated/addons/jaxb</xsl:attribute>
-                    <xsl:attribute name="classpath">${jaxbwiz.gensrc.classpath}</xsl:attribute>
-                </xsl:element>
             </xsl:element>
         </xsl:element>
     </xsl:template>
@@ -139,7 +131,7 @@ made subject to such option by the copyright holder.
         </xsl:element>
 
         <xsl:element name="copy">
-            <xsl:attribute name="todir"><xsl:value-of select="/s:schemas/@destdir"/></xsl:attribute>
+            <xsl:attribute name="todir">${build.generated.sources.dir}/jaxb</xsl:attribute>
             <xsl:element name="fileset">
                 <xsl:attribute name="dir">build/generated/jaxbCache/<xsl:value-of select="./@name"/></xsl:attribute>
             </xsl:element>

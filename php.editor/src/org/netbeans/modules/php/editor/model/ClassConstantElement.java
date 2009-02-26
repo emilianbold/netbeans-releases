@@ -43,5 +43,5 @@ package org.netbeans.modules.php.editor.model;
  *
  * @author Radek Matous
  */
-public interface ClassConstantElement extends ModelElement {
+public interface ClassConstantElement extends ClassMemberElement {
 }

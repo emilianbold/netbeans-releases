@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen;
 
+import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode.Description;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import java.awt.Dialog;
@@ -59,11 +60,9 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.GetterSetterPanel;
-import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -80,8 +79,11 @@ public class GetterSetterGenerator implements CodeGenerator {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             JTextComponent component = context.lookup(JTextComponent.class);
             CsmContext path = context.lookup(CsmContext.class);
-            CsmClass typeElement = Utilities.extractEnclosingClass(path);
-            if (component == null || typeElement == null) {
+            if (component == null || path == null) {
+                return ret;
+            }
+            CsmClass typeElement = path.getEnclosingClass();
+            if (typeElement == null) {
                 return ret;
             }
             CsmObject objectUnderOffset = path.getObjectUnderOffset();
@@ -98,9 +100,16 @@ public class GetterSetterGenerator implements CodeGenerator {
                         methods.put(method.getName().toString(), l);
                     }
                     l.add(method);
-                } else if (CsmKindUtilities.isField(member)) {
+                }
+            }
+            ElementNode.Description theFirstDescription = null;
+            for (CsmMember member : GeneratorUtils.getAllMembers(typeElement)) {
+                if (CsmKindUtilities.isField(member)) {
                     CsmField variableElement = (CsmField)member;
                     ElementNode.Description description = ElementNode.Description.create(variableElement, null, true, variableElement.equals(objectUnderOffset));
+                    if (theFirstDescription == null) {
+                        theFirstDescription = description;
+                    }
                     boolean hasGetter = GeneratorUtils.hasGetter(variableElement, methods);
                     boolean hasSetter = GeneratorUtils.isConstant(variableElement) || GeneratorUtils.hasSetter(variableElement, methods);
                     if (!hasGetter) {
@@ -130,30 +139,34 @@ public class GetterSetterGenerator implements CodeGenerator {
                 }
             }
             if (!gDescriptions.isEmpty()) {
-                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-                for (Map.Entry<CsmClass, List<ElementNode.Description>> entry : gDescriptions.entrySet()) {
-                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
-                }
-                Collections.reverse(descriptions);
+                List<ElementNode.Description> descriptions = prepareDescriptions(gDescriptions);
                 ret.add(new GetterSetterGenerator(component, path, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.Kind.GETTERS_ONLY));
             }
             if (!sDescriptions.isEmpty()) {
-                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-                for (Map.Entry<CsmClass, List<ElementNode.Description>> entry : sDescriptions.entrySet()) {
-                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
-                }
-                Collections.reverse(descriptions);
+                List<ElementNode.Description> descriptions = prepareDescriptions(sDescriptions);
                 ret.add(new GetterSetterGenerator(component, path, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.Kind.SETTERS_ONLY));
             }
             if (!gsDescriptions.isEmpty()) {
-                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-                for (Map.Entry<CsmClass, List<ElementNode.Description>> entry : gsDescriptions.entrySet()) {
-                    descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
-                }
-                Collections.reverse(descriptions);
+                List<ElementNode.Description> descriptions = prepareDescriptions(gsDescriptions);
                 ret.add(new GetterSetterGenerator(component, path, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.Kind.GETTERS_SETTERS));
             }
             return ret;
+        }
+
+        private List<Description> prepareDescriptions(Map<CsmClass, List<Description>> descripti) {
+            boolean selectIfOnlyOne = descripti.size() == 1;
+            List<ElementNode.Description> out = new ArrayList<ElementNode.Description>();
+            for (Map.Entry<CsmClass, List<ElementNode.Description>> entry : descripti.entrySet()) {
+                List<Description> values = entry.getValue();
+                if (selectIfOnlyOne && values.size() == 1) {
+                    ElementNode.Description orig = values.get(0);
+                    values = new ArrayList<ElementNode.Description>(1);
+                    values.add(ElementNode.Description.create(orig.getElementHandle(), null, true, true));
+                }
+                out.add(ElementNode.Description.create(entry.getKey(), values, false, false));
+            }
+            Collections.reverse(out);
+            return out;
         }
 
     }

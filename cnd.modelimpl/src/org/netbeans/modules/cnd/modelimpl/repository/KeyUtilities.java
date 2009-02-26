@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -52,6 +51,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
@@ -59,49 +59,49 @@ import org.netbeans.modules.cnd.repository.spi.Key;
  * @author Vladimir Voskresensky
  */
 public class KeyUtilities {
-    
+
     /** Creates a new instance of KeyUtils */
     private KeyUtilities() {
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // key generators
-    
     public static Key createFileKey(FileImpl file) {
         return new FileKey(file);
     }
-    
+
     public static Key createNamespaceKey(CsmNamespace ns) {
         return new NamespaceKey(ns);
     }
-    
+
     public static Key createProjectKey(ProjectBase project) {
-        return new ProjectKey(project);
+        return createProjectKey(project.getUniqueName().toString());
     }
-    
+
     public static Key createProjectKey(String projectQualifiedName) {
-        return new ProjectKey(projectQualifiedName);
+        Key out = new ProjectKey(projectQualifiedName);
+        return out;
     }
 
     public static Key createProjectKey(NativeProject nativeProject) {
-        return new ProjectKey(ProjectBase.getUniqueName(nativeProject).toString());
+        return createProjectKey(ProjectBase.getUniqueName(nativeProject).toString());
     }
-    
+
     public static Key createOffsetableDeclarationKey(OffsetableDeclarationBase obj) {
         assert obj != null;
         return new OffsetableDeclarationKey(obj);
     }
-    
+
     public static Key createUnnamedOffsetableDeclarationKey(OffsetableDeclarationBase obj, int index) {
         assert obj != null;
         return new OffsetableDeclarationKey(obj, index);
     }
-    
+
     public static Key createMacroKey(CsmMacro macro) {
         assert macro != null;
         return new MacroKey(macro);
     }
-    
+
     public static Key createIncludeKey(CsmInclude incl) {
         assert incl != null;
         return new IncludeKey(incl);
@@ -112,58 +112,57 @@ public class KeyUtilities {
         return new ParamListKey(paramList);
     }
     ////////////////////////////////////////////////////////////////////////////
-    
-     public static int getUnitId(String unitName) {
-	return RepositoryUtils.getUnitId(unitName);
+
+    public static int getUnitId(String unitName) {
+        return RepositoryUtils.getUnitId(unitName);
     }
-    
+
     public static String getUnitName(int unitIndex) {
-	return RepositoryUtils.getUnitName(unitIndex);
+        return RepositoryUtils.getUnitName(unitIndex);
     }
-    
-    public static int getFileIdByName(final int unitId, final String fileName){
+
+    public static int getFileIdByName(final int unitId, final String fileName) {
         return RepositoryUtils.getFileIdByName(unitId, fileName);
     }
-    
-    public static String getFileNameById(final int unitId, final int fileId){
+
+    public static String getFileNameById(final int unitId, final int fileId) {
         return RepositoryUtils.getFileNameById(unitId, fileId);
     }
-    public static String getFileNameByIdSafe(final int unitId, final int fileId){
+
+    public static String getFileNameByIdSafe(final int unitId, final int fileId) {
         return RepositoryUtils.getFileNameByIdSafe(unitId, fileId);
-    }    
- 
-    public static CsmDeclaration.Kind getKeyKind(Key key){
+    }
+
+    public static CsmDeclaration.Kind getKeyKind(Key key) {
         if (key instanceof OffsetableDeclarationKey) {
-            return Utils.getCsmDeclarationKind( ((OffsetableDeclarationKey)key).getKind() );
+            return Utils.getCsmDeclarationKind(((OffsetableDeclarationKey) key).getKind());
         }
         return null;
     }
 
-    public static CharSequence getKeyName(Key key){
+    public static CharSequence getKeyName(Key key) {
         if (key instanceof OffsetableKey) {
-            return ((OffsetableKey)key).getName();
-        } else if(key instanceof FileKey) {
+            return ((OffsetableKey) key).getName();
+        } else if (key instanceof FileKey) {
             return ((FileKey) key).getName();
-        } else if(key instanceof ProjectKey) {
+        } else if (key instanceof ProjectKey) {
             return ((ProjectKey) key).getProjectName();
         }
         return null;
     }
 
-    public static int getKeyStartOffset(Key key){
+    public static int getKeyStartOffset(Key key) {
         if (key instanceof OffsetableKey) {
-            return ((OffsetableKey)key).getStartOffset();
+            return ((OffsetableKey) key).getStartOffset();
         }
         return -1;
     }
 
-    public static int getKeyEndOffset(Key key){
+    public static int getKeyEndOffset(Key key) {
         if (key instanceof OffsetableKey) {
-            return ((OffsetableKey)key).getEndOffset();
+            return ((OffsetableKey) key).getEndOffset();
         }
         return -1;
     }
-    
     // have to be public or UID factory does not work
-
 }

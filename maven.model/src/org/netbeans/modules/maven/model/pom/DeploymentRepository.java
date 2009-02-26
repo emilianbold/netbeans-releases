@@ -43,7 +43,7 @@ package org.netbeans.modules.maven.model.pom;
  *
  * @author mkleint
  */
-public interface DeploymentRepository extends POMComponent {
+public interface DeploymentRepository extends IdPOMComponent {
 
 //  <!--xs:complexType name="DeploymentRepository">
 //    <xs:all>
@@ -54,5 +54,27 @@ public interface DeploymentRepository extends POMComponent {
 //      <xs:element name="layout" minOccurs="0" type="xs:string" default="default">
 //    </xs:all>
 //  </xs:complexType-->
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getUrl();
+    void setUrl(String url);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getName();
+    void setName(String name);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getLayout();
+    void setLayout(String layout);
+
 
 }

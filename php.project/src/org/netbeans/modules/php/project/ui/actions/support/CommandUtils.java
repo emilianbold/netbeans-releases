@@ -203,6 +203,21 @@ public final class CommandUtils {
     }
 
     /**
+     * Return <code>true</code> if {@link FileObject} is underneath project Selenium tests directory
+     * or Selenium tests directory itself.
+     * @param project project to get tests directory from.
+     * @param fileObj {@link FileObject} to check.
+     * @return <code>true</code> if {@link FileObject} is underneath project Selenium tests directory
+     *         or Selenium tests directory itself.
+     */
+    public static boolean isUnderSelenium(PhpProject project, FileObject fileObj, boolean showFileChooser) {
+        assert project != null;
+        assert fileObj != null;
+        FileObject selenium = ProjectPropertiesSupport.getSeleniumDirectory(project, showFileChooser);
+        return selenium != null && (selenium.equals(fileObj) || FileUtil.isParentOf(selenium, fileObj));
+    }
+
+    /**
      * Get {@link FileObject}s for context.
      * @param context context to search in.
      * @return {@link FileObject}s for context.
@@ -407,8 +422,14 @@ public final class CommandUtils {
     }
 
     private static URL urlForFile(PhpProject project, FileObject webRoot, FileObject file) throws MalformedURLException {
-        String relativePath = FileUtil.getRelativePath(webRoot, file);
-        assert relativePath != null : String.format("WebRoot %s must be parent of file %s", webRoot, file);
+        String relativePath = null;
+        if (file == null) {
+            // index file not set (or not valid but it's ok if we run project [not for debug project])
+            relativePath = ""; // NOI18N
+        } else {
+            relativePath = FileUtil.getRelativePath(webRoot, file);
+            assert relativePath != null : String.format("WebRoot %s must be parent of file %s", webRoot, file);
+        }
         URL retval = new URL(getBaseURL(project), relativePath);
         String arguments = ProjectPropertiesSupport.getArguments(project);
         return (arguments != null) ? appendQuery(retval, arguments) : retval;

@@ -54,13 +54,13 @@ import org.openide.nodes.PropertySupport;
 
 public class LibrariesNodeProp extends PropertySupport<List> {
 
-    private LibrariesConfiguration<LibraryItem> configuration;
+    private LibrariesConfiguration configuration;
     Project project;
     MakeConfiguration conf;
     String baseDir;
     String[] texts;
 
-    public LibrariesNodeProp(LibrariesConfiguration<LibraryItem> configuration, Project project, MakeConfiguration conf, String baseDir, String[] texts) {
+    public LibrariesNodeProp(LibrariesConfiguration configuration, Project project, MakeConfiguration conf, String baseDir, String[] texts) {
         super(texts[0], List.class, texts[1], texts[2], true, true);
         this.configuration = configuration;
         this.project = project;
@@ -145,10 +145,12 @@ public class LibrariesNodeProp extends PropertySupport<List> {
             return ret.toString();
         }
 
+        @Override
         public java.awt.Component getCustomEditor() {
             return new LibrariesPanel(project, conf, baseDir, value, this, env);
         }
 
+        @Override
         public boolean supportsCustomEditor() {
             return true;
         }

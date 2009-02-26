@@ -27,15 +27,15 @@ pack_all_components()
     NAME=${2}
     cd $NB_ALL/nbbuild
 
-    #Pack the distrubutions
-    find netbeans | egrep -v "netbeans/(extra|testtools|uml|visualweb|maven)" | zip -q $DIST_DIR/zip/$NAME.zip -@ || exit 1
+    #Pack the distributions
+    ant zip-cluster-config -Dcluster.config=full -Dzip.name=$DIST_DIR/zip/$NAME.zip || exit 1
 
-    #find netbeans | egrep "netbeans/(platform|harness)" | zip -q $DIST_DIR/zip/$NAME-platform.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|groovy|webcommon|maven|ergonomics)" | zip -q $DIST_DIR/zip/$NAME-javase.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|uml|visualweb|ruby|soa|cnd|identity|php|maven)" | zip -q $DIST_DIR/zip/$NAME-java.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php|groovy|maven|ergonomics)" | zip -q $DIST_DIR/zip/$NAME-ruby.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|ruby|groovy|maven|ergonomics)" | zip -q $DIST_DIR/zip/$NAME-php.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php|groovy|webcommon|maven|ergonomics)" | zip -q $DIST_DIR/zip/$NAME-cpp.zip -@ || exit 1
+    #ant zip-cluster-config -Dcluster.config=platform -Dzip.name=$DIST_DIR/zip/$NAME-platform.zip || exit 1
+    ant zip-cluster-config -Dcluster.config=basic -Dzip.name=$DIST_DIR/zip/$NAME-javase.zip || exit 1
+    ant zip-cluster-config -Dcluster.config=standard -Dzip.name=$DIST_DIR/zip/$NAME-java.zip || exit 1
+    ant zip-cluster-config -Dcluster.config=ruby -Dzip.name=$DIST_DIR/zip/$NAME-ruby.zip || exit 1
+    ant zip-cluster-config -Dcluster.config=php -Dzip.name=$DIST_DIR/zip/$NAME-php.zip || exit 1
+    ant zip-cluster-config -Dcluster.config=cnd -Dzip.name=$DIST_DIR/zip/$NAME-cpp.zip || exit 1
 
     mkdir $DIST_DIR/zip/moduleclusters
 

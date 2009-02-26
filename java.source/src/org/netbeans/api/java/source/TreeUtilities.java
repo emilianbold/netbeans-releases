@@ -51,6 +51,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.tree.JCTree;
@@ -331,10 +332,14 @@ public final class TreeUtilities {
      * @return parsed {@link TypeMirror} or null if the given specification cannot be parsed
      */
     public TypeMirror parseType(String expr, TypeElement scope) {
+        Enter enter = Enter.instance(info.impl.getJavacTask().getContext());
         com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.impl.getJavacTask().getContext());
-        int oldPos = jcMaker.pos;
-        
+        int oldPos = jcMaker.pos;        
         try {
+            if (enter.getClassEnv((Symbol.TypeSymbol)scope) == null) {
+                if (info.getTrees().getTree(scope) == null)
+                    return null;
+            }
             return info.impl.getJavacTask().parseType(expr, scope);
         } finally {
             jcMaker.pos = oldPos;
@@ -567,7 +572,7 @@ public final class TreeUtilities {
         }
         JCMethodDecl jcm = (JCMethodDecl) method;
         String name;
-        if (jcm.name == jcm.name.table.init) {
+        if (jcm.name == jcm.name.table.names.init) {
             TreePath path = info.getTrees().getPath(info.getCompilationUnit(), jcm);
             if (path == null) {
                 return null;

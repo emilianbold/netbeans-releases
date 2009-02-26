@@ -88,18 +88,15 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
         if (mainDoc == null) {
             return;
         }
-        CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true);
+        final CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true);
         if (csmFile == null) {
             return;
         }
 
-        final MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
-        boolean localContext = view.isLocalContext();
-
         // Get ofsets
         int startOffset = 0;
         int endOffset = mainDoc.getLength();
-        if (localContext) {
+        if (MacroExpansionTopComponent.isLocalContext()) {
             CsmScope scope = ContextUtils.findInnerFileScope(csmFile, offset);
             if (CsmKindUtilities.isOffsetable(scope)) {
                 startOffset = ((CsmOffsetable) scope).getStartOffset();
@@ -114,7 +111,7 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
         }
         final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, expandedContextDoc);
         MacroExpansionViewUtils.setOffset(expandedContextDoc, startOffset, endOffset);
-        MacroExpansionViewUtils.saveDocument(expandedContextDoc);
+        MacroExpansionViewUtils.saveDocumentAndMarkAsReadOnly(expandedContextDoc);
 
         // Init expanded macro field
         final Document expandedMacroDoc = MacroExpansionViewUtils.createExpandedMacroDocument(mainDoc, csmFile);
@@ -129,31 +126,26 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
                 Exceptions.printStackTrace(ex);
             }
         }
-        MacroExpansionViewUtils.saveDocument(expandedMacroDoc);
+        MacroExpansionViewUtils.saveDocumentAndMarkAsReadOnly(expandedMacroDoc);
 
         // Open view
         Runnable openView = new Runnable() {
 
             public void run() {
+                MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
                 if (!view.isOpened()) {
                     view.open();
                 }
                 view.setDocuments(expandedContextDoc, expandedMacroDoc);
                 view.requestActive();
-                view.setDisplayName(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionViewTitle") + CsmUtilities.getFile(mainDoc).getName()); // NOI18N
-                view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine") + expansionsNumber); // NOI18N
+                view.setDisplayName(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionViewTitle", CsmUtilities.getFile(mainDoc).getName())); // NOI18N
+                view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine", expansionsNumber)); // NOI18N
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
             openView.run();
         } else {
-            try {
-                SwingUtilities.invokeAndWait(openView);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            SwingUtilities.invokeLater(openView);
         }
     }
 }

@@ -42,13 +42,15 @@ package org.netbeans.modules.groovy.grailsproject.plugins;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dialog;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -69,11 +71,14 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform.Version;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -129,7 +134,66 @@ public class GrailsPluginsManager {
         return processor.getPlugins();
     }
 
-    public List<GrailsPlugin> refreshInstalledPlugins() {
+    public File getPluginsDir(GrailsPlatform platform) {
+        File projectRoot = FileUtil.toFile(project.getProjectDirectory());
+
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(platform.getVersion()) <= 0) {
+            File buildConfig = new File(projectRoot,
+                    "grails-app" + File.separator + "conf" + File.separator + "BuildConfig.groovy"); // NOI18N
+
+            // FIXME global plugins and buildConfig
+//            if (!buildConfig.exists() || !buildConfig.canRead()) {
+                File pluginsDirFile;
+                String strPluginsDir = System.getProperty("grails.project.plugins.dir"); // NOI18N
+                if (strPluginsDir == null) {
+                    File projectWorkDirFile;
+                    String projectWorkDir = System.getProperty("grails.project.work.dir"); // NOI18N
+                    if (projectWorkDir == null) {
+                        File workDirFile;
+                        String workDir = System.getProperty("grails.work.dir"); // NOI18N
+                        if (workDir == null) {
+                            workDir = System.getProperty("user.home"); // NOI18N
+                            workDir = workDir + File.separator + ".grails" + File.separator + platform.getVersion(); // NOI18N
+                            workDirFile = new File(workDir);
+                        } else {
+                            workDirFile = new File(workDir);
+                            if (!workDirFile.isAbsolute()) {
+                                workDirFile = new File(projectRoot, workDir);
+                            }
+                        }
+                        projectWorkDirFile = new File(workDirFile, "projects" + File.separator + projectRoot.getName()); // NOI18N
+                    } else {
+                        projectWorkDirFile = new File(projectWorkDir);
+                        if (!projectWorkDirFile.isAbsolute()) {
+                            projectWorkDirFile = new File(projectRoot, projectWorkDir);
+                        }
+                    }
+                    pluginsDirFile = new File(projectWorkDirFile, "plugins"); // NOI18N
+                } else {
+                    pluginsDirFile = new File(strPluginsDir);
+                    if (!pluginsDirFile.isAbsolute()) {
+                        pluginsDirFile = new File(projectRoot, strPluginsDir);
+                    }
+                }
+
+                return pluginsDirFile;
+//            } else {
+//
+//            }
+        }
+
+        return new File(projectRoot, "plugins"); // NOI18N
+    }
+
+    public List<GrailsPlugin> loadInstalledPlugins() {
+        Version version = GrailsPlatform.getDefault().getVersion();
+        if (Version.VERSION_1_1.compareTo(version) <= 0) {
+            return loadInstalledPlugins11();
+        }
+        return loadInstalledPlugins10();
+    }
+
+    private List<GrailsPlugin> loadInstalledPlugins10() {
         List<GrailsPlugin> plugins = new ArrayList<GrailsPlugin>();
         try {
             FileObject pluginsDir = project.getProjectDirectory().getFileObject("plugins"); //NOI18N
@@ -151,13 +215,52 @@ public class GrailsPluginsManager {
         return plugins;
     }
 
+    public List<GrailsPlugin> loadInstalledPlugins11() {
+        List<GrailsPlugin> plugins = new ArrayList<GrailsPlugin>();
+        try {
+            FileObject propertiesFile = project.getProjectDirectory().getFileObject("application.properties"); //NOI18N
+            if (propertiesFile != null && propertiesFile.isData()) {
+                Properties props = new Properties();
+                InputStream is = new BufferedInputStream(propertiesFile.getInputStream());
+                try {
+                    props.load(is);
+
+                    for (Enumeration e = props.propertyNames(); e.hasMoreElements();) {
+                        String name = (String) e.nextElement();
+                        if (name.startsWith("plugins.")) { // NOI18N
+                            String value = props.getProperty(name);
+                            name = name.substring("plugins.".length()); // NOI18N
+                            plugins.add(new GrailsPlugin(name, value, null));
+                        }
+                    }
+
+                } finally {
+                    is.close();
+                }
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        Collections.sort(plugins);
+        return plugins;
+    }
+
     public boolean uninstallPlugins(Collection<GrailsPlugin> selectedPlugins) {
+        Version version = GrailsPlatform.getDefault().getVersion();
+        if (Version.VERSION_1_1.compareTo(version) <= 0) {
+            return uninstallPlugins11(selectedPlugins);
+        }
+
+        return uninstallPlugins10(selectedPlugins);
+    }
+
+    private boolean uninstallPlugins10(Collection<GrailsPlugin> selectedPlugins) {
         if (selectedPlugins != null && selectedPlugins.size() > 0) {
             final FileObject pluginsDir = project.getProjectDirectory().getFileObject("plugins"); //NO I18N
             if (pluginsDir != null && pluginsDir.isFolder() && pluginsDir.canWrite()) {
                 pluginsDir.refresh();
                 try {
-                    for (GrailsPlugin plugin : selectedPlugins) {                        
+                    for (GrailsPlugin plugin : selectedPlugins) {
                         FileObject pluginDir = pluginsDir.getFileObject(plugin.getDirName());
                         if (pluginDir != null && pluginDir.isValid()) {
                             pluginDir.delete();
@@ -175,19 +278,25 @@ public class GrailsPluginsManager {
         return true;
     }
 
+    private boolean uninstallPlugins11(final Collection<GrailsPlugin> selectedPlugins) {
+        return handlePlugins(selectedPlugins, true);
+    }
+
     public boolean installPlugins(final Collection<GrailsPlugin> selectedPlugins) {
-        //good practice:        
-        // array == null || array.length == 0 throws a NullPointerException if array is null
+        return handlePlugins(selectedPlugins, false);
+    }
+
+    private boolean handlePlugins(final Collection<GrailsPlugin> selectedPlugins, boolean uninstall) {
         if (!(selectedPlugins != null && selectedPlugins.size() > 0)) {
             return false;
         }
 
         boolean installed = true;
         final JButton[] buttons = getProgressDlgButtons();
-        
+
         final ExecutorService executor = Executors.newFixedThreadPool(1);
         for (final GrailsPlugin plugin : selectedPlugins) {
-            final Dialog dlg = getProgressDialog(plugin, buttons);
+            final Dialog dlg = getProgressDialog(plugin, buttons, uninstall);
 
             buttons[0].addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ev) {
@@ -196,7 +305,8 @@ public class GrailsPluginsManager {
                 }
             });
 
-            Callable<Boolean> runner = getInstallPluginCallable(plugin, buttons[1], dlg);
+            // FIXME should it be FS atomic action ?
+            Callable<Boolean> runner = getPluginHandlerCallable(plugin, buttons[1], dlg, uninstall);
 
             final Future<Boolean> result = executor.submit(runner);
             dlg.setVisible(true);
@@ -211,12 +321,14 @@ public class GrailsPluginsManager {
             }
         }
         executor.shutdown();
+
+        FileUtil.refreshFor(getPluginsDir(GrailsProjectConfig.forProject(project).getGrailsPlatform()));
         return installed;
     }
     
-    private Callable<Boolean> getInstallPluginCallable(final GrailsPlugin plugin,
-            final JButton cancelButton, final Dialog dlg) {
-        final String command = "install-plugin"; // NOI18N
+    private Callable<Boolean> getPluginHandlerCallable(final GrailsPlugin plugin,
+            final JButton cancelButton, final Dialog dlg, final boolean uninstall) {
+        final String command = uninstall ? "uninstall-plugin" : "install-plugin"; // NOI18N
 
         return new Callable<Boolean>() {
             public Boolean call() {
@@ -264,10 +376,10 @@ public class GrailsPluginsManager {
                         broken = true;
                     }
 
-                    if (broken) {
-                        // TODO is this enough ?
-                        uninstallPlugins(Collections.singletonList(plugin));
-                    }
+// FIXME we would need some silent uninstall for this (not the case for 1.1)
+//                    if (!uninstall && broken) {
+//                        uninstallPlugins(Collections.singletonList(plugin));
+//                    }
 
                     return !broken;
                 } finally {
@@ -284,12 +396,12 @@ public class GrailsPluginsManager {
             }
         };
     }
-    
-    private Dialog getProgressDialog(GrailsPlugin plugin, JButton[] buttons) {
-        final String title = NbBundle.getMessage(GrailsPluginsManager.class, "Installation");
-        
+
+    private Dialog getProgressDialog(GrailsPlugin plugin, JButton[] buttons, boolean uninstall) {
+        final String title = NbBundle.getMessage(GrailsPluginsManager.class, uninstall ? "Uninstallation" : "Installation");
+
         final InstallingPluginPanel progress = new InstallingPluginPanel(
-            NbBundle.getMessage(GrailsPluginsManager.class, "PluginPleaseWait", plugin.getName()));
+            NbBundle.getMessage(GrailsPluginsManager.class, uninstall ? "PluginUninstallPleaseWait" : "PluginInstallPleaseWait", plugin.getName()));
         final DialogDescriptor descriptor = new DialogDescriptor(progress, title, true, buttons, buttons[0],
             DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(InstallingPluginPanel.class), null); // NOI18N
         descriptor.setModal(true);
@@ -312,7 +424,7 @@ public class GrailsPluginsManager {
         try {
             final ZipFile file = new ZipFile(new File(path));
             try {
-                final ZipEntry entry = file.getEntry("plugin.xml");
+                final ZipEntry entry = file.getEntry("plugin.xml"); // NOI18N
                 if (entry != null) {
                     InputStream stream = file.getInputStream(entry);
                     plugin = getPluginFromInputStream(stream, path);
@@ -335,9 +447,9 @@ public class GrailsPluginsManager {
         if (root.getAttributes().getNamedItem("version") != null) { //NOI18N
             version = root.getAttributes().getNamedItem("version").getTextContent(); //NOI18N
         }
-        if (doc.getElementsByTagName("title") != null
+        if (doc.getElementsByTagName("title") != null // NOI18N
                 && doc.getElementsByTagName("title").getLength() > 0) { //NOI18N
-            description = doc.getElementsByTagName("title")
+            description = doc.getElementsByTagName("title") // NOI18N
                     .item(0).getTextContent(); //NOI18N
         }
         return new GrailsPlugin(name, version, description, path);
@@ -347,7 +459,8 @@ public class GrailsPluginsManager {
 
         private final List<GrailsPlugin> plugins = Collections.synchronizedList(new ArrayList<GrailsPlugin>());
 
-        private static final Pattern PLUGIN_PATTERN = Pattern.compile("(.+)[\\s]+<([\\w\\s.-]+)>[\\s]+--(.+)");
+        private static final Pattern PLUGIN_PATTERN = Pattern.compile("(.+)[\\s]+<([\\w\\s.-]+)>[\\s]+--(.+)"); // NOI18N
+
         public void processLine(String line) {
             GrailsPlugin plugin = null;
             final Matcher matcher = PLUGIN_PATTERN.matcher(line);

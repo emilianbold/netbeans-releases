@@ -85,7 +85,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         for (Entity e : entities) {
             NamedEntityOptions.instance().setEnabled(e.se, e.cb.isSelected());
         }
-
+        SemanticHighlightingOptions.instance().propertyChange(null);
         isChanged = false;
     }
 

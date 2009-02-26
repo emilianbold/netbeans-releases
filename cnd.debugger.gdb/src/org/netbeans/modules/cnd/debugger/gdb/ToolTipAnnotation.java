@@ -54,8 +54,6 @@ import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.text.Line.Part;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.util.RequestProcessor;
 
@@ -71,11 +69,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
     private EditorCookie ec;
     
     public String getShortDescription() {
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        if (currentEngine == null) {
-            return null;
-        }
-        GdbDebugger debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
+        GdbDebugger debugger = GdbDebugger.getGdbDebugger();
         if (debugger == null) {
             return null;
         }
@@ -121,11 +115,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             return;
         }
         
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        if (currentEngine == null) {
-            return;
-        }
-        GdbDebugger debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
+        GdbDebugger debugger = GdbDebugger.getGdbDebugger();
         if (debugger == null) {
             return;
         }

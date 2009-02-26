@@ -59,7 +59,8 @@ public abstract class DebuggerApiTestBase extends NbTestCase {
     }
 
     protected void assertInstanceOf(String msg, Object obj, Class aClass) {
-        if (!obj.getClass().isAssignableFrom(aClass))
+        assertNotNull("An object is not an instance of "+aClass+", because it is 'null'.", obj);
+        if (!aClass.isAssignableFrom(obj.getClass()))
         {
             fail(msg);
         }

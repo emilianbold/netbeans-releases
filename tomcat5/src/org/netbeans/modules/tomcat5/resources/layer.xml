@@ -148,7 +148,7 @@ made subject to such option by the copyright holder.
 
         <!-- Recognize text/tomcat50+xml: -->
         <folder name="MIMEResolver">
-          <file name="org-netbeans-modules-tomcat5-resolver.xml" url="mime-resolver.xml">
+          <file name="org-netbeans-modules-tomcat5-resolver.xml" url="tomcat-mime-resolver.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.tomcat5.resources.Bundle"/>
             <!--<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/tomcat5/resources/Tomcat40Icon.gif"/>-->
             <attr name="position" intvalue="380"/>

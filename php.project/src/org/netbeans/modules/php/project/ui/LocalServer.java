@@ -54,6 +54,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
+import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.openide.util.ChangeSupport;
 
 // XXX should be replaced (?) by PhpEnvironment.DocumentRoot
@@ -61,6 +62,7 @@ import org.openide.util.ChangeSupport;
  * @author Tomas Mysik
  */
 public class LocalServer implements Comparable<LocalServer> {
+    public static final LocalServer PENDING_LOCAL_SERVER = new LocalServer(PhpEnvironment.PENDING_DOCUMENT_ROOT.getDocumentRoot());
 
     private final String virtualHost;
     private final String url;
@@ -68,6 +70,10 @@ public class LocalServer implements Comparable<LocalServer> {
     private final boolean editable;
     private String hint = " "; // NOI18N
     private String srcRoot;
+
+    public static LocalServer getEmpty() {
+        return new LocalServer("", ""); // NOI18N
+    }
 
     public LocalServer(final LocalServer localServer) {
         this(localServer.virtualHost, localServer.documentRoot, localServer.srcRoot, localServer.editable);
@@ -88,6 +94,7 @@ public class LocalServer implements Comparable<LocalServer> {
     public LocalServer(String virtualHost, String documentRoot, String srcRoot, boolean editable) {
         this(virtualHost, null, documentRoot, srcRoot, editable);
     }
+
     public LocalServer(String virtualHost, String url, String documentRoot, String srcRoot, boolean editable) {
         this.virtualHost = virtualHost;
         this.url = url;
@@ -121,6 +128,10 @@ public class LocalServer implements Comparable<LocalServer> {
 
     public boolean isEditable() {
         return editable;
+    }
+
+    public boolean isPending() {
+        return this == PENDING_LOCAL_SERVER;
     }
 
     public String getHint() {
@@ -292,7 +303,8 @@ public class LocalServer implements Comparable<LocalServer> {
                 boolean cellHasFocus) {
             assert value instanceof LocalServer;
             setName("ComboBox.listRenderer"); // NOI18N
-            setText(((LocalServer) value).getSrcRoot());
+            String srcRoot = ((LocalServer) value).getSrcRoot();
+            setText(srcRoot.length() == 0 ? " " : srcRoot); // NOI18N // combo is too low otherwise
 
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
@@ -314,7 +326,7 @@ public class LocalServer implements Comparable<LocalServer> {
         public ComboBoxModel(LocalServer... defaultLocalServers) {
             if (defaultLocalServers == null || defaultLocalServers.length == 0) {
                 // prevent NPE
-                defaultLocalServers = new LocalServer[] {new LocalServer("", "")}; // NOI18N
+                defaultLocalServers = new LocalServer[] {getEmpty()};
             }
             data = new ArrayList<LocalServer>(2 * defaultLocalServers.length);
             for (LocalServer localServer : defaultLocalServers) {
@@ -380,7 +392,7 @@ public class LocalServer implements Comparable<LocalServer> {
         public void setSelectedItem(Object object) {
             if ((selected != null && !selected.equals(object))
                     || selected == null && object != null) {
-                assert object instanceof LocalServer;
+                assert object == null || object instanceof LocalServer : "Trying to set object of type: " + object.getClass().getName();
                 selected = (LocalServer) object;
                 fireContentsChanged(this, -1, -1);
             }

@@ -201,15 +201,19 @@ private void chooseDocButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 }//GEN-LAST:event_chooseDocButtonActionPerformed
 
     void load() {
-        GroovySettings groovyOption = new GroovySettings();
-        groovyDocTextField.setText(groovyOption.getGroovyDoc());
+        GroovySettings groovyOption = GroovySettings.getInstance();
+        String text = groovyOption.getGroovyDoc();
+        if (text == null) {
+            text = "";
+        }
+        groovyDocTextField.setText(text);
         if (subpanel != null) {
             subpanel.load();
         }
     }
 
     void store() {
-        GroovySettings groovyOption = new GroovySettings();
+        GroovySettings groovyOption = GroovySettings.getInstance();
         groovyOption.setGroovyDoc(groovyDocTextField.getText().trim());
         if (subpanel != null) {
             subpanel.store();

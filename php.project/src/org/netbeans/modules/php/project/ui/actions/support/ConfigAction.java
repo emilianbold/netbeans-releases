@@ -39,8 +39,13 @@
 
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
+import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -55,11 +60,16 @@ public abstract class ConfigAction {
         REMOTE,
         SCRIPT,
         TEST,
+        SELENIUM,
     }
-    private static final ConfigAction CONFIG_ACTION_LOCAL = new ConfigActionLocal();
-    private static final ConfigAction CONFIG_ACTION_REMOTE = new ConfigActionRemote();
-    private static final ConfigAction CONFIG_ACTION_SCRIPT = new ConfigActionScript();
-    private static final ConfigAction CONFIG_ACTION_TEST = new ConfigActionTest();
+
+    protected static final Logger LOGGER = Logger.getLogger(ConfigAction.class.getName());
+    protected final PhpProject project;
+
+    protected ConfigAction(PhpProject project) {
+        assert project != null;
+        this.project = project;
+    }
 
     public static Type convert(PhpProjectProperties.RunAsType runAsType) {
         Type type = null;
@@ -74,59 +84,66 @@ public abstract class ConfigAction {
                 type = Type.SCRIPT;
                 break;
             default:
-                assert false : "Unknown type: " + runAsType;
-                break;
+                throw new IllegalArgumentException("Unknown type: " + runAsType);
         }
         return type;
     }
 
-    public static ConfigAction get(Type type) {
+    public static ConfigAction get(Type type, PhpProject project) {
         assert type != null;
         ConfigAction action = null;
         switch (type) {
             case LOCAL:
-                action = CONFIG_ACTION_LOCAL;
+                action = new ConfigActionLocal(project);
                 break;
             case REMOTE:
-                action = CONFIG_ACTION_REMOTE;
+                action = new ConfigActionRemote(project);
                 break;
             case SCRIPT:
-                action = CONFIG_ACTION_SCRIPT;
+                action = new ConfigActionScript(project);
                 break;
             case TEST:
-                action = CONFIG_ACTION_TEST;
+                action = new ConfigActionTest(project);
+                break;
+            case SELENIUM:
+                action = new ConfigActionSelenium(project);
                 break;
             default:
-                assert false : "Unknown type: " + type;
-                break;
+                throw new IllegalArgumentException("Unknown type: " + type);
         }
         assert action != null;
         return action;
     }
 
-    public abstract boolean isRunProjectEnabled(PhpProject project);
-    public abstract boolean isDebugProjectEnabled(PhpProject project);
-
-    public abstract boolean isRunFileEnabled(PhpProject project, Lookup context);
-    public abstract boolean isDebugFileEnabled(PhpProject project, Lookup context);
-
-    public abstract void runProject(PhpProject project);
-    public abstract void debugProject(PhpProject project);
-
-    public abstract void runFile(PhpProject project, Lookup context);
-    public abstract void debugFile(PhpProject project, Lookup context);
-
-    /**
-     * The default implementation.
-     */
-    protected boolean isRunProjectEnabled() {
+    public boolean isRunProjectEnabled() {
         return true;
     }
 
-    /**
-     * The default implementation.
-     */
-    protected boolean isDebugProjectEnabled() {
+    public boolean isDebugProjectEnabled() {
         return XDebugStarterFactory.getInstance() != null;
+    }
+
+    public abstract boolean isValid(boolean indexFileNeeded);
+
+    public abstract boolean isRunFileEnabled(Lookup context);
+    public abstract boolean isDebugFileEnabled(Lookup context);
+
+    public abstract void runProject();
+    public abstract void debugProject();
+
+    public abstract void runFile(Lookup context);
+    public abstract void debugFile(Lookup context);
+
+    protected void showCustomizer() {
+        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
+    }
+
+    protected boolean isIndexFileValid(FileObject baseDirectory) {
+        assert baseDirectory != null;
+        String indexFile = ProjectPropertiesSupport.getIndexFile(project);
+        if (indexFile == null || indexFile.trim().length() == 0 || baseDirectory.getFileObject(indexFile) == null) {
+            return false;
+        }
+        return true;
     }
 }

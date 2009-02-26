@@ -116,7 +116,6 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
     private RequestProcessor.Task   refreshDiffTask;
     private VersioningSystem ownerVersioningSystem;
-    private File tempFolder;
 
     public DiffSidebar(JTextComponent target, File file) {
         this.textComponent = target;
@@ -451,10 +450,6 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     private void shutdown() {
         assert SwingUtilities.isEventDispatchThread();
 
-        if(tempFolder != null) {
-            Utils.deleteRecursively(tempFolder);
-        }
-
         if (fileObject != null) {
             fileObject.removeFileChangeListener(this);
         }
@@ -745,10 +740,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         File mainFile = FileUtil.toFile(fileObject);
         if (mainFile == null) return null;
 
-        if(tempFolder != null) {
-            Utils.deleteRecursively(tempFolder);
-        }
-        tempFolder = Utils.getTempFolder();
+        File tempFolder = Utils.getTempFolder();
         tempFolder.deleteOnExit();
 
         Set<File> filesToCheckout = new HashSet<File>(2);

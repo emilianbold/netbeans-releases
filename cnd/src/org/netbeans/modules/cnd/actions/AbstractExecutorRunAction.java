@@ -183,23 +183,9 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);
-
         // Build directory
         String bdir = mes.getBuildDirectory();
-        File buildDir;
-        if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
-            buildDir = makefile.getParentFile();
-        } else if (IpeUtils.isPathAbsolute(bdir)) {
-            buildDir = new File(bdir);
-        } else {
-            buildDir = new File(makefile.getParentFile(), bdir);
-        }
-        try {
-            buildDir = buildDir.getCanonicalFile();
-        }
-        catch (IOException ioe) {
-            // FIXUP
-        }
+        File buildDir = getAbsoluteBuildDir(bdir, makefile);
         return buildDir;
     }
 
@@ -322,5 +308,26 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     @Override
     protected boolean asynchronous() {
         return false;
+    }
+
+    protected static File getAbsoluteBuildDir(String bdir, File startFile) {
+        File buildDir;
+        if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
+            buildDir = startFile.getParentFile();
+        } else if (IpeUtils.isPathAbsolute(bdir)) {
+            buildDir = new File(bdir);
+        } else {
+            buildDir = new File(startFile.getParentFile(), bdir);
+        }
+        // Canonical path not appropriate here.
+        // We must emulate command line behaviour hence absolute normalized path is more appropriate here.
+        // See IZ#157677:LiteSQL is not configurable in case of symlinks.
+        //try {
+        //    buildDir = buildDir.getCanonicalFile();
+        //} catch (IOException ioe) {
+        //    // FIXUP
+        //}
+        buildDir = FileUtil.normalizeFile(buildDir.getAbsoluteFile());
+        return buildDir;
     }
 }

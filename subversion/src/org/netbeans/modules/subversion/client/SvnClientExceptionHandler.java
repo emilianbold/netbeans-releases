@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -567,6 +567,7 @@ public class SvnClientExceptionHandler {
         msg = msg.toLowerCase();       
         return msg.indexOf("authentication error from server: username not found") > - 1 || // NOI18N
                msg.indexOf("authorization failed") > - 1 ||                                 // NOI18N
+               msg.indexOf("authentication failed") > - 1 ||                                // NOI18N
                msg.indexOf("authentication error from server: password incorrect") > -1 ||  // NOI18N
                msg.indexOf("can't get password") > - 1 ||                                   // NOI18N
                msg.indexOf("can't get username or password") > - 1;                         // NOI18N
@@ -689,17 +690,27 @@ public class SvnClientExceptionHandler {
                (msg.indexOf(CommandlineClient.ERR_CLI_NOT_AVALABLE) > -1);
     }
 
-    public static boolean isMissingOrLocked(String msg) {  
-        msg = msg.toLowerCase();       
+    public static boolean isMissingOrLocked(String msg) {
+        msg = msg.toLowerCase();
         int idx = msg.indexOf("svn: working copy");                                         // NOI18N
-        if(idx > -1) {            
-            return msg.indexOf("is missing or not locked", idx + 17) > -1;                  // NOI18N    
-        } 
+        if(idx > -1) {
+            return msg.indexOf("is missing or not locked", idx + 17) > -1;                  // NOI18N
+        }
         idx = msg.indexOf("svn: directory");                                                // NOI18N
-        if(idx > -1) {            
-            return msg.indexOf("is missing", idx + 13) > -1;                                // NOI18N    
-        } 
-        return false;       
+        if(idx > -1) {
+            return msg.indexOf("is missing", idx + 13) > -1;                                // NOI18N
+        }
+        return false;
+    }
+
+    /**
+     * Determines if the message is a result of an on-direcotory-called command.
+     * @param msg error message
+     * @return <code>true</code> if <code>msg</code> is a message returned from a command called on a directory, <code>false</code> otherwise.
+     */
+    public static boolean isTargetDirectory(String msg) {
+        msg = msg.toLowerCase();
+        return (msg.indexOf("refers to a directory") > -1);                                         // NOI18N
     }
     
     public static void notifyException(Exception ex, boolean annotate, boolean isUI) {

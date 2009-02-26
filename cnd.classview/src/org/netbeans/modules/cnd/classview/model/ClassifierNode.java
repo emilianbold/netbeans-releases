@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.openide.nodes.Children;
 
 /**
@@ -51,6 +53,14 @@ import org.openide.nodes.Children;
 public abstract class ClassifierNode  extends ObjectNode {
     
     protected ClassifierNode(CsmCompoundClassifier obj, Children.Array key) {
-        super(obj, key);
+        super(obj, checkForwardLeaf(obj, key));
+    }
+
+    private static Children checkForwardLeaf(CsmClassifier cls, Children child) {
+        if (CsmClassifierResolver.getDefault().isForwardClass(cls)) {
+            return Children.LEAF;
+        } else {
+            return child;
+        }
     }
 }

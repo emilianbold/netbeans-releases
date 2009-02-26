@@ -41,6 +41,7 @@ package org.netbeans.modules.editor.indent.spi;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
@@ -99,10 +100,26 @@ public final class CodeStylePreferences {
      * @return The <code>CodeStylePreferences</code>, never <code>null</code>.
      */
     public static CodeStylePreferences get(Document doc) {
+        return get(doc, doc != null ? (String) doc.getProperty("mimeType") : null); //NOI18N
+    }
+
+    /**
+     * Gets <code>CodeStylePreferences</code> for a document and an embedding mimeType.
+     * This is the prefered method to use. Whenever you have both <code>Document</code> and its
+     * <code>FileObject</code> always use this method and provide the <code>Document</code>
+     * instance.
+     *
+     * @param doc The document to get <code>CodeStylePreferences</code> for,
+     *   can be <code>null</code>. If <code>null</code>, the method will return
+     *   global preferences for 'all languages'.
+     *
+     * @return The <code>CodeStylePreferences</code>, never <code>null</code>.
+     */
+    public static CodeStylePreferences get(Document doc, String mimeType) {
         if (doc != null) {
-            return get(doc, (String) doc.getProperty("mimeType")); //NOI18N
+            return getPreferences(doc, mimeType);
         } else {
-            return get(null, null);
+            return getPreferences(null, null);
         }
     }
 
@@ -118,13 +135,28 @@ public final class CodeStylePreferences {
      * @return The <code>CodeStylePreferences</code>, never <code>null</code>.
      */
     public static CodeStylePreferences get(FileObject file) {
-        if (file != null) {
-            return get(file, file.getMIMEType()); //NOI18N
-        } else {
-            return get(null, null);
-        }
+        return get(file, file != null ? file.getMIMEType() : null);
     }
     
+    /**
+     * Gets <code>CodeStylePreferences</code> for a file. If you also have a
+     * <code>Document</code> instance you should use the {@link #get(javax.swing.text.Document)}
+     * method.
+     *
+     * @param file The file to get <code>CodeStylePreferences</code> for,
+     *   can be <code>null</code>. If <code>null</code>, the method will return
+     *   global preferences for 'all languages'.
+     *
+     * @return The <code>CodeStylePreferences</code>, never <code>null</code>.
+     */
+    public static CodeStylePreferences get(FileObject file, String mimeType) {
+        if (file != null) {
+            return getPreferences(file, mimeType); //NOI18N
+        } else {
+            return getPreferences(null, null);
+        }
+    }
+
     public Preferences getPreferences() {
         synchronized (this) {
             // This is here solely for the purpose of previewing changes in formatting settings
@@ -153,7 +185,7 @@ public final class CodeStylePreferences {
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
     private static final String PROJECT_PROFILE = "project"; // NOI18N
 
-    private static final Map<Object, CodeStylePreferences> cache = new WeakHashMap<Object, CodeStylePreferences>();
+    private static final Map<Object, Map<String, CodeStylePreferences>> cache = new WeakHashMap<Object, Map<String, CodeStylePreferences>>();
     
     private final String mimeType;
     private final Reference<Document> refDoc;
@@ -175,9 +207,10 @@ public final class CodeStylePreferences {
         }
     };
     
-    private static CodeStylePreferences get(Object obj, String mimeType) {
+    private static CodeStylePreferences getPreferences(Object obj, String mimeType) {
         synchronized (cache) {
-            CodeStylePreferences csp = cache.get(obj);
+            Map<String, CodeStylePreferences> csps = cache.get(obj);
+            CodeStylePreferences csp = csps != null ? csps.get(mimeType) : null;
             if (csp == null) {
                 Document doc;
                 FileObject file;
@@ -195,7 +228,11 @@ public final class CodeStylePreferences {
                         mimeType, 
                         doc == null ? null : new WeakReference<Document>(doc),
                         file == null ? "no file" : file.getPath()); //NOI18N
-                cache.put(obj, csp);
+                if (csps == null) {
+                    csps = new HashMap<String, CodeStylePreferences>();
+                    cache.put(obj, csps);
+                }
+                csps.put(mimeType, csp);
             }
 
             return csp;

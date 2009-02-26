@@ -10,7 +10,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
 class ConstantElementImpl extends ModelElementImpl implements ConstantElement {
-    ConstantElementImpl(FileScope inScope, ASTNodeInfo<Scalar> node) {
+    ConstantElementImpl(FileScopeImpl inScope, ASTNodeInfo<Scalar> node) {
         this(inScope,node.getName(),inScope.getFile(),node.getRange());
     }
 
@@ -26,9 +26,4 @@ class ConstantElementImpl extends ModelElementImpl implements ConstantElement {
     }
 
 
-    @Override
-    StringBuilder golden(int indent) {
-        //TODO: not yet
-        return new StringBuilder();
-    }
 }

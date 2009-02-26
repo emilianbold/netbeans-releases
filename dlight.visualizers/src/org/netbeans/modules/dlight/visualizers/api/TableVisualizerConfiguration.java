@@ -36,16 +36,15 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.visualizers.api;
 
+import javax.swing.Action;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.impl.TableVisualizerConfigurationAccessor;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
-
-
 
 /**
  * This configuration is used to be able to show data collected
@@ -54,30 +53,67 @@ import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationI
  * of Table visualizer, it should return that it supports model scheme which can be retrieved  using
  * {@link org.netbeans.modules.dlight.api.support.DataModelSchemeProvider#getScheme(java.lang.String)} where id equals to "model:table".
  */
-public final  class TableVisualizerConfiguration implements VisualizerConfiguration {
-  private DataTableMetadata metadata;
+public final class TableVisualizerConfiguration implements VisualizerConfiguration {
 
-  /**
-   * Creates new configuration to display meta table <code>metadata</code>
-   * @param metadata see {@link @org-netbeans-modules-dlight@org/netbeans/modules/dlight/api/storage/DataTableMetadata.html}
-   */
-  public TableVisualizerConfiguration(DataTableMetadata metadata) {
-    this.metadata = metadata;
-  }
+    private DataTableMetadata metadata;
+    private String emptyRuntimeMessage;
+    private String emptyAnalyzeMessage;
+
+    static{
+        TableVisualizerConfigurationAccessor.setDefault(new TableVisualizerConfigurationAccessorImpl());
+    }
+
+    /**
+     * Creates new configuration to display meta table <code>metadata</code>
+     * @param metadata see {@link @org-netbeans-modules-dlight@org/netbeans/modules/dlight/api/storage/DataTableMetadata.html}
+     */
+    public TableVisualizerConfiguration(DataTableMetadata metadata) {
+        this.metadata = metadata;
+    }
+
+    public void setEmptyRunningMessage(String emptyRuntimeMessage) {
+        this.emptyRuntimeMessage = emptyRuntimeMessage;
+    }
+
+    public void setEmptyAnalyzeMessage(String emptyAnalyzeMessage) {
+        this.emptyAnalyzeMessage = emptyAnalyzeMessage;
+    }
+
+    
+
+    String getEmptyRunningMessage(){
+        return emptyRuntimeMessage;
+    }
+
+    String getEmptyAnalyzeMessage(){
+        return emptyAnalyzeMessage;
+    }
 
 
-  public final DataTableMetadata getMetadata() {
-    return metadata;
-  }
+    public final DataTableMetadata getMetadata() {
+        return metadata;
+    }
 
+    public final DataModelScheme getSupportedDataScheme() {
+        return DataModelSchemeProvider.getInstance().getScheme("model:table");
+    }
 
-  public final DataModelScheme getSupportedDataScheme() {
-    return DataModelSchemeProvider.getInstance().getScheme("model:table");
-  }
+    public final String getID() {
+        return VisualizerConfigurationIDsProvider.TABLE_VISUALIZER;
+    }
 
-  public final String getID() {
-    return VisualizerConfigurationIDsProvider.TABLE_VISUALIZER;
-  }
+    private static class TableVisualizerConfigurationAccessorImpl extends TableVisualizerConfigurationAccessor{
 
+        @Override
+        public String getEmptyRunningMessage(TableVisualizerConfiguration configuration) {
+            return configuration.getEmptyRunningMessage();
+        }
+
+        @Override
+        public String getEmptyAnalyzeMessage(TableVisualizerConfiguration configuration) {
+            return configuration.getEmptyAnalyzeMessage();
+        }
+    }
+    
 }
 

@@ -43,6 +43,7 @@ package org.netbeans.modules.java.source.builder;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Names;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.*;
 import com.sun.tools.javac.code.Scope;
@@ -64,7 +65,7 @@ import static javax.lang.model.element.ElementKind.*;
  */
 public class ElementsService {
     private com.sun.tools.javac.code.Types jctypes;
-    private Name.Table names;
+    private Names names;
     private Types types;
     
     private static final Context.Key<ElementsService> KEY =
@@ -80,7 +81,7 @@ public class ElementsService {
     protected ElementsService(Context context) {
         context.put(KEY, this);
         jctypes = com.sun.tools.javac.code.Types.instance(context);
-        names = Name.Table.instance(context);
+        names = Names.instance(context);
         types = JavacTypes.instance(context);
     }
 

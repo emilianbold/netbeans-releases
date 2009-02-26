@@ -196,7 +196,7 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnRemoveAdded, "&Remove");
+        org.openide.awt.Mnemonics.setLocalizedText(btnRemoveAdded, org.openide.util.NbBundle.getMessage(WebFrameworksPanel.class, "BTN_Remove")); // NOI18N
         btnRemoveAdded.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnRemoveAddedActionPerformed(evt);
@@ -219,11 +219,11 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(jButtonAdd)
                     .add(btnRemoveAdded)))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(jLabelConfig, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 368, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
+            .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
         );
 
         layout.linkSize(new java.awt.Component[] {btnRemoveAdded, jButtonAdd}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -246,8 +246,6 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
         );
-
-        jButtonAdd.getAccessibleContext().setAccessibleDescription("null");
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddActionPerformed

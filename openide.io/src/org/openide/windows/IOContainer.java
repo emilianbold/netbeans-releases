@@ -39,12 +39,17 @@
 
 package org.openide.windows;
 
+import java.awt.Component;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 
@@ -66,9 +71,20 @@ public final class IOContainer {
     }
 
     private static IOContainer defaultIOContainer;
+    /**
+     * Gets the default container according to a generic {@link Provider}.
+     * <p>
+     * Normally this is taken from {@link Lookup#getDefault} but if there is no
+     * instance in lookup, a fallback instance is created which can be useful for
+     * unit tests and perhaps for standalone usage of various libraries.
+     * @return a generic container
+     */
     public static IOContainer getDefault() {
         if (defaultIOContainer == null) {
             Provider provider = Lookup.getDefault().lookup(Provider.class);
+            if (provider == null) {
+                provider = new Trivial();
+            }
             defaultIOContainer = create(provider);
         }
         return defaultIOContainer;
@@ -85,7 +101,7 @@ public final class IOContainer {
      * Opens parent container
      */
     public void open() {
-        log(provider, "open()");
+        log("open()");
         provider.open();
     }
 
@@ -93,7 +109,7 @@ public final class IOContainer {
      * Activates parent container
      */
     public void requestActive() {
-        log(provider, "requestActive()");
+        log("requestActive()");
         provider.requestActive();
     }
 
@@ -101,7 +117,7 @@ public final class IOContainer {
      * Selects parent container (if it is opened), but does not activate it
      */
     public void requestVisible() {
-        log(provider, "requestVisible()");
+        log("requestVisible()");
         provider.requestVisible();
     }
 
@@ -110,7 +126,7 @@ public final class IOContainer {
      * @return true if parent container is activated
      */
     public boolean isActivated() {
-        log(provider, "isActivated()");
+        log("isActivated()");
         return provider.isActivated();
     }
 
@@ -121,7 +137,7 @@ public final class IOContainer {
      * @see CallBacks
      */
     public void add(JComponent comp, CallBacks cb) {
-        log(provider, "requestVisible()", comp, cb);
+        log("requestVisible()", comp, cb);
         provider.add(comp, cb);
     }
 
@@ -130,7 +146,7 @@ public final class IOContainer {
      * @param comp component that should be removed
      */
     public void remove(JComponent comp) {
-        log(provider, "remove()", comp);
+        log("remove()", comp);
         provider.remove(comp);
     }
 
@@ -139,7 +155,7 @@ public final class IOContainer {
      * @param comp component that should be selected
      */
     public void select(JComponent comp) {
-        log(provider, "select()", comp);
+        log("select()", comp);
         provider.select(comp);
     }
 
@@ -148,7 +164,7 @@ public final class IOContainer {
      * @return selected tab
      */
     public JComponent getSelected() {
-        log(provider, "getSelected()");
+        log("getSelected()");
         return provider.getSelected();
     }
 
@@ -158,7 +174,7 @@ public final class IOContainer {
      * @param name component title
      */
     public void setTitle(JComponent comp, String name) {
-        log(provider, "setTitle()", comp, name);
+        log("setTitle()", comp, name);
         provider.setTitle(comp, name);
     }
 
@@ -168,7 +184,7 @@ public final class IOContainer {
      * @param text component title
      */
     public void setToolTipText(JComponent comp, String text) {
-        log(provider, "setToolTipText()", comp, text);
+        log("setToolTipText()", comp, text);
         provider.setToolTipText(comp, text);
     }
 
@@ -178,7 +194,7 @@ public final class IOContainer {
      * @param icon component icon
      */
     public void setIcon(JComponent comp, Icon icon) {
-        log(provider, "setIcon()", comp, icon);
+        log("setIcon()", comp, icon);
         provider.setIcon(comp, icon);
     }
 
@@ -188,7 +204,7 @@ public final class IOContainer {
      * @param toolbarActions toolbar actions for component
      */
     public void setToolbarActions(JComponent comp, Action[] toolbarActions) {
-        log(provider, "setToolbarActions()", comp, toolbarActions);
+        log("setToolbarActions()", comp, toolbarActions);
         provider.setToolbarActions(comp, toolbarActions);
     }
 
@@ -199,7 +215,7 @@ public final class IOContainer {
      * @return true if component can be closed
      */
     public boolean isCloseable(JComponent comp) {
-        log(provider, "isCloseable()", comp);
+        log("isCloseable()", comp);
         return provider.isCloseable(comp);
     }
 
@@ -308,15 +324,78 @@ public final class IOContainer {
     }
 
     private static final Logger LOGGER = Logger.getLogger(IOContainer.class.getName());
-    private static Level logLevel = Level.FINER;
 
-    private synchronized void log(Object provider, String msg, Object... items) {
-        if (LOGGER.isLoggable(logLevel)) {
-            LOGGER.log(logLevel, provider.getClass() + ": " + msg);
-            for (Object o : items) {
-                LOGGER.log(logLevel, "    " + o);
-            }
-        }
+    private synchronized void log(String msg, Object... items) {
+        LOGGER.log(Level.FINER, "{0}: {1} {2}", new Object[] {provider.getClass(), msg, Arrays.asList(items)});
         assert SwingUtilities.isEventDispatchThread() : "Should be called from AWT thread.";
     }
+
+    private static class Trivial extends JTabbedPane implements Provider {
+
+        private JFrame frame;
+
+        public void open() {
+            if (frame == null) {
+                frame = new JFrame();
+                frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+                frame.add(this);
+                if (getTabCount() > 0) {
+                    frame.setTitle(getTitleAt(0));
+                }
+                frame.pack();
+            }
+            frame.setVisible(true);
+        }
+
+        public void requestActive() {
+            frame.requestFocus();
+        }
+
+        public void requestVisible() {
+            frame.setVisible(true);
+        }
+
+        public boolean isActivated() {
+            return frame.isActive();
+        }
+
+        public void add(JComponent comp, CallBacks cb) {
+            // XXX ignores callbacks
+            add(comp);
+        }
+
+        public void remove(JComponent comp) {
+            remove((Component) comp);
+        }
+
+        public void select(JComponent comp) {
+            setSelectedComponent(comp);
+        }
+
+        public JComponent getSelected() {
+            return (JComponent) getSelectedComponent();
+        }
+
+        public void setTitle(JComponent comp, String name) {
+            setTitleAt(indexOfComponent(comp), name);
+        }
+
+        public void setToolTipText(JComponent comp, String text) {
+            setToolTipTextAt(indexOfComponent(comp), text);
+        }
+
+        public void setIcon(JComponent comp, Icon icon) {
+            setIconAt(indexOfComponent(comp), icon);
+        }
+
+        public void setToolbarActions(JComponent comp, Action[] toolbarActions) {
+            // XXX unsupported for now; setTabComponentAt could be useful in JDK 6
+        }
+
+        public boolean isCloseable(JComponent comp) {
+            return true;
+        }
+
+    }
+
 }

@@ -261,9 +261,24 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         return cls; 
     }
     private String diagnosticCNFEMessage(String base, Set<ProxyClassLoader> del) {
+        String parentSetS;
+        int size = parentSet.size();
+        if (size <= 10) {
+            parentSetS = parentSet.toString();
+        } else {
+            // Too big to show in its entirety - overwhelms the log file.
+            StringBuilder b = new StringBuilder();
+            Iterator<ProxyClassLoader> parentSetI = parentSet.iterator();
+            for (int i = 0; i < 10; i++) {
+                b.append(i == 0 ? "[" : ", ");
+                b.append(parentSetI.next());
+            }
+            b.append(", ..." + (size - 10) + " more]");
+            parentSetS = b.toString();
+        }
         return base + " starting from " + this +
                 " with possible defining loaders " + del +
-                " and declared parents " + parentSet;
+                " and declared parents " + parentSetS;
     }
 
     /** May return null */ 

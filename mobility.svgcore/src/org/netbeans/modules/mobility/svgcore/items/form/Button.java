@@ -52,7 +52,7 @@ import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
 public class Button extends SVGFormElement{
 
     private static final String SNIPPET_PATH = "button_snippet.xml_template"; //NOI18N
-                          //NOI18N
+                        
     
     public Button() {
         super(SVGComponentsSupport.ID_PREFIX_BUTTON, SNIPPET_PATH);

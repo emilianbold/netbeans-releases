@@ -114,10 +114,10 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
         assert (uid == null) || (UIDCsmConverter.UIDtoCsmObject(uid) != null) : " no object for UID " + uid;
     }
 
-    public void clearClassifiers() {
-        classifiers.clear();
-        typedefs.clear();
-    }
+    //public void clearClassifiers() {
+    //    classifiers.clear();
+    //    typedefs.clear();
+    //}
 
     private boolean isTypedef(CsmDeclaration decl){
         return CsmKindUtilities.isTypedef(decl);

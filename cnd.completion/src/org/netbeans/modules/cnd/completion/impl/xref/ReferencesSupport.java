@@ -96,6 +96,7 @@ import org.openide.util.Parameters;
 import org.openide.util.UserQuestionException;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.TokenItem;
+import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
@@ -322,9 +323,6 @@ public final class ReferencesSupport {
         }
         // then full check if needed
         csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY, fileReferencesContext);
-        // if still null try macro info from file (IZ# 130897)
-        if (csmItem == null) {
-        }
         return csmItem;
     }
 
@@ -395,7 +393,7 @@ public final class ReferencesSupport {
 
     private static boolean isSupportedToken(TokenItem<CppTokenId> token) {
         return token != null &&
-                (CsmIncludeHyperlinkProvider.isSupportedToken(token) || CsmHyperlinkProvider.isSupportedToken(token));
+                (CsmIncludeHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION) || CsmHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION));
     }
 
     public static Scope fastCheckScope(CsmReference ref) {
@@ -645,7 +643,14 @@ public final class ReferencesSupport {
         }
     }
 
-    private static CsmObject findMacro(List<CsmReference> macroUsages, final int offset) {
+    /**
+     * Searches for macro.
+     *
+     * @param macroUsages - list of macros
+     * @param offset - macro offset
+     * @return macro
+     */
+    public static CsmObject findMacro(List<CsmReference> macroUsages, final int offset) {
         int index = Collections.binarySearch(macroUsages, new RefOffsetKey(offset), new Comparator<CsmReference>() {
             public int compare(CsmReference o1, CsmReference o2) {
                 if (o1 instanceof RefOffsetKey) {

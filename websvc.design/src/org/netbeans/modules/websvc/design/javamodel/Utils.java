@@ -169,7 +169,9 @@ public class Utils {
                             if (!tnsFound) {
                                 String qualifName = classEl.getQualifiedName().toString();
                                 int ind = qualifName.lastIndexOf(".");
-                                serviceModel.targetNamespace = "http://"+(ind>=0?qualifName.substring(0,ind):"")+"/";
+                                String packageName = ind>=0 ? qualifName.substring(0,ind) : ""; //NOI18N
+                                String ns = getPackageReverseOrder(packageName);
+                                serviceModel.targetNamespace = "http://"+ns+"/"; //NOI18N
                             }
 
                             //TODO: Also have to apply JAXWS/JAXB rules regarding collision of names
@@ -803,5 +805,17 @@ public class Utils {
             }
         }
         return attributeValue[0];
+    }
+
+    private static String getPackageReverseOrder(String packageName) {
+        String[] names = packageName.split("\\."); //NOI18N
+        StringBuffer buf = new StringBuffer();
+        for (int i=names.length-1 ; i >= 0 ; i--) {
+            if (i<names.length-1) {
+                buf.append("."); //NOI18N
+            }
+            buf.append(names[i]);
+        }
+        return buf.toString();
     }
 }

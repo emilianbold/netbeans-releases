@@ -135,20 +135,14 @@ final class RootNode extends AbstractNode {
     
     /**
      */
-    TestsuiteNode displayReport(final Report report, int[] statistics) {
+    TestsuiteNode displayReport(final Report report) {
         assert EventQueue.isDispatchThread();
-        assert statistics.length == 6;
+
         /* Called from the EventDispatch thread */
 
-        totalTests = statistics[0];
-        failures = statistics[1];
-        errors = statistics[2];
-        detectedPassedTests = statistics[3];
-        interruptedTests = statistics[4];
-        elapsedTimeMillis = statistics[5];
-
-        updateDisplayName();
-        return children.displayReport(report);
+        TestsuiteNode tsNode = children.displayReport(report);
+        updateStatistics();
+        return tsNode;
     }
     
     /**
@@ -157,8 +151,8 @@ final class RootNode extends AbstractNode {
         assert EventQueue.isDispatchThread();
         
         /* Called from the EventDispatch thread */
-        updateDisplayName();
         children.displayReports(reports);
+        updateStatistics();
     }
         
     /**
@@ -176,7 +170,26 @@ final class RootNode extends AbstractNode {
             ((RootNodeChildren) children).setFiltered(filtered);
         }
     }
-    
+
+    private void updateStatistics(){
+        totalTests = 0;
+        failures = 0;
+        errors = 0;
+        interruptedTests = 0;
+        elapsedTimeMillis = 0;
+        detectedPassedTests = 0;
+
+        for(Report report: children.reports){
+            totalTests += report.totalTests;
+            failures += report.failures;
+            errors += report.errors;
+            interruptedTests += report.interruptedTests;
+            elapsedTimeMillis += report.elapsedTimeMillis;
+            detectedPassedTests += report.detectedPassedTests;
+        }
+        updateDisplayName();
+    }
+
     /**
      */
     private void updateDisplayName() {

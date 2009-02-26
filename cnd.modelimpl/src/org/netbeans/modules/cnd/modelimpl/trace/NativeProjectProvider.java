@@ -44,14 +44,12 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
-import org.netbeans.modules.cnd.loaders.CndDataObject;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.openide.filesystems.FileObject;
@@ -184,7 +182,7 @@ public final class NativeProjectProvider {
         }
 
         public String getProjectDisplayName() {
-            return getProjectRoot();
+            return "DummyProject"; // NOI18N
         }
 
         public List<NativeFileItem> getAllFiles() {
@@ -281,35 +279,12 @@ public final class NativeProjectProvider {
     /*package*/ static void registerItemInDataObject(DataObject obj, NativeFileItem item) {
         if (obj != null) {
             NativeFileItemSet set = obj.getLookup().lookup(NativeFileItemSet.class);
-            if (set == null) {
-                set = new NativeFileItemSetImpl();
-                if (obj instanceof CndDataObject) {
-                    ((CndDataObject)obj).addCookie(set);
-                }
+            if (set != null) {
+                set.add(item);
             }
-            set.add(item);
         }
     }
     
-    private static class NativeFileItemSetImpl implements NativeFileItemSet {
-        private List<NativeFileItem> items = new ArrayList<NativeFileItem>(1);
-        
-        public synchronized Collection<NativeFileItem> getItems() {
-            return new ArrayList<NativeFileItem>(items);
-        }
-        public synchronized void add(NativeFileItem item){
-            if (!items.contains(item)) {
-                items.add(item);
-            }
-        }
-        public synchronized void remove(NativeFileItem item){
-            items.remove(item);
-        }
-        public boolean isEmpty() {
-            return items.isEmpty();
-        }
-    }
-
     private static final class NativeFileItemImpl implements NativeFileItem {
 	
         private final File file;
@@ -376,5 +351,11 @@ public final class NativeProjectProvider {
         public boolean isExcluded() {
             return false;
         }
+
+        @Override
+        public String toString() {
+            return file.getAbsolutePath();
+        }
+
     }
 }

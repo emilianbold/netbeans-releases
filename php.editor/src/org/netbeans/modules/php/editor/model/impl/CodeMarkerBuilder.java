@@ -72,7 +72,7 @@ class CodeMarkerBuilder {
         this.fncDeclarations = new HashMap<FunctionDeclarationInfo, Scope>();
     }
 
-    void prepare(FunctionDeclaration node, ScopeImpl scope) {
+    void prepare(FunctionDeclaration node, Scope scope) {
         FunctionDeclarationInfo nodeInfo = FunctionDeclarationInfo.create(node);
         if (canBePrepared(node, scope)) {
             fncDeclarations.put(nodeInfo, scope);
@@ -80,7 +80,7 @@ class CodeMarkerBuilder {
         }
     }
 
-    void prepare(MethodDeclaration node, ScopeImpl scope) {
+    void prepare(MethodDeclaration node, Scope scope) {
         MethodDeclarationInfo nodeInfo = MethodDeclarationInfo.create(node);
         if (canBePrepared(node, scope)) {
             methodDeclarations.put(nodeInfo, scope);
@@ -98,7 +98,7 @@ class CodeMarkerBuilder {
         }
     }
 
-    private void buildFunctionDeclarations(FileScope fileScope) {
+    private void buildFunctionDeclarations(FileScopeImpl fileScope) {
         String scopeName = currentScope.getName();
         for (Entry<FunctionDeclarationInfo, Scope> entry : fncDeclarations.entrySet()) {
             Scope scope = entry.getValue();
@@ -112,7 +112,7 @@ class CodeMarkerBuilder {
         }
     }
 
-    private void buildMethodDeclarations(FileScope fileScope) {
+    private void buildMethodDeclarations(FileScopeImpl fileScope) {
         String scopeName = currentScope.getName();
         for (Entry<MethodDeclarationInfo, Scope> entry : methodDeclarations.entrySet()) {
             Scope scope = entry.getValue();
@@ -133,7 +133,7 @@ class CodeMarkerBuilder {
     }
 
 
-    private void buildReturnStatement(FileScope fileScope) {
+    private void buildReturnStatement(FileScopeImpl fileScope) {
         String scopeName = currentScope.getName();
         for (Entry<ASTNodeInfo<ReturnStatement>, Scope> entry : returnStatements.entrySet()) {
             Scope scope = entry.getValue();
@@ -151,7 +151,7 @@ class CodeMarkerBuilder {
     }
 
 
-    void build(FileScope fileScope) {
+    void build(FileScopeImpl fileScope) {
         if (currentNodeInfo != null && currentScope != null) {
             CodeMarkerImpl currentMarkerImpl = new CodeMarkerImpl(currentScope, currentNodeInfo, fileScope);
             //fileScope.addCodeMarker(currentMarkerImpl);

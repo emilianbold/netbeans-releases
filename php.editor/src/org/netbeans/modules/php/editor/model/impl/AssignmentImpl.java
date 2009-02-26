@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
@@ -58,12 +59,12 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     private Union2<String,List<? extends TypeScope>> typeName;
     private OffsetRange scopeRange;
 
-    AssignmentImpl(Container container, ScopeImpl scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
+    AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
             Map<String, AssignmentImpl> allAssignments) {
         this(container, scope, scopeRange, nameRange, VariousUtils.extractVariableTypeFromAssignment(assignment, allAssignments));
     }
 
-    AssignmentImpl(Container container, ScopeImpl scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
+    AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
         super(scope, container.getName(), container.getFile(), nameRange, container.getPhpKind());
         this.container = container;
         this.typeName = Union2.<String,List<? extends TypeScope>>createFirst(typeName);
@@ -107,10 +108,10 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
         return sb.toString();
     }
 
-    public List<? extends TypeScope> getTypes() {
+    public Collection<? extends TypeScope> getTypes() {
         String name = container.getName();
         List<? extends TypeScope> empty = Collections.emptyList();
-        ModelScope topScope = ModelUtils.getModelScope(this);
+        FileScope topScope = ModelUtils.getFileScope(this);
         //TODO: cache the value
         List<? extends TypeScope> types = typesFromUnion();
         if (types != null) {

@@ -1017,8 +1017,6 @@ final class PropUtils {
                 UIManager.getLookAndFeel().getClass().getName()
             );
 
-        boolean aqua = "Aqua".equals(UIManager.getLookAndFeel().getID());
-
         boolean nimbus = "Nimbus".equals(UIManager.getLookAndFeel().getID());
 
         boolean gtk = "GTK".equals(UIManager.getLookAndFeel().getID());
@@ -1032,20 +1030,12 @@ final class PropUtils {
         }
 
         if (setRendererColor == null) {
-            if (aqua) {
-                setRendererColor = new Color(225, 235, 240);
-            } else {
-                if (setRendererColor == null) {
-                    red = adjustColorComponent(controlColor.getRed(), -25, -25);
-                    green = adjustColorComponent(controlColor.getGreen(), -25, -25);
-                    blue = adjustColorComponent(controlColor.getBlue(), -25, -25);
-                    setRendererColor = new Color(red, green, blue);
-                }
+            if (setRendererColor == null) {
+                red = adjustColorComponent(controlColor.getRed(), -25, -25);
+                green = adjustColorComponent(controlColor.getGreen(), -25, -25);
+                blue = adjustColorComponent(controlColor.getBlue(), -25, -25);
+                setRendererColor = new Color(red, green, blue);
             }
-        }
-
-        if (aqua) {
-            selectedSetRendererColor = UIManager.getColor("Table.selectionBackground");
         }
 
         if (selectedSetRendererColor == null) {

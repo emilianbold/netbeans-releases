@@ -69,7 +69,7 @@ import org.w3c.dom.svg.SVGRect;
  *           &lt;set attributeName="visibility" attributeType="XML" begin="country_combobox.focusout" 
  *               fill="freeze" to="hidden"/>
  *       &lt;/rect>
- *       &lt;rect  x="5.0" y="0.0" width="80" height="20" fill="none" stroke="black" stroke-width="2"/>
+ *       &lt;rect id="country_combobox_border" x="5.0" y="0.0" width="80" height="20" fill="none" stroke="black" stroke-width="2"/>
  *   &lt;g>
  *       &lt;!-- Metadata information. Please don't edit. -->
  *       &lt;text display="none">type=button&lt;/text>
@@ -98,12 +98,6 @@ import org.w3c.dom.svg.SVGRect;
  *              &lt;!-- Metadata information. Please don't edit. -->
  *              &lt;text display="none">type=text&lt;/text>
  *       &lt;/g>
- *       &lt;!-- The rectangle below is difference between rectangle that bound 
- *         combobox and combobox button ( the latter 
- *       has id = country_combobox_button ). It needed for counting bounds of input text area .
- *       It should be created via source code or SVGTextField should have API for dealing with "width"
- *       of editor not based only on width of text field component.-->
- *       &lt;rect visibility="hidden" x="5.0" y="0" width="60" height="20" />
  *   &lt;/g>
  *   &lt;/g>
  *
@@ -213,6 +207,10 @@ public class SVGComboBox extends SVGComponent implements
         myModel = model;
         model.addDataListener( this );
         myList.setModel( model );
+
+        if ( model != null && model.getSize()>0 ){
+            setSelected( model.getElementAt(0));
+        }
     }
     
     public ComboBoxEditor getEditor(){
@@ -301,7 +299,7 @@ public class SVGComboBox extends SVGComponent implements
 
     private void initButton() {
         if ( getElement().getId() != null ){
-            myButton =  getElementById( getElement(), 
+            myButton =  (SVGLocatableElement)getElementById( getElement(),
                     getElement().getId()+ BUTTON_SUFFIX );
             myPressedAnimation = (SVGAnimationElement) getElementById( myButton,
                     myButton.getId() + PRESSED );
@@ -309,7 +307,8 @@ public class SVGComboBox extends SVGComponent implements
                     myButton.getId() + RELEASED ); 
         }
         if ( myButton == null ) {
-            myButton =  getNestedElementByMeta( getElement(), TYPE , BUTTON);
+            myButton =  (SVGLocatableElement)getNestedElementByMeta( getElement(),
+                    TYPE , BUTTON);
         }
         
         if ( myPressedAnimation == null && myButton != null ) {
@@ -347,16 +346,21 @@ public class SVGComboBox extends SVGComponent implements
     
     private void initEditor( ) {
         SVGLocatableElement editor = null;
+        SVGLocatableElement border = null;
         if ( getElement().getId() != null ){
             editor = (SVGLocatableElement) getElementById( getElement(), 
                     getElement().getId() + EDITOR_SUFFIX);
+            border = (SVGLocatableElement) getElementById( getElement(),
+                    getElement().getId() + SVGTextField.BORDER_SUFFIX);
         }
         if ( editor ==null ) {
             editor = (SVGLocatableElement)getElementByMeta( 
                     getElement(),TYPE, EDITOR);
         }
-        if ( editor != null ){
-            setEditor( new DefaultComboBoxEditor( form , editor));
+        if ( editor != null && border != null ){
+            setEditor( new DefaultComboBoxEditor( form , editor,
+                    border.getBBox().getWidth()-myButton.getBBox().getWidth(),
+                    border.getBBox().getX()));
         }
     }
     
@@ -661,8 +665,9 @@ public class SVGComboBox extends SVGComponent implements
     
     private class DefaultComboBoxEditor extends SVGTextField implements ComboBoxEditor{
 
-        public DefaultComboBoxEditor( SVGForm form , SVGLocatableElement element ) {
-            super(form , element );
+        public DefaultComboBoxEditor( SVGForm form , SVGLocatableElement element ,
+                float width , float x ) {
+            super(form , element , width, x );
             /*SVGComboBox.this.addActionListener( new SVGActionListener (){
                 public void actionPerformed( SVGComponent comp ) {
                     if( comp == SVGComboBox.this){
@@ -703,13 +708,17 @@ public class SVGComboBox extends SVGComponent implements
             }
         }
 
+
+        public void setText(String text){
+            super.setText(text);
+        }
     }
     
     private ComboBoxModel myModel;
     private ComboBoxEditor myEditor;
     
     private InputHandler myInputHandler;
-    private SVGElement myButton;
+    private SVGLocatableElement myButton;
     private SVGAnimationElement myPressedAnimation;
     private SVGAnimationElement myReleasedAnimation;
     

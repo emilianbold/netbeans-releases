@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.api.PhpOptions;
@@ -57,6 +58,7 @@ import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
 import org.netbeans.modules.php.project.ui.LocalServer;
+import org.netbeans.modules.php.project.ui.LocalServer.ComboBoxModel;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -75,7 +77,7 @@ import org.openide.util.WeakListeners;
  * @author Tomas Mysik
  */
 public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescriptor>,
-        WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
+        WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener, CancelablePanel {
 
     static final String VALID = "valid"; // NOI18N // used in the previous step while validating sources - copy-folder
     static final String RUN_AS = PhpProjectProperties.RUN_AS; // this property is used in RunAsPanel... yeah, ugly
@@ -115,6 +117,9 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private RunAsScript runAsScript = null;
     private String defaultLocalUrl = null;
     private String originalProjectName = null;
+
+    private volatile boolean readingDocumentRoots = false;
+    private volatile boolean canceled;
 
     public RunConfigurationPanel(String[] steps, SourcesFolderProvider sourcesFolderProvider, NewPhpProjectWizardIterator.WizardType wizardType) {
         this.sourcesFolderProvider = sourcesFolderProvider;
@@ -182,7 +187,24 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 break;
         }
 
-        runAsLocalWeb.setLocalServerModel(getLocalServerModel());
+        MutableComboBoxModel localServerModel = getLocalServerModel();
+        if (localServerModel != null) {
+            runAsLocalWeb.setLocalServerModel(localServerModel);
+        } else {
+            runAsLocalWeb.setLocalServerModel(new LocalServer.ComboBoxModel(LocalServer.PENDING_LOCAL_SERVER));
+            readingDocumentRoots = true;
+            runAsLocalWeb.setCopyFilesState(false);
+            canceled = false;
+            PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
+                public void finished(final List<DocumentRoot> documentRoots) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            initLocalServerModel(documentRoots);
+                        }
+                    });
+                }
+            });
+        }
         runAsLocalWeb.setCopyFiles(getCopyFiles());
 
         runAsRemoteWeb.setUploadDirectory(getUploadDirectory());
@@ -218,21 +240,37 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private MutableComboBoxModel getLocalServerModel() {
-        MutableComboBoxModel model = (MutableComboBoxModel) descriptor.getProperty(COPY_SRC_TARGETS);
-        if (model != null) {
-            return model;
-        }
+        return (MutableComboBoxModel) descriptor.getProperty(COPY_SRC_TARGETS);
+    }
 
-        List<DocumentRoot> copyToFolderRoots = PhpEnvironment.get().getDocumentRoots();
-        int size = copyToFolderRoots.size();
+    void initLocalServerModel(List<DocumentRoot> documentRoots) {
+        if (canceled) {
+            return;
+        }
+        int size = documentRoots.size();
         List<LocalServer> localServers = new ArrayList<LocalServer>(size);
-        for (DocumentRoot root : copyToFolderRoots) {
+        LocalServer selected = null;
+        for (DocumentRoot root : documentRoots) {
             String srcRoot = new File(root.getDocumentRoot(), sourcesFolderProvider.getSourcesFolderName()).getAbsolutePath();
             LocalServer ls = new LocalServer(null, root.getUrl(), root.getDocumentRoot(), srcRoot, true);
             localServers.add(ls);
+            if (selected == null) {
+                selected = ls;
+            }
         }
 
-        return new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[size]));
+        ComboBoxModel model = new LocalServer.ComboBoxModel(localServers.toArray(new LocalServer[localServers.size()]));
+        // store settings
+        if (selected != null) {
+            model.setSelectedItem(selected);
+            descriptor.putProperty(COPY_SRC_TARGET, selected);
+        }
+        descriptor.putProperty(COPY_SRC_TARGETS, model);
+        // update UI
+        runAsLocalWeb.setLocalServerModel(model);
+        runAsLocalWeb.setCopyFilesState(true);
+        readingDocumentRoots = false;
+        fireChangeEvent();
     }
 
     private boolean getCopyFiles() {
@@ -288,6 +326,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         String indexFile = null;
         switch (getRunAsType()) {
             case LOCAL:
+                if (readingDocumentRoots) {
+                    descriptor.putProperty(VALID, false);
+                    return false;
+                }
                 error = validateRunAsLocalWeb();
                 indexFile = runAsLocalWeb.getIndexFile();
                 break;
@@ -596,6 +638,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 break;
         }
         fireChangeEvent();
+    }
+
+    public void cancel() {
+        canceled = true;
     }
 
     private class WizardConfigProvider implements ConfigManager.ConfigProvider {

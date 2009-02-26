@@ -98,9 +98,7 @@ public class AntActions {
         
         //Needed in Tools|Options|...| ToolBars action icons
         a.putValue (
-            Action.SMALL_ICON, 
-            new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/jmx/jconsole/resources/run_project.png")) // NOI18N
-                );
+            Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/jmx/jconsole/resources/run_project.png", false));
         return a;
     }
     
@@ -128,9 +126,7 @@ public class AntActions {
                 );
         //Needed in Tools|Options|...| ToolBars action icons
         a.putValue (
-            Action.SMALL_ICON, 
-            new ImageIcon (ImageUtilities.loadImage("org/netbeans/modules/jmx/jconsole/resources/debug_project.png")) // NOI18N
-                );
+            Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/jmx/jconsole/resources/debug_project.png", false));
         return a;
     }
     

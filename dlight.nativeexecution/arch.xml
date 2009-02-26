@@ -17,13 +17,13 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "http://www.netbeans.org/source/browse/~checkout~/nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
-  <!ENTITY api-questions SYSTEM "http://www.netbeans.org/source/browse/~checkout~/nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
+<!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
+  <!ENTITY api-questions SYSTEM "../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
 
 <api-answers
   question-version="1.29"
-  author="yourname@netbeans.org"
+  author="akrasny@netbeans.org"
 >
 
   &api-questions;
@@ -47,13 +47,23 @@ Microsystems, Inc. All Rights Reserved.
 -->
     <answer id="arch-overall">
         <p>
-  This module provides an API that contains support for execution of native
-  processes from within IDE. The advandage is that it supports both native and
-  remote execution. Also it provides means for starting process with requested
-  execution privileges (see privileges(5)). Of course, privileges are applicable
-  for Solaris 10+ execution environment only.
-  This module gives control over task's I/O redirection, task's launch and
-  cancellation. It also provides PID of underlaying native process.
+  Currently the module doesn't provide any SPI.
+        </p>
+        <p>
+            Three main API classes are: 
+            <a href="@TOP@/org/netbeans/modules/nativeexecution/api/ExecutionEnvironment.html">ExecutionEnvironment</a>,
+            <a href="@TOP@/org/netbeans/modules/nativeexecution/api/NativeProcess.html">NativeProcess</a> and
+            <a href="@TOP@/org/netbeans/modules/nativeexecution/api/NativeProcessBuilder.html">NativeProcessBuilder</a>.
+            ExecutionEnvironmant describes <b>where</b> the process needs to be
+            started (i.e. it identifies a host and, if needed, provides information
+            for establishing ssh connection with that host (i.e. username and
+            ssh-port to use)).
+            <a href="@TOP@/org/netbeans/modules/nativeexecution/api/util/ConnectionManager.html">ConnectionManager</a>
+            (that is also a part of the API)
+            handles all ssh connections and is responsible for establishing those
+            connection (ask for passwords, etc.)<br/>
+            NativeProcessBuilder is a factory for a NativeProcess that can be
+            used with an ExecutionService to create and start system process.
         </p>
     </answer>
 
@@ -93,8 +103,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
     <answer id="arch-time">
         <p>
-   It is not final yet. Actually, it is planned to 'merge' it with External
-   Execution Support module. This may take 1 - 2 weeks.
+   It is not final yet. 
         </p>
     </answer>
 
@@ -116,23 +125,135 @@ Microsystems, Inc. All Rights Reserved.
 -->
     <answer id="arch-usecases">
         <p>
-   Originally it was written to support native execution for D-Light module.
-   Currently it's usage as easy as:
+  The module was designed in the same manner as ExtExecution Support and can be
+  considered as an extension of that module. It introduces it's own ProcessBuilder
+  (NativeProcessBuilder) that can be used with an 
+  <a href="@org-netbeans-modules-extexecution@/org/netbeans/api/extexecution/ExecutionDescriptor.html">ExecutionDescriptor</a>
+  and an
+  <a href="@org-netbeans-modules-extexecution@/org/netbeans/api/extexecution/ExecutionService.html">ExecutionService</a>
+  from the ExtExecution Support Module. The NativeProcessBuilder
+  is a factory for a NativeProcess, which is an extension of java.lang.Process with
+  two additional methods: getPID() and getState() to receive system process' pid
+  and state respectively.
         </p>
-        <pre>
-       ExecutionEnvironment execEnv = new ExecutionEnvironment("username", "remotehost.name");
-       NativeTask task = new NativeTask(execEnv, "/bin/ls", new String[]{"/"});
-       task.submit();
+        <p>
+            Below are several examples of usage.
+            </p>
+<usecase id="StartRemoteProcess" name="Start Remote System Process">
+<pre>
+    ExecutionEnvironment env = new ExecutionEnvironment(userName, host);
+    NativeProcessBuilder npb = new NativeProcessBuilder(env, "/bin/ls");
+    npb = npb.setArguments(".").setWorkingDirectory("/tmp");
+    ExecutionDescriptor descr = new ExecutionDescriptor().controllable(true);
+    ExecutionService service = ExecutionService.newService(npb, descr, "test");
 
-       try {
-           int result = task.get();
-       } catch (InterruptedException ex) {
-           Exceptions.printStackTrace(ex);
-       } catch (ExecutionException ex) {
-           Exceptions.printStackTrace(ex);
-       }
-        </pre>
-    </answer>
+    Future&lt;Integer&gt; result = service.run();
+
+    Integer exitCode = null;
+    try {
+        exitCode = result.get();
+    } catch (InterruptedException ex) {
+        Exceptions.printStackTrace(ex);
+    } catch (ExecutionException ex) {
+        Exceptions.printStackTrace(ex);
+    }
+
+    System.out.println("Exit code is " + exitCode);
+</pre>
+</usecase>
+
+<usecase id="ObtainPID" name="Obtain System Process' ID (PID)">
+
+To obtain process' PID one should register it's ChangeListener when configure a
+NativeProcessBuilder that will recieve a notification about process start event
+(<i>State</i> of the process changed to <i><b>RUNNING</b></i>). Then, on this
+event it is possible to ask event's source (NativeProcess) for a PID.
+<pre>
+ChangeListener listener = new ChangeListener() {
+
+    public void stateChanged(ChangeEvent e) {
+        NativeProcess process = (NativeProcess) e.getSource();
+        State newState = process.getState();
+
+        if (newState == State.STARTING) {
+            return;
+        }
+
+        if (newState == State.ERROR) {
+            System.out.println("Unable to start process!");
+            return;
+        }
+
+        System.out.println("Process " + process.toString() + " [" + process.getPID() + "] -> " + newState);
+    }
+};
+
+...
+
+NativeProcessBuilder npb = new NativeProcessBuilder(env, "/bin/ls");
+npb = npb.setArguments(".").setWorkingDirectory("/tmp");
+npb = npb.addNativeProcessListener(listener);
+...
+</pre>
+</usecase>
+
+<usecase id="StartInExtTerm" name="Start Process in an External Terminal">
+To start process in an external terminal one should setup NativeProcessBuilder
+accordingly.
+<pre>
+...
+
+ExternalTerminal term = ExternalTerminalProvider.getTerminal("gnome-terminal").setTitle("My title");
+
+NativeProcessBuilder npb = new NativeProcessBuilder(env, "/bin/ls");
+npb = npb.setArguments(".").setWorkingDirectory("/tmp");
+npb = npb.useExternalTerminal(term);
+...
+
+</pre>
+</usecase>
+
+<usecase id="UseAsynchronousActions" name="Initiate Connect/Privileges Grant">
+<a href="@TOP@/org/netbeans/modules/nativeexecution/api/util/ConnectionManager.html">ConnectionManager</a> and
+<a href="@TOP@/org/netbeans/modules/nativeexecution/api/util/SolarisPrivilegesSupport.html">SolarisPrivilegesSupport</a>
+are utility classes that manage
+remote sessions and granding privileges to execution environment.<br/>
+Their usage is rather straightforward, but they both have one characteristics
+and implement the following pattern: to initiate connection/granting privileges
+one first obtains an
+<a href="@TOP@/org/netbeans/modules/nativeexecution/api/util/AsynchronousAction.html">AsynchronousAction</a>
+and then invokes it (or associate with
+some Action handler).
+
+<pre>
+ExecutionEnvironment ee = new ExecutionEnvironment(user, host, port);
+ConnectionManager cm = ConnectionManager.getInstance();
+
+Runnable onConnect = new Runnable() {
+    public void run() {
+        DialogDisplayer.getDefault().notify(new DialogDescriptor.Message("Host connected!"));
+    }
+};
+
+AsynchronousAction connectAction = cm.getConnectToAction(ee, onConnect);
+
+// To invoke it immideately (and synchroniously)
+
+connectAction.invoke();
+
+// Or add it to some UI
+
+...
+JPanel panel = new JPanel(new BorderLayout());
+panel.add(new JButton(connectAction), BorderLayout.CENTER);
+
+DialogDisplayer.getDefault().createDialog(
+        new DialogDescriptor(panel, "Connection Test")).setVisible(true);
+...
+
+</pre>
+</usecase>
+</answer>
 
 <!--
         <question id="arch-what" when="init">
@@ -145,16 +266,28 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
     <answer id="arch-what">
-        <p></p>
-   This module was developed to solve following 'problems'. It was required to have means to:
+        <p>
+        This module can be considered as an extension to the External Execution
+        Module that provides an API (<api name="NativeExecutionAPI" group="java"
+  type="export" category="devel"/>) to execute and control external system
+        processes not only on the local machine, but on remote systems as well.
+        As it uses External Execution Module as a base for execution control,
+        process' Input/Output and integration with the IDE are handled in the same
+        way.
+        </p>
+        The differences are:
         <ul>
-            <li>start native process locally as well as remotely (over ssh) </li>
-            <li>get PID of started process</li>
-            <li>cancel started process</li>
-            <li>(on Solaris) start process with requested execution privileges
-                (mainly dtrace_*)
+            <li>one can start process remotely (using ssh-connection);</li>
+            <li>it supports execution in an external terminal;</li>
+            <li>it is possible to obtain system process' ID (PID);</li>
+            <li>it provides utility classes to perform common tasks like
+                files uploading, removing, etc.;
+            </li>
+            <li>it provides utility class for granting execution privileges
+                to native processes (See privileges(5). Solaris 10+ only).
             </li>
         </ul>
+
     </answer>
 
 <!--
@@ -186,7 +319,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
     <answer id="compat-deprecation">
         <p>
-        This module should be an extension rather than deprecation of External
+        This module in an extension rather than deprecation of External
         Execution Support.
         </p>
     </answer>
@@ -351,10 +484,12 @@ Microsystems, Inc. All Rights Reserved.
 -->
     <answer id="dep-platform">
         <p>
-        Locally it is run on any platform. For remote execution it is required
-        that remote host is running ssh server and is Unix. For privileged
-        execution it is required that remote host runs Solaris 10+.
+        The module was written to support D-Light functionality, so the focus
+        was Solaris/Linux environment. It was not tested under other environments.
+        For remote execution it is required that remote host is running ssh
+        server. For privileged execution it is required that remote host runs Solaris 10+.
         For privileged support a small native executable is implemented and used.
+        For terminal support a shell script (wrapper) is used.
         </p>
     </answer>
 
@@ -515,7 +650,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
     <answer id="exec-component">
         <p>
-            No.
+            There are no public properties. There are some for debugging purposes.
         </p>
     </answer>
 
@@ -571,7 +706,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
     <answer id="exec-process">
         <p>
-    Yes. The API provides support to do so. The result code, input and output stream content does not define API as this is forwarded to the client of this module.
+    Yes. The API provides support to do so. The result code, input and output
+    stream content does not define API as this is forwarded to the client of this module.
         </p>
     </answer>
 
@@ -650,7 +786,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
     <answer id="exec-threading">
         <p>
-        It is thread safe and can be accessed from any thread.
+        It is supposed to be thread safe and can be accessed from any thread.
         </p>
     </answer>
 
@@ -809,9 +945,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
     <answer id="perf-huge_dialogs">
         <p>
-   There are two dialogs: one for ask user password to connect to a host (in
+   There are two dialogs: one to ask user password to connect to a host (in
    case of remote execution); another one - to ask for priveleged user's
-   password to grant execution privileges to running process
+   password to grant execution privileges for running process.
         </p>
     </answer>
 
@@ -901,9 +1037,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
     <answer id="perf-progress">
         <p>
-   Not module itself, but processes that executed via provided API can take long
-   time. Also for remote execution connection to other host(s) initiated.
-   All these tasks are performed in non-AWT thread.
+   Processes that executed via provided API can take long time. Also for remote
+   execution connection to an other host(s) is initiated. All these tasks are
+   performed in non-AWT thread.
         </p>
     </answer>
 
@@ -1009,7 +1145,11 @@ Microsystems, Inc. All Rights Reserved.
 -->
     <answer id="resources-layer">
         <p>
-   No.
+   Yes. Terminal support is implemented so that it reads different terminals
+   'configuration' from the NativeExecution/ExtTerminalSupport folder.
+   Terminal 'configurations' describe what options should be passed to a
+   specific terminal (gnome-terminal, xterm) in order to start a process from
+   within it.
         </p>
     </answer>
 
@@ -1057,7 +1197,7 @@ Microsystems, Inc. All Rights Reserved.
         <p>
    Yes. Reads and Writes and doesn't share with others.
    User's password (encrypted) is stored in
-   <code>NbPreferences.forModule(org.netbeans.modules.nativeexecution.RemoteUserInfo.class)</code>
+            <code>NbPreferences.forModule(<a href="@TOP@/org/netbeans/modules/nativeexecution/support/RemoteUserInfo.html">RemoteUserInfo.class</a>)</code>
         </p>
     </answer>
 

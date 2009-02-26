@@ -71,8 +71,7 @@ public class AutotestRunner implements TestRunner {
     
     private static final TestRunner INSTANCE = new AutotestRunner();
 
-    private static final String NB_RSPEC_MEDIATOR = "NB_RSPEC_MEDIATOR"; //NOI18N
-    private static final String RSPEC_AUTOTEST_LOADER = "nb_autotest_loader.rb"; //NOI18N
+    static final String AUTOTEST_LOADER = "nb_autotest_loader.rb"; //NOI18N
 
     
     public AutotestRunner() {
@@ -112,7 +111,6 @@ public class AutotestRunner implements TestRunner {
         TestRunnerUtilities.addProperties(desc, project);
         desc.addInitialArgs("-r \"" + getLoaderScript().getAbsolutePath() + "\""); //NOI18N
         Map<String, String> env = new HashMap<String, String>(2);
-        AutotestRunner.addRspecMediatorOptionsToEnv(env);
         TestUnitRunner.addTestUnitRunnerToEnv(env);
         desc.addAdditionalEnv(env);
         desc.debug(debug);
@@ -132,21 +130,12 @@ public class AutotestRunner implements TestRunner {
         TestExecutionManager.getInstance().start(desc, new AutotestHandlerFactory(), session);
     }
     
-    private static void addRspecMediatorOptionsToEnv(Map<String, String> env) {
-        // referenced from nb_autotest_loader.rb
-        String options = "--require '"
-                + RspecRunner.getMediatorScript().getAbsolutePath()
-                + "' --runner NbRspecMediator";//NOI18N
-        
-        env.put(NB_RSPEC_MEDIATOR, options);
-    }
-
     private static File getLoaderScript() {
         File mediatorScript = InstalledFileLocator.getDefault().locate(
-                RSPEC_AUTOTEST_LOADER, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
+                AUTOTEST_LOADER, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
 
         if (mediatorScript == null) {
-            throw new IllegalStateException("Could not locate " + RSPEC_AUTOTEST_LOADER); // NOI18N
+            throw new IllegalStateException("Could not locate " + AUTOTEST_LOADER); // NOI18N
 
         }
         return mediatorScript;

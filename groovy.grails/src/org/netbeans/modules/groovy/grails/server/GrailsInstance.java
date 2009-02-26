@@ -45,7 +45,8 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.GrailsConstants;
-import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform.Version;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
@@ -62,11 +63,11 @@ public final class GrailsInstance implements ServerInstanceImplementation {
 
     private final GrailsChildFactory childFactory;
 
-    private final GrailsRuntime runtime;
+    private final GrailsPlatform runtime;
 
     private final Node node;
 
-    private GrailsInstance(GrailsInstanceProvider provider, GrailsRuntime runtime) {
+    private GrailsInstance(GrailsInstanceProvider provider, GrailsPlatform runtime) {
         this.childFactory = new GrailsChildFactory(provider);
         this.runtime = runtime;
         this.node = new GrailsNode(Children.create(childFactory, false), getDisplayName());
@@ -74,7 +75,7 @@ public final class GrailsInstance implements ServerInstanceImplementation {
 
     public static final GrailsInstance forProvider(GrailsInstanceProvider provider) {
         // when we will support multiple runtimes it has to be list of instances
-        return new GrailsInstance(provider, GrailsRuntime.getInstance());
+        return new GrailsInstance(provider, GrailsPlatform.getDefault());
     }
 
     public Node getBasicNode() {
@@ -94,10 +95,12 @@ public final class GrailsInstance implements ServerInstanceImplementation {
     }
 
     public final String getDisplayName() {
-        String version = Accessor.DEFAULT.getVersion(runtime);
-        if (version == null) {
+        String version;
+        if (!runtime.isConfigured()) {
             version = NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.unknownVersion");
         }
+
+        version = runtime.getVersion().toString();
         return NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.displayName", version);
     }
 
@@ -121,29 +124,6 @@ public final class GrailsInstance implements ServerInstanceImplementation {
 
     public final void remove() {
         // noop
-    }
-
-    /**
-     * The accessor pattern class.
-     */
-    public abstract static class Accessor {
-
-        /** The default accessor. */
-        public static Accessor DEFAULT;
-
-        static {
-            // invokes static initializer of GrailsRuntime.class
-            // that will assign value to the DEFAULT field above
-            Class c = GrailsRuntime.class;
-            try {
-                Class.forName(c.getName(), true, c.getClassLoader());
-            } catch (ClassNotFoundException ex) {
-                assert false : ex;
-            }
-        }
-
-        public abstract String getVersion(GrailsRuntime runtime);
-
     }
 
     private static class GrailsNode extends AbstractNode {

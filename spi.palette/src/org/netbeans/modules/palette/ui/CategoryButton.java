@@ -62,8 +62,6 @@ import org.openide.util.Utilities;
  */
 class CategoryButton extends JCheckBox implements Autoscroll {
 
-    private static final Color AQUA_BK_COLOR = new Color(225, 235, 240);
-    
     static final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() );
     static final boolean isNimbus = "Nimbus".equals( UIManager.getLookAndFeel().getID() );
     static final boolean isAqua = "Aqua".equals( UIManager.getLookAndFeel().getID() );
@@ -223,14 +221,12 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     @Override
     public Color getBackground() {
         if( isFocusOwner() ) {
-            if( isAqua )
-                return UIManager.getColor("Table.selectionBackground"); //NOI18N
             if( isGTK || isNimbus )
                 return UIManager.getColor("Tree.selectionBackground"); //NOI18N
             return UIManager.getColor( "PropSheet.selectedSetBackground" ); //NOI18N
         } else {
             if( isAqua )
-                return AQUA_BK_COLOR;
+                return UIManager.getColor("NbExplorerView.background");
             if( isGTK || isNimbus ) {
                 if( getModel().isRollover() )
                     return new Color( UIManager.getColor( "Menu.background" ).getRGB() ).darker(); //NOI18N
@@ -244,7 +240,7 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     public Color getForeground() {
         if( isFocusOwner() ) {
             if( isAqua )
-                return UIManager.getColor( "Table.selectionForeground" ); //NOI18N
+                return UIManager.getColor( "Table.foreground" ); //NOI18N
             else if( isGTK || isNimbus )
                 return UIManager.getColor( "Tree.selectionForeground" ); //NOI18N
             return UIManager.getColor( "PropSheet.selectedSetForeground" ); //NOI18N

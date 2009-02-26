@@ -40,17 +40,32 @@
  */
 package org.netbeans.modules.ruby.debugger.ui;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
 import org.netbeans.spi.debugger.ui.AttachType;
-import org.openide.util.NbBundle;
+import org.netbeans.spi.debugger.ui.Controller;
 
+@AttachType.Registration(displayName="#RubyAttachType.ConnectorName")
 public final class RubyAttachType extends AttachType {
 
-    public String getTypeDisplayName() {
-        return NbBundle.getMessage(RubyAttachType.class, "RubyAttachType.ConnectorName");
+    private Reference<ConnectPanel> customizerRef = new WeakReference<ConnectPanel>(null);
+    
+
+    public JComponent getCustomizer () {
+        ConnectPanel panel = new ConnectPanel ();
+        customizerRef = new WeakReference<ConnectPanel>(panel);
+        return panel;
     }
 
-    public JComponent getCustomizer() {
-        return new ConnectPanel();
+    @Override
+    public Controller getController() {
+        ConnectPanel panel = customizerRef.get();
+        if (panel != null) {
+            return panel.getController();
+        } else {
+            return null;
+        }
     }
+
 }

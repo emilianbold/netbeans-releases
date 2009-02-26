@@ -187,6 +187,19 @@ made subject to such option by the copyright holder.
                         </folder>
                 </folder>
             </folder>
+            <folder name="x-yaml">
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-ruby-railsprojects-GenerateAction$EditorAction.instance"/>
+                </folder>
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <file name="org-netbeans-modules-ruby-railsprojects-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                        <file name="org-netbeans-modules-ruby-railsprojects-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml">
+                            <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
     </folder>
     

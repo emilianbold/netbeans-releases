@@ -64,7 +64,7 @@ public class RemoteInteractiveCommandSupport extends RemoteConnectionSupport {
     }
 
     public RemoteInteractiveCommandSupport(String hkey, String cmd, Map<String, String> env, InputStream in, OutputStream out) {
-        super(hkey, 22);
+        super(hkey, PORT);
         this.cmd = cmd;
         this.env = env;
         this.in = in;

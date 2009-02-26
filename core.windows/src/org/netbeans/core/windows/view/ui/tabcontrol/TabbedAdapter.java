@@ -459,8 +459,14 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     /** Add action for enabling auto hide of views */
     public Action[] getPopupActions(Action[] defaultActions, int tabIndex) {
         boolean isDocked = WindowManagerImpl.getInstance().isDocked(getTopComponentAt(tabIndex));
+        boolean slidingEnabled = true;
+        TabData td = getModel().getTab(tabIndex);
+        if( td.getComponent() instanceof TopComponent ) {
+            slidingEnabled = Switches.isSlidingEnabled((TopComponent)td.getComponent());
+        }
         // no auto hide for editors and floating views
-        if (TabbedContainer.TYPE_EDITOR == getType() || !isDocked || !Switches.isTopComponentSlidingEnabled()) {
+        if (TabbedContainer.TYPE_EDITOR == getType() || !isDocked 
+                || !Switches.isTopComponentSlidingEnabled() || !slidingEnabled) {
             return defaultActions;
         }
         int actionCount = defaultActions.length;
@@ -556,6 +562,24 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         @Override
         public boolean isTopComponentMaximizationEnabled() {
             return Switches.isTopComponentMaximizationEnabled();
+        }
+
+        @Override
+        public boolean isTopComponentClosingEnabled(TopComponent tc) {
+            return !Boolean.TRUE.equals(tc.getClientProperty(TopComponent.PROP_CLOSING_DISABLED))
+                    && isTopComponentClosingEnabled();
+        }
+
+        @Override
+        public boolean isTopComponentMaximizationEnabled(TopComponent tc) {
+            return !Boolean.TRUE.equals(tc.getClientProperty(TopComponent.PROP_MAXIMIZATION_DISABLED))
+                    && isTopComponentMaximizationEnabled();
+        }
+
+        @Override
+        public boolean isTopComponentSlidingEnabled(TopComponent tc) {
+            return !Boolean.TRUE.equals(tc.getClientProperty(TopComponent.PROP_SLIDING_DISABLED))
+                    && isTopComponentSlidingEnabled();
         }
     } // end of LocInfo
 

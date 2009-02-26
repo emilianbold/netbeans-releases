@@ -10,11 +10,7 @@ rootnames:
   Logs
   Public
   RSpec
-  Unit Tests
-  Functional Tests
-  Test Fixtures
-  Test Mocks
-  Integration Tests
+  Test Files
   Scripts
   Documentation
   Vendor
@@ -30,11 +26,7 @@ rootProperties:
   log
   public
   spec
-  test/unit
-  test/functional
-  test/fixtures
-  test/mocks
-  test/integration
+  test
   script
   doc
   vendor
@@ -44,19 +36,14 @@ rootFiles:
   controllers
   db
   doc
-  fixtures
-  functional
   helpers
-  integration
   lib
   log
-  mocks
   models
   public
   script
   spec
   test
-  unit
   vendor
   views
 extraFiles:

@@ -183,12 +183,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         
         initComponents();
     
-        resumeIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_16.png"));
-        focusedResumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_focused_16.png"));
-        pressedResumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_pressed_16.png"));
-        suspendIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/suspend_button_16.png"));
-        focusedSuspendIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/suspend_button_focused_16.png"));
-        pressedSuspendIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/suspend_button_pressed_16.png"));
+        resumeIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/resume_button_16.png", false);
+        focusedResumeIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/resume_button_focused_16.png", false);
+        pressedResumeIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/resume_button_pressed_16.png", false);
+        suspendIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/suspend_button_16.png", false);
+        focusedSuspendIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/suspend_button_focused_16.png", false);
+        pressedSuspendIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/suspend_button_pressed_16.png", false);
         
         setBackground(treeBackgroundColor);
         
@@ -216,6 +216,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         sessionsComboListener = new SessionsComboBoxListener();
 
         scrollBarPanel.setVisible(false);
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            scrollBarPanel.setBackground(tapPanel.getBackground());
+            scrollBarPanel.setOpaque(true);
+        }
         treeScrollBar.addAdjustmentListener(this);
 
         setSuspendTableVisible(preferences.getBoolean(FiltersDescriptor.SHOW_SUSPEND_TABLE, true));
@@ -272,10 +276,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         treeScrollBar.setOrientation(javax.swing.JScrollBar.HORIZONTAL);
         scrollBarPanel.add(treeScrollBar, java.awt.BorderLayout.CENTER);
 
+        leftPanel1.setOpaque(false);
         leftPanel1.setPreferredSize(new java.awt.Dimension(8, 0));
         leftPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         scrollBarPanel.add(leftPanel1, java.awt.BorderLayout.WEST);
 
+        rightPanel1.setOpaque(false);
         rightPanel1.setPreferredSize(new java.awt.Dimension(24, 0));
         rightPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
         scrollBarPanel.add(rightPanel1, java.awt.BorderLayout.EAST);

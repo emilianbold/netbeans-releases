@@ -52,6 +52,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
+import org.netbeans.modules.ruby.testrunner.TestRunnerUtilities;
 import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
 import org.openide.util.NbBundle;
 
@@ -75,13 +76,13 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
         result.add(new SuiteStartedHandler());
         result.add(new SuiteFinishedHandler());
         result.add(new SuiteErrorOutputHandler());
-        result.add(new TestStartedHandler());
         result.add(new ShouldaTestStartedHandler());
         result.add(new ShouldaTestFailedHandler());
+        result.add(new TestStartedHandler());
         result.add(new TestFailedHandler());
         result.add(new TestErrorHandler());
-        result.add(new TestFinishedHandler());
         result.add(new ShouldaTestFinishedHandler());
+        result.add(new TestFinishedHandler());
         result.add(new TestLoggerHandler());
         result.add(new TestMiscHandler());
         result.add(new SuiteMiscHandler());
@@ -100,7 +101,7 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
         List<String> stackTraceList = new ArrayList<String>();
         stackTraceList.add(message);
         for (String location : stackTrace.split("%BR%")) { //NOI18N
-            if (!location.contains(TestUnitRunner.MEDIATOR_SCRIPT_NAME) && !location.contains(TestUnitRunner.RUNNER_SCRIPT_NAME)) { //NOI18N
+            if (!TestRunnerUtilities.filterOutFromStacktrace(location)) {
                 stackTraceList.add(location);
             }
         }
@@ -214,7 +215,7 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
     static class TestStartedHandler extends TestRecognizerHandler {
 
         public TestStartedHandler() {
-            super("%TEST_STARTED%\\s([\\w]+)\\((.+)\\)"); //NOI18N
+            super("%TEST_STARTED%\\s(.+)\\((.+)\\)"); //NOI18N
         }
 
         @Override
@@ -243,7 +244,7 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
         }
 
         public TestFinishedHandler() {
-            super("%TEST_FINISHED%\\stime=(.+)\\s([\\w]+)\\((.+)\\)"); //NOI18N
+            super("%TEST_FINISHED%\\stime=(.+)\\s(.+)\\((.+)\\)"); //NOI18N
         }
 
         @Override

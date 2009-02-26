@@ -38,18 +38,58 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
 -->
 <html>
     <head>
-        <title>Editing the Maven <tt>pom.xml</tt></title>
+        <title>Working with the Maven POM</title>
         <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     </head>
     <body>
-        <h2>Editing the Maven <tt>pom.xml</tt></h2>
+        <h2>Working with the Maven POM</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
+        <p>The Project Object Model (POM) is the basic unit of work in Maven.
+        The POM is described in the <tt>pom.xml</tt> XML file and contains project and configuration details,
+        such as the artifact coordinates, project dependencies and build profiles that Maven uses to execute goals and build the project.</p>
+        <p>For more information about POM elements, see the following pages on the Maven site:</p>
+        
         <p>
-            <!-- TODO describe your module, add more pages... -->
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://maven.apache.org/guides/introduction/introduction-to-the-pom.html">
+        <param name="text" value="<html><u>Introduction to the POM</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+        </object>
         </p>
+
+        <p>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://maven.apache.org/ref/2.0.8/maven-model/maven.html">
+        <param name="text" value="<html><u>POM Reference</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+        </object>
+        </p>
+
+        <p>When you use the New Project wizard to create an artifact, 
+        the IDE automatically generates <tt>pom.xml</tt> and adds the artifact details.
+        Open <tt>pom.xml</tt> in the XML editor to edit the file.
+        The following features are available in the XML editor to help you edit <tt>pom.xml</tt>.
+        </p>
+        <ul>
+            <li><strong>Code completion.</strong> The IDE's code completion can help you add and modify elements.
+            The code completion hints offered in the editor are based on the contents of the repository.</li>
+            <li><strong>Insert Code.</strong> The IDE can generate XML elements for you based on the
+            details you specify in a dialog box.
+            When you right-click in the editor window (Ctrl-I), a popup menu appears where you can choose to add a
+            dependency, plugin or profile or exclude a dependency.
+            A dialog box opens enabling you to specify the details about the code you want the IDE to insert.
+            </li>
+        </ul>
+
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/maven/docs/maven-about.html">About Maven Project Support</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/xml/xml_edit.html">Editing an XML Document</a></dd>
+    <dd><a href="maven-dependencies.html">Managing Maven Project Dependencies</a></dd>
 </dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>
@@ -58,15 +98,3 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
 </table>
 </body>
 </html>
-<!--
-Tip: to create a link which will open in an external web browser, try:
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.netbeans.org/">
-<param name="text" value="<html><u>http://www.netbeans.org/</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-To create a link to a help set from another module, you need to know the code name base and path, e.g.:
-<a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/configure/configure_options.html">Using the Options Window</a>
-(This link will behave sanely if that module is disabled or missing.)
--->

@@ -72,7 +72,6 @@ public class Install extends  ModuleInstall {
         ENABLED = assertionsEnabled || Boolean.getBoolean("org.netbeans.modules.timers.enable");
     }
     
-    static Logger logger;
     private static Handler timers = new TimerHandler();
     private static PropertyChangeListener docTracker = new ActivatedDocumentListener();
 

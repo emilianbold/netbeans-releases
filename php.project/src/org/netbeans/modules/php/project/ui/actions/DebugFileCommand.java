@@ -42,9 +42,11 @@ package org.netbeans.modules.php.project.ui.actions;
 
 
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -60,27 +62,37 @@ public class DebugFileCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(final Lookup context) {
-        if (isTestFile(context)) {
+        FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
+        if (isSeleniumFile(fileObj)) {
+            // selenium
+            ConfigAction.get(ConfigAction.Type.SELENIUM, getProject()).debugFile(context);
+        } else if (isTestFile(fileObj)) {
             // test
-            ConfigAction.get(ConfigAction.Type.TEST).debugFile(getProject(), context);
+            ConfigAction.get(ConfigAction.Type.TEST, getProject()).debugFile(context);
         } else {
             // source
-            if (!isRunConfigurationValid(false)) {
+            ConfigAction configAction = getConfigAction();
+            if (!configAction.isValid(false)) {
                 // property not set yet
                 return;
             }
-            getConfigAction().debugFile(getProject(), context);
+            configAction.debugFile(context);
         }
     }
 
     @Override
     public boolean isActionEnabled(Lookup context) {
-        if (isTestFile(context)) {
+        FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
+        if (isSeleniumFile(fileObj)) {
+            // selenium
+            return ConfigAction.get(ConfigAction.Type.SELENIUM, getProject()).isDebugFileEnabled(context);
+        }
+        if (isTestFile(fileObj)) {
             // test
-            return ConfigAction.get(ConfigAction.Type.TEST).isDebugFileEnabled(getProject(), context);
+            return ConfigAction.get(ConfigAction.Type.TEST, getProject()).isDebugFileEnabled(context);
         }
         // source
-        return getConfigAction().isDebugFileEnabled(getProject(), context);
+        return getConfigAction().isDebugFileEnabled(context);
     }
 
     @Override

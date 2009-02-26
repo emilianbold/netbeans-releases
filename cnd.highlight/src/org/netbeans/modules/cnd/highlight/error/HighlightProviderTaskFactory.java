@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashSet;
@@ -47,8 +49,10 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
 import org.netbeans.modules.cnd.highlight.semantic.ModelUtils;
+import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
 import org.netbeans.modules.cnd.model.tasks.EditorAwareCsmFileTaskFactory;
+import org.netbeans.modules.cnd.model.tasks.OpenedEditors;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -61,7 +65,18 @@ import org.openide.util.Cancellable;
  * @author Sergey Grinev
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position=30)
-public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory {
+public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory implements PropertyChangeListener {
+
+    public HighlightProviderTaskFactory(){
+        super();
+        SemanticHighlightingOptions.instance().addPropertyChangeListener(this);
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        for (FileObject file : OpenedEditors.getDefault().getVisibleEditorsFiles()){
+            reschedule(file);
+        }
+    }
 
     @Override
     protected PhaseRunner createTask(FileObject fo) {

@@ -314,8 +314,57 @@ public class NbEditorKit extends ExtKit implements Callable {
             return BaseKit.class;
         }
     }
+
+    private static Lookup getContextLookup(java.awt.Component component){
+        Lookup lookup = null;
+        for (java.awt.Component c = component; c != null; c = c.getParent()) {
+            if (c instanceof Lookup.Provider) {
+                lookup = ((Lookup.Provider)c).getLookup ();
+                if (lookup != null) {
+                    break;
+                }
+            }
+        }
+        return lookup;
+    }
+
+    private static Action translateContextLookupAction(Lookup contextLookup, Action action) {
+        if (action instanceof ContextAwareAction && contextLookup != null){
+            action = ((org.openide.util.ContextAwareAction)action)
+            .createContextAwareInstance(contextLookup);
+        }
+        return action;
+    }
+
+    private static JMenuItem createLocalizedMenuItem(Action action) {
+        JMenuItem item;
+        if (action instanceof Presenter.Popup) {
+            item = ((Presenter.Popup)action).getPopupPresenter();
+        } else {
+            item = new JMenuItem(action);
+            Mnemonics.setLocalizedText(item, item.getText());
+            if (item.getIcon() != null) item.setIcon(null); //filter out icons
+        }
+        return item;
+    }
     
-    
+    private static void assignAccelerator(Keymap km, Action action, JMenuItem item) {
+        if (item.getAccelerator() == null){
+            KeyStroke ks = (KeyStroke)action.getValue(Action.ACCELERATOR_KEY);
+            if (ks!=null) {
+                item.setAccelerator(ks);
+            } else {
+                // Try to get the accelerator from keymap
+                if (km != null) {
+                    KeyStroke[] keys = km.getKeyStrokesForAction(action);
+                    if (keys != null && keys.length > 0) {
+                        item.setAccelerator(keys[0]);
+                    }
+                }
+            }
+        }
+    }
+
     public class NbBuildPopupMenuAction extends BuildPopupMenuAction {
 
         static final long serialVersionUID =-8623762627678464181L;
@@ -372,56 +421,6 @@ public class NbEditorKit extends ExtKit implements Callable {
             return pm;
         }
 
-        private Lookup getContextLookup(java.awt.Component component){
-            Lookup lookup = null;
-            for (java.awt.Component c = component; c != null; c = c.getParent()) {
-                if (c instanceof Lookup.Provider) {
-                    lookup = ((Lookup.Provider)c).getLookup ();
-                    if (lookup != null) {
-                        break;
-                    }
-                }
-            }
-            return lookup;
-        }
-        
-        private Action translateContextLookupAction(Lookup contextLookup, Action action) {
-            if (action instanceof ContextAwareAction && contextLookup != null){
-                action = ((org.openide.util.ContextAwareAction)action)
-                .createContextAwareInstance(contextLookup);
-            }
-            return action;
-        }
-        
-        private JMenuItem createLocalizedMenuItem(Action action) {
-            JMenuItem item;
-            if (action instanceof Presenter.Popup) {
-                item = ((Presenter.Popup)action).getPopupPresenter();
-            } else {
-                item = new JMenuItem(action);
-                Mnemonics.setLocalizedText(item, item.getText());
-                if (item.getIcon() != null) item.setIcon(null); //filter out icons
-            }
-            return item;
-        }
-        
-        private void assignAccelerator(Keymap km, Action action, JMenuItem item) {
-            if (item.getAccelerator() == null){
-                KeyStroke ks = (KeyStroke)action.getValue(Action.ACCELERATOR_KEY);
-                if (ks!=null) {
-                    item.setAccelerator(ks);
-                } else {
-                    // Try to get the accelerator from keymap
-                    if (km != null) {
-                        KeyStroke[] keys = km.getKeyStrokesForAction(action);
-                        if (keys != null && keys.length > 0) {
-                            item.setAccelerator(keys[0]);
-                        }
-                    }
-                }
-            }
-        }
-        
         protected void addAction(JTextComponent component, JPopupMenu popupMenu, Action action) {
             Lookup contextLookup = getContextLookup(component);
             
@@ -839,20 +838,22 @@ public class NbEditorKit extends ExtKit implements Callable {
             if (action instanceof BaseAction) {
                 item = ((BaseAction)action).getPopupMenuItem(target);
             }
-            
+
             if (item == null) {
+                Lookup contextLookup = getContextLookup(target);
+                action = translateContextLookupAction(contextLookup, action);
+                item = createLocalizedMenuItem(action);
                 String actionName = (String) action.getValue(Action.NAME);
                 String itemText = getItemText(target, actionName, action);
                 if (itemText != null) {
-                    item = new JMenuItem(itemText);
-                    item.addActionListener(action);
+                    item.setText(itemText);
                     Mnemonics.setLocalizedText(item, itemText);
-                    addAcceleretors(action, item, target);
-                    item.setEnabled(action.isEnabled());
-                    Object helpID = action.getValue ("helpID"); // NOI18N
-                    if (helpID != null && (helpID instanceof String)) {
-                        item.putClientProperty ("HelpID", helpID); // NOI18N
-                    }
+                }
+                addAcceleretors(action, item, target);
+                item.setEnabled(action.isEnabled());
+                Object helpID = action.getValue ("helpID"); // NOI18N
+                if (helpID != null && (helpID instanceof String)) {
+                    item.putClientProperty ("HelpID", helpID); // NOI18N
                 }
             }
 

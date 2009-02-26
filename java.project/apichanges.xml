@@ -106,6 +106,43 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="source-group-modifier-constants">
+            <api name="general"/>
+            <summary>Constants for SourceGroupModifier</summary>
+            <version major="1" minor="25"/>
+            <date day="18" month="2" year="2009"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a few constants to <code>JavaProjectConstants</code> for use by <code>SourceGroupModifier</code> with relation
+                    to java projects.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.project" name="JavaProjectConstants"/>
+            <issue number="102711"/>
+        </change>
+
+        <change id="CPModifier-addProject">
+            <api name="general"/>
+            <summary>Addition of ProjectClassPathModifier.addProject() method</summary>
+            <version major="1" minor="24"/>
+            <date day="11" month="2" year="2008"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    <code>ProjectClassPathModifier.addProject(Project[], FileObject, String)</code> is a partial replacement for
+                    <code>ProjectClassPathModifier.addAntArtifact()</code> that is capable of working with non-ant based project types as well.
+                    It's not guaranteed that the source and target project will connect in cases when each is of different class of project. Eg.
+                    Ant-based vs Maven project types. A way to check is to attempt to retrieve AntArtifact from the source and target projects..
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.project.classpath" name="ProjectClassPathModifier"/>
+            <class package="org.netbeans.spi.java.project.classpath" name="ProjectClassPathModifierImplementation"/>
+            <issue number="157985"/>
+        </change>
+
         
         <change id="javadoc-root-and-source-root-detection">
             <api name="general"/>

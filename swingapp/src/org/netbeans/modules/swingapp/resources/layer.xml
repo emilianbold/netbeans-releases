@@ -63,24 +63,6 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-    <folder name="Actions">
-        <folder name="Window">
-            <file name="org-netbeans-modules-swingapp-actions-ShowGlobalActionTableAction.instance"/>
-        </folder>
-    </folder>
-    
-    <folder name="Menu">
-        <folder name="Window">
-            <folder name="Other">
-                 <attr name="position" intvalue="1700"/>
-                 <file name="ShowGlobalActionTableAction.shadow">
-                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-swingapp-actions-ShowGlobalActionTableAction.instance"/>
-                     <attr name="position" intvalue="600"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-
     <folder name="org-netbeans-modules-swingapp">
         <!-- app shells registration-->
         <folder name="appshells">
@@ -109,19 +91,6 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-    <folder name="Windows2">
-        <folder name="Modes">
-            <folder name="output">
-                <file name="GlobalActionTable.wstcref" url="windowmanager/GlobalActionTable.wstcref">
-                    <attr name="position" intvalue="2800"/>
-                </file>
-            </folder>
-        </folder>
-        <folder name="Components">
-            <file name="GlobalActionTable.settings" url="components/GlobalActionTable.settings"/>
-        </folder>
-    </folder>
-
     <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Customizer">
@@ -134,6 +103,19 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
         </folder>
+        <folder name="org-netbeans-modules-maven">
+            <folder name="Archetypes">
+                <file name="appframework-archetype">
+                    <attr name="position" intvalue="300"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.swingapp.resources.Bundle"/>
+                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
+                    <attr name="artifactId" stringvalue="appframework"/>
+                    <attr name="version" stringvalue="1.0"/>
+                    <!--attr name="repository" stringvalue=""/-->
+                    <attr name="nameBundleKey" stringvalue="TIT_Appframework_Archetype"/>
+                    <attr name="descriptionBundleKey" stringvalue="DESC_Appframework_Archetype"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
-
 </filesystem>

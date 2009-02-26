@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -118,7 +117,7 @@ public final class LibProjectImpl extends ProjectBase {
     public void onFileRemoved(List<NativeFileItem> file) {
     }
 
-    public void onFileImplRemoved(List<FileImpl> files){
+    public void onFileImplRemoved(List<FileImpl> files) {
     }
 
     public void onFileAdded(NativeFileItem file) {
@@ -157,6 +156,14 @@ public final class LibProjectImpl extends ProjectBase {
 
     @Override
     protected void clearNativeFileContainer() {
+    }
+
+    @Override
+    public boolean isStable(CsmFile skipFile) {
+        if (!isDisposing()) {
+            return !ParserQueue.instance().hasFiles(this, (FileImpl) skipFile);
+        }
+        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////

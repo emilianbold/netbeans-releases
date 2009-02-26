@@ -1,318 +1,399 @@
-line_comment:#!/bin/bash
-whitespace:
+OPERATOR:#
+OPERATOR:!
+OPERATOR:/
+IDENTIFIER:bin
+OPERATOR:/
+KEYWORD:bash
+WHITESPACE:
 
-keyword:while
-whitespace: 
-operator:[
-whitespace: 
-operator:$#
-whitespace: 
-operator:-
-identifier:gt
-whitespace: 
-number:0
-whitespace: 
-operator:]
-operator:;
-whitespace: 
-keyword:do
-whitespace:    
-line_comment:# Until you run out of parameters . . .
-whitespace:
+KEYWORD:while
+WHITESPACE: 
+OPERATOR:[
+WHITESPACE: 
+OPERATOR:$
+OPERATOR:#
+WHITESPACE: 
+OPERATOR:-
+IDENTIFIER:gt
+WHITESPACE: 
+NUMBER:0
+WHITESPACE: 
+OPERATOR:]
+OPERATOR:;
+WHITESPACE: 
+KEYWORD:do
+WHITESPACE:    
+OPERATOR:#
+WHITESPACE: 
+KEYWORD:Until
+WHITESPACE: 
+IDENTIFIER:you
+WHITESPACE: 
+IDENTIFIER:run
+WHITESPACE: 
+IDENTIFIER:out
+WHITESPACE: 
+IDENTIFIER:of
+WHITESPACE: 
+IDENTIFIER:parameters
+WHITESPACE: 
+OPERATOR:.
+WHITESPACE: 
+OPERATOR:.
+WHITESPACE: 
+OPERATOR:.
+WHITESPACE:
   
-keyword:case
-whitespace: 
-string:"$1"
-whitespace: 
-keyword:in
-whitespace:
+KEYWORD:case
+WHITESPACE: 
+STRING:"$1"
+WHITESPACE: 
+KEYWORD:in
+WHITESPACE:
     
-operator:-
-identifier:d
-operator:|
-operator:-
-operator:-
-identifier:debug
-operator:)
-whitespace:
+OPERATOR:-
+IDENTIFIER:d
+OPERATOR:|
+OPERATOR:-
+OPERATOR:-
+IDENTIFIER:debug
+OPERATOR:)
+WHITESPACE:
               
-line_comment:# "-d" or "--debug" parameter?
-whitespace:
+OPERATOR:#
+WHITESPACE: 
+STRING:"-d"
+WHITESPACE: 
+IDENTIFIER:or
+WHITESPACE: 
+STRING:"--debug"
+WHITESPACE: 
+IDENTIFIER:parameter
+OPERATOR:?
+WHITESPACE:
               
-identifier:DEBUG
-operator:=
-number:1
-whitespace:
+IDENTIFIER:DEBUG
+OPERATOR:=
+NUMBER:1
+WHITESPACE:
               
-operator:;
-operator:;
-whitespace:
+OPERATOR:;
+OPERATOR:;
+WHITESPACE:
     
-operator:-
-identifier:c
-operator:|
-operator:-
-operator:-
-identifier:conf
-operator:)
-whitespace:
+OPERATOR:-
+IDENTIFIER:c
+OPERATOR:|
+OPERATOR:-
+OPERATOR:-
+IDENTIFIER:conf
+OPERATOR:)
+WHITESPACE:
               
-identifier:CONFFILE
-operator:=
-string:"$2"
-whitespace:
+IDENTIFIER:CONFFILE
+OPERATOR:=
+STRING:"$2"
+WHITESPACE:
               
-keyword:shift
-whitespace:
+KEYWORD:shift
+WHITESPACE:
               
-keyword:if
-whitespace: 
-operator:[
-whitespace: 
-operator:!
-whitespace: 
-operator:-
-identifier:f
-whitespace: 
-identifier:$CONFFILE
-whitespace: 
-operator:]
-operator:;
-whitespace: 
-keyword:then
-whitespace:
+KEYWORD:if
+WHITESPACE: 
+OPERATOR:[
+WHITESPACE: 
+OPERATOR:!
+WHITESPACE: 
+OPERATOR:-
+IDENTIFIER:f
+WHITESPACE: 
+OPERATOR:$
+IDENTIFIER:CONFFILE
+WHITESPACE: 
+OPERATOR:]
+OPERATOR:;
+WHITESPACE: 
+KEYWORD:then
+WHITESPACE:
                 
-command:echo
-whitespace: 
-string:"Error: Supplied file doesn't exist!"
-whitespace:
+KEYWORD:echo
+WHITESPACE: 
+STRING:"Error: Supplied file doesn't exist!"
+WHITESPACE:
                 
-keyword:exit
-whitespace: 
-number:1
-whitespace:     
-line_comment:# File not found error.
-whitespace:
+KEYWORD:exit
+WHITESPACE: 
+NUMBER:1
+WHITESPACE:     
+OPERATOR:#
+WHITESPACE: 
+KEYWORD:File
+WHITESPACE: 
+IDENTIFIER:not
+WHITESPACE: 
+IDENTIFIER:found
+WHITESPACE: 
+IDENTIFIER:error
+OPERATOR:.
+WHITESPACE:
               
-keyword:fi
-whitespace:
+KEYWORD:fi
+WHITESPACE:
               
-operator:;
-operator:;
-whitespace:
+OPERATOR:;
+OPERATOR:;
+WHITESPACE:
   
-keyword:esac
-whitespace:
+KEYWORD:esac
+WHITESPACE:
   
-keyword:shift
-whitespace:       
-line_comment:# Check next set of parameters.
-whitespace:
+KEYWORD:shift
+WHITESPACE:       
+OPERATOR:#
+WHITESPACE: 
+IDENTIFIER:Check
+WHITESPACE: 
+IDENTIFIER:next
+WHITESPACE: 
+KEYWORD:set
+WHITESPACE: 
+IDENTIFIER:of
+WHITESPACE: 
+IDENTIFIER:parameters
+OPERATOR:.
+WHITESPACE:
 
-keyword:done
-whitespace:
+KEYWORD:done
+WHITESPACE:
 
 
-identifier:func1
-operator:(
-operator:)
-whitespace:
+IDENTIFIER:func1
+OPERATOR:(
+OPERATOR:)
+WHITESPACE:
 
-operator:{
-whitespace: 
-line_comment:# This is simple function :)
-whitespace:
+OPERATOR:{
+WHITESPACE: 
+OPERATOR:#
+WHITESPACE: 
+IDENTIFIER:This
+WHITESPACE: 
+IDENTIFIER:is
+WHITESPACE: 
+IDENTIFIER:simple
+WHITESPACE: 
+KEYWORD:function
+WHITESPACE: 
+OPERATOR::
+OPERATOR:)
+WHITESPACE:
   
-command:echo
-whitespace: 
-string:"This is simple function."
-whitespace:
+KEYWORD:echo
+WHITESPACE: 
+STRING:"This is simple function."
+WHITESPACE:
 
-operator:}
-whitespace: 
-line_comment:# Function declaration must precede call.
-whitespace:
+OPERATOR:}
+WHITESPACE: 
+OPERATOR:#
+WHITESPACE: 
+KEYWORD:Function
+WHITESPACE: 
+IDENTIFIER:declaration
+WHITESPACE: 
+IDENTIFIER:must
+WHITESPACE: 
+IDENTIFIER:precede
+WHITESPACE: 
+IDENTIFIER:call
+OPERATOR:.
+WHITESPACE:
 
 
-keyword:function
-whitespace: 
-identifier:func2
-operator:(
-operator:)
-whitespace:
+KEYWORD:function
+WHITESPACE: 
+IDENTIFIER:func2
+OPERATOR:(
+OPERATOR:)
+WHITESPACE:
 
-operator:{
-whitespace:
+OPERATOR:{
+WHITESPACE:
   
-command:echo
-whitespace: 
-string:"This is another simple function."
-whitespace:
+KEYWORD:echo
+WHITESPACE: 
+STRING:"This is another simple function."
+WHITESPACE:
 
-operator:}
-whitespace:
-
-
-
-identifier:func1
-whitespace:
-
-identifier:func2
-whitespace:
+OPERATOR:}
+WHITESPACE:
 
 
-operator:(
-operator:(
-whitespace: 
-number:5
-whitespace: 
-operator:>
-whitespace: 
-number:4
-whitespace: 
-operator:)
-operator:)
-whitespace:                                      
-line_comment:# true
-whitespace:
 
-command:echo
-whitespace: 
-string:"Exit status of \"(( 5 > 4 ))\" is $?."
-whitespace:     
-line_comment:# 0
-whitespace:
+IDENTIFIER:func1
+WHITESPACE:
+
+IDENTIFIER:func2
+WHITESPACE:
 
 
-identifier:MAX
-operator:=
-number:10000
-whitespace:
+OPERATOR:(
+OPERATOR:(
+WHITESPACE: 
+NUMBER:5
+WHITESPACE: 
+OPERATOR:>
+WHITESPACE: 
+NUMBER:4
+WHITESPACE: 
+OPERATOR:)
+OPERATOR:)
+WHITESPACE:                                      
+OPERATOR:#
+WHITESPACE: 
+KEYWORD:true
+WHITESPACE:
 
-keyword:for
-whitespace: 
-operator:(
-operator:(
-identifier:nr
-operator:=
-number:1
-operator:;
-whitespace: 
-identifier:nr
-operator:<
-identifier:$MAX
-operator:;
-whitespace: 
-identifier:nr
-operator:+
-operator:+
-operator:)
-operator:)
-whitespace:
+KEYWORD:echo
+WHITESPACE: 
+STRING:"Exit status of \"(( 5 > 4 ))\" is $?."
+WHITESPACE:     
+OPERATOR:#
+WHITESPACE: 
+NUMBER:0
+WHITESPACE:
 
-keyword:do
-whitespace:
+
+IDENTIFIER:MAX
+OPERATOR:=
+NUMBER:10000
+WHITESPACE:
+
+KEYWORD:for
+WHITESPACE: 
+OPERATOR:(
+OPERATOR:(
+IDENTIFIER:nr
+OPERATOR:=
+NUMBER:1
+OPERATOR:;
+WHITESPACE: 
+IDENTIFIER:nr
+OPERATOR:<
+OPERATOR:$
+IDENTIFIER:MAX
+OPERATOR:;
+WHITESPACE: 
+IDENTIFIER:nr
+OPERATOR:+
+OPERATOR:+
+OPERATOR:)
+OPERATOR:)
+WHITESPACE:
+
+KEYWORD:do
+WHITESPACE:
 
     
-command:let
-whitespace: 
-string:"t1 = nr % 5"
-whitespace:
+KEYWORD:let
+WHITESPACE: 
+STRING:"t1 = nr % 5"
+WHITESPACE:
     
-keyword:if
-whitespace: 
-operator:[
-whitespace: 
-string:"$t1"
-whitespace: 
-operator:-
-identifier:ne
-whitespace: 
-number:3
-whitespace: 
-operator:]
-operator:;
-keyword:then
-whitespace:
+KEYWORD:if
+WHITESPACE: 
+OPERATOR:[
+WHITESPACE: 
+STRING:"$t1"
+WHITESPACE: 
+OPERATOR:-
+IDENTIFIER:ne
+WHITESPACE: 
+NUMBER:3
+WHITESPACE: 
+OPERATOR:]
+OPERATOR:;
+KEYWORD:then
+WHITESPACE:
       
-keyword:continue
-whitespace:
+KEYWORD:continue
+WHITESPACE:
     
-keyword:fi
-whitespace:
+KEYWORD:fi
+WHITESPACE:
 
     
-command:let
-whitespace: 
-string:"t2 = nr % 7"
-whitespace:
+KEYWORD:let
+WHITESPACE: 
+STRING:"t2 = nr % 7"
+WHITESPACE:
     
-keyword:if
-whitespace: 
-operator:[
-whitespace: 
-string:"$t2"
-whitespace: 
-operator:-
-identifier:ne
-whitespace: 
-number:4
-whitespace: 
-operator:]
-whitespace:
+KEYWORD:if
+WHITESPACE: 
+OPERATOR:[
+WHITESPACE: 
+STRING:"$t2"
+WHITESPACE: 
+OPERATOR:-
+IDENTIFIER:ne
+WHITESPACE: 
+NUMBER:4
+WHITESPACE: 
+OPERATOR:]
+WHITESPACE:
     
-keyword:then
-whitespace:
+KEYWORD:then
+WHITESPACE:
       
-keyword:continue
-whitespace:
+KEYWORD:continue
+WHITESPACE:
     
-keyword:fi
-whitespace:
+KEYWORD:fi
+WHITESPACE:
 
     
-command:let
-whitespace: 
-string:"t3 = nr % 9"
-whitespace:
+KEYWORD:let
+WHITESPACE: 
+STRING:"t3 = nr % 9"
+WHITESPACE:
     
-keyword:if
-whitespace: 
-operator:[
-whitespace: 
-string:"$t3"
-whitespace: 
-operator:-
-identifier:ne
-whitespace: 
-number:5
-whitespace: 
-operator:]
-whitespace:
+KEYWORD:if
+WHITESPACE: 
+OPERATOR:[
+WHITESPACE: 
+STRING:"$t3"
+WHITESPACE: 
+OPERATOR:-
+IDENTIFIER:ne
+WHITESPACE: 
+NUMBER:5
+WHITESPACE: 
+OPERATOR:]
+WHITESPACE:
     
-keyword:then
-whitespace:
+KEYWORD:then
+WHITESPACE:
       
-keyword:continue
-whitespace:
+KEYWORD:continue
+WHITESPACE:
     
-keyword:fi
-whitespace:
+KEYWORD:fi
+WHITESPACE:
 
 
-keyword:done
-whitespace:
+KEYWORD:done
+WHITESPACE:
 
-command:echo
-whitespace: 
-string:"Number = $nr"
-whitespace:
+KEYWORD:echo
+WHITESPACE: 
+STRING:"Number = $nr"
+WHITESPACE:
 
 
 
-keyword:exit
-whitespace: 
-number:0
-whitespace:
+KEYWORD:exit
+WHITESPACE: 
+NUMBER:0
+WHITESPACE:
 
 

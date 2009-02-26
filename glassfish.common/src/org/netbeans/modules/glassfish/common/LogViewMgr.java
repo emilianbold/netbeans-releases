@@ -763,9 +763,12 @@ public class LogViewMgr {
     
     public static InputOutput getServerIO(String uri) {
 
-        ServerInstance si = GlassfishInstanceProvider.getDefault().getInstance(uri);
-
+        // TODO -- avoid depending on the static methods
+        ServerInstance si = GlassfishInstanceProvider.getPrelude().getInstance(uri);
         if (si == null) {
+            si = GlassfishInstanceProvider.getEe6().getInstance(uri);
+        }
+        if (null == si) {
             return null;
         }
         

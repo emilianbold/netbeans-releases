@@ -3235,43 +3235,26 @@ class JavaCodeGenerator extends CodeGenerator {
                                     String newHandlerName)
     {
         InteriorSection sec = getEventHandlerSection(oldHandlerName);
-        if (sec == null || !initialized || !canGenerate)
-            return;
-
-        String header = sec.getHeader();
-
-        // find the old handler name in the handler method header
-        int index = header.indexOf('(');
-        if (index < 0)
-            return; // should not happen unless the handler code is corrupted
-        index = header.substring(0, index).lastIndexOf(oldHandlerName);
-        if (index < 0)
-            return; // old name not found; should not happen
-
-        IndentEngine engine = IndentEngine.find(formEditorSupport.getDocument());
-        StringWriter buffer = new StringWriter();
-        Writer codeWriter = engine.createWriter(formEditorSupport.getDocument(),
-                                                sec.getStartPosition().getOffset(),
-                                                buffer);
-        try {
-            codeWriter.write(header.substring(0, index));
-            codeWriter.write(newHandlerName);
-            codeWriter.write(header.substring(index + oldHandlerName.length()));
-            codeWriter.flush();
-            int i1 = buffer.getBuffer().length();
-            codeWriter.write("}\n"); // NOI18N // footer with new line
-            codeWriter.flush();
-
-            sec.setHeader(buffer.getBuffer().substring(0, i1));
-            sec.setFooter(buffer.getBuffer().substring(i1));
-            sec.setName(getEventSectionName(newHandlerName));
-
-            codeWriter.close();
-        } 
-        catch (java.beans.PropertyVetoException e) {
+        if (sec == null || !initialized || !canGenerate) {
             return;
         }
-        catch (IOException e) {
+
+        // find the old handler name in the handler method header and replace
+        // it with the new name
+        String header = sec.getHeader();
+        int index = header.indexOf('(');
+        if (index < 0) {
+            return; // should not happen unless the handler code is corrupted
+        }
+        index = header.substring(0, index).lastIndexOf(oldHandlerName);
+        if (index < 0) {
+            return; // old name not found; should not happen
+        }
+        try {
+            sec.setHeader(header.substring(0, index) + newHandlerName + header.substring(index + oldHandlerName.length()));
+            sec.setName(getEventSectionName(newHandlerName));
+        } 
+        catch (java.beans.PropertyVetoException e) {
             return;
         }
 

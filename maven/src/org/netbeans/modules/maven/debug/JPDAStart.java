@@ -58,6 +58,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
@@ -167,6 +168,7 @@ public class JPDAStart implements Runnable {
                 properties.put("sourcepath", sourcePath); //NOI18N
                 properties.put("name", getName()); //NOI18N
                 properties.put("jdksources", jdkSourcePath); //NOI18N
+                properties.put("baseDir", FileUtil.toFile(project.getProjectDirectory())); // NOI18N
                 
                 final ListeningConnector flc = lc;
                 RequestProcessor.getDefault().post(new Runnable() {

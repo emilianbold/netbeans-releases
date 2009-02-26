@@ -309,7 +309,7 @@ public class InstancesView extends TopComponent {
                 }
             });
             org.openide.awt.Mnemonics.setLocalizedText(pauseButton, NbBundle.getMessage(InstancesView.class, "CTL_Pause"));
-            pauseButton.setIcon(new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/debugger/resources/actions/Pause.gif")));
+            pauseButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/actions/Pause.gif", false));
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 2;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.CENTER;

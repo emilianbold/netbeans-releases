@@ -161,13 +161,14 @@ public class Annotator {
 
     public void refresh() {
         String string = SvnModuleConfig.getDefault().getAnnotationFormat(); //System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
-        if (string != null && !string.trim().equals("")) {
+        if (string != null && !string.trim().equals("")) { // NOI18N
             mimeTypeFlag = string.indexOf("{mime_type}") > -1;
-            string = Utils.skipUnsupportedVariables(string, new String[] {"{status}", "{folder}", "{revision}", "{mime_type}" });     // NOI18N
-            string = string.replaceAll("\\{revision\\}",  "\\{0\\}");           // NOI18N
-            string = string.replaceAll("\\{status\\}",    "\\{1\\}");           // NOI18N
-            string = string.replaceAll("\\{folder\\}",    "\\{2\\}");           // NOI18N
-            string = string.replaceAll("\\{mime_type\\}", "\\{3\\}");           // NOI18N
+            string = SvnUtils.createAnnotationFormat(string);
+            if (!SvnUtils.isAnnotationFormatValid(string)) {
+                Subversion.LOG.log(Level.WARNING, "Bad annotation format, switching to defaults");
+                string = org.openide.util.NbBundle.getMessage(Annotator.class, "Annotator.defaultFormat"); // NOI18N
+                mimeTypeFlag = string.contains("{3}");
+            }
             format = new MessageFormat(string);
             emptyFormat = format.format(new String[] {"", "", "", ""} , new StringBuffer(), null).toString().trim();
         }
@@ -700,37 +701,45 @@ public class Annotator {
             if (VersioningSupport.isFlat(file)) {
                 for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = (File) j.next();
-                    if (mf.getParentFile().equals(file)) {
-                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
-                        if (info.isDirectory()) {
-                            continue;
+                    if (mf == null) {
+                        Subversion.LOG.log(Level.WARNING, "null File entry returned from getAllModifiedFiles");
+                    } else {
+                        if (file.equals(mf.getParentFile())) {
+                            FileInformation info = (FileInformation) modifiedFiles.get(mf);
+                            if (info.isDirectory()) {
+                                continue;
+                            }
+                            int status = info.getStatus();
+                            if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                                Image badge = ImageUtilities.assignToolTipToImage(
+                                        ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict); // NOI18N
+                                return ImageUtilities.mergeImages(icon, badge, 16, 9);
+                            }
+                            modified = true;
+                            allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
                         }
-                        int status = info.getStatus();
-                        if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = ImageUtilities.assignToolTipToImage(
-                                    ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict); // NOI18N
-                            return ImageUtilities.mergeImages(icon, badge, 16, 9);
-                        }
-                        modified = true;
-                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
                     }
                 }
             } else {
                 for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = (File) j.next();
-                    if (Utils.isAncestorOrEqual(file, mf)) {
-                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
-                        int status = info.getStatus();
-                        if ((status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) && file.equals(mf)) {
-                            continue;
+                    if (mf == null) {
+                        Subversion.LOG.log(Level.WARNING, "null File entry returned from getAllModifiedFiles");
+                    } else {
+                        if (Utils.isAncestorOrEqual(file, mf)) {
+                            FileInformation info = (FileInformation) modifiedFiles.get(mf);
+                            int status = info.getStatus();
+                            if ((status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) && file.equals(mf)) {
+                                continue;
+                            }
+                            if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                                Image badge = ImageUtilities.assignToolTipToImage(
+                                        ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict); // NOI18N
+                                return ImageUtilities.mergeImages(icon, badge, 16, 9);
+                            }
+                            modified = true;
+                            allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
                         }
-                        if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = ImageUtilities.assignToolTipToImage(
-                                    ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict); // NOI18N
-                            return ImageUtilities.mergeImages(icon, badge, 16, 9);
-                        }
-                        modified = true;
-                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
                     }
                 }
             }

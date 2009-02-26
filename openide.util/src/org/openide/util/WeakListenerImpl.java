@@ -52,6 +52,7 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
@@ -583,10 +584,13 @@ abstract class WeakListenerImpl implements java.util.EventListener {
             try {
                 remove.invoke(src, params);
             } catch (Exception ex) { // from invoke(), should not happen
-                LOG.warning(
-                    "Problem encountered while calling " + methodClass + "." + methodName + "(...) on " + src
-                ); // NOI18N
-                LOG.log(Level.WARNING, null, ex);
+                String errMessage = "Problem encountered while calling " + methodClass + "." + methodName + "(...) on " + src; // NOI18N
+                LOG.warning( errMessage );
+                //detailed logging needed in some cases
+                boolean showErrMessage = ex instanceof InvocationTargetException
+                        || "object is not an instance of declaring class".equals(ex.getMessage());
+
+                LOG.log(Level.WARNING, showErrMessage ? errMessage : null, ex);
             }
         }
 

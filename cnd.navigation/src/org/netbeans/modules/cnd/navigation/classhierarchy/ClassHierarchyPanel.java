@@ -532,7 +532,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         }
     }
     
-    private class MyBeanTreeView extends BeanTreeView {
+    private static class MyBeanTreeView extends BeanTreeView {
         public MyBeanTreeView(){
         }
         public void addCloseAction(final Action action){

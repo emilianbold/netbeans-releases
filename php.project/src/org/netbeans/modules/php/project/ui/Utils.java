@@ -452,29 +452,29 @@ public final class Utils {
         return ch >= 32 && ch < 127;
     }
 
-    public static boolean isWindowsVista() {
-        return (Utilities.getOperatingSystem() & Utilities.OS_WINVISTA) != 0;
-    }
-
-    // #144928
+    // #144928, #157417
     /**
-     * Handles correctly 'feature' of Windows Vista.
+     * Handles correctly 'feature' of Windows (read-only flag, "Program Files" directory on Windows Vista).
      * @param folder folder to check.
      * @return <code>true</code> if folder is writable.
      */
     public static boolean isFolderWritable(File folder) {
-        assert folder.isDirectory() : "Not a directory: " + folder;
-
-        boolean windowsVista = isWindowsVista();
-        LOGGER.fine("On Windows Vista: " + windowsVista);
+        if (!folder.isDirectory()) {
+            // #157591
+            LOGGER.fine(String.format("%s is not a folder", folder));
+            return false;
+        }
+        boolean windows = Utilities.isWindows();
+        LOGGER.fine("On Windows: " + windows);
 
         boolean canWrite = folder.canWrite();
         LOGGER.fine(String.format("Folder %s is writable: %s", folder, canWrite));
-        if (!canWrite || !windowsVista) {
+        if (!windows) {
+            // we are not on windows => result is ok
             return canWrite;
         }
 
-        // vista and we "can" write
+        // on windows
         LOGGER.fine("Trying to create temp file");
         try {
             File tmpFile = File.createTempFile("netbeans", null, folder);

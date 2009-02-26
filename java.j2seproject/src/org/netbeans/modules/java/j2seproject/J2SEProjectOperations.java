@@ -326,6 +326,12 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
                 if (fo != null) {
                     FileObject privateFolder = FileUtil.createFolder(project.getProjectDirectory(), "nbproject/private");  //NOI18N
                     if (privateFolder != null) {
+                        // #131857: SyncFailedException : check for file existence before FileUtil.copyFile
+                        FileObject oldFile = privateFolder.getFileObject(fo.getName(), fo.getExt());
+                        if (oldFile != null) {
+                            oldFile.delete();
+                        }
+
                         FileUtil.copyFile(fo, privateFolder, fo.getName());
                     }                
                 }

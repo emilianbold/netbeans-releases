@@ -41,11 +41,13 @@
 
 package org.netbeans.core.windows.view.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -55,6 +57,7 @@ import java.util.Set;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.view.SlidingView;
 import org.netbeans.core.windows.view.ViewElement;
@@ -97,6 +100,11 @@ public final class DesktopImpl {
         // desktop represents regular layer of layeredPane
         desktop = new JPanel();
         desktop.setLayout(new GridBagLayout());
+        Color bkColor = UIManager.getColor("NbSplitPane.background"); //NOI18N
+        if( null != bkColor ) {
+            desktop.setBackground(bkColor);
+            desktop.setOpaque(true);
+        }
         layeredPane.add(desktop);
     }
     
@@ -153,6 +161,9 @@ public final class DesktopImpl {
             constr.fill = GridBagConstraints.BOTH;
             constr.weightx = 1;
             constr.weighty = 1;
+            Insets insets = UIManager.getInsets("nb.desktop.view.insets"); //NOI18N
+            if( null != insets )
+                constr.insets = insets;
             desktop.add(component, constr);
         }
         layeredPane.revalidate();
@@ -172,19 +183,20 @@ public final class DesktopImpl {
         GridBagConstraints constraint = new GridBagConstraints();
         constraint.fill = GridBagConstraints.BOTH;
         if (Constants.BOTTOM.equals(view.getSide())) {
-            constraint.gridx = 1;
+            constraint.gridx = 0;
             constraint.gridy = 1;
+            constraint.gridwidth = 3;
             constraint.anchor = GridBagConstraints.SOUTHWEST;
             
         } else if (Constants.LEFT.equals(view.getSide())) {
             constraint.gridx = 0;
             constraint.gridy = 0;
-            constraint.gridheight = 2;
+            constraint.gridheight = 1;
             constraint.anchor = GridBagConstraints.NORTHWEST;
         } else if (Constants.RIGHT.equals(view.getSide())) {
             constraint.gridx = 2;
             constraint.gridy = 0;
-            constraint.gridheight = 2;
+            constraint.gridheight = 1;
             constraint.anchor = GridBagConstraints.NORTHEAST;
         }
         desktop.add(view.getComponent(), constraint);

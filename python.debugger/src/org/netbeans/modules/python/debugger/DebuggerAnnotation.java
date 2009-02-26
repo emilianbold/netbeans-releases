@@ -49,35 +49,25 @@ public class DebuggerAnnotation
         extends Annotation {
 
   /** Annotation type constant. */
-  public static final String BREAKPOINT_ANNOTATION_TYPE =
-          new String("Breakpoint");
+  public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint";
   /** Annotation type constant. */
-  public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE =
-          new String("DisabledBreakpoint");
+  public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE = "DisabledBreakpoint";
   /** Annotation type constant. */
-  public static final String CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE =
-          new String("CondBreakpoint");
+  public static final String CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE ="CondBreakpoint";
   /** Annotation type constant. */
-  public static final String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE =
-          new String("DisabledCondBreakpoint");
+  public static final String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "DisabledCondBreakpoint";
   /** Annotation type constant. */
-  public static final String CURRENT_LINE_ANNOTATION_TYPE =
-          new String("CurrentPC");
+  public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC" ;
   /** Annotation type constant. */
-  public static final String CURRENT_LINE_ANNOTATION_TYPE2 =
-          new String("CurrentPC2");
+  public static final String CURRENT_LINE_ANNOTATION_TYPE2 = "CurrentPC2" ;
   /** Annotation type constant. */
-  public static final String CURRENT_LINE_PART_ANNOTATION_TYPE =
-          new String("CurrentPCLinePart");
+  public static final String CURRENT_LINE_PART_ANNOTATION_TYPE = "CurrentPCLinePart" ;
   /** Annotation type constant. */
-  public static final String NEXT_TARGET_NAME =
-          new String("NextTargetName");
+  public static final String NEXT_TARGET_NAME = "NextTargetName" ;
   /** Annotation type constant. */
-  public static final String CURRENT_LINE_PART_ANNOTATION_TYPE2 =
-          new String("CurrentPC2LinePart");
+  public static final String CURRENT_LINE_PART_ANNOTATION_TYPE2 = "CurrentPC2LinePart" ;
   /** Annotation type constant. */
-  public static final String CALL_STACK_FRAME_ANNOTATION_TYPE =
-          new String("CallSite");
+  public static final String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite" ;
   private Annotatable _annotatable;
   private String _type;
 
@@ -91,17 +81,17 @@ public class DebuggerAnnotation
   }
 
   public String getShortDescription() {
-    if (_type == BREAKPOINT_ANNOTATION_TYPE) {
+    if (_type.equals( BREAKPOINT_ANNOTATION_TYPE ) ) {
       return "Breakpoint";
-    } else if (_type == DISABLED_BREAKPOINT_ANNOTATION_TYPE) {
+    } else if (_type.equals( DISABLED_BREAKPOINT_ANNOTATION_TYPE) ) {
       return "Disabled Breakpoint";
-    } else if (_type == CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
+    } else if (_type.equals ( CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) ) {
       return "Disabled Conditional Breakpoint";
-    } else if (_type == DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
+    } else if (_type.equals(  DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE ) ) {
       return "Disabled Conditional Breakpoint";
-    } else if (_type == CURRENT_LINE_ANNOTATION_TYPE) {
+    } else if (_type.equals( CURRENT_LINE_ANNOTATION_TYPE) ) {
       return "Current Program Counter";
-    } else if (_type == CALL_STACK_FRAME_ANNOTATION_TYPE) {
+    } else if (_type.equals( CALL_STACK_FRAME_ANNOTATION_TYPE) ) {
       return "Call Stack Line";
     }
     return "TOOLTIP_ANNOTATION";

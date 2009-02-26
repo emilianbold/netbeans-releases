@@ -60,7 +60,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.FileEntry;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
@@ -74,7 +73,7 @@ import org.openide.util.NbBundle;
 /** 
  * Node representing a <code>PropertiesDataObject</code>.
  * Its children ({@link PropertiesLocaleNode}s) represent
- * the {@link PropertyFileEntry PropertyFileEntries}.
+ * the {@link PropertiesFileEntry} PropertyFileEntries.
  *
  * @author Petr Jiricka, Peter Zavadsky
  * @see PropertiesDataObject
@@ -97,13 +96,12 @@ public class PropertiesDataNode extends DataNode {
 
     /** Creates data node for a given data object.
      * The provided children object will be used to hold all child nodes.
-     * @param obj object to work with
-     * @param ch children container for the node
+     * @param dataObject  object to work with
+     * @param children container for the node
      */
     public PropertiesDataNode(DataObject dataObject, Children children) {
         super(dataObject, children);
         setIconBaseWithExtension("org/netbeans/modules/properties/propertiesObject.png"); // NOI18N
-        
         dataObjectListener = new NameUpdater();
         dataObject.addPropertyChangeListener(
                 WeakListeners.propertyChange(dataObjectListener, dataObject));
@@ -321,14 +319,15 @@ public class PropertiesDataNode extends DataNode {
     } // End of NewLocaleType class.
 
     private static boolean containsLocale(PropertiesDataObject propertiesDataObject, Locale locale) {
-        FileObject file = propertiesDataObject.getPrimaryFile();
+        FileObject file = propertiesDataObject.getBundleStructure().getNthEntry(0).getFile();
+//        FileObject file = propertiesDataObject.getPrimaryFile();
         String newName = file.getName() + PropertiesDataLoader.PRB_SEPARATOR_CHAR + locale;
-        Iterator it = propertiesDataObject.secondaryEntries().iterator();
-        while (it.hasNext()) {
-            FileObject f = ((FileEntry)it.next()).getFile();
+        BundleStructure structure = propertiesDataObject.getBundleStructure();
+        for (int i = 0; i<structure.getEntryCount();i++) {
+            FileObject f = structure.getNthEntry(i).getFile();
             if (newName.startsWith(f.getName()) && f.getName().length() > file.getName().length())
                 file = f;
-        }        
+        }
         return file.getName().equals(newName);
     }
 }

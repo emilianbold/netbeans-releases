@@ -79,7 +79,7 @@ public class ProjectSupport {
 	return projectFile.lastModified();
     }
 
-    public static void executeCustomAction(Project project, CustomProjectActionHandler customProjectActionHandler) {
+    public static void executeCustomAction(Project project, ProjectActionHandler customProjectActionHandler) {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
         if (pdp == null)
             return;

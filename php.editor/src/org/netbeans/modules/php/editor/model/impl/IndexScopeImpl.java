@@ -44,58 +44,82 @@ import java.util.List;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
-import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.model.ClassConstantElement;
+import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.ConstantElement;
+import org.netbeans.modules.php.editor.model.FieldElement;
+import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Union2;
 
 /**
  *
  * @author Radek Matous
  */
-class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
+class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     private PHPIndex index;
 
     IndexScopeImpl(CompilationInfo info) {
-        super(info, "index", PhpKind.INDEX);//NOI18N
+        this(info, "index", PhpKind.INDEX);//NOI18N
         this.index = PHPIndex.get(info.getIndex(PHPLanguage.PHP_MIME_TYPE));
     }
 
     IndexScopeImpl(PHPIndex idx) {
-        super(null, "index", PhpKind.INDEX);//NOI18N
+        this(null, "index", PhpKind.INDEX);//NOI18N
         this.index = idx;
     }
 
-    public List<? extends TypeScopeImpl> getAllTypes() {
-        List<TypeScopeImpl> retval = new ArrayList<TypeScopeImpl>();
-        for (IndexedElement element : getIndex().getAllTopLevel(null, "", NameKind.PREFIX)) {
-            if (element instanceof IndexedClass) {
-                retval.add(new ClassScopeImpl(this, (IndexedClass) element));
-            } else if (element instanceof IndexedInterface) {
-                retval.add(new InterfaceScopeImpl(this, (IndexedInterface) element));
-            }
+    private IndexScopeImpl(CompilationInfo info, String name, PhpKind kind) {
+        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
+    }
+
+    /**
+     * @return the index
+     */
+    public PHPIndex getIndex() {
+        return index;
+    }
+
+    public List<? extends InterfaceScope> findInterfaces(String... queryName) {
+        return findInterfaces(NameKind.EXACT_NAME, queryName);
+    }
+
+    public List<? extends InterfaceScope> findInterfaces(NameKind nameKind, String... queryName) {
+        List<InterfaceScope> retval = new ArrayList<InterfaceScope>();
+        for (String name : queryName) {
+            assert name != null && name.trim().length() > 0;
+            Collection<IndexedInterface> interfaces = getIndex().getInterfaces(null, name, nameKind);
+            for (IndexedInterface indexedInterface : interfaces) {
+                retval.add(new InterfaceScopeImpl(this, indexedInterface));
+                //retval.add(new InterfaceScopeIdxImpl(this, indexedInterface));
+
+}
         }
         return retval;
     }
 
-    public List<? extends TypeScopeImpl> getTypes(String... queryName) {
-        return getTypes(NameKind.EXACT_NAME, queryName);
+    public List<? extends TypeScope> findTypes(String... queryName) {
+        return findTypes(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends TypeScopeImpl> getTypes(NameKind nameKind, String... queryName) {
-        List<TypeScopeImpl> retval = new ArrayList<TypeScopeImpl>();
+    public List<? extends TypeScope> findTypes(NameKind nameKind, String... queryName) {
+        List<TypeScope> retval = new ArrayList<TypeScope>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
             Collection<IndexedClass> classes = getIndex().getClasses(null, name, nameKind);
@@ -110,22 +134,12 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
         return retval;
     }
 
-    public List<? extends ClassScopeImpl> getAllClasses() {
-        List<ClassScopeImpl> retval = new ArrayList<ClassScopeImpl>();
-        for (IndexedElement element : getIndex().getAllTopLevel(null, "", NameKind.PREFIX)) {
-            if (element instanceof IndexedClass) {
-                retval.add(new ClassScopeImpl(this, (IndexedClass) element));
-            }
-        }
-        return retval;
+    public List<? extends ClassScope> findClasses(String... queryName) {
+        return findClasses(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends ClassScopeImpl> getClasses(String... queryName) {
-        return getClasses(NameKind.EXACT_NAME, queryName);
-    }
-
-    public List<? extends ClassScopeImpl> getClasses(NameKind nameKind, String... queryName) {
-        List<ClassScopeImpl> retval = new ArrayList<ClassScopeImpl>();
+    public List<? extends ClassScope> findClasses(NameKind nameKind, String... queryName) {
+        List<ClassScope> retval = new ArrayList<ClassScope>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
             Collection<IndexedClass> classes = getIndex().getClasses(null, name, nameKind);
@@ -136,74 +150,12 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
         return retval;
     }
 
-    public List<? extends InterfaceScopeImpl> getAllInterfaces() {
-        List<InterfaceScopeImpl> retval = new ArrayList<InterfaceScopeImpl>();
-        for (IndexedElement element : getIndex().getAllTopLevel(null, "", NameKind.PREFIX)) {
-            if (element instanceof IndexedInterface) {
-                retval.add(new InterfaceScopeImpl(this, (IndexedInterface) element));
-            }
-        }
-        return retval;
+    public List<? extends FunctionScope> findFunctions(String... queryName) {
+        return findFunctions(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends InterfaceScopeImpl> getInterfaces(String... queryName) {
-        return getInterfaces(NameKind.EXACT_NAME, queryName);
-    }
-
-    public List<? extends InterfaceScopeImpl> getInterfaces(NameKind nameKind, String... queryName) {
-        List<InterfaceScopeImpl> retval = new ArrayList<InterfaceScopeImpl>();
-        for (String name : queryName) {
-            assert name != null && name.trim().length() > 0;
-            Collection<IndexedInterface> interfaces = getIndex().getInterfaces(null, name, nameKind);
-            for (IndexedInterface indexedInterface : interfaces) {
-                retval.add(new InterfaceScopeImpl(this, indexedInterface));
-            }
-        }
-        return retval;
-    }
-
-    public List<? extends ConstantElementImpl> getAllConstants() {
-        List<ConstantElementImpl> retval = new ArrayList<ConstantElementImpl>();
-        for (IndexedElement element : getIndex().getAllTopLevel(null, "", NameKind.PREFIX)) {
-            if (element instanceof IndexedConstant) {
-                retval.add(new ConstantElementImpl(this, (IndexedConstant) element));
-            }
-        }
-        return retval;
-    }
-
-    public List<? extends ConstantElementImpl> getConstants(String... queryName) {
-        return getConstants(NameKind.EXACT_NAME, queryName);
-    }
-
-    public List<? extends ConstantElementImpl> getConstants(NameKind nameKind, String... queryName) {
-        List<ConstantElementImpl> retval = new ArrayList<ConstantElementImpl>();
-        for (String name : queryName) {
-            assert name != null && name.trim().length() > 0;
-            Collection<IndexedConstant> constants = getIndex().getConstants(null, name, nameKind);
-            for (IndexedConstant indexedConstant : constants) {
-                retval.add(new ConstantElementImpl(this, indexedConstant));
-            }
-        }
-        return retval;
-    }
-
-    public List<? extends FunctionScopeImpl> getAllFunctions() {
-        List<FunctionScopeImpl> retval = new ArrayList<FunctionScopeImpl>();
-        for (IndexedElement element : getIndex().getAllTopLevel(null, "", NameKind.PREFIX)) {
-            if (element instanceof IndexedFunction) {
-                retval.add(new FunctionScopeImpl(this, (IndexedFunction) element));
-            }
-        }
-        return retval;
-    }
-
-    public List<? extends FunctionScopeImpl> getFunctions(String... queryName) {
-        return getFunctions(NameKind.EXACT_NAME, queryName);
-    }
-
-    public List<? extends FunctionScopeImpl> getFunctions(NameKind nameKind, String... queryName) {
-        List<FunctionScopeImpl> retval = new ArrayList<FunctionScopeImpl>();
+    public List<? extends FunctionScope> findFunctions(NameKind nameKind, String... queryName) {
+        List<FunctionScope> retval = new ArrayList<FunctionScope>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
             Collection<IndexedFunction> functions = getIndex().getFunctions(null, name, nameKind);
@@ -214,22 +166,28 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
         return retval;
     }
 
-    public List<? extends VariableName> getAllVariables() {
-        List<VariableNameImpl> retval = new ArrayList<VariableNameImpl>();
-        for (IndexedElement element : getIndex().getAllTopLevel(null, "", NameKind.PREFIX)) {
-            if (element instanceof IndexedVariable) {
-                retval.add(new VariableNameImpl(this, (IndexedVariable) element));
+    public List<? extends ConstantElement> findConstants(String... queryName) {
+        return findConstants(NameKind.EXACT_NAME, queryName);
+    }
+
+    public List<? extends ConstantElement> findConstants(NameKind nameKind, String... queryName) {
+        List<ConstantElement> retval = new ArrayList<ConstantElement>();
+        for (String name : queryName) {
+            assert name != null && name.trim().length() > 0;
+            Collection<IndexedConstant> constants = getIndex().getConstants(null, name, nameKind);
+            for (IndexedConstant indexedConstant : constants) {
+                retval.add(new ConstantElementImpl(this, indexedConstant));
             }
         }
         return retval;
     }
 
-    public List<? extends VariableName> getVariables(String... queryName) {
-        return getVariables(NameKind.EXACT_NAME, queryName);
+    public List<? extends VariableName> findVariables(String... queryName) {
+        return findVariables(NameKind.EXACT_NAME, queryName);
     }
 
-    public List<? extends VariableName> getVariables(NameKind nameKind, String... queryName) {
-        List<VariableNameImpl> retval = new ArrayList<VariableNameImpl>();
+    public List<? extends VariableName> findVariables(NameKind nameKind, String... queryName) {
+        List<VariableName> retval = new ArrayList<VariableName>();
         for (String name : queryName) {
             assert name != null && name.trim().length() > 0;
             Collection<IndexedVariable> vars = getIndex().getTopLevelVariables(null, name, nameKind);
@@ -240,102 +198,56 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
         return retval;
     }
 
-    @Override
-    public OffsetRange getBlockRange() {
-        return getNameRange();
+    public List<? extends MethodScope> findMethods(TypeScope type, String queryName, int... modifiers) {
+        return findMethods(type, NameKind.EXACT_NAME, queryName, modifiers);
     }
 
-    public List<? extends ModelElementImpl> getElements() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public List<? extends MethodScope> findMethods(TypeScope type, NameKind nameKind, String... queryName) {
+        return findMethods(type, nameKind, queryName);
     }
 
-    @CheckForNull
-    @Override
-    CachedModelSupport getCachedModelSupport() {
-        return null;
-    }
-
-    /**
-     * @return the index
-     */
-    PHPIndex getIndex() {
-        return index;
-    }
-
-    public List<? extends ClzConstantElementImpl>getInheritedConstants(ClassScopeImpl cls, String queryName) {
-        List<ClzConstantElementImpl> retval = new ArrayList<ClzConstantElementImpl>();
-        //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
-        //if (cls == null) return Collections.emptyList();
-        //assert cls.getName().equals(className);
-        Collection<IndexedConstant> flds = getIndex().getClassConstants(null, cls.getName(), queryName, NameKind.EXACT_NAME);
-        for (IndexedConstant idxConst : flds) {
-            //assert cls.getName().equals(idxConst.getIn());
-            ClzConstantElementImpl elementImpl = new ClzConstantElementImpl(cls, idxConst);
-            retval.add(elementImpl);
-        }
-        return retval;
-    }
-
-    public List<? extends FieldElementImpl>getInheritedFields(ClassScopeImpl cls, String queryName) {
-        List<FieldElementImpl> retval = new ArrayList<FieldElementImpl>();
-        //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
-        //if (cls == null) return Collections.emptyList();
-        //assert cls.getName().equals(className);
-        Collection<IndexedConstant> flds = getIndex().getFields(null, cls.getName(), queryName, NameKind.EXACT_NAME, Modifier.PUBLIC | Modifier.PROTECTED);
-        for (IndexedConstant idxConst : flds) {
-            FieldElementImpl fei = new FieldElementImpl(cls, idxConst);
-            retval.add(fei);
-        }
-        return retval;
-    }
-
-    public List<? extends MethodScopeImpl> getInheritedMethods(final TypeScopeImpl cls, final String queryName) {
-        List<MethodScopeImpl> retval = new ArrayList<MethodScopeImpl>();
-        //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
-        //if (cls == null) return Collections.emptyList();
-        //assert cls.getName().equals(className);
-        Collection<IndexedFunction> methods = getIndex().getMethods(null, cls.getName(), queryName, NameKind.EXACT_NAME, Modifier.PUBLIC | Modifier.PROTECTED);
-        for (IndexedFunction idxFunc : methods) {
-            MethodScopeImpl msi = new MethodScopeImpl(cls, idxFunc, PhpKind.METHOD);
-            retval.add(msi);
-        }
-        return retval;
-    }
-
-
-    public List<? extends MethodScopeImpl> getMethods(final NameKind nameKind, TypeScopeImpl cls, final String queryName, final int... modifiers) {
-        List<MethodScopeImpl> retval = new ArrayList<MethodScopeImpl>();
+    public List<? extends MethodScope> findMethods(TypeScope type, NameKind nameKind, String queryName, int... modifiers) {
+        List<MethodScope> retval = new ArrayList<MethodScope>();
         PhpModifiers attribs = new PhpModifiers(modifiers);
         //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
         //if (cls == null) return Collections.emptyList();
         //assert cls.getName().equals(className);
         Collection<IndexedFunction> methods = null;
-        if (cls instanceof InterfaceScope) {
-            methods = getIndex().getMethods(null, cls.getName(), queryName, nameKind, PHPIndex.ANY_ATTR);
+        if (type instanceof InterfaceScope) {
+            methods = getIndex().getMethods(null, type.getName(), queryName, nameKind, PHPIndex.ANY_ATTR);
         } else {
-            methods = getIndex().getMethods(null, cls.getName(), queryName, nameKind, modifiers.length == 0 ? PHPIndex.ANY_ATTR : attribs.toBitmask());
+            methods = getIndex().getMethods(null, type.getName(), queryName, nameKind, modifiers.length == 0 ? PHPIndex.ANY_ATTR : attribs.toBitmask());
         }
         for (IndexedFunction idxFunc : methods) {
-            MethodScopeImpl msi = new MethodScopeImpl(cls, idxFunc, PhpKind.METHOD);
+            MethodScopeImpl msi = new MethodScopeImpl((TypeScopeImpl) type, idxFunc, PhpKind.METHOD);
             retval.add(msi);
         }
         return retval;
     }
 
-    public List<? extends MethodScopeImpl> getMethods(TypeScopeImpl cls, final String queryName, final int... modifiers) {
-        return getMethods(NameKind.EXACT_NAME, cls, queryName, modifiers);
+    public List<? extends MethodScope> findInheritedMethods(TypeScope typeScope, String methodName) {
+        List<MethodScope> retval = new ArrayList<MethodScope>();
+        //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
+        //if (cls == null) return Collections.emptyList();
+        //assert cls.getName().equals(className);
+        Collection<IndexedFunction> methods = getIndex().getMethods(null, typeScope.getName(), methodName, NameKind.EXACT_NAME, Modifier.PUBLIC | Modifier.PROTECTED);
+        for (IndexedFunction idxFunc : methods) {
+            MethodScopeImpl msi = new MethodScopeImpl(typeScope, idxFunc, PhpKind.METHOD);
+            retval.add(msi);
+        }
+        return retval;
     }
 
-    public List<? extends MethodScopeImpl> getMethods(TypeScopeImpl cls, final int... modifiers) {
-        return getMethods(NameKind.PREFIX, cls, "", modifiers);
+    public List<? extends ClassConstantElement> findClassConstants(TypeScope aThis, String... queryName) {
+        return findClassConstants(NameKind.EXACT_NAME, aThis, queryName);
     }
 
-    public List<? extends ClzConstantElementImpl> getConstants(final NameKind nameKind, TypeScopeImpl cls, final String... queryName) {
-        List<ClzConstantElementImpl> retval = new ArrayList<ClzConstantElementImpl>();
+    public List<? extends ClassConstantElement> findClassConstants(final NameKind nameKind, TypeScope type, final String... queryName) {
+        List<ClassConstantElement> retval = new ArrayList<ClassConstantElement>();
         for (String name : queryName) {
-            Collection<IndexedConstant> constants = getIndex().getClassConstants(null, cls.getName(), name, nameKind);
+            Collection<IndexedConstant> constants = getIndex().getClassConstants(null, type.getName(), name, nameKind);
             for (IndexedConstant idxConst : constants) {
-                ClzConstantElementImpl elementImpl = new ClzConstantElementImpl(cls, idxConst);
+                ClassConstantElementImpl elementImpl = new ClassConstantElementImpl(type, idxConst);
                 retval.add(elementImpl);
             }
 
@@ -343,15 +255,21 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
         return retval;
     }
 
-    public List<? extends ClzConstantElementImpl> getConstants(TypeScopeImpl aThis, final String... queryName) {
-        return getConstants(NameKind.EXACT_NAME, aThis, queryName);
+    public List<? extends ClassConstantElement> findInheritedClassConstants(ClassScope clsScope, String constName) {
+        List<ClassConstantElement> retval = new ArrayList<ClassConstantElement>();
+        Collection<IndexedConstant> flds = getIndex().getClassConstants(null, clsScope.getName(), constName, NameKind.EXACT_NAME);
+        for (IndexedConstant idxConst : flds) {
+            ClassConstantElementImpl elementImpl = new ClassConstantElementImpl(clsScope, idxConst);
+            retval.add(elementImpl);
+        }
+        return retval;
     }
 
-    public List<? extends FieldElementImpl> getFields(final NameKind nameKind, ClassScopeImpl cls, final String queryName, final int... modifiers) {
+    public List<? extends FieldElement> findFields(final NameKind nameKind, ClassScope cls, final String queryName, final int... modifiers) {
         List<FieldElementImpl> retval = new ArrayList<FieldElementImpl>();
         PhpModifiers attribs = new PhpModifiers(modifiers);
         String name = (queryName.startsWith("$")) //NOI18N
-                    ? queryName.substring(1) : queryName;
+                ? queryName.substring(1) : queryName;
 
         Collection<IndexedConstant> constants = getIndex().getFields(null, cls.getName(), name, nameKind, modifiers.length == 0 ? PHPIndex.ANY_ATTR : attribs.toBitmask());
         for (IndexedConstant idxConst : constants) {
@@ -361,15 +279,38 @@ class IndexScopeImpl extends ModelScopeImpl implements IndexScope {
         return retval;
     }
 
-    public List<? extends FieldElementImpl> getFields(ClassScopeImpl aThis, final String queryName, final int... modifiers) {
-        return getFields(NameKind.EXACT_NAME, aThis, queryName, modifiers);
+    public List<? extends FieldElement> findFields(ClassScope cls, final int... modifiers) {
+        return findFields(NameKind.PREFIX, cls, "", modifiers);
+    }
+
+    public List<? extends FieldElement> findFields(ClassScope aThis, final String queryName, final int... modifiers) {
+        return findFields(NameKind.EXACT_NAME, aThis, queryName, modifiers);
+    }
+
+    public CachingSupport getCachedModelSupport() {
+        return null;
+    }
+
+    public List<? extends FieldElement> findInheritedFields(ClassScope clsScope, String fieldName) {
+        List<FieldElement> retval = new ArrayList<FieldElement>();
+        //ClassScopeImpl cls = ModelUtils.getFirst(getClasses(className));
+        //if (cls == null) return Collections.emptyList();
+        //assert cls.getName().equals(className);
+        Collection<IndexedConstant> flds = getIndex().getFields(null, clsScope.getName(), fieldName, NameKind.EXACT_NAME, Modifier.PUBLIC | Modifier.PROTECTED);
+        for (IndexedConstant idxConst : flds) {
+            FieldElement fei = new FieldElementImpl(clsScope, idxConst);
+            retval.add(fei);
+        }
+        return retval;
     }
 
     @Override
-    IndexScopeImpl getIndexScope() {
-        return this;
+    public OffsetRange getBlockRange() {
+        return getNameRange();
     }
 
-
-
+    @Override
+    public List<? extends ModelElementImpl> getElements() {
+        throw new IllegalStateException();
+    }
 }

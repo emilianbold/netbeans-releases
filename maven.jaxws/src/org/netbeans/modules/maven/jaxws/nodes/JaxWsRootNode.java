@@ -142,8 +142,8 @@ public class JaxWsRootNode extends AbstractNode {
             return new String[] {
                 "Templates/WebServices/WebService.java",    // NOI18N
                 "Templates/WebServices/WebServiceFromWSDL.java",    // NOI18N
-                //"Templates/WebServices/MessageHandler.java", // NOI18N
-                //"Templates/WebServices/LogicalHandler.java" // NOI18N
+                "Templates/WebServices/MessageHandler.java", // NOI18N
+                "Templates/WebServices/LogicalHandler.java" // NOI18N
             };
         }
     }

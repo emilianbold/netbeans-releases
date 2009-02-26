@@ -59,8 +59,7 @@ made subject to such option by the copyright holder.
             
             <xsl:if test="/jaxws:jax-ws/jaxws:clients/jaxws:client">
                 <target name="wsimport-init" depends="init">
-                    <mkdir dir="${{build.generated.dir}}/wsimport/client"/>
-                    <mkdir dir="${{build.generated.dir}}/wsimport/binaries"/>
+                    <mkdir dir="${{build.generated.sources.dir}}/jax-ws"/>
                     <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
                         <classpath path="${{java.home}}/../lib/tools.jar:${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}"/>
                     </taskdef>
@@ -77,10 +76,10 @@ made subject to such option by the copyright holder.
                     <condition property="wsimport-client-{$wsname}.notRequired">
                         <xsl:choose>
                             <xsl:when test="jaxws:package-name">
-                                <available file="${{build.generated.dir}}/wsimport/client/{$package_path}/{$wsname}.java"/>    
+                                <available file="${{build.generated.sources.dir}}/jax-ws/{$package_path}/{$wsname}.java"/>
                             </xsl:when>
                             <xsl:otherwise>
-                                <available file="${{build.generated.dir}}/wsimport/client/dummy" type="dir"/>
+                                <available file="${{build.generated.sources.dir}}/jax-ws/dummy" type="dir"/>
                             </xsl:otherwise>
                         </xsl:choose>                       
                     </condition>
@@ -89,9 +88,9 @@ made subject to such option by the copyright holder.
                     <property name="wsdl-{$wsname}" location="${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"/>
                     <xsl:if test="jaxws:package-name/@forceReplace">
                         <wsimport
-                            sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            sourcedestdir="${{build.generated.sources.dir}}/jax-ws"
                             package="{$package_name}"
-                            destdir="${{build.generated.dir}}/wsimport/binaries"
+                            destdir="${{build.generated.sources.dir}}/jax-ws"
                             wsdl="${{wsdl-{$wsname}}}"
                             catalog="{$catalog}">
                             <xsl:if test="$wsimportoptions">
@@ -134,8 +133,8 @@ made subject to such option by the copyright holder.
                     </xsl:if>
                     <xsl:if test="not(jaxws:package-name/@forceReplace)">
                         <wsimport
-                            sourcedestdir="${{build.generated.dir}}/wsimport/client"
-                            destdir="${{build.generated.dir}}/wsimport/binaries"
+                            sourcedestdir="${{build.generated.sources.dir}}/jax-ws"
+                            destdir="${{build.generated.sources.dir}}/jax-ws"
                             wsdl="${{wsdl-{$wsname}}}"
                             catalog="{$catalog}">
                             <xsl:if test="$wsimportoptions">
@@ -178,7 +177,7 @@ made subject to such option by the copyright holder.
                     </xsl:if>
                 </target>
                 <target name="wsimport-client-clean-{$wsname}" depends="-init-project">
-                    <delete dir="${{build.generated.dir}}/wsimport/client/{$package_path}"/>
+                    <delete dir="${{build.generated.sources.dir}}/jax-ws/{$package_path}"/>
                 </target>
             </xsl:for-each>
             
@@ -194,12 +193,6 @@ made subject to such option by the copyright holder.
                             <xsl:text>wsimport-client-</xsl:text><xsl:value-of select="@name"/>
                         </xsl:for-each>
                     </xsl:attribute>
-                </target>
-                <target name="wsimport-client-compile" depends="-pre-pre-compile">
-                    <carproject:javac srcdir="${{build.generated.dir}}/wsimport/client" destdir="${{classes.dir}}"/>
-                    <copy todir="${{classes.dir}}">
-                        <fileset dir="${{build.generated.dir}}/wsimport/binaries" includes="**/*.xml"/>
-                    </copy>
                 </target>
             </xsl:if>
             

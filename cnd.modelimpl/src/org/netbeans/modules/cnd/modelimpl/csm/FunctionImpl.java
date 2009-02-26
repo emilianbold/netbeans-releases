@@ -100,13 +100,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     protected static final int LAST_USED_FLAG_INDEX = 3;
     private byte flags;
     
-    public FunctionImpl(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
-        this(ast, file, scope, true);
-    }
-    
     private static final boolean CHECK_SCOPE = false;
     
-    public FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
+    public FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
@@ -144,17 +140,20 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
 
         _setScope(scope);
-        
-        RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-	
+
+        if (global){
+            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        } else {
+            Utils.setSelfUID(this);
+        }
         boolean _const = initConst(ast);
         setFlags(FLAGS_CONST, _const);
         classTemplateSuffix = new StringBuilder();
-        templateDescriptor = createTemplateDescriptor(ast, this, (StringBuilder)classTemplateSuffix);
+        templateDescriptor = createTemplateDescriptor(ast, this, (StringBuilder)classTemplateSuffix, global);
         returnType = initReturnType(ast);
 
         // set parameters, do it in constructor to have final fields
-        this.parameterList = createParameterList(ast);
+        this.parameterList = createParameterList(ast, !global);
         if (this.parameterList == null || this.parameterList.isEmpty()) {
             setFlags(FLAGS_VOID_PARMLIST, isVoidParameter(ast));
         } else {
@@ -368,7 +367,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     public String getDeclarationText() {
         return "";
     }
-    
+
     /**
      * Gets this function definition
      * TODO: describe getDefiition==this ...
@@ -414,24 +413,52 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return def;
     }
     
+    // method try to find definition in case cast operator definition is declared without scope
+    private CsmDeclaration fixCastOperator(CsmProject prj, String uname) {
+        int i = uname.indexOf("operator "); // NOI18N
+        if (i > 0) {
+            String s = uname.substring(i + 9);
+            int j = s.lastIndexOf("::"); // NOI18N
+            if (j > 0) {
+                s = uname.substring(0, i + 9) + " " + s.substring(j + 2); // NOI18N
+                return prj.findDeclaration(s);
+            }
+        }
+        return null;
+    }
+
     private CsmFunctionDefinition findDefinition(CsmProject prj, String uname){
         CsmDeclaration res = prj.findDeclaration(uname);
+        if (res == null && this.isOperator()) {
+            res = fixCastOperator(prj, uname);
+        }
         if (res instanceof CsmFunctionDefinition) {
             return (CsmFunctionDefinition)res;
         }
-        if (getParameters().size()==0 && !isVoidParameterList()) {
-            CsmScope scope = getScope();
-            if (CsmKindUtilities.isNamespace(scope) && ((CsmNamespace)scope).isGlobal()) {
-                if (prj instanceof ProjectBase) {
-                    String from = uname.substring(0, uname.indexOf('(')+1);
-                    Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)prj).findDeclarationsByPrefix(from);
-                    for(CsmOffsetableDeclaration decl : decls){
-                        if (!ProjectBase.isCppFile(decl.getContainingFile())){
-                            return (CsmFunctionDefinition)decl;
-                        }
+        if (prj instanceof ProjectBase) {
+            int parmSize = getParameters().size();
+            boolean isVoid = isVoidParameterList();
+            String from = uname.substring(0, uname.indexOf('(')+1);
+            Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)prj).findDeclarationsByPrefix(from);
+            CsmFunctionDefinition candidate = null;
+            for(CsmOffsetableDeclaration decl : decls){
+                CsmFunctionDefinition def = (CsmFunctionDefinition) decl;
+                int candidateParamSize = def.getParameters().size();
+                if (!isVoid && parmSize == 0) {
+                    if (!ProjectBase.isCppFile(decl.getContainingFile())){
+                        return def;
+                    }
+                }
+                if (parmSize == candidateParamSize) {
+                    // TODO check overloads
+                    if (candidate == null) {
+                        candidate = def;
+                    } else {
+                        return null;
                     }
                 }
             }
+            return candidate;
         }
         return null;
     }
@@ -504,15 +531,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return null;
     }
 
-    private FunctionParameterListImpl createParameterList(AST funAST) {
-        return FunctionParameterListImpl.create(getContainingFile(), funAST, this);
+    private FunctionParameterListImpl createParameterList(AST funAST, boolean isLocal) {
+        return FunctionParameterListImpl.create(getContainingFile(), funAST, this, isLocal);
     }
     
-    private Collection<CsmParameter> initParameters(AST node) {
-        AST ast = findParameterNode(node);
-        return AstRenderer.renderParameters(ast, getContainingFile(), this);
-    }
-
     private boolean isVoidParameter(AST node) {
         AST ast = findParameterNode(node);
         return AstRenderer.isVoidParameter(ast);
@@ -694,7 +716,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-            assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
+            // wrong assert, see IZ#158605
+            //assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
         }
         return scope;
     }

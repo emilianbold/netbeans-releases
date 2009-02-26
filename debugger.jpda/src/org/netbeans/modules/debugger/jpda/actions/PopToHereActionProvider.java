@@ -46,10 +46,12 @@ import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
 
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 
 
 /**
@@ -94,7 +96,15 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
     public void runAction() {
         try {
             JPDAThread t = getDebuggerImpl ().getCurrentThread ();
-            t.getCallStack (0, 1) [0].popFrame ();
+            ((JPDAThreadImpl) t).accessLock.writeLock().lock();
+            try {
+                CallStackFrame[] frames = t.getCallStack (0, 2);
+                if (frames.length > 1) {
+                    frames[0].popFrame ();
+                }
+            } finally {
+                ((JPDAThreadImpl) t).accessLock.writeLock().unlock();
+            }
         } catch (AbsentInformationException ex) {
         }
     }
@@ -117,16 +127,7 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
         if (t == null) {
             enabled = false;
         } else {
-            t.getReadAccessLock().lock();
-            try {
-                if (!t.isSuspended()) {
-                    enabled = false;
-                } else {
-                    enabled = t.getStackDepth () > 1;
-                }
-            } finally {
-                t.getReadAccessLock().unlock();
-            }
+            enabled = t.isSuspended();
         }
         setEnabled (
             ActionsManager.ACTION_POP_TOPMOST_CALL,

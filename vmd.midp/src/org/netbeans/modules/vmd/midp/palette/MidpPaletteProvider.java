@@ -68,8 +68,10 @@ public class MidpPaletteProvider implements PaletteProvider {
     public static final String CATEGORY_PROCESS_FLOW = "flow"; // NOI18N
     public static final String CATEGORY_RESOURCES = "resources"; // NOI18N
     public static final String CATEGORY_CUSTOM = "custom"; // NOI18N
-    private String[] paletteCategories = {CATEGORY_DISPLAYABLES, CATEGORY_COMMANDS, CATEGORY_ELEMENTS, CATEGORY_ITEMS, CATEGORY_PROCESS_FLOW, CATEGORY_RESOURCES, CATEGORY_CUSTOM};
-    private int[] categoryPositions = {100, 200, 300, 400, 500, 600, 1000}; // custom should be the last
+    public static final String CATEGORY_DATABINDING = "databinding"; // NOI18N
+
+    private String[] paletteCategories = {CATEGORY_DISPLAYABLES, CATEGORY_COMMANDS, CATEGORY_ELEMENTS, CATEGORY_ITEMS, CATEGORY_PROCESS_FLOW, CATEGORY_RESOURCES, CATEGORY_CUSTOM, CATEGORY_DATABINDING};
+    private int[] categoryPositions = {100, 200, 300, 400, 500, 600, 1000, 710}; // custom should be the last
 
     public MidpPaletteProvider() {
     }

@@ -65,18 +65,20 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class BrowseTestSources extends JPanel {
-    private static final long serialVersionUID = 146332105742174968L;
+    private static final long serialVersionUID = 1463321897654268L;
 
     private final PhpProject phpProject;
     private DialogDescriptor dialogDescriptor;
     private NotificationLineSupport notificationLineSupport;
 
-    public BrowseTestSources(PhpProject phpProject) {
+    public BrowseTestSources(PhpProject phpProject, String title) {
         assert phpProject != null;
+        assert title != null;
 
         this.phpProject = phpProject;
 
         initComponents();
+        infoLabel.setText(title);
         testSourcesTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
@@ -102,7 +104,7 @@ public class BrowseTestSources extends JPanel {
     public boolean open() {
         dialogDescriptor = new DialogDescriptor(
                 this,
-                NbBundle.getMessage(BrowseTestSources.class, "LBL_TestSourcesForProject", ProjectUtils.getInformation(phpProject).getDisplayName()),
+                NbBundle.getMessage(BrowseTestSources.class, "LBL_DirectoryForProject", ProjectUtils.getInformation(phpProject).getDisplayName()),
                 true,
                 DialogDescriptor.OK_CANCEL_OPTION,
                 DialogDescriptor.OK_OPTION,
@@ -121,38 +123,38 @@ public class BrowseTestSources extends JPanel {
 
         String testSources = testSourcesTextField.getText();
         if (testSources.length() == 0) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestSourcesEmpty"));
+            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_FolderEmpty"));
             dialogDescriptor.setValid(false);
             return;
         }
 
         File testSourcesFile = new File(testSources);
         if (!testSourcesFile.isAbsolute()) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestSourcesNotAbsolute"));
+            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotAbsolute"));
             dialogDescriptor.setValid(false);
             return;
         } else if (!testSourcesFile.isDirectory()) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestSourcesNotDirectory"));
+            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotDirectory"));
             dialogDescriptor.setValid(false);
             return;
         }
         FileObject nbproject = phpProject.getProjectDirectory().getFileObject("nbproject"); // NOI18N
         FileObject testSourcesFo = FileUtil.toFileObject(testSourcesFile);
         if (testSourcesFile.equals(FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(phpProject)))) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestSourcesEqualsSources"));
+            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestEqualsSources"));
             dialogDescriptor.setValid(false);
             return;
         } else if (FileUtil.isParentOf(nbproject, testSourcesFo)
                 || nbproject.equals(testSourcesFo)) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestSourcesUnderneathNBMetadata"));
+            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestUnderneathNBMetadata"));
             dialogDescriptor.setValid(false);
             return;
         } else if (!Utils.isFolderWritable(testSourcesFile)) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestSourcesNotWritable"));
+            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotWritable"));
             dialogDescriptor.setValid(false);
             return;
         } else if (!FileUtil.isParentOf(phpProject.getProjectDirectory(), testSourcesFo)) {
-            notificationLineSupport.setWarningMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestSourcesNotUnderneathProjectFolder"));
+            notificationLineSupport.setWarningMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotUnderneathProjectFolder"));
             dialogDescriptor.setValid(true);
             return;
         }
@@ -176,7 +178,7 @@ public class BrowseTestSources extends JPanel {
         testSourcesTextField = new JTextField();
         testSourcesBrowseButton = new JButton();
 
-        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.infoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(infoLabel, "dummy"); // NOI18N
         testSourcesLabel.setLabelFor(testSourcesTextField);
 
         Mnemonics.setLocalizedText(testSourcesLabel, NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.text"));

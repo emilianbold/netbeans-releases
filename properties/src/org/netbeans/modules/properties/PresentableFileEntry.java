@@ -148,9 +148,6 @@ public abstract class PresentableFileEntry extends FileEntry
      * Sets value of attribute &quot;is template?&quot; for this entry's file.
      *
      * @param  newValue  new value of the attribute
-     * @return  <code>true</code> if the value was changed;
-     *          <code>false</code> if the new value was the same
-     *              as the old value
      * @exception  java.io.IOException  if setting the template state fails
      */
     public final void setTemplate(boolean newValue) throws IOException {

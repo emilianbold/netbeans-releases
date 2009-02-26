@@ -258,7 +258,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                 if (type == null) {
                     String fqn = AstUtilities.getFqnName(path);
                     if (call == Call.LOCAL && fqn != null && fqn.length() == 0) {
-                        fqn = "java.lang.Object";
+                        fqn = "java.lang.Object"; // NOI18N
                     }
 
                     return findMethod(name, fqn, type, call, info, astOffset, lexOffset, path, closest, index);
@@ -785,16 +785,18 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                 FileObject fileObject = SourceUtils.getFile(handles[0], cpInfo);
                 if (fileObject != null) {
                     javaSource = JavaSource.forFileObject(fileObject);
-                    javaSource.runUserActionTask(new Task<CompilationController>() {
-                        public void run(CompilationController controller) throws Exception {
-                            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                            Element element = handles[0].resolve(controller);
-                            Trees trees = controller.getTrees();
-                            Tree tree = trees.getTree(element);
-                            SourcePositions sourcePositions = trees.getSourcePositions();
-                            offset[0] = (int) sourcePositions.getStartPosition(controller.getCompilationUnit(), tree);
-                        }
-                    }, true);
+                    if (javaSource != null) {
+                        javaSource.runUserActionTask(new Task<CompilationController>() {
+                            public void run(CompilationController controller) throws Exception {
+                                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                                Element element = handles[0].resolve(controller);
+                                Trees trees = controller.getTrees();
+                                Tree tree = trees.getTree(element);
+                                SourcePositions sourcePositions = trees.getSourcePositions();
+                                offset[0] = (int) sourcePositions.getStartPosition(controller.getCompilationUnit(), tree);
+                            }
+                        }, true);
+                    }
                     return new DeclarationLocation(fileObject, offset[0]);
                 }
             }

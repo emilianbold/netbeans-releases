@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="maven.samples">
+    <description>Builds, tests, and runs the project org.netbeans.modules.maven.samples</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <target name="jar" depends="zip-examples,projectized-common.jar"/>
+    
+    <target name="zip-examples" depends="build-init">
+        <property name="examples" location="${build.classes.dir}/org/netbeans/modules/maven/samples"/>
+        <mkdir dir="${examples}"/>
+        <zip basedir="samples_src/Calculator"  destfile="${examples}/Calculator.zip"/>
+        <zip basedir="samples_src/CalculatorClient"  destfile="${examples}/CalculatorClient.zip"/>
+    </target>
+</project>

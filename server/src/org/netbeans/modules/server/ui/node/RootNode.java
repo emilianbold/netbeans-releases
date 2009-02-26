@@ -56,6 +56,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
@@ -100,12 +101,19 @@ public final class RootNode extends AbstractNode {
             super();
         }
 
-        public synchronized void init() {
-            final ServerRegistry registry = ServerRegistry.getInstance();
+        public void init() {
+            RequestProcessor.getDefault().post(new Runnable() {
 
-            registry.addChangeListener(
-                WeakListeners.create(ChangeListener.class, this, registry));
-            stateChanged(new ChangeEvent(registry));
+                public void run() {
+                    synchronized (ChildFactory.this) {
+                        final ServerRegistry registry = ServerRegistry.getInstance();
+
+                        registry.addChangeListener(
+                            WeakListeners.create(ChangeListener.class, ChildFactory.this, registry));
+                        stateChanged(new ChangeEvent(registry));
+                    }
+                }
+            });
         }
 
         public synchronized void stateChanged(ChangeEvent e) {

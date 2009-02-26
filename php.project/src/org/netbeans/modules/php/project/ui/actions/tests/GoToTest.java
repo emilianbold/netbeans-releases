@@ -39,16 +39,20 @@
 
 package org.netbeans.modules.php.project.ui.actions.tests;
 
+import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpProjectUtils;
+import org.netbeans.modules.php.project.spi.PhpUnitSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.gototest.TestLocator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -82,10 +86,10 @@ public class GoToTest implements TestLocator {
             return null;
         }
 
-        if (CommandUtils.isUnderSources(project, fo)) {
-            return findTest(project, fo);
-        } else if (CommandUtils.isUnderTests(project, fo, false)) {
+        if (CommandUtils.isUnderTests(project, fo, false)) {
             return findSource(project, fo);
+        } else if (CommandUtils.isUnderSources(project, fo)) {
+            return findTest(project, fo);
         }
         return null;
     }
@@ -98,47 +102,58 @@ public class GoToTest implements TestLocator {
             return FileType.NEITHER;
         }
 
-        if (CommandUtils.isUnderSources(project, fo)) {
-            return FileType.TESTED;
-        } else if (CommandUtils.isUnderTests(project, fo, false)) {
+        if (CommandUtils.isUnderTests(project, fo, false)) {
             String name = fo.getNameExt();
-            if (!name.equals(PhpUnitConstants.TEST_FILE_SUFFIX) && name.endsWith(PhpUnitConstants.TEST_FILE_SUFFIX)) {
+            if (!name.equals(PhpUnit.TEST_FILE_SUFFIX) && name.endsWith(PhpUnit.TEST_FILE_SUFFIX)) {
                 return FileType.TEST;
             }
+        } else if (CommandUtils.isUnderSources(project, fo)) {
+            return FileType.TESTED;
         }
         return FileType.NEITHER;
     }
 
     private LocationResult findSource(PhpProject project, FileObject testFo) {
-        String relativeTestPath = FileUtil.getRelativePath(getTests(project), testFo.getParent());
-        assert relativeTestPath != null : String.format("Relative path must be found for tests %s and folder %s", getTests(project), testFo.getParent());
-
-        // we have to iterate over all the children because several php extensions exists (php, php5, php4, inc, ...)
-        FileObject relSrcParentFolder = getSources(project).getFileObject(relativeTestPath);
-        if (relSrcParentFolder != null) {
-            for (FileObject fo : relSrcParentFolder.getChildren()) {
-                if (CommandUtils.isPhpFile(fo)
-                        && testFo.getNameExt().equals(fo.getName() + PhpUnitConstants.TEST_FILE_SUFFIX)) {
-                    return new LocationResult(fo, -1);
+        FileObject sources = getSources(project);
+        assert sources != null : "Project sources must be found";
+        PhpUnitSupport unitSupport = Lookup.getDefault().lookup(PhpUnitSupport.class);
+        assert unitSupport != null : "PhpUnitSupport must be found in default lookup";
+        Collection<? extends String> classNames = unitSupport.getClassNames(testFo);
+        for (String clsName : classNames) {
+            if (clsName.endsWith(PhpUnit.TEST_CLASS_SUFFIX)) {
+                int lastIndexOf = clsName.lastIndexOf(PhpUnit.TEST_CLASS_SUFFIX);
+                assert lastIndexOf != -1;
+                String srcClassName = clsName.substring(0, lastIndexOf);
+                Collection<? extends FileObject> files = unitSupport.filesForClassName(testFo, srcClassName);
+                for (FileObject fileObject : files) {
+                    if (CommandUtils.isPhpFile(fileObject)
+                            && FileUtil.isParentOf(sources, fileObject)) {
+                        return new LocationResult(fileObject, -1);
+                    }
                 }
             }
         }
-
-        return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_SrcNotFound", testFo.getName()));
+        return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_SrcNotFound", testFo.getNameExt()));
     }
 
-    private LocationResult findTest(PhpProject project, FileObject srcFo) {
-        FileObject testFo = getTests(project).getFileObject(findRelativeTestFileName(project, srcFo));
-        if (testFo == null) {
-            return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_TestNotFound", srcFo.getName()));
+    public static LocationResult findTest(PhpProject project, FileObject srcFo) {
+        FileObject tests = getTests(project);
+        if (tests != null) {
+            PhpUnitSupport unitSupport = Lookup.getDefault().lookup(PhpUnitSupport.class);
+            assert unitSupport != null : "PhpUnitSupport must be found in default lookup";
+            Collection<? extends String> classNames = unitSupport.getClassNames(srcFo);
+            for (String clsName : classNames) {
+                String testClsName = clsName + PhpUnit.TEST_CLASS_SUFFIX;
+                Collection<? extends FileObject> files = unitSupport.filesForClassName(srcFo, testClsName);
+                for (FileObject fileObject : files) {
+                    if (CommandUtils.isPhpFile(fileObject)
+                            && FileUtil.isParentOf(tests, fileObject)) {
+                        return new LocationResult(fileObject, -1);
+                    }
+                }
+            }
         }
-        return new LocationResult(testFo, -1);
-    }
-
-    static String findRelativeTestFileName(PhpProject project, FileObject srcFo) {
-        String relativeSourcePath = FileUtil.getRelativePath(getSources(project), srcFo.getParent());
-        assert relativeSourcePath != null : String.format("Relative path must be found for sources %s and folder %s", getSources(project), srcFo.getParent());
-        return relativeSourcePath + "/" + srcFo.getName() + PhpUnitConstants.TEST_FILE_SUFFIX; // NOI18N
+        return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_TestNotFound", srcFo.getNameExt()));
     }
 
     private PhpProject findPhpProject(FileObject fo) {
@@ -150,11 +165,11 @@ public class GoToTest implements TestLocator {
         return (PhpProject) project;
     }
 
-    private static FileObject getSources(PhpProject project) {
+    public static FileObject getSources(PhpProject project) {
         return ProjectPropertiesSupport.getSourcesDirectory(project);
     }
 
-    private static FileObject getTests(PhpProject project) {
+    public static FileObject getTests(PhpProject project) {
         return ProjectPropertiesSupport.getTestDirectory(project, false);
     }
 }

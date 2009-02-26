@@ -38,8 +38,8 @@
  */
 package org.netbeans.modules.dlight.collector.stdout.spi;
 
-import org.netbeans.modules.dlight.collector.stdout.api.CLIODCConfiguration;
-import org.netbeans.modules.dlight.collector.stdout.api.impl.CLIODCConfigurationAccessor;
+import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
+import org.netbeans.modules.dlight.collector.stdout.impl.CLIODCConfigurationAccessor;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
 import org.openide.util.lookup.ServiceProvider;

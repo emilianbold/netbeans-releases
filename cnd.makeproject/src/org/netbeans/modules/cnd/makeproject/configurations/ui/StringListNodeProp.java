@@ -154,9 +154,9 @@ public class StringListNodeProp extends PropertySupport<List> {
         public java.awt.Component getCustomEditor() {
             String text = null;
             if (inheritValues != null) {
-                text = texts[3];
+                text = texts[4];
             }
-            return new StringListPanel(value, addPathPanel, inheritValues, text, this, env, helpCtx);
+            return new StringListPanel(texts[3], value, addPathPanel, inheritValues, text, this, env, helpCtx);
         }
 
         @Override

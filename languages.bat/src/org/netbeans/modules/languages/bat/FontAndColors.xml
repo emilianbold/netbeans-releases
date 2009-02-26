@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 <fontscolors>
-    <fontcolor default="comment" name="line_comment"/>
+    <fontcolor default="comment" name="comment"/>
     <fontcolor default="keyword" name="keyword"/>
     <fontcolor default="keyword" name="command"/>
     <fontcolor default="string" name="string"/>

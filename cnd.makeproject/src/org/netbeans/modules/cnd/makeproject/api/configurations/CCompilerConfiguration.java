@@ -82,9 +82,9 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         clone.setLibraryLevel(getLibraryLevel().clone());
         clone.setStandardsEvolution(getStandardsEvolution().clone());
         clone.setLanguageExt(getLanguageExt().clone());
-        clone.setIncludeDirectories(getIncludeDirectories().cloneConf());
+        clone.setIncludeDirectories(getIncludeDirectories().clone());
         clone.setInheritIncludes(getInheritIncludes().clone());
-        clone.setPreprocessorConfiguration(getPreprocessorConfiguration().cloneConf());
+        clone.setPreprocessorConfiguration(getPreprocessorConfiguration().clone());
         clone.setInheritPreprocessor(getInheritPreprocessor().clone());
         return clone;
     }
@@ -151,9 +151,12 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     
     public String getPreprocessorOptions() {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().getOption(null, getUserMacroFlag()) + " ") ; // NOI18N
+        OptionToString visitor = new OptionToString(null, getUserMacroFlag());
+        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().toString(visitor));
+        options.append(' '); // NOI18N
         while (master != null && getInheritPreprocessor().getValue()) {
-            options.append(master.getPreprocessorConfiguration().getOption(null, getUserMacroFlag()) + " "); // NOI18N
+            options.append(master.getPreprocessorConfiguration().toString(visitor));
+            options.append(' '); // NOI18N
             if (master.getInheritPreprocessor().getValue()) {
                 master = (CCompilerConfiguration) master.getMaster();
             } else {
@@ -165,9 +168,12 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     
     public String getIncludeDirectoriesOptions(CompilerSet cs) {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        StringBuilder options = new StringBuilder(getIncludeDirectories().getOption(cs, getUserIncludeFlag()) + " "); // NOI18N
+        OptionToString visitor = new OptionToString(cs, getUserIncludeFlag());
+        StringBuilder options = new StringBuilder(getIncludeDirectories().toString(visitor));
+        options.append(' '); // NOI18N
         while (master != null && getInheritIncludes().getValue()) {
-            options.append(master.getIncludeDirectories().getOption(cs, getUserIncludeFlag()) + " "); // NOI18N
+            options.append(master.getIncludeDirectories().toString(visitor));
+            options.append(' '); // NOI18N
             if (master.getInheritIncludes().getValue()) {
                 master = (CCompilerConfiguration) master.getMaster();
             } else {

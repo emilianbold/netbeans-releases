@@ -80,7 +80,7 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
     }
     
     public void put() {
-	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) System.err.printf("> ProjectComponent: Hanging %s by key %s\n", this, key);
+	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) {System.err.printf("> ProjectComponent: Hanging %s by key %s\n", this, key);}
 	RepositoryUtils.hang(key, this);
     }
 
@@ -90,7 +90,7 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
 //    }
     
     public void write(DataOutput out) throws IOException {
-	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) System.err.printf("> ProjectComponent: Writing %s by key %s\n", this, key);
+	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) {System.err.printf("> ProjectComponent: Writing %s by key %s\n", this, key);}
 	writeKey(key, out);
     }
     
@@ -106,7 +106,7 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
 	Persistent p = RepositoryUtils.tryGet(key);
 	if( p != null ) {
 	    assert p instanceof  ProjectComponent;
-	    ProjectComponent pc = (ProjectComponent) p;
+	    //ProjectComponent pc = (ProjectComponent) p;
             // A workaround for #131701
 	    //pc.putImpl();
 	}

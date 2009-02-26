@@ -70,6 +70,9 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     /** Extension for properties files. */
     static final String PROPERTIES_EXTENSION = "properties"; // NOI18N
 
+    /** Properties MIME type*/
+    static final String PROPERTIES_MIME_TYPE = "text/x-properties"; //NOI18N
+
     /** Character used to separate parts of bundle properties file name */
     public static final char PRB_SEPARATOR_CHAR = '_';
 
@@ -86,6 +89,9 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     private static Set<String> knownLanguages;
     /** */
     private static Set<String> knownCountries;
+
+    /** */
+    private static boolean nestedView = false;
 
     /** Creates new PropertiesDataLoader. */
     public PropertiesDataLoader() {
@@ -153,15 +159,20 @@ public final class PropertiesDataLoader extends MultiFileLoader {
              * corresponding to an existing file
              */
             String fName = fo.getName();
-            int index = fName.indexOf(PRB_SEPARATOR_CHAR);
-            while (index != -1) {
-                FileObject candidate = fo.getParent().getFileObject(
-                        fName.substring(0, index), fo.getExt());
-                if (candidate != null && isValidLocaleSuffix(fName.substring(index))) {
-                    return candidate;
+            if (nestedView) {
+                int index = fName.indexOf(PRB_SEPARATOR_CHAR);
+                while (index != -1) {
+                    FileObject candidate = fo.getParent().getFileObject(
+                            fName.substring(0, index), fo.getExt());
+                    if (candidate != null && isValidLocaleSuffix(fName.substring(index))) {
+                        return candidate;
+                    }
+                    index = fName.indexOf(PRB_SEPARATOR_CHAR, index + 1);
                 }
-                index = fName.indexOf(PRB_SEPARATOR_CHAR, index + 1);
             }
+            return fo;
+        } else if(fo.getMIMEType().equalsIgnoreCase(PROPERTIES_MIME_TYPE)) {
+//            getExtensions().addExtension(fo.getExt());
             return fo;
         } else {
             return getExtensions().isRegistered(fo) ? fo : null;
@@ -231,7 +242,7 @@ public final class PropertiesDataLoader extends MultiFileLoader {
      * This data loader will then recognize all files having any extension
      * of the given list.
      *
-     * @param  extList  list of extensions
+     * @param  ext  list of extensions
      */
     public void setExtensions(ExtensionList ext) {
         putProperty(PROP_EXTENSIONS, ext, true);

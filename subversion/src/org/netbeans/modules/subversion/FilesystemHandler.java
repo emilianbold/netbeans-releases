@@ -55,6 +55,7 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -146,7 +147,9 @@ class FilesystemHandler extends VCSInterceptor {
                     }
                     try {
                         SvnClient client = Subversion.getInstance().getClient(false);
-                        client.remove(new File [] { file }, true);
+                        if (shallRemove(client, file)) {
+                            client.remove(new File [] { file }, true);
+                        }
                     } catch (SVNClientException e) {
                         // ignore; we do not know what to do here
                         Subversion.LOG.log(Level.FINER, null, e);
@@ -156,6 +159,27 @@ class FilesystemHandler extends VCSInterceptor {
                 }
             }
         });
+    }
+
+    /**
+     * Tries to determine if the <code>file</code> is supposed to be really removed by svn or not.<br/>
+     * i.e. unversioned files should not be removed at all.
+     * This method refreshed the file cache synchronally, do not run it directly from Interceptor methods, use a separated thread.
+     * @param file file sheduled for removal
+     * @return <code>true</code> if the <code>file</code> shall be really removed, <code>false</code> otherwise.
+     */
+    private boolean shallRemove(SvnClient client, File file) throws SVNClientException {
+        boolean retval = true;
+        ISVNStatus status = getStatus(client, file);
+        if (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
+            retval = false;
+        } else if (Utilities.isMac() || Utilities.isWindows()) {
+            String existingFilename = FileUtils.getExistingFilenameInParent(file);
+            if (existingFilename != null) {
+                retval = false;
+            }
+        }
+        return retval;
     }
 
     @Override

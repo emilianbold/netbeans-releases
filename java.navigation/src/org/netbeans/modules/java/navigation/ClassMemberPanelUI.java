@@ -23,6 +23,7 @@ import javax.lang.model.element.Element;
 import javax.swing.BorderFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.java.source.Task;
@@ -94,6 +95,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         JComponent buttons = filters.getComponent();
         buttons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
         filtersPanel.add(buttons);
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+            filtersPanel.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         
         actions = new Action[] {            
             new SortByNameAction( filters ),

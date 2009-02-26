@@ -42,6 +42,7 @@
 package org.netbeans.swing.tabcontrol;
 
 import java.awt.Component;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -74,7 +75,7 @@ public abstract class WinsysInfoForTabbedContainer implements WinsysInfoForTabbe
     public boolean isTopComponentClosingEnabled() {
         return true;
     }
-    
+
     /**
      * 
      * @return True if TopComponents can be maximized, false to remove Maximize/Restore
@@ -84,6 +85,32 @@ public abstract class WinsysInfoForTabbedContainer implements WinsysInfoForTabbe
         return true;
     }
     
+    /**
+     * @return True if given TopComponent can be closed, false to remove Close button
+     * from TopComponent's header.
+     * @since 1.15
+     */
+    public boolean isTopComponentClosingEnabled( TopComponent tc ) {
+        return true;
+    }
+
+    /**
+     * @return True if given TopComponent can be slided-out, false to remove 'Minimize Window'
+     * action from TopComponent's popup menu.
+     * @since 1.15
+     */
+    public boolean isTopComponentSlidingEnabled( TopComponent tc ) {
+        return true;
+    }
+
+    /**
+     * @return True if given TopComponent can be maximized.
+     * @since 1.15
+     */
+    public boolean isTopComponentMaximizationEnabled( TopComponent tc ) {
+        return true;
+    }
+
     public static WinsysInfoForTabbedContainer getDefault( WinsysInfoForTabbed winsysInfo ) {
         return new DefaultWinsysInfoForTabbedContainer( winsysInfo );
     }

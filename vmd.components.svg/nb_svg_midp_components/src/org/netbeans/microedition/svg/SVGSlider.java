@@ -91,7 +91,8 @@ public class SVGSlider extends SVGComponent {
         initNestedElements();
         verify();
         myInputHandler = new SliderInputHandler();
-        setValue( myMin );
+        //setValue( myMin );
+        myValue = myMin;
     }
 
     public SVGSlider( int min, int max, SVGForm form, String elemId ) {
@@ -109,33 +110,75 @@ public class SVGSlider extends SVGComponent {
     }
     
     public void setValue( final int value ){
-        if ( myValue > myMax || myValue < myMin ){
-            throw new IllegalArgumentException( value +" is out of range"); // NOI18N
+        int val = value;
+        if ( val > myMax ){
+            val = myMax;
+        }
+        if ( val < myMin ){
+            val = myMin;
         }
         
-        final int step = value - myValue;
+        final int step = val - myValue;
+
+        if ( myMax == myMin ){
+            return;
+        }
         getForm().invokeLaterSafely(new Runnable() {
 
             public void run() {
                 SVGRect rect = myRuleElement.getBBox();
                 float width = rect.getWidth();
                 SVGMatrix matrix = myKnobElement.getMatrixTrait(TRANSFORM);
-                matrix.mTranslate(step * width / (myMax - myMin),
-                        0);
+                matrix.mTranslate(step * width / (myMax - myMin),0);
                 myKnobElement.setMatrixTrait(TRANSFORM, matrix);
             }
         });
         
-        myValue = value;
+        myValue = val;
         fireActionPerformed();
     }
     
     public void setMin( int min ){
-        myMin = min;
+        /*
+         * This is needed to reset knob. Otherwise visual knob
+         * element will have position that can't be express
+         * in relationship between current value/min/max.
+         */
+        setValue(myMin);
+        
+        if ( min > myMax ){
+            myMin = myMax;
+        }
+        else {
+            myMin = min;
+        }
+
+        if ( myValue <myMin ){
+            myValue = myMin;
+        }
     }
     
     public void setMax( int max ){
-        myMax = max;
+        /*
+         * This is needed to reset knob. Otherwise visual knob
+         * element will have position that can't be express
+         * in relationship between current value/min/max.
+         */
+        setValue(myMin);
+        
+        if ( max < myMin ){
+            myMax = myMin;
+        }
+        else {
+            myMax = max;
+        }
+        if ( myValue > myMax ){
+            myValue = myMax;
+        }
+
+        if ( myValue >myMax ){
+            myValue = myMax;
+        }
     }
     
     public int getMin(){
@@ -161,6 +204,11 @@ public class SVGSlider extends SVGComponent {
         if (myRuleElement == null) {
             myRuleElement = (SVGLocatableElement) getElementByMeta(
                     getElement(), TYPE, RULE);
+        }
+
+        if ( myRuleElement != null && myRuleElement.getBBox() != null){
+            SVGRect rect = myRuleElement.getScreenBBox();
+            isHorizontal = rect.getHeight()< rect.getWidth();
         }
     }
     
@@ -217,8 +265,13 @@ public class SVGSlider extends SVGComponent {
             }
             myStartKnobX = rect.getX();
             myStartKnobY = rect.getY();
-            if ( myStartKnobX <= event.getX() && 
+            if ( isHorizontal && myStartKnobX <= event.getX() &&
                     myStartKnobX +rect.getWidth()>= event.getX() )
+            {
+                isKnobPressed = true;
+            }
+            else if ( !isHorizontal && myStartKnobY <= event.getY() &&
+                    myStartKnobY +rect.getHeight()>= event.getY() )
             {
                 isKnobPressed = true;
             }
@@ -231,7 +284,8 @@ public class SVGSlider extends SVGComponent {
                 super.handlePointerRelease( event );
                 return;
             }
-            float knobX = rect.getX();
+            float knob = isHorizontal ? rect.getX() :rect.getY();
+            float coord = isHorizontal ? event.getX(): event.getY();
             if ( isKnobPressed ){
                 isKnobPressed = false;
                 SVGRect ruleRect = myRuleElement.getScreenBBox();
@@ -239,10 +293,16 @@ public class SVGSlider extends SVGComponent {
                     super.handlePointerRelease(event);
                     return;
                 }
-                float factor = (event.getX()-ruleRect.getX())/ruleRect.getWidth();
+                float factor ;
+                if ( isHorizontal ){
+                    factor = (event.getX()-ruleRect.getX())/ruleRect.getWidth();
+                }
+                else {
+                    factor = (event.getY()-ruleRect.getY())/ruleRect.getHeight();
+                }
                 setValue(myMin + (int)(factor*(myMax - myMin)));
             }
-            else if ( knobX > event.getX() ){
+            else if ( knob > coord ){
                 setValue( Math.max( myMin , myValue - myStep ) );
             }
             else {
@@ -264,5 +324,7 @@ public class SVGSlider extends SVGComponent {
     
     private SVGLocatableElement myKnobElement;
     private SVGLocatableElement myRuleElement;
+
+    private boolean isHorizontal = true;
 
 }

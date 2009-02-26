@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.profiler;
 
 import java.io.File;
 import java.util.Properties;
+import java.util.Set;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;

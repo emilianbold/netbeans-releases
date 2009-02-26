@@ -42,6 +42,7 @@
 package org.netbeans.modules.groovy.editor.api;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Locale;
@@ -91,6 +92,8 @@ public class GroovyTypeSearcher implements IndexSearcher {
         Set<IndexedClass> classes = null;
         if (textForQuery.length() > 0) {
             classes = index.getClasses(textForQuery, kind, true, false, false, scope, null);
+        } else {
+            return Collections.emptySet();
         }
         
         Set<GroovyTypeDescriptor> result = new HashSet<GroovyTypeDescriptor>();
@@ -203,7 +206,7 @@ public class GroovyTypeSearcher implements IndexSearcher {
                 initProjectInfo();
             }
             if (isLibrary) {
-                return new ImageIcon(ImageUtilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
+                return ImageUtilities.loadImageIcon(GroovySources.GROOVY_FILE_ICON_16x16, false);
             }
             return projectIcon;
         }

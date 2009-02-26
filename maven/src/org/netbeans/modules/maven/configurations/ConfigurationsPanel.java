@@ -274,6 +274,7 @@ private void cbProfilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
     NewConfigurationPanel pnl = new NewConfigurationPanel();
     DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(ConfigurationsPanel.class, "TIT_Add_Config"));
+    pnl.attachDescriptor(dd);
     Object ret = DialogDisplayer.getDefault().notify(dd);
     if (ret == DialogDescriptor.OK_OPTION) {
         ModelHandle.Configuration conf = ModelHandle.createCustomConfiguration(pnl.getConfigurationId());

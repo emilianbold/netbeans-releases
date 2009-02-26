@@ -41,8 +41,6 @@
 package org.netbeans.modules.cnd.refactoring.codegen.ui;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +60,7 @@ import org.openide.util.NbPreferences;
  * @author  Petr Hrebejk, Dusan Balek
  * @author Vladimir Voskresensky
  */
-public class ElementSelectorPanel extends JPanel implements ExplorerManager.Provider, ActionListener {
+public class ElementSelectorPanel extends JPanel implements ExplorerManager.Provider {
 
     private final ExplorerManager manager = new ExplorerManager();
     private final CheckTreeView elementView;
@@ -77,8 +75,9 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         add(elementView, BorderLayout.CENTER);
         if (supportInline) {
             Mnemonics.setLocalizedText(inline, NbBundle.getMessage(ElementSelectorPanel.class, "LBL_inline_implementation")); // NOI18N
-            inlineMethod = NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INLINE_PROPERTY, false);
+            inlineMethod = NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INSERT_CODE_INLINE_PROPERTY, true);
             inline.setSelected(inlineMethod);
+            inline.setEnabled(false);
             add(inline, BorderLayout.SOUTH);
         } else {
             inlineMethod = false;
@@ -96,14 +95,9 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         }
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if (e != null && e.getSource() == inline) {
-            inlineMethod = inline.isSelected();
-            NbPreferences.forModule(DeclarationGenerator.class).putBoolean(DeclarationGenerator.INLINE_PROPERTY, inlineMethod);
-        }
-    }
-
     public boolean isMethodInline() {
+        inlineMethod = inline.isSelected();
+        NbPreferences.forModule(DeclarationGenerator.class).putBoolean(DeclarationGenerator.INSERT_CODE_INLINE_PROPERTY, inlineMethod);
         return inlineMethod;
     }
 

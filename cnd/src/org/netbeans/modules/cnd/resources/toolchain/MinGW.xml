@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="MinGW" display="GNU Compiler Collection from MinGW" family="GNU"/>
+    <toolchain name="MinGW" display="GNU Compiler Collection from MinGW" family="GNU" qmakespec="win32-g++"/>
     <platforms stringvalue="windows"/>
     <base_folder regestry="hklm\software\microsoft\windows\currentversion\uninstall\MinGW" pattern="InstallLocation.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]mingw[\\/]bin[\\/]?$"/>
     <command_folder regestry="hklm\software\microsoft\windows\currentversion\uninstall\msys-1.0_is1" pattern="Inno Setup: App Path.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]msys[\\/]1.0[\\/]bin[\\/]?$"/>

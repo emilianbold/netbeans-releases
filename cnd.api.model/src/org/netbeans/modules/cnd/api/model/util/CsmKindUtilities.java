@@ -484,7 +484,15 @@ public class CsmKindUtilities {
             return false;
         }
     }      
-    
+
+    public static boolean isFileLocalFunction(CsmObject obj) {
+        if (isFunction(obj)) {
+            return isFile(((CsmFunction)obj).getScope());
+        } else {
+            return false;
+        }
+    }
+
     public static boolean isGlobalVariable(CsmObject obj) {
         if (isVariable(obj)) {
             // global variable has scope - namespace

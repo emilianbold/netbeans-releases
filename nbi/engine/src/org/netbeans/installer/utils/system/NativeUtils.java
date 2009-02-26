@@ -39,6 +39,7 @@ package org.netbeans.installer.utils.system;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -171,7 +172,11 @@ public abstract class NativeUtils {
             FileUtils.deleteFile(engine);
         }
     }
+
+    public abstract boolean openBrowser(URI uri);
     
+    public abstract boolean isBrowseSupported();
+
     public abstract FilesList addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException;
     
     public abstract void removeComponentFromSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException;

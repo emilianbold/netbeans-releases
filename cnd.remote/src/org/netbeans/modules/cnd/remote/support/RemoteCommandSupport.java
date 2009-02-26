@@ -107,11 +107,11 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
     }
 
     public RemoteCommandSupport(String key, String cmd) {
-        this(key, cmd, null, 22);
+        this(key, cmd, null, PORT);
     }
 
     public RemoteCommandSupport(String key, String cmd, Map<String, String> env) {
-        this(key, cmd, env, 22);
+        this(key, cmd, env, PORT);
     }
 
     @Override

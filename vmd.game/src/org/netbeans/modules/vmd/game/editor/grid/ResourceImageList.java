@@ -143,8 +143,12 @@ class ResourceImageList extends JList {
 		private void handleTileSelection(int index) {
 			if (DEBUG) System.out.println("Tile selected: " + index); // NOI18N
 			StaticTile tile = (StaticTile) ResourceImageList.this.getModel().getElementAt(index);
-			tile.getImageResource().getGameDesign().getMainView().requestPreview(tile);
-			tile.getImageResource().getGameDesign().getMainView().paintTileChanged(tile);
+            if (tile != null) {
+                tile.getImageResource().getGameDesign().getMainView().requestPreview(tile);
+                tile.getImageResource().getGameDesign().getMainView().paintTileChanged(tile);
+            } else {
+                System.out.println("WARNING: selected tile " + index + " is NULL"); // NOI18N
+            }
 		}
 	}
 

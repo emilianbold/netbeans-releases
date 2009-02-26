@@ -438,7 +438,10 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                 try {
                     // #25082: do not notify an exception if the file comes
                     // from other filesystem than the system filesystem
-                    if (src.getFileSystem().isDefault()) {
+                    // #127117 - ignore failures for Windows2Local because they 
+                    //are harmless. Files can be corrupted if their saving
+                    //is interrupted but windows system can recover from this.
+                    if (src.getFileSystem().isDefault() && !src.getPath().startsWith("Windows2Local")) {  //NOI18N
                         ERR.log(Level.WARNING, null, new IOException("Parsing " + src + ": " + ex.getMessage()).initCause(ex)); // NOI18N
                     }
                 } catch (org.openide.filesystems.FileStateInvalidException fie) {

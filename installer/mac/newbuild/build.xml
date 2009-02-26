@@ -93,7 +93,7 @@ Microsystems, Inc. All Rights Reserved.
                                          soa(soa),
                                          ruby(ruby),                                       
                                          php(php), 
-                                         enterprise(javaee), identity(javaee), xml(javaee), visualweb(javaee), groovy(javaee),
+                                         enterprise(javaee), identity(javaee), xml(javaee), groovy(javaee),
                                          webcommon(webcommon),
                                          ergonomics(ergonomics),
                                          ide(baseide), nb6.0-etc(baseide), platform(baseide), gsf(baseide)"/>        
@@ -170,10 +170,10 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         
         <copy file="${basedir}/netBeans/baseide/build/scripts/env.sh" todir="${scriptsdir}"/>
-        <copy file="${basedir}/netBeans/baseide/pkg/scripts/addproduct_id.sh" todir="${scriptsdir}"/>
-        <copy file="${basedir}/netBeans/baseide/pkg/scripts/servicetag.jar"   todir="${scriptsdir}"/>
-        <copy file="${basedir}/netBeans/baseide/pkg/scripts/servicetag.sh"    todir="${scriptsdir}"/>
-        <copy file="${basedir}/netBeans/baseide/build/scripts/get_current_jdk.sh"  todir="${scriptsdir}"/>
+        <copy file="${basedir}/netBeans/baseide/build/scripts/addproduct_id.sh" todir="${scriptsdir}"/>
+        <copy file="${basedir}/netBeans/baseide/build/scripts/get_current_jdk.sh" todir="${scriptsdir}"/>
+        <copy file="${basedir}/netBeans/baseide/build/scripts/servicetag.sh"    todir="${scriptsdir}"/>
+        <copy file="${basedir}/netBeans/baseide/build/scripts/servicetag.jar"   todir="${scriptsdir}"/>        
         
         <echo message="Building ${module.name} into ${basedir}/build/${module.name}.pkg"/>
         <exec executable="sh" failonerror="yes">

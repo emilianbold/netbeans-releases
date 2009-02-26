@@ -43,8 +43,6 @@ package org.netbeans.modules.java.api.common.queries;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,8 +55,8 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -100,14 +98,23 @@ final class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementati
                 if (root.equals(sourceRoot)) {
                     result = new R (sourceProps);
                     cache.put (sourceRoot,result);
-                    break;
+                    return result;
                 }
             }
             for (URL root : this.test.getRootURLs()) {
                 if (root.equals(sourceRoot)) {
                     result = new R (testProps);
                     cache.put (sourceRoot,result);
-                    break;
+                    return result;
+                }
+            }
+            String buildGeneratedDirS = eval.getProperty("build.generated.sources.dir");
+            if (buildGeneratedDirS != null) { // #105645
+                String parent = helper.resolveFile(buildGeneratedDirS).toURI().toString();
+                if (sourceRoot.toString().startsWith(parent)) {
+                    result = new R(sourceProps);
+                    cache.put(sourceRoot, result);
+                    return result;
                 }
             }
         }
@@ -130,14 +137,7 @@ final class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementati
             for (String propName : propNames) {
                 String val = eval.getProperty(propName);
                 if (val != null) {                
-                    File f = helper.resolveFile(val);
-                    if (f != null) {
-                        try {
-                            urls.add(f.toURI().toURL());
-                        } catch (MalformedURLException e) {
-                            Exceptions.printStackTrace(e);
-                        }
-                    }
+                    urls.add(FileUtil.urlForArchiveOrDir(helper.resolveFile(val)));
                 }
             }
             return urls.toArray(new URL[urls.size()]);

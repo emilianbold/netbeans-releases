@@ -40,54 +40,73 @@
 package org.netbeans.modules.maven.graph;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.Collections;
-import javax.swing.ImageIcon;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.visual.widget.BirdViewController;
+import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
  * component showing graph of dependencies for project.
  * @author Milos Kleint 
  */
-public class DependencyGraphTopComponent extends TopComponent {
+public class DependencyGraphTopComponent extends TopComponent implements LookupListener, MultiViewElement {
 //    public static final String ATTRIBUTE_DEPENDENCIES_LAYOUT = "MavenProjectDependenciesLayout"; //NOI18N
     
-    private Project project;
+//    private Project project;
+    private Lookup.Result<DependencyNode> result;
+    private Lookup.Result<MavenProject> result2;
     private DependencyGraphScene scene;
+    private MultiViewElementCallback callback;
     final JScrollPane pane = new JScrollPane();
-    private BirdViewController birdView;
-    private JComponent satelliteView;
+    private boolean isMultiview = false;
     
     
-    private Timer timer = new Timer(1000, new ActionListener() {
+    private Timer timer = new Timer(500, new ActionListener() {
         public void actionPerformed(ActionEvent arg0) {
             checkFindValue();
         }
     });
+    private JToolBar toolbar;
     
     /** Creates new form ModulesGraphTopComponent */
-    public DependencyGraphTopComponent(Project proj) {
+    public DependencyGraphTopComponent(Lookup lookup) {
+        super();
+        associateLookup(lookup);
         initComponents();
-        project = proj;
-        ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
-        setName("DependencyGraph" + info.getName()); //NOI18N
-        setDisplayName(NbBundle.getMessage(DependencyGraphTopComponent.class, 
-                "TIT_DepGraphTC", info.getDisplayName()));
-        timer.setDelay(1000);
+//        project = proj;
+        sldDepth.getLabelTable().put(new Integer(0), new JLabel(NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_All")));
+        timer.setDelay(500);
         timer.setRepeats(false);
         txtFind.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent arg0) {
@@ -102,15 +121,68 @@ public class DependencyGraphTopComponent extends TopComponent {
                 timer.restart();
             }
         });
+        comScopes.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                @SuppressWarnings("unchecked")
+                List<String> scopes = (List<String>) value;
+                String text;
+                if (scopes.size() == 0) {
+                    text = "Ignore";
+                } else {
+                    text = scopes.get(scopes.size() -1);
+                }
+                return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+            }
+        });
+        DefaultComboBoxModel mdl = new DefaultComboBoxModel();
+        mdl.addElement(Arrays.asList(new String[0]));
+        mdl.addElement(Arrays.asList(new String[] {
+            Artifact.SCOPE_PROVIDED,
+            Artifact.SCOPE_COMPILE
+        }));
+        mdl.addElement(Arrays.asList(new String[] {
+            Artifact.SCOPE_PROVIDED,
+            Artifact.SCOPE_COMPILE,
+            Artifact.SCOPE_RUNTIME
+        }));
+        mdl.addElement(Arrays.asList(new String[] {
+            Artifact.SCOPE_PROVIDED,
+            Artifact.SCOPE_COMPILE,
+            Artifact.SCOPE_RUNTIME,
+            Artifact.SCOPE_TEST
+        }));
+        comScopes.setModel(mdl);
+        comScopes.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (scene != null) {
+                    @SuppressWarnings("unchecked")
+                    List<String> selected = (List<String>) comScopes.getSelectedItem();
+                    ScopesVisitor vis = new ScopesVisitor(scene, selected);
+                    scene.getRootGraphNode().getArtifact().accept(vis);
+                    scene.validate();
+                    scene.repaint();
+                    revalidate();
+                    repaint();
+                }
+            }
+        });
     }
     
     private void checkFindValue() {
         String val = txtFind.getText().trim();
         if ("".equals(val)) { //NOI18N
-            scene.clearFind();
-        } else {
-            scene.findNodeByText(val);
+            val = null;
         }
+        SearchVisitor visitor = new SearchVisitor(scene);
+        visitor.setSearchString(val);
+        DependencyNode node = scene.getRootGraphNode().getArtifact();
+        node.accept(visitor);
+        scene.validate();
+        scene.repaint();
+        revalidate();
+        repaint();
+
     }
     
     @Override
@@ -119,38 +191,51 @@ public class DependencyGraphTopComponent extends TopComponent {
     }
     
     @Override
-    protected void componentOpened() {
+    public void componentOpened() {
         super.componentOpened();
         pane.setWheelScrollingEnabled(true);
+        sldDepth.setEnabled(false);
+        sldDepth.setVisible(false);
+        txtFind.setEnabled(false);
+        btnBigger.setEnabled(false);
+        btnSmaller.setEnabled(false);
+        comScopes.setEnabled(false);
         add(pane, BorderLayout.CENTER);
-        JLabel lbl = new JLabel(org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_Loading"));
-        lbl.setAlignmentX(JLabel.CENTER_ALIGNMENT);
-        lbl.setAlignmentY(JLabel.CENTER_ALIGNMENT);
+        JLabel lbl = new JLabel(NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_Loading"));
+        lbl.setHorizontalAlignment(JLabel.CENTER);
+        lbl.setVerticalAlignment(JLabel.CENTER);
         pane.setViewportView(lbl);
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                scene = GraphDocumentFactory.createDependencyDocument(project);
-                try {
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        public void run() {
-                            JComponent sceneView = scene.getView ();
-                            if (sceneView == null) {
-                                sceneView = scene.createView ();
-                            }
-                            pane.setViewportView(sceneView);
-                            scene.cleanLayout(pane);
-                            birdView = scene.createBirdView();
-                            satelliteView = scene.createSatelliteView();
-                            scene.setSelectedObjects(Collections.singleton(scene.getRootArtifact()));
-                        }
-                    });
-                } catch (Exception e) {
-                    
-                }
-            }
-        });
+        result = getLookup().lookup(new Lookup.Template<DependencyNode>(DependencyNode.class));
+        result.addLookupListener(this);
+        result2 = getLookup().lookup(new Lookup.Template<MavenProject>(MavenProject.class));
+        result2.addLookupListener(this);
+        createScene();
     }
     
+    @Override
+    public void componentActivated() {
+        super.componentActivated();
+    }
+
+    @Override
+    public void componentClosed() {
+        super.componentClosed();
+    }
+
+    @Override
+    public void componentDeactivated() {
+        super.componentDeactivated();
+    }
+
+    @Override
+    public void componentHidden() {
+        super.componentHidden();
+    }
+
+    @Override
+    public void componentShowing() {
+        super.componentShowing();
+    }
     
     
     /** This method is called from within the constructor to
@@ -162,46 +247,70 @@ public class DependencyGraphTopComponent extends TopComponent {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
+        jToolBar1 = new javax.swing.JToolBar();
         btnBigger = new javax.swing.JButton();
         btnSmaller = new javax.swing.JButton();
-        btnBirdEye = new javax.swing.JToggleButton();
         lblFind = new javax.swing.JLabel();
         txtFind = new javax.swing.JTextField();
+        lblScopes = new javax.swing.JLabel();
+        comScopes = new javax.swing.JComboBox();
+        sldDepth = new javax.swing.JSlider();
 
         setLayout(new java.awt.BorderLayout());
 
         jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        btnBigger.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/graph/zoomin.gif")));
+        jToolBar1.setFloatable(false);
+        jToolBar1.setRollover(true);
+
+        btnBigger.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/graph/zoomin.gif", true)));
+        btnBigger.setFocusable(false);
+        btnBigger.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnBigger.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         btnBigger.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnBiggerActionPerformed(evt);
             }
         });
-        jPanel1.add(btnBigger);
+        jToolBar1.add(btnBigger);
 
-        btnSmaller.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/graph/zoomout.gif")));
+        btnSmaller.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/graph/zoomout.gif", true)));
+        btnSmaller.setFocusable(false);
+        btnSmaller.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnSmaller.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         btnSmaller.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSmallerActionPerformed(evt);
             }
         });
-        jPanel1.add(btnSmaller);
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnBirdEye, org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.btnBirdEye.text")); // NOI18N
-        btnBirdEye.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBirdEyeActionPerformed(evt);
-            }
-        });
-        jPanel1.add(btnBirdEye);
+        jToolBar1.add(btnSmaller);
 
         org.openide.awt.Mnemonics.setLocalizedText(lblFind, org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.lblFind.text")); // NOI18N
-        jPanel1.add(lblFind);
+        jToolBar1.add(lblFind);
 
-        txtFind.setMinimumSize(new java.awt.Dimension(100, 19));
+        txtFind.setMaximumSize(new java.awt.Dimension(200, 19));
+        txtFind.setMinimumSize(new java.awt.Dimension(50, 19));
         txtFind.setPreferredSize(new java.awt.Dimension(150, 19));
-        jPanel1.add(txtFind);
+        jToolBar1.add(txtFind);
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblScopes, org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.lblScopes.text")); // NOI18N
+        jToolBar1.add(lblScopes);
+        jToolBar1.add(comScopes);
+
+        sldDepth.setMajorTickSpacing(1);
+        sldDepth.setMaximum(5);
+        sldDepth.setPaintLabels(true);
+        sldDepth.setSnapToTicks(true);
+        sldDepth.setValue(0);
+        sldDepth.setPreferredSize(new java.awt.Dimension(150, 25));
+        sldDepth.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                sldDepthStateChanged(evt);
+            }
+        });
+        jToolBar1.add(sldDepth);
+
+        jPanel1.add(jToolBar1);
 
         add(jPanel1, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents
@@ -219,40 +328,141 @@ public class DependencyGraphTopComponent extends TopComponent {
     }//GEN-LAST:event_btnSmallerActionPerformed
     
     private void btnBiggerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBiggerActionPerformed
-        if (btnBirdEye.isSelected()) {
-            birdView.hide();
-        }
         scene.setZoomFactor(scene.getZoomFactor() * 1.2);
         scene.validate();
         scene.repaint();
         if (pane.getHorizontalScrollBar().isVisible() || 
             pane.getVerticalScrollBar().isVisible()) {
-            satelliteView.setLocation(0,0);
             revalidate();
             repaint();
         }
         
     }//GEN-LAST:event_btnBiggerActionPerformed
 
-    private void btnBirdEyeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBirdEyeActionPerformed
-        if (btnBirdEye.isSelected()) {
-            birdView.setZoomFactor(1.1);
-            birdView.show();
-        } else {
-            birdView.hide();
+    private void sldDepthStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldDepthStateChanged
+        if (!sldDepth.isEnabled() || sldDepth.getValueIsAdjusting()) {
+            return;
         }
-        
-    }//GEN-LAST:event_btnBirdEyeActionPerformed
+
+        HighlightVisitor visitor = new HighlightVisitor(scene);
+        int value = sldDepth.getValue();
+        visitor.setMaxDepth(value == 0 ? Integer.MAX_VALUE : value);
+        DependencyNode node = scene.getRootGraphNode().getArtifact();
+        node.accept(visitor);
+        Dimension dim = visitor.getVisibleRectangle().getSize ();
+        Dimension viewDim = pane.getViewportBorderBounds ().getSize ();
+        double zoom = Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height);
+        scene.setZoomFactor (Math.min(zoom, 1));
+
+        scene.validate();
+        Rectangle viewpoint = scene.convertSceneToView(visitor.getVisibleRectangle());
+        int hgrow = ((viewDim.width - viewpoint.width) / 2) - 5;
+        int wgrow = ((viewDim.height - viewpoint.height) / 2) - 5;
+        viewpoint.grow(hgrow, wgrow);
+        scene.getView().scrollRectToVisible(viewpoint);
+
+        revalidate();
+        repaint();
+
+    }//GEN-LAST:event_sldDepthStateChanged
 
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBigger;
-    private javax.swing.JToggleButton btnBirdEye;
     private javax.swing.JButton btnSmaller;
+    private javax.swing.JComboBox comScopes;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JLabel lblFind;
+    private javax.swing.JLabel lblScopes;
+    private javax.swing.JSlider sldDepth;
     private javax.swing.JTextField txtFind;
     // End of variables declaration//GEN-END:variables
-    
+
+    public void resultChanged(LookupEvent ev) {
+        createScene();
+    }
+
+
+    private void createScene() {
+        Iterator<? extends DependencyNode> it1 = result.allInstances().iterator();
+        Iterator<? extends MavenProject> it2 = result2.allInstances().iterator();
+        final Project nbProj = getLookup().lookup(Project.class);
+        if (it2.hasNext() && it1.hasNext()) {
+            final MavenProject prj = it2.next();
+            final DependencyNode root = it1.next();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    scene = new DependencyGraphScene(prj, nbProj);
+                    GraphConstructor constr = new GraphConstructor(scene);
+                    root.accept(constr);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            JComponent sceneView = scene.getView();
+                            if (sceneView == null) {
+                                sceneView = scene.createView();
+                            }
+                            pane.setViewportView(sceneView);
+                            scene.cleanLayout(pane);
+                            scene.setSelectedObjects(Collections.singleton(scene.getRootGraphNode()));
+                            txtFind.setEnabled(true);
+                            btnBigger.setEnabled(true);
+                            btnSmaller.setEnabled(true);
+                            comScopes.setEnabled(true);
+                            if (scene.getMaxNodeDepth() > 1) {
+                                sldDepth.setMaximum(scene.getMaxNodeDepth());
+                                sldDepth.setEnabled(true);
+                                sldDepth.setVisible(true);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    public JComponent getVisualRepresentation() {
+        isMultiview = true;
+        jPanel1.removeAll();
+        jToolBar1.removeAll();
+        return this;
+    }
+
+    public JComponent getToolbarRepresentation() {
+        if (toolbar == null) {
+            toolbar = new JToolBar();
+            toolbar.setFloatable(false);
+            toolbar.setRollover(true);
+//            Action[] a = new Action[1];
+//            Action[] actions = getLookup().lookup(a.getClass());
+//            for (Action act : actions) {
+//                JButton btn = new JButton();
+//                Actions.connect(btn, act);
+//                toolbar.add(btn);
+//            }
+            Dimension space = new Dimension(3, 0);
+            toolbar.addSeparator(space);
+            toolbar.add(btnBigger);
+            toolbar.addSeparator(space);
+            toolbar.add(btnSmaller);
+            toolbar.addSeparator(space);
+            toolbar.add(lblFind);
+            toolbar.add(txtFind);
+            toolbar.addSeparator(space);
+            toolbar.add(lblScopes);
+            toolbar.add(comScopes);
+            toolbar.addSeparator(space);
+            toolbar.add(sldDepth);
+        }
+        return toolbar;
+    }
+
+    public void setMultiViewCallback(MultiViewElementCallback callback) {
+        this.callback = callback;
+    }
+
+    public CloseOperationState canCloseElement() {
+        return CloseOperationState.STATE_OK;
+    }
 }

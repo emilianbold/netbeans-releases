@@ -51,6 +51,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import javax.swing.plaf.ComponentUI;
@@ -207,10 +208,21 @@ key:TabbedPane:TabbedPaneTab[Selected].backgroundPainter
 */
     protected void paintTabBackground(Graphics g, int index, int x, int y,
                                       int width, int height) {
+        boolean isLast = index == getDataModel().size()-1;
+        if (!isLast) {
+            width++;
+        }
+
+        Shape clip = g.getClip();
+        boolean isPreviousTabSelected = index-1 == displayer.getSelectionModel().getSelectedIndex();
+        if (isPreviousTabSelected) {
+            g.setClip(x+1, y, width-1, height);
+        }
+
         Object o = null;
         if (isSelected(index)) {
             if (isActive()) {
-                o = UIManager.get("TabbedPane:TabbedPaneTab[Pressed+Selected].backgroundPainter");
+                o = UIManager.get("TabbedPane:TabbedPaneTab[MouseOver+Selected].backgroundPainter");
             } else {
                 o = UIManager.get("TabbedPane:TabbedPaneTab[Selected].backgroundPainter");
             }
@@ -227,6 +239,10 @@ key:TabbedPane:TabbedPaneTab[Selected].backgroundPainter
             painter.paint(g2d, null, width, height);
             g.drawImage(bufIm, x, y, null);
         } else {
+        }
+
+        if (isPreviousTabSelected) {
+            g.setClip(clip);
         }
     }
 

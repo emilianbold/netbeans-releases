@@ -60,6 +60,16 @@ public class LinuxNativeUtils extends UnixNativeUtils {
             "linux-amd64.so"; //NO18N
     
     private static final String PROC_MOUNTS_FILE = "/proc/mounts";
+
+    public static final String[] POSSIBLE_BROWSER_LOCATIONS_LINUX = new String[]{
+        "/usr/bin/firefox",
+        "/usr/bin/mozilla-firefox",
+        "/usr/local/firefox/firefox",
+        "/opt/bin/firefox",
+        "/usr/bin/mozilla",
+        "/usr/local/mozilla/mozilla",
+        "/opt/bin/mozilla"
+    };
     
     public static final String[] FORBIDDEN_DELETING_FILES_LINUX = {};
     
@@ -136,5 +146,9 @@ public class LinuxNativeUtils extends UnixNativeUtils {
                 Platform.LINUX_X64 : 
                 Platform.LINUX_X86;
         }        
+    }
+
+    protected String [] getPossibleBrowserLocations() {
+        return POSSIBLE_BROWSER_LOCATIONS_LINUX;
     }
 }

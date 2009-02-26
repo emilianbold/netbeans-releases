@@ -47,8 +47,8 @@ import java.util.Properties;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Scm;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.options.MavenCommandSettings;
@@ -66,23 +66,23 @@ public class CheckoutUI extends javax.swing.JPanel {
 
     private final JButton checkoutButton;
     private Scm scm;
-    private Artifact artifact;
+    private MavenProject project;
 
     /** Creates new form CheckoutUI */
-    public CheckoutUI(Artifact artifact, Scm scm) {
-        this.scm = scm;
-        this.artifact = artifact;
+    public CheckoutUI(MavenProject proj) {
+        this.project = proj;
+        this.scm = proj.getScm();
         StringBuffer buffer = new StringBuffer();
         buffer.append("<b>");//NOI18N
 
-        buffer.append(artifact.getArtifactId());
+        buffer.append(proj.getArtifactId());
         buffer.append("</b>");//NOI18N
 
         buffer.append(":");//NOI18N
 
         buffer.append("<b>");//NOI18N
 
-        buffer.append(artifact.getVersion().toString());
+        buffer.append(proj.getVersion());
         buffer.append("</b>");//NOI18N
 
         initComponents();
@@ -92,7 +92,7 @@ public class CheckoutUI extends javax.swing.JPanel {
         //checkoutButton.setEnabled(false);//TODO validate 
 
         load();
-        txtFolder.setText(ProjectChooser.getProjectsFolder().getAbsolutePath() + File.separator + artifact.getArtifactId());
+        txtFolder.setText(ProjectChooser.getProjectsFolder().getAbsolutePath() + File.separator + project.getArtifactId());
         validateFolder();
     }
 
@@ -224,33 +224,34 @@ public class CheckoutUI extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblLocalFolderDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE)
+                    .add(lblLocalFolderDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
                     .add(chkPrintDebugInfo)
-                    .add(lblDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE)
+                    .add(lblDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
                     .add(lblAuthenticationDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 297, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(layout.createSequentialGroup()
                         .add(10, 10, 10)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblUser)
                             .add(lblPassword))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 134, Short.MAX_VALUE)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(txtPassword)
-                            .add(txtUser, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 172, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(lblActhenticationHint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 266, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(lblConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(txtPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
+                            .add(txtUser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(lblActhenticationHint)
+                        .add(166, 166, 166))
+                    .add(lblConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(10, 10, 10)
-                        .add(lblLocalFolder, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(lblLocalFolder)
                         .add(10, 10, 10)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(10, 10, 10)
-                                .add(lblFolderError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE))
+                                .add(lblFolderError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(txtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(txtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(btnFile))))
                     .add(layout.createSequentialGroup()
@@ -262,8 +263,8 @@ public class CheckoutUI extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(10, 10, 10)
-                                .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 512, Short.MAX_VALUE))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, txtUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
+                                .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, txtUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)
                             .add(developerConnection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 122, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
@@ -298,8 +299,8 @@ public class CheckoutUI extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblUser)
-                    .add(lblActhenticationHint)
-                    .add(txtUser, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(txtUser, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(lblActhenticationHint))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblPassword)
@@ -351,7 +352,7 @@ private void txtFolderKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
         List<String> goals = new ArrayList<String>();
         goals.add(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_SCM_CHECKOUT));//NOI18N
         brc.setGoals(goals);
-        brc.setTaskDisplayName(NbBundle.getMessage(CheckoutUI.class, "LBL_Checkout", artifact.getArtifactId() + " : " + artifact.getVersion().toString()));
+        brc.setTaskDisplayName(NbBundle.getMessage(CheckoutUI.class, "LBL_Checkout", project.getArtifactId() + " : " + project.getVersion()));
         brc.setExecutionName(brc.getTaskDisplayName());
         Properties properties = new Properties();
         String path = txtFolder.getText();

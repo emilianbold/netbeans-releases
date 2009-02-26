@@ -115,7 +115,7 @@
         <!-- Recognize application/xslt+xml: -->
         <!-- XXX (jglick) why does this exist? Seems to dupe Services/MIMEResolver/xslt-mime-resolver.xml from o.n.m.xsl -->
         <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-xslt-core-mime-resolver.xml" url="mime-resolver.xml">
+            <file name="org-netbeans-modules-xslt-core-mime-resolver.xml" url="xslt-mime-resolver.xml">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xslt/core/resources/xslt_file.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.core.resources.Bundle"/>
                 <attr name="position" intvalue="451"/>

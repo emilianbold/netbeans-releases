@@ -38,12 +38,16 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
+import java.awt.event.ComponentEvent;
 import javax.swing.JComponent;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 import java.awt.BorderLayout;
+import java.awt.event.ComponentListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -54,16 +58,17 @@ import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.openide.util.RequestProcessor;
-
+import org.netbeans.modules.dlight.visualizers.api.impl.TableVisualizerConfigurationAccessor;
 
 /**
  *
  * @author ak119685
  */
-class TableVisualizer extends JPanel implements Visualizer<TableVisualizerConfiguration>, OnTimerTask {
+class TableVisualizer extends JPanel implements
+    Visualizer<TableVisualizerConfiguration>, OnTimerTask, ComponentListener {
 
     private TableDataProvider provider;
+    private volatile boolean isShown = true;
     private TableVisualizerConfiguration configuration;
     private final List<DataRow> data = new ArrayList<DataRow>();
     private JToolBar buttonsToolbar;
@@ -72,12 +77,75 @@ class TableVisualizer extends JPanel implements Visualizer<TableVisualizerConfig
     private JTable table;
     private TableSorter tableSorterModel = new TableSorter();
     private OnTimerRefreshVisualizerHandler timerHandler;
+    private boolean isEmptyContent;
 
     TableVisualizer(TableDataProvider provider, final TableVisualizerConfiguration configuration) {
         timerHandler = new OnTimerRefreshVisualizerHandler(this, 5);
-        this.provider =  provider;
+        this.provider = provider;
         this.configuration = configuration;
+        setEmptyContent();
+    }
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        addComponentListener(this);
+        VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
+        onTimer();
+        if (timerHandler.isSessionRunning()) {
+            timerHandler.startTimer();
+            return;
+        }
+
+        if (timerHandler.isSessionAnalyzed() ||
+            timerHandler.isSessionPaused()) {
+            onTimer();
+        }
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        timerHandler.stopTimer();
+        removeComponentListener(this);
+        VisualizerTopComponentTopComponent.findInstance().removeComponentListener(this);
+
+    }
+
+    private void setEmptyContent() {
+        isEmptyContent = true;
+        this.removeAll();
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        table = null;
+        if (tableSorterModel != null) {
+//            tableSorterModel.removeTableModelListener(this);
+            tableSorterModel = null;
+        }
+        JLabel label = new JLabel(timerHandler.isSessionAnalyzed() ? TableVisualizerConfigurationAccessor.getDefault().getEmptyAnalyzeMessage(configuration) : TableVisualizerConfigurationAccessor.getDefault().getEmptyRunningMessage(configuration)); // NOI18N
+        label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+        this.add(label);
+        repaint();
+        revalidate();
+    }
+
+    private void setContent(boolean isEmpty) {
+        if (isEmptyContent && isEmpty) {
+            return;
+        }
+        if (isEmptyContent && !isEmpty) {
+            setNonEmptyContent();
+            return;
+        }
+        if (!isEmptyContent && isEmpty) {
+            setEmptyContent();
+            return;
+        }
+
+    }
+
+    private void setNonEmptyContent() {
+        isEmptyContent = false;
+        this.removeAll();
         tableModel = new AbstractTableModel() {
 
             public int getRowCount() {
@@ -135,29 +203,9 @@ class TableVisualizer extends JPanel implements Visualizer<TableVisualizerConfig
 
 
         add(buttonsToolbar, BorderLayout.LINE_START);
+        repaint();
         validate();
 
-    }
-
-    @Override
-    public void addNotify() {
-        super.addNotify();
-
-        if (timerHandler.isSessionRunning()) {
-            timerHandler.startTimer();
-            return;
-        }
-
-        if (timerHandler.isSessionAnalyzed() ||
-                timerHandler.isSessionPaused()) {
-            onTimer();
-        }
-    }
-
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        timerHandler.stopTimer();
     }
 
     public VisualizerContainer getDefaultContainer() {
@@ -165,27 +213,30 @@ class TableVisualizer extends JPanel implements Visualizer<TableVisualizerConfig
     }
 
     public int onTimer() {
+        if (!isShown || !isShowing()) {
+            return 0;
+        }
         load();
         return 0;
     }
 
     private void load() {
-
-
-        RequestProcessor.getDefault().post(new Runnable() {
+        List<DataRow> dataRow = provider.queryData(configuration.getMetadata());
+        boolean isEmpty;
+        synchronized (data) {
+            data.clear();
+            data.addAll(dataRow);
+            isEmpty = data.isEmpty();
+        //in case there is no data create fake model
+        }
+        final boolean isEmptyConent = isEmpty;
+        UIThread.invoke(new Runnable() {
 
             public void run() {
-                List<DataRow> dataRow = provider.queryData(configuration.getMetadata());
-                synchronized (data) {
-                    data.clear();
-                    data.addAll(dataRow);
+                if (tableModel != null){
+                    tableModel.fireTableDataChanged();
                 }
-                UIThread.invoke(new Runnable() {
-
-                    public void run() {
-                        tableModel.fireTableDataChanged();
-                    }
-                });
+                setContent(isEmptyConent);
             }
         });
     }
@@ -196,5 +247,33 @@ class TableVisualizer extends JPanel implements Visualizer<TableVisualizerConfig
 
     public JComponent getComponent() {
         return this;
+    }
+
+    public void timerStopped() {
+        if (isEmptyContent) {
+            //should set again to chahe Label message
+            setEmptyContent();
+        }
+    }
+
+    public void componentResized(ComponentEvent e) {
+    }
+
+    public void componentMoved(ComponentEvent e) {
+    }
+
+    public void componentShown(ComponentEvent e) {
+        if (isShown) {
+            return;
+        }
+        isShown = isShowing();
+        if (isShown) {
+            onTimer();
+        }
+
+    }
+
+    public void componentHidden(ComponentEvent e) {
+        isShown = false;
     }
 }

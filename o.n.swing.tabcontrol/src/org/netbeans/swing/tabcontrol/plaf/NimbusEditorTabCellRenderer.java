@@ -50,6 +50,7 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -106,11 +107,20 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
     
     private static void paintTabBackground (Graphics g, int index, Component c,
     int x, int y, int w, int h) {
+
+        Shape clip = g.getClip();
         NimbusEditorTabCellRenderer ren = (NimbusEditorTabCellRenderer) c;
+
+        w +=1;
+        boolean isPreviousTabSelected = ren.isPreviousTabSelected();
+        if (isPreviousTabSelected) {
+            g.setClip(x+1, y, w-1, h);
+        }
+
         Object o = null;
         if (ren.isSelected()) {
             if (ren.isActive()) {
-                o = UIManager.get("TabbedPane:TabbedPaneTab[Pressed+Selected].backgroundPainter");
+                o = UIManager.get("TabbedPane:TabbedPaneTab[MouseOver+Selected].backgroundPainter");
             } else {
                 o = UIManager.get("TabbedPane:TabbedPaneTab[Selected].backgroundPainter");
             }
@@ -126,6 +136,10 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
             painter.paint(g2d, null, w, h);
             g.drawImage(bufIm, x, y, null);
         } else {
+        }
+
+        if (isPreviousTabSelected) {
+            g.setClip(clip);
         }
     }
     
@@ -145,12 +159,11 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
 
             Insets ins = getBorderInsets(c);
             Polygon p = new Polygon();
-            int x = ren.isLeftmost() ? 1 : 0;
-            int y = 1;
+            int x = ren.isLeftmost() ? 3 : 0;
+            int y = 0;
 
-            int width = ren.isLeftmost() ? c.getWidth() - 1 : c.getWidth();
-            int height = ren.isSelected() ?
-                    c.getHeight() + 2 : c.getHeight() - 1;
+            int width = ren.isLeftmost() ? c.getWidth() - 3 : c.getWidth();
+            int height = c.getHeight() - 4;
                     
             //Modified to return rectangle
             p.addPoint(x, y);
@@ -256,11 +269,10 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
             Insets ins = getBorderInsets(c);
             Polygon p = new Polygon();
             int x = -3;
-            int y = 1;
+            int y = 0;
 
             int width = c.getWidth() + 3;
-            int height = ren.isSelected() ?
-                    c.getHeight() + 2 : c.getHeight() - 1;
+            int height = c.getHeight() - 4;
 
             //Modified to return rectangle
             p.addPoint(x, y);
@@ -315,11 +327,10 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
             Insets ins = getBorderInsets(c);
             Polygon p = new Polygon();
             int x = 0;
-            int y = 1;
+            int y = 0;
 
             int width = c.getWidth() + 10;
-            int height = ren.isSelected() ?
-                    c.getHeight() + 2 : c.getHeight() - 1;
+            int height = c.getHeight() - 4;
 
             //Modified to return rectangle
             p.addPoint(x, y);

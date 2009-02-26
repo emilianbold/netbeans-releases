@@ -52,12 +52,12 @@ import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 class CodeMarkerImpl implements CodeMarker {
     private OffsetRange range;
     private Scope scope;
-    private FileScope fileScope;
-    public CodeMarkerImpl(Scope scope , ASTNodeInfo nodeInfo, FileScope fileScope) {
+    private FileScopeImpl fileScope;
+    public CodeMarkerImpl(Scope scope , ASTNodeInfo nodeInfo, FileScopeImpl fileScope) {
         this(scope, nodeInfo.getRange(), fileScope);
     }
 
-    public CodeMarkerImpl(Scope scope , OffsetRange  range, FileScope fileScope) {
+    public CodeMarkerImpl(Scope scope , OffsetRange  range, FileScopeImpl fileScope) {
          this.range = range;
          this.scope = scope;
          this.fileScope = fileScope;

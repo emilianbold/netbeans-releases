@@ -239,7 +239,7 @@
 <mapID target="ant_debugging" url="ant/ant_debugging.html" />
 
 <!-- Additional maven topics are in the maven module -->
-<mapID target="org.netbeans.modules.maven.about" url="maven-about.html"/>
+<mapID target="maven-about" url="maven/maven-about.html"/>
 
 
 <mapID target="propfiles.intro" url="propfiles/about_resourcebundles.html" />

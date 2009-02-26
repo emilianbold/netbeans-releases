@@ -46,12 +46,13 @@ import org.openide.nodes.Sheet;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandler;
-import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandlerProvider;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.PrioritizedCustomizerNode;
 import org.openide.util.HelpCtx;
 
@@ -69,7 +70,7 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 	return customizerNode;
     }
 
-    static class GdbCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode, CustomProjectActionHandlerProvider {
+    static class GdbCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode, ProjectActionHandlerFactory {
 
         public GdbCustomizerNode(String name, String displayName) {
 	    super(name, displayName, null);
@@ -91,7 +92,18 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
             return GDB_PRIORITY;
         }
 
-        public CustomProjectActionHandler factoryCreate() {
+        public boolean canHandle(ProjectActionEvent.Type type) {
+            switch (type) {
+                case DEBUG:
+                case DEBUG_LOAD_ONLY:
+                case DEBUG_STEPINTO:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        public ProjectActionHandler createHandler() {
             return new GdbActionHandler();
         }
     }

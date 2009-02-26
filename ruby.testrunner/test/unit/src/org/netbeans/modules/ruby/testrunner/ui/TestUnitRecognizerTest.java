@@ -65,6 +65,16 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("Foo::Bar::TestFooBar", matcher.group(2));
     }
 
+    public void testTestStartedIssue157577() {
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.TestStartedHandler();
+        String output = "%TEST_STARTED% test_-with-a_dash(TestDash)";
+        Matcher matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(2, matcher.groupCount());
+        assertEquals("test_-with-a_dash", matcher.group(1));
+        assertEquals("TestDash", matcher.group(2));
+    }
+
     public void testShouldaTestStarted() {
         String output = "%TEST_STARTED% test: when index is called should respond with success. (MainControllerTest)";
         TestRecognizerHandler handler = new TestUnitHandlerFactory.ShouldaTestStartedHandler();
@@ -93,6 +103,24 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("0.008765", matcher.group(1));
         assertEquals("test_foo", matcher.group(2));
         assertEquals("FooModule::TestFooBar", matcher.group(3));
+    }
+
+    public void testTestFinishedIssue157577() {
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.TestFinishedHandler();
+        String output = "%TEST_FINISHED% time=0.123 test_with_a-dash(TestDash)";
+        Matcher matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(3, matcher.groupCount());
+        assertEquals("0.123", matcher.group(1));
+        assertEquals("test_with_a-dash", matcher.group(2));
+        assertEquals("TestDash", matcher.group(3));
+
+        output = "%TEST_FINISHED% time=0.123 test_with_(parenthesis)(TestParenthesis)";
+        matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(3, matcher.groupCount());
+        assertEquals("test_with_(parenthesis)", matcher.group(2));
+        assertEquals("TestParenthesis", matcher.group(3));
     }
 
     public void testShouldaTestFinished() {

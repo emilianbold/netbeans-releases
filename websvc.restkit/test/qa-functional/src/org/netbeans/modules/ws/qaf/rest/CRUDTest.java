@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ws.qaf.rest;
 
@@ -64,6 +64,8 @@ import org.openide.filesystems.FileUtil;
 /**
  * Tests for New REST web services from Entity Classes wizard
  *
+ * Duration of this test suite: aprox. 3min
+ * 
  * @author lukas
  */
 public class CRUDTest extends RestTestBase {
@@ -146,6 +148,10 @@ public class CRUDTest extends RestTestBase {
         FileObject fo = FileUtil.toFileObject(new File(getRestDataDir(), "Person.java.gf")); //NOI18N
         FileObject targetDir = getProject().getProjectDirectory().getFileObject("src/java"); //NOI18N
         fo.copy(targetDir.createFolder("entity"), "Person", "java"); //NOI18N
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException ex) {
+        }
         //RESTful Web Services from Entity Classes
         String restLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromEntities");
         createNewWSFile(getProject(), restLabel);
@@ -188,6 +194,10 @@ public class CRUDTest extends RestTestBase {
         wo.next();
         wo.finish();
         waitGorGenerationProgress();
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException ex) {
+        }
         Set<File> files = getFiles("service"); //NOI18N
         files.addAll(getFiles("converter")); //NOI18N
         assertEquals("Some files were not generated", 6, files.size()); //NOI18N
@@ -233,7 +243,17 @@ public class CRUDTest extends RestTestBase {
      */
     protected WizardOperator prepareEntityClasses(WizardOperator wo, boolean createPU) {
         //Add all >>
-        new JButtonOperator(wo, 4).pushNoBlock();
+        String lbl = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_AddAll");
+        JButtonOperator allLbl = new JButtonOperator(wo, lbl);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+        }
+        allLbl.pushNoBlock();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+        }
         wo.next();
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, 0);
         jcbo.clearText();
@@ -275,7 +295,7 @@ public class CRUDTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(CRUDTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(CRUDTest.class),
                 "testRfE", //NOI18N
                 "testPropAccess", //NOI18N
                 "testDeploy", //NOI18N

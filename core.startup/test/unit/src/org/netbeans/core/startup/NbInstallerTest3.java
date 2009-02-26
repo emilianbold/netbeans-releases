@@ -41,19 +41,18 @@
 
 package org.netbeans.core.startup;
 
+import org.netbeans.MockEvents;
 import java.io.File;
 import java.util.Collections;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
 import org.openide.util.NbBundle;
 
 /** Test the NetBeans module installer implementation.
  * Broken into pieces to ensure each runs in its own VM.
  * @author Jesse Glick
  */
-public class NbInstallerTest3 extends SetupHid {
+public class NbInstallerTest3 extends NbInstallerTestBase {
 
     public NbInstallerTest3(String name) {
         super(name);
@@ -62,8 +61,8 @@ public class NbInstallerTest3 extends SetupHid {
     /** Test #21173/#23595: overriding layers by branding. */
     public void testBrandingLayerOverrides() throws Exception {
         Main.getModuleSystem ();
-        final FakeEvents ev = new FakeEvents();
-        org.netbeans.core.startup.NbInstaller installer = new org.netbeans.core.startup.NbInstaller(ev);
+        final MockEvents ev = new MockEvents();
+        NbInstaller installer = new NbInstaller(ev);
         ModuleManager mgr = new ModuleManager(installer, ev);
         installer.registerManager(mgr);
         mgr.mutexPrivileged().enterWriteAccess();

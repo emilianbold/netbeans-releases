@@ -92,6 +92,23 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         clearChanged();
     }
 
+    public boolean isDefaultConfiguration() {
+        if (excluded.getValue()) {
+            return false;
+        }
+        if (getTool() != item.getDefaultTool()) {
+            return false;
+        }
+        if ((customToolConfiguration != null && customToolConfiguration.getModified()) ||
+                (cCompilerConfiguration != null && cCompilerConfiguration.getModified()) ||
+                (ccCompilerConfiguration != null && ccCompilerConfiguration.getModified()) ||
+                (fortranCompilerConfiguration != null && fortranCompilerConfiguration.getModified()) ||
+                (assemblerConfiguration != null && assemblerConfiguration.getModified())) {
+            return false;
+        }
+        return true;
+    }
+
     public boolean isCompilerToolConfiguration() {
         return getTool() == Tool.CCompiler ||
                 getTool() == Tool.CCCompiler ||

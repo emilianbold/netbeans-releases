@@ -41,12 +41,14 @@ package org.netbeans.modules.groovy.grails.api;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.groovy.grails.RuntimeHelper;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 
 
@@ -55,6 +57,7 @@ import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
  *
  * @author schmidtm, Petr Hejl
  */
+// FIXME move this to project support
 public final class GrailsProjectConfig {
 
     public static final String GRAILS_PORT_PROPERTY = "grails.port"; // NOI18N
@@ -287,6 +290,14 @@ public final class GrailsProjectConfig {
         propertyChangeSupport.firePropertyChange(GRAILS_JAVA_PLATFORM_PROPERTY, oldValue, platform);
     }
 
+    public GrailsPlatform getGrailsPlatform() {
+        GrailsPlatform runtime = GrailsPlatform.getDefault();
+        if (runtime.isConfigured()) {
+            return runtime;
+        }
+        return null;
+    }
+
     /**
      * Returns the display browser flag of the project.
      *
@@ -311,4 +322,5 @@ public final class GrailsProjectConfig {
         }
         propertyChangeSupport.firePropertyChange(GRAILS_DISPLAY_BROWSER_PROPERTY, oldValue, displayBrowser);
     }
+
 }

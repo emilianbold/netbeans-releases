@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ConstructorPanel;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -73,6 +74,9 @@ public class ConstructorGenerator implements CodeGenerator {
 
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            if (!CsmRefactoringUtils.REFACTORING_EXTRA) {
+                return ret;
+            }
             JTextComponent component = context.lookup(JTextComponent.class);
             CsmContext path = context.lookup(CsmContext.class);
             if (component == null || path == null) {

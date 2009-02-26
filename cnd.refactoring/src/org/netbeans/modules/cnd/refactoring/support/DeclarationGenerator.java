@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 public final class DeclarationGenerator {
 
     public static final String INLINE_PROPERTY = "inline_method"; // NOI18N
+    public static final String INSERT_CODE_INLINE_PROPERTY = "insert_code_inline_method"; // NOI18N
 
     public enum Kind {
         INLINE_DEFINITION,
@@ -60,33 +61,29 @@ public final class DeclarationGenerator {
 
     public static String createGetter(CsmField field, String gName, Kind kind) {
         StringBuilder out = new StringBuilder();
-        out.append("\n"); // NOI18N
         // type information is the first
         if (field.isStatic()) {
             out.append("static "); //NOI18N
         }
-        out.append(field.getType().getClassifierText()).append(" "); //NOI18N
+        out.append(field.getType().getText()).append(" "); //NOI18N
         // add name
         if (kind == Kind.EXTERNAL_DEFINITION) {
             // external definition needs class prefix
             out.append(field.getContainingClass().getName()).append("::"); // NOI18N
         }
-        out.append(gName).append("()"); // NOI18N
-        if (field.getType().isConst()) {
-            out.append(" const "); // NOI18N
-        }
+        out.append(gName).append("() const "); // NOI18N
         if (kind == Kind.DECLARATION) {
             out.append(";"); //NOI18N
         } else {
             out.append("{ ").append("return ").append(field.getName()).append(";}"); // NOI18N
         }
-        out.append("\n"); // NOI18N
         return out.toString();
     }
 
     public static String createSetter(CsmField field, String sName, Kind kind) {
         StringBuilder out = new StringBuilder();
         CharSequence fldName = field.getName();
+        String paramName = GeneratorUtils.stripFieldPrefix(fldName.toString());
         out.append("\n"); // NOI18N
         // type information is the first
         if (field.isStatic()) {
@@ -100,12 +97,13 @@ public final class DeclarationGenerator {
         }
         out.append(sName).append("("); // NOI18N
         // add parameter
-        out.append(field.getType().getClassifierText());
-        out.append(" ").append(fldName);// NOI18N
+        out.append(field.getType().getText());
+        out.append(" ").append(paramName);// NOI18N
+        out.append(")"); // NOI18N
         if (kind == Kind.DECLARATION) {
             out.append(";"); //NOI18N
         } else {
-            out.append("{ ").append("this->").append(fldName).append("=").append(fldName).append(";}"); // NOI18N
+            out.append("{ ").append("this->").append(fldName).append("=").append(paramName).append(";}"); // NOI18N
         }
         out.append("\n"); // NOI18N
         return out.toString();

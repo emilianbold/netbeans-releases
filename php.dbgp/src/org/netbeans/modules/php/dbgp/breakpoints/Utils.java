@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.breakpoints.FunctionBreakpoint.Type;
@@ -58,6 +59,7 @@ import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 
 
@@ -66,7 +68,8 @@ import org.openide.text.Line;
  *
  */
 public class Utils {
-    
+    //keep synchronized with PHPOptionsCategory.PATH_IN_LAYER
+    public static final String PATH_IN_LAYER = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"; //NOI18N
     final static String  MIME_TYPE = "text/x-php5"; //NOI18N
     public static LineFactory lineFactory = new LineFactory();
     
@@ -177,7 +180,7 @@ public class Utils {
     
     public static class LineFactory {
         public Line getLine(int line, String remoteFileName, SessionId id) {
-            DataObject dataObject = id.getDataObjectByRemote(remoteFileName);
+            DataObject dataObject = Utils.getDataObjectByRemote(id, remoteFileName);
             if (dataObject == null) {
                 return null;
             }
@@ -200,4 +203,21 @@ public class Utils {
             return null;
         }        
     }
+
+    public static void openPhpOptionsDialog() {
+        OptionsDisplayer.getDefault().open(PATH_IN_LAYER);
+    }
+
+    public static DataObject getDataObjectByRemote(SessionId id, String uri) {
+        try {
+            FileObject fileObject = id.toSourceFile(uri);
+            if (fileObject == null) {
+                return null;
+            }
+            return DataObject.find(fileObject);
+        } catch (DataObjectNotFoundException e) {
+            return null;
+        }
+    }
+
 }

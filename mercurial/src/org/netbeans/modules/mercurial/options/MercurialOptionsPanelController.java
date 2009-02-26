@@ -64,6 +64,7 @@ import org.netbeans.modules.mercurial.options.PropertiesPanel;
 import org.netbeans.modules.mercurial.options.PropertiesTable;
 import org.netbeans.modules.mercurial.options.PropertiesTableModel;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.DialogDescriptor;
@@ -177,6 +178,13 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         if (!HgModuleConfig.getDefault().isExecPathValid(execpath)) {
             JOptionPane.showMessageDialog(null,
                                           NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_EXEC_PATH_TEXT"), // NOI18N
+                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_FIELD_TITLE"), // NOI18N
+                                          JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        if (!HgUtils.isAnnotationFormatValid(HgUtils.createAnnotationFormat(panel.annotationTextField.getText()))) {
+            JOptionPane.showMessageDialog(null,
+                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_ANNOTATION_FORMAT_TEXT"), // NOI18N
                                           NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_FIELD_TITLE"), // NOI18N
                                           JOptionPane.WARNING_MESSAGE);
             return false;

@@ -42,23 +42,16 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 <fontscolors>
-    <fontcolor default="keyword" name="js_keyword"/>
-    <fontcolor default="separator" name="js_separator"/>
-    <fontcolor default="identifier" name="js_identifier"/>
-    <fontcolor default="comment" name="js_line_comment"/>
-    <fontcolor default="error" name="error"/>
-    <fontcolor default="number" name="js_number"/>
-    <fontcolor foreColor="ff006f00" name="js_regularExpression">
-        <font style="bold"/>
+    <fontcolor default="keyword" name="keyword"/>
+    <fontcolor default="keyword" name="instanceof"/>
+
+    <fontcolor default="identifier" name="class">
+        <font style="italic"/>
     </fontcolor>
-    <fontcolor default="whitespace" name="js_whitespace"/>
-    <fontcolor default="string" name="s_p">
-        <font style="bold"/>
-    </fontcolor>
-    <fontcolor default="comment" name="js_comment"/>
-    <fontcolor name="js_operator"/>
-    <fontcolor default="string" name="js_string"/>
-    <fontcolor default="string" name="js_error_string"/>
-    <fontcolor default="string" name="s_string"/>
+
+    <fontcolor default="separator" name="braces"/>
+    <fontcolor default="identifier" name="operator"/>
+    <fontcolor default="number" name="numeric"/>
     <fontcolor foreColor="bbaa0000" name="oql_keyword"/>
+    <fontcolor foreColor="11aa8300" name="oql_method"/>
 </fontscolors>

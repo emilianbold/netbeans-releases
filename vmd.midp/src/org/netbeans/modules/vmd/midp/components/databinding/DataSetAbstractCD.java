@@ -59,10 +59,8 @@ import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionControllerSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInstanceName;
 import org.openide.util.NbBundle;
-
 
 /**
  *
@@ -70,7 +68,8 @@ import org.openide.util.NbBundle;
  */
 public class DataSetAbstractCD extends ComponentDescriptor {
     
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_32.png"; // NOI18N
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#DataSetAbstract"); //NOI18N
     
     public static final String PROP_READ_ONLY = "readOnly"; //NOI18N
@@ -110,8 +109,6 @@ public class DataSetAbstractCD extends ComponentDescriptor {
                 .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Instance_Name"), PropertyEditorInstanceName.createInstance(TYPEID), ClassCD.PROP_INSTANCE_NAME); // NOI18N
                 
     }
-
-
 
     @Override
     protected List<? extends Presenter> createPresenters() {

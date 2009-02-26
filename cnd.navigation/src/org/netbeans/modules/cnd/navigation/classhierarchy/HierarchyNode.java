@@ -123,7 +123,7 @@ public class HierarchyNode extends AbstractCsmNode{
         return NbBundle.getMessage(HierarchyNode.class, key);
     }
 
-    class EmptyAction implements Action{
+    static class EmptyAction implements Action{
         public Object getValue(String key) {
             return null;
         }

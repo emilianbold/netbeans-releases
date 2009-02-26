@@ -38,106 +38,71 @@
  */
 package org.netbeans.modules.dlight.perfan.storage.impl;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.perfan.dbe.ConnectorListener;
-import org.netbeans.modules.dlight.perfan.dbe.DbeConnector;
-import org.netbeans.modules.dlight.perfan.dbe.IDBEInterface;
-import org.netbeans.modules.dlight.perfan.spi.SunStudioDataCollector;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
+public final class PerfanDataStorage extends DataStorage {
 
-// TODO: implement SessionListener - kill idbe on Session closure
-public class PerfanDataStorage extends DataStorage implements ConnectorListener {
-  private static final Logger log = DLightLogger.getLogger(PerfanDataStorage.class);
-  private IDBEInterface idbe = null;
-  private SunStudioDataCollector collector = null;
-  private volatile boolean connecting = false;
+    private final Object lock = new String(PerfanDataStorage.class.getName());
+    private static final Logger log = DLightLogger.getLogger(PerfanDataStorage.class);
+    private Erprint erprint;
 
-  // TODO: PROBLEM! FIXME
-  // Workaround of a problem!!!
-  // If idbe crashes, an attempt to restart it takes place.
-  // Problem: something gets initialized in getTopFunctions only (on native side)
-  //          so any call of getCallers/getCallees crashes idbe
-  //          Workaround - push 'Refresh' on table.
-  public PerfanDataStorage() {
-    super();
-  }
-
-  public Object[] getCallees(long ref) {
-    connect();
-    return idbe == null ? null : idbe.getCallees(ref);
-  }
-
-  public Object[] getCallers(long ref) {
-    connect();
-    return idbe == null ? null : idbe.getCallers(ref);
-  }
-
-  public Object[] getTopFunctions(String mspec, String msort, int limit) {
-    connect();
-    return idbe == null ? null : idbe.getTopFunctions(mspec, msort, limit);
-  }
-
-  public void setCollector(SunStudioDataCollector collector) {
-    this.collector = collector;
-  }
-
-  private void connect() {
-    if (idbe != null || connecting) {
-      return;
+    public PerfanDataStorage() {
+        super();
     }
 
-    if (collector == null) {
-      throw new IllegalStateException("Cannot connect - no collector yet");
-    }
-
-    connecting = true;
-//TODO: check if it is really should be run in separate thread as
-// now it is just doesn't work
-//    new Thread(new Runnable() {
-//      public void run() {
-        DbeConnector connector = new DbeConnector(collector.getExecEnv(), collector.getExperimentDirectory());
-
-        try {
-          connector.connect(PerfanDataStorage.this);
-        } catch (IOException ex) {
-          Exceptions.printStackTrace(ex);
-        } finally {
-          connecting = false;
+    public void init(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory) {
+        if (erprint != null) {
+            erprint.stop();
         }
-      //}
-    //}, "DBE connection thread").start();
-  }
+        
+        erprint = new Erprint(execEnv, sproHome, experimentDirectory);
+    }
 
+    // TODO: implement!
+    public Object[] getCallees(long ref) {
+        return null;
+    }
 
-  @Override
-  public Collection<DataStorageType> getStorageTypes() {
-    return PerfanDataStorageFactory.supportedTypes;
-  }
+    // TODO: implement!
+    public Object[] getCallers(long ref) {
+        return null;
+    }
 
+    /**
+     * For now assume that getTopFunctions is a method that forces er_print restart...
+     * TODO: change the behavior later...
+     */
+    public String[] getTopFunctions(String mspec, String msort, int limit) {
+        String[] result = null;
+        synchronized (lock) {
+            erprint.restart();
+            erprint.setMetrics(mspec);
+            erprint.setSortBy(msort);
+            result = erprint.getHotFunctions(limit);
+        }
+        return result;
+    }
 
-  @Override
-  protected boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
-    return true;
-  }
+    @Override
+    public Collection<DataStorageType> getStorageTypes() {
+        return PerfanDataStorageFactory.supportedTypes;
+    }
 
-  @Override
-  public void addData(String tableName, List<DataRow> data) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
+    @Override
+    protected boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
+        return true;
+    }
 
-  public void connected(IDBEInterface idbeInterface) {
-    log.info("Connected to experiment with " + idbeInterface);
-    this.idbe = idbeInterface;
-  }
+    @Override
+    public void addData(String tableName, List<DataRow> data) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

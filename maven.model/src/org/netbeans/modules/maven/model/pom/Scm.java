@@ -54,4 +54,32 @@ public interface Scm extends POMComponent {
 //    </xs:all>
 //  </xs:complexType-->
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getConnection();
+    void setConnection(String connection);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getDeveloperConnection();
+    void setDeveloperConnection(String connection);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getUrl();
+    void setUrl(String url);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getTag();
+    void setTag(String tag);
+
 }

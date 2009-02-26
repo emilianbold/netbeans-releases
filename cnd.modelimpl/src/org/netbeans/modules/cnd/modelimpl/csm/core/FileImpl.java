@@ -108,6 +108,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 //    private static final boolean logEmptyTokenStream = Boolean.getBoolean("parser.log.empty");
     private static final boolean emptyAstStatictics = Boolean.getBoolean("parser.empty.ast.statistics");
     private static final boolean SKIP_UNNECESSARY_FAKE_FIXES = false;
+    private static final boolean SKIP_FAKE_FIXES_IN_GETTERS = true; // set false to get a deadlock
     public static final int UNDEFINED_FILE = 0;
     public static final int SOURCE_FILE = 1;
     public static final int SOURCE_C_FILE = 2;
@@ -191,7 +192,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private final Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
     private long lastParsed = Long.MIN_VALUE;
     /** Cache the hash code */
-    private int hash; // Default to 0
+    private int hash = 0; // Default to 0
     /** 
      * Stores the UIDs of the static functions declarations (not definitions) 
      * This is necessary for finding definitions/declarations 
@@ -219,6 +220,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         state = State.INITIAL;
         setBuffer(fileBuffer);
         this.projectUID = UIDCsmConverter.projectToUID(project);
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) { // NOI18N
+            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
+        }
         this.projectRef = new WeakReference<ProjectBase>(project); // Suppress Warnings
         this.fileType = fileType;
         if (nativeFileItem != null) {
@@ -415,6 +419,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private void postParse() {
+        fixFakeRegistrations();
         if (isValid()) {   // FIXUP: use a special lock here
             RepositoryUtils.put(this);
         }
@@ -546,6 +551,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         } finally {
             declarationsLock.writeLock().unlock();
         }
+        clearFakeRegistrations();
 
         if (clearNonDisposable) {
             _clearIncludes();
@@ -681,7 +687,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 } else {
 //                    System.err.println("new stream created, because prev stream was finished on " + stream.getStartOffset() + " now asked for " + startOffset);
                 }
-                stream = new OffsetTokenStream(createFullTokenStream(filtered));
+                TokenStream fullTS = createFullTokenStream(filtered);
+                if(fullTS != null) {
+                    stream = new OffsetTokenStream(fullTS);
+                } else {
+                    return null;
+                }
             } else {
 //                System.err.println("use cached stream finished previously on " + stream.getStartOffset() + " now asked for " + startOffset);
             }
@@ -879,7 +890,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(oldState));
             }
-            clearFakeRegistrations();
 
 //            if (reportParse && logEmptyTokenStream) {
 //                APTParseFileWalker walker2 = new APTParseFileWalker(startProject, aptFull, this, preprocHandler);
@@ -1069,7 +1079,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
-        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+        if (!SKIP_FAKE_FIXES_IN_GETTERS) {
             fixFakeRegistrations();
         }
         Collection<CsmOffsetableDeclaration> decls;
@@ -1084,7 +1094,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
-        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+        if (!SKIP_FAKE_FIXES_IN_GETTERS) {
             fixFakeRegistrations();
         }
         Iterator<CsmOffsetableDeclaration> out;
@@ -1097,10 +1107,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return out;
     }
 
+    /**
+     * Returns number of declarations.
+     * Does not fixFakeRegistrations, so this size could be inaccurate
+     *
+     * @return number of declarations
+     */
     public int getDeclarationsSize(){
-        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
-            fixFakeRegistrations();
-        }
+//        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+//            fixFakeRegistrations(false);
+//        }
         try {
             declarationsLock.readLock().lock();
             return declarations.size();
@@ -1110,7 +1126,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, String prefix) {
-        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+        if (!SKIP_FAKE_FIXES_IN_GETTERS) {
             fixFakeRegistrations();
         }
         Collection<CsmUID<CsmOffsetableDeclaration>> out = null;
@@ -1153,7 +1169,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(int startOffset, int endOffset) {
-        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+        if (!SKIP_FAKE_FIXES_IN_GETTERS) {
             fixFakeRegistrations();
         }
         List<CsmUID<CsmOffsetableDeclaration>> res;
@@ -1181,7 +1197,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(int offset) {
-        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+        if (!SKIP_FAKE_FIXES_IN_GETTERS) {
             fixFakeRegistrations();
         }
         List<CsmUID<CsmOffsetableDeclaration>> res;
@@ -1462,44 +1478,65 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public void onFakeRegisration(FunctionImplEx decl) {
-        CsmUID<FunctionImplEx> uidDecl = UIDCsmConverter.declarationToUID(decl);
-        fakeRegistrationUIDs.add(uidDecl);
-    }
-
-    private void clearFakeRegistrations() {
-        fakeRegistrationUIDs.clear();
-    }
-
-    public void fixFakeRegistrations() {
-        if (fakeRegistrationUIDs.size() == 0 || !isValid()) {
-            return;
+        synchronized (fakeRegistrationUIDs) {
+            CsmUID<FunctionImplEx> uidDecl = UIDCsmConverter.declarationToUID(decl);
+            fakeRegistrationUIDs.add(uidDecl);
         }
-        if (fakeRegistrationUIDs.size() > 0) {
-            List<CsmUID<FunctionImplEx>> fakes = new ArrayList<CsmUID<FunctionImplEx>>(fakeRegistrationUIDs);
+    }
+
+    public void clearFakeRegistrations() {
+        synchronized (fakeRegistrationUIDs) {
             fakeRegistrationUIDs.clear();
-            for (CsmUID<? extends CsmDeclaration> fakeUid : fakes) {
-                CsmDeclaration curElem = fakeUid.getObject();
-                if (curElem != null) {
-                    if (curElem instanceof FunctionImplEx) {
-                        ((FunctionImplEx) curElem).fixFakeRegistration();
-                        parseCount++;
-                    } else {
-                        DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass())); // NOI18N
+        }
+    }
+
+    private volatile boolean alreadyInFixFakeRegistrations = false;
+
+    /**
+     * Fixes ambiguities.
+     *
+     * @param clearFakes - indicates that we should clear list of fake registrations (all have been parsed and we have no chance to fix them in future)
+     */
+    public void fixFakeRegistrations() {
+        synchronized (fakeRegistrationUIDs) {
+            if (!alreadyInFixFakeRegistrations) {
+                alreadyInFixFakeRegistrations = true;
+                if (fakeRegistrationUIDs.size() == 0 || !isValid()) {
+                    alreadyInFixFakeRegistrations = false;
+                    return;
+                }
+                if (fakeRegistrationUIDs.size() > 0) {
+                    for (CsmUID<? extends CsmDeclaration> fakeUid : fakeRegistrationUIDs) {
+                        CsmDeclaration curElem = fakeUid.getObject();
+                        if (curElem != null) {
+                            if (curElem instanceof FunctionImplEx) {
+                                ((FunctionImplEx) curElem).fixFakeRegistration();
+                                parseCount++;
+                            } else {
+                                DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass())); // NOI18N
+                            }
+                        }
                     }
                 }
+                alreadyInFixFakeRegistrations = false;
             }
         }
     }
-
+    
     public 
     @Override
     String toString() {
-        return "FileImpl @" + hashCode() + ' ' + getAbsolutePath(); // NOI18N
+        return "FileImpl @" + hashCode() + ":" + super.hashCode() + ' ' + getAbsolutePath() + " prj:" + System.identityHashCode(this.projectUID) + this.projectUID; // NOI18N
     }
 
-    public CsmUID<CsmFile> getUID() {
-        if (uid == null) {
-            uid = UIDUtilities.createFileUID(this);
+    public final CsmUID<CsmFile> getUID() {
+        CsmUID<CsmFile> out = uid;
+        if (out == null) {
+            synchronized (this) {
+                if (uid == null) {
+                    uid = out = UIDUtilities.createFileUID(this);
+                }
+            }
         }
         return uid;
     }
@@ -1538,6 +1575,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         // not null UID
         assert this.projectUID != null;
         UIDObjectFactory.getDefaultFactory().writeUID(this.projectUID, output);
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) { // NOI18N
+            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
+        }
         output.writeLong(lastParsed);
         output.writeUTF(state.toString());
         try {
@@ -1563,6 +1603,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         fileType = input.readInt();
 
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) { // NOI18N
+            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
+        }
         // not null UID
         assert this.projectUID != null;
         this.projectRef = null;

@@ -61,8 +61,8 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
 
     private List<CsmExpression> initializers;
     
-    public ConstructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility) throws AstRendererException {
-        super(ast, cls, visibility, true);
+    public ConstructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+        super(ast, cls, visibility, register, register);
         
         initializers = AstRenderer.renderConstructorInitializersList(ast, this, this.getContainingFile());
     }

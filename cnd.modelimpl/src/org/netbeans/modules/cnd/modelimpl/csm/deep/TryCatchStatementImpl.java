@@ -59,10 +59,10 @@ public class TryCatchStatementImpl extends StatementBase implements CsmTryCatchS
     
     private StatementBase tryStatement;
     private List<CsmExceptionHandler> handlers;
-    
-    public TryCatchStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+
+    public TryCatchStatementImpl(AST ast, CsmFile file, CsmScope scope, boolean global) {
         super(ast, file, scope);
-        render(ast);
+        render(ast, global);
     }
     
     public CsmStatement.Kind getKind() {
@@ -77,7 +77,7 @@ public class TryCatchStatementImpl extends StatementBase implements CsmTryCatchS
         return handlers;
     }
     
-    private void render(AST ast) {
+    private void render(AST ast, boolean global) {
         handlers = new ArrayList<CsmExceptionHandler>();
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
@@ -85,7 +85,7 @@ public class TryCatchStatementImpl extends StatementBase implements CsmTryCatchS
                     tryStatement = AstRenderer.renderStatement(token, getContainingFile(), this);
                     break;
                 case CPPTokenTypes.CSM_CATCH_CLAUSE:
-                    handlers.add(new ExceptionHandlerImpl(token, getContainingFile(), this));
+                    handlers.add(new ExceptionHandlerImpl(token, getContainingFile(), this, global));
                     break;
             }
         }

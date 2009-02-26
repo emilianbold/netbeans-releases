@@ -92,7 +92,14 @@ public class Item implements NativeFileItem, PropertyChangeListener {
      * @param newname new name without suffic or path
      */
     public void rename(String newname) {
+        rename(newname, true);
+    }
+
+    private void rename(String newname, boolean nameWithoutExtension) {
         if (newname == null || newname.length() == 0 || getFolder() == null) {
+            return;
+        }
+        if (path.equals(newname)) {
             return;
         }
 
@@ -103,8 +110,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         } else {
             indexName++;
         }
+
         int indexDot = path.lastIndexOf('.');
-        if (indexDot < indexName) {
+        if (indexDot < indexName || !nameWithoutExtension) {
             indexDot = -1;
         }
 
@@ -132,6 +140,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     public void moveTo(String newPath) {
         Folder f = getFolder();
+        if (f.isDiskFolder()) {
+            return;
+        }
         String oldPath = getAbsPath();
         Item item = new Item(newPath);
         f.addItem(item);
@@ -148,6 +159,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     public String getSortName() {
         return sortName;
+    }
+
+    public String getName() {
+        return IpeUtils.getBaseName(path);
     }
 
     public String getPath(boolean norm) {
@@ -189,7 +204,20 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("name")) { // NOI18N
             // File has been renamed
-            rename((String) evt.getNewValue());
+            boolean nameWithoutExtension = true;
+            Object o = evt.getSource();
+            if (o instanceof DataObject) {
+                String nodeName = ((DataObject) o).getName();
+                FileObject fo = ((DataObject) o).getPrimaryFile();
+                if (fo != null) {
+                    String fileName = fo.getNameExt();
+                    if (nodeName.equals(fileName)) {
+                        nameWithoutExtension = false;
+                    }
+
+                }
+            }
+            rename((String) evt.getNewValue(), nameWithoutExtension);
         } else if (evt.getPropertyName().equals("valid")) { // NOI18N
             // File has been deleted
             // Do nothing (IZ 87557, 94935)
@@ -261,6 +289,25 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             itemConfigurations[i] = getItemConfiguration(configurations[i]);
         }
         return itemConfigurations;
+    }
+
+    public void copyConfigurations(Item src) {
+        if (src.getFolder() == null) {
+            return;
+        }
+
+        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) src.getFolder().getConfigurationDescriptor();
+        if (makeConfigurationDescriptor == null) {
+            return;
+        }
+
+        for (Configuration conf : makeConfigurationDescriptor.getConfs().getConfs()) {
+            ItemConfiguration srcItemConfiguration = src.getItemConfiguration(conf);
+            ItemConfiguration dstItemConfiguration = getItemConfiguration(conf);
+            if (srcItemConfiguration != null && dstItemConfiguration != null) {
+                dstItemConfiguration.assignValues(srcItemConfiguration);
+            }
+        }
     }
 
     /**
@@ -561,9 +608,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public String toString() {
         return path;
     }
-
     private static final SpiAccessor SPI_ACCESSOR = new SpiAccessor();
+
     private static final class SpiAccessor {
+
         private UserOptionsProvider provider;
 
         private synchronized UserOptionsProvider getProvider() {
@@ -574,7 +622,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
 
         private SpiAccessor() {
-            
         }
 
         private List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration) {
@@ -592,6 +639,5 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 return macros;
             }
         }
-       
     }
 }

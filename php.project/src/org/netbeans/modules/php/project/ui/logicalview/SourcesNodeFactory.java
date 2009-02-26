@@ -53,6 +53,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -167,7 +168,8 @@ public class SourcesNodeFactory implements NodeFactory {
                 FileObject rootFolder = key.getRootFolder();
                 DataFolder folder = getFolder(rootFolder);
                 if (folder != null) {
-                    node = new SrcNode(project, folder, new PhpSourcesFilter(project, rootFolder), key.getDisplayName());
+                    boolean isTest = !folder.getPrimaryFile().equals(ProjectPropertiesSupport.getSourcesDirectory(project));
+                    node = new SrcNode(project, folder, new PhpSourcesFilter(project, rootFolder), key.getDisplayName(), isTest);
                 }
             }
             return node;

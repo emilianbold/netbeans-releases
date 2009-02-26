@@ -97,6 +97,14 @@ public class CodeUtils {
     public static SimpleSection createSimpleSectionAfter (StyledDocument document, GuardedSection sectionForAddingAfter, String sectionID) {
         GuardedSectionManager instance = GuardedSectionManager.getInstance (document);
         try {
+            //TODO Logs, Remove it
+//            System.out.println("-------------------------");
+//            System.out.println("Section Name: " + sectionForAddingAfter.getName());
+//            System.out.println("Start position: " + sectionForAddingAfter.getStartPosition());
+//            System.out.println("Caret position: " + sectionForAddingAfter.getCaretPosition() );
+//            System.out.println("Text: " + sectionForAddingAfter.getText());
+//            System.out.println("--------------------------");
+
             return instance.createSimpleSection (document.createPosition (sectionForAddingAfter.getEndPosition ().getOffset () + 1), sectionID);
         } catch (BadLocationException e) {
             throw Debug.error (e);

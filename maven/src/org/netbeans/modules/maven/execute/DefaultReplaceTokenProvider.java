@@ -130,7 +130,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
         if (group != null && MavenSourcesImpl.NAME_TESTSOURCE.equals(group.getName())) {
             replaceMap.put(CLASSPATHSCOPE,"test"); //NOI18N
         } else {
-            replaceMap.put(CLASSPATHSCOPE,"compile"); //"compile" seems to be the default, runtime doesn't work MEXEC-56
+            replaceMap.put(CLASSPATHSCOPE,"runtime"); //NOI18N
         }
         if (group != null && MavenSourcesImpl.NAME_SOURCE.equals(group.getName()) &&
                 (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||

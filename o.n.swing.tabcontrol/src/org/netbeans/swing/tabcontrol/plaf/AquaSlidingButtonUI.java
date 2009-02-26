@@ -42,23 +42,17 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
-import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.AlphaComposite;
+import java.awt.Composite;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.geom.AffineTransform;
-import javax.swing.*;
+import javax.swing.AbstractButton;
+import javax.swing.JComponent;
+import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.basic.BasicHTML;
-import javax.swing.text.View;
-import org.netbeans.swing.tabcontrol.SlideBarDataModel;
-import org.netbeans.swing.tabcontrol.SlidingButton;
 import org.netbeans.swing.tabcontrol.SlidingButtonUI;
-import org.netbeans.swing.tabcontrol.plaf.GenericGlowingChiclet;
 
 /**
  *
@@ -68,15 +62,9 @@ public class AquaSlidingButtonUI extends SlidingButtonUI {
     
     private static AquaSlidingButtonUI AQUA_INSTANCE = null;
     
-    static Color[] rollover = new Color[]{
-        new Color(222, 222, 227), new Color(220, 238, 255), new Color(190, 247, 255),
-        new Color(205, 205, 205)};
-    
-    
     /** Creates a new instance of AquaSlidingButtonUI */
     private AquaSlidingButtonUI() {
     }
-    
     
     /** Aqua ui for sliding buttons.  This class is public so it can be
      * instantiated by UIManager, but is of no interest as API. */
@@ -87,60 +75,29 @@ public class AquaSlidingButtonUI extends SlidingButtonUI {
         return AQUA_INSTANCE;
     }
 
+    @Override
     public void installUI(JComponent c) {
         super.installUI(c);
-        c.setFont (UIManager.getFont("Tree.font"));
+        //use the same font as view/editor tabs
+        Font txtFont = (Font) UIManager.get("windowTitleFont"); //NOI18N
+        if (txtFont == null) {
+            txtFont = new Font("Dialog", Font.PLAIN, 11); //NOI18N
+        } else if (txtFont.isBold()) {
+            // don't use deriveFont() - see #49973 for details
+            txtFont = new Font(txtFont.getName(), Font.PLAIN, txtFont.getSize());
+        }
+        c.setFont(txtFont);
     }
-    
-   private ChicletWrapper chic = new ChicletWrapper();
-   protected void paintBackground(Graphics2D graph, AbstractButton b) {
-        chic.setNotch(false, false);
-
-        chic.setState(((SlidingButton) b).isBlinkState() ? GenericGlowingChiclet.STATE_ATTENTION : 0);
-        chic.setArcs(0.5f, 0.5f, 0.5f, 0.5f);
-        chic.setBounds(0, 1, b.getWidth(), b.getHeight() - 2);
-        chic.setAllowVertical(true);
-        chic.draw(graph);
-        chic.setAllowVertical(false);
-    }    
-    
-    protected void paintButtonPressed(Graphics graph, AbstractButton b) {
-        chic.setNotch(false, false);
-        int state = 0;
-        state |= b.getModel().isSelected() ? GenericGlowingChiclet.STATE_SELECTED : 0;
-        state |= b.getModel().isPressed() ? GenericGlowingChiclet.STATE_PRESSED : 0;
-        state |= b.getModel().isRollover() ? GenericGlowingChiclet.STATE_ACTIVE : 0;
-        state |= ((SlidingButton) b).isBlinkState() ? GenericGlowingChiclet.STATE_ATTENTION : 0;
-        chic.setState(state);
-        chic.setArcs(0.5f, 0.5f, 0.5f, 0.5f);
-        chic.setBounds(0, 1, b.getWidth(), b.getHeight() - 2);
-        chic.setAllowVertical(true);
-        chic.draw((Graphics2D)graph);
-        chic.setAllowVertical(false);
-    }
-    
-   // ********************************
-    //          Layout Methods
-    // ********************************
-    public Dimension getPreferredSize(JComponent c) {
-        SlidingButton slide = (SlidingButton) c;
-	Dimension d = new Dimension(super.getPreferredSize(c));
-        Insets i = c.getInsets();
-        int orientation = slide.getOrientation();
         
-        if (orientation == SlideBarDataModel.SOUTH) {
-            if (i.top + i.bottom < 5)
-                d.height += 5;
-            if (i.left + i.right < 7)
-                d.width += 7;
-        }
-        else {
-            if (i.top + i.bottom < 7)
-                d.height += 7;
-            if (i.left + i.right < 5)
-                d.width += 5;
-        }
+    @Override
+    protected void paintIcon(Graphics g, AbstractButton b, Rectangle iconRect) {
+        Graphics2D g2d = (Graphics2D) g;
 
-	return d;
+        Composite comp = g2d.getComposite();
+        if( b.getModel().isRollover() || b.getModel().isSelected() ) {
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+        }
+        super.paintIcon(g, b, iconRect);
+        g2d.setComposite(comp);
     }
 }

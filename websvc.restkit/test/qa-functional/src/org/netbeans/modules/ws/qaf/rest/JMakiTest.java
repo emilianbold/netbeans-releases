@@ -60,7 +60,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author lukas
  */
-public class JMakiTest extends CStubsTest {
+public class JMakiTest extends RestCStubsTest {
 
     public JMakiTest(String name) {
         super(name);

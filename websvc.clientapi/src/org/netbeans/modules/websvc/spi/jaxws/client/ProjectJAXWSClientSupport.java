@@ -54,6 +54,7 @@ import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.websvc.api.jaxws.project.CatalogUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.ClientAlreadyExistsExeption;
@@ -134,18 +135,6 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
         boolean clientAdded=false;
         if (jaxWsModel!=null) {
             
-            // HACK to enable filesystems to fire events when new folder will be created
-            // need to ask for children
-            FileObject projectDir = project.getProjectDirectory();
-            clientArtifactsFolder = projectDir.getFileObject("build/generated/wsimport/client"); //NOI18N
-            if (clientArtifactsFolder!=null) {
-                clientArtifactsFolder.getChildren(true);
-            } else {
-                try {
-                    FileUtil.createFolder(projectDir, "build/generated/wsimport/client");
-                } catch (IOException ex) {}
-            }
-            
             if(!isJsr109){
                 try{
                     addJaxWs20Library();
@@ -224,6 +213,29 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                 }
                 writeJaxWsModel(jaxWsModel);
                 clientAdded=true;
+                // get jax-ws-catalog.xml
+                if (catalog != null) {
+                    try {
+                        FileObject webInfWsdl = getWsdlFolder(true);
+                        if (webInfWsdl != null) {
+                            FileObject jaxWsCatalog = webInfWsdl.getParent().getFileObject("jax-ws-catalog.xml");
+                            if (jaxWsCatalog == null) {
+                                jaxWsCatalog = FileUtil.copyFile(catalog, webInfWsdl.getParent(), "jax-ws-catalog"); //NOI18N
+                                // update system elements in jax-ws-catalog.xml
+                                CatalogUtils.updateCatalogEntriesForClient(jaxWsCatalog, clientName);
+                            } else {
+                                // copy, and modify catalog entries from catalog.xml to jax-ws-catalog.xml
+                                CatalogUtils.copyCatalogEntriesForClient(catalog, jaxWsCatalog, clientName);
+                            }
+                            // copy files
+                            WSUtils.copyFiles(xmlResourcesFo, webInfWsdl);
+                        }
+
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
                 // generate wsdl model immediately
                 final String clientName2 = finalClientName;
                 try {
@@ -292,7 +304,7 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
                 public Boolean run() throws IOException {
                     ExecutorTask wsimportTask =
-                            ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-"+finalName,"wsimport-client-compile" },null); //NOI18N
+                            ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-"+finalName},null); //NOI18N
                     return Boolean.TRUE;
                 }
             }).booleanValue();

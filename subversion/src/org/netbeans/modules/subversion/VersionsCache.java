@@ -73,15 +73,28 @@ public class VersionsCache {
      * Loads a content of the given file in the given revision. May communicate over network.
      * @param repoUrl target repository URL
      * @param url target file full url
-     * @param revision target revision
+     * @param revision target revision, will be used also as the peg revision
      * @param fileName basename of the file which will be used as a temporary file's name
      * @return a temporary file with given file's content
      * @throws java.io.IOException
      */
     public File getFileRevision(SVNUrl repoUrl, SVNUrl url, String revision, String fileName) throws IOException {
+        return getFileRevision(repoUrl, url, revision, revision, fileName);
+    }
+    /**
+     * Loads a content of the given file in the given revision. May communicate over network.
+     * @param repoUrl target repository URL
+     * @param url target file full url
+     * @param revision target revision
+     * @param pegRevision peg revision
+     * @param fileName basename of the file which will be used as a temporary file's name
+     * @return a temporary file with given file's content
+     * @throws java.io.IOException
+     */
+    public File getFileRevision(SVNUrl repoUrl, SVNUrl url, String revision, String pegRevision, String fileName) throws IOException {
         try {
             SvnClient client = Subversion.getInstance().getClient(repoUrl);
-            InputStream in = getInputStream(client, url, revision);
+            InputStream in = getInputStream(client, url, revision, pegRevision);
             return createContent(fileName, in);
         } catch (SVNClientException ex) {
             IOException ioex = new IOException("Can not load: " + url + " in revision: " + revision); // NOI18N
@@ -92,13 +105,25 @@ public class VersionsCache {
 
     /**
      * Loads the file in specified revision.
+     * For peg revision <code>revision</code> will be used for existing files, for repository files it will be the HEAD revision.
+     * <p>It's may connect over network I/O do not
+     * call from the GUI thread.</p>
+     *
+     * @return null if the file does not exit in given revision
+     */
+    public File getFileRevision(File base, String revision) throws IOException {
+        return getFileRevision(base, revision, revision);
+    }
+
+    /**
+     * Loads the file in specified revision.
      *
      * <p>It's may connect over network I/O do not
      * call from the GUI thread.
      *
      * @return null if the file does not exit in given revision
      */
-    public File getFileRevision(File base, String revision) throws IOException {
+    public File getFileRevision(File base, String revision, String pegRevision) throws IOException {
         try {
             SvnClientFactory.checkClientAvailable();
         } catch (SVNClientException e) {
@@ -154,7 +179,7 @@ public class VersionsCache {
                     } else {
                         SVNUrl url = SvnUtils.getRepositoryUrl(base);
                         if (url != null) {
-                            in = getInputStream(client, url, revision);
+                            in = getInputStream(client, url, revision, pegRevision);
                         } else {
                             in = new ByteArrayInputStream(org.openide.util.NbBundle.getMessage(VersionsCache.class, "MSG_UnknownURL").getBytes()); // NOI18N
                         }                
@@ -181,18 +206,19 @@ public class VersionsCache {
      * @param client
      * @param url
      * @param revision
+     * @param pegRevision 
      * @return content of the file in the given revision
      * @throws org.tigris.subversion.svnclientadapter.SVNClientException
      */
-    private InputStream getInputStream (SvnClient client, SVNUrl url, String revision) throws SVNClientException {
+    private InputStream getInputStream (SvnClient client, SVNUrl url, String revision, String pegRevision) throws SVNClientException {
         InputStream in = null;
         try {
             if (SvnClientFactory.isCLI()) {
                 // XXX why was the revision given twice ??? !!! CLI WORKAROUND?
                 // doesn't work with javahl but we won't change for cli as there might be some reason
-                in = client.getContent(url.appendPath("@" + revision), SvnUtils.toSvnRevision(revision));
+                in = client.getContent(url.appendPath("@" + pegRevision), SvnUtils.toSvnRevision(revision));
             } else {
-                in = client.getContent(url, SvnUtils.toSvnRevision(revision), SvnUtils.toSvnRevision(revision));
+                in = client.getContent(url, SvnUtils.toSvnRevision(revision), SvnUtils.toSvnRevision(pegRevision));
             }
         } catch (SVNClientException e) {
             if (SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage()) ||

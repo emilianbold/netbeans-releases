@@ -101,9 +101,9 @@ public final class Snapshot {
         String              mimeType
     ) {
         if (offset < 0 || length < 0)
-            throw new ArrayIndexOutOfBoundsException ();
+            throw new ArrayIndexOutOfBoundsException ("offset=" + offset + ", length=" + length); //NOI18N
         if (offset + length > getText ().length ())
-            throw new ArrayIndexOutOfBoundsException ();
+            throw new ArrayIndexOutOfBoundsException ("offset=" + offset + ", length=" + length + ", snapshot-length=" + getText().length()); //NOI18N
         List<int[]> newCurrentToOriginal = new ArrayList<int[]> ();
         List<int[]> newOriginalToCurrent = new ArrayList<int[]> ();
         int i = 1;
@@ -217,15 +217,14 @@ public final class Snapshot {
      * @param snapshotOffset The offset in this snapshot.
      *
      * @return The offset in the original source or <code>-1</code>.
-     * @throws IndexOutOfBoundsException if the index argument is negative or not less than the length of this string
      */
     public int getOriginalOffset (
         int snapshotOffset
     ) {
         if (snapshotOffset < 0)
-            throw new IndexOutOfBoundsException (snapshotOffset + " < 0");
+            return -1;
         if (snapshotOffset > getText ().length ())
-            throw new IndexOutOfBoundsException (snapshotOffset + " > " + getText ().length ());
+            return -1;
 
         int low = 0;
         int high = currentToOriginal.length - 1;

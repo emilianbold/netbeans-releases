@@ -3679,7 +3679,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                            XML_PROPERTIES, buf, indent);
 
             // try to save accessibility properties
-            FormProperty[] accProps = component.getAccessibilityProperties();
+            FormProperty[] accProps = component.getKnownAccessibilityProperties();
             saveProperties(accProps, XML_A11Y_PROPERTIES, buf, indent);
         }
 
@@ -4045,7 +4045,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         boolean anyProp = false;
         String indent2 = null;
 
-        BindingProperty[] props = component.getAllBindingProperties();
+        BindingProperty[] props = component.getKnownBindingProperties();
         for (int i=0; i < props.length; i++) {
             BindingProperty prop = props[i];
 

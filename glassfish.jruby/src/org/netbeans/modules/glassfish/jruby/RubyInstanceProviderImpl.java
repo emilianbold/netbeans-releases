@@ -54,12 +54,15 @@ import org.openide.util.ChangeSupport;
  */
 public final class RubyInstanceProviderImpl implements RubyInstanceProvider, ChangeListener {
 
-    private static final RubyInstanceProviderImpl singleton = new RubyInstanceProviderImpl();
+    private static final RubyInstanceProviderImpl singleton = 
+            new RubyInstanceProviderImpl(ServerUtilities.getPreludeUtilities());
     
     private final ChangeSupport support = new ChangeSupport(this);
+    private ServerUtilities su;
     
-    private RubyInstanceProviderImpl() {
-        ServerInstanceProvider provider = ServerUtilities.getServerProvider();
+    private RubyInstanceProviderImpl(ServerUtilities su) {
+        this.su = su;
+        ServerInstanceProvider provider = su.getServerProvider();
         provider.addChangeListener(this);
     }
 
@@ -76,11 +79,11 @@ public final class RubyInstanceProviderImpl implements RubyInstanceProvider, Cha
     // RubyInstanceProvider interface implementation
     // ------------------------------------------------------------------------
     public List<? extends RubyInstance> getInstances() {
-        return ServerUtilities.getInstancesByCapability(RubyInstance.class);
+        return su.getInstancesByCapability(RubyInstance.class);
     }
 
     public RubyInstance getInstance(String uri) {
-        return ServerUtilities.getInstanceByCapability(uri, RubyInstance.class);
+        return su.getInstanceByCapability(uri, RubyInstance.class);
     }
 
     public void addChangeListener(ChangeListener listener) {

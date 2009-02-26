@@ -57,7 +57,7 @@ public class ExtProcessRemoteCommandSupport extends RemoteConnectionSupport {
     private final Map<String, String> env;
 
     public ExtProcessRemoteCommandSupport(String hkey, String cmd, Map<String, String> env) {
-        super(hkey, 22);
+        super(hkey, PORT);
         this.cmd = cmd;
         this.env = env;
 

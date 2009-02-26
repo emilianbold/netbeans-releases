@@ -85,6 +85,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 
 
 /**
@@ -103,6 +104,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
         COMMAND_CLEAN,
         COMMAND_REBUILD,
         COMMAND_AUTOTEST,
+        COMMAND_AUTOSPEC,
         COMMAND_RDOC,
         COMMAND_IRB_CONSOLE,
         COMMAND_RUN,
@@ -431,7 +433,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
-                TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
+                TestRunner rspecRunner = Util.getTestRunner(TestRunner.TestType.RSPEC);
                 if (rspecRunner != null) {
                     rspecRunner.runTest(file, COMMAND_DEBUG_SINGLE.equals(command));
                 } else {
@@ -446,7 +448,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
             //String target = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
             if (file.getName().endsWith("_test")) { // NOI18N
                 // Run test normally - don't pop up browser
-                TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
+                TestRunner testRunner = Util.getTestRunner(TestRunner.TestType.TEST_UNIT);
                 if (testRunner != null) {
                     testRunner.getInstance().runTest(file, COMMAND_DEBUG_SINGLE.equals(command));
                     return;
@@ -508,12 +510,22 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
         }
         
         if (COMMAND_AUTOTEST.equals(command)) {
-            if (AutoTestSupport.isInstalled(project)) {
+            if (AutoTestSupport.isInstalled(project, TestType.AUTOTEST)) {
                 AutoTestSupport support = new AutoTestSupport(context, project, getSourceEncoding());
                 support.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));
-                support.start();
+                support.start(TestType.AUTOTEST);
             }
             
+            return;
+        }
+
+        if (COMMAND_AUTOTEST.equals(command)) {
+            if (AutoTestSupport.isInstalled(project, TestType.AUTOSPEC)) {
+                AutoTestSupport support = new AutoTestSupport(context, project, getSourceEncoding());
+                support.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));
+                support.start(TestType.AUTOSPEC);
+            }
+
             return;
         }
         
@@ -544,7 +556,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
 
             RSpecSupport rspec = new RSpecSupport(project);
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
-                TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
+                TestRunner rspecRunner = Util.getTestRunner(TestRunner.TestType.RSPEC);
                 if (rspecRunner != null) {
                     rspecRunner.runTest(file, isDebug);
                 } else {
@@ -554,7 +566,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
                 return;
             }
             
-            TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
+            TestRunner testRunner = Util.getTestRunner(TestRunner.TestType.TEST_UNIT);
             if (testRunner != null) {
                 testRunner.getInstance().runTest(file, isDebug);
             } else {
@@ -564,7 +576,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
         }
 
         if (COMMAND_TEST.equals(command)) {
-            TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
+            TestRunner testRunner = Util.getTestRunner(TestRunner.TestType.TEST_UNIT);
             boolean testTaskExist = RakeSupport.getRakeTask(project, TEST_TASK_NAME) != null;
             if (testTaskExist) {
                 File pwd = FileUtil.toFile(project.getProjectDirectory());
@@ -582,7 +594,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
         
         if (COMMAND_RSPEC.equals(command)) {
             boolean rspecTaskExists = RakeSupport.getRakeTask(project, RSPEC_TASK_NAME) != null;
-            TestRunner testRunner = getTestRunner(TestRunner.TestType.RSPEC);
+            TestRunner testRunner = Util.getTestRunner(TestRunner.TestType.RSPEC);
             if (rspecTaskExists) {
                 File pwd = FileUtil.toFile(project.getProjectDirectory());
                 RakeRunner runner = new RakeRunner(project);
@@ -802,13 +814,4 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
         }
     }
     
-    private TestRunner getTestRunner(TestRunner.TestType testType) {
-        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
-        for (TestRunner each : testRunners) {
-            if (each.supports(testType)) {
-                return each;
-            }
-        }
-        return null;
-    }
 }

@@ -54,12 +54,17 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 
 /**
  * Servise that provides template instantiations
@@ -70,14 +75,28 @@ import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 public class InstantiationProviderImpl extends CsmInstantiationProvider {
 
     @Override
-    public CsmObject instantiate(CsmTemplate template, List<CsmType> params) {
+    public CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmFile contextFile) {
         List<CsmTemplateParameter> templateParams = template.getTemplateParameters();
+        // check that all params are resolved
+        boolean hasUnresolvedParams = false;
         Map<CsmTemplateParameter, CsmType> mapping = new HashMap<CsmTemplateParameter, CsmType>();
         for (int i = 0; i < templateParams.size() && i < params.size(); i++) {
             CsmTemplateParameter templateParam = templateParams.get(i);
             CsmType paramValue = params.get(i);
             if(templateParam != null && paramValue != null) {
                 mapping.put(templateParam, paramValue);
+            } else {
+                hasUnresolvedParams = true;
+            }
+        }
+        if (!hasUnresolvedParams && params.size() == templateParams.size() && CsmKindUtilities.isClass(template)) {
+            // try to find full specialization of class
+            CsmClass decl = (CsmClass) template;
+            StringBuilder fqn = new StringBuilder(decl.getQualifiedName());
+            fqn.append(Instantiation.getInstantiationCanonicalText(params));
+            CsmObject resolved = ResolverFactory.createResolver(contextFile, Integer.MAX_VALUE).resolve(fqn, Resolver.CLASS);
+            if (resolved != null) {
+                return resolved;
             }
         }
         return Instantiation.create(template, mapping);

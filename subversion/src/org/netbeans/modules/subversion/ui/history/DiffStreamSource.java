@@ -69,7 +69,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public class DiffStreamSource extends StreamSource implements Cancellable {
 
     private final File      baseFile;
-    private final String    revision;
+    private final String    revision, pegRevision;
     private final String    title;
     private String          mimeType;
     private SVNUrl          url;
@@ -90,7 +90,24 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
      */
     public DiffStreamSource(File baseFile, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String title) {
         this.baseFile = baseFile;
+        this.revision = this.pegRevision = revision;
+        this.title = title;
+        this.url = fileUrl;
+        this.repoUrl = repoUrl;
+    }
+
+    /**
+     * Creates a new StreamSource implementation for Diff engine.
+     *
+     * @param baseFile
+     * @param revision file revision, may be null if the revision does not exist (ie for new files)
+     * @param pegRevision file peg revision
+     * @param title title to use in diff panel
+     */
+    public DiffStreamSource(File baseFile, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String pegRevision, String title) {
+        this.baseFile = baseFile;
         this.revision = revision;
+        this.pegRevision = pegRevision;
         this.title = title;
         this.url = fileUrl;
         this.repoUrl = repoUrl;
@@ -172,17 +189,27 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
             return;
         }
         mimeType = SvnUtils.getMimeType(baseFile);
-        if (isEditable()) {
-            // we cannot move editable documents because that would break Document sharing
-            remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision);
-        } else {
-            File rf = VersionsCache.getInstance().getFileRevision(repoUrl, url, revision, baseFile.getName());
-            if (rf == null) {
-                remoteFile = null;
+        try {
+            if (isEditable()) {
+                // we cannot move editable documents because that would break Document sharing
+                remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision);
+            } else {
+                File rf = VersionsCache.getInstance().getFileRevision(repoUrl, url, revision, pegRevision, baseFile.getName());
+                if (rf == null) {
+                    remoteFile = null;
+                    return;
+                }
+                remoteFile = rf;
+                Utils.associateEncoding(baseFile, rf);
+            }
+        } catch (IOException e) {
+            if ((e.getCause() != null && SvnClientExceptionHandler.isTargetDirectory(e.getCause().getMessage()) || SvnClientExceptionHandler.isTargetDirectory(e.getMessage()))) {
+                // target is a directory, but locally deleted
+                Subversion.LOG.log(Level.FINE, "", e);
+                mimeType = "content/unknown"; // NOI18N
                 return;
             }
-            remoteFile = rf;
-            Utils.associateEncoding(baseFile, rf);
+            throw e;
         }
         if (!baseFile.exists() && remoteFile != null && remoteFile.exists()) {
             mimeType = SvnUtils.getMimeType(remoteFile);

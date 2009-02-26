@@ -65,6 +65,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
@@ -74,6 +75,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -448,7 +450,7 @@ public class InfoPanel extends javax.swing.JPanel {
     private JButton createArrowButton() {
         arrowMenu = new JPopupMenu();
         JButton button = DropDownButtonFactory.createDropDownButton(
-            new ImageIcon(Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/unvisited_bpkt_arrow_small_16.png")), arrowMenu);
+            ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/unvisited_bpkt_arrow_small_16.png", false), arrowMenu);
         button.setPreferredSize(new Dimension(40, button.getPreferredSize().height)); // [TODO]
         button.setMaximumSize(new Dimension(40, button.getPreferredSize().height)); // [TODO]
         button.setFocusable(false);
@@ -474,6 +476,9 @@ public class InfoPanel extends javax.swing.JPanel {
         toolbar.setFloatable(false);
         toolbar.setRollover(true);
         toolbar.setBorderPainted(false);
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            toolbar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        }
         // create toggle buttons
         int filterCount = filtersDesc.getFilterCount();
         ArrayList<JToggleButton> toggles = new ArrayList<JToggleButton>(filterCount);

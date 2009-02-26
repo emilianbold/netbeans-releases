@@ -41,8 +41,6 @@
 package org.netbeans.modules.cnd.api.compilers;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -65,11 +63,11 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -84,12 +82,16 @@ import org.openide.util.Utilities;
  */
 public class CompilerSetManager {
 
-    /* Legacy defines for CND 5.5 compiler set definitions */
+    // Legacy defines for CND 5.5 compiler set definitions
+    // used in DBX, so don't remove please!
     public static final int SUN_COMPILER_SET = 0;
     public static final int GNU_COMPILER_SET = 1;
-    public static final Object STATE_PENDING = "state_pending"; // NOI18N
-    public static final Object STATE_COMPLETE = "state_complete"; // NOI18N
-    public static final Object STATE_UNINITIALIZED = "state_uninitialized"; // NOI18N
+    
+    private static enum State {
+        STATE_PENDING,
+        STATE_COMPLETE,
+        STATE_UNINITIALIZED
+    }
     public static final String LOCALHOST = "localhost"; // NOI18N
 
     /* Persistance information */
@@ -123,10 +125,14 @@ public class CompilerSetManager {
     public static final String GNU = "GNU"; // NOI18N
     private List<CompilerSet> sets = new ArrayList<CompilerSet>();
     private final String hkey;
-    private Object state;
+    private State state;
     private int platform = -1;
     private Task remoteInitialization;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+
+    public static CompilerSetManager getDefault(String key) {
+        return getDefault(key, true);
+    }
 
     /**
      * Find or create a default CompilerSetManager for the given key. A default
@@ -140,7 +146,7 @@ public class CompilerSetManager {
      * @param key Either user@host or localhost
      * @return A default CompilerSetManager for the given key
      */
-    public static CompilerSetManager getDefault(String key) {
+   public static CompilerSetManager getDefault(String key, boolean runCompilerSetDataLoader) {
         CompilerSetManager csm = null;
         boolean no_compilers = false;
 
@@ -154,7 +160,7 @@ public class CompilerSetManager {
                 }
             }
             if (csm == null) {
-                csm = new CompilerSetManager(key);
+                csm = new CompilerSetManager(key, runCompilerSetDataLoader);
                 if (csm.isValid()) {
                     csm.saveToDisk();
                 } else if (!csm.isPending() && !csm.isUninitialized()) {
@@ -222,7 +228,9 @@ public class CompilerSetManager {
             ToolchainDescriptor td = tcm.getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
             if (td != null) {
                 String cygwinBin = tcm.getBaseFolder(td, PlatformTypes.PLATFORM_WINDOWS);
-                cygwinBase = cygwinBin.substring(0, cygwinBin.length() - 4).replace("\\", "/"); // NOI18N
+                if (cygwinBase != null) {
+                    cygwinBase = cygwinBin.substring(0, cygwinBin.length() - 4).replace("\\", "/"); // NOI18N
+                }
             }
             if (cygwinBase == null) {
                 for (String dir : Path.getPath()) {
@@ -304,9 +312,13 @@ public class CompilerSetManager {
     }
 
     private CompilerSetManager(String key) {
+        this(key, true);
+    }
+
+    private CompilerSetManager(String key, boolean runCompilerSetDataLoader) {
         hkey = key;
-        state = STATE_PENDING;
-        init();
+        state = State.STATE_PENDING;
+        init(runCompilerSetDataLoader);
     }
 
     private CompilerSetManager(String hkey, List<CompilerSet> sets, int platform) {
@@ -314,22 +326,22 @@ public class CompilerSetManager {
         this.sets = sets;
         this.platform = platform;
         if (!LOCALHOST.equals(hkey) && isEmpty()) {
-            this.state = STATE_UNINITIALIZED;
+            this.state = State.STATE_UNINITIALIZED;
             log.fine("CSM restoring from pref: Adding empty CS to host " + hkey);
             add(CompilerSet.createEmptyCompilerSet(platform));
         } else {
-            this.state = STATE_COMPLETE;
+            this.state = State.STATE_COMPLETE;
         }
     }
 
-    private void init() {
+    private void init(boolean runCompilerSetDataLoader) {
         if (hkey.equals(LOCALHOST)) {
             platform = computeLocalPlatform();
             initCompilerSets(Path.getPath());
-            state = STATE_COMPLETE;
+            state = State.STATE_COMPLETE;
         } else {
             log.fine("CSM.init: initializing remote compiler set for: " + hkey);
-            initRemoteCompilerSets(hkey, false);
+            initRemoteCompilerSets(hkey, false, runCompilerSetDataLoader);
         }
     }
 
@@ -338,22 +350,22 @@ public class CompilerSetManager {
     }
 
     public boolean isPending() {
-        return state == STATE_PENDING;
+        return state == State.STATE_PENDING;
     }
 
     public boolean isUninitialized() {
-        return state == STATE_UNINITIALIZED;
+        return state == State.STATE_UNINITIALIZED;
     }
 
     public boolean isComplete() {
-        return state == STATE_COMPLETE;
+        return state == State.STATE_COMPLETE;
     }
 
-    public synchronized void initialize(boolean save) {
+    public synchronized void initialize(boolean save, boolean runCompilerSetDataLoader) {
         if (isUninitialized()) {
             log.fine("CSM.getDefault: Doing remote setup from EDT?" + SwingUtilities.isEventDispatchThread());
             this.sets.clear();
-            initRemoteCompilerSets(this.hkey, true);
+            initRemoteCompilerSets(this.hkey, true, runCompilerSetDataLoader);
             if (remoteInitialization != null) {
                 remoteInitialization.waitFinished();
                 remoteInitialization = null;
@@ -511,11 +523,15 @@ public class CompilerSetManager {
                 File folder = new File(base);
                 if (folder.exists() && folder.isDirectory()) {
                     CompilerFlavor flavor = CompilerFlavor.toFlavor(d.getName(), platform);
-                    flavors.add(flavor);
-                    CompilerSet cs = CompilerSet.getCustomCompilerSet(folder.getAbsolutePath(), flavor, flavor.toString());
-                    cs.setAutoGenerated(true);
-                    initCompilerSet(base, cs, true);
-                    add(cs);
+                    if (flavor != null) { // #158084 NPE
+                        flavors.add(flavor);
+                        CompilerSet cs = CompilerSet.getCustomCompilerSet(folder.getAbsolutePath(), flavor, flavor.toString());
+                        cs.setAutoGenerated(true);
+                        initCompilerSet(base, cs, true);
+                        add(cs);
+                    } else {
+                        log.warning("NULL compiler flavor for " + d.getName() + " on platform " + platform);
+                    }
                 }
             }
         }
@@ -528,7 +544,10 @@ public class CompilerSetManager {
         if (arData != null) {
             for (String data : arData) {
                 if (data != null && data.length() > 0) {
-                    css.add(parseCompilerSetString(hkey, platform, data));
+                    CompilerSet cs = parseCompilerSetString(hkey, platform, data);
+                    if (cs != null) {
+                        css.add(cs);
+                    }
                 }
             }
         }
@@ -542,7 +561,12 @@ public class CompilerSetManager {
         String flavor = data.substring(0, i1);
         String path = data.substring(i1 + 1, i2);
         String tools = data.substring(i2 + 1);
-        CompilerSet cs = new CompilerSet(CompilerFlavor.toFlavor(flavor, platform), path, flavor);
+        CompilerFlavor compilerFlavor = CompilerFlavor.toFlavor(flavor, platform);
+        if (compilerFlavor == null) { // #158084
+            log.warning("NULL compiler flavor for " + flavor + " on platform " + platform);
+            return null;
+        }
+        CompilerSet cs = new CompilerSet(compilerFlavor, path, flavor);
         StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
         while (st.hasMoreTokens()) {
             String name = st.nextToken();
@@ -595,8 +619,9 @@ public class CompilerSetManager {
     }
 
     /** Initialize remote CompilerSets */
-    private synchronized void initRemoteCompilerSets(final String key, boolean connect) {
-        if (state == STATE_COMPLETE) {
+    private synchronized void initRemoteCompilerSets(final String key, boolean connect,
+            final boolean runCompilerSetDataLoader) {
+        if (state == State.STATE_COMPLETE) {
             return;
         }
         if (remoteInitialization != null) {
@@ -610,70 +635,75 @@ public class CompilerSetManager {
         assert record != null;
 
         log.fine("CSM.initRemoteCompilerSets for " + key + " [" + state + "]");
-        report("Connecting to " + RemoteUtils.getHostName(key) + "..."); //NOI18N
+        final boolean wasOffline = record.isOffline();
+        if (wasOffline) {
+            CompilerSetReporter.report("CSM_Conn", false, RemoteUtils.getHostName(key)); //NOI18N
+        }
         record.validate(connect);
         if (record.isOnline()) {
-            report("done.\n"); //NOI18N
+            if (wasOffline) {
+                CompilerSetReporter.report("CSM_Done"); //NOI18N
+            }
             remoteInitialization = RequestProcessor.getDefault().post(new Runnable() {
 
                 @SuppressWarnings("unchecked")
                 public void run() {
-                    report("Configuring host.\n");//NOI18N
+                    CompilerSetReporter.report("CSM_ConfHost");//NOI18N
                     provider.init(key); //NOI18N
                     platform = provider.getPlatform();
-                    report("Validating platform...found " + PlatformTypes.toString(platform) + ".\nLooking for tool collections:\n");//NOI18N
+                    CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform)); //NOI18N
+                    CompilerSetReporter.report("CSM_LFTC"); //NOI18N
                     log.fine("CSM.initRemoteCompileSets: platform = " + platform);
                     getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
                     while (provider.hasMoreCompilerSets()) {
                         String data = provider.getNextCompilerSetData();
                         CompilerSet cs = parseCompilerSetString(key, platform, data);
-                        report("  Found " + cs.getDisplayName() + " at " + cs.getDirectory() + ".\n");//NOI18N
-                        add(cs);
+                        if (cs != null) {
+                            CompilerSetReporter.report("CSM_Found", true, cs.getDisplayName(), cs.getDirectory());//NOI18N
+                            add(cs);
+                        } else if(CompilerSetReporter.canReport()) {
+                            CompilerSetReporter.report("CSM_Err", true, data);//NOI18N
+                        }
                     }
                     completeCompilerSets(platform);
-                    List<CompilerSet> setsCopy;
-                    if (sets instanceof ArrayList) {
-                        setsCopy = (List<CompilerSet>) ((ArrayList<CompilerSet>) sets).clone();
-                    } else {
-                        // this will never be called in current impl but interface allows any List so:
-                        setsCopy = new ArrayList<CompilerSet>();
-                        setsCopy.addAll(sets);
-                    }
                     log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
                     if (sets.size() == 0) {
-                        report("Done. No tool collections were found in default locations. You can configure them manually later using Tools > Options dialog.\n"); //NOI18N
+                        CompilerSetReporter.report("CSM_Done_NF"); //NOI18N
                     } else {
-                        report("Done. Found " + sets.size() + " tool collection(s).\n");//NOI18N
+                        CompilerSetReporter.report("CSM_Done_OK", true,  sets.size());//NOI18N
                     }
-                    state = STATE_COMPLETE;
+                    state = State.STATE_COMPLETE;
 
-                    report("Your host was successfully configured.\n");//NOI18N
-                    provider.loadCompilerSetData(setsCopy).addTaskListener(new TaskListener() {
-
-                        public void taskFinished(org.openide.util.Task task) {
-                            log.fine("Code Model Ready for " + CompilerSetManager.this.toString());
-                            CompilerSetManagerEvents.get(hkey).runTasks();
-                        }
-                    });
+                    CompilerSetReporter.report("CSM_Conigured");//NOI18N
+                    if (runCompilerSetDataLoader) {
+                        finishInitialization();
+                    }
                 }
+
             });
         } else {
-            report("...failed. Hostname is wrong or host is offline.\n");//NOI18N
+            CompilerSetReporter.report("CSM_Fail");//NOI18N
             // create empty CSM
             log.fine("CSM.initRemoteCompilerSets: Adding empty CS to OFFLINE host " + key);
             add(CompilerSet.createEmptyCompilerSet(PlatformTypes.PLATFORM_NONE));
-            state = STATE_UNINITIALIZED;
+            state = State.STATE_UNINITIALIZED;
         }
     }
 
-    //TODO: temp test code
-    public static Writer writer = null;
-    private void report(String msg)  {
-        if (writer != null) {
-            try {
-                writer.write(msg);
-            } catch (IOException ex) {
-            }
+    public void finishInitialization() {
+        CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
+        List<CompilerSet> setsCopy = new ArrayList<CompilerSet>(sets);
+        Runnable compilerSetDataLoader = provider.createCompilerSetDataLoader(setsCopy);
+        CndUtils.assertFalse(compilerSetDataLoader == null);
+        if (compilerSetDataLoader != null) {
+            RequestProcessor.Task task = RequestProcessor.getDefault().create(compilerSetDataLoader);
+            task.addTaskListener(new TaskListener() {
+                public void taskFinished(org.openide.util.Task task) {
+                    log.fine("Code Model Ready for " + CompilerSetManager.this.toString());
+                    CompilerSetManagerEvents.get(hkey).runTasks();
+                }
+            });
+            task.schedule(0);
         }
     }
 
@@ -780,9 +810,12 @@ public class CompilerSetManager {
             if (sun != null) {
                 sun = sun.createCopy();
                 sun.setName("SunStudio"); // NOI18N
-                sun.setFlavor(CompilerFlavor.toFlavor("SunStudio", platform)); // NOI18N
-                sun.setAutoGenerated(true);
-                add(sun);
+                CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", platform); // NOI18N
+                if (flavor != null) { // #158084 NPE
+                    sun.setFlavor(flavor); // NOI18N
+                    sun.setAutoGenerated(true);
+                    add(sun);
+                }
             }
         }
     }

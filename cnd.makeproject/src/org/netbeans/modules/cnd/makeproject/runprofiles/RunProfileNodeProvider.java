@@ -62,8 +62,9 @@ public class RunProfileNodeProvider implements CustomizerNodeProvider {
     private CustomizerNode customizerNode = null;
     
     public CustomizerNode factoryCreate() {
-        if (customizerNode == null)
+        if (customizerNode == null) {
             customizerNode = createProfileNode();
+        }
 	return customizerNode;
     }
     
@@ -74,7 +75,7 @@ public class RunProfileNodeProvider implements CustomizerNodeProvider {
                 null);
     }
 
-    class RunProfileCustomizerNode extends CustomizerNode {
+    static class RunProfileCustomizerNode extends CustomizerNode {
 	public RunProfileCustomizerNode(String name, String displayName, CustomizerNode[] children) {
 	    super(name, displayName, children);
 	}

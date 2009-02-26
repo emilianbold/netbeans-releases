@@ -69,9 +69,7 @@ import org.openide.util.actions.Presenter;
 public class JInlineMenu extends JMenuItem implements DynamicMenuContent {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -2310488127953523571L;
-    private static final Icon BLANK_ICON = new ImageIcon(
-            ImageUtilities.loadImage("org/openide/resources/actions/empty.gif")
-        ); // NOI18N            
+    private static final Icon BLANK_ICON = ImageUtilities.loadImageIcon("org/openide/resources/actions/empty.gif", false); // NOI18N            
 
 //    /** north separator */
 //    private JSeparator north = new JSeparator();

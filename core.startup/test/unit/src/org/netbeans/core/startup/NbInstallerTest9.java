@@ -41,6 +41,8 @@
 
 package org.netbeans.core.startup;
 
+import org.netbeans.SetupHid;
+import org.netbeans.MockEvents;
 import java.io.File;
 import java.io.IOException;
 import java.util.jar.JarFile;
@@ -62,7 +64,7 @@ public class NbInstallerTest9 extends SetupHid {
      */
     public void testManifestCaching() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath());
-        ModuleInstaller inst = new org.netbeans.core.startup.NbInstaller(new FakeEvents());
+        ModuleInstaller inst = new org.netbeans.core.startup.NbInstaller(new MockEvents());
         File littleJar = new File(jars, "little-manifest.jar");
         //inst.loadManifest(littleJar).write(System.out);
         assertEquals(getManifest(littleJar), inst.loadManifest(littleJar));
@@ -74,7 +76,7 @@ public class NbInstallerTest9 extends SetupHid {
         File allManifestsDat = new File(new File(new File(getWorkDir(), "var"), "cache"), "all-manifest.dat");
         assertTrue("File " + allManifestsDat + " exists", allManifestsDat.isFile());
         // Create a new NbInstaller, since otherwise it turns off caching...
-        inst = new org.netbeans.core.startup.NbInstaller(new FakeEvents());
+        inst = new org.netbeans.core.startup.NbInstaller(new MockEvents());
         assertEquals(getManifest(littleJar), inst.loadManifest(littleJar));
         assertEquals(getManifest(mediumJar), inst.loadManifest(mediumJar));
         assertEquals(getManifest(bigJar), inst.loadManifest(bigJar));

@@ -46,6 +46,7 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
+import javax.swing.event.ChangeEvent;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
 import javax.swing.*;
@@ -53,7 +54,10 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.lang.ref.SoftReference;
+import javax.swing.event.ChangeListener;
+import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
+import org.openide.windows.TopComponent;
 
 /**
  * Base class for tab displayers that have scrollable tabs.
@@ -98,6 +102,15 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
             getTabsVisibleArea(scratch);
             displayer.repaint(scratch.x, scratch.y, scratch.width, scratch.height);
         }
+
+        if( null == btnMaximizeRestore )
+            return;
+        TabData td = displayer.getModel().getTab(tab);
+        Component c = td.getComponent();
+        if( !(c instanceof TopComponent) )
+            return;
+        boolean maximizeEnabled = displayer.getContainerWinsysInfo().isTopComponentMaximizationEnabled((TopComponent)c);
+        btnMaximizeRestore.setEnabled(maximizeEnabled);
     }
 
     /**
@@ -143,7 +156,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
     protected LayoutManager createLayout() {
         return new WCLayout();
     }
-    
+
     /**
      * @return A component that holds control buttons (scroll left/right, drop down menu)
      * that are displayed to right of the tab area.

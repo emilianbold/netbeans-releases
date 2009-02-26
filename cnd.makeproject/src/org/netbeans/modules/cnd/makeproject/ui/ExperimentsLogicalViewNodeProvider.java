@@ -65,215 +65,211 @@ public class ExperimentsLogicalViewNodeProvider implements LogicalViewNodeProvid
     public AbstractNode getLogicalViewNode(Project project) {
         return new ExperimentsRootNode(project);
     }
-}
 
-class ExperimentsRootNode extends AbstractNode {
+    private static class ExperimentsRootNode extends AbstractNode {
 
-    public ExperimentsRootNode(Project project) {
-        super(new ExperimentsRootNodeChildren(project));
-        setName("Experiments"); // NOI18N
-        setDisplayName("Experiments"); // NOI18N
-    }
-
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
-    }
-
-    public Image getOpenedIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolderOpen.gif"); // NOI18N
-    }
-
-    public boolean canRename() {
-        return false;
-    }
-}
-
-class ExperimentsRootNodeChildren extends Children.Keys<ExperimentsGroupNode> implements ChangeListener {
-
-    Project project;
-
-    public ExperimentsRootNodeChildren(Project project) {
-        this.project = project;
-    }
-
-    @Override
-    protected void addNotify() {
-        super.addNotify();
-        setKeys(getKeys());
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    protected void removeNotify() {
-        setKeys(Collections.EMPTY_SET);
-        super.removeNotify();
-    }
-
-    protected Node[] createNodes(ExperimentsGroupNode key) {
-        Node node = null;
-        if (key instanceof ExperimentsGroupNode) {
-            node = (Node) key;
-        } else {
-            // FIXUP: error
+        public ExperimentsRootNode(Project project) {
+            super(new ExperimentsRootNodeChildren(project));
+            setName("Experiments"); // NOI18N
+            setDisplayName("Experiments"); // NOI18N
         }
-        return new Node[]{node};
+
+        @Override
+        public Image getIcon(int type) {
+            return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolderOpen.gif"); // NOI18N
+        }
+
+        @Override
+        public boolean canRename() {
+            return false;
+        }
     }
 
-    public void stateChanged(ChangeEvent e) {
-        setKeys(getKeys());
+    private static class ExperimentsRootNodeChildren extends Children.Keys<ExperimentsGroupNode> implements ChangeListener {
+
+        Project project;
+
+        public ExperimentsRootNodeChildren(Project project) {
+            this.project = project;
+        }
+
+        @Override
+        protected void addNotify() {
+            super.addNotify();
+            setKeys(getKeys());
+        }
+
+        @Override
+        protected void removeNotify() {
+            setKeys(Collections.<ExperimentsGroupNode>emptySet());
+            super.removeNotify();
+        }
+
+        protected Node[] createNodes(ExperimentsGroupNode key) {
+            Node node = key;
+            return new Node[]{node};
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            setKeys(getKeys());
+        }
+
+        private Collection<ExperimentsGroupNode> getKeys() {
+            Vector<ExperimentsGroupNode> v = new Vector<ExperimentsGroupNode>();
+            v.add(new ExperimentsGroupNode(project, "Heap Tracing")); // NOI18N
+            v.add(new ExperimentsGroupNode(project, "Data Race Detection")); // NOI18N
+            v.add(new ExperimentsGroupNode(project, "Runtime Checking")); // NOI18N
+            return v;
+        }
     }
 
-    private Collection<ExperimentsGroupNode> getKeys() {
-        Vector<ExperimentsGroupNode> v = new Vector<ExperimentsGroupNode>();
-        v.add(new ExperimentsGroupNode(project, "Heap Tracing")); // NOI18N
-        v.add(new ExperimentsGroupNode(project, "Data Race Detection")); // NOI18N
-        v.add(new ExperimentsGroupNode(project, "Runtime Checking")); // NOI18N
-        return v;
-    }
-}
+    private static class ExperimentsGroupNode extends AbstractNode {
 
-class ExperimentsGroupNode extends AbstractNode {
+        public ExperimentsGroupNode(Project project, String name) {
+            super(new ExperimentsGroupNodeChildren(project));
+            setName(name);
+            setDisplayName(name);
+        }
 
-    public ExperimentsGroupNode(Project project, String name) {
-        super(new ExperimentsGroupNodeChildren(project));
-        setName(name);
-        setDisplayName(name);
-    }
+        @Override
+        public Image getIcon(int type) {
+            return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
+        }
 
-    @Override
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
-    }
+        @Override
+        public Image getOpenedIcon(int type) {
+            return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolderOpen.gif"); // NOI18N
+        }
 
-    @Override
-    public Image getOpenedIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolderOpen.gif"); // NOI18N
-    }
+        @Override
+        public boolean canRename() {
+            return false;
+        }
 
-    @Override
-    public boolean canRename() {
-        return false;
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[]{
+                        new ImportExperimentAction(),};
+        }
     }
 
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{
-                    new ImportExperimentAction(),};
-    }
-}
+    private static class ExperimentsGroupNodeChildren extends Children.Keys<Experiment> implements ChangeListener {
 
-class ExperimentsGroupNodeChildren extends Children.Keys<Experiment> implements ChangeListener {
+        Project project;
 
-    Project project;
+        public ExperimentsGroupNodeChildren(Project project) {
+            this.project = project;
+        }
 
-    public ExperimentsGroupNodeChildren(Project project) {
-        this.project = project;
-    }
+        @Override
+        protected void addNotify() {
+            super.addNotify();
+            setKeys(getKeys());
+        }
 
-    @Override
-    protected void addNotify() {
-        super.addNotify();
-        setKeys(getKeys());
-    }
+        @Override
+        protected void removeNotify() {
+            setKeys(Collections.<Experiment>emptySet());
+            super.removeNotify();
+        }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    protected void removeNotify() {
-        setKeys(Collections.EMPTY_SET);
-        super.removeNotify();
-    }
+        protected Node[] createNodes(Experiment key) {
+            return new Node[]{key};
+        }
 
-    protected Node[] createNodes(Experiment key) {
-        return new Node[]{key};
-    }
+        public void stateChanged(ChangeEvent e) {
+            setKeys(getKeys());
+        }
 
-    public void stateChanged(ChangeEvent e) {
-        setKeys(getKeys());
-    }
-
-    private Collection<Experiment> getKeys() {
-        // FIXUP: add per project...
-        Vector<Experiment> v = new Vector<Experiment>();
-        v.add(new Experiment("Experiment-01212007-1422")); // NOI18N
-        v.add(new Experiment("Experiment-01212007-1427")); // NOI18N
-        v.add(new Experiment("Experiment-01212007-1532")); // NOI18N
-        return v;
-    }
-}
-
-class Experiment extends AbstractNode {
-
-    public Experiment(String name) {
-        super(Children.LEAF);
-        setName(name);
-        setDisplayName(name);
+        private Collection<Experiment> getKeys() {
+            // FIXUP: add per project...
+            Vector<Experiment> v = new Vector<Experiment>();
+            v.add(new Experiment("Experiment-01212007-1422")); // NOI18N
+            v.add(new Experiment("Experiment-01212007-1427")); // NOI18N
+            v.add(new Experiment("Experiment-01212007-1532")); // NOI18N
+            return v;
+        }
     }
 
-    @Override
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
+    private static class Experiment extends AbstractNode {
+
+        public Experiment(String name) {
+            super(Children.LEAF);
+            setName(name);
+            setDisplayName(name);
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
+        }
+
+        @Override
+        public boolean canRename() {
+            return true;
+        }
+
+        @Override
+        public boolean canDestroy() {
+            return true;
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[]{
+                        new OpenExperimentAction(),
+                        SystemAction.get(DeleteAction.class),
+                        SystemAction.get(RenameAction.class),
+                        null,
+                        SystemAction.get(PropertiesAction.class),};
+        }
     }
 
-    @Override
-    public boolean canRename() {
-        return true;
+    private static class ImportExperimentAction extends DummyAction {
+
+        public ImportExperimentAction() {
+            super("Import Experiment..."); // NOI18N
+        }
     }
 
-    @Override
-    public boolean canDestroy() {
-        return true;
+    private static class OpenExperimentAction extends DummyAction {
+
+        public OpenExperimentAction() {
+            super("Open Experiment..."); // NOI18N
+        }
     }
 
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{
-                    new OpenExperimentAction(),
-                    SystemAction.get(DeleteAction.class),
-                    SystemAction.get(RenameAction.class),
-                    null,
-                    SystemAction.get(PropertiesAction.class),};
-    }
-}
+    private static class DummyAction extends NodeAction {
 
-class ImportExperimentAction extends DummyAction {
+        private String name;
 
-    public ImportExperimentAction() {
-        super("Import Experiment..."); // NOI18N
-    }
-}
+        public DummyAction(String name) {
+            this.name = name;
+        }
 
-class OpenExperimentAction extends DummyAction {
+        protected boolean enable(Node[] activatedNodes) {
+            return true;
+        }
 
-    public OpenExperimentAction() {
-        super("Open Experiment..."); // NOI18N
-    }
-}
+        public String getName() {
+            return name;
+        }
 
-class DummyAction extends NodeAction {
+        public void performAction(Node[] activatedNodes) {
+        }
 
-    private String name;
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
 
-    public DummyAction(String name) {
-        this.name = name;
-    }
-
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void performAction(Node[] activatedNodes) {
-    }
-
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
+        @Override
+        protected boolean asynchronous() {
+            return false;
+        }
     }
 }

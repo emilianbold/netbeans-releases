@@ -297,6 +297,9 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
             return;
         }
 
+        if( !Switches.isDraggingEnabled(tc) )
+            return;
+
         // #21918. See above.
         if (ctrlDown) {
             hackUserDropAction = DnDConstants.ACTION_COPY;

@@ -218,6 +218,8 @@ final class CommandManager implements ActionListener {
                 if (actions == null) {
                     actions = tc.getActions();
                 }
+                if (actions == null || actions.length == 0 )
+                    return;
                 
                 showPopupMenu(
                     Utilities.actionsToPopup(actions, tc.getLookup()), tae.getMouseEvent().getPoint(), tae.getMouseEvent().getComponent());
@@ -283,7 +285,11 @@ final class CommandManager implements ActionListener {
             TabDataModel slidedCompModel = new DefaultTabDataModel();
             slidedTabContainer = new TabbedContainer(slidedCompModel, TabbedContainer.TYPE_VIEW, slideBar.createWinsysInfo());
             slidedTabContainer.addActionListener(this);
-            Border b = (Border) UIManager.get ("floatingBorder"); //NOI18N
+            Border b = null;
+            String side = orientation2Side( slideBar.getModel().getOrientation() );
+            b = UIManager.getBorder("floatingBorder-"+side); //NOI18N
+            if( b == null )
+                b = UIManager.getBorder("floatingBorder"); //NOI18N
             if (b != null) {
                 slidedTabContainer.setBorder (b);
             }

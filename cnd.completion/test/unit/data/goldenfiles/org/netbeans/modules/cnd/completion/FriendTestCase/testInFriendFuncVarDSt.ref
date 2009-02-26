@@ -1,7 +1,11 @@
+aProtSt int
+aPubSt int
 bPrivSt int
 bProtSt int
 bPubSt int
 dPubSt int
+aProtFunSt() void
+aPubFunSt() void
 bPrivFunSt() void
 bProtFunSt() void
 bPubFunSt() void

@@ -57,7 +57,6 @@ import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.DefaultAttributes;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
@@ -179,7 +178,7 @@ public class EditorTestLookup extends ProxyLookup {
         if (repository == null) {
             repository = new Repository(new SystemFileSystem(fs));
         } else {
-            ((SystemFileSystem) FileUtil.getConfigRoot().getFileSystem()).setOrig(fs);
+            ((SystemFileSystem) repository.getDefaultFileSystem()).setOrig(fs);
         }
         
         Object[] lookupContent = new Object[instances.length + 1];
@@ -187,9 +186,9 @@ public class EditorTestLookup extends ProxyLookup {
         System.arraycopy(instances, 0, lookupContent, 1, instances.length);
 
         // Create the Services folder (if needed}
-        FileObject services = FileUtil.getConfigFile("Services");
+        FileObject services = repository.getDefaultFileSystem().findResource("Services");
         if (services == null) {
-            services = FileUtil.getConfigRoot().createFolder("Services");
+            services = repository.getDefaultFileSystem().getRoot().createFolder("Services");
         }
         
         EditorTestLookup.setLookup(lookupContent, cl, services, exclude);
@@ -233,7 +232,12 @@ public class EditorTestLookup extends ProxyLookup {
         }
         
         public void setOrig(FileSystem [] orig) {
-            setDelegates(orig);
+            StorageImpl.ignoreFilesystemEvents(true);
+            try {
+                setDelegates(orig);
+            } finally {
+                StorageImpl.ignoreFilesystemEvents(false);
+            }
         }
 
         public @Override FileSystem.Status getStatus() {

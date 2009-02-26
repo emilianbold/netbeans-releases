@@ -865,6 +865,7 @@ class J2SEActionProvider implements ActionProvider {
 
     private boolean allowAntBuild() {
         String buildClasses = project.evaluator().getProperty(ProjectProperties.BUILD_CLASSES_DIR);
+        if (buildClasses == null) return false;
         File buildClassesFile = this.updateHelper.getAntProjectHelper().resolveFile(buildClasses);
 
         return !new File(buildClassesFile, AUTOMATIC_BUILD_TAG).exists();

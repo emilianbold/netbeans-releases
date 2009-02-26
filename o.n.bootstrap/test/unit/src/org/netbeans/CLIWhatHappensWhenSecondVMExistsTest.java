@@ -71,11 +71,11 @@ implements Map {
         super(testName);
     }
     
-    protected Level logLevel() {
+    protected @Override Level logLevel() {
         return Level.FINEST;
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
         LOG = Logger.getLogger("TEST." + getName());
         called = false;

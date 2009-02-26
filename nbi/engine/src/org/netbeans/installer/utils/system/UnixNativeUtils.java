@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -85,6 +86,8 @@ public class UnixNativeUtils extends NativeUtils {
     private boolean isUserAdmin;
     private boolean checkQuota = true;
     private File quotaExecutable = null;
+    private File browserExecutable = null;
+    private boolean browserExecutableSet = false;
     
     private static final String[] FORBIDDEN_DELETING_FILES_UNIX = {
         System.getProperty("user.home"),
@@ -546,6 +549,43 @@ public class UnixNativeUtils extends NativeUtils {
         }
     }
 
+    @Override
+    public boolean isBrowseSupported() {
+        initBrowser();
+        return browserExecutable!=null;
+    }
+
+    public boolean openBrowser(URI uri) {
+        initBrowser();
+        if (browserExecutable != null) {
+            LogManager.log("... using browser: " + browserExecutable);
+            try {
+                Runtime.getRuntime().exec(new String[]{browserExecutable.getAbsolutePath(), uri.toString()});
+                return true;
+            } catch (IOException e) {
+                LogManager.log(e);
+            }
+        }
+        return false;
+    }
+
+    protected String[] getPossibleBrowserLocations() {
+        return new String [] {};
+    }
+
+    private void initBrowser() {
+        if(browserExecutableSet) return;
+        final String[] possibleBrowsers = getPossibleBrowserLocations();
+        for (String s : possibleBrowsers) {
+            File f = new File(s);
+            if (f.exists()) {
+                browserExecutable = f;
+                break;
+            }
+        }
+        browserExecutableSet = true;
+    }
+    
     public List<File> findExecutableFiles(File parent) throws IOException {
         List<File> files = new ArrayList<File>();
 

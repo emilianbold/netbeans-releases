@@ -67,7 +67,7 @@ public class PropertyBundleSupport implements Serializable {
     /**
      * Constructs a <code>PropertyBundleSupport</code> object.
      *
-     * @param sourceBean  object to be given as a source of events
+     * @param source Bean object to be given as a source of events
      * @exception  java.lang.NullPointerException
      *             if the parameter is <code>null</code>
      */

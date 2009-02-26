@@ -138,13 +138,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.languages</code-name-base>
-                    <run-dependency>
-                        <release-version>0-1</release-version>
-                        <specification-version>1.84</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.options.editor</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
@@ -216,15 +209,6 @@
                     <name>qa-functional</name>
                     <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
-                        <compile-dependency/>
-                        <test/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.java.sourceui</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

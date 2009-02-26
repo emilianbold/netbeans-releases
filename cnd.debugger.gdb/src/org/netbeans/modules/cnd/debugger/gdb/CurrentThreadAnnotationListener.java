@@ -91,7 +91,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     // helper methods ..........................................................
 
     private void updateCurrentDebugger() {
-        GdbDebugger newDebugger = getCurrentDebugger();
+        GdbDebugger newDebugger = GdbDebugger.getGdbDebugger();
         if (currentDebugger == newDebugger) {
             return;
         }
@@ -102,14 +102,6 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             newDebugger.addPropertyChangeListener(this);
         }
         currentDebugger = newDebugger;
-    }
-    
-    private static GdbDebugger getCurrentDebugger() {
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        if (currentEngine == null) {
-            return null;
-        }
-        return currentEngine.lookupFirst(null, GdbDebugger.class);
     }
 
     /**

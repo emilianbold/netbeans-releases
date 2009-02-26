@@ -97,7 +97,7 @@ public interface CsmImageName {
 
     static final String FUNCTION_GLOBAL = RESOURCE_BASE+"global_function.png"; // NOI18N
     static final String FUNCTION_DECLARATION_GLOBAL = RESOURCE_BASE+"global_function_decl.png"; // NOI18N
-    static final String FUNCTION_ST_GLOBAL = RESOURCE_BASE+"global_function.png"; // NOI18N
+    static final String FUNCTION_ST_GLOBAL = RESOURCE_BASE+"static_function.png"; // NOI18N
 
     static final String OPERATOR_PUBLIC = RESOURCE_BASE+"operator_public.png"; // NOI18N
     static final String OPERATOR_PROTECTED = RESOURCE_BASE+"operator_protected.png"; // NOI18N
@@ -112,10 +112,7 @@ public interface CsmImageName {
 
     static final String VARIABLE_GLOBAL = RESOURCE_BASE+"global_variable.png"; // NOI18N
     static final String VARIABLE_EX_GLOBAL = RESOURCE_BASE+"extern_variable_16.png"; // NOI18N
-    static final String VARIABLE_ST_GLOBAL = RESOURCE_BASE+"global_variable.png"; // NOI18N
-
     static final String VARIABLE_CONST_GLOBAL = RESOURCE_BASE+"global_constant.png"; // NOI18N
-    static final String VARIABLE_CONST_ST_GLOBAL = RESOURCE_BASE+"global_constant.png"; // NOI18N
 
     static final String VARIABLE_LOCAL = RESOURCE_BASE+"local_variable.png"; // NOI18N
     static final String VARIABLE_ST_LOCAL = RESOURCE_BASE+"local_variable.png"; // NOI18N
@@ -123,9 +120,7 @@ public interface CsmImageName {
     static final String VARIABLE_CONST_LOCAL = RESOURCE_BASE+"local_constant.png"; // NOI18N
     static final String VARIABLE_CONST_ST_LOCAL = RESOURCE_BASE+"local_constant.png"; // NOI18N
 
-    static final String VARIABLE_FILE_LOCAL = RESOURCE_BASE+"global_variable.png"; // NOI18N
-    static final String VARIABLE_ST_FILE_LOCAL = RESOURCE_BASE+"global_variable.png"; // NOI18N
-
+    static final String VARIABLE_FILE_LOCAL = RESOURCE_BASE+"static_variable.png"; // NOI18N
     static final String VARIABLE_CONST_FILE_LOCAL = RESOURCE_BASE+"global_constant.png"; // NOI18N
     static final String VARIABLE_CONST_ST_FILE_LOCAL = RESOURCE_BASE+"global_constant.png"; // NOI18N
     

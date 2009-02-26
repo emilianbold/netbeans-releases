@@ -53,6 +53,7 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 //import org.openide.util.Utilities;
@@ -99,6 +100,9 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
         toolbar.setFocusable(false);
         toolbar.setFloatable(false);
         toolbar.setBorderPainted(false);
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            toolbar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        }
         
         return toolbar;
     }
@@ -106,10 +110,7 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
     /**
      */
     private void createFilterButton() {
-        btnFilter = new JToggleButton(new ImageIcon(
-                ImageUtilities.loadImage(
-                    "org/netbeans/modules/junit/output/res/filter.png", //NOI18N
-                    true)));
+        btnFilter = new JToggleButton(ImageUtilities.loadImageIcon("org/netbeans/modules/junit/output/res/filter.png", true));
         btnFilter.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(getClass(), "ACSN_FilterButton"));  //NOI18N
         btnFilter.addItemListener(this);

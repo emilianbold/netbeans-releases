@@ -151,6 +151,10 @@ public class ClusterUpdateProvider implements UpdateProvider {
             return Collections.emptySet ();
         }
         for (File cf : config.listFiles ()) {
+            if(cf.getName ().endsWith(".xml_hidden")) {
+                //158204
+                continue;
+            }
             assert cf.getName ().endsWith (".xml") : cf + " is XML file";
             if (cf.getName ().endsWith (".xml")) { // NOI18N
                 res.add (cf);

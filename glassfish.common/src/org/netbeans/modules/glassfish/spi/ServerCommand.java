@@ -221,7 +221,20 @@ public abstract class ServerCommand {
     public String toString() {
         return (query == null) ? command : command + QUERY_SEPARATOR + query;
     }
-    
+
+    /**
+     * A name for the source of an the input stream.
+     *
+     * This should not return null if getInputStream returns a non-null.
+     *
+     * Used during the construction of a zip-stream to support data upload.
+     *
+     * @return the name to associate with the input stream
+     */
+    public String getInputName() {
+        return null;
+    }
+
     /**
      * Command to get property information for a dotted name.
      */

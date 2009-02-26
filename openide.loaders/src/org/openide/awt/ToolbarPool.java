@@ -250,6 +250,9 @@ public final class ToolbarPool extends JComponent implements Accessible {
             }
             add (center = c, BorderLayout.CENTER);
             center.addMouseListener (listener);
+            invalidate();
+            revalidate();
+            repaint();
         }
     }
 

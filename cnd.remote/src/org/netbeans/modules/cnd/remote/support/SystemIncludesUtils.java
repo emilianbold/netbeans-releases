@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -69,8 +68,8 @@ import org.openide.util.RequestProcessor;
 public class SystemIncludesUtils {
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
-    public static RequestProcessor.Task load(final String hkey, final List<CompilerSet> csList) {
-        return RequestProcessor.getDefault().post(new Runnable() {
+    public static Runnable createLoader(final String hkey, final List<CompilerSet> csList) {
+        return new Runnable() {
 
             public void run() {
                 ProgressHandle handle = ProgressHandleFactory.createHandle(getMessage("SIU_ProgressTitle") + " " + RemoteUtils.getHostName(hkey)); //NOI18N
@@ -102,7 +101,7 @@ public class SystemIncludesUtils {
                     handle.finish();
                 }
             }
-        });
+        };
     }
 
     private static boolean doLoad(final String hkey, String storagePrefix, Collection<String> paths, ProgressHandle handle) {

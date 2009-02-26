@@ -571,7 +571,6 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
      */
     public String getTesterPageURL() {
         WSStackUtils stackUtils = new WSStackUtils(project);
-        boolean isJsr109Supported = stackUtils.isJsr109Supported();
         if (ServerType.GLASSFISH == stackUtils.getServerType() || ServerType.GLASSFISH_V3 == stackUtils.getServerType() ) {
             return getWebServiceURL() + "?Tester"; //NOI18N
         } else {

@@ -270,6 +270,11 @@ public final class SimpleValueNames {
      */
     public static final String CODE_FOLDING_COLLAPSE_JAVADOC = "code-folding-collapse-javadoc"; //NOI18N
 
+    /**
+     * Collapse tags or other non java code blocks.
+     * @since 1.19
+     */
+    public static final String CODE_FOLDING_COLLAPSE_TAGS = "code-folding-collapse-tags"; //NOI18N
 
     /**
      * Highlight the row where the caret currently is. The ExtCaret must be used.
@@ -373,6 +378,12 @@ public final class SimpleValueNames {
      */
     public static final String HYPERLINK_ACTIVATION_MODIFIERS = "hyperlink-activation-modifiers"; //NOI18N
     
+    /**
+     * Modifiers for which the alternative hyperlinks should be enabled.
+     * @since 1.24
+     */
+    public static final String ALT_HYPERLINK_ACTIVATION_MODIFIERS = "alt-hyperlink-activation-modifiers"; //NOI18N
+
     /** 
      * Whether popup menu will be displayed on mouse right-click or not.
      * It's set to true by default.

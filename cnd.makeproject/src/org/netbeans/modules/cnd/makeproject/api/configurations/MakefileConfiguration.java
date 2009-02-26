@@ -176,7 +176,7 @@ public class MakefileConfiguration {
     // Clone and assign
     public void assign(MakefileConfiguration conf) {
         // MakefileConfiguration
-        setMakeConfiguration(conf.getMakeConfiguration());
+        //setMakeConfiguration(conf.getMakeConfiguration()); // MakeConfiguration should not be assigned
         getBuildCommandWorkingDir().assign(conf.getBuildCommandWorkingDir());
         getBuildCommand().assign(conf.getBuildCommand());
         getCleanCommand().assign(conf.getCleanCommand());

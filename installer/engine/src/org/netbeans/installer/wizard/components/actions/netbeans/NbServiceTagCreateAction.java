@@ -320,9 +320,14 @@ public class NbServiceTagCreateAction extends WizardAction {
                 LogManager.log("...... javaHome : "    + javaHome);
 
 
-                final String gfVersion = gfProduct.getVersion().getMajor() == 3 ? "v3" : "v2";
-                LogManager.log("...... gfVersion : "   + gfVersion);
+                String gfVersion = null;
+                if(gfProduct.getVersion().getMajor() == 2) {
+                   gfVersion = gfProduct.getUid().equals("glassfish")? "v2" : "v2.1";                   
+                } else {
+                   gfVersion = "v3";
+                }
 
+                LogManager.log("...... gfVersion : "   + gfVersion);
                 Version javaVersion = JavaUtils.getVersion(gfJavaHome);
                 if(javaVersion==null) {
                     LogManager.log("...... can`t get java version from "   + gfJavaHome + ", using default one");
@@ -330,6 +335,7 @@ public class NbServiceTagCreateAction extends WizardAction {
                     javaVersion = JavaUtils.getVersion(javaHome);
                     LogManager.log("...... java.home : " + javaHome);
                 }
+
                 final String  jdkVersion = javaVersion.toJdkStyle();
                 LogManager.log("...... javaVersion : " + jdkVersion);
                 
@@ -367,6 +373,8 @@ public class NbServiceTagCreateAction extends WizardAction {
                         "<source>" + source + "</source>");
                 map.put("<source>GlassFish V3</source>",
                         "<source>" + source + "</source>");
+                map.put("<source>Sun GlassFish Enterprise Server Native Packages</source>",
+                         "<source>" + source + "</source>");
                 // AppServer installation image has this incorrect vendor
                 map.put("Sun Micosystems Inc.",
                         "Sun Microsystems Inc.");

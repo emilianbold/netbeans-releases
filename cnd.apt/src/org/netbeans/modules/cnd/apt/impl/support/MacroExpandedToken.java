@@ -66,19 +66,16 @@ public class MacroExpandedToken implements APTToken, Serializable {
     }
 
     public MacroExpandedToken(APTToken from, APTToken to, APTToken endOffsetToken) {
-        if (!(from instanceof APTToken)) {
-            assert (false);
-            throw new IllegalStateException("why 'from' is not APTToken?"); // NOI18N
+        if (from == null) {
+            throw new IllegalArgumentException("why 'from' is not APTToken?"); // NOI18N
         }
         this.from = from;
-        if (!(to instanceof APTToken)) {
-            assert (false);
-            throw new IllegalStateException("why 'to' is not APTToken?"); // NOI18N
+        if (to == null) {
+            throw new IllegalArgumentException("why 'to' is not APTToken?"); // NOI18N
         }
         this.to = to;
-        if (!(endOffsetToken instanceof APTToken)) {
-            assert (false);
-            throw new IllegalStateException("why 'endOffsetToken' is not APTToken?"); // NOI18N
+        if (endOffsetToken == null) {
+            throw new IllegalArgumentException("why 'endOffsetToken' is not APTToken?"); // NOI18N
         }
         this.endOffsetToken = endOffsetToken;
     }

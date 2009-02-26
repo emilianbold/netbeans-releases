@@ -57,7 +57,7 @@ import org.openide.util.ChangeSupport;
  * @author Radek Matous
  */
 public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
-        private static final long serialVersionUID = -743970325856955L;
+        private static final long serialVersionUID = -74397897465486955L;
 
         private final PhpProject project;
         private final FileObject rootFolder;
@@ -81,6 +81,7 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
         public boolean acceptDataObject(DataObject object) {
             return !isProjectFile(object)
                     && !isTestDirectory(object)
+                    && !isSeleniumDirectory(object)
                     && VisibilityQuery.getDefault().isVisible(object.getPrimaryFile());
         }
 
@@ -90,16 +91,20 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
         }
 
         private boolean isTestDirectory(DataObject object) {
-            if (rootFolder == null) {
+            return isDirectory(object, ProjectPropertiesSupport.getTestDirectory(project, false));
+        }
+
+        private boolean isSeleniumDirectory(DataObject object) {
+            return isDirectory(object, ProjectPropertiesSupport.getSeleniumDirectory(project, false));
+        }
+
+        private boolean isDirectory(DataObject object, FileObject directory) {
+            if (rootFolder == null || directory == null) {
                 return false;
             }
-            FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
-            if (testDirectory == null) {
-                return false;
-            }
-            if (!testDirectory.equals(rootFolder)) {
-                // in sources or similar (but not in tests definitely)
-                return testDirectory.equals(object.getPrimaryFile());
+            if (!directory.equals(rootFolder)) {
+                // in sources or similar (but not in 'directory' definitely)
+                return directory.equals(object.getPrimaryFile());
             }
             return false;
         }

@@ -83,7 +83,6 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     private List<ProgressListener> listeners =
             new CopyOnWriteArrayList<ProgressListener>();
     private InstanceProperties ip;
-    private String url;
     
     public Hk2StartServer(DeploymentManager jdm) {
         if (!(jdm instanceof Hk2DeploymentManager)) {
@@ -92,7 +91,6 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
         this.dm = (Hk2DeploymentManager) jdm;
         this.ip = dm.getProperties().getInstanceProperties();
         this.serverName = ip.getProperty(GlassfishModule.DISPLAY_NAME_ATTR);
-        this.url = ip.getProperty(InstanceProperties.URL_ATTR);
     }
     
     @Override
@@ -238,8 +236,15 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     }
     
     public boolean isRunning() {
-        return Hk2PluginProperties.isRunning(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
-                ip.getProperty(InstanceProperties.HTTP_PORT_NUMBER));
+        GlassfishModule commonSupport = getCommonServerSupport();
+        if(commonSupport != null) {
+            GlassfishModule.ServerState s = commonSupport.getServerState();
+            return GlassfishModule.ServerState.RUNNING.equals(s) ||
+                    GlassfishModule.ServerState.RUNNING_JVM_DEBUG.equals(s);
+        } else {
+            return Hk2PluginProperties.isRunning(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
+                    ip.getProperty(InstanceProperties.HTTP_PORT_NUMBER));
+        }
     }
     
     public DeploymentStatus getDeploymentStatus() {

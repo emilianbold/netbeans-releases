@@ -3236,6 +3236,7 @@ org.netbeans.modules.languages.dataobject.LanguagesDataLoader
 org.netbeans.modules.languages.dataobject.LanguagesDataNode
 org.netbeans.modules.languages.dataobject.LanguagesDataObject
 org.netbeans.modules.languages.dataobject.LanguagesEditorKit
+org.netbeans.modules.languages.dataobject.LanguagesEditorKit$EditorSettings
 org.netbeans.modules.languages.dataobject.MimeLookupInitializerImpl
 org.netbeans.modules.languages.features.ASTBrowserAction
 org.netbeans.modules.languages.features.ASTBrowserTopComponent
@@ -3401,6 +3402,7 @@ org.netbeans.modules.openide.util.NamedServicesProvider
 org.netbeans.modules.openide.util.PreferencesProvider
 org.netbeans.modules.openide.windows.GlobalActionContextImpl
 org.netbeans.modules.options.OptionsWindowAction
+org.netbeans.modules.options.indentation.FormattingSettingsFromNbPreferences
 org.netbeans.modules.palette.Category
 org.netbeans.modules.palette.CategoryListener
 org.netbeans.modules.palette.Item

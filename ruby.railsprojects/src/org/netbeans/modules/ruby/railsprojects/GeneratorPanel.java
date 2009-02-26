@@ -475,8 +475,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         changeListener = l; 
     }      
     
-    @Override
-    public boolean isValid() {
+    public boolean isDataValid() {
         Generator generator = getSelectedGenerator();
         if (generator == Generator.NONE) {
             return false;

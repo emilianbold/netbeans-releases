@@ -22,15 +22,12 @@ import java.io.File;
 import java.io.IOException;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.util.ArrayList;
 
 import org.apache.xml.resolver.Catalog;
-import org.apache.xml.resolver.CatalogManager;
-import org.apache.xml.resolver.helpers.Debug;
-import org.apache.xml.resolver.tools.CatalogResolver;
+import org.apache.xml.resolver.NbCatalogManager;
+import org.apache.xml.resolver.tools.NbCatalogResolver;
 
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 
 /**
  * Helper class to read catalog.xml
@@ -61,14 +58,14 @@ public class ApacheResolverHelper {
     }
 
     public static String getURI(String catalogLocation, String locationURI) {
-        CatalogResolver catalogResolver;
-        Catalog apacheCatalogResolverObj;    
+        NbCatalogResolver catalogResolver;
+        Catalog apacheCatalogResolverObj;
     
         
-        CatalogManager manager = new CatalogManager(null);
+        NbCatalogManager manager = new NbCatalogManager(null);
         manager.setUseStaticCatalog(false);
         manager.setPreferPublic(false);
-        catalogResolver = new CatalogResolver(manager);
+        catalogResolver = new NbCatalogResolver(manager);
         
         apacheCatalogResolverObj = catalogResolver.getCatalog();
         try {
@@ -93,14 +90,14 @@ public class ApacheResolverHelper {
     
 
     public static boolean isPresent(ArrayList<File> catalogLocationList, String locationURI) {
-        CatalogResolver catalogResolver;
+        NbCatalogResolver catalogResolver;
         Catalog apacheCatalogResolverObj;    
 
         
-        CatalogManager manager = new CatalogManager(null);
+        NbCatalogManager manager = new NbCatalogManager(null);
         manager.setUseStaticCatalog(false);
         manager.setPreferPublic(false);
-        catalogResolver = new CatalogResolver(manager);
+        catalogResolver = new NbCatalogResolver(manager);
         
         apacheCatalogResolverObj = catalogResolver.getCatalog();
         for (File catalogLocation : catalogLocationList ) {

@@ -48,6 +48,19 @@ made subject to such option by the copyright holder.
 </apidefs>
 <changes>
 
+<change id="tc_customization">
+    <api name="winsys"/>
+    <summary>Window system customizations on TopComponent level</summary>
+    <version major="6" minor="26"/>
+    <date day="29" month="1" year="2009"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        Added a group of client properties that modify TopComponent's behavior in window system.
+        E.g. disable closing, sliding, undocking etc.
+    </description>
+    <issue number="156693"/>
+</change>
 <change id="tc.open">
     <api name="winsys"/>
     <summary>TopComponent.openAction</summary>

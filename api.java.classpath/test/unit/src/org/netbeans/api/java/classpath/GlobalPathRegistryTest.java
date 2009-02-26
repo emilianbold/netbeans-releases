@@ -42,16 +42,12 @@
 package org.netbeans.api.java.classpath;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.Map;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -81,7 +77,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
     private GlobalPathRegistry r;
     private FileObject root;
     private ClassPath cp1, cp2, cp3, cp4, cp5;
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         r = GlobalPathRegistry.getDefault();
         r.clear();
@@ -187,6 +183,10 @@ public class GlobalPathRegistryTest extends NbTestCase {
         assertTrue ("Missing roots from cp1",result.containsAll (Arrays.asList(cp1.getRoots())));
         assertTrue ("Missing roots from cp2",result.containsAll (Arrays.asList(cp2.getRoots())));
         assertTrue ("Missing roots from cp4",result.containsAll (Arrays.asList(cp4.getRoots())));
+
+        // #158105: findResource should also use the same set.
+        FileObject res = FileUtil.createData(root, "4/some/resource");
+        assertEquals(res, r.findResource("some/resource"));
     }
     
     /**
@@ -251,7 +251,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
         assertTrue(src.isEmpty());
         assertTrue(boot.isEmpty());
         assertTrue(compile.isEmpty());
-        assertTrue(reg.getSourceRoots().isEmpty());
+        assertEquals(Collections.<FileObject>emptySet(), reg.getSourceRoots());
         r.register(ClassPath.COMPILE, new ClassPath[] {cp3});
         SFBQImpl query = Lookup.getDefault().lookup(SFBQImpl.class);
         query.addPair(cp3.getRoots()[0].getURL(),cp4.getRoots());       
@@ -367,7 +367,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
             return null;
         }
         
-        public synchronized void run () {
+        public @Override synchronized void run () {
             r.run();
             this.notify();
         }

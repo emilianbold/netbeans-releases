@@ -99,7 +99,7 @@ import org.openide.util.NbBundle;
 public class TiledLayerDialog extends javax.swing.JPanel implements ActionListener {
 
     private GlobalRepository gameDesign;
-    private static final Icon ICON_ERROR = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
+    private static final Icon ICON_ERROR = ImageUtilities.loadImageIcon("org/netbeans/modules/vmd/midp/resources/error.gif", false); // NOI18N
     private static final int DEFAULT_COLS = 20;
     private static final int DEFAULT_ROWS = 20;
     private static final int DEFAULT_TILE_WIDTH = 18;
@@ -558,11 +558,11 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
     }
 
     private String getFieldLayerNameError() {
-        String illegalIdentifierName = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelInvalidName.txt");
+        String illegalIdentifierName = NbBundle.getMessage(TiledLayerDialog.class, "TiledLayerDialog.labelInvalidName.txt");
         String errMsg = null;
         String layerName = this.fieldLayerName.getText();
         if (layerName.equals("")) {
-            errMsg = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelEnterName.txt");
+            errMsg = NbBundle.getMessage(TiledLayerDialog.class, "TiledLayerDialog.labelEnterName.txt");
         } else if (!this.gameDesign.isComponentNameAvailable(layerName)) {
             errMsg = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelNameExists.txt");
         } else if (!isValidJavaIdentifier(layerName)) {

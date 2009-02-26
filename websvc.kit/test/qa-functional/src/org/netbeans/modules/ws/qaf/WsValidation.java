@@ -301,7 +301,7 @@ public class WsValidation extends WebServicesTestBase {
         assertServerRunning();
         Node wsNode = new Node(getProjectRootNode(), WEB_SERVICES_NODE_NAME + "|" + getWsName()); //NOI18N
         String wrapperLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_ConvertToRestAction");
-        wsNode.performPopupAction(wrapperLabel);
+        wsNode.performPopupActionNoBlock(wrapperLabel);
         String progressLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.saas.Bundle", "MSG_GENERATING_REST_RESOURCE");
         try {
             // wait at most 60 second until progress dialog dismiss
@@ -319,8 +319,6 @@ public class WsValidation extends WebServicesTestBase {
         String restName = getWsName() + "Port"; //NOI18N
         Node restWsNode = new Node(restNode, restName);
         restWsNode.expand();
-        System.out.println("lookup  : " + getWsClientLookupCall());
-        System.out.println("expected: " + getWsClientLookupCall().replace(".ws.", ".ws_client."));
         EditorOperator eo = new EditorOperator(restName + ".java"); //NOI18N
         assertTrue("myIntMethod missing", eo.contains("myIntMethod")); //NOI18N
         workaroundIZ152542(eo);

@@ -688,4 +688,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         return vec;
     }
+
+    @Override
+    public String toString() {
+        return getProjectDisplayName()+" "+getProjectRoot(); // NOI18N
+    }
 }

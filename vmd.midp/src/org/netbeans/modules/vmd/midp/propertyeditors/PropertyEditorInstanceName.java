@@ -51,7 +51,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
@@ -129,11 +128,24 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     private void saveValue(final String text) {
         if (component != null && component.get() != null) {
             final DesignComponent _component = component.get();
+            //final PropertyValue[] newValue = new PropertyValue[1];
+
             _component.getDocument().getTransactionManager().readAccess(new Runnable() {
 
                 public void run() {
                     PropertyValue newInstanceName = InstanceNameResolver.createFromSuggested(_component, text);
-                    PropertyEditorInstanceName.super.setValue(newInstanceName);
+                    /*newValue[0] = newInstanceName;
+                }
+            });
+            if (PropertyEditorInstanceName.super.getValue() != null) {
+                MidpCodeSupport.refactorInstanceName(getAsText(),
+                        newValue[0].getPrimitiveValue().toString(),
+                        _component);
+            }
+            _component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                public void run() {*/
+                    PropertyEditorInstanceName.super.setValue(newInstanceName);//newValue[0]);
                 }
             });
         }
@@ -159,7 +171,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
 
     @Override
     public boolean canWrite() {
-        if (component == null || component.get() == null) {
+        /*if (component == null || component.get() == null) {
             return false;
         }
         
@@ -172,7 +184,18 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
             }
         });
 
-        return canWrite[0];
+        return canWrite[0];*/
+        return false;
+    }
+
+    @Override
+    public Boolean canEditAsText() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsCustomEditor() {
+        return false;
     }
 
     private String getLabelName() {

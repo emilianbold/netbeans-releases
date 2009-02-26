@@ -44,15 +44,18 @@ import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.security.InvalidKeyException;
 import java.util.logging.Level;
 import javax.net.ssl.SSLKeyException;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Cancellable;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -167,7 +170,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     }
                 }
                 if(support != null && support.isCanceled()) {
-                    Subversion.LOG.log(Level.WARNING, null, t);
+                    // action has been canceled, level info should be fine
+                    Subversion.LOG.log(Level.INFO, null, t);
                     // who knows what might have happened ...
                     throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);
                 }
@@ -229,6 +233,21 @@ public class SvnClientInvocationHandler implements InvocationHandler {
 
         Class[] parameters = proxyMethod.getParameterTypes();
         Class declaringClass = proxyMethod.getDeclaringClass();
+
+        // escaping SVNUrl argument values - #146041
+        // for javahl this is the place to escape those args, for cmd see SvnCommand
+        if (args != null) {
+            for (int i = 0; i < args.length; ++i) {
+                Object arg = args[i];
+                if (arg != null && arg instanceof SVNUrl) {
+                    try {
+                        args[i] = SvnUtils.decodeAndEncodeUrl((SVNUrl) arg);
+                    } catch (MalformedURLException ex) {
+                        Subversion.LOG.log(Level.INFO, "Url: " + arg, ex);
+                    }
+                }
+            }
+        }
 
         if( ISVNClientAdapter.class.isAssignableFrom(declaringClass) ) {
             // Cliet Adapter

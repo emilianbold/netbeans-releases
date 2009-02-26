@@ -710,13 +710,16 @@ public class ModelSupport implements PropertyChangeListener {
                     if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
                         System.err.printf("Updating for %s\n", fo);
                     }
-                    CsmFile[] files = CsmUtilities.getCsmFiles(fo);
-                    for (int i = 0; i < files.length; ++i) {
-                        FileImpl file = (FileImpl) files[i];
-                        ProjectBase project = file.getProjectImpl(true);
-                        if (created) {
-                            project.onFileExternalCreate(file);
-                        } else {
+                    if (created) {
+                        ProjectBase project = (ProjectBase)CsmUtilities.getCsmProject(fo);
+                        if (project != null) {
+                            project.onFileExternalCreate(fo);
+                        }
+                   } else {
+                        CsmFile[] files = CsmUtilities.getCsmFiles(fo);
+                        for (int i = 0; i < files.length; ++i) {
+                            FileImpl file = (FileImpl) files[i];
+                            ProjectBase project = file.getProjectImpl(true);
                             project.onFileExternalChange(file);
                         }
                     }

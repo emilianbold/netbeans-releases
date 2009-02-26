@@ -96,7 +96,7 @@ public final class Report {
         //PENDING - should be synchronized
         tests.add(test);
         
-        if (test.getTrouble() == null) {
+        if (!Status.isFailure(test.getStatus())) {
             detectedPassedTests++;
         }
     }

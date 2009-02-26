@@ -41,6 +41,8 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.spi.model.UIDProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -54,6 +56,10 @@ public final class UIDProviderIml implements UIDProvider {
 
     private static final Set<Class> nonIdentifiable = new HashSet<Class>();
     private static final boolean debugMode = CndUtils.isDebugMode();
+
+    public static boolean isSelfUID(CsmUID<?> uid) {
+        return uid instanceof SelfUID<?>;
+    }
 
     public UIDProviderIml() {
         // public constructor for service initialization
@@ -70,16 +76,21 @@ public final class UIDProviderIml implements UIDProvider {
             // we need to cast to the exact type
             @SuppressWarnings("unchecked") // checked
             CsmUID<T> uid = (CsmUID<T>) ident.getUID();
-            if (false && debugMode) {
+            if (debugMode && !((obj instanceof CsmNamespace)||(obj instanceof CsmProject))) {
                 Object object = uid.getObject();
                 if (object == null) {
                     if (checkNull) {
-                        System.err.println("no deref object for uid[" + uid + "] of " + obj); // NOI18N
+                        new Exception("no deref object for uid[" + uid + "] of " + obj).printStackTrace(); // NOI18N
                     }
                 } else {
-                    final Class<? extends Object> derefClass = object.getClass();
-                    if (!derefClass.isAssignableFrom(obj.getClass())) {
-                        System.err.println("deref class " + derefClass + " is not super class of " + obj.getClass()); // NOI18N
+                    // commented because method isAssignableFrom() is too expensive
+                    // find alternative method for assertion
+                    //for example: under special trace flag
+                    if (false) {
+                        final Class<? extends Object> derefClass = object.getClass();
+                        if (!derefClass.isAssignableFrom(obj.getClass())) {
+                            System.err.println("deref class " + derefClass + " is not super class of " + obj.getClass()); // NOI18N
+                        }
                     }
                 }
             }
@@ -130,6 +141,11 @@ public final class UIDProviderIml implements UIDProvider {
             int hash = 3;
             hash = 89 * hash + this.element.hashCode();
             return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "SUID: " + this.element; // NOI18N
         }
     }
 }

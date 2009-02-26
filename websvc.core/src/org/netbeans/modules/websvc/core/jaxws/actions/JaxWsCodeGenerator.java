@@ -700,9 +700,9 @@ public class JaxWsCodeGenerator {
         Project targetProject = FileOwnerQuery.getOwner(targetFo);
         J2eeModuleProvider moduleProvider = targetProject.getLookup().lookup(J2eeModuleProvider.class);
         if (moduleProvider != null && J2eeModule.WAR.equals(moduleProvider.getJ2eeModule().getModuleType())) {
-            return "WEB-INF/wsdl/client/" + client.getName() + "/" + client.getLocalWsdlFile(); //NOI18N
+            return "WEB-INF/wsdl/" + client.getLocalWsdlFile(); //NOI18N
         } else {
-            return "META-INF/wsdl/client/" + client.getName() + "/" + client.getLocalWsdlFile(); //NOI18N
+            return "META-INF/wsdl/" + client.getLocalWsdlFile(); //NOI18N
         }
     }
 

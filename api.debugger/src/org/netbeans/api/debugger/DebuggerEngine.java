@@ -125,7 +125,8 @@ public final class DebuggerEngine implements ContextProvider {
     
     
     // variables ...............................................................
-    
+
+    private Lookup                  privateLookup;
     private Lookup                  lookup;
     private ActionsManager          actionsManager;
 
@@ -139,7 +140,7 @@ public final class DebuggerEngine implements ContextProvider {
         Object[] services1 = new Object [services.length + 1];
         System.arraycopy (services, 0, services1, 0, services.length);
         services1 [services1.length - 1] = this;
-        Lookup privateLookup = new Lookup.Compound (
+        this.privateLookup = new Lookup.Compound (
                 new Lookup.Instance (services1),
                 new Lookup.MetaInf (typeID)
             );
@@ -151,6 +152,10 @@ public final class DebuggerEngine implements ContextProvider {
 
     Lookup getLookup() {
         return lookup;
+    }
+
+    Lookup getPrivateLookup() {
+        return privateLookup;
     }
     
 //    /**

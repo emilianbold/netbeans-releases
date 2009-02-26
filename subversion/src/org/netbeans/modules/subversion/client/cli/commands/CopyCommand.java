@@ -71,11 +71,20 @@ public class CopyCommand extends SvnCommand {
 
     public static final String MAKE_PARENTS_ARGUMENT = "--parents";
 
-    public CopyCommand(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev) {        
+    public CopyCommand(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev) {
         this.fromUrl = fromUrl;
         this.toUrl = toUrl;
         this.msg = msg;
-        this.rev = rev;        
+        this.rev = rev;
+        type = CopyType.url2url;
+    }
+
+    public CopyCommand(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev, boolean makeParents) {
+        this.fromUrl = fromUrl;
+        this.toUrl = toUrl;
+        this.msg = msg;
+        this.rev = rev;
+        this.makeParents = makeParents;
         type = CopyType.url2url;
     }
 

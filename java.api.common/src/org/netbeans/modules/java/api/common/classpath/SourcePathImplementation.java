@@ -66,6 +66,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -78,8 +79,8 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
 
     // TODO: if needed these parameters can be configurable via constructor parameter:
     private static final String BUILD_DIR = "build.dir"; // NOI18N
+    private static final String BUILD_GENERATED_DIR = "build.generated.sources.dir"; // NOI18N
 
-    private static final String DIR_GEN_BINDINGS = "generated/addons"; // NOI18N
     private static RequestProcessor REQ_PROCESSOR = new RequestProcessor(); // No I18N
     
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -88,32 +89,32 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     private AntProjectHelper projectHelper;
     private FileChangeListener fcl = null;      
     private PropertyEvaluator evaluator;
-    private boolean canHaveWebServices;
+    private File buildGeneratedDir = null;
+    private final FileChangeListener buildGeneratedDirListener = new FileChangeAdapter() {
+        public @Override void fileFolderCreated(FileEvent fe) {
+            // XXX could do this asynch like SourceRootScannerTask, but would need to do synch during unit test
+            invalidate();
+        }
+        public @Override void fileDeleted(FileEvent fe) {
+            invalidate();
+        }
+        public @Override void fileRenamed(FileRenameEvent fe) {
+            invalidate();
+        }
+    };
     
     /**
      * Construct the implementation.
      * @param sourceRoots used to get the roots information and events
      * @param projectHelper used to obtain the project root
      */
-    SourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper, PropertyEvaluator evaluator, boolean canHaveWebServices) {
+    SourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper, PropertyEvaluator evaluator) {
         assert sourceRoots != null && projectHelper != null && evaluator != null;
         this.sourceRoots = sourceRoots;
         this.sourceRoots.addPropertyChangeListener (this);
         this.projectHelper=projectHelper;
         this.evaluator = evaluator;
-        this.canHaveWebServices = canHaveWebServices;
         evaluator.addPropertyChangeListener(this);
-    }
-
-    private synchronized void createListener(String buildDir, String[] paths){
-        if (this.fcl == null){
-            // Need to keep reference to fcl.
-            // See JavaDoc for org.openide.util.WeakListeners
-            FileObject prjFo = this.projectHelper.getProjectDirectory();                        
-            this.fcl = new AddOnGeneratedSourceRootListener(prjFo, buildDir, 
-                    paths);
-            ((AddOnGeneratedSourceRootListener)this.fcl).listenToProjRoot();            
-        }
     }
     
     private List<PathResourceImplementation> getGeneratedSrcRoots(String buildDir, String[] paths){
@@ -207,48 +208,30 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                     }
                     result.add(new PRI());
                 }
-                // adds build/generated/wsclient and build/generated/wsimport to resources to be available for code completion
+                // add build/generated-sources subfolders to source roots
                 try {
-                    String buildDir = evaluator.getProperty(BUILD_DIR);
-                    if (buildDir!=null) {
-                        // generated/wsclient
-                        File f = new File (projectHelper.resolveFile(buildDir),"generated/wsclient"); //NOI18N
-                        URL url = f.toURI().toURL();
-                        if (!f.exists()) {  //NOI18N
-                            assert !url.toExternalForm().endsWith("/");  //NOI18N
-                            url = new URL (url.toExternalForm()+'/');   //NOI18N
-                        }
-                        result.add(ClassPathSupport.createResource(url));
-                        // generated/wsimport/client
-                        f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/client"); //NOI18N
-                        url = f.toURI().toURL();
-                        if (!f.exists()) {  //NOI18N
-                            assert !url.toExternalForm().endsWith("/");  //NOI18N
-                            url = new URL (url.toExternalForm()+'/');   //NOI18N
-                        }
-                        result.add(ClassPathSupport.createResource(url));
-
-                        // generated/wsimport/service
-                        if (canHaveWebServices) {
-                            f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/service"); //NOI18N
-                            url = f.toURI().toURL();
-                            if (!f.exists()) {  //NOI18N
-                                assert !url.toExternalForm().endsWith("/");  //NOI18N
-                                url = new URL (url.toExternalForm()+'/');   //NOI18N
+                    String buildGeneratedDirS = evaluator.getProperty(BUILD_GENERATED_DIR);
+                    if (buildGeneratedDirS != null) {
+                        File _buildGeneratedDir = projectHelper.resolveFile(buildGeneratedDirS);
+                        if (!_buildGeneratedDir.equals(buildGeneratedDir)) {
+                            if (buildGeneratedDir != null) {
+                                FileUtil.removeFileChangeListener(buildGeneratedDirListener, buildGeneratedDir);
                             }
-                            result.add(ClassPathSupport.createResource(url));
+                            buildGeneratedDir = _buildGeneratedDir;
+                            FileUtil.addFileChangeListener(buildGeneratedDirListener, buildGeneratedDir);
                         }
-
-                        // generated/addons/<subDirs>
-                        result.addAll(getGeneratedSrcRoots(buildDir,
-                                new String[] {DIR_GEN_BINDINGS}));
-                        // Listen for any new Source root creation.
-                        createListener(buildDir,
-                                new String[] {DIR_GEN_BINDINGS});
+                        if (buildGeneratedDir.isDirectory()) { // #105645
+                            for (File root : buildGeneratedDir.listFiles()) {
+                                if (!root.isDirectory()) {
+                                    continue;
+                                }
+                                result.add(ClassPathSupport.createResource(root.toURI().toURL()));
+                            }
+                        }
                     }
-                    } catch (MalformedURLException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
                 this.resources = Collections.unmodifiableList(result);
             }
             return this.resources;

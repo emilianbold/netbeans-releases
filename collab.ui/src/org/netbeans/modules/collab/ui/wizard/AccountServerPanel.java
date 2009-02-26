@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,26 +40,30 @@
  */
 package org.netbeans.modules.collab.ui.wizard;
 
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
-
-import org.openide.util.NbBundle;
-
 import com.sun.collablet.Account;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.openide.util.NbBundle;
 
 /**
  *
  *
  */
-public class AccountServerPanel extends WizardPanelBase {
+public class AccountServerPanel extends JPanel {
+
+    private WizardPanelBase wizardPanel;
 
     /**
      *
      *
      */
-    public AccountServerPanel() {
-        super(NbBundle.getMessage(AccountServerPanel.class, "LBL_AccountServerPanel_Name")); // NOI18N
+    public AccountServerPanel (WizardPanelBase wizardPanel) {
+        this.wizardPanel = wizardPanel;
+        setName(NbBundle.getMessage(AccountServerPanel.class, "LBL_AccountServerPanel_Name"));
 
         initComponents();
 
@@ -124,7 +128,7 @@ public class AccountServerPanel extends WizardPanelBase {
      *
      *
      */
-    public void readSettings(Object object) {
+    void readSettings(Object object) {
         AccountWizardSettings settings = AccountWizardSettings.narrow(object);
         Account account = settings.getAccount();
         serverField.setEditable(true);
@@ -162,7 +166,7 @@ public class AccountServerPanel extends WizardPanelBase {
      *
      *
      */
-    public void storeSettings(Object object) {
+    void storeSettings(Object object) {
         storeSettings(AccountWizardSettings.narrow(object).getAccount());
     }
 
@@ -170,7 +174,7 @@ public class AccountServerPanel extends WizardPanelBase {
      *
      *
      */
-    public void storeSettings(Account account) {
+    void storeSettings(Account account) {
         account.setServer(serverField.getText().trim());
 
         if (!isProxySelected()) {
@@ -196,13 +200,13 @@ public class AccountServerPanel extends WizardPanelBase {
      */
     protected void checkValidity() {
         if (serverField.getText().trim().length() == 0) {
-            setValid(false);
+            wizardPanel.setValid(false);
 
             return;
         }
 
         if (!isProxySelected()) {
-            setValid(true);
+            wizardPanel.setValid(true);
         } else {
             boolean hasServerText = proxyServer.getText().trim().length() > 0;
 
@@ -211,7 +215,7 @@ public class AccountServerPanel extends WizardPanelBase {
             boolean neitherHaveText = (proxyUserName.getText().trim().length() == 0) &&
                 (proxyPassword.getText().trim().length() == 0);
 
-            setValid(hasServerText && (neitherHaveText || userNameHasText));
+            wizardPanel.setValid(hasServerText && (neitherHaveText || userNameHasText));
         }
     }
 
@@ -232,7 +236,7 @@ public class AccountServerPanel extends WizardPanelBase {
         proxyServerExample.setText(NbBundle.getMessage(AccountServerPanel.class, key));
     }
 
-    public void initAccessibility() {
+    private void initAccessibility() {
 
         httpProxyButton.getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(AccountServerPanel.class, "ACSD_DESC_AccountProxyPanel_HttpProxy")

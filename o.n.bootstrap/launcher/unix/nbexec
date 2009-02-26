@@ -139,13 +139,6 @@ done
 # Process arguments given on the command line.
 parse_args "$@"
 
-#enabling heap dump on OOME
-jargs="$jargs -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=\"${userdir}/var/log/heapdump.hprof\""
-
-jargs_without_clusters="$jargs"
-jargs="-Dnetbeans.dirs=\"${clusters}\" $jargs_without_clusters"
-
-
 #
 # check JDK
 #
@@ -178,6 +171,14 @@ if [ ! -x "${jdkhome}/bin/java" ] ; then
     echo "Cannot find java. Please use the --jdkhome switch." >&2
     exit 2
 fi
+
+# if heap dump on OOME is supported enable it
+if "${jdkhome}/bin/java" -XX:+HeapDumpOnOutOfMemoryError > /dev/null ; then
+   jargs="$jargs -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=\"${userdir}/var/log/heapdump.hprof\""
+fi
+
+jargs_without_clusters="$jargs"
+jargs="-Dnetbeans.dirs=\"${clusters}\" $jargs_without_clusters"
 
 jdkhome=`absolutize_path "$jdkhome"`
 
@@ -460,6 +461,7 @@ fi
 # clear to prevent loop from ending
 restart="yes"
 first_time_starting="yes"
+restart_file="${userdir}/var/restart"
 
 while [ "$restart" ] ; do
 
@@ -488,6 +490,8 @@ while [ "$restart" ] ; do
     # let's go
     #
     delete_new_clusters_file
+    rm -f "${restart_file}"
+
      eval ${_NB_PROFILE_CMD} "\"${jdkhome}/bin/java\"" -Djdk.home="\"${jdkhome}\"" -classpath "\"$cp\"" \
         $jargs org.netbeans.Main "$args" '&'
     PID=$!
@@ -511,8 +515,10 @@ while [ "$restart" ] ; do
         do_run_updater
         restart="yes"
     else
-        restart=""
-        # will fall thru loop and exit
+        if [ ! -f "${restart_file}" ] ; then
+            # will fall thru loop and exit
+            restart=""
+        fi
     fi
 
 done

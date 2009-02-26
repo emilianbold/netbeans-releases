@@ -70,6 +70,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
+import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -85,7 +86,7 @@ import org.openide.util.RequestProcessor;
  * IMHO at least..
  * @author  Milos Kleint
  */
-public class MavenSourcesImpl implements Sources {
+public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementation {
     public static final String TYPE_OTHER = "Resources"; //NOI18N
     public static final String TYPE_TEST_OTHER = "TestResources"; //NOI18N
     public static final String TYPE_GEN_SOURCES = "GeneratedSources"; //NOI18N
@@ -99,7 +100,7 @@ public class MavenSourcesImpl implements Sources {
     private final List<ChangeListener> listeners;
     
     private Map<String, SourceGroup> javaGroup;
-    private SourceGroup genSrcGroup;
+    private Map<File, SourceGroup> genSrcGroup;
     private Map<File, OtherGroup> otherMainGroups;
     private Map<File, OtherGroup> otherTestGroups;
     
@@ -111,6 +112,7 @@ public class MavenSourcesImpl implements Sources {
         project = proj;
         listeners = new ArrayList<ChangeListener>();
         javaGroup = new TreeMap<String, SourceGroup>();
+        genSrcGroup = new TreeMap<File, SourceGroup>();
         otherMainGroups = new TreeMap<File, OtherGroup>();
         otherTestGroups = new TreeMap<File, OtherGroup>();
         NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
@@ -131,25 +133,14 @@ public class MavenSourcesImpl implements Sources {
                 changed = changed | checkJavaGroupCache(folder, NAME_SOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Sources"));
                 folder = FileUtilities.convertStringToFileObject(mp.getBuild().getTestSourceDirectory());
                 changed = changed | checkJavaGroupCache(folder, NAME_TESTSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Test_Sources"));
-                URI[] uris = project.getGeneratedSourceRoots();
-                if (uris.length > 0) {
-                    try {
-                        folder = URLMapper.findFileObject(uris[0].toURL());
-                    } catch (MalformedURLException ex) {
-                        ex.printStackTrace();
-                        folder = null;
-                    }
-                } else {
-                    folder = null;
-                }
-                changed = changed | checkGeneratedGroupCache(folder);
+                changed = changed | checkGeneratedGroupsCache(project.getGeneratedSourceRoots());
                 changed = changed | checkOtherGroupsCache(project.getOtherRoots(false), false);
                 changed = changed | checkOtherGroupsCache(project.getOtherRoots(true), true);
             } else {
                 changed = true;
                 checkJavaGroupCache(null, NAME_SOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Sources"));
                 checkJavaGroupCache(null, NAME_TESTSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Test_Sources"));
-                checkGeneratedGroupCache(null);
+                checkGeneratedGroupsCache(null);
                 checkOtherGroupsCache(null, true);
                 checkOtherGroupsCache(null, false);
             }
@@ -166,7 +157,7 @@ public class MavenSourcesImpl implements Sources {
             }
         }
     }
-    
+
     private void fireChange() {
         List<ChangeListener> currList;
         synchronized (listeners) {
@@ -207,25 +198,15 @@ public class MavenSourcesImpl implements Sources {
             return grp;
         }
         if (TYPE_GEN_SOURCES.equals(str)) {
-            try {
-                URI[] uris = project.getGeneratedSourceRoots();
-                if (uris.length > 0) {
-                    //TODO just assuming 1 generated source root is BAD... should be more like the java source roots..
-                    FileObject folder = URLMapper.findFileObject(uris[0].toURL());
-                    SourceGroup grp = null;
-                    synchronized (lock) {
-                        checkGeneratedGroupCache(folder);
-                        grp = genSrcGroup;
-                    }
-                    if (grp != null) {
-                        return new SourceGroup[] {grp};
-                    } else {
-                        return new SourceGroup[0];
-                    }
-                }
-            } catch (MalformedURLException exc) {
-                return new SourceGroup[0];
+            URI[] uris = project.getGeneratedSourceRoots();
+            List<SourceGroup> toReturn = new ArrayList<SourceGroup>();
+            synchronized (lock) {
+                checkGeneratedGroupsCache(uris);
+                toReturn.addAll(genSrcGroup.values());
             }
+            SourceGroup[] grp = new SourceGroup[toReturn.size()];
+            grp = toReturn.toArray(grp);
+            return grp;
         }
         if (TYPE_OTHER.equals(str) || TYPE_TEST_OTHER.equals(str)) {
             // TODO not all these are probably resources.. maybe need to split in 2 groups..
@@ -246,35 +227,42 @@ public class MavenSourcesImpl implements Sources {
             return grp;
         }
         if (JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(str)) {
-            URI[] uris = project.getResources(false);
-            if (uris.length > 0) {
-                List<URI> virtuals = new ArrayList<URI>();
-                List<SourceGroup> existing = new ArrayList<SourceGroup>();
-                for (URI u : uris) {
-                    FileObject fo = FileUtilities.convertURItoFileObject(u);
-                    if (fo == null) {
-                        virtuals.add(u);
-                    } else {
-                        existing.add(GenericSources.group(project, fo, "resources",  //NOI18N
-                            NbBundle.getMessage(MavenSourcesImpl.class, "SG_Project_Resources"), null, null));
-                    }
-                }
-                if (existing.size() == 0) {
-                    File root = new File(virtuals.get(0));
-                    FileObject fo=null;
-                    try {
-                        fo = FileUtil.createFolder(root);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+            return getOrCreateResourceSourceGroup(false);
+        }
+//        logger.warn("unknown source type=" + str);
+        return new SourceGroup[0];
+    }
+
+    private SourceGroup[] getOrCreateResourceSourceGroup(boolean test) {
+        URI[] uris = project.getResources(test);
+        if (uris.length > 0) {
+            List<URI> virtuals = new ArrayList<URI>();
+            List<SourceGroup> existing = new ArrayList<SourceGroup>();
+            for (URI u : uris) {
+                FileObject fo = FileUtilities.convertURItoFileObject(u);
+                if (fo == null) {
+                    virtuals.add(u);
+                } else {
                     existing.add(GenericSources.group(project, fo, "resources",  //NOI18N
                         NbBundle.getMessage(MavenSourcesImpl.class, "SG_Project_Resources"), null, null));
                 }
-                //TODO we should probably add includes/excludes to source groups.
-                return existing.toArray(new SourceGroup[0]);
             }
+            if (existing.size() == 0) {
+                File root = new File(virtuals.get(0));
+                FileObject fo=null;
+                try {
+                    fo = FileUtil.createFolder(root);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                existing.add(GenericSources.group(project, fo, "resources",  //NOI18N
+                    NbBundle.getMessage(MavenSourcesImpl.class, "SG_Project_Resources"), null, null));
+            }
+            //TODO we should probably add includes/excludes to source groups.
+            return existing.toArray(new SourceGroup[0]);
+        } else {
+            //TODO add <Resources> element to pom??
         }
-//        logger.warn("unknown source type=" + str);
         return new SourceGroup[0];
     }
     
@@ -304,23 +292,50 @@ public class MavenSourcesImpl implements Sources {
         }
         return changed;
     }
-    
-    
+
+    private boolean checkGeneratedGroupsCache(URI[] uris) {
+        boolean changed = false;
+        List<File> checked = new ArrayList<File>();
+        for (URI u : uris) {
+            FileObject folder = FileUtilities.convertURItoFileObject(u);
+            File file = FileUtil.toFile(folder);
+            changed = changed |checkGeneratedGroupCache(folder, file, folder.getNameExt());
+            checked.add(file);
+        }
+        Set<File> currs = new HashSet<File>();
+        currs.addAll(genSrcGroup.keySet());
+        for (File curr : currs) {
+            if (!checked.contains(curr)) {
+                genSrcGroup.remove(curr);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
     /**
      * consult the SourceGroup cache, return true if anything changed..
      */
-    private boolean checkGeneratedGroupCache(FileObject root) {
-        if (root == null && genSrcGroup != null) {
-            genSrcGroup = null;
+    private boolean checkGeneratedGroupCache(FileObject root, File rootFile, String nameSuffix) {
+        SourceGroup group = genSrcGroup.get(rootFile);
+        if (root == null && group != null) {
+            genSrcGroup.remove(rootFile);
             return true;
         }
         if (root == null) {
             return false;
         }
         boolean changed = false;
-        if (genSrcGroup == null || !genSrcGroup.getRootFolder().isValid() || !genSrcGroup.getRootFolder().equals(root)) {
-            genSrcGroup = new GeneratedGroup(project, root, NAME_GENERATED_SOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Generated_Sources"));
+        if (group == null) {
+            group = new GeneratedGroup(project, root, NAME_GENERATED_SOURCE + nameSuffix, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Generated_Sources", nameSuffix));
+            genSrcGroup.put(rootFile, group);
             changed = true;
+        } else {
+            if (!group.getRootFolder().isValid() || !group.getRootFolder().equals(root)) {
+                group = new GeneratedGroup(project, root, NAME_GENERATED_SOURCE + nameSuffix, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Generated_Sources", nameSuffix));
+                genSrcGroup.put(rootFile, group);
+                changed = true;
+            }
         }
         return changed;
     }
@@ -370,6 +385,52 @@ public class MavenSourcesImpl implements Sources {
             changed = true;
         }
         return changed;
+    }
+
+    public SourceGroup createSourceGroup(String type, String hint) {
+        assert type != null;
+        MavenProject mp = project.getOriginalMavenProject();
+        File folder = null;
+        if (JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(type)) {
+            boolean main = JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint);
+            SourceGroup[] grps =  getOrCreateResourceSourceGroup(!main);
+            if (grps.length > 0) {
+                return grps[0];
+            }
+            return null;
+        }
+        if (JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type)) {
+            if (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint)) {
+                folder = FileUtilities.convertStringToFile(mp.getBuild().getSourceDirectory());
+            }
+            if (JavaProjectConstants.SOURCES_HINT_TEST.equals(hint)) {
+                folder = FileUtilities.convertStringToFile(mp.getBuild().getTestSourceDirectory());
+            }
+        }
+        if (folder != null) {
+            folder.mkdirs();
+            FileUtil.refreshFor(folder);
+            checkChanges(false);
+            FileObject fo = FileUtil.toFileObject(folder);
+            assert fo != null;
+            SourceGroup[] grps = getSourceGroups(type);
+            for (SourceGroup sg : grps) {
+                if (fo.equals(sg.getRootFolder())) {
+                    return sg;
+                }
+            }
+            //shall we somehow report it?
+        }
+
+        return null;
+    }
+
+    public boolean canCreateSourceGroup(String type, String hint) {
+        if ((JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(type) || JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type))
+                && (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint) || JavaProjectConstants.SOURCES_HINT_TEST.equals(hint))) {
+            return true;
+        }
+        return false;
     }
     
     

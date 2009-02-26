@@ -41,9 +41,11 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -59,27 +61,37 @@ public class RunFileCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) {
-        if (isTestFile(context)) {
+        FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
+        if (isSeleniumFile(fileObj)) {
+            // selenium
+            ConfigAction.get(ConfigAction.Type.SELENIUM, getProject()).runFile(context);
+        } else if (isTestFile(fileObj)) {
             // test
-            ConfigAction.get(ConfigAction.Type.TEST).runFile(getProject(), context);
+            ConfigAction.get(ConfigAction.Type.TEST, getProject()).runFile(context);
         } else {
             // source
-            if (!isRunConfigurationValid(false)) {
+            ConfigAction configAction = getConfigAction();
+            if (!configAction.isValid(false)) {
                 // property not set yet
                 return;
             }
-            getConfigAction().runFile(getProject(), context);
+            configAction.runFile(context);
         }
     }
 
     @Override
     public boolean isActionEnabled(Lookup context) {
-        if (isTestFile(context)) {
+        FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
+        if (isSeleniumFile(fileObj)) {
+            // selenium
+            return ConfigAction.get(ConfigAction.Type.SELENIUM, getProject()).isRunFileEnabled(context);
+        }
+        if (isTestFile(fileObj)) {
             // test
-            return ConfigAction.get(ConfigAction.Type.TEST).isRunFileEnabled(getProject(), context);
+            return ConfigAction.get(ConfigAction.Type.TEST, getProject()).isRunFileEnabled(context);
         }
         // source
-        return getConfigAction().isRunFileEnabled(getProject(), context);
+        return getConfigAction().isRunFileEnabled(context);
     }
 
     @Override

@@ -77,8 +77,9 @@ class FormToolBar extends JToolBar {
 
     private Listener listener;
 
-    // ctor
     public FormToolBar(FormDesigner designer) {
+        // Proper initialization of aqua toolbar ui, see commit dbd66075827a
+        super("editorToolbar"); // NOI18N
         formDesigner = designer;
 
         // the toolbar should have roll-over buttons and no handle for dragging

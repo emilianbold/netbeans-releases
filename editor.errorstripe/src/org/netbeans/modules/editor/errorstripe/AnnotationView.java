@@ -287,8 +287,11 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         super.paintComponent(g);
         
         Color oldColor = g.getColor();
-        
-        g.setColor(UIManager.getColor("Panel.background")); // NOI18N
+
+        Color backColor = UIManager.getColor("NbEditorGlyphGutter.background"); //NOI18N
+        if( null == backColor )
+            backColor = UIManager.getColor("Panel.background"); // NOI18N
+        g.setColor(backColor);
         
         g.fillRect(0, 0, getWidth(), getHeight());
         

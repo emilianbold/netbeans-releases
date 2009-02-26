@@ -55,8 +55,6 @@ import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.FileManip;
 import org.netbeans.modules.uml.core.support.umlsupport.FileSysManip;
-import org.netbeans.modules.uml.core.support.umlsupport.PathManip;
-import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
@@ -80,6 +78,7 @@ public class Package extends Namespace implements IPackage, IAutonomousElement
         super();
     }
     
+    @Override
     public void setNode(Node n)
     {
         super.setNode(n);
@@ -507,6 +506,7 @@ public class Package extends Namespace implements IPackage, IAutonomousElement
      * @return HRESULT
      *
      */
+    @Override
     public void establishNodePresence( Document doc, Node parent )
     {
         buildNodePresence( "UML:Package", doc, parent );
@@ -705,6 +705,7 @@ public class Package extends Namespace implements IPackage, IAutonomousElement
         return isUnique;
     }
     
+    @Override
     public IVersionableElement performDuplication()
     {
         IVersionableElement dup = super.performDuplication();
@@ -779,6 +780,7 @@ public class Package extends Namespace implements IPackage, IAutonomousElement
         super.performDependentElementCleanup( thisElement );
     }
     
+    @Override
     public void establishNodeAttributes( org.dom4j.Element node )
     {
         super.establishNodeAttributes( node );
@@ -1096,6 +1098,7 @@ public class Package extends Namespace implements IPackage, IAutonomousElement
     }
     
     //overrides the method in Namespace
+    @Override
     public boolean addOwnedElement(INamedElement elem)
     {
         IProject elemProj = elem.getProject();

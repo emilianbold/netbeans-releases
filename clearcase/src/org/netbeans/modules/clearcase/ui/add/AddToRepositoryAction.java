@@ -614,9 +614,6 @@ public final class AddToRepositoryAction extends AbstractAction implements Chang
     private void openProject(Project p) {
         Project[] projects = new Project[]{p};
         OpenProjects.getDefault().open(projects, false);
-
-        // set as main project and expand
-        OpenProjects.getDefault().setMainProject(p);     
     }
     
     public void commandStarted()        { /* boring */ }

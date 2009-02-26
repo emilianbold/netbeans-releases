@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.websvc.core.jaxws.projects;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +61,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
     "org-netbeans-modules-j2ee-clientproject",
     "org-netbeans-modules-java-j2seproject"
 })
-public class AntJaxWsServicesProvider implements WebServiceDataProvider, PropertyChangeListener {
+public class AntJaxWsServicesProvider implements WebServiceDataProvider {
     private Project prj;
 
     /** Constructor.
@@ -110,46 +109,6 @@ public class AntJaxWsServicesProvider implements WebServiceDataProvider, Propert
         if (jaxWsModel != null) {
             jaxWsModel.removePropertyChangeListener(pcl);
         }
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-//        if (JAXWSLightSupport.PROPERTY_SERVICE_ADDED.equals(evt.getPropertyName())) {
-//            JaxWsService newService = (JaxWsService) evt.getNewValue();
-//            if (newService.isServiceProvider()) {
-//                Service service = jaxWsModel.findServiceByImplementationClass(newService.getImplementationClass());
-//                if (service != null) {
-//                    AntJAXWSService mavenService = new AntJAXWSService(newService, jaxWsModel, service, prj);
-//                    WebService webService = WebServiceFactory.createWebService(mavenService);
-//                    providers.add(webService);
-//                }
-//            } else {
-//                Client client = jaxWsModel.findClientByWsdlUrl(newService.getWsdlUrl());
-//                if (client != null) {
-//                    AntJAXWSClient mavenClient = new AntJAXWSClient(newService, jaxWsModel, client, prj);
-//                    WebService webService = WebServiceFactory.createWebService(mavenClient);
-//                    consumers.add(webService);
-//                }
-//            }
-//        } else if (JAXWSLightSupport.PROPERTY_SERVICE_REMOVED.equals(evt.getPropertyName())) {
-//            JaxWsService jaxWsService = (JaxWsService) evt.getOldValue();
-//            if (jaxWsService.isServiceProvider()) {
-//                String implClass = jaxWsService.getImplementationClass();
-//                for (WebService service : providers) {
-//                    if (implClass.equals(service.getIdentifier())) {
-//                        providers.remove(service);
-//                        break;
-//                    }
-//                }
-//            } else {
-//                String wsdlUrl = jaxWsService.getWsdlUrl();
-//                for (WebService service : consumers) {
-//                    if (wsdlUrl.equals(service.getIdentifier())) {
-//                        consumers.remove(service);
-//                        break;
-//                    }
-//                }
-//            }
-//        }
     }
 
 }

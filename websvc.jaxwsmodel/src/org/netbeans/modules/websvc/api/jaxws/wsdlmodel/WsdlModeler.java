@@ -58,8 +58,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.xml.resolver.CatalogManager;
-import org.apache.xml.resolver.tools.CatalogResolver;
+import org.apache.xml.resolver.NbCatalogManager;
+import org.apache.xml.resolver.tools.NbCatalogResolver;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.xml.sax.EntityResolver;
@@ -219,11 +219,11 @@ public class WsdlModeler {
                 options.defaultPackage = packageName;
             }
             if (catalog != null) {
-                CatalogManager manager = new CatalogManager(null);
+                NbCatalogManager manager = new NbCatalogManager(null);
                 manager.setCatalogFiles(catalog.toExternalForm());
                 manager.setUseStaticCatalog(false);
                 manager.setVerbosity(4);
-                entityResolver = new CatalogResolver(manager);
+                entityResolver = new NbCatalogResolver(manager);
                 options.entityResolver = entityResolver;
             }
 

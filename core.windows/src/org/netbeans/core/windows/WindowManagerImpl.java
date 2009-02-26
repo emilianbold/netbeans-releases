@@ -769,9 +769,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /** Sets visible or invisible window system GUI. */
     public void setVisible(boolean visible) {
-        if( visible ) {
-            FloatingWindowTransparencyManager.getDefault().start();
-        } else {
+        if( !visible ) {
             FloatingWindowTransparencyManager.getDefault().stop();
         }
         central.setVisible(visible);
@@ -781,6 +779,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         if (visible) {
             if (!exclusivesCompleted) {
                 paintedTimer.restart();
+            } else {
+                FloatingWindowTransparencyManager.getDefault().start();
             }
         } else {
             paintedTimer.stop();
@@ -1156,7 +1156,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                     recentTc = central.getRecentTopComponent( mode, tc );
                 }
                 mode.close(tc);
-                if( null != recentTc )
+                if( !tc.isOpened() && null != recentTc )
                     mode.setSelectedTopComponent(recentTc);
             }
         }
@@ -1177,6 +1177,9 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
             central.setModeSelectedTopComponent(mode, tc);
+            if( mode.getState() == Constants.MODE_STATE_SEPARATED ) {
+                tc.toFront();
+            }
         }
     }
 
@@ -1294,6 +1297,12 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         if (!exclusivesCompleted) {
             exclusivesCompleted = true;
             paintedTimer.stop();
+
+            exclusive.register(new Runnable() {
+                public void run() {
+                    FloatingWindowTransparencyManager.getDefault().start();
+                }
+            });
 
             SwingUtilities.invokeLater(exclusive);
         }

@@ -450,10 +450,8 @@ public class CsmContextUtilities {
     }
     
     private static boolean isInContext(CsmContext context, CsmObject obj) {
-        // XXX: in fact better to start from end
-        //for (Iterator it = context.iterator(); it.hasNext();) {
-        for (ListIterator it = context.reverseIterator(); it.hasPrevious();) {
-            CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.previous();
+        for (ListIterator<CsmContext.CsmContextEntry> it = context.reverseIterator(); it.hasPrevious();) {
+            CsmContext.CsmContextEntry elem = it.previous();
             if (obj.equals(elem.getScope())) {
                 return true;
             }
@@ -559,6 +557,16 @@ public class CsmContextUtilities {
         } else {
             CsmClass cls = CsmContextUtilities.getClass(context, false, false);
             ns = cls == null ? null : getClassNamespace(cls);
+        }
+        if (ns == null) {
+            // look for namespace definition in context
+            for (ListIterator<CsmContext.CsmContextEntry> it = context.reverseIterator(); it.hasPrevious();) {
+                CsmContext.CsmContextEntry elem = it.previous();
+                if (CsmKindUtilities.isNamespaceDefinition(elem.getScope())) {
+                    ns = ((CsmNamespaceDefinition)elem.getScope()).getNamespace();
+                    break;
+                }
+            }
         }
         return ns;
     }

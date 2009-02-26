@@ -20,8 +20,11 @@
 
 package org.netbeans.modules.bpel.debugger.ui;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
 import org.netbeans.spi.debugger.ui.AttachType;
+import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.util.NbBundle;
 
 
@@ -31,13 +34,25 @@ import org.openide.util.NbBundle;
  *
  * @author Sun Microsystems
  */
+@AttachType.Registration(displayName="#CTL_BpelConnector_name")
 public class BpelAttachType extends AttachType {
 
-    public String getTypeDisplayName () {
-        return NbBundle.getMessage (getClass(), "CTL_Connector_name");
-    }
+    private Reference<BpelConnectPanel> customizerRef = new WeakReference<BpelConnectPanel>(null);
 
     public JComponent getCustomizer () {
-        return new BpelConnectPanel();
+        BpelConnectPanel panel = new BpelConnectPanel ();
+        customizerRef = new WeakReference<BpelConnectPanel>(panel);
+        return panel;
     }
+
+    @Override
+    public Controller getController() {
+        BpelConnectPanel panel = customizerRef.get();
+        if (panel != null) {
+            return panel.getController();
+        } else {
+            return null;
+        }
+    }
+
 }

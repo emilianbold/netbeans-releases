@@ -84,7 +84,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * TODO, include this in the main module (nb-project)
  * @author mkleint
  */
 public class ArchetypeWizardUtils {
@@ -178,7 +177,6 @@ public class ArchetypeWizardUtils {
         config.setActivatedProfiles(Collections.<String>emptyList());
         config.setExecutionDirectory(directory);
         config.setExecutionName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Project_Creation"));
-        //TODO externalize somehow to allow advanced users to change the value..
         config.setGoals(Collections.singletonList(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_CREATE_ARCHETYPENG))); //NOI18N
         if (arch.getRepository() != null) {
             props.setProperty("archetype.repository", arch.getRepository()); //NOI18N
@@ -189,6 +187,10 @@ public class ArchetypeWizardUtils {
         config.setInteractive(false);
         props.setProperty("archetype.interactive", "false");//NOI18N
         config.setProperties(props);
+        //#136853 make sure to get the latest snapshot always..
+        if (arch.getVersion().contains("SNAPSHOT")) { //NOI18N
+            config.setUpdateSnapshots(true);
+        }
 
         config.setTaskDisplayName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Maven"));
         // setup executor now..
@@ -252,34 +254,34 @@ public class ArchetypeWizardUtils {
                 null,
                 (String)wiz.getProperty("groupId"), //NOI18N
                 (String)wiz.getProperty("artifactId"), //NOI18N
-                (String)wiz.getProperty("version"),
+                (String)wiz.getProperty("version"), //NOI18N
                 null,
-                (String)wiz.getProperty("package"),
+                (String)wiz.getProperty("package"), //NOI18N
                 null, null, null);
         @SuppressWarnings("unchecked")
         Map<String, String> additional = (Map<String, String>)wiz.getProperty("additionalProps"); //NOI18N
 
         try {
-            NBVersionInfo ear_vi = (NBVersionInfo)wiz.getProperty("ear_versionInfo");
+            NBVersionInfo ear_vi = (NBVersionInfo)wiz.getProperty("ear_versionInfo"); //NOI18N
             if (ear_vi != null) {
                 // enterprise application wizard, multiple archetypes to run
-                NBVersionInfo web_vi = (NBVersionInfo)wiz.getProperty("web_versionInfo");
-                NBVersionInfo ejb_vi = (NBVersionInfo)wiz.getProperty("ejb_versionInfo");
+                NBVersionInfo web_vi = (NBVersionInfo)wiz.getProperty("web_versionInfo"); //NOI18N
+                NBVersionInfo ejb_vi = (NBVersionInfo)wiz.getProperty("ejb_versionInfo"); //NOI18N
 
                 handle.start(8 + (web_vi != null ? 3 : 0) + (ejb_vi != null ? 3 : 0));
-                File rootFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi,
-                        (Archetype)wiz.getProperty("archetype"), additional, 0);
-                createFromArchetype(handle, (File)wiz.getProperty("ear_projdir"), ear_vi,
-                        (Archetype)wiz.getProperty("ear_archetype"), null, 4);
+                File rootFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi, //NOI18N
+                        (Archetype)wiz.getProperty("archetype"), additional, 0); //NOI18N
+                createFromArchetype(handle, (File)wiz.getProperty("ear_projdir"), ear_vi, //NOI18N
+                        (Archetype)wiz.getProperty("ear_archetype"), null, 4); //NOI18N
                 int progressCounter = 6;
                 if (web_vi != null) {
-                    createFromArchetype(handle, (File)wiz.getProperty("web_projdir"), web_vi,
-                            (Archetype)wiz.getProperty("web_archetype"), null, progressCounter);
+                    createFromArchetype(handle, (File)wiz.getProperty("web_projdir"), web_vi, //NOI18N
+                            (Archetype)wiz.getProperty("web_archetype"), null, progressCounter); //NOI18N
                     progressCounter += 3;
                 }
                 if (ejb_vi != null) {
-                    createFromArchetype(handle, (File)wiz.getProperty("ejb_projdir"), ejb_vi,
-                            (Archetype)wiz.getProperty("ejb_archetype"), null, progressCounter);
+                    createFromArchetype(handle, (File)wiz.getProperty("ejb_projdir"), ejb_vi, //NOI18N
+                            (Archetype)wiz.getProperty("ejb_archetype"), null, progressCounter); //NOI18N
                     progressCounter += 3;
                 }
                 addEARDeps((File)wiz.getProperty("ear_projdir"), ejb_vi, web_vi, progressCounter);
@@ -289,8 +291,8 @@ public class ArchetypeWizardUtils {
             } else {
                 // other wizards, just one archetype
                 handle.start(4);
-                File projFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi,
-                        (Archetype)wiz.getProperty("archetype"), additional, 0);
+                File projFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi, //NOI18N
+                        (Archetype)wiz.getProperty("archetype"), additional, 0); //NOI18N
                 return openProjects(handle, projFile, 3);
             }
         } finally {
@@ -382,19 +384,19 @@ public class ArchetypeWizardUtils {
         }
         if (ejbVi != null) {
             // EAR ---> ejb
-            ModelUtils.addDependency(earDirFO.getFileObject("pom.xml"), ejbVi.getGroupId(),
+            ModelUtils.addDependency(earDirFO.getFileObject("pom.xml"), ejbVi.getGroupId(), //NOI18N
                     ejbVi.getArtifactId(), ejbVi.getVersion(), ejbVi.getType(), null, null, true);
         }
         if (webVi != null) {
             // EAR ---> war
-            ModelUtils.addDependency(earDirFO.getFileObject("pom.xml"), webVi.getGroupId(),
+            ModelUtils.addDependency(earDirFO.getFileObject("pom.xml"), webVi.getGroupId(), //NOI18N
                     webVi.getArtifactId(), webVi.getVersion(), webVi.getType(), null, null, false);
         }
         progressCounter++;
     }
 
     private static void updateProjectName (final File projDir, final String newName) {
-        FileObject pomFO = FileUtil.toFileObject(new File(projDir, "pom.xml"));
+        FileObject pomFO = FileUtil.toFileObject(new File(projDir, "pom.xml")); //NOI18N
         if (pomFO != null) {
             ModelOperation<POMModel> op = new ModelOperation<POMModel> () {
                 public void performOperation(POMModel model) {

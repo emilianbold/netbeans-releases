@@ -28,7 +28,7 @@ ${COMMENTICON}    static final String ICON_PATH = "${ICONPATH}";
         setName(NbBundle.getMessage(${TEMPLATENAME}TopComponent.class, "CTL_${TEMPLATENAME}TopComponent"));
         setToolTipText(NbBundle.getMessage(${TEMPLATENAME}TopComponent.class, "HINT_${TEMPLATENAME}TopComponent"));
 ${COMMENTICON}        setIcon(Utilities.loadImage(ICON_PATH, true));
-        ${KEEPPREFSIZE}
+${WINSYSBEHAVIOR}
     }
 
     /** This method is called from within the constructor to

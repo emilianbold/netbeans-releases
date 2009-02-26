@@ -67,6 +67,5 @@ public interface CsmMacroExpansionViewProvider {
      * @param doc - document
      * @param offset - offset in document
      */
-    public abstract void showMacroExpansionView(Document doc, int offset);
-
+    public void showMacroExpansionView(Document doc, int offset);
 }

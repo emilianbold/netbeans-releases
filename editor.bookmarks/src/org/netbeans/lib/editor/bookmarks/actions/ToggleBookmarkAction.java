@@ -90,9 +90,7 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
     
     public ToggleBookmarkAction(JTextComponent component) {
         super(
-            NbBundle.getMessage(ToggleBookmarkAction.class, ACTION_NAME), 
-            new ImageIcon(ImageUtilities.loadImage(ACTION_ICON))
-        );
+            NbBundle.getMessage(ToggleBookmarkAction.class, ACTION_NAME),ImageUtilities.loadImageIcon(ACTION_ICON, false));
         putValue(SHORT_DESCRIPTION, getValue(NAME));
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
         

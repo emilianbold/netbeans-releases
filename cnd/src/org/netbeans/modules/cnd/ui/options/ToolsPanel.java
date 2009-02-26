@@ -1676,7 +1676,7 @@ private boolean selectTool(JTextField tf) {
     return true;
 }
 
-    class MyCellRenderer extends DefaultListCellRenderer {
+    static class MyCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -1733,7 +1733,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     Runnable longTask = new Runnable() {
         public void run() {
             CompilerSetManager newCsm = CompilerSetManager.create(hkey);
-            newCsm.initialize(false);
+            newCsm.initialize(false, true);
             cacheManager.addCompilerSetManager(newCsm);
             List<CompilerSet> list = csm.getCompilerSets();
             for (CompilerSet cs : list) {
