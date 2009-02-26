@@ -119,6 +119,7 @@ public class KenaiTest extends junit.framework.TestCase {
         String name = "java-inline";
         KenaiProject prj = instance.getProject(name);
         System.out.println("Project: " + prj.getDisplayName());
+        System.out.println(prj.getWebLocation());
     }
 
     @Test

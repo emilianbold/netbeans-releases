@@ -60,7 +60,7 @@ public final class KenaiProject {
 
     private String    name;
 
-    private URL       href;
+    private URL       web_url;
 
     private ProjectData     data;
     
@@ -80,7 +80,7 @@ public final class KenaiProject {
     private KenaiProject(ProjectData p) {
         this.name = p.name;
         try {
-            this.href = new URL(p.href);
+            this.web_url = new URL(p.web_url);
         } catch (MalformedURLException ex) {
             throw new IllegalArgumentException(ex);
         }
@@ -111,7 +111,7 @@ public final class KenaiProject {
      * @return
      */
     public URL getWebLocation() {
-        return href;
+        return web_url;
     }
 
     /**
@@ -273,7 +273,7 @@ public final class KenaiProject {
 
         this.name = data.name;
         try {
-            this.href = new URL(data.href);
+            this.web_url = new URL(data.href);
         } catch (MalformedURLException ex) {
             throw new IllegalArgumentException(ex);
         }
