@@ -39,7 +39,9 @@
 package org.netbeans.modules.dlight.sync;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
@@ -68,7 +70,11 @@ import org.openide.util.NbBundle;
 public final class SyncToolConfigurationProvider implements DLightToolConfigurationProvider {
 
     private static final String TOOL_NAME = loc("SyncTool.ToolName"); // NOI18N
+
     private static final boolean USE_SUNSTUDIO = Boolean.getBoolean("gizmo.cpu.sunstudio"); // NOI18N
+    private static final boolean USE_PRSTAT = Util.getBoolean("gizmo.sync.prstat", true); // NOI18N
+    private static final boolean redirectStdErr = Util.getBoolean("dlight.memory.log.stderr", false); // NOI18N
+    
     private static final Column timestampColumn = new _Column(Long.class, "timestamp"); // NOI18N
     private static final Column waiterColumn = new _Column(Integer.class, "waiter"); // NOI18N
     private static final Column mutexColumn = new _Column(Long.class, "mutex"); // NOI18N
@@ -103,11 +109,13 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
     public DLightToolConfiguration create() {
         DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(TOOL_NAME);
-
         toolConfiguration.addDataCollectorConfiguration(initDataCollectorConfiguration());
-        toolConfiguration.addIndicatorDataProviderConfiguration(initIndicatorDataProviderConfiguration());
-        toolConfiguration.addIndicatorConfiguration(initIndicatorConfiguration());
-
+        IndicatorDataProviderConfiguration idpc = initIndicatorDataProviderConfiguration();
+        IndicatorConfiguration ic = initIndicatorConfiguration();
+        if (ic != null && idpc != null) {
+            toolConfiguration.addIndicatorDataProviderConfiguration(idpc);
+            toolConfiguration.addIndicatorConfiguration(ic);
+        }
         return toolConfiguration;
     }
 
@@ -183,9 +191,30 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         } else {
             final DataTableMetadata indicatorTableMetadata = new DataTableMetadata("locks", Arrays.asList(locksColumn));
             List<DataTableMetadata> indicatorTablesMetadata = Arrays.asList(indicatorTableMetadata);
-            lockIndicatorDataProvider = new CLIODCConfiguration(
-                    "/bin/prstat", "-mv -p @PID -c 1", // NOI18N
-                    new SyncCLIOParser(locksColumn), indicatorTablesMetadata);
+            if (USE_PRSTAT) {
+                lockIndicatorDataProvider = new CLIODCConfiguration(
+                        "/bin/prstat", "-mv -p @PID -c 1", // NOI18N
+                        new SyncCLIOParser(locksColumn), indicatorTablesMetadata);
+            } else {
+                String monitor = NativeToolsUtil.getExecutable("smonitor");
+                String envVar = NativeToolsUtil.getLdPreloadEnvVarName();
+                String agent = NativeToolsUtil.getSharefLibrary("sagent");
+                DLightLogger.instance.fine("Sync Indicator:\n\tmonitor: " + monitor + "\n\tagent: " + agent + "\n\n"); // NOI18N
+                if (monitor != null && agent != null) {
+                    CLIODCConfiguration clioCollectorConfiguration =
+                            new CLIODCConfiguration(monitor,
+                            " @PID " + (redirectStdErr ? " 2>/tmp/smonitor.err" : ""), // NOI18N
+                            new OneColumnClioParser(locksColumn),
+                            Arrays.asList(indicatorTableMetadata));
+                    Map<String, String> env = new LinkedHashMap<String, String>();
+                    env.put(envVar, agent);
+
+                    DLightLogger.instance.fine("SET " + envVar + "=" + agent);//NOI18N
+
+                    clioCollectorConfiguration.setDLightTargetExecutionEnv(env);
+                    lockIndicatorDataProvider = clioCollectorConfiguration;
+                }
+            }
         }
 
         return lockIndicatorDataProvider;

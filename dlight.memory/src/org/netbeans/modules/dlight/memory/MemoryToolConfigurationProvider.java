@@ -66,10 +66,8 @@ import org.openide.util.NbBundle;
 public final class MemoryToolConfigurationProvider
         implements DLightToolConfigurationProvider {
 
-    private static final boolean useCollector =
-            Util.getBoolean("dlight.memory.collector", true); // NOI18N
-    private static final boolean redirectStdErr =
-            Util.getBoolean("dlight.memory.log.stderr", false); // NOI18N
+    private static final boolean useCollector = Util.getBoolean("dlight.memory.collector", true); // NOI18N
+    private static final boolean redirectStdErr = Util.getBoolean("dlight.memory.log.stderr", false); // NOI18N
     private static final String toolName = loc("MemoryTool.ToolName"); // NOI18N
 
     public MemoryToolConfigurationProvider() {
@@ -121,9 +119,9 @@ public final class MemoryToolConfigurationProvider
         DataTableMetadata indicatorTableMetadata =
                 new DataTableMetadata("truss", indicatorColumns); // NOI18N
 
-        String monitor = MemoryMonitorUtil.getMonitorCmd();
-        String envVar = MemoryMonitorUtil.getEnvVar();
-        String agent = MemoryMonitorUtil.getAgentLib();
+        String monitor = NativeToolsUtil.getExecutable("mmonitor");
+        String envVar = NativeToolsUtil.getLdPreloadEnvVarName();
+        String agent = NativeToolsUtil.getSharefLibrary("magent");
 
         DLightLogger.instance.fine("Memory Indicator:\nmonitor:\n" + // NOI18N
                 monitor + "\nagent:\n" + agent + "\n\n"); // NOI18N
