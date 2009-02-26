@@ -107,7 +107,6 @@ public class StartTask extends BasicTask<OperationState> {
         this.support = support;
         this.recognizers = recognizers;
         this.jdkHome = jdkRoot;
-        this.jdkHome = getJavaPlatformRoot(support);
         this.jvmArgs = (jvmArgs != null) ? Arrays.asList(removeEscapes(jvmArgs)) : null;
     }
     
@@ -150,6 +149,7 @@ public class StartTask extends BasicTask<OperationState> {
         
         Process serverProcess = null;
         try {
+            jdkHome = getJavaPlatformRoot(support);
             serverProcess = createProcess();
         } catch (IOException ex) {
             fireOperationStateChanged(OperationState.FAILED, 
@@ -236,22 +236,19 @@ public class StartTask extends BasicTask<OperationState> {
         return  envp.toArray(new String[envp.size()]);
     }
 
-    private FileObject getJavaPlatformRoot(CommonServerSupport support) {
+    private FileObject getJavaPlatformRoot(CommonServerSupport support) throws IOException {
         FileObject retVal = null;
         String javaInstall = support.getInstanceProperties().get(GlassfishModule.JAVA_PLATFORM_ATTR);
-        try {
-            if (null == javaInstall) {
-                File dir = new File(getJdkHome());
+        if (null == javaInstall || javaInstall.trim().length() < 1) {
+            File dir = new File(getJdkHome());
+            retVal = FileUtil.createFolder(FileUtil.normalizeFile(dir));
+        } else {
+            File f = new File(javaInstall);
+            if (f.exists()) {
+                //              bin             home
+                File dir = f.getParentFile().getParentFile();
                 retVal = FileUtil.createFolder(FileUtil.normalizeFile(dir));
-            } else {
-                File f = new File(javaInstall);
-                if (f.exists()) {
-                    //              bin             home
-                    File dir = f.getParentFile().getParentFile();
-                    retVal = FileUtil.createFolder(FileUtil.normalizeFile(dir));
-                }
             }
-        } catch (IOException ioe) {
         }
         return retVal;
     }
@@ -270,14 +267,8 @@ public class StartTask extends BasicTask<OperationState> {
     }
     
     private NbProcessDescriptor createProcessDescriptor() throws IOException {
-        String startScript;
-        if (null == jdkHome) {
-           startScript = getJdkHome() + 
+        String startScript = FileUtil.toFile(jdkHome).getAbsolutePath() +
                 File.separatorChar + "bin" + File.separatorChar + "java";
-        } else {
-            startScript = FileUtil.toFile(jdkHome).getAbsolutePath() +
-                File.separatorChar + "bin" + File.separatorChar + "java";
-        }
         File ss = new File(startScript);
         if (support.getInstanceProvider().requiresJdk6OrHigher() && !Util.appearsToBeJdk6OrBetter(ss)) {
             return null;
