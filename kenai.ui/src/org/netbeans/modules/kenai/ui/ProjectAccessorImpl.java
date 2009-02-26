@@ -89,7 +89,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public ActionListener getOpenNonMemberProjectAction(Dashboard d) {
+    public ActionListener getOpenNonMemberProjectAction() {
         return new OpenKenaiProjectAction();
     }
 
