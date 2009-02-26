@@ -68,8 +68,6 @@ public class Bugzilla {
 
     private RequestProcessor rp;
 
-    private Map<String, RepositoryConfiguration> repoToRepoconf = new HashMap<String, RepositoryConfiguration>();
-    
     private Bugzilla() {
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
@@ -272,12 +270,7 @@ public class Bugzilla {
     }
 
     private RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository) throws CoreException, IOException {
-        RepositoryConfiguration rc = repoToRepoconf.get(repository.getDisplayName());
-        if(rc == null) {
-            rc = getRepositoryConnector().getClientManager().getClient(repository.getTaskRepository(), new NullProgressMonitor()).getRepositoryConfiguration(new NullProgressMonitor());
-            repoToRepoconf.put(repository.getDisplayName(), rc);
-        }
-        return rc;
+        return getClient(repository).getRepositoryConfiguration(new NullProgressMonitor());
     }
 
 }
