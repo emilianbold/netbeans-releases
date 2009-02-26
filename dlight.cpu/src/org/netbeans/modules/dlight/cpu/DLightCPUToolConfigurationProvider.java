@@ -183,6 +183,7 @@ public final class DLightCPUToolConfigurationProvider
 
         List<Column> columns = new ArrayList<Column>();
         columns.add(new _Column(String.class, "name")); // NOI18N
+        columns.add(new _Column(String.class, "name_quilified")); // NOI18N
 
         List<FunctionMetric> metricsList = SQLStackStorage.METRICS;
 

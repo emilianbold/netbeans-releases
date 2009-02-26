@@ -146,9 +146,9 @@ public class SQLStackStorage {
         ResultSet rs = select.executeQuery();
         while (rs.next()) {
             Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
-            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
-            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2)), metrics));
+            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
+            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2), rs.getString(3)), metrics));
         }
         rs.close();
         return result;
@@ -160,9 +160,9 @@ public class SQLStackStorage {
         ResultSet rs = select.executeQuery();
         while (rs.next()) {
             Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
-            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
-            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2)), metrics));
+            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
+            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2), rs.getString(3)), metrics));
         }
         rs.close();
         return result;
@@ -171,15 +171,15 @@ public class SQLStackStorage {
     public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) throws SQLException {
         List<FunctionCall> result = new ArrayList<FunctionCall>();
         PreparedStatement select = sqlStorage.prepareStatement(
-            "SELECT func_id, func_name, time_incl, time_excl " +
+            "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " +
             "FROM Func ORDER BY " + metric.getMetricID() + " DESC");
         select.setMaxRows(limit);
         ResultSet rs = select.executeQuery();
         while (rs.next()) {
             Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
-            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
-            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2)), metrics));
+            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
+            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2), rs.getString(3)), metrics));
         }
         rs.close();
         return result;
@@ -259,7 +259,7 @@ public class SQLStackStorage {
 
     private PreparedStatement prepareCalleesSelect(FunctionCall[] path) throws SQLException {
         StringBuilder buf = new StringBuilder();
-        buf.append("SELECT F.func_id, F.func_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N1 ");
+        buf.append("SELECT F.func_id, F.func_name,  F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N1 ");
         for (int i = 1; i < path.length; ++i) {
             buf.append(" INNER JOIN Node AS N").append(i + 1);
             buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id ");
@@ -310,12 +310,18 @@ public class SQLStackStorage {
 
         private final int id;
         private final String name;
+        private final String quilifiedName;
 
-        public FunctionImpl(int id, String name) {
+        public FunctionImpl(int id, String name, String qualified_name) {
             this.id = id;
             this.name = name;
+            this.quilifiedName = qualified_name;
         }
 
+//        public FunctionImpl(int id, String name) {
+//            this.id = id;
+//            this.name = name;
+//        }
         public int getId() {
             return id;
         }
@@ -325,7 +331,7 @@ public class SQLStackStorage {
         }
 
         public String getQuilifiedName() {
-            return name;
+            return quilifiedName;
         }
 
         @Override
@@ -356,6 +362,17 @@ public class SQLStackStorage {
                 }
             }
             return null;
+        }
+
+        @Override
+        public boolean hasMetric(String metric_id) {
+            for (FunctionMetric metric : metrics.keySet()) {
+                if (metric.getMetricID().equals(metric_id)) {
+                    return true;
+                }
+            }
+            return false;
+
         }
 
         @Override
@@ -456,9 +473,9 @@ public class SQLStackStorage {
                                     PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Func (func_id, func_full_name, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?, ?)");
                                     stmt.setInt(1, addFunctionCmd.id);
                                     stmt.setString(2, addFunctionCmd.name.toString());
-                                    if (demanglingService == null){
+                                    if (demanglingService == null) {
                                         stmt.setString(3, addFunctionCmd.name.toString());
-                                    }else{
+                                    } else {
                                         Future<String> demangled = demanglingService.demangle(addFunctionCmd.name.toString());
                                         try {
                                             stmt.setString(3, demangled.get());
