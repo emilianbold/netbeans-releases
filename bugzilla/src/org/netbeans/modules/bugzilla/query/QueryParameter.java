@@ -190,7 +190,8 @@ public abstract class QueryParameter {
         private final JComboBox combo;
         public ComboParameter(JComboBox combo, String parameter) {
             super(parameter);
-            this.combo = combo;            
+            this.combo = combo;
+            combo.setModel(new DefaultComboBoxModel());
         }
         @Override
         public ParameterValue[] getValues() {
@@ -223,6 +224,7 @@ public abstract class QueryParameter {
         public ListParameter(JList list, String parameter) {
             super(parameter);
             this.list = list;
+            list.setModel(new DefaultListModel());
         }
         @Override
         public ParameterValue[] getValues() {
