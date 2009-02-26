@@ -36,26 +36,60 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.core.stack.storage;
 
-package org.netbeans.modules.cnd.gizmo;
-
+import java.beans.PropertyEditorSupport;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
 import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author mt154047
  */
-@ServiceProvider(service = DemanglingFunctionNameServiceFactory.class)
-public final class  CndDemanglingFunctionNameServiceFactory  implements DemanglingFunctionNameServiceFactory{
+public class MangledNameTypeEditor extends PropertyEditorSupport {
 
-    public DemanglingFunctionNameService getForCurrentSession() {
-        return new CndDemanglingFunctionNameServiceImpl();
+
+    /**
+     * Creates new instance.
+     */
+    public MangledNameTypeEditor() {
     }
 
-    public DemanglingFunctionNameService geDemanglingServiceFor(CPPCompiler cppCompiler) {
-        return new CndDemanglingFunctionNameServiceImpl(cppCompiler);
+    @Override
+    public String getAsText() {
+        return ((MangledNameType) getValue()).demangle();
     }
 
+    @Override
+    public void setValue(Object value) {
+        if (value instanceof String) {
+            super.setValue(new MangledNameType(value + ""));
+            return;
+        }
+        super.setValue(value);
+    }
+
+    @Override
+    public Object getValue() {
+        return super.getValue();
+    }
+
+
+
+//
+//    @Override
+//    public String getAsText() {
+//        if (!(getValue() instanceof Time)){
+//            return getValue() + "";
+//        }
+//        return ((Time) getValue() == null ? "0" : ((Time) getValue()).equals(zeroTime) ? "0" : format.format(((Time) getValue()).getNanos() / 1e9));
+//    }
+//
+    @Override
+    public void setAsText(String text) {
+        throw new UnsupportedOperationException();
+    }
 }
