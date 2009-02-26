@@ -48,6 +48,8 @@ package org.netbeans.modules.bugzilla.query;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.DefaultComboBoxModel;
@@ -1120,9 +1122,11 @@ public class QueryPanel extends javax.swing.JPanel {
         noContentPanel.setProgressComponent(on ? progressBar : null);
     }
 
-    void showRetrievingProgress(boolean on, JComponent progressBar, String text) {
+    void showRetrievingProgress(boolean on, JComponent progressBar, String text, boolean searchPanelVisible) {
         noContentContainer.setVisible(on);
-        searchPanel.setVisible(!on);
+        if(searchPanelVisible) {
+            searchPanel.setVisible(!on);
+        }
         if(on && text != null) {
             noContentPanel.setText(text);
         }

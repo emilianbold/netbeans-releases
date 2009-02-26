@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class Query implements Comparable<Query> {
 
-    private final PropertyChangeSupport support;
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     public static final int ISSUE_STATUS_UNKNOWN        = 0;
     public static final int ISSUE_STATUS_SEEN           = 2;
@@ -95,14 +95,13 @@ public abstract class Query implements Comparable<Query> {
 
     private List<QueryNotifyListener> notifyListeners;
     private IssueTable issueTable;
-    private boolean saved;
+    protected boolean saved;
     private long lastRefresh = -1;
 
     /**
      * Creates a query
      */
     public Query() {
-        this.support = new PropertyChangeSupport(this);
     }
 
     /**
@@ -226,7 +225,7 @@ public abstract class Query implements Comparable<Query> {
     public abstract ColumnDescriptor[] getColumnDescriptors(); 
 
     public void setFilter(Filter filter) {
-        issueTable.setFilter(filter);
+        getIssueTable().setFilter(filter);
     }
 
     public long getLastRefresh() {

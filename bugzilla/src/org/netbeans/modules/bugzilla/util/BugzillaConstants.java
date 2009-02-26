@@ -46,5 +46,22 @@ import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
  * @author Tomas Stupka
  */
 public interface BugzillaConstants {
-    public static final String URL_ADVANCED_BUG_LIST = IBugzillaConstants.URL_BUGLIST + "?query_format=advanced";
+    public static final String URL_ADVANCED_BUG_LIST = IBugzillaConstants.URL_BUGLIST + "?query_format=advanced"; //NOI18N
+
+    public static final String MY_ISSUES_PARAMETERS_FORMAT =
+            "&bug_status=UNCONFIRMED" +                                         //NOI18N
+            "&bug_status=NEW" +                                                 //NOI18N
+            "&bug_status=ASSIGNED" +                                            //NOI18N
+            "&bug_status=REOPENED" +
+            "&emailassigned_to1=1" +
+            "&emailreporter1=1" +
+            "&emailtype1=exact" +
+            "&email1={0}";
+
+    public static final String ALL_ISSUES_PARAMETERS =
+            "&bug_status=UNCONFIRMED" +
+            "&bug_status=NEW" +
+            "&bug_status=ASSIGNED" +
+            "&bug_status=REOPENED";
+
 }

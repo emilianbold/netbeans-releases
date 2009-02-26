@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
+import java.text.MessageFormat;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.netbeans.modules.bugzilla.util.BugzillaConstants;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -49,6 +52,7 @@ import org.netbeans.modules.bugzilla.query.BugzillaQuery;
  */
 public class KenaiRepository extends BugzillaRepository {
     private String urlParam;
+    private Query[] definedQueries;
 
     public KenaiRepository(String repoName, String url, String user, String password, String urlParam) {
         super(repoName, url, user, password);
@@ -57,8 +61,42 @@ public class KenaiRepository extends BugzillaRepository {
 
     @Override
     public Query createQuery() {
-        BugzillaQuery q = new BugzillaQuery(this, urlParam, true);
+        BugzillaQuery q = new BugzillaQuery(null, this, urlParam, true, false);
         return q;
+    }
+
+    @Override
+    public Query[] getQueries() {
+        Query[] qs = super.getQueries();
+        Query[] dq = getDefinedQueries();
+        Query[] ret = new Query[qs.length + dq.length];
+        System.arraycopy(qs, 0, ret, 0, qs.length);
+        for (int i = 0; i < dq.length; i++) {
+            ret[qs.length + i] = dq[i];
+        }
+        return ret;
+    }
+
+    private synchronized Query[] getDefinedQueries() {
+        if(definedQueries == null) {
+            definedQueries = new Query[2];
+
+            StringBuffer sb = new StringBuffer();
+            sb.append(urlParam);
+            sb.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, getUsername()));
+            BugzillaQuery myIssues = new BugzillaQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), this, sb.toString(), true, true); // NOI18N
+            myIssues.getController().onRefresh(); // XXX this is messy
+            definedQueries[0] = myIssues;
+
+            sb = new StringBuffer();
+            sb.append(urlParam);
+            sb.append(BugzillaConstants.ALL_ISSUES_PARAMETERS);
+            BugzillaQuery allIssues = new BugzillaQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, sb.toString(), true, true); // NOI18N
+            allIssues.getController().onRefresh(); // XXX this is messy
+            definedQueries[1] = allIssues;
+
+        }
+        return definedQueries;
     }
 
 }
