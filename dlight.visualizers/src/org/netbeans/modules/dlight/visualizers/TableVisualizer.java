@@ -93,16 +93,18 @@ class TableVisualizer extends JPanel implements
         super.addNotify();
         addComponentListener(this);
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
-        onTimer();
+        asyncFillModel();
+
         if (timerHandler.isSessionRunning()) {
             timerHandler.startTimer();
             return;
         }
 
-        if (timerHandler.isSessionAnalyzed() ||
-            timerHandler.isSessionPaused()) {
-            onTimer();
-        }
+// AK: Do we really need this for the second time?
+//        if (timerHandler.isSessionAnalyzed() ||
+//            timerHandler.isSessionPaused()) {
+//            onTimer();
+//        }
     }
 
     @Override
