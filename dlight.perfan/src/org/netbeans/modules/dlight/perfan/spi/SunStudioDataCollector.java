@@ -99,6 +99,7 @@ public class SunStudioDataCollector
     // Below are FULL DataTableMetadata objects...
     private static final DataTableMetadata cpuInfoTable;
     private static final DataTableMetadata syncInfoTable;
+    private static final DataTableMetadata memInfoTable;
     private static final DataTableMetadata summaryInfoTable;
     private static final List<DataStorageType> supportedStorageTypes;
     private static final Logger log = DLightLogger.getLogger(SunStudioDataCollector.class);
@@ -126,13 +127,17 @@ public class SunStudioDataCollector
                 SunStudioDCConfiguration.c_iUser,
                 SunStudioDCConfiguration.c_eUser));
 
-        
+
         syncInfoTable = new DataTableMetadata(
                 "SunStudioSyncDetailedData", // NOI18N
                 Arrays.asList(SunStudioDCConfiguration.c_name,
                 SunStudioDCConfiguration.c_iSync,
                 SunStudioDCConfiguration.c_iSyncn));
 
+        memInfoTable = new DataTableMetadata("SunStudioMemDetailedData",
+                Arrays.asList(SunStudioDCConfiguration.c_name,
+                SunStudioDCConfiguration.c_leakCount,
+                SunStudioDCConfiguration.c_leakSize));
 
         summaryInfoTable = new DataTableMetadata(
                 "SunStudioSummaryData", // NOI18N
@@ -385,6 +390,10 @@ public class SunStudioDataCollector
             result.add(syncInfoTable);
         }
 
+        if (collectedInfoList.contains(CollectedInfo.MEMORY)) {
+            result.add(memInfoTable);
+        }
+
         if (collectedInfoList.contains(CollectedInfo.SYNCSUMMARY)) {
             result.add(summaryInfoTable);
         }
@@ -393,7 +402,8 @@ public class SunStudioDataCollector
     }
 
     public boolean isAttachable() {
-        if (collectedInfoList.contains(CollectedInfo.SYNCHRONIZARION)) {
+        if (collectedInfoList.contains(CollectedInfo.SYNCHRONIZARION) ||
+                collectedInfoList.contains(CollectedInfo.MEMORY)) {
             return false;
         }
         return true;
@@ -405,10 +415,29 @@ public class SunStudioDataCollector
 
     public String[] getArgs() {
         List<String> args = new ArrayList<String>();
+
+        // From collect(1):
+        // ...
+        // -l signal
+        //    Record a sample point  whenever  the  given  signal  is
+        //    delivered to the process.
+        // ..
+        // Add this arguments to allow indicator provider based on
+        // mmonitor to coexist with collect
+        
+        args.add("-l"); // NOI18N
+        args.add("USR1"); // NOI18N
+
         if (collectedInfoList.contains(CollectedInfo.SYNCHRONIZARION)) {
             args.add("-s"); // NOI18N
             args.add("30"); // NOI18N
         }
+
+        if (collectedInfoList.contains(CollectedInfo.MEMORY)) {
+            args.add("-H"); // NOI18N
+            args.add("on"); // NOI18N
+        }
+
         args.add("-o"); // NOI18N
         args.add(getExperimentDir());
         return args.toArray(new String[0]);
@@ -522,8 +551,9 @@ public class SunStudioDataCollector
     }
 
     private final class SummaryDataFetchingTask implements Runnable {
+
         private List<String> colNames = new ArrayList<String>();
-        
+
         public SummaryDataFetchingTask() {
             for (CollectedInfo info : collectedInfoList) {
                 if (info == CollectedInfo.SYNCSUMMARY) {
@@ -534,11 +564,11 @@ public class SunStudioDataCollector
 
         public void run() {
             System.out.println("!!!!!!!!!!!!!! Receive Indicator Data from SunStudio er_print!!!!!");
-            
+
             if (colNames.isEmpty()) {
                 return;
             }
-            
+
             List data = storage.fetchSummaryData(colNames);
             SunStudioDataCollector.this.notifyIndicators(Arrays.asList(new DataRow(colNames, data)));
         }

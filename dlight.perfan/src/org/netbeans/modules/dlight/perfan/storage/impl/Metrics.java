@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,44 +34,61 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.api.impl;
+package org.netbeans.modules.dlight.perfan.storage.impl;
 
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric.FunctionMetricConfiguration;
+import java.util.List;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.util.CollectionToStringConvertor;
 
-/**
- *
- * @author mt154047
- */
-public abstract class FunctionMetricAccessor {
+public class Metrics {
 
-    private static volatile FunctionMetricAccessor DEFAULT;
+    final String mspec;
+    final String msort;
+    private final static CollectionToStringConvertor<Column> convertor;
 
-    public static FunctionMetricAccessor getDefault() {
-        FunctionMetricAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
 
-        try {
-            Class.forName(FunctionMetric.class.getName(), true,
-                    FunctionMetric.class.getClassLoader());
-        } catch (Exception e) {
-        }
-        return DEFAULT;
+    static {
+        convertor = new CollectionToStringConvertor<Column>(":", // NOI18N
+                new CollectionToStringConvertor.Convertor<Column>() {
+
+            public String itemToString(Column item) {
+                return item.getColumnName();
+            }
+        });
     }
 
-    public static void setDefault(FunctionMetricAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
+    private Metrics(String mspec, String msort) {
+        this.mspec = mspec;
+        this.msort = msort;
+    }
+
+    public static Metrics constructFrom(final List<Column> columns, final List<Column> orderBy) {
+        String mspecResult = convertor.collectionToString(columns);
+        String msortResult = convertor.collectionToString(orderBy);
+
+        if ("".equals(msortResult)) { // NOI18N
+            msortResult = columns.get(0).getColumnName();
         }
-        DEFAULT = accessor;
+
+        return new Metrics(mspecResult, msortResult);
     }
 
-    public FunctionMetricAccessor() {
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Metrics)) {
+            throw new IllegalArgumentException();
+        }
+        Metrics o = (Metrics) obj;
+        return o.msort.equals(msort) && o.mspec.equals(mspec);
     }
 
-    public abstract FunctionMetric createNew(FunctionMetricConfiguration functionMetricConfiguration);
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + (this.mspec != null ? this.mspec.hashCode() : 0);
+        hash = 89 * hash + (this.msort != null ? this.msort.hashCode() : 0);
+        return hash;
+    }
 }

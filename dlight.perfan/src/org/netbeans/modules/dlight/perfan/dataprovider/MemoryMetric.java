@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,44 +34,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.api.impl;
+package org.netbeans.modules.dlight.perfan.dataprovider;
 
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric.FunctionMetricConfiguration;
+import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author mt154047
- */
-public abstract class FunctionMetricAccessor {
+public class MemoryMetric {
 
-    private static volatile FunctionMetricAccessor DEFAULT;
+    public static final FunctionMetric LeakBytesMetric = fm("i.bleak", Integer.class); // NOI18N
+    public static final FunctionMetric LeaksCountMetric = fm("i.leak", Integer.class); // NOI18N
 
-    public static FunctionMetricAccessor getDefault() {
-        FunctionMetricAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-
-        try {
-            Class.forName(FunctionMetric.class.getName(), true,
-                    FunctionMetric.class.getClassLoader());
-        } catch (Exception e) {
-        }
-        return DEFAULT;
+    static private FunctionMetric fm(String id, Class clazz) {
+        return FunctionMetricsFactory.getInstance().getFunctionMetric(
+                new FunctionMetricConfiguration(id,
+                NbBundle.getMessage(MemoryMetric.class,
+                "MemoryMetric." + id + ".uname"), clazz)); // NOI18N
     }
-
-    public static void setDefault(FunctionMetricAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
-    }
-
-    public FunctionMetricAccessor() {
-    }
-
-    public abstract FunctionMetric createNew(FunctionMetricConfiguration functionMetricConfiguration);
 }
