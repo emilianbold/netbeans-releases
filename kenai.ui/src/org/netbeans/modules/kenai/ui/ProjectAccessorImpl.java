@@ -90,8 +90,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
     @Override
     public ActionListener getOpenNonMemberProjectAction(Dashboard d) {
-        //TODO: Milan to implement this
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new OpenKenaiProjectAction();
     }
 
     @Override
@@ -111,7 +110,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
             new RemoveProjectAction(project),
             new RefreshProjectAction(project)
         };
-        throw new UnsupportedOperationException("Not supported yet.");
+        return actions;
     }
 
     @Override
