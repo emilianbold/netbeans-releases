@@ -95,6 +95,7 @@ public class NoContentPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     public void setProgressComponent(Component component) {
+        if(progressComponent != null) jPanel2.remove(progressComponent);
         if(component != null) {
             this.progressComponent = component;
             GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -102,9 +103,7 @@ public class NoContentPanel extends javax.swing.JPanel {
             gridBagConstraints.weightx = 10.0;
             gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
             jPanel2.add(component, gridBagConstraints);
-        } else {
-            if(progressComponent != null) jPanel2.remove(progressComponent);
-        }
+        } 
     }
 
 }
