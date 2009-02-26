@@ -115,6 +115,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         EditorRegistry.removePropertyChangeListener(this);
     }
 
+    public boolean isScanInProgress() {
+        return getWorker().isWorking();
+    }
+    
     // -----------------------------------------------------------------------
     // PathRegistryListener implementation
     // -----------------------------------------------------------------------
@@ -741,7 +745,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
         }
-        
+
+        public boolean isWorking() {
+            synchronized (todo) {
+                return scheduled;
+            }
+        }
+
         // -------------------------------------------------------------------
         // ParserResultTask implementation
         // -------------------------------------------------------------------
