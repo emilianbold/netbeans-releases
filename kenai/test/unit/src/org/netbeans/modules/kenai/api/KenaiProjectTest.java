@@ -104,18 +104,6 @@ public class KenaiProjectTest {
         assert result.getName().equals(UNITTESTUNIQUENAME);
     }
 
-    /**
-     * Test of open method, of class KenaiProject.
-     */
-    @Test
-    public void testOpen() throws KenaiException {
-        KenaiProject instance = Kenai.getDefault().getProject(UNITTESTUNIQUENAME);
-        instance.open();
-        for (KenaiProject prj:Kenai.getDefault().getOpenProjects()) {
-            System.out.println(prj);
-        }
-    }
-
     @Test
     public void testCheckName() throws KenaiException, MalformedURLException {
         assert KenaiProject.checkName("uniquenamebond007") == null;

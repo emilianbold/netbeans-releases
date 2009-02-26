@@ -47,9 +47,7 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.AbstractCollection;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import org.codeviation.commons.patterns.Factory;
 import org.codeviation.commons.utils.Iterators;
@@ -73,36 +71,13 @@ public final class Kenai {
      * getOldValue() returns old PasswordAuthentication or null
      * getNewValue() returns new PasswordAuthentication or null
      */
-     public static final String PROP_LOGIN = "login";
-
-     /**
-      * fired when project is open in UI
-      * getNewValue returns project being open
-      * do we need this event at all?
-      */
-     @Deprecated
-     public static final String PROP_PROJECT_OPEN = "project_open";
-
-     /**
-      * fired when project is closed in UI
-      * getOldValue() returns project being closed
-      * do we need this event at all?
-      */
-     @Deprecated
-     public static final String PROP_PROJECT_CLOSE = "project_close";
-
-     /**
-      * getNewValue() returns project being refreshed
-      */
-     public static final String PROP_PROJECT_CHANGED = "project_change";
-
-     private static Kenai instance;
-
+    public static final String PROP_LOGIN = "login";
+    
+    private static Kenai instance;
     private PasswordAuthentication auth = null;
     private static URL url;
 
     HashMap<String, WeakReference<KenaiProject>> projectsCache = new HashMap<String, WeakReference<KenaiProject>>();
-    Collection<KenaiProject> openProjects = null;
 
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
@@ -144,7 +119,7 @@ public final class Kenai {
 //                return auth;
 //            }
 //        });
-        fireEvent(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
+        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
     }
 
 
@@ -155,7 +130,7 @@ public final class Kenai {
     public void logout() {
         PasswordAuthentication old=auth;
         auth = null;
-        fireEvent(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
+        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
     }
 
     /**
@@ -191,14 +166,6 @@ public final class Kenai {
     public synchronized void removePropertyChangeListener(String name, PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener(name, l);
     }
-
-
-    
-    synchronized void fireEvent(PropertyChangeEvent event) {
-        propertyChangeSupport.firePropertyChange(event);
-    }
-
-
 
     /**
      * Creates a new account in the Kenai system. Note that you must call login() to start
@@ -348,19 +315,6 @@ public final class Kenai {
     }
 
     /**
-     * @return the openProjects
-     * @see KenaiProject#open()
-     * @see KenaiProject#close()
-     */
-    public Collection<KenaiProject> getOpenProjects() {
-        if (openProjects==null) {
-            openProjects = new HashSet<KenaiProject>();
-            openProjects.addAll(Persistence.getInstance().loadProjects());
-        }
-        return Collections.unmodifiableCollection(openProjects);
-    }
-
-    /**
      * get my projects of logged user
      * @return collection of projects
      * @throws org.netbeans.modules.kenai.api.KenaiException
@@ -374,8 +328,8 @@ public final class Kenai {
         return Persistence.getInstance().loadProjects();
     }
 
-    void storeProjects() {
-        Persistence.getInstance().storeProjects(openProjects);
+    void storeProjects(Collection<KenaiProject> projects) {
+        Persistence.getInstance().storeProjects(projects);
     }
 
     private class LazyCollection<I,O> extends AbstractCollection<O> {

@@ -40,6 +40,7 @@
 package org.netbeans.modules.kenai.api;
 
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -57,6 +58,15 @@ import org.netbeans.modules.kenai.ProjectData;
  * @author Jan Becicka
  */
 public final class KenaiProject {
+
+    /**
+     * getSource() returns project being refreshed
+     * values are undefined
+     */
+    public static final String PROP_PROJECT_CHANGED = "project_change";
+
+
+    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
     private String    name;
 
@@ -136,30 +146,6 @@ public final class KenaiProject {
      */
     public String getTags() {
         return data.tags;
-    }
-
-    /**
-     * Opens project
-     * @see Kenai#getOpenProjects()
-     */
-    public synchronized void open() {
-        final Kenai kenai = Kenai.getDefault();
-        Kenai.getDefault().getOpenProjects();
-        Kenai.getDefault().openProjects.add(this);
-        kenai.storeProjects();
-        kenai.fireEvent(new PropertyChangeEvent(kenai, Kenai.PROP_PROJECT_OPEN, null, this));
-    }
-
-    /**
-     * Closes project
-     * @see Kenai#getOpenProjects()
-     */
-    public synchronized void close() {
-        final Kenai kenai = Kenai.getDefault();
-        Kenai.getDefault().getOpenProjects();
-        Kenai.getDefault().openProjects.remove(this);
-        kenai.storeProjects();
-        kenai.fireEvent(new PropertyChangeEvent(kenai, Kenai.PROP_PROJECT_CLOSE, this, null));
     }
 
     private static Pattern repositoryPattern = Pattern.compile("(https|http)://(testkenai|kenai)\\.com/(svn|hg)/(\\S*)~(.*)");
@@ -278,7 +264,7 @@ public final class KenaiProject {
             throw new IllegalArgumentException(ex);
         }
         features=null;
-        Kenai.getDefault().fireEvent(new PropertyChangeEvent(Kenai.getDefault(), Kenai.PROP_PROJECT_CHANGED, null, this));
+        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_PROJECT_CHANGED, null, null));
     }
 
     @Override
@@ -308,5 +294,37 @@ public final class KenaiProject {
         return "KenaiProject " + getName();
     }
 
+    /**
+     * Adds listener to Kenai instance
+     * @param l
+     */
+    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener(l);
+    }
 
+    /**
+     * Adds listener to Kenai instance
+     * @param name
+     * @param l
+     */
+    public synchronized void addPropertyChangeListener(String name, PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener(name,l);
+    }
+
+    /**
+     * Removes listener from Kenai instance
+     * @param l
+     */
+    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(l);
+    }
+
+    /**
+     * Removes listener from Kenai instance
+     * @param name
+     * @param l
+     */
+    public synchronized void removePropertyChangeListener(String name, PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(name, l);
+    }
 }
