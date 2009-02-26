@@ -291,7 +291,7 @@ public class NbServiceTagCreateAction extends WizardAction {
                 final File javaHome = (SystemUtils.isMacOS() || !jreHome.exists()) ? gfJavaHome : jreHome;
                 String version = null;
                 if(gfProduct.getVersion().getMajor() == 2) {
-                    version = gfProduct.getVersion().getMinor() == 1 ? "v2.1" : "v2";
+                    version = gfProduct.getUid().equals("glassfish")? "v2" : "v2.1"; 
                 } else {
                     version = "v3";
                 }
@@ -327,6 +327,8 @@ public class NbServiceTagCreateAction extends WizardAction {
                             "<platform_arch>" + System.getProperty("os.arch") + "</platform_arch>");
                 }
                 map.put("<source>Sun GlassFish Enterprise Server Native Packages</source>",
+                        "<source>" + source + "</source>");
+                map.put("<source>Sun Java System Application Server Native Packages</source>",
                         "<source>" + source + "</source>");
                 map.put("<source>GlassFish V3</source>",
                         "<source>" + source + "</source>");
