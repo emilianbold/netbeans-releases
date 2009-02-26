@@ -241,13 +241,17 @@ public class BugzillaIssue extends Issue {
                     switch(changedField) {
                         case SUMMARY :
                             ret = "Summary changed";
+                            break;
                         case CC :
                             ret = "CC field changed";
+                            break;
                         case KEYWORDS :
                             ret ="Keywords changed";
+                            break;
                         case DEPENDS_ON :
                         case BLOCKS :
                             ret ="Dependence changed";
+                            break;
                         default :
                             ret = changedField.name() + " changed to " + getFieldValue(changedField);
                     }
@@ -259,31 +263,44 @@ public class BugzillaIssue extends Issue {
                     switch(changedField) {
                         case SUMMARY :
                             ret = changedCount + " changes, incl. summary";
+                            break;
                         case PRIORITY :
                             ret = changedCount + " changes, incl. priority";
+                            break;
                         case SEVERITY :
                             ret = changedCount + " changes, incl. severity";
+                            break;
                         case PRODUCT :
                             ret = changedCount + " changes, incl. product";
+                            break;
                         case COMPONENT :
                             ret = changedCount + " changes, incl. component";
+                            break;
                         case PLATFORM :
                             ret = changedCount + " changes, incl. platform";
+                            break;
                         case VERSION :
                             ret = changedCount + " changes, incl. version";
+                            break;
                         case MILESTONE :
                             ret = changedCount + " changes, incl. milestone";
+                            break;
                         case KEYWORDS :
                             ret = changedCount + " changes, incl. keywords";
+                            break;
                         case URL :
                             ret = changedCount + " changes, incl. url";
+                            break;
                         case ASSIGEND_TO :
                             ret = changedCount + " changes, incl. Assignee";
+                            break;
                         case QA_CONTACT :
                             ret = changedCount + " changes, incl. qa contact";
+                            break;
                         case DEPENDS_ON :
                         case BLOCKS :
                             ret = changedCount + " changes, incl. dependence";
+                            break;
                         default :
                             ret = changedCount + " changes";
                     }
@@ -374,7 +391,6 @@ public class BugzillaIssue extends Issue {
         }
         return IssueField.STATUS_UPTODATE;
     }
-
 
     // XXX get rid of this
     Set<TaskAttribute> getResolveAttributes(String resolution) {
