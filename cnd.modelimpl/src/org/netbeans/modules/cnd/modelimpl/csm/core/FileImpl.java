@@ -500,7 +500,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         _clearIncludes();
         _clearMacros();
         _clearErrors();
-        if (reportParse || TraceFlags.DEBUG) {
+        if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("ReParsing", preprocHandler); //NOI18N
         }
         AST ast = doParse(preprocHandler);
@@ -610,7 +610,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private AST _parse(APTPreprocHandler preprocHandler) {
 
         Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
-        if (reportParse || TraceFlags.DEBUG) {
+        if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("Parsing", preprocHandler); //NOI18N
         }
         AST ast = doParse(preprocHandler);
@@ -631,7 +631,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private void logParse(String title, APTPreprocHandler preprocHandler) {
-        if (reportParse || TraceFlags.DEBUG) {
+        if (reportParse || logState || TraceFlags.DEBUG) {
             System.err.printf("# %s %s (%s %s) (Thread=%s)\n", //NOI18N
                     title, fileBuffer.getFile().getPath(),
                     TraceUtils.getPreprocStateString(preprocHandler.getState()),
