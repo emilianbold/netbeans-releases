@@ -268,10 +268,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
         final String msgPopulating = NbBundle.getMessage(this.getClass(), "MSG_Populating");    // NOI18N
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msgPopulating, c);
         final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
+        panel.showRetrievingProgress(true, progressBar, msgPopulating, !query.isSaved());
         t[0] = rp.post(new Runnable() {
             public void run() {
                 handle.start();
-                panel.showRetrievingProgress(true, progressBar, msgPopulating, !query.isSaved());
                 try {
                     Bugzilla.LOG.fine("Starting populate query controller"); // NOI18N
                     // NOI18N
@@ -667,6 +667,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(this.getClass(), "MSG_SearchingQuery", new Object[] {query.getDisplayName()}), c);// NOI18N
         final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
         panel.showSearchingProgress(true, progressBar, NbBundle.getMessage(this.getClass(), "MSG_Searching")); // NOI18N
+        handle.start();
 
         // XXX !!! remove !!!
         query.addNotifyListener(new QueryNotifyListener() {
@@ -681,7 +682,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
 
             public void started() {
-                handle.start();
             }
 
             public void finished() {
