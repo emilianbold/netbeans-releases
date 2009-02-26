@@ -45,16 +45,17 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.MalformedURLException;
 import org.netbeans.modules.kenai.ui.spi.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -64,7 +65,10 @@ import org.netbeans.modules.kenai.ui.LoginHandleImpl;
 import org.netbeans.modules.kenai.ui.treelist.TreeList;
 import org.netbeans.modules.kenai.ui.treelist.TreeListModel;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -207,8 +211,13 @@ public final class DashboardImpl extends Dashboard {
     private ActionListener createWhatIsKenaiAction() {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(dashboardComponent, "Kenai is cool");
-                //TODO implement
+                try {
+                    URLDisplayer.getDefault().showURL(
+                            new URL(NbBundle.getMessage(DashboardImpl.class, "URL_KenaiOverview"))); //NOI18N
+                } catch( MalformedURLException ex ) {
+                    //shouldn't happen
+                    Exceptions.printStackTrace(ex);
+                }
             }
         };
     }
@@ -301,12 +310,12 @@ public final class DashboardImpl extends Dashboard {
         res.setOpaque(false);
         LoginNode tmp = new LoginNode(this);
 
-        JLabel lbl = new JLabel("No Kenai Project Open");
+        JLabel lbl = new JLabel(NbBundle.getMessage(DashboardImpl.class, "LBL_No_Kenai_Project_Open")); //NOI18N
         lbl.setForeground(ColorManager.disabledColor);
         lbl.setHorizontalAlignment(JLabel.CENTER);
-        LinkButton btnWhatIs = new LinkButton("What is Kenai?", createWhatIsKenaiAction() );
+        LinkButton btnWhatIs = new LinkButton(NbBundle.getMessage(DashboardImpl.class, "LBL_WhatIsKenai"), createWhatIsKenaiAction() ); //NOI18N
 
-        res.add( tmp.getComponent(UIManager.getColor("List.foreground"), ColorManager.defaultBackground, false, false), new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(3, 4, 3, 4), 0, 0) );
+        res.add( tmp.getComponent(UIManager.getColor("List.foreground"), ColorManager.defaultBackground, false, false), new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(3, 4, 3, 4), 0, 0) ); //NOI18N
         res.add( new JLabel(), new GridBagConstraints(0, 1, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
         res.add( lbl, new GridBagConstraints(0, 2, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 4, 0), 0, 0) );
         res.add( btnWhatIs, new GridBagConstraints(0, 3, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 0, 0, 0), 0, 0) );
@@ -316,12 +325,12 @@ public final class DashboardImpl extends Dashboard {
 
     private void startLoadingOtherProjects() {
         Preferences prefs = NbPreferences.forModule(DashboardImpl.class);
-        int count = prefs.getInt("projectCount", 0);
+        int count = prefs.getInt("projectCount", 0); //NOI18N
         if( 0 == count )
             return; //nothing to load
         ArrayList<String> ids = new ArrayList<String>(count);
         for( int i=0; i<count; i++ ) {
-            String id = prefs.get("project"+i, null);
+            String id = prefs.get("project"+i, null); //NOI18N
             if( null != id && id.trim().length() > 0 ) {
                 ids.add( id.trim() );
             }
@@ -338,10 +347,10 @@ public final class DashboardImpl extends Dashboard {
 
     private void storeOtherProjects() {
         Preferences prefs = NbPreferences.forModule(DashboardImpl.class);
-        prefs.putInt("projectCount", otherProjects.size());
+        prefs.putInt("projectCount", otherProjects.size()); //NOI18N
         int index = 0;
         for( ProjectHandle project : otherProjects ) {
-            prefs.put("project"+index++, project.getId());
+            prefs.put("project"+index++, project.getId()); //NOI18N
         }
     }
 
@@ -370,7 +379,7 @@ public final class DashboardImpl extends Dashboard {
             if( null == login )
                 return;
             if( null != userNode ) {
-                setStatusMessage("Opening projects...");
+                setStatusMessage(NbBundle.getMessage(DashboardImpl.class, "LBL_OpeningProjects")); //NOI18N
             }
             memberProjectsLoader = new MemberProjectsLoader(login);
             RequestProcessor.getDefault().post(memberProjectsLoader);
@@ -448,7 +457,7 @@ public final class DashboardImpl extends Dashboard {
             if( cancelled )
                 return;
             if( null == res[0] ) {
-                setErrorMessage( "Project loading failed (not responding)");
+                setErrorMessage( NbBundle.getMessage(DashboardImpl.class, "LBL_ErrLoadProject")); //NOI18N
                 return;
             }
 
@@ -494,7 +503,7 @@ public final class DashboardImpl extends Dashboard {
             if( cancelled )
                 return;
             if( null == res[0] ) {
-                setErrorMessage( "Not responding");
+                setErrorMessage( NbBundle.getMessage(DashboardImpl.class, "LBL_NotResponding")); //NOI18N
                 return;
             }
 
