@@ -101,16 +101,16 @@ public final class DashboardImpl extends Dashboard {
                 }
             }
         };
-        Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN, new PropertyChangeListener() {
+        final Kenai kenai = Kenai.getDefault();
+        final PasswordAuthentication pa = kenai.getPasswordAuthentication();
+        setUser(pa==null?null:new LoginHandleImpl(pa.getUserName()));
+        kenai.addPropertyChangeListener(Kenai.PROP_LOGIN, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
                 final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
                 if (newValue==null) {
                     setUser(null);
                 } else {
                     setUser(new LoginHandleImpl(newValue.getUserName()));
-                }
-                if (newValue==null) {
-
                 }
             }
         });
