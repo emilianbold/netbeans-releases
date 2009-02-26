@@ -86,7 +86,7 @@ public class CPVendor implements WizardDescriptor.Panel, ChangeListener {
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
-    @Override
+    
     public Component getComponent() {
         if (component == null) {
             component = new CPVendorPanel(this, this.helper, this.wizardInfo);
