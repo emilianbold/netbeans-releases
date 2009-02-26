@@ -64,8 +64,7 @@ public class MessagingHandleImpl extends MessagingHandle {
 
     @Override
     public int getMessageCount() {
-        //TODO:
-        return 0;
+         return ChatNotifications.getDefault().getMessageCountFor(muc.getRoom());
     }
 
     /**

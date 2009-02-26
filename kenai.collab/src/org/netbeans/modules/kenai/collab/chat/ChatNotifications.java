@@ -126,6 +126,14 @@ public class ChatNotifications {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
+    int getMessageCountFor(String name) {
+        Room room = groupMessages.get(name);
+        if (room!=null) {
+            return room.msgCount;
+        }
+        return 0;
+    }
+
     private Icon getIcon() {
         return null;
     }
