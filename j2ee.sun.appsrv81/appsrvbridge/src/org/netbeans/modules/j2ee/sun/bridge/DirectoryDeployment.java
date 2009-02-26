@@ -452,13 +452,20 @@ public class DirectoryDeployment extends IncrementalDeployment {
             }
             //tmp = tmp.getParentFile();
             // I am depending on the fact that an app will have a resource dir!!!
-            dest = new File(tmp, "dist");
-            dest = new File(dest, "gfdeploy");
+            dest = new File(tmp, "target");  // NOI18N
+            if (!dest.exists()) {
+                // the app wasn't a maven project
+                dest = new File(tmp, "dist");  // NOI18N
+            }
+            if (dest.isFile() || (dest.isDirectory() && !dest.canWrite())) {
+               throw new IllegalStateException();
+            }
+            dest = new File(dest, "gfdeploy");  // NOI18N
             if (!dest.exists()) {
                 dest.mkdirs();
             }
             if (!dest.isDirectory()) {
-                dest = null;
+               dest = null;
             }
         }
         return dest;
@@ -469,11 +476,6 @@ public class DirectoryDeployment extends IncrementalDeployment {
     // editable file -- but it is quicker to access, if it is there....
     //
     private File getProjectDir(J2eeModule app) {
-        java.io.File tmp = app.getResourceDirectory();
-
-        if (tmp != null) {
-            return tmp.getParentFile();
-        }
         try {
             FileObject fo = app.getContentDirectory();
             Project p = FileOwnerQuery.getOwner(fo);
@@ -484,6 +486,11 @@ public class DirectoryDeployment extends IncrementalDeployment {
         } catch (IOException ex) {
             Logger.getLogger("org.netbeans.modules.j2ee.sun.bridge").log(Level.FINER,    // NOI18N
                     null,ex);
+        }
+        java.io.File tmp = app.getResourceDirectory();
+
+        if (tmp != null) {
+            return tmp.getParentFile();
         }
         return null;
     }

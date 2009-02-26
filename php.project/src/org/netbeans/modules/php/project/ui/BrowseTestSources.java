@@ -130,31 +130,31 @@ public class BrowseTestSources extends JPanel {
 
         File testSourcesFile = new File(testSources);
         if (!testSourcesFile.isAbsolute()) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_FolderNotAbsolute"));
+            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotAbsolute"));
             dialogDescriptor.setValid(false);
             return;
         } else if (!testSourcesFile.isDirectory()) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_FolderNotDirectory"));
+            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotDirectory"));
             dialogDescriptor.setValid(false);
             return;
         }
         FileObject nbproject = phpProject.getProjectDirectory().getFileObject("nbproject"); // NOI18N
         FileObject testSourcesFo = FileUtil.toFileObject(testSourcesFile);
         if (testSourcesFile.equals(FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(phpProject)))) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_FolderEqualsSources"));
+            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestEqualsSources"));
             dialogDescriptor.setValid(false);
             return;
         } else if (FileUtil.isParentOf(nbproject, testSourcesFo)
                 || nbproject.equals(testSourcesFo)) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_FolderUnderneathNBMetadata"));
+            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestUnderneathNBMetadata"));
             dialogDescriptor.setValid(false);
             return;
         } else if (!Utils.isFolderWritable(testSourcesFile)) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_FolderNotWritable"));
+            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotWritable"));
             dialogDescriptor.setValid(false);
             return;
         } else if (!FileUtil.isParentOf(phpProject.getProjectDirectory(), testSourcesFo)) {
-            notificationLineSupport.setWarningMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_FolderNotUnderneathProjectFolder"));
+            notificationLineSupport.setWarningMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotUnderneathProjectFolder"));
             dialogDescriptor.setValid(true);
             return;
         }

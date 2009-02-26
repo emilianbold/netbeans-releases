@@ -47,9 +47,10 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
-import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -68,7 +69,7 @@ public abstract class GenerateAction extends NodeAction {
     }
 
     protected void performAction(Node[] activatedNodes) {
-        final GrailsRuntime runtime = GrailsRuntime.getInstance();
+        final GrailsPlatform runtime = GrailsPlatform.getDefault();
         if (!runtime.isConfigured()) {
             ConfigurationSupport.showConfigurationWarning(runtime);
             return;
@@ -134,7 +135,7 @@ public abstract class GenerateAction extends NodeAction {
             return false;
         }
 
-        GrailsProject prj = (GrailsProject) FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
+        Project prj = FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
         FileObject domainDir = prj.getProjectDirectory().getFileObject(DOMAIN_DIR);
         if (domainDir == null) {
             return false;

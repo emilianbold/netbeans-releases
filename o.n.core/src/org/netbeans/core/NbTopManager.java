@@ -493,7 +493,8 @@ public abstract class NbTopManager {
                     public void run() {
                         org.netbeans.CLIHandler.stopServer ();
                 
-                        if(windowSystem != null) {
+                        boolean gui = org.netbeans.core.startup.CLIOptions.isGui();
+                        if(windowSystem != null && gui) {
                             windowSystem.hide();
                             windowSystem.save();
                         }

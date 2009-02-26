@@ -38,7 +38,8 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
-import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
@@ -49,23 +50,27 @@ import org.netbeans.modules.dlight.util.TimerTaskExecutionService;
 /**
  *
  */
-class OnTimerRefreshVisualizerHandler
+final class OnTimerRefreshVisualizerHandler
         implements SessionStateListener, DLightSessionListener {
 
-    private static final TimerTaskExecutionService service =
+    private final static TimerTaskExecutionService service =
             TimerTaskExecutionService.getInstance();
-    private final VisualizerUpdateTask timerTask = new VisualizerUpdateTask();
     private final OnTimerTask task;
-    private final int timerFactor;
-    private boolean timerIsActive = false;
+    private final long period;
+    private final TimeUnit unit;
+    private Future scheduledTask;
     private SessionState currentSessionState = null;
 
-    protected OnTimerRefreshVisualizerHandler(OnTimerTask task, int timerFactor) {
+    protected OnTimerRefreshVisualizerHandler(OnTimerTask task, long period, TimeUnit unit) {
         this.task = task;
-        this.timerFactor = timerFactor;
-        DLightManager.getDefault().addDLightSessionListener(this);
-        DLightManager.getDefault().getActiveSession().addSessionStateListener(this);
-        currentSessionState = DLightManager.getDefault().getActiveSession().getState();
+        this.period = period;
+        this.unit = unit;
+
+        final DLightManager mgr = DLightManager.getDefault();
+        final DLightSession activeSession = mgr.getActiveSession();
+        mgr.addDLightSessionListener(this);
+        activeSession.addSessionStateListener(this);
+        currentSessionState = activeSession.getState();
     }
 
     protected boolean isSessionRunning() {
@@ -81,29 +86,37 @@ class OnTimerRefreshVisualizerHandler
     }
 
     synchronized void startTimer() {
-        if (!timerIsActive) {
-            service.registerTimerTask(timerTask, timerFactor);
-            timerIsActive = true;
+        if (scheduledTask != null && !scheduledTask.isDone()) {
+            return;
         }
+
+        scheduledTask = service.scheduleAtFixedRate(
+                new Runnable() {
+
+                    public void run() {
+                        task.onTimer();
+                    }
+                }, period, unit);
     }
 
     synchronized void stopTimer() {
-        if (timerIsActive) {
-            service.unregisterTimerTask(timerTask);
-            timerIsActive = false;
-            task.timerStopped();
+        if (scheduledTask == null || scheduledTask.isDone()) {
+            return;
         }
+
+        scheduledTask.cancel(true);
+        task.timerStopped();
     }
 
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
         currentSessionState = newState;
 
-        if (timerIsActive && (newState == SessionState.PAUSED || newState == SessionState.ANALYZE)) {
+        if (newState == SessionState.PAUSED || newState == SessionState.ANALYZE) {
             stopTimer();
             return;
         }
 
-        if (!timerIsActive && (newState == SessionState.STARTING || newState == SessionState.RUNNING)) {
+        if (newState == SessionState.STARTING || newState == SessionState.RUNNING) {
             startTimer();
             return;
         }
@@ -128,13 +141,6 @@ class OnTimerRefreshVisualizerHandler
         if (removedSession != null) {
             removedSession.removeSessionStateListener(this);
             stopTimer();
-        }
-    }
-
-    private class VisualizerUpdateTask implements Callable<Integer> {
-
-        public Integer call() throws Exception {
-            return task.onTimer();
         }
     }
 }

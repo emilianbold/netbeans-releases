@@ -87,6 +87,7 @@ public class JPyDebugXmlParser extends DefaultHandler {
   private static final String _THREAD_ = "THREAD";
   private static final String _STATE_ = "state";
   private static final String _SUSPENDED_ = "SUSPENDED";
+  private static final String _BREAK_ = "BREAK";
   private static final String _VARIABLES_ = "VARIABLES";
   private static final String _VARIABLE_ = "VARIABLE";
   private static final String _EXCEPTION_ = "EXCEPTION";
@@ -257,7 +258,8 @@ public class JPyDebugXmlParser extends DefaultHandler {
     Boolean isCurrent =
             Boolean.valueOf(getAttribute(_CURRENT_, attr));
     String state = (String) getAttribute(_STATE_, attr);
-    boolean suspended = state.equals(_SUSPENDED_);
+    boolean suspended = state.equals(_SUSPENDED_) ||
+            state.equals(_BREAK_);
     PythonThreadInfos thInfos =
             new PythonThreadInfos(
             getAttribute(_NAME_, attr),

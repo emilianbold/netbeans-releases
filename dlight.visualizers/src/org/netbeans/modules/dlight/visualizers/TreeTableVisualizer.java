@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -100,14 +101,14 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     private OnTimerRefreshVisualizerHandler timerHandler;
     protected boolean isEmptyContent;
 
-    TreeTableVisualizer(TreeTableVisualizerConfiguration configuration, TreeTableDataProvider<T> dataProvider) {
-        timerHandler = new OnTimerRefreshVisualizerHandler(this, 5);
+    TreeTableVisualizer(TreeTableVisualizerConfiguration configuration,
+        TreeTableDataProvider<T> dataProvider) {
+        timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.configuration = configuration;
         this.dataProvider = dataProvider;
         treeModel = new DefaultTreeModel(TREE_ROOT);
         setEmptyContent();
-        addComponentListener(this);
-        VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
+
     }
 
     protected void setEmptyContent() {
@@ -155,6 +156,8 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     @Override
     public void addNotify() {
         super.addNotify();
+        addComponentListener(this);
+        VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
         
         asyncFillModel(configuration.getMetadata().getColumns());
 
@@ -175,6 +178,8 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     public void removeNotify() {
         super.removeNotify();
         timerHandler.stopTimer();
+        removeComponentListener(this);
+        VisualizerTopComponentTopComponent.findInstance().removeComponentListener(this);
     }
 
     protected DefaultMutableTreeNode getTreeRoot() {
@@ -319,7 +324,73 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
             columns.add(column);
         }
+        columns.add(new ColumnModel() {
 
+            boolean isVisible = true;
+            boolean isSorted = false;
+            boolean isSortedDescending = false;
+            int currentOrderNumber = -1;
+
+            @Override
+            public String getID() {
+                return TreeTableVisualizerConfigurationAccessor.getDefault().getTreeColumn(configuration).getColumnName();
+            }
+
+            @Override
+            public String getDisplayName() {
+                return TreeTableVisualizerConfigurationAccessor.getDefault().getTreeColumn(configuration).getColumnUName();
+            }
+
+            @Override
+            public Class getType() {
+                return null;
+            }
+
+            @Override
+            public void setCurrentOrderNumber(int newOrderNumber) {
+                this.currentOrderNumber = newOrderNumber;
+            }
+
+            @Override
+            public int getCurrentOrderNumber() {
+                return currentOrderNumber;
+            }
+
+            @Override
+            public void setVisible(boolean arg0) {
+                this.isVisible = arg0;
+            }
+
+            @Override
+            public boolean isVisible() {
+                return isVisible;
+            }
+
+            @Override
+            public boolean isSortable() {
+                return true;
+            }
+
+            @Override
+            public boolean isSorted() {
+                return isSorted;
+            }
+
+            @Override
+            public void setSorted(boolean sorted) {
+                this.isSorted = sorted;
+            }
+
+            @Override
+            public void setSortedDescending(boolean sortedDescending) {
+                this.isSortedDescending = sortedDescending;
+            }
+
+            @Override
+            public boolean isSortedDescending() {
+                return isSortedDescending;
+            }
+        });
         List<Model> models = new ArrayList<Model>();
         treeModelImpl =
             new TreeModelImpl();
@@ -330,7 +401,9 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         models.add(tableModelImpl);
         models.addAll(columns);
         models.add(new NodeModelImpl());
-//    models.add(new NodeActionsProviderImpl());
+        if (TreeTableVisualizerConfigurationAccessor.getDefault().getNodesActionProvider(configuration) != null) {
+            models.add(TreeTableVisualizerConfigurationAccessor.getDefault().getNodesActionProvider(configuration));
+        }
         compoundModel =
             Models.createCompoundModel(models);
         treeTableView =
@@ -451,7 +524,6 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 //we have sync call here, want async
 
         syncFillModel(configuration.getMetadata().getColumns());
-//        updateList(dataProvider.getTableView(configuration.getMetadata().getColumns(), null, Integer.MAX_VALUE));
         return 0;
     }
 
@@ -477,13 +549,17 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     }
 
     public void componentShown(ComponentEvent e) {
+        if (isShown) {
+            return;
+        }
         isShown = isShowing();
-        
         // Fill model only in case we are really became visible ...
         if (isShown) {
             // We are in the AWT thread. Need to update model out of it.
             asyncFillModel(configuration.getMetadata().getColumns());
         }
+
+
     }
 
     public void componentHidden(ComponentEvent e) {
@@ -653,7 +729,8 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
         public String getDisplayName(Object node) {
             if (node == TreeModel.ROOT) {
-                return TreeTableVisualizerConfigurationAccessor.getDefault().getTreeColumn(configuration).getColumnUName();
+                String treeColumnDisplayedName = TreeTableVisualizerConfigurationAccessor.getDefault().getTreeColumn(configuration).getColumnUName();
+                return treeColumnDisplayedName;
             }
             if (node instanceof DefaultMutableTreeNode) {
                 DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;

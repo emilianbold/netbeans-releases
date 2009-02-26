@@ -49,6 +49,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import org.netbeans.Events;
 import org.netbeans.InvalidException;
@@ -58,7 +59,7 @@ import org.netbeans.ModuleManager;
 
 /**
  * Utility class permitting you to verify that a set of modules could be enabled together.
- * Currently used from the <code>VerifyUpdateCenter</code> Ant task in the NB build system.
+ * Currently used from <code>org.netbeans.core.validation.ValidateUpdateCenterTest</code>.
  * @author Jesse Glick
  */
 public class ConsistencyVerifier {
@@ -120,6 +121,8 @@ public class ConsistencyVerifier {
         for (Manifest m : modules) {
             try {
                 m.getMainAttributes().putValue("OpenIDE-Module-Public-Packages", "-"); // NOI18N
+                m.getMainAttributes().remove(new Attributes.Name("OpenIDE-Module-Friends")); // NOI18N
+                m.getMainAttributes().remove(new Attributes.Name("OpenIDE-Module-Localizing-Bundle")); // NOI18N
                 boolean autoload = "true".equals(m.getMainAttributes().getValue("autoload"));
                 boolean eager = "true".equals(m.getMainAttributes().getValue("eager"));
                 Module mod = mgr.createFixed(m, null, ClassLoader.getSystemClassLoader(), autoload, eager);

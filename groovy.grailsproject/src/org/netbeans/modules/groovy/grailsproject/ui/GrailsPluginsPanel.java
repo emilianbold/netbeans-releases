@@ -56,7 +56,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
         assert SwingUtilities.isEventDispatchThread();
         final DefaultListModel model = new DefaultListModel();
         reloadInstalledButton.setEnabled(false);
-        installedPluginsList = pluginsManager.refreshInstalledPlugins();
+        installedPluginsList = pluginsManager.loadInstalledPlugins();
         for (GrailsPlugin plugin : installedPluginsList) {
             model.addElement(plugin);
         }        

@@ -77,8 +77,11 @@ public class Util {
             if (is == null) {
                 return null;
             }
+
             String prefix = "_dlight_" + getBriefName(resourceFileName);
             File result_file = File.createTempFile(prefix, ".d");
+            result_file.deleteOnExit();
+
             OutputStream os = new FileOutputStream(result_file);
             FileUtil.copy(is, os);
             is.close();

@@ -60,6 +60,7 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
     private transient FileObject parent;
     private transient PropertiesFileEntry primaryEntry;
     private String baseName;
+    private String extension;
 
     /** Generated Serialized Version UID. */
     static final long serialVersionUID = 7501232754255253334L;
@@ -80,6 +81,7 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
 //        super(obj);
         this.obj = obj;
         baseName = Util.getBaseName(obj.getName());
+        extension = PropertiesDataLoader.PROPERTIES_EXTENSION;
     }
 
     /**
@@ -104,6 +106,10 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
             }
             if (primaryEntry != null) {
                 FileObject primary = primaryEntry.getFile();
+                if(!primary.hasExt(extension)) {
+                    if (primary.getMIMEType().equalsIgnoreCase(PropertiesDataLoader.PROPERTIES_MIME_TYPE))
+                        extension = primary.getExt();
+                }
                 parent = primary.getParent();
             } else {
                 if (parent == null) {
@@ -114,7 +120,7 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
             String fName;
             FileObject oldCandidate;
             for (FileObject file : parent.getChildren()) {
-                if (!file.hasExt(PropertiesDataLoader.PROPERTIES_EXTENSION)) {
+                if (!file.hasExt(extension) || !file.getMIMEType().equalsIgnoreCase(PropertiesDataLoader.PROPERTIES_MIME_TYPE)) {
                     continue;
                 }
                 fName = file.getName();
@@ -136,12 +142,20 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
                     }
                 }
             }
+            if (listFileObjects.isEmpty()) {
+                files = null;
+                return;
+            }
             files = listFileObjects.toArray(new FileObject[listFileObjects.size()]);
             if (primaryEntry != getNthEntry(0)) {
                 //TODO XXX This means that primaryEntry has changed, so need to notify openSupport
                 primaryEntry = getNthEntry(0);
                 if (primaryEntry != null) {
                     notifyOneFileChanged(primaryEntry.getFile());
+                    if(!primaryEntry.getFile().hasExt(extension)) {
+                        if (primaryEntry.getFile().getMIMEType().equalsIgnoreCase(PropertiesDataLoader.PROPERTIES_MIME_TYPE))
+                            extension = primaryEntry.getFile().getExt();
+                    }
                     parent = primaryEntry.getFile().getParent();
                     obj = (PropertiesDataObject) primaryEntry.getDataObject();
                     baseName = Util.getBaseName(obj.getName());
@@ -192,7 +206,8 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
     @Override
     public int getEntryIndexByFileName(String fileName) {
         if (files == null) {
-            notifyEntriesNotInitialized();
+//            notifyEntriesNotInitialized();
+            return -1;
         }
         for (int i = 0; i < getEntryCount(); i++) {
             if (files[i].getName().equals(fileName)) {

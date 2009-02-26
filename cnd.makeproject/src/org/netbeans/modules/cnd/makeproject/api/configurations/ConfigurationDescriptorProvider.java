@@ -257,7 +257,7 @@ public class ConfigurationDescriptorProvider {
                 boolean aLang = false;
                 for (Item item : projectItems) {
                     ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
-                    if (!itemConfiguration.getExcluded().getValue()) {
+                    if (itemConfiguration != null && !itemConfiguration.getExcluded().getValue()) {
                         size++;
                         switch (itemConfiguration.getTool()) {
                             case Tool.CCompiler:

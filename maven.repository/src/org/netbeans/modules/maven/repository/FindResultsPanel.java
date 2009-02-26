@@ -181,7 +181,7 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
             @Override
             public Image getIcon(int arg0) {
-                return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/empty.png"); //NOI18N
+                return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/empty.gif"); //NOI18N
             }
 
             @Override
@@ -236,11 +236,10 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             super(new Children.Keys<NBVersionInfo>() {
 
                 @Override
-                protected Node[] createNodes(NBVersionInfo arg0) {
-
-
-                    return new Node[]{new VersionNode(arg0, arg0.isJavadocExists(),
-                                arg0.isSourcesExists())
+                protected Node[] createNodes(NBVersionInfo info) {
+                    RepositoryInfo rinf = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
+                    return new Node[]{new VersionNode(rinf, info, info.isJavadocExists(),
+                                info.isSourcesExists(), true)
                             };
                 }
 
@@ -272,86 +271,6 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
     }
 
-    private static class VersionNode extends AbstractNode {
-
-        private NBVersionInfo nbvi;
-        private boolean hasJavadoc;
-        private boolean hasSources;
-
-        /** Creates a new instance of VersionNode */
-        public VersionNode(NBVersionInfo versionInfo, boolean javadoc, boolean source) {
-            super(Children.LEAF);
-
-            hasJavadoc = javadoc;
-            hasSources = source;
-            this.nbvi = versionInfo;
-
-            setName(versionInfo.getVersion());
-            setDisplayName(versionInfo.getVersion() + " [ " + versionInfo.getType() + (versionInfo.getClassifier() != null ? ("," + versionInfo.getClassifier()) : "") + " ] " + " - " + versionInfo.getRepoId()); //NOI18N
-
-            setIconBaseWithExtension("org/netbeans/modules/maven/repository/DependencyJar.gif"); //NOI18N
-
-        }
-
-        @Override
-        public Action[] getActions(boolean context) {
-            Artifact artifact = RepositoryUtil.createArtifact(nbvi);
-            Action[] retValue;
-            RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(nbvi.getRepoId());
-            if (info != null && info.isRemoteDownloadable()) {
-                retValue = new Action[]{
-                            new AddAsDependencyAction(artifact),
-                            CommonArtifactActions.createFindUsages(artifact),
-                            null,
-                            CommonArtifactActions.createViewProjectHomeAction(artifact),
-                            CommonArtifactActions.createViewBugTrackerAction(artifact),
-                            CommonArtifactActions.createSCMActions(artifact)
-                        };
-
-            } else {
-
-
-                retValue = new Action[]{
-                            new AddAsDependencyAction(artifact),
-                            null,
-                            CommonArtifactActions.createFindUsages(artifact),
-                            null,
-                            CommonArtifactActions.createViewJavadocAction(artifact),
-                            CommonArtifactActions.createViewProjectHomeAction(artifact),
-                            CommonArtifactActions.createViewBugTrackerAction(artifact),
-                            CommonArtifactActions.createSCMActions(artifact)
-                        };
-            }
-            return retValue;
-        }
-
-        @Override
-        public java.awt.Image getIcon(int param) {
-            java.awt.Image retValue = super.getIcon(param);
-            if (hasJavadoc) {
-                retValue = ImageUtilities.mergeImages(retValue,
-                        ImageUtilities.loadImage("org/netbeans/modules/maven/repository/DependencyJavadocIncluded.png"),//NOI18N
-                        12, 12);
-            }
-            if (hasSources) {
-                retValue = ImageUtilities.mergeImages(retValue,
-                        ImageUtilities.loadImage("org/netbeans/modules/maven/repository/DependencySrcIncluded.png"),//NOI18N
-                        12, 8);
-            }
-            return retValue;
-
-        }
-
-        public NBVersionInfo getNBVersionInfo() {
-            return nbvi;
-        }
-
-        @Override
-        public String getShortDescription() {
-
-            return nbvi.toString();
-        }
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClose;
     private javax.swing.JButton btnModify;

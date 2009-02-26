@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -307,15 +307,15 @@ public class DBReadWriteHelper {
                     break;
 
                 case Types.TIMESTAMP:
-                    ps.setTimestamp(index, (Timestamp) new TimestampType().convert(valueObj));
+                    ps.setTimestamp(index, TimestampType.convert (valueObj));
                     break;
 
                 case Types.DATE:
-                    ps.setDate(index, (Date) new DateType().convert(valueObj));
+                    ps.setDate(index, DateType.convert (valueObj));
                     break;
 
                 case Types.TIME:
-                    ps.setTime(index, (Time) new TimeType().convert(valueObj));
+                    ps.setTime(index, TimeType.convert (valueObj));
                     break;
 
                 case Types.BIT:
@@ -388,13 +388,13 @@ public class DBReadWriteHelper {
                 }
 
                 case Types.TIMESTAMP:
-                    return valueObj instanceof Timestamp ? valueObj : new TimestampType().convert(valueObj);
+                    return TimestampType.convert(valueObj);
 
                 case Types.DATE:
-                    return valueObj instanceof Date ? valueObj : new DateType().convert(valueObj);
+                    return DateType.convert(valueObj);
 
                 case Types.TIME:
-                    return valueObj instanceof Time ? valueObj : new TimeType().convert(valueObj);
+                    return TimeType.convert(valueObj);
 
                 case Types.BIGINT:
                     return valueObj instanceof Long ? valueObj : new Long(valueObj.toString());

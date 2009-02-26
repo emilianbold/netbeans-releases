@@ -39,14 +39,18 @@
 
 package org.netbeans.modules.maven;
 
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.netbeans.spi.project.LookupMerger;
+import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Element;
@@ -57,7 +61,7 @@ import org.w3c.dom.NodeList;
  * implementation of AuxiliaryProperties.
  * @author mkleint
  */
-public class MavenProjectPropsImpl implements AuxiliaryProperties {
+public class MavenProjectPropsImpl {
 
     static String NAMESPACE = "http://www.netbeans.org/ns/maven-properties-data/1"; //NOI18N
     static String ROOT = "properties"; //NOI18N
@@ -70,7 +74,7 @@ public class MavenProjectPropsImpl implements AuxiliaryProperties {
     private boolean sharedChanged;
     private NbMavenProject nbprj;
 
-    public MavenProjectPropsImpl(Project project, AuxiliaryConfiguration aux, NbMavenProject pr) {
+    MavenProjectPropsImpl(Project project, AuxiliaryConfiguration aux, NbMavenProject pr) {
         prj = project;
         this.aux = aux;
         nbprj = pr;
@@ -237,6 +241,66 @@ public class MavenProjectPropsImpl implements AuxiliaryProperties {
         transaction = false;
         transPropsPrivate = null;
         transPropsShared = null;
+    }
+
+    static class Merger implements LookupMerger<AuxiliaryProperties> {
+        private MavenProjectPropsImpl primary;
+
+        Merger(MavenProjectPropsImpl primary) {
+            this.primary = primary;
+        }
+
+        public Class<AuxiliaryProperties> getMergeableClass() {
+            return AuxiliaryProperties.class;
+        }
+
+        public AuxiliaryProperties merge(Lookup lookup) {
+            return new MergedAuxProperties(lookup, primary);
+        }
+
+    }
+
+    static class MergedAuxProperties implements AuxiliaryProperties {
+        Lookup.Result<AuxiliaryProperties> props;
+        private MavenProjectPropsImpl primary;
+        private MergedAuxProperties(Lookup lookup, MavenProjectPropsImpl primary) {
+             props = lookup.lookupResult(AuxiliaryProperties.class);
+             this.primary = primary;
+        }
+
+
+        public String get(String key, boolean shared) {
+            String toRet = primary.get(key, shared);
+            if (toRet == null) {
+                for (AuxiliaryProperties prop : props.allInstances()) {
+                    toRet = prop.get(key, shared);
+                    if (toRet != null) {
+                        break;
+                    }
+                }
+            }
+            return toRet;
+        }
+
+        public void put(String key, String value, boolean shared) {
+            primary.put(key, value, shared);
+        }
+
+        public Iterable<String> listKeys(boolean shared) {
+            Set<String> toRet = new TreeSet<String>();
+            Iterator<String> s = primary.listKeys(shared).iterator();
+            while (s.hasNext()) {
+                toRet.add(s.next());
+            }
+            for (AuxiliaryProperties aux : props.allInstances()) {
+                s = aux.listKeys(shared).iterator();
+                while (s.hasNext()) {
+                    toRet.add(s.next());
+                }
+            }
+            return toRet;
+        }
+
     }
 
 }

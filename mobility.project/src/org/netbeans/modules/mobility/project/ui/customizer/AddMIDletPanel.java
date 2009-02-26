@@ -140,13 +140,13 @@ public class AddMIDletPanel extends JPanel implements DocumentListener, ActionLi
             final String clazz = getClazz();
             jTextFieldName.setText(clazz.substring(clazz.lastIndexOf('.')+1));
         }
-        if (dd != null) dd.setValid(isValid());
+        if (dd != null) dd.setValid(isStateValid());
     }
     
     public void changedUpdate(@SuppressWarnings("unused")
 	final DocumentEvent e) {
         fillName = false;
-        if (dd != null) dd.setValid(isValid());
+        if (dd != null) dd.setValid(isStateValid());
     }
     
     public void insertUpdate(final DocumentEvent e) {

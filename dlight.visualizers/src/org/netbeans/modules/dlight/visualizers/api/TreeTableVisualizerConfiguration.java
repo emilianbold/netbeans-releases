@@ -48,6 +48,7 @@ import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
+import org.netbeans.spi.viewmodel.NodeActionsProvider;
 
 /**
  * This configuration is used to be able to show data collected
@@ -62,6 +63,7 @@ public class TreeTableVisualizerConfiguration implements VisualizerConfiguration
     private Column treeColumn;
     private Column[] tableColumns;
     private boolean isPlainTable = false;
+    private NodeActionsProvider nodeActionsProvider;
 
 
     static {
@@ -158,6 +160,14 @@ public class TreeTableVisualizerConfiguration implements VisualizerConfiguration
         return treeColumn;
     }
 
+    NodeActionsProvider getNodeActionsProvider(){
+        return nodeActionsProvider;
+    }
+
+    public void setNodeActionProvider(NodeActionsProvider nodeActionsProvider){
+        this.nodeActionsProvider = nodeActionsProvider;
+    }
+
     public DataTableMetadata getMetadata() {
         return dataTableMetadata;
     }
@@ -165,6 +175,7 @@ public class TreeTableVisualizerConfiguration implements VisualizerConfiguration
     public DataModelScheme getSupportedDataScheme() {
         return DataModelSchemeProvider.getInstance().getScheme("model:tree:table");
     }
+
 
     public String getID() {
         return VisualizerConfigurationIDsProvider.TREE_TABLE_VISUALIZER;
@@ -185,6 +196,11 @@ public class TreeTableVisualizerConfiguration implements VisualizerConfiguration
         @Override
         public boolean isTableView(TreeTableVisualizerConfiguration configuration) {
             return configuration.isTableView();
+        }
+
+        @Override
+        public NodeActionsProvider getNodesActionProvider(TreeTableVisualizerConfiguration configuration) {
+            return configuration.getNodeActionsProvider();
         }
     }
 

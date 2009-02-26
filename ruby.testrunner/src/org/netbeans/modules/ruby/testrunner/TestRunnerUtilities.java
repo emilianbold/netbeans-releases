@@ -56,7 +56,7 @@ public final class TestRunnerUtilities {
 
     private static final List<String> NB_RUNNER_FILES = Arrays.asList(TestUnitRunner.MEDIATOR_SCRIPT_NAME,
             TestUnitRunner.TEST_RUNNER_SCRIPT_NAME, TestUnitRunner.SUITE_RUNNER_SCRIPT_NAME,
-            RspecRunner.RSPEC_MEDIATOR_SCRIPT, AutotestRunner.RSPEC_AUTOTEST_LOADER);
+            RspecRunner.RSPEC_MEDIATOR_SCRIPT, AutotestRunner.AUTOTEST_LOADER);
 
     private TestRunnerUtilities() {
     }

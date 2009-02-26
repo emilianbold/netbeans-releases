@@ -64,7 +64,7 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
-import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectFactory;
 import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
@@ -103,8 +103,6 @@ public final class GrailsCommandSupport {
 
     private static final Logger LOGGER = Logger.getLogger(GrailsCommandSupport.class.getName());
 
-    private static final Pattern COMMAND_PATTERN = Pattern.compile("grails\\s(.*)"); // NOI18N
-
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
     private final GrailsProject project;
@@ -122,7 +120,7 @@ public final class GrailsCommandSupport {
     }
 
     public ExecutionDescriptor getRunDescriptor() {
-        return getDescriptor(GrailsRuntime.IDE_RUN_COMMAND);
+        return getDescriptor(GrailsPlatform.IDE_RUN_COMMAND);
     }
 
     public ExecutionDescriptor getDescriptor(String command) {
@@ -134,7 +132,7 @@ public final class GrailsCommandSupport {
     }
 
     public ExecutionDescriptor getDescriptor(String command, InputProcessorFactory outFactory, final boolean debug) {
-        if (GrailsRuntime.IDE_RUN_COMMAND.equals(command)) {
+        if (GrailsPlatform.IDE_RUN_COMMAND.equals(command)) {
             Runnable runnable = new Runnable() {
                 public void run() {
                     final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
@@ -295,12 +293,22 @@ public final class GrailsCommandSupport {
 
     private static class HelpLineProcessor implements LineProcessor {
 
+        private static final Pattern COMMAND_PATTERN = Pattern.compile("grails\\s(.*)"); // NOI18N
+
+        private static final Pattern EXCLUDE_PATTERN = Pattern.compile("Usage.*|Examples.*"); // NOI18N
+
         private List<String> commands = Collections.synchronizedList(new ArrayList<String>());
+
+        private boolean excluded;
 
         public void processLine(String line) {
             Matcher matcher = COMMAND_PATTERN.matcher(line);
             if (matcher.matches()) {
-                commands.add(matcher.group(1));
+                if (!excluded) {
+                    commands.add(matcher.group(1));
+                }
+            } else {
+                excluded = EXCLUDE_PATTERN.matcher(line).matches();
             }
         }
 
@@ -327,13 +335,17 @@ public final class GrailsCommandSupport {
         private final GrailsProject project;
         private final boolean debug;
 
+        private boolean running;
+
         public ServerURLProcessor(GrailsProject project, boolean debug) {
             this.project = project;
             this.debug = debug;
         }
 
         public void processLine(String line) {
-            if (line.contains("Browse to http:/")) {
+            if (!running && line.contains("Browse to http://")) {
+                running = true;
+
                 String urlString = line.substring(line.indexOf("http://"));
 
                 URL url;
