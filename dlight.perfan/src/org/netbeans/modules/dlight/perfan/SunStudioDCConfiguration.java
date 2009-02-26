@@ -39,11 +39,16 @@
 package org.netbeans.modules.dlight.perfan;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
+import org.netbeans.modules.dlight.perfan.dataprovider.MemoryMetric;
+import org.netbeans.modules.dlight.perfan.dataprovider.TimeMetric;
 import org.netbeans.modules.dlight.perfan.impl.SunStudioDCConfigurationAccessor;
 import org.netbeans.modules.dlight.perfan.spi.SunStudioIDsProvider;
 import org.openide.util.NbBundle;
@@ -62,10 +67,12 @@ public final class SunStudioDCConfiguration
         implements DataCollectorConfiguration, IndicatorDataProviderConfiguration {
 
     public static final Column c_name = new _Column(String.class, "name");    // NOI18N
-    public static final Column c_eUser = new _Column(Double.class, "e.user"); // NOI18N
-    public static final Column c_iUser = new _Column(Double.class, "i.user"); // NOI18N
-    public static final Column c_iSync = new _Column(Double.class, "i.sync"); // NOI18N
-    public static final Column c_iSyncn = new _Column(Long.class, "i.syncn"); // NOI18N
+    public static final Column c_eUser = new _Column(TimeMetric.UserFuncTimeExclusive);
+    public static final Column c_iUser = new _Column(TimeMetric.UserFuncTimeInclusive);
+    public static final Column c_iSync = new _Column(TimeMetric.SyncWaitTimeInclusive);
+    public static final Column c_iSyncn = new _Column(TimeMetric.SyncWaitCallInclusive);
+    public static final Column c_leakCount = new _Column(MemoryMetric.LeaksCountMetric);
+    public static final Column c_leakSize = new _Column(MemoryMetric.LeakBytesMetric);
     public static final Column c_ulockSummary = new _Column(Long.class, "user_lock"); // NOI18N
 
 
@@ -102,67 +109,41 @@ public final class SunStudioDCConfiguration
         collectedInfoList.add(info);
     }
 
-    public static final DataTableMetadata getSyncTableMetadata(Column ... columns) {
-        String tableName = "SunStudioSyncDetailedData"; // NOI18N
+    public static final DataTableMetadata getSyncTableMetadata(Column... columns) {
+        return getTableMetadata("SunStudioSyncDetailedData", // NOI18N
+                columns, Arrays.asList(c_iSync, c_iSyncn));
+    }
+
+    public static final DataTableMetadata getCPUTableMetadata(Column... columns) {
+        return getTableMetadata("SunStudioCPUDetailedData", // NOI18N
+                columns, Arrays.asList(c_iUser, c_eUser));
+    }
+
+    public static final DataTableMetadata getMemTableMetadata(Column... columns) {
+        return getTableMetadata("SunStudioMemDetailedData", // NOI18N
+                columns, Arrays.asList(c_leakCount, c_leakSize));
+    }
+
+    private static DataTableMetadata getTableMetadata(String tableName, Column[] columns, final List<Column> allowedColumns) {
         final List<Column> cols = new ArrayList<Column>();
 
         for (Column c : columns) {
-            if (c == c_name || c == c_iSync || c == c_iSyncn) {
+            if (c == c_name) {
+                continue;
+            }
+            if (allowedColumns.contains(c)) {
                 cols.add(c);
             } else {
                 throw new IllegalArgumentException("An attempt to create " + // NOI18N
-                        "DataTableMetadata for Synchronization data with column " + // NOI18N
-                        c.getColumnName() + " which is not related to Synchronization"); // NOI18N
+                        "DataTableMetadata " + tableName + " with column " + // NOI18N
+                        c.getColumnName() + " which is not related to it"); // NOI18N
             }
         }
 
+        cols.add(c_name);
         return new DataTableMetadata(tableName, cols);
     }
 
-    public static final DataTableMetadata getCPUTableMetadata(Column ... columns) {
-        String tableName = "SunStudioCPUDetailedData"; // NOI18N
-        final List<Column> cols = new ArrayList<Column>();
-
-        for (Column c : columns) {
-            if (c == c_name || c == c_iUser || c == c_eUser) {
-                cols.add(c);
-            } else {
-                throw new IllegalArgumentException("An attempt to create " + // NOI18N
-                        "DataTableMetadata for CPU data with column " + // NOI18N
-                        c.getColumnName() + " which is not related to CPU"); // NOI18N
-            }
-        }
-
-        return new DataTableMetadata(tableName, cols);
-    }
-
-
-
-//    /**
-//     * Returns {@link @org-netbeans-modules-dlight@/org/netbeans/modules/dlight/api/storage/DataTableMetadata.html}
-//     * for types of information collected
-//     * @param collectedInfo information to be collected
-//     * @return virtual table description
-//     */
-//    public static final DataTableMetadata getDataTableMetaDataFor(CollectedInfo collectedInfo) {
-//        List<Column> columns = new ArrayList<Column>();
-//        columns.add(c_name);
-//
-//        //e.user:i.user:i.sync:i.syncn:name
-//        switch (collectedInfo) {
-//            case FUNCTIONS_LIST:
-//                columns.add(c_eUser);
-//                columns.add(c_iUser);
-//                break;
-//            case SYNCHRONIZARION:
-//                columns.add(c_iSync);
-//                columns.add(c_iSyncn);
-//                break;
-//        }
-//
-//        DataTableMetadata result = new DataTableMetadata("idbe", columns);
-//        return result;
-//    }
 
     /**
      * Return name of the column which represents Function name
@@ -192,6 +173,10 @@ public final class SunStudioDCConfiguration
 
         public _Column(Class clazz, String name) {
             super(name, clazz, loc("SSDataCollector.ColumnName." + name), null); // NOI18N
+        }
+
+        private _Column(FunctionMetric metric) {
+            super(metric.getMetricID(), metric.getMetricValueClass(), metric.getMetricDisplayedName(), null);
         }
     }
 

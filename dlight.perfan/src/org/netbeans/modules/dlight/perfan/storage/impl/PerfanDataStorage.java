@@ -82,19 +82,19 @@ public final class PerfanDataStorage extends DataStorage {
      * For now assume that getTopFunctions is a method that forces er_print restart...
      * TODO: change the behavior later...
      */
-    public String[] getTopFunctions(String mspec, String msort, int limit) {
+    public String[] getTopFunctions(Metrics metrics, int limit) {
         String[] result = null;
         synchronized (lock) {
             erprint.restart();
-            erprint.setMetrics(mspec);
-            erprint.setSortBy(msort);
+            erprint.setMetrics(metrics.mspec);
+            erprint.setSortBy(metrics.msort);
             result = erprint.getHotFunctions(limit);
         }
         return result;
     }
 
     public List fetchSummaryData(List<String> colNames) {
-        List result = new ArrayList();
+        List<Object> result = new ArrayList<Object>();
         ExperimentStatistics stat = erprint.getExperimentStatistics();
 
         for (String col : colNames) {

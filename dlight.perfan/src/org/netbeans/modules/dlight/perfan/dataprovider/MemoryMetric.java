@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
@@ -43,18 +43,15 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionMetric.FunctionMetricC
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.openide.util.NbBundle;
 
-public final class TimeMetric {
+public class MemoryMetric {
 
-    static public final FunctionMetric UserFuncTimeInclusive = fm("i.user", Double.class); // NOI18N
-    static public final FunctionMetric UserFuncTimeExclusive = fm("e.user", Double.class); // NOI18N
-    static public final FunctionMetric SyncWaitTimeInclusive = fm("i.sync", Double.class); // NOI18N
-    static public final FunctionMetric SyncWaitCallInclusive = fm("i.syncn", Integer.class); // NOI18N
+    public static final FunctionMetric LeakBytesMetric = fm("i.bleak", Integer.class); // NOI18N
+    public static final FunctionMetric LeaksCountMetric = fm("i.leak", Integer.class); // NOI18N
 
     static private FunctionMetric fm(String id, Class clazz) {
         return FunctionMetricsFactory.getInstance().getFunctionMetric(
                 new FunctionMetricConfiguration(id,
-                NbBundle.getMessage(TimeMetric.class,
-                "TimeMetric." + id + ".uname"), clazz)); // NOI18N
+                NbBundle.getMessage(MemoryMetric.class,
+                "MemoryMetric." + id + ".uname"), clazz)); // NOI18N
     }
 }
-
