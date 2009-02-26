@@ -48,6 +48,7 @@ import java.io.*;
 import java.util.*;
 import javax.swing.Action;
 import org.netbeans.modules.openide.loaders.UIException;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -83,8 +84,8 @@ public class DataNode extends AbstractNode {
 
     /** Create a data node for a given data object.
     * The provided children object will be used to hold all child nodes.
-    * The name is always set to the base name of the primary file;
-    * the display name may instead be set to the base name with extension.
+    * The name is always the {@linkplain FileObject#getNameExt full name} of the primary file;
+    * the default display name is the same (unless {@link #setShowFileExtensions} has been turned off).
     * @param obj object to work with
     * @param ch children container for the node
     * @param lookup the lookup to provide content of {@link #getLookup}
@@ -105,7 +106,7 @@ public class DataNode extends AbstractNode {
 
         obj.addPropertyChangeListener (org.openide.util.WeakListeners.propertyChange (propL, obj));
 
-        super.setName (obj.getName ());
+        super.setName(obj.getPrimaryFile().getNameExt());
         updateDisplayName ();
     }
 
@@ -114,30 +115,7 @@ public class DataNode extends AbstractNode {
         String newDisplayName;
         
         if (prim.isRoot()) {
-            // Special case - getName{,Ext} will just return "".
-            // Used to be handled by org.netbeans.core.RootFolderNode
-            // but might as well do it here.
-            // XXX replace with #37549
-            File f = FileUtil.toFile(prim);
-            if (f == null) {
-                // Check for a JAR root explicitly.
-                FileObject archiveFile = FileUtil.getArchiveFile(prim);
-                if (archiveFile != null) {
-                    f = FileUtil.toFile(archiveFile);
-                }
-            }
-            if (f != null) {
-                // E.g. /tmp/foo or /tmp/foo.jar
-                newDisplayName = f.getAbsolutePath();
-            } else {
-                try {
-                    // E.g. http://webdavhost.nowhere.net/mystuff/
-                    newDisplayName = prim.getURL().toExternalForm();
-                } catch (FileStateInvalidException e) {
-                    // Should not happen in practice.
-                    newDisplayName = "???"; // NOI18N
-                }
-            }
+            newDisplayName = FileUtil.getFileDisplayName(prim);
         } else if (showFileExtensions || obj instanceof DataFolder || obj instanceof DefaultDataObject) {
             newDisplayName = prim.getNameExt();
         } else {
@@ -158,19 +136,52 @@ public class DataNode extends AbstractNode {
     }
 
     /** Changes the name of the node and may also rename the data object.
-    * If the object is renamed and file extensions are to be shown,
-    * the display name is also updated accordingly.
+    * The display name is also updated accordingly.
     *
-    * @param name new name for the object
+    * @param name new name for the primary file (should include any extension)
     * @param rename rename the data object?
     * @exception IllegalArgumentException if the rename failed
     */
     public void setName (String name, boolean rename) {
         try {
             if (rename) {
-                obj.rename (name);
+                FileObject prim = obj.getPrimaryFile();
+                String oldExt = prim.getExt();
+                int dot = name.lastIndexOf('.');  //NOI18N
+                String newExt = dot < 1 ? "" : name.substring(dot + 1); // NOI18N
+                String newBase = dot < 1 ? name : name.substring(0, dot);
+                if (newExt.equals(oldExt)) {
+                    // no change in extension
+                    obj.rename(newBase);
+                } else {
+                    if (obj.isModified()) {
+                        SaveCookie saveCookie = obj.getCookie(SaveCookie.class);
+                        if (saveCookie != null) {
+                            saveCookie.save();
+                        }
+                    }
+                    FileLock lock = prim.lock();
+                    try {
+                        prim.rename(lock, newBase, newExt);
+                    } finally {
+                        lock.releaseLock();
+                    }
+                    try {
+                        // Invalidate current DataObject which enforces refresh
+                        // and new DataObject will be created.
+                        obj.setValid(false);
+                    } catch (PropertyVetoException ex) {
+                        // ignore
+                    }
+                    if (obj instanceof MultiDataObject) {
+                        // Refresh folder to show possible new single DataObjects
+                        // (e.g. when renaming form DataObject).
+                        FolderList folderList = FolderList.find(prim.getParent(), true);
+                        folderList.getChildren();  // need to be here - refresh is not enough
+                        folderList.refresh();
+                    }
+                }
             }
-
             super.setName (name);
             updateDisplayName ();
         } catch (IOException ex) {
@@ -719,7 +730,7 @@ public class DataNode extends AbstractNode {
                 }
 
                 if (DataObject.PROP_NAME.equals(ev.getPropertyName())) {
-                    DataNode.super.setName(obj.getName());
+                    DataNode.super.setName(obj.getPrimaryFile().getNameExt());
                     updateDisplayName();
                 }
                 if (DataObject.PROP_COOKIE.equals(ev.getPropertyName())) {
