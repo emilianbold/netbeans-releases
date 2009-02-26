@@ -1972,13 +1972,13 @@ public class GdbDebugger implements PropertyChangeListener {
      * @return The Build Result property from the project's configuration
      */
     private static String getBuildResult(ProjectInformation pinfo, MakeConfiguration conf) {
-        String path = conf.getMakefileConfiguration().getOutput().getValue().replace("\\", "/"); // NOI18N
+        String path = conf.getAbsoluteOutputValue().replace("\\", "/"); // NOI18N
 
         if (path.length() == 0) {
             ProjectActionEvent pae = new ProjectActionEvent(pinfo.getProject(),
                     ProjectActionEvent.Type.CHECK_EXECUTABLE, pinfo.getDisplayName(), path, conf, null, false);
             ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[] { pae });
-            path = conf.getMakefileConfiguration().getOutput().getValue().replace("\\", "/"); // NOI18N
+            path = conf.getAbsoluteOutputValue().replace("\\", "/"); // NOI18N
         }
         return path;
     }
