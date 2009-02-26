@@ -38,6 +38,10 @@
  */
 package org.netbeans.modules.dlight.core.stack.storage;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -80,8 +84,9 @@ public class SQLStackStorage {
     private final ExecutorThread executor;
     private final DemanglingFunctionNameService demanglingService;
 
-    public SQLStackStorage(SQLDataStorage sqlStorage) {
+    public SQLStackStorage(SQLDataStorage sqlStorage) throws SQLException, IOException {
         this.sqlStorage = sqlStorage;
+        initTables();
         funcCache = new HashMap<CharSequence, Integer>();
         nodeCache = new HashMap<NodeCacheKey, Integer>();
         funcIdSequence = 0;
@@ -94,6 +99,16 @@ public class SQLStackStorage {
             demanglingService = factory.getForCurrentSession();
         } else {
             demanglingService = null;
+        }
+    }
+
+    private void initTables() throws SQLException, IOException {
+        InputStream is = SQLStackStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resource/schema.sql");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        try {
+            sqlStorage.execute(reader);
+        } finally {
+            reader.close();
         }
     }
 
@@ -235,7 +250,7 @@ public class SQLStackStorage {
 
     private PreparedStatement prepareCallersSelect(FunctionCall[] path) throws SQLException {
         StringBuilder buf = new StringBuilder();
-        buf.append(" SELECT F.func_id, F.func_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N ");
+        buf.append(" SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N ");
         buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id ");
         buf.append(" INNER JOIN Node N1 ON N.node_id = N1.caller_id ");
         for (int i = 1; i < path.length; ++i) {
@@ -249,7 +264,7 @@ public class SQLStackStorage {
             }
             buf.append("N").append(i).append(".func_id = ? ");
         }
-        buf.append(" GROUP BY F.func_id, F.func_name");
+        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name");
         PreparedStatement select = sqlStorage.prepareStatement(buf.toString());
         for (int i = 0; i < path.length; ++i) {
             select.setInt(i + 1, ((FunctionImpl) path[i].getFunction()).getId());
@@ -259,7 +274,7 @@ public class SQLStackStorage {
 
     private PreparedStatement prepareCalleesSelect(FunctionCall[] path) throws SQLException {
         StringBuilder buf = new StringBuilder();
-        buf.append("SELECT F.func_id, F.func_name,  F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N1 ");
+        buf.append("SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N1 ");
         for (int i = 1; i < path.length; ++i) {
             buf.append(" INNER JOIN Node AS N").append(i + 1);
             buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id ");
@@ -272,7 +287,7 @@ public class SQLStackStorage {
             }
             buf.append(" N").append(i).append(".func_id = ? ");
         }
-        buf.append(" GROUP BY F.func_id, F.func_name");
+        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name");
         PreparedStatement select = sqlStorage.prepareStatement(buf.toString());
         for (int i = 0; i < path.length; ++i) {
             select.setInt(i + 1, ((FunctionImpl) path[i].getFunction()).getId());

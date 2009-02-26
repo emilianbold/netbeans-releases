@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.impl;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -67,7 +69,7 @@ import org.openide.util.RequestProcessor;
 /**
  *
  */
-abstract public class SQLDataStorage extends DataStorage {
+public abstract class SQLDataStorage extends DataStorage {
 
   public static final String SQL_DATA_STORAGE_TYPE = "db:sql";
 
@@ -312,6 +314,24 @@ abstract public class SQLDataStorage extends DataStorage {
 
   protected final Connection getConnection() {
     return connection;
+  }
+
+  public final void execute(BufferedReader reader) throws SQLException, IOException {
+    String line;
+    StringBuilder buf = new StringBuilder();
+    Statement s = connection.createStatement();
+    while ((line = reader.readLine()) != null) {
+      if (line.startsWith("-- ")) {
+        continue;
+      }
+      buf.append(line);
+      if (line.endsWith(";")) {
+        String sql = buf.toString();
+        buf.setLength(0);
+        s.execute(sql);
+      }
+    }
+    s.close();
   }
 
   protected final void execute(String sql) throws SQLException {
