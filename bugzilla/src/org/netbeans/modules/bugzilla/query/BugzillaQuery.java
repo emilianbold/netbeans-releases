@@ -133,9 +133,9 @@ public class BugzillaQuery extends Query {
                         issues.clear(); // XXX just in case
                         
                         firstRun = false;
-                        ids = repository.getCache().readQuery(BugzillaQuery.this);
+                        ids = repository.getIssuesCache().readQuery(BugzillaQuery.this);
                     } else {
-                        repository.getCache().storeQuery(BugzillaQuery.this, issues.toArray(new String[issues.size()]));
+                        repository.getIssuesCache().storeQuery(BugzillaQuery.this, issues.toArray(new String[issues.size()]));
                         ids = issues;
                     }
 
@@ -147,7 +147,7 @@ public class BugzillaQuery extends Query {
                 StringBuffer url = new StringBuffer();
                 url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST);
                 url.append(urlParameters);
-                final IssuesCache cache = repository.getCache();
+                final IssuesCache cache = repository.getIssuesCache();
                 TaskDataCollector collector = new TaskDataCollector() {
                     public void accept(TaskData taskData) {
 
@@ -187,7 +187,7 @@ public class BugzillaQuery extends Query {
         if(obsoleteIssues.contains(id)) {
             return Query.ISSUE_STATUS_OBSOLETE;
         } else {
-            return repository.getCache().getStatus(id);
+            return repository.getIssuesCache().getStatus(id);
         }
     }
 
@@ -241,7 +241,7 @@ public class BugzillaQuery extends Query {
         }
 
         // XXX move to cache and sync
-        IssuesCache cache = repository.getCache();
+        IssuesCache cache = repository.getIssuesCache();
         List<Issue> ret = new ArrayList<Issue>();
         for (String id : ids) {
             int status = getIssueStatus(id);

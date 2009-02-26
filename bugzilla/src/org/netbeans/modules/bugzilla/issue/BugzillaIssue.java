@@ -41,7 +41,6 @@ package org.netbeans.modules.bugzilla.issue;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -70,6 +69,7 @@ import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
 import org.openide.util.Exceptions;
@@ -211,6 +211,89 @@ public class BugzillaIssue extends Issue {
         return attributes;
     }
 
+    @Override
+    public String getRecentChanges() {
+        if(wasSeen()) {
+            return "";
+        }
+        int status = repository.getIssuesCache().getStatus(getID());
+        if(status == Query.ISSUE_STATUS_NEW) {
+            return "New";
+        } else if(status == Query.ISSUE_STATUS_MODIFIED) {
+            List<IssueField> changedFields = new ArrayList<IssueField>();
+            Map<String, String> seenAtributes = repository.getIssuesCache().getSeenAttributes(getID());
+            assert seenAtributes != null;
+            for (IssueField f : IssueField.values()) {
+                String value = getFieldValue(f);
+                String seenValue = seenAtributes.get(f.key);
+                if(seenValue == null) {
+                    seenValue = "";
+                }
+                if(!value.trim().equals(seenValue)) {
+                    changedFields.add(f);
+                }
+            }
+            int changedCount = changedFields.size();
+            assert changedCount > 0 : "status MODIFIED yet zero changes found";
+            if(changedCount == 1) {
+                String ret = null;
+                for (IssueField changedField : changedFields) {
+                    switch(changedField) {
+                        case SUMMARY :
+                            ret = "Summary changed";
+                        case CC :
+                            ret = "CC field changed";
+                        case KEYWORDS :
+                            ret ="Keywords changed";
+                        case DEPENDS_ON :
+                        case BLOCKS :
+                            ret ="Dependence changed";
+                        default :
+                            ret = changedField.name() + " changed to " + getFieldValue(changedField);
+                    }
+                }
+                return ret;
+            } else {
+                String ret = null;
+                for (IssueField changedField : changedFields) {
+                    switch(changedField) {
+                        case SUMMARY :
+                            ret = changedCount + " changes, incl. summary";
+                        case PRIORITY :
+                            ret = changedCount + " changes, incl. priority";
+                        case SEVERITY :
+                            ret = changedCount + " changes, incl. severity";
+                        case PRODUCT :
+                            ret = changedCount + " changes, incl. product";
+                        case COMPONENT :
+                            ret = changedCount + " changes, incl. component";
+                        case PLATFORM :
+                            ret = changedCount + " changes, incl. platform";
+                        case VERSION :
+                            ret = changedCount + " changes, incl. version";
+                        case MILESTONE :
+                            ret = changedCount + " changes, incl. milestone";
+                        case KEYWORDS :
+                            ret = changedCount + " changes, incl. keywords";
+                        case URL :
+                            ret = changedCount + " changes, incl. url";
+                        case ASSIGEND_TO :
+                            ret = changedCount + " changes, incl. Assignee";
+                        case QA_CONTACT :
+                            ret = changedCount + " changes, incl. qa contact";
+                        case DEPENDS_ON :
+                        case BLOCKS :
+                            ret = changedCount + " changes, incl. dependence";
+                        default :
+                            ret = changedCount + " changes";
+                    }
+                    return ret;
+                }
+            }            
+        }
+        return "";
+    }
+
     public static String getID(TaskData taskData) {
         try {
             return Integer.toString(BugzillaRepositoryConnector.getBugId(taskData.getTaskId()));
@@ -250,7 +333,7 @@ public class BugzillaIssue extends Issue {
     public void setSeen(boolean seen, boolean cacheRefresh) {
         super.setSeen(seen);
         if(cacheRefresh) {
-            repository.getCache().setSeen(getID(), seen, getAttributes());
+            repository.getIssuesCache().setSeen(getID(), seen, getAttributes());
         }
     }
 

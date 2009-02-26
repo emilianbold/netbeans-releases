@@ -73,7 +73,8 @@ public class BugzillaIssueNode extends IssueNode {
             new StatusProperty(),
             new ResolutionProperty(),
             new SummaryProperty(),
-            new SeenProperty()
+            new RecentChangesProperty(), // XXX move to issue node
+            new SeenProperty() // XXX move to issue node
         };
     };
 
