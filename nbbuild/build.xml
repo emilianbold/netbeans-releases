@@ -2043,4 +2043,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <gzip src="${catalog.file}" destfile="${catalog.file}.gz"/>
   </target>
 
+    <target name="test" description="Runs ${test.type} target in modules specified by ${test.modules}.">
+        <subant target="${test.type}" >
+            <property name="continue.after.failing.tests" value="true"/>
+            <dirset dir=".." includes="${test.modules}"/>
+        </subant>
+    </target>
+
 </project>
