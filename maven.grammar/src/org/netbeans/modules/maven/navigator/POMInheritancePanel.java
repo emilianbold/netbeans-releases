@@ -255,7 +255,9 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
                 }
                 
                 nds.add(0, new POMNode(fl, mdl, new AbstractLookup(ic), parentVersion));
-                parentVersion = mdl.getVersion();
+                if (mdl.getVersion() != null) {
+                    parentVersion = mdl.getVersion();
+                }
             }
             return nds.toArray(new Node[0]);
         }
