@@ -54,6 +54,7 @@ import org.openide.util.Utilities;
 public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax.EntityResolver {
 
     private static final String POM_4_0_0 = "http://maven.apache.org/maven-v4_0_0.xsd"; // NOI18N
+    private static final String POM_ALT_4_0_0 = "http://maven.apache.org/xsd/maven-4.0.0.xsd"; // NOI18N
     private static final String ID_POM_4_0_0 = "SCHEMA:" + POM_4_0_0; // NOI18N
     private static final String SETTINGS_1_0_0 = "http://maven.apache.org/xsd/settings-1.0.0.xsd"; // NOI18N
     private static final String ID_SETTINGS_1_0_0 = "SCHEMA:" + SETTINGS_1_0_0; // NOI18N
@@ -155,7 +156,7 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
      * @return InputSource for publicId/systemId 
      */    
     public org.xml.sax.InputSource resolveEntity(String publicId, String systemId) throws org.xml.sax.SAXException, java.io.IOException {
-        if (POM_4_0_0.equals(systemId)) {
+        if (POM_4_0_0.equals(systemId) || POM_ALT_4_0_0.endsWith(systemId)) {
             return new org.xml.sax.InputSource(URL_POM_4_0_0);
         } else if (SETTINGS_1_0_0.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_SETTINGS_1_0_0);
