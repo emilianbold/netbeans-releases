@@ -35,12 +35,20 @@ public abstract class ProjectHandle {
      * The property value should ideally be the new list of QueryHandles.
      */
     public static final String PROP_QUERY_LIST = "queryList";
+    
+    private final String id;
+
+    protected ProjectHandle( String id ) {
+        this.id = id;
+    }
 
     /**
      *
      * @return Project's unique identification
      */
-    public abstract String getId();
+    public final String getId() {
+        return id;
+    }
 
     /**
      *
@@ -56,8 +64,30 @@ public abstract class ProjectHandle {
         changeSupport.removePropertyChangeListener(l);
     }
 
-    protected final void firePropertyChange( String propName, Object oldValue, Object newValue ) {
+    public final void firePropertyChange( String propName, Object oldValue, Object newValue ) {
         changeSupport.firePropertyChange(propName, oldValue, newValue);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if( obj == null ) {
+            return false;
+        }
+        if( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final ProjectHandle other = (ProjectHandle) obj;
+        if( (this.id == null) ? (other.id != null) : !this.id.equals(other.id) ) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 29 * hash + (this.id != null ? this.id.hashCode() : 0);
+        return hash;
     }
 }
 

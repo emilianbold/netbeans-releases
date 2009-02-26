@@ -37,29 +37,21 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.kenai.ui.dashboard;
 
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import java.awt.Color;
 
 /**
  *
- * @author Jan Becicka
+ * @author S. Aubrecht
  */
-public class ProjectHandleImpl extends ProjectHandle {
+public class ColorManager {
 
-    private KenaiProject prj;
-    public ProjectHandleImpl(KenaiProject prj) {
-        super( prj.getName() );
-        this.prj=prj;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return prj.getDisplayName();
-    }
-
-    public KenaiProject getKenaiProject() {
-        return prj;
-    }
+    public static final Color defaultBackground = Color.white;
+    public static final Color defaultForeground = Color.black;
+    public static final Color disabledColor = Color.gray;
+    public static final Color linkColor = Color.blue;
+    public static final Color errorColor = new Color(153,0,0);
+    public static final Color stableBuildColor = new Color(0,153,0);
+    public static final Color unstableBuildColor = Color.yellow.darker().darker();
 }

@@ -5,14 +5,17 @@
 
 package org.netbeans.modules.kenai.ui.spi;
 
+import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+
 /**
  * Singleton providing access to Kenai Dashboard window.
  *
  * @author S. Aubrecht
  */
-public final class Dashboard {
+public abstract class Dashboard {
 
-    private Dashboard() {
+    public static Dashboard getDefault() {
+        return Holder.instance;
     }
 
     /**
@@ -20,20 +23,19 @@ public final class Dashboard {
      * user's member projects.
      * Typically should be called after successful login.
      * @param login User login details.
-     * @see ActionsFactory.getLoginAction
      */
-    public void setUser( LoginHandle login ) {
-        //TODO implement
-    }
+    public abstract void setUser( LoginHandle login );
 
     /**
      * Add a Kenai project which current user isn't member of to the Dashboard.
      * @param project
      * @see ActionsFactory.getOpenNonMemberProjectAction
      */
-    public void addNonMemberProject( ProjectHandle project ) {
-        //TODO implement
-    }
+    public abstract void addNonMemberProject( ProjectHandle project );
 
-//    public abstract void removeNonMemberProject( ProjectHandle project );
+    public abstract void removeProject( ProjectHandle project );
+
+    private static class Holder {
+        private static final Dashboard instance = new DashboardImpl();
+    }
 }

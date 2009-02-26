@@ -43,7 +43,7 @@ public abstract class ProjectAccessor {
      * @param d
      * @return Adds a Kenai project into given Dashboard window.
      */
-    public abstract ActionListener getOpenNonMemberProjectAction( Dashboard d );
+    public abstract ActionListener getOpenNonMemberProjectAction();
 
     /**
      * @param project

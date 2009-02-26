@@ -37,29 +37,18 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
-
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+package org.netbeans.modules.kenai.ui.treelist;
 
 /**
+ * Listener to notify tree-list model that children were added/removed when a row
+ * is expanded/collapsed.
  *
- * @author Jan Becicka
+ * @author S. Aubrecht
  */
-public class ProjectHandleImpl extends ProjectHandle {
+public interface TreeListListener {
+    void childrenRemoved( TreeListNode parent );
 
-    private KenaiProject prj;
-    public ProjectHandleImpl(KenaiProject prj) {
-        super( prj.getName() );
-        this.prj=prj;
-    }
+    void childrenAdded( TreeListNode parent );
 
-    @Override
-    public String getDisplayName() {
-        return prj.getDisplayName();
-    }
-
-    public KenaiProject getKenaiProject() {
-        return prj;
-    }
+    void contentChanged( TreeListNode node );
 }
