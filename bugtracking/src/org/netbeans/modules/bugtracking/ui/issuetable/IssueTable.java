@@ -43,6 +43,7 @@ package org.netbeans.modules.bugtracking.ui.issuetable;
 
 import java.awt.Component;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
+import org.netbeans.modules.bugtracking.spi.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.openide.util.NbBundle;
 
@@ -53,6 +54,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -204,15 +207,16 @@ public class IssueTable implements MouseListener, AncestorListener {
 
     private void setModelProperties(Query query) {
         ColumnDescriptor[] descs = query.getColumnDescriptors();
-        List<Node.Property> properties = new ArrayList<Node.Property>(descs.length + (query.isSaved() ? 1 : 0));
+        List<Node.Property> properties = new ArrayList<Node.Property>(descs.length + (query.isSaved() ? 2 : 0));
         int i = 0;
         for (; i < descs.length; i++) {
             ColumnDescriptor desc = descs[i];
             properties.add(desc);
         }
         if(query.isSaved()) {
+            properties.add(new RecentChangesDescriptor());
             properties.add(new SeenDescriptor());
-            seenColumnIdx = i;
+            seenColumnIdx = i + 1;
         }
 
         tableModel.setProperties(properties.toArray(new Node.Property[properties.size()]));
@@ -278,53 +282,87 @@ public class IssueTable implements MouseListener, AncestorListener {
     
     private class CellRenderer extends DefaultTableCellRenderer {
         private JLabel seenCell = new JLabel();
+        private static final int VISIBLE_START_CHARS = 0;
+
+        private String computeFitText(String text) {
+            if (text == null || text.length() <= VISIBLE_START_CHARS + 3) return text;
+
+            FontMetrics fm = getFontMetrics(getFont());
+            int width = getSize().width;
+
+            String sufix = "..."; // NOI18N
+            int sufixLength = fm.stringWidth(sufix);
+            int desired = width - sufixLength - 10;
+            if (desired <= 0) return text;
+
+            for (int i = 0; i <= text.length() - 1; i++) {
+                String prefix = text.substring(0, i);
+                int swidth = fm.stringWidth(prefix);
+                if (swidth >= desired) {
+                    return prefix.length() > 0 ? prefix + sufix: text;
+                }
+            }
+            return text;
+        }
 
         public CellRenderer() {
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            MessageFormat format = null;
             Component renderer = null;
+            String tooltip = null;
             if(value instanceof IssueNode.SeenProperty) {
-                IssueNode.SeenProperty p = (IssueNode.SeenProperty) value;
-                seenCell.setIcon(!((Boolean) p.getValue()) ? seenValueIcon : null);
+                IssueNode.SeenProperty ps = (IssueNode.SeenProperty) value;
+                seenCell.setIcon(!((Boolean) ps.getValue()) ? seenValueIcon : null);
                 renderer = seenCell;
             } else if(query.isSaved() && value instanceof IssueNode.IssueProperty) {
-                IssueNode.IssueProperty p = (IssueNode.IssueProperty) value;
-                StringBuffer sb = null;
+                IssueProperty p = (IssueNode.IssueProperty) value;
                 try {
-                    String s = (String) p.getValue();
-                    sb = new StringBuffer();
                     Issue issue = p.getIssue();
                     int status = query.getIssueStatus(issue);
                     if(!issue.wasSeen() || status == Query.ISSUE_STATUS_OBSOLETE) {
-                        sb.append("<html>"); // NOI18N
                         switch(status) {
                             case Query.ISSUE_STATUS_NEW :
-                                issueUnseenFormat.format(new Object[] {s}, sb, null);
+                                format = issueUnseenFormat;
                                 break;
                             case Query.ISSUE_STATUS_OBSOLETE :
-                                issueObsoleteFormat.format(new Object[] {s}, sb, null);
+                                format = issueObsoleteFormat;
                                 break;
                             case Query.ISSUE_STATUS_MODIFIED :
-                                issueModifiedFormat.format(new Object[] {s}, sb, null);
+                                format = issueModifiedFormat;
                                 break;
                         }
-                        sb.append("</html>"); // NOI18N
-                    } else {
-                        sb.append(s);
                     }
+                    tooltip = (String) p.getValue();
                 } catch (Exception ex) {
                     BugtrackingManager.LOG.log(Level.WARNING, null, ex);
-                }
-                if(sb != null) {
-                    value = sb.toString();
                 }
             }
             if(renderer == null) {
                 renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
+            if(renderer instanceof JComponent) {
+                JComponent l = (JComponent) renderer;
+                l.putClientProperty("format", format);
+                ((JComponent) renderer).setToolTipText(tooltip);
+            }
             return renderer;
+        }
+
+        protected void paintComponent(Graphics g) {
+            MessageFormat format = (MessageFormat) getClientProperty("format");
+            String s = computeFitText(getText());
+            if(format != null) {
+                StringBuffer sb = new StringBuffer();
+                sb.append("<html>"); // NOI18N
+                format.format(new Object[] {s}, sb, null);
+                sb.append("</html>"); // NOI18N
+                s = sb.toString();
+            }
+            setText(s);
+            super.paintComponent(g);
         }
     }
 
@@ -379,5 +417,12 @@ public class IssueTable implements MouseListener, AncestorListener {
             super(Issue.LABEL_NAME_SEEN, Boolean.class, "", NbBundle.getBundle(Issue.class).getString("CTL_Issue_Seen_Desc")); // NOI18N
         }
     }
+
+    private class RecentChangesDescriptor extends ColumnDescriptor {
+        public RecentChangesDescriptor() {
+            super(Issue.LABEL_RECENT_CHANGES, String.class, NbBundle.getBundle(Issue.class).getString("CTL_Issue_Recent"), NbBundle.getBundle(Issue.class).getString("CTL_Issue_Recent_Desc")); // NOI18N
+        }
+    }
+
 }
 
