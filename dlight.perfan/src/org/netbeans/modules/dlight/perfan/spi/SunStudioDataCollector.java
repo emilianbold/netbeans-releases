@@ -44,14 +44,16 @@ import java.io.OutputStreamWriter;
 import java.net.ConnectException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
-import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
@@ -62,18 +64,21 @@ import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.management.api.DLightManager;
+import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
 import org.netbeans.modules.dlight.perfan.util.SunStudioLocator;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.util.TimerTaskExecutionService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
@@ -86,18 +91,22 @@ import org.openide.windows.InputOutput;
  * This class will represent SunStudio Performance Analyzer collect
  * which will be used as DataCollector
  */
-public class SunStudioDataCollector implements DataCollector<SunStudioDCConfiguration> {
+public class SunStudioDataCollector
+        extends IndicatorDataProvider<SunStudioDCConfiguration>
+        implements DataCollector<SunStudioDCConfiguration> {
 
-    public static final Column TOP_FUNCTION_INFO = new Column("currentFunction", String.class); // NOI18N
     private static final String ID = "PerfanDataStorage"; // NOI18N
+    // Below are FULL DataTableMetadata objects...
+    private static final DataTableMetadata cpuInfoTable;
+    private static final DataTableMetadata syncInfoTable;
+    private static final DataTableMetadata memInfoTable;
+    private static final DataTableMetadata summaryInfoTable;
     private static final List<DataStorageType> supportedStorageTypes;
-    private static final DataTableMetadata dataTableMetadata;
     private static final Logger log = DLightLogger.getLogger(SunStudioDataCollector.class);
     private final Object lock = new String(SunStudioDataCollector.class.getName());
     private final List<ValidationListener> validationListeners;
     private final List<CollectedInfo> collectedInfoList;
     private ValidationStatus validationStatus = ValidationStatus.initialStatus();
-//    private IndicatorsNotifyerTask indicatorsNotifyerTask;
     private PerfanDataStorage storage = null;
     private String experimentDir;
     private Future<Integer> collectTask = null;
@@ -105,20 +114,48 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     private String collectCmd;
     private String sproHome;
     private DLightTarget target = null;
+    private FutureTask<Boolean> warmUpTask = null;
+    private Future summaryInfoTask = null;
+
 
     static {
         supportedStorageTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(ID));
-        dataTableMetadata = new DataTableMetadata("idbe", Arrays.asList(TOP_FUNCTION_INFO)); // NOI18N
+
+        cpuInfoTable = new DataTableMetadata(
+                "SunStudioCPUDetailedData", // NOI18N
+                Arrays.asList(SunStudioDCConfiguration.c_name,
+                SunStudioDCConfiguration.c_iUser,
+                SunStudioDCConfiguration.c_eUser));
+
+
+        syncInfoTable = new DataTableMetadata(
+                "SunStudioSyncDetailedData", // NOI18N
+                Arrays.asList(SunStudioDCConfiguration.c_name,
+                SunStudioDCConfiguration.c_iSync,
+                SunStudioDCConfiguration.c_iSyncn));
+
+        memInfoTable = new DataTableMetadata("SunStudioMemDetailedData",
+                Arrays.asList(SunStudioDCConfiguration.c_name,
+                SunStudioDCConfiguration.c_leakCount,
+                SunStudioDCConfiguration.c_leakSize));
+
+        summaryInfoTable = new DataTableMetadata(
+                "SunStudioSummaryData", // NOI18N
+                Arrays.asList(SunStudioDCConfiguration.c_ulockSummary));
     }
 
-
+    //
+    // No matter how many tools/(indicators/detailed views) are relay on
+    // SunStudio, - at last we will get here with the full list of what should
+    // be collect.
+    // This is because collector MUST be created using SSDCProvider ONLY.
+    //
     SunStudioDataCollector(List<CollectedInfo> collectedInfoList) {
         this.collectedInfoList = Collections.synchronizedList(
                 new ArrayList<CollectedInfo>(collectedInfoList));
 
         this.validationListeners = Collections.synchronizedList(
                 new ArrayList<ValidationListener>());
-
     }
 
     public Future<ValidationStatus> validate(final DLightTarget targetToValidate) {
@@ -213,7 +250,7 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     void addCollectedInfo(List<CollectedInfo> collectedInfo) {
-        //should add if do not have yet
+        // should add if do not have yet
         for (CollectedInfo c : collectedInfo) {
             if (!collectedInfoList.contains(c)) {
                 collectedInfoList.add(c);
@@ -237,15 +274,14 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
 
         this.storage = (PerfanDataStorage) dataStorage;
         this.target = target;
-    }
+        this.experimentDir = "/var/tmp/dlightExperiment.er";
 
-    public void reinit() {
-        log.fine("Initialize perfan collector and storage for target " + target.toString()); // NOI18N
-        boolean status = prepareDirectory("/var/tmp/dlightExperiment.er"); // NOI18N
-
-        if (status == false) {
-            log.severe("Unable to prepare experiment directory!"); // NOI18N
+        if (warmUpTask != null && !warmUpTask.isDone()) {
+            warmUpTask.cancel(true);
         }
+
+        warmUpTask = new FutureTask<Boolean>(new WarmUpTask(execEnv, experimentDir));
+        warmUpTask.run();
 
         // Init storage (i.e. er_print, actually)
         storage.init(execEnv, sproHome, experimentDir);
@@ -255,75 +291,88 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         return execEnv;
     }
 
-    private boolean prepareDirectory(final String expDir) {
-        boolean status = true;
-
-        this.experimentDir = expDir;
-        log.fine("Prepare PerfanDataCollector. Clean directory " + expDir); // NOI18N
-        Future<Integer> rmFuture;
-        Integer rmResult = null;
-
-        rmFuture = CommonTasksSupport.rmDir(execEnv, experimentDir, true, null);
-
-        try {
-            rmResult = rmFuture.get();
-        } catch (InterruptedException ex) {
-        } catch (ExecutionException ex) {
-        }
-
-        if (rmResult == null || rmResult.intValue() != 0) {
-            log.info("SunStudioDataCollector: unable to delete directory " // NOI18N
-                    + execEnv.toString() + ":" + experimentDir); // NOI18N
-            status = false;
-        }
-
-        File lockFile = new File(new File(experimentDir).getParentFile(), "_collector_directory_lock"); // NOI18N
-        rmFuture = CommonTasksSupport.rmFile(execEnv, lockFile.getPath(), null);
-
-        try {
-            rmResult = rmFuture.get();
-        } catch (InterruptedException ex) {
-        } catch (ExecutionException ex) {
-        }
-
-        return status;
-    }
-
     private void targetStarted(DLightTarget target) {
-        if (isAttachable()) {
-            // i.e. should start separate process
-            AttachableTarget at = (AttachableTarget) target;
-            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, collectCmd);
-            npb = npb.setArguments("-P", "" + at.getPID(), "-o", experimentDir); // NOI18N
+        synchronized (lock) {
+            // Wait for warm-up task completion ...
+            boolean warmUpStatus = false;
 
-            ExecutionDescriptor descr = new ExecutionDescriptor();
-            descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
-            descr = descr.outProcessorFactory(new StdErrRedirectorFactory());
-            descr = descr.inputOutput(InputOutput.NULL);
+            try {
+                warmUpStatus = warmUpTask.get().booleanValue();
+            } catch (CancellationException ex) {
+                log.fine("Will not start SunStudioDataCollector because of " // NOI18N
+                        + ex.getMessage());
+            } catch (InterruptedException ex) {
+                log.fine("Will not start SunStudioDataCollector because of " // NOI18N
+                        + ex.getMessage());
+            } catch (ExecutionException ex) {
+                log.fine("Will not start SunStudioDataCollector because of " // NOI18N
+                        + ex.getMessage());
+            }
 
-            ExecutionService service = ExecutionService.newService(npb, descr, "collect"); // NOI18N
-            collectTask = service.run();
+            // Make it null, to start it again on restart ...
+            warmUpTask = null;
+
+            if (!warmUpStatus) {
+                log.fine("Will not start SunStudioDataCollector because warm-up task failed"); // NOI18N
+                return;
+            }
+
+            if (isAttachable()) {
+                // i.e. should start separate process
+                AttachableTarget at = (AttachableTarget) target;
+                NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, collectCmd);
+                npb = npb.setArguments("-P", "" + at.getPID(), "-o", experimentDir); // NOI18N
+
+                ExecutionDescriptor descr = new ExecutionDescriptor();
+                descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
+                descr = descr.outProcessorFactory(new StdErrRedirectorFactory());
+                descr = descr.inputOutput(InputOutput.NULL);
+
+                ExecutionService service = ExecutionService.newService(npb, descr, "collect"); // NOI18N
+                collectTask = service.run();
+            }
+
+            // In case when summary data was requested do init
+            // periodic SummaryDataFetchingTask ...
+
+            if (collectedInfoList.contains(SunStudioDCConfiguration.CollectedInfo.SYNCSUMMARY)) {
+                resetIndicators();
+                TimerTaskExecutionService service =
+                        TimerTaskExecutionService.getInstance();
+                summaryInfoTask = service.scheduleAtFixedRate(
+                        new SummaryDataFetchingTask(), 1, TimeUnit.SECONDS);
+            }
+
         }
     }
 
     private void targetFinished(DLightTarget target) {
-        log.fine("Stopping PerfanDataCollector: " + collectCmd); // NOI18N
-
-        if (isAttachable()) {
-            // i.e. separate process
-            if (collectTask != null) {
-                collectTask.cancel(true);
+        synchronized (lock) {
+            if (warmUpTask != null && !warmUpTask.isDone()) {
+                warmUpTask.cancel(true);
+                warmUpTask = null;
             }
-        } else {
-            // i.e. this means that exactly this collector finished
-            // do nothing
+
+            log.fine("Stopping PerfanDataCollector: " + collectCmd); // NOI18N
+
+            if (isAttachable()) {
+                // i.e. separate process
+                if (collectTask != null) {
+                    collectTask.cancel(true);
+                }
+            } else {
+                // i.e. this means that exactly this collector finished
+                // do nothing
+            }
+
+            collectTask = null;
+
+            if (summaryInfoTask != null) {
+                summaryInfoTask.cancel(true);
+                summaryInfoTask = null;
+            }
         }
 
-        collectTask = null;
-
-//    if (indicatorsNotifyerTask != null) {
-//      DLightGlobalTimer.getInstance().unregisterTimerTask(indicatorsNotifyerTask);
-//    }
     }
 
     public Collection<DataStorageType> getSupportedDataStorageTypes() {
@@ -331,11 +380,30 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
     }
 
     public List<DataTableMetadata> getDataTablesMetadata() {
-        return Arrays.asList(dataTableMetadata);
+        List<DataTableMetadata> result = new ArrayList<DataTableMetadata>();
+
+        if (collectedInfoList.contains(CollectedInfo.FUNCTIONS_LIST)) {
+            result.add(cpuInfoTable);
+        }
+
+        if (collectedInfoList.contains(CollectedInfo.SYNCHRONIZARION)) {
+            result.add(syncInfoTable);
+        }
+
+        if (collectedInfoList.contains(CollectedInfo.MEMORY)) {
+            result.add(memInfoTable);
+        }
+
+        if (collectedInfoList.contains(CollectedInfo.SYNCSUMMARY)) {
+            result.add(summaryInfoTable);
+        }
+
+        return result;
     }
 
     public boolean isAttachable() {
-        if (collectedInfoList.contains(CollectedInfo.SYNCHRONIZARION)) {
+        if (collectedInfoList.contains(CollectedInfo.SYNCHRONIZARION) ||
+                collectedInfoList.contains(CollectedInfo.MEMORY)) {
             return false;
         }
         return true;
@@ -347,11 +415,30 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
 
     public String[] getArgs() {
         List<String> args = new ArrayList<String>();
+
+        // From collect(1):
+        // ...
+        // -l signal
+        //    Record a sample point  whenever  the  given  signal  is
+        //    delivered to the process.
+        // ..
+        // Add this arguments to allow indicator provider based on
+        // mmonitor to coexist with collect
+        
+        args.add("-l"); // NOI18N
+        args.add("USR1"); // NOI18N
+
         if (collectedInfoList.contains(CollectedInfo.SYNCHRONIZARION)) {
-            args.add("-s");
-            args.add("30");
+            args.add("-s"); // NOI18N
+            args.add("30"); // NOI18N
         }
-        args.add("-o");
+
+        if (collectedInfoList.contains(CollectedInfo.MEMORY)) {
+            args.add("-H"); // NOI18N
+            args.add("on"); // NOI18N
+        }
+
+        args.add("-o"); // NOI18N
         args.add(getExperimentDir());
         return args.toArray(new String[0]);
     }
@@ -364,27 +451,29 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
         // We need to be sure that events are processed sequentially ...
         // So use synchronized block ...
         // ??? Not sure - need to review.
-        synchronized (lock) {
-            switch (newState) {
-                case STARTING:
-                    reinit();
-                    return;
-                case RUNNING:
-                    targetStarted(source);
-                    return;
-                case FAILED:
-                    targetFinished(source);
-                    return;
-                case TERMINATED:
-                    targetFinished(source);
-                    return;
-                case DONE:
-                    targetFinished(source);
-                    return;
-                case STOPPED:
-                    targetFinished(source);
-                    return;
-            }
+        switch (newState) {
+            case STARTING:
+                if (warmUpTask == null) {
+                    // Re-start
+                    warmUpTask = new FutureTask<Boolean>(new WarmUpTask(execEnv, experimentDir));
+                    warmUpTask.run();
+                }
+                return;
+            case RUNNING:
+                targetStarted(source);
+                return;
+            case FAILED:
+                targetFinished(source);
+                return;
+            case TERMINATED:
+                targetFinished(source);
+                return;
+            case DONE:
+                targetFinished(source);
+                return;
+            case STOPPED:
+                targetFinished(source);
+                return;
         }
     }
 
@@ -410,6 +499,78 @@ public class SunStudioDataCollector implements DataCollector<SunStudioDCConfigur
                     super.write(sb.toString().toCharArray());
                 }
             });
+        }
+    }
+
+    private static final class WarmUpTask implements Callable<Boolean> {
+
+        private final String dirName;
+        private final ExecutionEnvironment execEnv;
+
+        public WarmUpTask(ExecutionEnvironment execEnv, String dirName) {
+            this.dirName = dirName;
+            this.execEnv = execEnv;
+        }
+
+        public Boolean call() throws Exception {
+            boolean status = true;
+
+            log.fine("Prepare PerfanDataCollector. Clean directory " + dirName); // NOI18N
+            Future<Integer> rmFuture;
+            Integer rmResult = null;
+
+            rmFuture = CommonTasksSupport.rmDir(execEnv, dirName, true, null);
+
+            try {
+                rmResult = rmFuture.get();
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+            }
+
+            if (rmResult == null || rmResult.intValue() != 0) {
+                log.info("SunStudioDataCollector: unable to delete directory " // NOI18N
+                        + execEnv.toString() + ":" + dirName); // NOI18N
+                status = false;
+            }
+
+            File lockFile = new File(new File(dirName).getParentFile(), "_collector_directory_lock"); // NOI18N
+            rmFuture = CommonTasksSupport.rmFile(execEnv, lockFile.getPath(), null);
+
+            try {
+                rmResult = rmFuture.get();
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+            }
+
+            if (status == false) {
+                log.severe("Unable to prepare experiment directory!"); // NOI18N
+            }
+
+            return new Boolean(status);
+        }
+    }
+
+    private final class SummaryDataFetchingTask implements Runnable {
+
+        private List<String> colNames = new ArrayList<String>();
+
+        public SummaryDataFetchingTask() {
+            for (CollectedInfo info : collectedInfoList) {
+                if (info == CollectedInfo.SYNCSUMMARY) {
+                    colNames.add(SunStudioDCConfiguration.c_ulockSummary.getColumnName());
+                }
+            }
+        }
+
+        public void run() {
+            System.out.println("!!!!!!!!!!!!!! Receive Indicator Data from SunStudio er_print!!!!!");
+
+            if (colNames.isEmpty()) {
+                return;
+            }
+
+            List data = storage.fetchSummaryData(colNames);
+            SunStudioDataCollector.this.notifyIndicators(Arrays.asList(new DataRow(colNames, data)));
         }
     }
 }

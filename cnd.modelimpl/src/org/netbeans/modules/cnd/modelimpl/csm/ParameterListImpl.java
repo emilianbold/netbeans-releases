@@ -74,14 +74,18 @@ public class ParameterListImpl<T, K> extends OffsetableIdentifiableBase<T> imple
         }
     }
     
-    public Collection<K> getParameters() {
+    public final Collection<K> getParameters() {
         return _getParameters();
     }
 
-    public boolean isEmpty() {
+    public final boolean isEmpty() {
         return parameters == null || parameters.isEmpty();
     }
 
+    public final int getNrParameters() {
+        return parameters == null ? 0 : parameters.size();
+    }
+    
     @Override
     public void dispose() {
         super.dispose();

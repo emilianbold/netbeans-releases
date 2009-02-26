@@ -575,7 +575,27 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             assert start >= 0 : "must have word \"operator\" in name";
             start += OPERATOR.length();
             String signText = strName.substring(start).trim();
-            out = OperatorKind.getKindByImage(signText);
+            OperatorKind binaryKind = OperatorKind.getKindByImage(signText, true);
+            OperatorKind nonBinaryKind = OperatorKind.getKindByImage(signText, false);
+            if (binaryKind != OperatorKind.NONE && nonBinaryKind != OperatorKind.NONE) {
+                // select the best
+                int nrParams = getNrParameters();
+                if (nrParams == 0) {
+                    out = nonBinaryKind;
+                } else if (nrParams == 1) {
+                    if (CsmKindUtilities.isClass(getScope())) {
+                        out = binaryKind;
+                    } else {
+                        out = nonBinaryKind;
+                    }
+                } else if (nrParams == 2) {
+                    out = binaryKind;
+                } else {
+                    out = nonBinaryKind;
+                }
+            } else {
+                out = (binaryKind != OperatorKind.NONE) ? binaryKind : nonBinaryKind;
+            }
         }
         return out;                
     }
@@ -730,6 +750,14 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
     }
 
+    private int getNrParameters() {
+        if (isVoidParameterList() || this.parameterList == null) {
+            return 0;
+        } else {
+            return this.parameterList.getNrParameters();
+        }
+    }
+    
     private void _disposeParameters() {
         if (this.parameterList != null) {
             parameterList.dispose();

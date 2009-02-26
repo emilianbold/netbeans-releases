@@ -45,11 +45,13 @@ import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -64,16 +66,23 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.text.JTextComponent;
+import javax.xml.namespace.QName;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.build.model.ModelLineage;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.model.pom.ModelList;
 import org.netbeans.modules.maven.model.pom.POMComponent;
+import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.pom.POMQName;
 import org.netbeans.modules.maven.model.pom.POMQNames;
 import org.netbeans.modules.maven.model.pom.Project;
+import org.netbeans.modules.maven.navigator.POMModelVisitor.POMCutHolder;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
@@ -86,24 +95,37 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeOp;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
 
 /**
  *
  * @author  mkleint
  */
-public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable {
+public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable, CaretListener {
 
-    private static final String NAVIGATOR_SHOW_UNDEFINED = "navigator.showUndefined"; //NOi18N
+    private static final String NAVIGATOR_SHOW_UNDEFINED = "navigator.showUndefined"; //NOI18N
     private transient ExplorerManager explorerManager = new ExplorerManager();
     
     private BeanTreeView treeView;
     private DataObject current;
+    private JTextComponent currentComponent;
+    private int currentDot = -1;
+    private RequestProcessor.Task caretTask = RequestProcessor.getDefault().create(new Runnable() {
+        public void run() {
+            if (currentDot != -1) {
+                updateCaret(currentDot);
+            }
+        }
+    });
+
+
     private FileChangeAdapter adapter = new FileChangeAdapter(){
             @Override
             public void fileChanged(FileEvent fe) {
@@ -113,12 +135,14 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         };
     private TapPanel filtersPanel;
 
-    private boolean filterIncludeUndefined;
+    private Configuration configuration;
 
     /** Creates new form POMInheritancePanel */
     public POMModelPanel() {
         initComponents();
-        filterIncludeUndefined = NbPreferences.forModule(POMModelPanel.class).getBoolean(NAVIGATOR_SHOW_UNDEFINED, false);
+        configuration = new Configuration();
+        boolean filterIncludeUndefined = NbPreferences.forModule(POMModelPanel.class).getBoolean(NAVIGATOR_SHOW_UNDEFINED, true);
+        configuration.setFilterUndefined(filterIncludeUndefined);
 
         treeView = (BeanTreeView)jScrollPane1;
         // filters
@@ -137,49 +161,52 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             filtersPanel.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
 
         add(filtersPanel, BorderLayout.SOUTH);
-        getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                    Node[] nds = getExplorerManager().getSelectedNodes();
-                    if (nds.length == 1) {
-                        selectByNode(nds[0], null);
-                    }
-                }
-            }
-
-            private void selectByNode(Node nd, POMQName name) {
-                if (nd == null) {
-                    return;
-                }
-                POMModelVisitor.POMCutHolder holder = nd.getLookup().lookup(POMModelVisitor.POMCutHolder.class);
-                if (holder != null) {
-                    Object[] objs = holder.getCutValues();
-                    if (objs[0] != null && objs[0] instanceof POMComponent) {
-                        POMComponent pc = (POMComponent) objs[0];
-                        int pos;
-                        if (name != null) {
-                            //TODO if not a simple child, then this fails.
-                            pos = pc.findChildElementPosition(name.getQName());
-                        } else {
-                            pos = pc.getModel().getAccess().findPosition(pc.getPeer());
-                        }
-                        if (pos != -1) {
-                            select(pos);
-                        }
-                    } else if (objs[0] != null && name == null) {
-                        selectByNode(nd.getParentNode(), nd.getLookup().lookup(POMQName.class));
-                    }
-                }
-            }
-        });
     }
 
-    private void select(final int pos) {
+    static void selectByNode(Node nd, POMQName name, int layer) {
+        if (nd == null) {
+            return;
+        }
+        POMModelVisitor.POMCutHolder holder = nd.getLookup().lookup(POMModelVisitor.POMCutHolder.class);
+        if (holder != null) {
+            Object[] objs = holder.getCutValues();
+            if (layer >= objs.length) {
+                return;
+            }
+            if (objs[layer] != null && objs[layer] instanceof POMComponent) {
+                POMComponent pc = (POMComponent) objs[layer];
+                int pos;
+                if (name != null) {
+                    //TODO if not a simple child, then this fails.
+                    pos = pc.findChildElementPosition(name.getQName());
+                } else {
+                    pos = pc.getModel().getAccess().findPosition(pc.getPeer());
+                }
+                if (pos != -1) {
+                    select(nd, pos, layer);
+                }
+            } else if (objs[layer] != null && name == null) {
+                selectByNode(nd.getParentNode(), nd.getLookup().lookup(POMQName.class), layer);
+            }
+        }
+    }
+
+
+    private static void select(final Node node, final int pos, final int layer) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                EditorCookie.Observable ec = current.getLookup().lookup(EditorCookie.Observable.class);
+                POMCutHolder hold = node.getLookup().lookup(POMCutHolder.class);
+                POMModel[] models = hold.getSource();
+                if (models.length <= layer) {
+                    return;
+                }
+                POMModel mdl = models[layer];
+                DataObject dobj = mdl.getModelSource().getLookup().lookup(DataObject.class);
+                if (dobj == null) {
+                    return;
+                }
+                EditorCookie.Observable ec = dobj.getLookup().lookup(EditorCookie.Observable.class);
                 if (ec == null) {
-                    System.out.println("ec is null");
                     return;
                 }
                 JEditorPane[] panes = ec.getOpenedPanes();
@@ -187,7 +214,11 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     // editor already opened, so just select
                     JTextComponent component = panes[0];
                     component.setCaretPosition(pos);
-                } else  {
+                    TopComponent tc = NbEditorUtilities.getOuterTopComponent(component);
+                    if (!tc.isVisible()) {
+                        tc.requestVisible();
+                    }
+                } else {
                     // editor not opened yet
                     ec.open();
                     try {
@@ -196,11 +227,19 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                         if (panes != null && panes.length > 0) {
                             JTextComponent component = panes[0];
                             component.setCaretPosition(pos);
+                            if ("pom".equals(dobj.getPrimaryFile().getExt())) {
+                                //make temporarily non-editable??
+//                                component.setEditable(false);
+//                                TopComponent tc = NbEditorUtilities.getOuterTopComponent(component);
+//                                String dn = tc.getDisplayName();
+//                                tc.setDisplayName(dn + " r/o");
+
+                            }
                         }
                     } catch (IOException ioe) {
-
                     }
                 }
+
             }
         });
     }
@@ -210,13 +249,20 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     }
 
     void navigate(DataObject d) {
-        if (current != null) {
-            current.getPrimaryFile().removeFileChangeListener(adapter);
-        }
+        cleanup();
         current = d;
         current.getPrimaryFile().addFileChangeListener(adapter);
         showWaitNode();
         RequestProcessor.getDefault().post(this);
+    }
+
+    void cleanup() {
+        if (current != null) {
+            current.getPrimaryFile().removeFileChangeListener(adapter);
+        }
+        if (currentComponent != null) {
+            currentComponent.removeCaretListener(this);
+        }
     }
     
     public void run() {
@@ -228,19 +274,19 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     ModelLineage lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.createOnlineEmbedder(), false);
                     @SuppressWarnings("unchecked")
                     Iterator<File> it = lin.fileIterator();
-                    final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.POMCutHolder();
+                    List<Project> prjs = new ArrayList<Project>();
+                    List<POMModel> mdls = new ArrayList<POMModel>();
                     POMQNames names = null;
-                    
-
                     while (it.hasNext()) {
-                        File pom = it.next();
+                        File pom = FileUtil.normalizeFile(it.next());
                         FileUtil.refreshFor(pom);
                         FileObject fo = FileUtil.toFileObject(pom);
                         if (fo != null) {
                             ModelSource ms = org.netbeans.modules.maven.model.Utilities.createModelSource(fo);
                             POMModel mdl = POMModelFactory.getDefault().getModel(ms);
                             if (mdl != null) {
-                                hold.addCut(mdl.getProject());
+                                prjs.add(mdl.getProject());
+                                mdls.add(mdl);
                                 names = mdl.getPOMQNames();
                             } else {
                                 System.out.println("no model for " + pom);
@@ -249,11 +295,14 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                             System.out.println("no fileobject for " + pom);
                         }
                     }
-                    final POMModelVisitor.PomChildren childs = new POMModelVisitor.PomChildren(hold, names, Project.class, filterIncludeUndefined);
+                    final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.SingleObjectCH(mdls.toArray(new POMModel[0]), names, names.PROJECT, Project.class,  configuration); //NOI18N
+                    for (Project p : prjs) {
+                        hold.addCut(p);
+                    }
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                            treeView.setRootVisible(false);
-                           explorerManager.setRootContext(new AbstractNode(childs, Lookups.fixed(hold)));
+                           explorerManager.setRootContext(hold.createNode());
                         } 
                     });
                 } catch (ProjectBuildingException ex) {
@@ -273,6 +322,32 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     } 
                 });
             }
+            
+            //now attach the listener to the textcomponent
+            final EditorCookie.Observable ec = current.getLookup().lookup(EditorCookie.Observable.class);
+            if (ec == null) {
+                //how come?
+                return;
+            }
+            try {
+                ec.openDocument(); //wait to editor to open
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    JEditorPane[] panes = ec.getOpenedPanes();
+                    if (panes != null && panes.length > 0) {
+                        // editor already opened, so just select
+                        JTextComponent component = panes[0];
+                        component.removeCaretListener(POMModelPanel.this);
+                        component.addCaretListener(POMModelPanel.this);
+                        currentComponent = component;
+                    }
+                }
+            } );
+
         }
     }
 
@@ -321,7 +396,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             toolbar.setOpaque(false);
             toolbar.setFocusable(false);
             JToggleButton tg1 = new JToggleButton(new ShowUndefinedAction());
-            tg1.setSelected(filterIncludeUndefined);
+            tg1.setSelected(configuration.isFilterUndefined());
             toolbar.add(tg1);
             Dimension space = new Dimension(3, 0);
             toolbar.addSeparator(space);
@@ -354,7 +429,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     
     private static Node createWaitNode() {
         AbstractNode an = new AbstractNode(Children.LEAF);
-        an.setIconBaseWithExtension("org/netbeans/modules/maven/navigator/wait.gif");
+        an.setIconBaseWithExtension("org/netbeans/modules/maven/navigator/wait.gif"); //NOI18N
         an.setDisplayName(NbBundle.getMessage(POMInheritancePanel.class, "LBL_Wait"));
         return an;
     }
@@ -439,24 +514,167 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         }
         return null;
     }
+
+    public void caretUpdate(CaretEvent e) {
+        if (e.getSource() != currentComponent) {
+            ((JTextComponent)e.getSource()).removeCaretListener(this);
+            //just a double check we do't get a persistent leak here..
+            return;
+        }
+        currentDot = e.getDot();
+        caretTask.schedule(1000);
+    }
+
+    private void updateCaret(int caret) {
+        POMCutHolder pch = getExplorerManager().getRootContext().getLookup().lookup(POMCutHolder.class);
+        if (pch != null) {
+            POMComponent pc = (POMComponent) pch.getSource()[0].findComponent(caret);
+            Stack<POMComponent> stack = new Stack<POMComponent>();
+            while (pc != null) {
+                stack.push(pc);
+                pc = pc.getParent();
+            }
+            Node currentNode = getExplorerManager().getRootContext();
+            if (stack.empty()) {
+                return;
+            }
+            //pop the project root.
+            POMComponent currentpc = stack.pop();
+            boolean found = false;
+            while (!stack.empty()) {
+                currentpc = stack.pop();
+                found = false;
+                Node[] childs = currentNode.getChildren().getNodes(true);
+                Class listClass = null;
+                if (currentpc instanceof ModelList) {
+                    ModelList lst = (ModelList)currentpc;
+                    listClass = lst.getListClass();
+                }
+                for (Node childNode : childs) {
+                    POMCutHolder holder = childNode.getLookup().lookup(POMCutHolder.class);
+                    Object currentObj = holder.getCutValues()[0];
+                    if (currentObj != null && currentObj instanceof POMComponent) {
+                        if (currentObj == currentpc) {
+                            treeView.expandNode(currentNode);
+                            currentNode = childNode;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (currentObj != null && currentObj instanceof String) {
+                        String qnName;
+                        QName qn = childNode.getLookup().lookup(QName.class);
+                        if (qn == null) {
+                            POMQName pqn = childNode.getLookup().lookup(POMQName.class);
+                            if (pqn != null) {
+                                qn = pqn.getQName();
+                            }
+                        }
+                        if (qn != null) {
+                            qnName = qn.getLocalPart();
+                        } else {
+                            //properties
+                            qnName = childNode.getLookup().lookup(String.class);
+                        }
+
+                        if (qnName == null || (!(currentpc instanceof POMExtensibilityElement))) {
+                            //TODO can be also string in lookup;
+                            continue;
+                        }
+                        POMExtensibilityElement exEl = (POMExtensibilityElement) currentpc;
+                        if (exEl.getQName().getLocalPart().equals(qnName)) {
+                            treeView.expandNode(currentNode);
+                            currentNode = childNode;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (currentObj != null && holder instanceof POMModelVisitor.ListObjectCH
+                            && listClass != null) {
+                        POMModelVisitor.ListObjectCH loh = (POMModelVisitor.ListObjectCH)holder;
+                        if (loh.getListClass().equals(listClass)) {
+                            treeView.expandNode(currentNode);
+                            currentNode = childNode;
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found) {
+                    break;
+                }
+            }
+            if (found) {
+                try {
+                    getExplorerManager().setSelectedNodes(new Node[]{currentNode});
+                } catch (PropertyVetoException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
     
 
     private class ShowUndefinedAction extends AbstractAction {
 
         public ShowUndefinedAction() {
-            putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/filterHideFields.gif")));
-            putValue(SHORT_DESCRIPTION, "Show only POM elements defined in at least one place.");
+            putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/filterHideFields.gif"))); //NOI18N
+            putValue(SHORT_DESCRIPTION, org.openide.util.NbBundle.getMessage(POMModelPanel.class, "DESC_FilterUndefined"));
         }
 
 
         public void actionPerformed(ActionEvent e) {
-            filterIncludeUndefined = !filterIncludeUndefined;
-            NbPreferences.forModule(POMModelPanel.class).putBoolean( NAVIGATOR_SHOW_UNDEFINED, filterIncludeUndefined);
-
-            POMModelVisitor.PomChildren keys = (POMModelVisitor.PomChildren) explorerManager.getRootContext().getChildren();
-            keys.reshow(filterIncludeUndefined);
+            boolean current = configuration.isFilterUndefined();
+            configuration.setFilterUndefined(!current);
+            NbPreferences.forModule(POMModelPanel.class).putBoolean( NAVIGATOR_SHOW_UNDEFINED, !current);
         }
         
+    }
+
+    static class Configuration {
+
+        private boolean filterUndefined;
+        public static final String PROP_FILTERUNDEFINED = "filterUndefined"; //NOI18N
+
+        /**
+         * Get the value of filterUndefined
+         *
+         * @return the value of filterUndefined
+         */
+        public boolean isFilterUndefined() {
+            return filterUndefined;
+        }
+
+        /**
+         * Set the value of filterUndefined
+         *
+         * @param filterUndefined new value of filterUndefined
+         */
+        public void setFilterUndefined(boolean filterUndefined) {
+            boolean oldFilterUndefined = this.filterUndefined;
+            this.filterUndefined = filterUndefined;
+            propertyChangeSupport.firePropertyChange(PROP_FILTERUNDEFINED, oldFilterUndefined, filterUndefined);
+        }
+        private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+
+        /**
+         * Add PropertyChangeListener.
+         *
+         * @param listener
+         */
+        public void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+            propertyChangeSupport.addPropertyChangeListener(listener);
+        }
+
+        /**
+         * Remove PropertyChangeListener.
+         *
+         * @param listener
+         */
+        public void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+            propertyChangeSupport.removePropertyChangeListener(listener);
+        }
+
     }
 }
 

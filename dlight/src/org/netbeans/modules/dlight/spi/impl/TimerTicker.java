@@ -36,13 +36,12 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi.impl;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.Callable;
-import java.util.logging.Logger;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
@@ -50,45 +49,62 @@ import org.netbeans.modules.dlight.spi.support.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.TimerTaskExecutionService;
 
-public final class TimerTicker extends IndicatorDataProvider<TimerIDPConfiguration> implements Callable<Integer> {
-  private static final Logger log = DLightLogger.getLogger(TimerTicker.class);
- 
- 
-  private static final DataTableMetadata tableMetadata = new DataTableMetadata(TimerIDPConfiguration.TIME_ID, Arrays.asList(TimerIDPConfiguration.TIME_INFO));
-  private  IndicatorDataProviderConfiguration configuration;
-  private long startTime = 0;
+public final class TimerTicker
+        extends IndicatorDataProvider<TimerIDPConfiguration>
+        implements Runnable {
 
-  TimerTicker(TimerIDPConfiguration configuration){
-    this.configuration = configuration;
-  }
+    private static final TimerTaskExecutionService service;
+    private static final DataTableMetadata tableMetadata;
+    private final Object lock = new String(TimerTicker.class.getName());
+    private final IndicatorDataProviderConfiguration configuration;
+    private long startTime = 0;
+    private Future tickerTask;
 
-  private void targetStarted(DLightTarget target) {
-    resetIndicators();
-    TimerTaskExecutionService.getInstance().registerTimerTask(this, 5);
-    log.fine("TimerTicker started !!!!!!!!");
-    startTime = System.currentTimeMillis();
-  }
 
-  private void targetFinished(DLightTarget target) {
-    log.fine("Task finished!!!! Stopping timer!!");
-    TimerTaskExecutionService.getInstance().unregisterTimerTask(this);
-  }
+    static {
+        service = TimerTaskExecutionService.getInstance();
+        tableMetadata = new DataTableMetadata(TimerIDPConfiguration.TIME_ID,
+                Arrays.asList(TimerIDPConfiguration.TIME_INFO));
+    }
 
-  public Integer call() throws Exception {
-    DataRow data = new DataRow(Arrays.asList(TimerIDPConfiguration.TIME_ID), Arrays.<Object>asList(System.currentTimeMillis() - startTime));
-    notifyIndicators(Arrays.asList(data));
-    return 0;
-  }
+    TimerTicker(TimerIDPConfiguration configuration) {
+        this.configuration = configuration;
+    }
 
-  @Override
-  public Collection<DataTableMetadata> getDataTablesMetadata() {
-    return Arrays.asList(tableMetadata);
-  }
+    private void targetStarted(DLightTarget target) {
+        synchronized (lock) {
+            resetIndicators();
+            tickerTask = service.scheduleAtFixedRate(this, 1, TimeUnit.SECONDS);
+            startTime = System.currentTimeMillis();
+        }
+    }
 
-   public void targetStateChanged(DLightTarget source, State oldState, State newState) {
+    private void targetFinished(DLightTarget target) {
+        synchronized (lock) {
+            if (tickerTask != null) {
+                tickerTask.cancel(true);
+                tickerTask = null;
+            }
+        }
+    }
+
+    public void run() {
+        DataRow data = new DataRow(Arrays.asList(TimerIDPConfiguration.TIME_ID),
+                Arrays.<Object>asList(System.currentTimeMillis() - startTime));
+
+        notifyIndicators(Arrays.asList(data));
+    }
+
+    @Override
+    public Collection<DataTableMetadata> getDataTablesMetadata() {
+        return Arrays.asList(tableMetadata);
+    }
+
+    public void targetStateChanged(
+            DLightTarget source, State oldState, State newState) {
+
         switch (newState) {
             case RUNNING:
                 targetStarted(source);
@@ -107,6 +123,4 @@ public final class TimerTicker extends IndicatorDataProvider<TimerIDPConfigurati
                 return;
         }
     }
-
-
 }

@@ -221,10 +221,11 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             IndicatorAccessor.getDefault().addIndicatorActionListener(ind, this);
         }
         notifySessionAdded(session);
-        //should add existinhg listeners
-        for (DLightSessionListener sessionListener : sessionListeners){
-            sessionListener.sessionAdded(session);
-        }
+//        AK: Listeners are already notified...
+//        //should add existinhg listeners
+//        for (DLightSessionListener sessionListener : sessionListeners){
+//            sessionListener.sessionAdded(session);
+//        }
         return session;
     }
 
