@@ -39,11 +39,13 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
+import java.awt.Image;
 import java.text.MessageFormat;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -51,12 +53,21 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public class KenaiRepository extends BugzillaRepository {
+
+    static final String ICON_PATH = "org/netbeans/modules/bugzilla/resources/kenai-small.png";
     private String urlParam;
     private Query[] definedQueries;
+    private Image icon;
 
     public KenaiRepository(String repoName, String url, String user, String password, String urlParam) {
         super(repoName, url, user, password);
         this.urlParam = urlParam;
+        icon = ImageUtilities.loadImage(ICON_PATH, true);
+    }
+
+    @Override
+    public Image getIcon() {
+        return icon;
     }
 
     @Override

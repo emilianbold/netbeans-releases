@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugzilla;
 
 import java.awt.BorderLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -73,6 +74,7 @@ import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -251,6 +253,11 @@ public class BugzillaRepository extends Repository {
             if(!Character.isDigit(str.charAt(i))) return false;
         }
         return true;
+    }
+
+    @Override
+    public Image getIcon() {
+        return null;
     }
     
     private class Controller extends BugtrackingController implements DocumentListener, ActionListener {
