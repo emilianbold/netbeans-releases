@@ -86,6 +86,13 @@ public final class UIUtils {
     private UIUtils() {
     }
 
+    /**
+     * do we need this method at all
+     * TODO: remove me
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public static final JTextPane createHTMLPane() {
         JTextPane textPane = new JTextPane();
         textPane.setContentType("text/html");
@@ -103,6 +110,14 @@ public final class UIUtils {
         return textPane;
     }
 
+    /**
+     * do we need this method at all
+     * TODO: remove me
+     * @param text
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public static final JButton createFocusableHyperlink(String text) {
         final JButton hyperlink=new JButton("<html><body><a href=\"foo\">"+text+"</a>");
         hyperlink.setBorderPainted(false);
@@ -127,9 +142,11 @@ public final class UIUtils {
 
 
     /**
+     * this method will be removed
      * will try to login using stored uname and password if not already logged in
      * @return true if logged in, false otherwise
      */
+    @Deprecated
     public static boolean tryLogin() {
         if (Kenai.getDefault().getPasswordAuthentication()!=null) {
             return true;
