@@ -63,11 +63,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiEvent;
-import org.netbeans.modules.kenai.api.KenaiListener;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.collab.chat.ChatNotifications;
-import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.ImageUtilities;
@@ -132,7 +128,7 @@ public class ChatTopComponent extends TopComponent {
         } else {
             putLoginScreen();
         }
-        Kenai.getDefault().addKenaiListener(new KenaiL());
+        Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN, new KenaiL());
         chats.addChangeListener(changeListener);
         chats.addPropertyChangeListener(TabbedPaneFactory.PROP_CLOSE, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -464,16 +460,14 @@ public class ChatTopComponent extends TopComponent {
 
     }
 
-    final class KenaiL implements KenaiListener {
+    final class KenaiL implements PropertyChangeListener {
 
-        public void stateChanged(KenaiEvent e) {
-            if (KenaiEvent.LOGIN==e.getType()) {
-                if (e.getSource()==null) {
-                    putLoginScreen();
-                } else {
-                    KenaiConnection.getDefault().getMyProjects();
-                    putChatsScreen();
-                }
+        public void propertyChange(PropertyChangeEvent e) {
+            if (e.getNewValue() == null) {
+                putLoginScreen();
+            } else {
+                KenaiConnection.getDefault().getMyProjects();
+                putChatsScreen();
             }
         }
     }

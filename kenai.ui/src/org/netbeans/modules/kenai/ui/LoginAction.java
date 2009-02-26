@@ -39,10 +39,10 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiEvent;
-import org.netbeans.modules.kenai.api.KenaiListener;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -69,18 +69,15 @@ public final class LoginAction extends AbstractAction implements Runnable {
     public static synchronized LoginAction getDefault() {
         if (instance==null) {
             instance=new LoginAction();
-            Kenai.getDefault().addKenaiListener(new KenaiListener() {
-
-                public void stateChanged(KenaiEvent e) {
-                    if (e.LOGIN == e.getType()) {
-                        if (e.getSource()==null) {
+            Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN, new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent pce) {
+                        if (pce.getNewValue()==null) {
                             instance.setLogout(false);
                         } else {
                             instance.setLogout(true);
                         }
                     }
-                }
-            });
+                });
         }
         return instance;
     }
