@@ -41,29 +41,17 @@
 package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Iterator;
-import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
-import org.omg.CORBA.Request;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 
@@ -125,62 +113,6 @@ public class PresenceIndicator {
                 ChatTopComponent.getDefault().requestActive();
             }
         }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-            processEvent(e);
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            processEvent(e);
-        }
-
-        private void processEvent(MouseEvent e) {
-            if (e.isPopupTrigger()) {
-                JPopupMenu menu = new JPopupMenu();
-                menu.add(new JMenuItem(new Online()));
-                menu.add(new JMenuItem(new Offline()));
-                menu.add(new JMenuItem(new OpenChat()));
-                menu.show(label, 0, 0);
-            }
-        }
-
-
-        
-        private class Online extends AbstractAction {
-            
-            public Online() {
-                super(org.openide.util.NbBundle.getMessage(PresenceIndicator.class, "CTL_Available", new Object[] {}));
-            }
-
-            public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        }
-        
-        private class Offline extends AbstractAction {
-            public Offline() {
-                super(org.openide.util.NbBundle.getMessage(PresenceIndicator.class, "CTL_Offline", new Object[] {}));
-            }
-
-            public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        }
-
-        private class OpenChat extends AbstractAction {
-
-            public OpenChat() {
-                super(NbBundle.getMessage(PresenceIndicator.class, "CTL_OpenChat", new Object[] {}));
-            }
-
-            public void actionPerformed(ActionEvent e) {
-                ChatTopComponent.getDefault().open();
-                ChatTopComponent.getDefault().requestActive();
-            }
-        }
-
     }
 
     public class PresenceListener implements PacketListener {
@@ -191,22 +123,22 @@ public class PresenceIndicator {
          */
         public void processPacket(Packet packet) {
             onlineUsers.clear();
-            StringBuffer tip = new StringBuffer();
-            tip.append("<html><body>");
+            StringBuffer tipBuffer = new StringBuffer();
+            tipBuffer.append("<html><body>");
 
             for (MultiUserChat muc :KenaiConnection.getDefault().getChats()) {
                 String displayName = null;
                 displayName = StringUtils.parseName(muc.getRoom());
-                tip.append("<b>"+displayName+"</b><br>");
+                tipBuffer.append("<b>"+displayName+"</b><br>");
                 Iterator<String> i = muc.getOccupants();
                 while(i.hasNext()) {
                     String uname = StringUtils.parseResource(i.next());
                     onlineUsers.add(uname);
-                    tip.append(uname + "<br>");
+                    tipBuffer.append(uname + "<br>");
                 }
             }
-            tip.append("</body></html>");
-            this.tip=tip.toString();
+            tipBuffer.append("</body></html>");
+            this.tip=tipBuffer.toString();
             if (onlineUsers.size()==0) {
                 setStatus(Status.OFFLINE);
             } else {
