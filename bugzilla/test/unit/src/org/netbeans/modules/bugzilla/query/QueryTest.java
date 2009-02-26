@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.bugzilla.query;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.netbeans.modules.bugzilla.*;
@@ -290,12 +292,15 @@ public class QueryTest extends NbTestCase implements TestConstants {
         populate(c, summary);
 
         TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
-
         nl.reset();
+        QueryListener ql = new QueryListener();
+        q.addPropertyChangeListener(ql);
+
         h = new LogHandler("refresh finish");
         Bugzilla.LOG.addHandler(h);
         save(c, QUERY_NAME + ts); // save button
         while(!h.done) Thread.sleep(100);
+        assertEquals(1, ql.saved);
 
         assertTrue(nl.started);
         assertTrue(nl.finished);
@@ -306,6 +311,40 @@ public class QueryTest extends NbTestCase implements TestConstants {
         assertEquals(id1, i.getID());
     }
 
+    public void testSaveRemove() throws MalformedURLException, CoreException, InterruptedException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        long ts = System.currentTimeMillis();
+
+        // create query
+        BugzillaQuery q = new BugzillaQuery(getRepository());
+        LogHandler h = new LogHandler("Finnished populate ");
+        Bugzilla.LOG.addHandler(h);
+
+        // get controler and wait until populated with default values
+        QueryController c = q.getController();
+        while(!h.done) Thread.sleep(100);
+
+        Query[] qs = getRepository().getQueries();
+        int queriesCount = qs.length;
+
+        QueryListener ql = new QueryListener();
+        q.addPropertyChangeListener(ql);
+        // save
+        h = new LogHandler("refresh finish");
+        Bugzilla.LOG.addHandler(h);
+        save(c, QUERY_NAME + ts);
+        while(!h.done) Thread.sleep(100);
+        assertEquals(1, ql.saved);
+
+        qs = getRepository().getQueries();
+        assertEquals(queriesCount + 1, qs.length);
+
+        // remove
+        remove(c);
+        assertEquals(1, ql.removed);
+        qs = getRepository().getQueries();
+        assertEquals(queriesCount, qs.length);
+    }
+
     private BugzillaRepository getRepository() {
         return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
     }
@@ -314,6 +353,12 @@ public class QueryTest extends NbTestCase implements TestConstants {
         Method m = c.getClass().getDeclaredMethod("save", String.class, boolean.class);
         m.setAccessible(true);
         m.invoke(c, name, true);
+    }
+
+    private void remove(QueryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        Method m = c.getClass().getDeclaredMethod("remove");
+        m.setAccessible(true);
+        m.invoke(c);
     }
 
     private void search(QueryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -348,6 +393,24 @@ public class QueryTest extends NbTestCase implements TestConstants {
 
         @Override
         public void close() throws SecurityException {
+        }
+
+    }
+
+    private class QueryListener implements PropertyChangeListener {
+        int saved = 0;
+        int removed = 0;
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getPropertyName().equals(Query.EVENT_QUERY_REMOVED)) {
+                removed++;
+            }
+            if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
+                saved++;
+            }
+        }
+        void reset() {
+            saved = 0;
+            removed = 0;
         }
 
     }
