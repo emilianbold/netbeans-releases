@@ -149,18 +149,12 @@ public final class JavaNode extends DataNode implements ChangeListener {
 
     @Override
     public void setName(String name) {
-        String oldExt = getDataObject().getPrimaryFile().getExt();
-        int dot = name.lastIndexOf('.');  //NOI18N
-        String newExt = dot < 1 ? "" : name.substring(dot + 1); // NOI18N
-
         RenameHandler handler = getRenameHandler();
-        // #27444 - don't use handler if changing extension
-        if (handler == null || !newExt.equals(oldExt)) {
+        if (handler == null) {
             super.setName(name);
         } else {
-            String newBase = dot < 1 ? name : name.substring(0, dot);
             try {
-                handler.handleRename(JavaNode.this, newBase);
+                handler.handleRename(JavaNode.this, name);
             } catch (IllegalArgumentException ioe) {
                 super.setName(name);
             }
