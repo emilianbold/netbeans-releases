@@ -1,3 +1,5 @@
 [usersubs]
 cvs@cnd.netbeans.org=cnd*/*,asm/*,lib.terminalemulator/*
 cvs@dlight.netbeans.org=dlight*/*
+cvs@installer.netbeans.org=installer/*,reglib/*
+cvs@nbi.netbeans.org=nbi/*
