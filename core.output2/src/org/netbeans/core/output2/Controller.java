@@ -194,7 +194,9 @@ public class Controller {
             }
             if (size < MIN_FONT_SIZE) {
                 Font f = (Font) UIManager.get("controlFont"); //NOI18N
-                size = f.getSize();
+                if (f != null) {
+                    size = f.getSize();
+                }
             }
             if (size < MIN_FONT_SIZE) {
                 size = 11;
