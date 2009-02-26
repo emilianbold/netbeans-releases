@@ -218,4 +218,29 @@ public abstract class IssueNode extends AbstractNode {
 
     }
 
+    /**
+     * Represens the Seen value in a IssueNode
+     */
+    public class RecentChangesProperty extends IssueProperty {
+        public RecentChangesProperty() {
+            super(Issue.LABEL_RECENT_CHANGES,
+                  String.class,
+                  NbBundle.getMessage(Issue.class, "CTL_Issue_Recent"), // NOI18N
+                  NbBundle.getMessage(Issue.class, "CTL_Issue_Recent_Desc")); // NOI18N
+        }
+        public Object getValue() {
+            return getIssue().getRecentChanges();
+        }
+        
+        @Override
+        public int compareTo(IssueProperty p) {
+            if(p == null) return 1;
+            if(p instanceof RecentChangesProperty) {
+                return getIssue().getRecentChanges().compareToIgnoreCase(((RecentChangesProperty)p).getIssue().getRecentChanges());
+            }
+            return 1;
+        }
+
+    }
+
 }

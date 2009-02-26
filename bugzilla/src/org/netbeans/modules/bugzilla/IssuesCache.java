@@ -74,13 +74,7 @@ public class IssuesCache {
         int oldStatus;
         if(issue == null) {
             issue = new BugzillaIssue(taskData, repository);
-
-            // XXX init storage for repo
-            try {
-                oldAttr = IssueStorage.getInstance().readIssue(repository.getUrl(), id);
-            } catch (IOException ex) {
-                Bugzilla.LOG.log(Level.SEVERE, null, ex);
-            }
+            oldAttr = getSeenAttributes(id);
             oldStatus = Query.ISSUE_STATUS_NEW;
         } else {
 
@@ -205,6 +199,17 @@ public class IssuesCache {
             issueMap = new HashMap<String, BugzillaIssue>();
         }
         return issueMap;
+    }
+
+    public Map<String, String> getSeenAttributes(String id) {
+        Map<String, String> oldAttr = null;
+        // XXX init storage for repo
+        try {
+            oldAttr = IssueStorage.getInstance().readIssue(repository.getUrl(), id);
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        }
+        return oldAttr;
     }
 
     private Map<String, IssueData> getSeenIssueData() {

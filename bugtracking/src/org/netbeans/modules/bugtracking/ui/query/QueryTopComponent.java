@@ -477,7 +477,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
         Arrays.sort(queries);
         for (int i = 0; i < queries.length; i++) {
             Query q = queries[i];
-            q.getController().addPropertyChangeListener(this);
+            q.addPropertyChangeListener(this);
             ql = new QueryButton(repo, q);
             ql.setText(q.getDisplayName());
             queriesPanel.add(ql);

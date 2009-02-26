@@ -268,10 +268,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
         final String msgPopulating = NbBundle.getMessage(this.getClass(), "MSG_Populating");    // NOI18N
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msgPopulating, c);
         final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
+        panel.showRetrievingProgress(true, progressBar, msgPopulating, !query.isSaved());
         t[0] = rp.post(new Runnable() {
             public void run() {
                 handle.start();
-                panel.showRetrievingProgress(true, progressBar, msgPopulating, !query.isSaved());
                 try {
                     Bugzilla.LOG.fine("Starting populate query controller"); // NOI18N
                     // NOI18N
@@ -451,22 +451,26 @@ public class QueryController extends BugtrackingController implements DocumentLi
                         if(name == null || name.trim().equals("")) {
                             return; // XXX nice error?
                         }
-                        query.setName(name);
                     } else {
                         return;
                     }
                 }
                 assert name != null;
-                repository.saveQuery(query);
-                query.setSaved(true); // XXX
-                setAsSaved();
-                if(firstTime) {
-                    onSearch();
-                } else {
-                    onRefresh();
-                }
+                save(name, firstTime);
             }
        });
+    }
+
+    private void save(String name, boolean firstTime) {
+        query.setName(name);
+        repository.saveQuery(query);
+        query.setSaved(true); // XXX
+        setAsSaved();
+        if (firstTime) {
+            onSearch();
+        } else {
+            onRefresh();
+        }
     }
 
     private void onCancelChanges() {
@@ -628,17 +632,22 @@ public class QueryController extends BugtrackingController implements DocumentLi
             NbBundle.getMessage(QueryController.class, "MSG_RemoveQuery", new Object[] { query.getDisplayName() }), // NOI18N
             NbBundle.getMessage(QueryController.class, "CTL_RemoveQuery"),      // NOI18N
             NotifyDescriptor.OK_CANCEL_OPTION);
+
         if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
                 public void run() {
-                    if(task != null) {
-                        task.cancel();
-                    }
-                    repository.removeQuery(query);
-                    query.fireQueryRemoved();
+                    remove();
                 }
             });
         }
+    }
+    
+    private void remove() {
+        if (task != null) {
+            task.cancel();
+        }
+        repository.removeQuery(query);
+        query.fireQueryRemoved();
     }
 
     private synchronized void post(Runnable r) {
@@ -658,6 +667,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(this.getClass(), "MSG_SearchingQuery", new Object[] {query.getDisplayName()}), c);// NOI18N
         final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
         panel.showSearchingProgress(true, progressBar, NbBundle.getMessage(this.getClass(), "MSG_Searching")); // NOI18N
+        handle.start();
 
         // XXX !!! remove !!!
         query.addNotifyListener(new QueryNotifyListener() {
@@ -672,7 +682,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
 
             public void started() {
-                handle.start();
             }
 
             public void finished() {
