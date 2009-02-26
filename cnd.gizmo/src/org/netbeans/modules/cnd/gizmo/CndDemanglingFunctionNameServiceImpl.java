@@ -75,7 +75,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
 
     CndDemanglingFunctionNameServiceImpl() {
         Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
-        NativeProject nPrj = project.getLookup().lookup(NativeProject.class);
+        NativeProject nPrj = (project == null) ? null : project.getLookup().lookup(NativeProject.class);
         if (nPrj == null) {
             cppCompiler = CPPCompiler.GNU;
             dem_util_path = GNU_FAMILIY;
