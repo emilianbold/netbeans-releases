@@ -49,6 +49,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfigurat
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
@@ -68,8 +69,7 @@ import org.openide.util.NbBundle;
  *
  * @author Vladimir Kvashin
  */
-public final class MemoryToolConfigurationProvider
-        implements DLightToolConfigurationProvider {
+public final class MemoryToolConfigurationProvider implements DLightToolConfigurationProvider {
 
     private static final boolean useCollector =
             Util.getBoolean("dlight.memory.collector", true); // NOI18N
@@ -151,9 +151,10 @@ public final class MemoryToolConfigurationProvider
 
         final DataTableMetadata indicatorTableMetadata =
                 new DataTableMetadata("magent", Arrays.asList(totalColumn)); // NOI18N
-        String monitor = MemoryMonitorUtil.getMonitorCmd();
-        String envVar = MemoryMonitorUtil.getEnvVar();
-        String agent = MemoryMonitorUtil.getAgentLib();
+
+        String monitor = NativeToolsUtil.getExecutable("mmonitor");
+        String envVar = NativeToolsUtil.getLdPreloadEnvVarName();
+        String agent = NativeToolsUtil.getSharefLibrary("magent");
 
         DLightLogger.instance.fine("Memory Indicator:\nmonitor:\n" + // NOI18N
                 monitor + "\nagent:\n" + agent + "\n\n"); // NOI18N
