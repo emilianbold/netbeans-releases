@@ -59,6 +59,11 @@ public abstract class Issue {
      * Seen property id
      */
     public static String LABEL_NAME_SEEN = "issue.seen";
+    
+    /**
+     * Recetn Changes property id
+     */
+    public static String LABEL_RECENT_CHANGES = "issue.recent_changes";
 
     /**
      * issue data were changed
@@ -142,6 +147,11 @@ public abstract class Issue {
      * @return
      */
     public abstract String getSummary();
+
+    /**
+     * 
+     */
+    public abstract String getRecentChanges();
 
     /**
      * Returns true if issue was already seen or marked as seen by the user
