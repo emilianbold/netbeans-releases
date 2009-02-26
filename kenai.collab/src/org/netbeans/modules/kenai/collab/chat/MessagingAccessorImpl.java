@@ -41,7 +41,6 @@ package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.netbeans.modules.kenai.collab.chat.ChatTopComponent;
 import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
 import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
