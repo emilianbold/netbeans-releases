@@ -258,8 +258,7 @@ public class GroovyProjectExtender implements GroovyFeature {
      */
     private boolean addBuildScript() {
         AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
-        List<String> extensibleTargets = extender.getExtensibleTargets();
-        if (extender != null && extensibleTargets.contains(EXTENSIBLE_TARGET_NAME)) {
+        if (extender != null && extender.getExtensibleTargets().contains(EXTENSIBLE_TARGET_NAME)) {
             AntBuildExtender.Extension extension = extender.getExtension(GROOVY_EXTENSION_ID);
             if (extension == null) {
                 FileObject destDirFO = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
@@ -283,8 +282,7 @@ public class GroovyProjectExtender implements GroovyFeature {
 
     private boolean removeBuildScript() {
         AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
-        List<String> extensibleTargets = extender.getExtensibleTargets();
-        if (extender != null && extensibleTargets.contains(EXTENSIBLE_TARGET_NAME)) {
+        if (extender != null && extender.getExtensibleTargets().contains(EXTENSIBLE_TARGET_NAME)) {
             AntBuildExtender.Extension extension = extender.getExtension(GROOVY_EXTENSION_ID);
             if (extension != null) {
                 FileObject destDirFO = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
