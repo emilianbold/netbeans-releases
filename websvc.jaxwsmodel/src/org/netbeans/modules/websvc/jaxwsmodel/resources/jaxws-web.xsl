@@ -193,13 +193,13 @@ made subject to such option by the copyright holder.
                             <xsl:with-param name="Catalog" select="$catalog"/>
                             <xsl:with-param name="wsimportoptions" select="jaxws:wsimport-options"/>
                         </xsl:call-template>
-                        <copy todir="${{build.web.dir}}/WEB-INF/wsdl/{$wsname}">
-                            <fileset dir="${{basedir}}/${{conf-dir}}xml-resources/web-services/{$wsname}/wsdl/" />
-                        </copy>
                         <copy todir="${{build.generated.sources.dir}}/jax-ws">
                             <fileset dir="${{build.generated.dir}}/jax-wsCache/service/{$wsname}">
                                 <include name="**/*.java"/>
                             </fileset>
+                        </copy>
+                        <copy todir="${{build.web.dir}}/WEB-INF/wsdl/{$wsname}">
+                            <fileset dir="${{basedir}}/${{conf-dir}}xml-resources/web-services/{$wsname}/wsdl/" />
                         </copy>
                     </target>
                     <target name="wsimport-service-clean-{$wsname}" depends="-init-project">
@@ -304,8 +304,8 @@ made subject to such option by the copyright holder.
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:for-each>
-                <xsl:variable name="produces" select="$wsimportoptions/jaxws:wsimport-option/jaxws:wsimport-option-name='xnocompile'"/>
-                <xsl:if test="$produces">
+                <xsl:variable name="is_xnocompile" select="$wsimportoptions/jaxws:wsimport-option/jaxws:wsimport-option-name='xnocompile'"/>
+                <xsl:if test="$is_xnocompile">
                     <depends>
                         <xsl:attribute name="file">${basedir}/${conf-dir}xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/wsdl/<xsl:value-of select="$wsdlUrl"/></xsl:attribute>
                     </depends>

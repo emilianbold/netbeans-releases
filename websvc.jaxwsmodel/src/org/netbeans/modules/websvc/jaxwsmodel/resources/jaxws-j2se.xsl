@@ -175,7 +175,9 @@ made subject to such option by the copyright holder.
                             </wsimport>
                         </xsl:if>
                         <copy todir="${{build.generated.sources.dir}}/jax-ws">
-                            <fileset dir="${{build.generated.dir}}/jax-wsCache/{$wsname}"/>
+                            <fileset dir="${{build.generated.dir}}/jax-wsCache/{$wsname}">
+                                <include name="**/*.java"/>
+                            </fileset>
                         </copy>
                     </target>
                     <target name="wsimport-client-clean-{$wsname}" depends="-init-project">
