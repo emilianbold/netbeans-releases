@@ -38,67 +38,105 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+/*
+ * CPVendor.java
+ *
+ * Created on February 11, 2009
+ */
 
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 
-import java.io.InputStream;
+import java.awt.Component;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.ResourceBundle;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
-import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
-import org.openide.ErrorManager;
 
 import org.openide.util.HelpCtx;
+
+import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
 import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
 
-public abstract class ResourceWizardPanel implements WizardDescriptor.FinishablePanel, ChangeListener, WizardConstants {
-
+/** 
+ * 
+ *
+ * @author  Nitya Doraisamy
+ */
+public class CPVendor implements WizardDescriptor.Panel, ChangeListener {
+    
+    /** The visual component that displays this panel.
+     * If you need to access the component from this class,
+     * just use getComponent().
+     */
+    private CPVendorPanel component;
+    private ResourceConfigHelper helper;    
+    private Wizard wizardInfo;
     private final List listeners = new ArrayList();
-
-    /** Default preferred width of the panel - should be the same for all panels within one wizard */
-    private static final int DEFAULT_WIDTH = 600;
-    /** Default preferred height of the panel - should be the same for all panels within one wizard */
-    private static final int DEFAULT_HEIGHT = 390;
-   
-    public WizardDescriptor wizDescriptor;
-    public ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"); //NOI18N
+    private WizardDescriptor wizDescriptor;
     
-    public ResourceWizardPanel() { }
-
-    /** @return preferred size of the wizard panel - it should be the same for all panels within one Wizard
-    * so that the wizard dialog does not change its size when switching between panels */
+    /** Create the wizard panel descriptor. */
+    public CPVendor(ResourceConfigHelper helper, Wizard wizardInfo) {
+        this.helper = helper;
+        this.wizardInfo = wizardInfo;
+    }
     
-    public java.awt.Dimension getPreferredSize () {
-        return new java.awt.Dimension (DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    // Get the visual component for the panel. In this template, the component
+    // is kept separate. This can be more efficient: if the wizard is created
+    // but never displayed, or not all panels are displayed, it is better to
+    // create only those which really need to be visible.
+    @Override
+    public Component getComponent() {
+        if (component == null) {
+            component = new CPVendorPanel(this, this.helper, this.wizardInfo);
+            component.addChangeListener(this);
+        }
+        return component;
     }
 
+    private CPVendorPanel getVisual() {
+        return (CPVendorPanel) getComponent();
+    }
+
+    public String getResourceName() {
+        return this.wizardInfo.getName();
+    }
+    
     public HelpCtx getHelp() {
-        return null; // HelpCtx.DEFAULT_HELP;
-    }
-
-    public void stateChanged(ChangeEvent event) {
-        fireChange(event);
+         return new HelpCtx("AS_Wiz_ConnPool_chooseDB"); //NOI18N
     }
     
-    public void fireChange (Object source) {
-        ArrayList lst;
-
-        synchronized (listeners) {
-            lst = new ArrayList(listeners);
-        }
-
-        ChangeEvent event = new ChangeEvent(source);
-        for (int i=0; i< lst.size(); i++){
-            ChangeListener listener = (ChangeListener) lst.get(i);
-            listener.stateChanged(event);
-        }
+    public ResourceConfigHelper getHelper() {
+        return helper;
+    }
+    
+    public Wizard getWizard() {
+        return wizardInfo;
+    }
+    
+    /**
+     * Checks if the JNDI Name in the wizard is duplicate name in the
+     * Unregistered resource list for JDBC Data Sources, Persistenc Managers, 
+     * and Java Mail Sessions.
+     *
+     * @return boolean true if there is a duplicate name.
+     * false if not.
+     */
+    public boolean isValid() {
+        boolean value = getVisual().hasValidData();
+        return value;
+    }
+    
+    public void readSettings(Object settings) {
+        wizDescriptor = (WizardDescriptor) settings;
+        getVisual().read(settings);
     }
 
+    public void storeSettings(Object settings) {
+        //getVisual().store((AddServerInstanceWizard)settings);
+    }
+    
     public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -110,37 +148,37 @@ public abstract class ResourceWizardPanel implements WizardDescriptor.Finishable
             listeners.remove(l);
         }
     }
-    
-    public boolean isFinishPanel() {
-        return false;
+
+    public void stateChanged(ChangeEvent event) {
+        fireChange(event);
     }
-    
+
+    private void fireChange(ChangeEvent event) {
+        ArrayList tempList;
+
+        synchronized (listeners) {
+            tempList = new ArrayList(listeners);
+        }
+
+        Iterator iter = tempList.iterator();
+        while (iter.hasNext()) {
+            ((ChangeListener)iter.next()).stateChanged(event);
+        }
+    }
+
     public void setErrorMsg(String message) {
         if (this.wizDescriptor != null) {
             this.wizDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);    //NOI18N
         }
     }
-    
+
     public void setErrorMessage(String msg, String value){
         String message = MessageFormat.format(msg, new Object[] {value});
         setErrorMsg(message);
     }
-    
-    public void readSettings(Object settings) {
-        this.wizDescriptor = (WizardDescriptor)settings;
-    }
-    
-    public void storeSettings(Object settings) {
-    }
-    
-    public Wizard getWizardInfo(String dataFile){
-        Wizard wizardInfo = null;
-        try{
-            InputStream in = Wizard.class.getClassLoader().getResourceAsStream(dataFile);
-            wizardInfo = Wizard.createGraph(in);
-        }catch(Exception ex){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-        return wizardInfo;
+
+    public void setInitialFocus(){
+        getVisual().setInitialFocus();
     }
 }
+
