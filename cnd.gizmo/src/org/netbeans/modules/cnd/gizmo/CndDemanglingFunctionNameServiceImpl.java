@@ -114,7 +114,12 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
 
     public Future<String> demangle(final String functionName) {
         //get current Project
-        final String nameToDemangle = functionName.substring(functionName.indexOf("`"), functionName.indexOf("+")); //NOI18N
+       final String nameToDemangle ;
+        if (functionName.indexOf("`") != -1 && functionName.indexOf("+") != -1){
+            nameToDemangle = functionName.substring(functionName.indexOf("`") + 1, functionName.indexOf("+")); //NOI18N;
+        }else{
+            nameToDemangle = functionName;
+        }
         return DLightExecutorService.service.submit(new Callable<String>() {
 
             public String call() {
@@ -136,7 +141,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
                 }
 
                 //process.
-                return functionName;
+                return nameToDemangle;
             }
         });
 
