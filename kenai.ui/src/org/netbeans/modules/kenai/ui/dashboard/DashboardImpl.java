@@ -285,11 +285,6 @@ public final class DashboardImpl extends Dashboard {
 
     public JComponent getComponent() {
         synchronized( LOCK ) {
-            if( null != login ) {
-                if( null == memberProjects )
-                    startLoadingMemberProjects();
-                initTreeList();
-            }
             opened = true;
             if( otherProjects.isEmpty() ) {
                 startLoadingOtherProjects();
@@ -300,6 +295,8 @@ public final class DashboardImpl extends Dashboard {
                 dashboardComponent.add( createEmptyContent(), BorderLayout.CENTER );
             } else {
                 initTreeList();
+                if( null == memberProjects )
+                    startLoadingMemberProjects();
             }
         }
         return dashboardComponent;
