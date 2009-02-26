@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -110,7 +111,6 @@ public class BugzillaQuery extends Query {
         return controller;
     }
 
-
     @Override
     public ColumnDescriptor[] getColumnDescriptors() {
         return BugzillaIssue.getColumnDescriptors();
@@ -124,57 +124,54 @@ public class BugzillaQuery extends Query {
 
         executeQuery(new Runnable() {
             public void run() {
-
-                if(isSaved()) {
-                    List<String> ids;
-                    if(!wasRun()) {
-                        
-                        assert issues.size() == 0;
-                        issues.clear(); // XXX just in case
-                        
-                        firstRun = false;
-                        ids = repository.getIssuesCache().readQuery(BugzillaQuery.this);
-                    } else {
-                        repository.getIssuesCache().storeQuery(BugzillaQuery.this, issues.toArray(new String[issues.size()]));
-                        ids = issues;
+                Bugzilla.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name, urlParameters});
+                try {
+                    if(isSaved()) {
+                        List<String> ids;
+                        if(!wasRun()) {
+                            assert issues.size() == 0;
+                            issues.clear(); // XXX just in case
+                            ids = repository.getIssuesCache().readQuery(BugzillaQuery.this);
+                        } else {
+                            repository.getIssuesCache().storeQuery(BugzillaQuery.this, issues.toArray(new String[issues.size()]));
+                            ids = issues;
+                        }
+                        obsoleteIssues.clear();
+                        obsoleteIssues.addAll(ids);
+                        ids.clear();
                     }
+                    firstRun = false;
 
-                    obsoleteIssues.clear();
-                    obsoleteIssues.addAll(ids);
-                    ids.clear();
+                    StringBuffer url = new StringBuffer();
+                    url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST);
+                    url.append(urlParameters);
+                    final IssuesCache cache = repository.getIssuesCache();
+                    TaskDataCollector collector = new TaskDataCollector() {
+                        public void accept(TaskData taskData) {
+                            // get id
+                            String id = BugzillaIssue.getID(taskData);
+
+                            BugzillaIssue issue = cache.setIssueData(taskData);
+                            issues.add(id);
+                            obsoleteIssues.remove(id);
+                            fireNotifyData(issue); // XXX - !!! triggers getIssues()
+                        }
+                    };
+
+                    final TaskRepository taskRepository = repository.getTaskRepository();
+                    BugzillaUtil.performQuery(taskRepository, url.toString(), collector);
+
+                    if(isSaved()) {
+                        for (String id : obsoleteIssues) {
+                            Issue issue = repository.getIssue(id);
+                            fireNotifyData(issue); // XXX - !!! triggers getIssues()
+                        }
+                    }
+                } finally {
+                    Bugzilla.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name, urlParameters});
                 }
-
-                StringBuffer url = new StringBuffer();
-                url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST);
-                url.append(urlParameters);
-                final IssuesCache cache = repository.getIssuesCache();
-                TaskDataCollector collector = new TaskDataCollector() {
-                    public void accept(TaskData taskData) {
-
-                        // get id
-                        String id = BugzillaIssue.getID(taskData);
-
-                        BugzillaIssue issue = cache.setIssueData(taskData);
-                        issues.add(id);
-                        obsoleteIssues.remove(id);
-                        fireNotifyData(issue); // XXX - !!! triggers getIssues()
-                    }
-                };
-
-                final TaskRepository taskRepository = repository.getTaskRepository();
-                BugzillaUtil.performQuery(taskRepository, url.toString(), collector);
-
-                if(isSaved()) {
-                    for (String id : obsoleteIssues) {
-                        Issue issue = repository.getIssue(id);
-                        fireNotifyData(issue); // XXX - !!! triggers getIssues()
-                    }
-                }
-
             }
         });
-
-
     }
 
     @Override
