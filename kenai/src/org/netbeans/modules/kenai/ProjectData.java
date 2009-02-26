@@ -53,6 +53,7 @@ public class ProjectData {
     public String description;
     public String created_at;
     public String updated_at;
+    public String web_url;
     public int    member_count;
     public LicenceData [] licenses;
     public FeatureData [] features;
