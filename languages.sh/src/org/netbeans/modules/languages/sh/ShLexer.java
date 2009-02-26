@@ -522,7 +522,6 @@ class ShLexer implements Lexer<ShTokenId> {
             case '%':
             case '\\':
             case '$':
-            case '#':
                 return info.tokenFactory ().createToken (ShTokenId.OPERATOR);
             case ' ':
             case '\n':
@@ -539,6 +538,15 @@ class ShLexer implements Lexer<ShTokenId> {
                 if (i != LexerInput.EOF)
                     input.backup (1);
                 return info.tokenFactory ().createToken (ShTokenId.WHITESPACE);
+            case '#':
+                do {
+                    i = input.read ();
+                } while (
+                    i != '\n' &&
+                    i != '\r' &&
+                    i != LexerInput.EOF
+                );
+                return info.tokenFactory ().createToken (ShTokenId.COMMENT);
             case '0':
             case '1':
             case '2':
@@ -615,16 +623,6 @@ class ShLexer implements Lexer<ShTokenId> {
                         return info.tokenFactory ().createToken (ShTokenId.KEYWORD);
                     if (commands.contains (lcid))
                         return info.tokenFactory ().createToken (ShTokenId.COMMAND);
-                    if ("rem".equals (lcid)) {
-                        do {
-                            i = input.read ();
-                        } while (
-                            i != '\n' &&
-                            i != '\r' &&
-                            i != LexerInput.EOF
-                        );
-                        return info.tokenFactory ().createToken (ShTokenId.COMMENT);
-                    }
                     return info.tokenFactory ().createToken (ShTokenId.IDENTIFIER);
                 }
                 return info.tokenFactory ().createToken (ShTokenId.ERROR);

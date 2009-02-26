@@ -81,6 +81,7 @@ public class CursorSensitiveScheduler extends CurrentEditorTaskScheduler {
         }
         else {
             currentDocument = null;
+            source = null;
         }
     }
     
