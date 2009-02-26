@@ -194,7 +194,12 @@ public class AddBreakpointAction extends AbstractAction {
                 bOk.setEnabled (false);
                 return;
             }
-            bOk.setEnabled (controller.isValid ());
+            if (panel.isNoValidityController()) {
+                // Always valid
+                bOk.setEnabled (true);
+            } else {
+                bOk.setEnabled (controller.isValid ());
+            }
         }
 
         /** @return true if OK button was pressed in dialog,

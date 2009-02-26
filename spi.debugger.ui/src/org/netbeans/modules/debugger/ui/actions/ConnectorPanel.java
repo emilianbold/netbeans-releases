@@ -67,6 +67,7 @@ import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.awt.Mnemonics;
 
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -166,6 +167,7 @@ public class ConnectorPanel extends JPanel implements ActionListener {
         JComponent customizer = attachType.getCustomizer ();
         controller = attachType.getController();
         if (controller == null && (customizer instanceof Controller)) {
+            Exceptions.printStackTrace(new IllegalStateException("FIXME: JComponent "+customizer+" must not implement Controller interface!"));
             controller = (Controller) customizer;
         }
         firePropertyChange(PROP_TYPE, null, customizer);

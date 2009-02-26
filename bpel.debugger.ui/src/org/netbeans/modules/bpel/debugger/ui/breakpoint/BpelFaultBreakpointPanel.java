@@ -297,17 +297,6 @@ public class BpelFaultBreakpointPanel extends JPanel implements Controller/*, or
         return true;
     }
     
-    /**
-     * Return <code>true</code> whether value of this customizer 
-     * is valid (and OK button can be enabled).
-     *
-     * @return <code>true</code> whether value of this customizer 
-     * is valid
-     */
-    public boolean isValid() {
-        return true;
-    }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbAllFaults;
     private javax.swing.JLabel jLabel2;

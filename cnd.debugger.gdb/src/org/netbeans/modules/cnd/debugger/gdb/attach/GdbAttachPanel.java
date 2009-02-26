@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.debugger.gdb.attach;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -66,11 +67,12 @@ import org.openide.util.NbBundle;
  *
  * @author  gordonp
  */
-public class GdbAttachPanel extends JPanel implements Controller, ProcessListReader {
+public class GdbAttachPanel extends JPanel implements ProcessListReader {
     
     private ProcessList procList;
     private AttachTableModel processModel;
     private FilterController filterController;
+    private Controller controller;
     private static List<FilterItem> filterList;
     private static String selectedFilter;
     
@@ -83,6 +85,7 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
     public GdbAttachPanel() {
         procList = new ProcessList(this);
         filterController = new FilterController(this);
+        controller = new GdbAttachController();
         initProcessModel();
         initComponents();
         postComponentsInit();
@@ -139,41 +142,11 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
         // Now get the process list
         procList = new ProcessList(this);
     }
-    
-    public boolean cancel() {
-        return true;
+
+    Controller getController() {
+        return controller;
     }
-    
-    public boolean ok() {
-        int row = processTable.getSelectedRow();
-        if (row >= 0) {
-            String pid = processModel.getValueAt(row, 1).toString();
-            PItem pi = (PItem) projectCB.getSelectedItem();
-            if (pi != null) {
-                try {
-                    GdbDebugger.attach(pid, pi.getProjectInformation());
-                } catch (DebuggerStartException dse) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                            NbBundle.getMessage(GdbAttachPanel.class,
-                           "ERR_UnexpecedAttachFailure", pid))); // NOI18N
-                }
-            }
-        }
-        return true;
-    }
-    
-    /**
-     * Return <code>true</code> whether value of this customizer 
-     * is valid (and OK button can be enabled).
-     *
-     * @return <code>true</code> whether value of this customizer 
-     * is valid
-     */
-    @Override
-    public boolean isValid() {
-        return projectCB.getItemCount() > 0;
-    }
-    
+
     /**
      * This callback should be called from a RequestProcessor thread. Once it computes
      * the row vectors, it needs to pass them to the model (Does it need to do this on
@@ -367,6 +340,50 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
         public boolean isCellEditable(int row, int col) {
             return false;
         }
+    }
+
+    private class GdbAttachController implements Controller {
+        
+        public boolean cancel() {
+            return true;
+        }
+
+        public boolean ok() {
+            int row = processTable.getSelectedRow();
+            if (row >= 0) {
+                String pid = processModel.getValueAt(row, 1).toString();
+                PItem pi = (PItem) projectCB.getSelectedItem();
+                if (pi != null) {
+                    try {
+                        GdbDebugger.attach(pid, pi.getProjectInformation());
+                    } catch (DebuggerStartException dse) {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                NbBundle.getMessage(GdbAttachPanel.class,
+                               "ERR_UnexpecedAttachFailure", pid))); // NOI18N
+                    }
+                }
+            }
+            return true;
+        }
+
+        /**
+         * Return <code>true</code> whether value of this customizer
+         * is valid (and OK button can be enabled).
+         *
+         * @return <code>true</code> whether value of this customizer
+         * is valid
+         */
+        @Override
+        public boolean isValid() {
+            return projectCB.getItemCount() > 0;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+        }
+
     }
     
     /** This method is called from within the constructor to
