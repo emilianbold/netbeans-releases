@@ -93,6 +93,9 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
         List<ErrorDescription> err = new ArrayList<ErrorDescription>();
         DocumentComponent comp1 = model.findComponent(selectionStart);
         DocumentComponent comp2 = model.findComponent(selectionEnd);
+        if (comp1 == null || comp2 == null) { //#157213
+            return err;
+        }
         String exp1 = model.getXPathExpression(comp1);
         String exp2 = model.getXPathExpression(comp2);
         boolean inDepManag = exp1.contains("dependencyManagement") || exp2.contains("dependencyManagement"); //NOI18N
