@@ -311,6 +311,7 @@
                     <test-dependency>
                         <code-name-base>org.openide.util</code-name-base>
                         <recursive/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openidex.util</code-name-base>
