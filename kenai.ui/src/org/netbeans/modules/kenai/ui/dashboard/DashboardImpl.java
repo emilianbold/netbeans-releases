@@ -149,9 +149,13 @@ public final class DashboardImpl extends Dashboard {
                             model.removeRoot( loginNode );
                         if( null != userNode )
                             model.removeRoot( userNode );
-                        userNode = new UserNode(login, DashboardImpl.this);
-                        model.addRoot(0, userNode);
-                        initTreeList();
+                        if( null == login ) {
+                            userNode = new UserNode(login, DashboardImpl.this);
+                            model.addRoot(0, userNode);
+                        } else {
+                            loginNode = new LoginNode(DashboardImpl.this);
+                            model.addRoot(0, userNode);
+                        }
                         startLoadingMemberProjects();
                     }
                 };
