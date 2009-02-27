@@ -66,7 +66,7 @@ public abstract class TreeListNode {
      * elapses then node's renderer shows an error message.
      */
     static final long TIMEOUT_INTERVAL_MILLIS = 
-            NbPreferences.forModule(TreeListNode.class).getInt("node.expand.timeoutmillis", 5 * 1000); //NOI18N
+            NbPreferences.forModule(TreeListNode.class).getInt("node.expand.timeoutmillis", 60 * 1000); //NOI18N
 
     private final boolean expandable;
     private final TreeListNode parent;
