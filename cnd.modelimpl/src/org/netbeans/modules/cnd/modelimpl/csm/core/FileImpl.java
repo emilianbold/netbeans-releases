@@ -1125,7 +1125,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    public Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, String prefix) {
+    public Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, CharSequence prefix) {
         if (!SKIP_FAKE_FIXES_IN_GETTERS) {
             fixFakeRegistrations();
         }
@@ -1278,7 +1278,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return out;
     }
 
-    public Collection<CsmUID<CsmMacro>> findMacroUids(String name) {
+    public Collection<CsmUID<CsmMacro>> findMacroUids(CharSequence name) {
         Collection<CsmUID<CsmMacro>> uids = new ArrayList<CsmUID<CsmMacro>>(2);
         NameSortedKey from = NameSortedKey.getStartKey(name);
         NameSortedKey to = NameSortedKey.getEndKey(name);
@@ -1710,7 +1710,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             start = UIDUtilities.getStartOffset(anUid);
         }
 
-        private NameKey(String name, int offset) {
+        private NameKey(CharSequence name, int offset) {
             this.name = name;
             start = offset;
         }

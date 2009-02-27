@@ -122,7 +122,7 @@ public class CsmSelect {
 
     public static interface CsmFilterBuilder {
         CsmFilter createKindFilter(CsmDeclaration.Kind ... kinds);
-        CsmFilter createNameFilter(String strPrefix, boolean match, boolean caseSensitive, boolean allowEmptyName);
+        CsmFilter createNameFilter(CharSequence strPrefix, boolean match, boolean caseSensitive, boolean allowEmptyName);
         CsmFilter createOffsetFilter(int startOffset, int endOffset);
         CsmFilter createOffsetFilter(int innerOffset);
         CsmFilter createCompoundFilter(CsmFilter first, CsmFilter second);

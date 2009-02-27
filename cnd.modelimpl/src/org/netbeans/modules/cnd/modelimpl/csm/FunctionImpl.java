@@ -118,7 +118,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         if (!isStatic()) {
             CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(
-                               name.toString(), true, true, false);
+                               name, true, true, false);
             Iterator<CsmFunction> it = CsmSelect.getStaticFunctions(file, filter);
             while(it.hasNext()){
                 CsmFunction fun = it.next();
@@ -376,7 +376,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     public CsmFunctionDefinition getDefinition() {
         if( isCStyleStatic() ) {
             CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(
-                               getName().toString(), true, true, false);
+                               getName(), true, true, false);
             Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(getContainingFile(), filter);
             while(it.hasNext()){
                 CsmDeclaration decl = it.next();
