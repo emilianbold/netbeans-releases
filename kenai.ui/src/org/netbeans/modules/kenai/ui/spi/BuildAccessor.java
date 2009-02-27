@@ -41,7 +41,7 @@ public abstract class BuildAccessor {
     /**
      *
      * @param query
-     * @return Action to invokie when user pressed Enter key on given build line.
+     * @return Action to invoke when user pressed Enter key on given build line.
      */
     public abstract ActionListener getDefaultAction( BuildHandle build );
 }
