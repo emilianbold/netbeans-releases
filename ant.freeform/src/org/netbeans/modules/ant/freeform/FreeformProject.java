@@ -56,6 +56,7 @@ import org.netbeans.modules.ant.freeform.ui.ProjectCustomizerProvider;
 import org.netbeans.modules.ant.freeform.ui.View;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.LookupProviderSupport;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -64,7 +65,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -73,6 +73,14 @@ import org.w3c.dom.NodeList;
  * One freeform project.
  * @author Jesse Glick
  */
+@AntBasedProjectRegistration(
+    type=FreeformProjectType.TYPE,
+    iconResource="org/netbeans/modules/ant/freeform/resources/freeform-project.png",
+    sharedName=FreeformProjectType.NAME_SHARED,
+    privateName=FreeformProjectType.NAME_SHARED,
+    sharedNamespace=FreeformProjectType.NS_GENERAL_1,
+    privateNamespace=FreeformProjectType.NS_GENERAL_PRIVATE
+)
 public final class FreeformProject implements Project {
     
     public static final Lookup.Result<ProjectNature> PROJECT_NATURES = Lookup.getDefault().lookupResult(ProjectNature.class);
@@ -146,6 +154,7 @@ public final class FreeformProject implements Project {
         return eval;
     }
 
+    @Override
     public String toString() {
         return "FreeformProject[" + getProjectDirectory() + "]"; // NOI18N
     }

@@ -105,22 +105,22 @@ is the proper place.
 
     <changes>
         
-        <change id="antbasedprojecttype2">
+        <change id="antbasedprojectregistration">
             <api name="general"/>
-            <summary>Provide project icon without actually loading the project type</summary>
-            <version major="1" minor="28"/>
-            <date day="13" month="1" year="2009"/>
-            <author login="mkleint"/>
+            <summary>Register Ant based projects with @annotation</summary>
+            <version major="1" minor="30"/>
+            <date day="4" month="23" year="2009"/>
+            <author login="jtulach"/>
             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
             <description>
                 <p>
-                  Introducing <code>AntBasedProjectType2</code> that extends <code>AntBasedProjectType</code>
-                  and adds <code>geticon()</code> method to allow showing the icon without actually loading the
-                  project. Related to <code>org.netbeans.spi.project.ProjectFactory2</code> changes in the Project API module.
+                  Introducing <code>AntBasedProjectRegistration</code> to
+                  simplify registering Ant based projects. Just write the
+                  project class and annotate it.
                 </p>
             </description>
-            <class package="org.netbeans.spi.project.support.ant" name="AntBasedProjectType2"/>
-            <issue number="153923"/>
+            <class package="org.netbeans.spi.project.support.ant" name="AntBasedProjectRegistration"/>
+            <issue number="153655"/>
         </change>
         
         <change id="SourcesHelper-minimalSubfolders">
