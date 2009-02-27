@@ -328,6 +328,23 @@ made subject to such option by the copyright holder.
         <issue number="158775"/>
     </change>
 
+     <change id="PropertiesListener">
+        <api name="DebuggerCoreAPI"/>
+        <summary>Support for listening to changes of property values.</summary>
+        <version major="1" minor="17"/>
+        <date day="28" month="2" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             addPropertyChangeListener() and removePropertyChangeListener()
+             methods added to Properties class.
+             </p>
+        </description>
+        <class package="org.netbeans.api.debugger" name="Properties" />
+        <issue number="158907"/>
+    </change>
+
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->

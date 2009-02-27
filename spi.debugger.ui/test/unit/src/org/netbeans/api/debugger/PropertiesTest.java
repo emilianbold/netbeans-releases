@@ -42,6 +42,9 @@
 package org.netbeans.api.debugger;
 
 import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,6 +53,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import junit.framework.TestCase;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 /**
@@ -175,7 +179,60 @@ public class PropertiesTest extends TestCase {
 
         assertEquals(TestInitializer.DEFAULT_VALUES.get("test.string"), p.getString("string", null));
     }
-    
+
+    public void testListeners() throws Exception {
+        // First test that the properties can be collected:
+        Properties p = Properties.getDefault();
+        p = p.getProperties("listening");
+        WeakReference<? extends Properties> pRef = new WeakReference(p);
+        p = null;
+        System.gc();
+        NbTestCase.assertGC("The Properties are not collected.", pRef);
+        //System.err.println("testListeners(): Properties can be collected O.K.");
+
+        // Then attach a listener and test that they are not collected:
+        p = Properties.getDefault().getProperties("listening");
+        final PropertyChangeEvent[] evtRef = new PropertyChangeEvent[] { null };
+        PropertyChangeListener l = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                evtRef[0] = evt;
+            }
+        };
+        p.addPropertyChangeListener(l);
+        pRef = new WeakReference(p);
+        p = null;
+        System.gc();
+        boolean collected;
+        try {
+            NbTestCase.assertGC("The Properties are not collected.", pRef);
+            collected = true;
+        } catch (AssertionError ae) {
+            collected = false;
+        }
+        assertFalse("Properties were collected even when we hold a listener!", collected);
+        //System.err.println("testListeners(): Properties were not collected with a listener O.K.");
+
+        // The properties we listen on still live...
+        p = Properties.getDefault().getProperties("listening");
+        p.setDouble("double", Double.NEGATIVE_INFINITY);
+        assertNotNull("Property change was not received.", evtRef[0]);
+        assertEquals("double", evtRef[0].getPropertyName());
+        assertEquals(Double.NEGATIVE_INFINITY, evtRef[0].getNewValue());
+        //System.err.println("testListeners(): Properties event O.K.");
+
+        pRef.get().removePropertyChangeListener(l);
+        p = null;
+        System.gc();
+        try {
+            NbTestCase.assertGC("The Properties are not collected after remove of listener.", pRef);
+        } catch (AssertionError ae) {
+            // TODO: File a defect for NbTestCase
+            if (!ae.getMessage().endsWith("Not found!!!")) {
+                throw ae;
+            }
+        }
+    }
+
     /** Stress test of multi-threaded get/set */
     public void testStressGetSet() throws Exception {
         Properties p = Properties.getDefault();

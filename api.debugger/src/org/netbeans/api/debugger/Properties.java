@@ -44,12 +44,15 @@ package org.netbeans.api.debugger;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 
 import java.util.ArrayList;
@@ -62,6 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import java.util.WeakHashMap;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -320,6 +324,43 @@ public abstract class Properties {
      */
     public abstract Properties getProperties (String propertyName);
 
+    /**
+     * Add a property change listener to this properties instance.
+     * The listener fires a property change event when a new value of some property
+     * is set.
+     * <p>
+     * Please note, that this properties object is not collected from memory
+     * sooner than all it's listeners. Therefore it's not necessray to
+     * keep a strong reference to this object while holding the listener.
+     *
+     * @param l The property change listener
+     * @throws UnsupportedOperationException if not supported. The default
+     * properties implementation retrieved by {@link #getDefault()} supports
+     * adding/removing listeners.
+     */
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        throw new UnsupportedOperationException("Unsupported listening on "+getClass()+" properties.");
+    }
+
+    /**
+     * Remove a property change listener from this properties instance.
+     * <p>
+     * Please note, that this properties object is not collected from memory
+     * sooner than all it's listeners. Therefore it's not necessray to
+     * keep a strong reference to this object while holding the listener.
+     * OTOH it is necessary to remove all listeners or release all strong
+     * references to the listeners to allow collection of this properties
+     * object.
+     *
+     * @param l The property change listener
+     * @throws UnsupportedOperationException if not supported. The default
+     * properties implementation retrieved by {@link #getDefault()} supports
+     * adding/removing listeners.
+     */
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        throw new UnsupportedOperationException("Unsupported listening on "+getClass()+" properties.");
+    }
+
 
     // innerclasses ............................................................
 
@@ -509,6 +550,10 @@ public abstract class Properties {
         private static final Collection BAD_COLLECTION = new ArrayList ();
         private static final Object[] BAD_ARRAY = new Object [0];
 
+        private final Map<String, Reference<Properties>> childProperties = new HashMap<String, Reference<Properties>>();
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private final Map<PropertyChangeListener, Properties> propertiesHeldByListener = new WeakHashMap<PropertyChangeListener, Properties>();
+
         ServicesHolder<Reader>      readers      = new ReaderHolder();
         ServicesHolder<Initializer> initializers = new InitializerHolder();
 
@@ -687,6 +732,7 @@ public abstract class Properties {
             } else {
                 impl.setProperty (propertyName, value);
             }
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public int getInt (String propertyName, int defaultValue) {
@@ -708,6 +754,7 @@ public abstract class Properties {
 
         public void setInt (String propertyName, int value) {
             impl.setProperty (propertyName, Integer.toString (value));
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public char getChar (String propertyName, char defaultValue) {
@@ -725,6 +772,7 @@ public abstract class Properties {
 
         public void setChar (String propertyName, char value) {
             impl.setProperty (propertyName, Character.toString(value));
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public float getFloat (String propertyName, float defaultValue) {
@@ -746,6 +794,7 @@ public abstract class Properties {
 
         public void setFloat (String propertyName, float value) {
             impl.setProperty (propertyName, Float.toString (value));
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public long getLong (String propertyName, long defaultValue) {
@@ -767,6 +816,7 @@ public abstract class Properties {
 
         public void setLong (String propertyName, long value) {
             impl.setProperty (propertyName, Long.toString (value));
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public double getDouble (String propertyName, double defaultValue) {
@@ -788,6 +838,7 @@ public abstract class Properties {
 
         public void setDouble (String propertyName, double value) {
             impl.setProperty (propertyName, Double.toString (value));
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public boolean getBoolean (String propertyName, boolean defaultValue) {
@@ -805,6 +856,7 @@ public abstract class Properties {
 
         public void setBoolean (String propertyName, boolean value) {
             impl.setProperty (propertyName, value ? "true" : "false");
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public byte getByte (String propertyName, byte defaultValue) {
@@ -826,6 +878,7 @@ public abstract class Properties {
 
         public void setByte (String propertyName, byte value) {
             impl.setProperty (propertyName, Byte.toString (value));
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public short getShort (String propertyName, short defaultValue) {
@@ -847,6 +900,7 @@ public abstract class Properties {
 
         public void setShort (String propertyName, short value) {
             impl.setProperty (propertyName, Short.toString (value));
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Object getObject (String propertyName, Object defaultValue) {
@@ -906,36 +960,30 @@ public abstract class Properties {
             synchronized(impl) {
                 if (value == null) {
                     impl.setProperty (propertyName, "# null");
-                    return;
-                }
-                if (value instanceof String) {
+                } else if (value instanceof String) {
                     setString (propertyName, (String) value);
-                    return;
-                }
-                if (value instanceof Map) {
+                } else if (value instanceof Map) {
                     setMap (propertyName, (Map) value);
-                    return;
-                }
-                if (value instanceof Collection) {
+                } else if (value instanceof Collection) {
                     setCollection (propertyName, (Collection) value);
-                    return;
-                }
-                if (value instanceof Object[]) {
+                } else if (value instanceof Object[]) {
                     setArray (propertyName, (Object[]) value);
-                    return;
-                }
+                } else {
 
-                // find register
-                Reader r = readers.find(value.getClass ().getName ());
-                if (r == null) {
-                    ErrorManager.getDefault().log ("Can not write object " + value);
-                    return;
-                }
+                    // find register
+                    Reader r = findReader (value.getClass ().getName ());
+                    if (r == null) {
+                        ErrorManager.getDefault().log ("Can not write object " + value);
+                        return;
+                    }
 
-                // write
-                r.write (value, getProperties (propertyName));
-                impl.setProperty (propertyName, "# " + value.getClass ().getName ());
+                    // write
+                    r.write (value, getProperties (propertyName));
+                    impl.setProperty (propertyName, "# " + value.getClass ().getName ());
+
+                }
             }
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Object[] getArray (String propertyName, Object[] defaultValue) {
@@ -980,6 +1028,7 @@ public abstract class Properties {
                 for (i = 0; i < k; i++)
                     p.setObject ("" + i, value [i]);
             }
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Collection getCollection (String propertyName, Collection defaultValue) {
@@ -1038,6 +1087,7 @@ public abstract class Properties {
                     i++;
                 }
             }
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Map getMap (String propertyName, Map defaultValue) {
@@ -1094,11 +1144,41 @@ public abstract class Properties {
                     i++;
                 }
             }
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Properties getProperties (String propertyName) {
-            return new DelegatingProperties (this, propertyName);
+            synchronized (childProperties) {
+                Reference<Properties> propRef = childProperties.get(propertyName);
+                if (propRef != null) {
+                    Properties p = propRef.get();
+                    if (p != null) {
+                        return p;
+                    }
+                }
+                Properties p = new DelegatingProperties (this, propertyName);
+                propRef = new WeakReference<Properties>(p);
+                childProperties.put(propertyName, propRef);
+                return p;
+            }
         }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            pcs.addPropertyChangeListener(l);
+            synchronized (propertiesHeldByListener) {
+                propertiesHeldByListener.put(l, this);
+            }
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            pcs.removePropertyChangeListener(l);
+            synchronized (propertiesHeldByListener) {
+                propertiesHeldByListener.remove(l);
+            }
+        }
+
 
         private static ClassLoader classLoader;
         private static ClassLoader getClassLoader () {
@@ -1114,6 +1194,10 @@ public abstract class Properties {
 
         private Properties delegatingProperties;
         private String root;
+        private final Map<String, Reference<Properties>> childProperties =
+                new HashMap<String, Reference<Properties>>();
+        private final Map<PropertyChangeListener, PropertyChangeListener> delegatingListeners =
+                new WeakHashMap<PropertyChangeListener, PropertyChangeListener>();
 
 
         DelegatingProperties (Properties properties, String root) {
@@ -1226,7 +1310,60 @@ public abstract class Properties {
         }
 
         public Properties getProperties (String propertyName) {
-            return new DelegatingProperties (delegatingProperties, root + '.' + propertyName);
+            synchronized (childProperties) {
+                Reference<Properties> propRef = childProperties.get(propertyName);
+                if (propRef != null) {
+                    Properties p = propRef.get();
+                    if (p != null) {
+                        return p;
+                    }
+                }
+                Properties p = new DelegatingProperties (delegatingProperties, root + '.' + propertyName);
+                propRef = new WeakReference<Properties>(p);
+                childProperties.put(propertyName, propRef);
+                return p;
+            }
         }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            PropertyChangeListener delegate = new DelegatingPropertyChangeListener(l);
+            synchronized (delegatingListeners) {
+                delegatingListeners.put(l, delegate);
+            }
+            delegatingProperties.addPropertyChangeListener(delegate);
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            PropertyChangeListener delegate;
+            synchronized (delegatingListeners) {
+                delegate = delegatingListeners.get(l);
+            }
+            if (delegate != null) {
+                delegatingProperties.removePropertyChangeListener(delegate);
+            }
+        }
+
+        private class DelegatingPropertyChangeListener implements PropertyChangeListener {
+
+            private PropertyChangeListener delegate;
+
+            public DelegatingPropertyChangeListener(PropertyChangeListener delegate) {
+                this.delegate = delegate;
+            }
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                PropertyChangeEvent delegateEvt = new PropertyChangeEvent(
+                        DelegatingProperties.this,
+                        evt.getPropertyName().substring(root.length() + 1),
+                        evt.getOldValue(),
+                        evt.getNewValue());
+                delegateEvt.setPropagationId(evt.getPropagationId());
+                delegate.propertyChange(delegateEvt);
+            }
+            
+        }
+
     }
 }
