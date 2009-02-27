@@ -76,23 +76,22 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private static final boolean USE_PRSTAT = Util.getBoolean("gizmo.sync.prstat", true); // NOI18N
     private static final boolean redirectStdErr = Util.getBoolean("dlight.memory.log.stderr", false); // NOI18N
     
-    private static final Column timestampColumn = new _Column(Long.class, "timestamp"); // NOI18N
-    private static final Column waiterColumn = new _Column(Integer.class, "waiter"); // NOI18N
-    private static final Column mutexColumn = new _Column(Long.class, "mutex"); // NOI18N
-    private static final Column blockerColumn = new _Column(Integer.class, "blocker"); // NOI18N
-    private static final Column timeColumn = new _Column(Long.class, "time"); // NOI18N
-    private static final Column stackColumn = new _Column(Integer.class, "stackid"); // NOI18N
-    private static final Column locksColumn = new _Column(Float.class, "locks"); // NOI18N
+    private static final Column timestampColumn = 
+        new Column("timestamp", Long.class, loc("SyncTool.ColumnName.timestamp"), null); // NOI18N
+    private static final Column waiterColumn =
+        new Column("waiter", Integer.class, loc("SyncTool.ColumnName.waiter"), null); // NOI18N
+    private static final Column mutexColumn =
+        new Column("mutex", Long.class, loc("SyncTool.ColumnName.mutex"), null); // NOI18N
+    private static final Column blockerColumn =
+        new Column("blocker", Integer.class, loc("SyncTool.ColumnName.blocker"), null); // NOI18N
+    private static final Column timeColumn =
+        new Column("time", Long.class, loc("SyncTool.ColumnName.time"), null); // NOI18N
+    private static final Column stackColumn =
+        new Column("stackid", Integer.class, loc("SyncTool.ColumnName.stackid"), null); // NOI18N
+    private static final Column locksColumn =
+        new Column("locks", Float.class, loc("SyncTool.ColumnName.locks"), null); // NOI18N
     private static final DataTableMetadata rawTableMetadata;
-
-    private static class _Column extends Column {
-
-        public _Column(Class clazz, String name) {
-            super(name, clazz, loc("SyncTool.ColumnName." + name), null); // NOI18N
-        }
-    }
-
-
+    
     static {
         List<Column> rawColumns = Arrays.asList(
                 timestampColumn,
@@ -195,7 +194,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             if (USE_PRSTAT) {
                 lockIndicatorDataProvider = new CLIODCConfiguration(
                         "/bin/prstat", "-mv -p @PID -c 1", // NOI18N
-                        new SAgentClioParser(locksColumn), indicatorTablesMetadata);
+                        new SyncCLIOParser(locksColumn), indicatorTablesMetadata);
             } else {
                 String monitor = NativeToolsUtil.getExecutable("smonitor");
                 String envVar = NativeToolsUtil.getLdPreloadEnvVarName();
@@ -205,7 +204,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
                     CLIODCConfiguration clioCollectorConfiguration =
                             new CLIODCConfiguration(monitor,
                             " @PID " + (redirectStdErr ? " 2>/tmp/smonitor.err" : ""), // NOI18N
-                            new OneColumnClioParser(locksColumn),
+                            new SAgentClioParser(locksColumn),
                             Arrays.asList(indicatorTableMetadata));
                     Map<String, String> env = new LinkedHashMap<String, String>();
                     env.put(envVar, agent);

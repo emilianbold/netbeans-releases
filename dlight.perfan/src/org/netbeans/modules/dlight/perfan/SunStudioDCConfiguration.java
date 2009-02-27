@@ -66,14 +66,32 @@ import org.openide.util.NbBundle;
 public final class SunStudioDCConfiguration
         implements DataCollectorConfiguration, IndicatorDataProviderConfiguration {
 
-    public static final Column c_name = new _Column(String.class, "name");    // NOI18N
-    public static final Column c_eUser = new _Column(TimeMetric.UserFuncTimeExclusive);
-    public static final Column c_iUser = new _Column(TimeMetric.UserFuncTimeInclusive);
-    public static final Column c_iSync = new _Column(TimeMetric.SyncWaitTimeInclusive);
-    public static final Column c_iSyncn = new _Column(TimeMetric.SyncWaitCallInclusive);
-    public static final Column c_leakCount = new _Column(MemoryMetric.LeaksCountMetric);
-    public static final Column c_leakSize = new _Column(MemoryMetric.LeakBytesMetric);
-    public static final Column c_ulockSummary = new _Column(Long.class, "user_lock"); // NOI18N
+    public static final Column c_name = new Column("name", String.class, loc("SSDataCollector.ColumnName.name"), null);    // NOI18N
+    public static final Column c_eUser = 
+        new Column(TimeMetric.UserFuncTimeExclusive.getMetricID(), 
+        TimeMetric.UserFuncTimeExclusive.getMetricValueClass(),
+        TimeMetric.UserFuncTimeExclusive.getMetricDisplayedName(), null);
+    public static final Column c_iUser =
+        new Column(TimeMetric.UserFuncTimeInclusive.getMetricID(),
+        TimeMetric.UserFuncTimeInclusive.getMetricValueClass(),
+        TimeMetric.UserFuncTimeInclusive.getMetricDisplayedName(), null);
+    public static final Column c_iSync =
+        new Column(TimeMetric.SyncWaitTimeInclusive.getMetricID(),
+            TimeMetric.SyncWaitTimeInclusive.getMetricValueClass(),
+            TimeMetric.SyncWaitTimeInclusive.getMetricDisplayedName(), null);
+    public static final Column c_iSyncn =
+        new Column(TimeMetric.SyncWaitCallInclusive.getMetricID(),
+            TimeMetric.SyncWaitCallInclusive.getMetricValueClass(),
+            TimeMetric.SyncWaitCallInclusive.getMetricDisplayedName(), null);
+    public static final Column c_leakCount =
+        new Column(MemoryMetric.LeaksCountMetric.getMetricID(),
+            MemoryMetric.LeaksCountMetric.getMetricValueClass(),
+            MemoryMetric.LeaksCountMetric.getMetricDisplayedName(), null);
+    public static final Column c_leakSize = 
+        new Column(MemoryMetric.LeakBytesMetric.getMetricID(),
+            MemoryMetric.LeakBytesMetric.getMetricValueClass(),
+            MemoryMetric.LeakBytesMetric.getMetricDisplayedName(), null);
+    public static final Column c_ulockSummary = new Column("user_lock", Long.class, loc("SSDataCollector.ColumnName.user_lock"), null); // NOI18N
 
 
     static {
@@ -166,17 +184,6 @@ public final class SunStudioDCConfiguration
         @Override
         public List<CollectedInfo> getCollectedInfo(SunStudioDCConfiguration configuration) {
             return configuration.getCollectedInfoList();
-        }
-    }
-
-    private static class _Column extends Column {
-
-        public _Column(Class clazz, String name) {
-            super(name, clazz, loc("SSDataCollector.ColumnName." + name), null); // NOI18N
-        }
-
-        private _Column(FunctionMetric metric) {
-            super(metric.getMetricID(), metric.getMetricValueClass(), metric.getMetricDisplayedName(), null);
         }
     }
 
