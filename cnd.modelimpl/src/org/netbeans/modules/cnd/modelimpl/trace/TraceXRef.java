@@ -335,7 +335,6 @@ public class TraceXRef extends TraceModel {
     private static void analyzeFile(final CsmFile file, final StatisticsParameters params,
             final XRefResultSet<UnresolvedEntry> bag, final PrintWriter out, final OutputWriter printErr,
             final AtomicBoolean canceled) {
-        out.print(file.getAbsolutePath());
         long time = System.currentTimeMillis();
         if (params.analyzeSmartAlgorith) {
             // for smart algorithm visit functions
@@ -345,7 +344,7 @@ public class TraceXRef extends TraceModel {
             CsmFileReferences.getDefault().accept(file, new LWVisitor(bag, printErr, canceled, params.reportUnresolved), params.interestedReferences);
         }
         time = System.currentTimeMillis() - time;
-        out.println(" took " + time + "ms"); // NOI18N
+        out.println(file.getAbsolutePath() + " took " + time + "ms"); // NOI18N
     }
 
     private static void visitDeclarations(Collection<? extends CsmOffsetableDeclaration> decls, StatisticsParameters params, XRefResultSet<UnresolvedEntry> bag,
