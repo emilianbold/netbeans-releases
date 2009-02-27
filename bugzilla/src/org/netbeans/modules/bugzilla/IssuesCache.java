@@ -135,15 +135,12 @@ public class IssuesCache {
         assert oldData != null;
         getSeenIssueData().put(id, new IssueData(newAttr, oldData.status));
 
-        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() { // XXX should be sync
-            public void run() {
-                try {
-                    IssueStorage.getInstance().storeIssue(repository.getUrl(), id, seen, newAttr);
-                } catch (IOException ex) {
-                    Bugzilla.LOG.log(Level.SEVERE, null, ex);
-                }
-            }
-        });
+        try {
+            IssueStorage.getInstance().storeIssue(repository.getUrl(), id, seen, newAttr);
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        }
+
     }
 
     public synchronized BugzillaIssue getIssue(String id) {
