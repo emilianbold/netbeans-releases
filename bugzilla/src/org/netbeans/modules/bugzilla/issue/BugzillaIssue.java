@@ -394,7 +394,7 @@ public class BugzillaIssue extends Issue {
     }
 
     /**
-     * Returns
+     * Returns the value represented by the given field
      *
      * @param f
      * @return
@@ -626,7 +626,7 @@ public class BugzillaIssue extends Issue {
     }
 
     public void refresh() {
-//        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         try {
             TaskData td = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), data.getTaskId(), new NullProgressMonitor());
             setTaskData(td);

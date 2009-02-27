@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
@@ -73,13 +74,12 @@ public class IssuesCache {
         int oldStatus;
         if(issue == null) {
             issue = new BugzillaIssue(taskData, repository);
-            oldAttr = getSeenAttributes(id);
+            oldAttr = readSeenAttributes(id);
             oldStatus = Query.ISSUE_STATUS_NEW;
         } else {
-
             issue.setTaskData(taskData);
             IssueData data = getSeenIssueData().get(id);
-            assert data != null;
+            assert data != null : "missing data for issue " + id;
             oldAttr = data.attributes;
             oldStatus = data.status;
         }
@@ -105,10 +105,11 @@ public class IssuesCache {
                 int status;
                 if(isChanged(oldAttr, issue.getAttributes())) {
                     status = Query.ISSUE_STATUS_MODIFIED;
+                    getSeenIssueData().put(id, new IssueData(oldAttr, status));
                 } else {
                     status = Query.ISSUE_STATUS_NEW;
+                    getSeenIssueData().put(id, new IssueData(null, status));
                 }
-                getSeenIssueData().put(id, new IssueData(null, status));
             }
             issue.setSeen(seen, false); // XXX true triggers already written attr
         } else {
@@ -119,6 +120,7 @@ public class IssuesCache {
     }
 
     public synchronized void setSeen(final String id, final boolean seen, Map<String, String> attr) {
+        assert !SwingUtilities.isEventDispatchThread();
 
         BugzillaIssue issue = getCache().get(id);
         assert issue != null;
@@ -184,6 +186,17 @@ public class IssuesCache {
     }
 
     public Map<String, String> getSeenAttributes(String id) {
+        IssueData data = getSeenIssueData().get(id);
+        Map<String, String> ret = data != null ? data.attributes : null;
+        if(ret == null) {
+            // XXX ugly
+            ret = new HashMap<String, String>();
+            ret.put("seen", "0"); 
+        }
+        return ret;
+    }
+
+    private Map<String, String> readSeenAttributes(String id) {
         Map<String, String> oldAttr = null;
         // XXX init storage for repo
         try {
@@ -215,8 +228,7 @@ public class IssuesCache {
             String v = attrNew.get(e.getKey());
             if(v == null && e.getValue() == null) continue;
             if(v == null) return true;
-            if(!e.getKey().equals("seen") && !v.equals(e.getValue())) return true; // XXX get rid of this                 if(isChanged(oldAttr, issue.getAttributes())) {
-
+            if(!e.getKey().equals("seen") && !v.equals(e.getValue())) return true; // XXX get rid of this
         }
         return false;
     }
