@@ -276,6 +276,10 @@ public final class IOWindow implements IOContainer.Provider {
         @Override
         public void requestActive() {
             super.requestActive();
+            JComponent tab = getSelectedTab();
+            if (tab != null) {
+                tab.requestFocus();
+            }
         }
 
         @Override
