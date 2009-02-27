@@ -48,7 +48,7 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.websvc.core.wseditor.support;
+package org.netbeans.modules.websvc.api.support;
 
 import org.openide.nodes.Node;
 

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.core.wseditor.support;
 
+import org.netbeans.modules.websvc.api.support.EditWSAttributesCookie;
 import java.util.Collection;
 import java.util.Set;
 import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider;
