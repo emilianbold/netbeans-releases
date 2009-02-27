@@ -59,6 +59,7 @@ import org.openide.util.NbBundle;
 public class IssuePanel extends javax.swing.JPanel {
     private BugzillaIssue issue;
     private CommentsPanel commentsPanel;
+    private int resolvedIndex;
 
     public IssuePanel() {
         initComponents();
@@ -116,6 +117,8 @@ public class IssuePanel extends javax.swing.JPanel {
         // componentCombo, versionCombo, targetMilestoneCombo are filled
         // automatically when productCombo is set/changed
         platformCombo.setModel(toComboModel(bugzilla.getPlatforms(repository)));
+        List<String> statuses = bugzilla.getStatusValues(repository);
+        resolvedIndex = statuses.indexOf("RESOLVED"); // NOI18N
         statusCombo.setModel(toComboModel(bugzilla.getStatusValues(repository)));
         resolutionCombo.setModel(toComboModel(bugzilla.getResolutions(repository)));
         priorityCombo.setModel(toComboModel(bugzilla.getPriorities(repository)));
@@ -478,8 +481,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void statusComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statusComboActionPerformed
         // Hide/show resolution combo
-        String status = statusCombo.getSelectedItem().toString();
-        boolean shown = !status.equals("NEW"); // NOI18N
+        boolean shown = (statusCombo.getSelectedIndex() >= resolvedIndex);
         resolutionCombo.setVisible(shown);
     }//GEN-LAST:event_statusComboActionPerformed
 
