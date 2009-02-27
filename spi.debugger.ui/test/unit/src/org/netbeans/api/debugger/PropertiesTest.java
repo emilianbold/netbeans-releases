@@ -47,8 +47,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import junit.framework.TestCase;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 /**
  * Test of the Properties class
@@ -109,7 +111,6 @@ public class PropertiesTest extends TestCase {
     
     public void testReader() throws Exception {
         Properties p = Properties.getDefault();
-        ((Properties.PropertiesImpl) p).addReader(new TestReader());
         assertNull(p.getObject("rect 1", null));
         assertNull(p.getObject("rect 2", null));
         assertNull(p.getObject("test 1", null));
@@ -132,11 +133,52 @@ public class PropertiesTest extends TestCase {
         assertEquals(t2, p.getObject("test 2", null));
         assertEquals(t3, p.getObject("test 3", null));
     }
+
+    public void testInitializer() throws Exception {
+        Properties p = Properties.getDefault();
+        p = p.getProperties("test");
+
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.array"), p.getArray("array", null));
+
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.boolean"), p.getBoolean("boolean", true));
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.boolean"), p.getBoolean("boolean", false));
+
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.byte"), p.getByte("byte", (byte) 0));
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.byte"), p.getByte("byte", (byte) -1));
+
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.char"), p.getChar("char", (char) 0));
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.char"), p.getChar("char", 'a'));
+
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.collection"), p.getCollection("collection", null));
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.set"), p.getCollection("set", null));
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.list"), p.getCollection("list", null));
+
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.double"), p.getDouble("double", 0.0));
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.double"), p.getDouble("double", 1.0));
+
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.float"), p.getFloat("float", 0.0f));
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.float"), p.getFloat("float", 1.0f));
+
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.int"), p.getInt("int", 0));
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.int"), p.getInt("int", 1));
+
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.long"), p.getLong("long", 0l));
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.long"), p.getLong("long", 1234567890123456789l));
+
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.map"), p.getMap("map", null));
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.linkedhashmap"), p.getMap("linkedhashmap", null));
+
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.object"), p.getObject("object", null));
+
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.short"), p.getShort("short", (short) 0));
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.short"), p.getShort("short", (short) 1));
+
+        assertEquals(TestInitializer.DEFAULT_VALUES.get("test.string"), p.getString("string", null));
+    }
     
     /** Stress test of multi-threaded get/set */
     public void testStressGetSet() throws Exception {
         Properties p = Properties.getDefault();
-        ((Properties.PropertiesImpl) p).addReader(new TestReader());
         int n = 5;
         ConcurrentGetSet[] cgs = new ConcurrentGetSet[n];
         Thread[] t = new Thread[n];
@@ -308,8 +350,9 @@ public class PropertiesTest extends TestCase {
         p.setObject(name, obj);
         assertEquals(obj, p.getObject(name, ""));
     }
-    
-    private static class TestReader implements Properties.Reader {
+
+    @DebuggerServiceRegistration(types={Properties.Reader.class})
+    public static class TestReader implements Properties.Reader {
         
     
         public String[] getSupportedClassNames() {
@@ -340,6 +383,59 @@ public class PropertiesTest extends TestCase {
             }
             throw new IllegalArgumentException(object.toString());
         }
+    }
+
+    @DebuggerServiceRegistration(types={Properties.Initializer.class})
+    public static class TestInitializer implements Properties.Initializer {
+
+        public static final String[] PROPERTY_NAMES = new String[] {
+            "test.array",
+            "test.boolean",
+            "test.byte",
+            "test.char",
+            "test.collection",
+            "test.set",
+            "test.list",
+            "test.double",
+            "test.float",
+            "test.int",
+            "test.long",
+            "test.map",
+            "test.linkedhashmap",
+            "test.object",
+            "test.short",
+            "test.string",
+        };
+
+        public static final Map<String, Object> DEFAULT_VALUES = new HashMap<String, Object>();
+
+        static {
+            DEFAULT_VALUES.put(PROPERTY_NAMES[0], new String[] {"TestArray"});
+            DEFAULT_VALUES.put(PROPERTY_NAMES[1], Boolean.TRUE);
+            DEFAULT_VALUES.put(PROPERTY_NAMES[2], Byte.MAX_VALUE);
+            DEFAULT_VALUES.put(PROPERTY_NAMES[3], Character.MIN_SURROGATE);
+            DEFAULT_VALUES.put(PROPERTY_NAMES[4], Collections.unmodifiableCollection(Collections.singleton(DEFAULT_VALUES)));
+            DEFAULT_VALUES.put(PROPERTY_NAMES[5], Collections.singleton(PROPERTY_NAMES));
+            DEFAULT_VALUES.put(PROPERTY_NAMES[6], Collections.singletonList("sl"));
+            DEFAULT_VALUES.put(PROPERTY_NAMES[7], Double.NaN);
+            DEFAULT_VALUES.put(PROPERTY_NAMES[8], Float.NEGATIVE_INFINITY);
+            DEFAULT_VALUES.put(PROPERTY_NAMES[9], Integer.SIZE);
+            DEFAULT_VALUES.put(PROPERTY_NAMES[10], Long.reverse(Long.SIZE));
+            DEFAULT_VALUES.put(PROPERTY_NAMES[11], Collections.singletonMap("key", "value"));
+            DEFAULT_VALUES.put(PROPERTY_NAMES[12], new LinkedHashMap());
+            DEFAULT_VALUES.put(PROPERTY_NAMES[13], new Rectangle(10, 10, 20, 20));
+            DEFAULT_VALUES.put(PROPERTY_NAMES[14], Short.MIN_VALUE);
+            DEFAULT_VALUES.put(PROPERTY_NAMES[15], String.class.getName());
+        }
+
+        public String[] getSupportedPropertyNames() {
+            return PROPERTY_NAMES;
+        }
+
+        public Object getDefaultPropertyValue(String propertyName) {
+            return DEFAULT_VALUES.get(propertyName);
+        }
+        
     }
     
     private static class TestObject {

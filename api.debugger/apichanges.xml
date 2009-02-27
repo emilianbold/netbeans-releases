@@ -309,6 +309,25 @@ made subject to such option by the copyright holder.
         <issue number="156687"/>
     </change>
 
+    <change id="PropertiesInitializer">
+        <api name="DebuggerCoreAPI"/>
+        <summary>Support for providing initial values of properties.</summary>
+        <version major="1" minor="17"/>
+        <date day="28" month="2" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             Properties.Initializer interface introduced to provide initial
+             values of properties. This is necessary when properties are
+             accessed from more places and it's not practical to copy default
+             values to every such location.
+             </p>
+        </description>
+        <class package="org.netbeans.api.debugger" name="Properties" />
+        <issue number="158775"/>
+    </change>
+
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->
