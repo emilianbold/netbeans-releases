@@ -971,7 +971,7 @@ public abstract class Properties {
                 } else {
 
                     // find register
-                    Reader r = findReader (value.getClass ().getName ());
+                    Reader r = readers.find(value.getClass ().getName ());
                     if (r == null) {
                         ErrorManager.getDefault().log ("Can not write object " + value);
                         return;
