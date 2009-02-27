@@ -148,7 +148,7 @@ public class Resolver3 implements Resolver {
         }
         return result;
     }
-    
+
     private CsmClassifier findClassifier(CharSequence qualifiedName) {
         // try to find visible classifier
         CsmClassifier result = CsmClassifierResolver.getDefault().findClassifierUsedInFile(qualifiedName, getStartFile(), needClasses());
@@ -158,8 +158,23 @@ public class Resolver3 implements Resolver {
     public CsmFile getStartFile() {
         return startFile;
     }
+
+    private CsmNamespace findNamespace(CsmNamespace ns, CharSequence qualifiedNamePart) {
+        CsmNamespace result = null;
+        if (ns == null) {
+            result = findNamespace(qualifiedNamePart);
+        } else {
+            CsmNamespace containingNs = ns;
+            while (containingNs != null && result == null) {
+                String fqn = (containingNs.isGlobal() ? "" : (containingNs.getQualifiedName() + "::")) + qualifiedNamePart; // NOI18N
+                result = findNamespace(fqn);
+                containingNs = containingNs.getParent();
+            }
+        }
+        return result;
+    }
     
-    public CsmNamespace findNamespace(CharSequence qualifiedName) {
+    private CsmNamespace findNamespace(CharSequence qualifiedName) {
         CsmNamespace result = project.findNamespace(qualifiedName);
         if( result == null ) {
             for (Iterator iter = project.getLibraries().iterator(); iter.hasNext() && result == null;) {
@@ -609,12 +624,8 @@ public class Resolver3 implements Resolver {
                 }
             }
             if( result == null  && needNamespaces()) {
-                if(getContainingNamespace() != null) {
-                    result = findNamespace(getContainingNamespace().getQualifiedName() + "::" + nameTokens[0]); // NOI18N
-                }
-                if (result == null) {
-                    result = findNamespace(nameTokens[0]);                    
-                }
+                containingNS = getContainingNamespace();
+                result = findNamespace(containingNS, nameTokens[0]);
             }
             if (result == null  && needClassifiers()){
                 result = findClassifier(nameTokens[0]);
@@ -689,11 +700,8 @@ public class Resolver3 implements Resolver {
                 result = findClassifier(containingNS, sb.toString());                
             }
             if( result == null && needNamespaces()) {
-//                containingNS = getContainingNamespace();
-//                result = findClassifier(containingNS, sb.toString());
-//            }
-//            if( result == null ) {
-                result = findNamespace(sb.toString());
+                containingNS = getContainingNamespace();
+                result = findNamespace(containingNS, sb.toString());
             }
             if( result == null && needClassifiers()) {
                 gatherMaps(file);
