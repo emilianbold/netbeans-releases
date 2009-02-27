@@ -324,6 +324,19 @@ public class Resolver3 implements Resolver {
                 break;
             }
         }
+        if (result == null) {
+            for (CsmDeclaration decl : CsmUsingResolver.getDefault().findUsedDeclarations(containingNS)) {
+                if (CharSequenceKey.Comparator.compare(nameToken, decl.getName()) == 0) {
+                    if (CsmKindUtilities.isClassifier(decl) && needClassifiers()) {
+                        result = decl;
+                        break;
+                    } else if (CsmKindUtilities.isClass(decl) && needClasses()) {
+                        result = decl;
+                        break;
+                    }
+                }
+            }
+        }
         return result;
     }
     
