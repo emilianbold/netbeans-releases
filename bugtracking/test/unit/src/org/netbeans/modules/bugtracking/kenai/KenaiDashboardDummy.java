@@ -57,10 +57,8 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 
@@ -77,7 +75,7 @@ public class KenaiDashboardDummy extends javax.swing.JFrame implements PropertyC
         initComponents();
         this.qa = qa;
         this.p = p;
-        DummyProjectHandle ph = new DummyProjectHandle();
+        DummyProjectHandle ph = new DummyProjectHandle(p.getName());
         ph.addPropertyChangeListener(this);
         stripListernes(findIssuesButton);
         findIssuesButton.addActionListener(qa.getFindIssueAction(ph));
@@ -229,9 +227,8 @@ public class KenaiDashboardDummy extends javax.swing.JFrame implements PropertyC
 
     private class DummyProjectHandle extends ProjectHandle {
 
-        @Override
-        public String getId() {
-            return p.getName();
+        public DummyProjectHandle(String id) {
+            super(id);
         }
 
         @Override
