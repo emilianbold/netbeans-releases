@@ -82,55 +82,118 @@ public class IssueTest extends NbTestCase implements TestConstants {
         }
     }
 
-//    public void testSetFields() throws Throwable {
-//        // WARNING: the test assumes that there are more than one value
-//        // for atributes like platform, versions etc.
+    public void testFields() throws Throwable {
+        // WARNING: the test assumes that there are more than one value
+        // for atributes like platform, versions etc.
+
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+        String id = TestUtil.createIssue(getRepository(), summary);
+        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+
+        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
+
+        String keyword = getKeyword(issue);
+        String milestone = getMilestone(issue);
+        String platform = getPlatform(issue);
+        String priority = getPriority(issue);
+        String resolution = getResolution(issue);
+        String version = getVersion(issue);
+        String assignee = "dil@dil.com";
+        String qaContact = "dil@dil.com";
+        String assigneeName = "dilino";
+        String qaContactName = "dilino";
+        String blocks = "1";
+        String depends = "2";
+        String cc = "dil@dil.com";
+        String url = "http://new.ulr";
+        String component = getComponent(issue);
+        String severity = getSeverity(issue);
+
+        // CC handled in separate test
+        issue.setFieldValue(IssueField.ASSIGNED_TO,assignee);
+        issue.setFieldValue(IssueField.ASSIGNED_TO_NAME, assigneeName);
+        issue.setFieldValue(IssueField.BLOCKS, blocks);
+        issue.setFieldValue(IssueField.COMPONENT, component);
+        issue.setFieldValue(IssueField.DEPENDS_ON, depends);
+        issue.setFieldValue(IssueField.KEYWORDS, keyword);
+        issue.setFieldValue(IssueField.MILESTONE,milestone);
+        issue.setFieldValue(IssueField.PLATFORM,platform);
+        issue.setFieldValue(IssueField.PRIORITY, priority);
+        issue.setFieldValue(IssueField.QA_CONTACT, qaContact);
+        issue.setFieldValue(IssueField.QA_CONTACT_NAME, qaContactName);
+        issue.setFieldValue(IssueField.SEVERITY, getSeverity(issue));
+        issue.setFieldValue(IssueField.SUMMARY, summary + ".new");
+        issue.setFieldValue(IssueField.URL, url);
+        issue.setFieldValue(IssueField.VERSION, version);
+        issue.setFieldValue(IssueField.NEWCC, cc);
+
+        // can't be changed
+//      DESCRIPTION
+//      PRODUCT
+
+        // won't test those too
+//      CREATION
+//      MODIFICATION
+
+        // handled in separate tests
+//      STATUS
+//      RESOLUTION
+//      REMOVECC
+//      CC
+
+        try {
+            issue.submit();
+        } catch (CoreException ex) {
+            TestUtil.handleException(ex);
+        }
+
+        issue.refresh();
+
+        assertEquals(assignee, issue.getFieldValue(IssueField.REPORTER));
+        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
+        assertEquals(assignee, issue.getFieldValue(IssueField.ASSIGNED_TO));
+        assertEquals(assigneeName, issue.getFieldValue(IssueField.ASSIGNED_TO_NAME));
+        assertEquals(blocks, issue.getFieldValue(IssueField.BLOCKS));
+        assertEquals(component, issue.getFieldValue(IssueField.COMPONENT));
+        assertEquals(depends, issue.getFieldValue(IssueField.DEPENDS_ON));
+        assertEquals(keyword, issue.getFieldValue(IssueField.KEYWORDS));
+        assertEquals(milestone, issue.getFieldValue(IssueField.MILESTONE));
+        assertEquals(platform, issue.getFieldValue(IssueField.PLATFORM));
+        assertEquals(priority, issue.getFieldValue(IssueField.PRIORITY));
+        assertEquals(qaContact, issue.getFieldValue(IssueField.QA_CONTACT));
+        assertEquals(qaContactName, issue.getFieldValue(IssueField.QA_CONTACT_NAME));
+        assertEquals(severity, issue.getFieldValue(IssueField.SEVERITY));
+        assertEquals(summary + ".new", issue.getFieldValue(IssueField.SUMMARY));
+        assertEquals(url, issue.getFieldValue(IssueField.URL));
+        assertEquals(version, issue.getFieldValue(IssueField.VERSION));
+        assertEquals(cc, issue.getFieldValue(IssueField.CC));
+
+        assertEquals(ISSUE_DESCRIPTION, issue.getFieldValue(IssueField.DESCRIPTION));
+        assertEquals(TEST_PROJECT, issue.getFieldValue(IssueField.PRODUCT));
+
+        keyword = getKeyword(issue);
+        milestone = getMilestone(issue);
+        platform = getPlatform(issue);
+        priority = getPriority(issue);
+        resolution = getResolution(issue);
+        version = getVersion(issue);
+        assignee = "dil@dil.com";
+        qaContact = "dil@dil.com";
+        assigneeName = "dilino";
+        qaContactName = "dilino";
+        blocks = "1";
+        depends = "2";
+        cc = "dil@dil.com";
+        url = "http://new.ulr";
+        component = getComponent(issue);
+        severity = getSeverity(issue);
+
+
+//        XXX changing a product might also imply the change of other fields!!!
 //
-//        long ts = System.currentTimeMillis();
-//        String summary = "somary" + ts;
-//        String id = TestUtil.createIssue(getRepository(), summary);
-//        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
-//
-//        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
-//
-//        String keyword = getKeyword(issue);
-//        String milestone = getMilestone(issue);
-//        String platform = getPlatform(issue);
-//        String priority = getPriority(issue);
-//        String resolution = getResolution(issue);
-//        String version = getVersion(issue);
-//        String assignee = "dil@dil.com";
-//        String qaContact = "dil@dil.com";
-//        String assigneeName = "dilino";
-//        String qaContactName = "dilino";
-//        String blocks = "1";
-//        String depends = "2";
-//        String cc = "dil@dil.com";
-//        String url = "http://new.ulr";
-//        String component = getComponent(issue);
-//        String severity = getSeverity(issue);
-//
-//        // CC handled in separate test
-//        // resolve handled in separate test
-//        issue.setFieldValue(IssueField.ASSIGEND_TO,assignee);
-//        issue.setFieldValue(IssueField.ASSIGNED_TO_NAME, assigneeName);
-//        issue.setFieldValue(IssueField.BLOCKS, blocks);
-//        issue.setFieldValue(IssueField.COMPONENT, component);
-//        issue.setFieldValue(IssueField.DEPENDS_ON, depends);
-//        issue.setFieldValue(IssueField.KEYWORDS, keyword);
-//        issue.setFieldValue(IssueField.MILESTONE,milestone);
-//        issue.setFieldValue(IssueField.PLATFORM,platform);
-//        issue.setFieldValue(IssueField.PRIORITY, priority);
-//        issue.setFieldValue(IssueField.QA_CONTACT, qaContact);
-////        issue.setFieldValue(IssueField.QA_CONTACT_NAME, qaContactName);
-////        issue.setFieldValue(IssueField.REPORTER, "dilino");
-////        issue.setFieldValue(IssueField.RESOLUTION, resolution);
-//        issue.setFieldValue(IssueField.SEVERITY, getSeverity(issue));
-//        //issue.setFieldValue(IssueField.STATUS, getSeverity());
-//        issue.setFieldValue(IssueField.SUMMARY, summary + ".new");
-//        issue.setFieldValue(IssueField.URL, url);
-//        issue.setFieldValue(IssueField.VERSION, version);
-//
+//        String product = getProduct(issue);
+//        issue.setFieldValue(IssueField.PRODUCT, product);
 //        try {
 //            issue.submit();
 //        } catch (CoreException ex) {
@@ -138,206 +201,255 @@ public class IssueTest extends NbTestCase implements TestConstants {
 //        }
 //
 //        issue.refresh();
-//
-//        assertEquals(assignee, issue.getFieldValue(IssueField.ASSIGEND_TO));
-//        assertEquals(assigneeName, issue.getFieldValue(IssueField.ASSIGNED_TO_NAME));
-//        assertEquals(blocks, issue.getFieldValue(IssueField.BLOCKS));
-////        assertEquals(cc, issue.getFieldValue(IssueField.CC));
-//        assertEquals(component, issue.getFieldValue(IssueField.COMPONENT));
-//        assertEquals(depends, issue.getFieldValue(IssueField.DEPENDS_ON));
-//        assertEquals(keyword, issue.getFieldValue(IssueField.KEYWORDS));
-//        assertEquals(milestone, issue.getFieldValue(IssueField.MILESTONE));
-//        assertEquals(platform, issue.getFieldValue(IssueField.PLATFORM));
-//        assertEquals(priority, issue.getFieldValue(IssueField.PRIORITY));
-//        assertEquals(qaContact, issue.getFieldValue(IssueField.QA_CONTACT));
-////        assertEquals(qaContactName, issue.getFieldValue(IssueField.QA_CONTACT_NAME));
-////        assertEquals(resolution, issue.getFieldValue(IssueField.RESOLUTION));
-//        assertEquals(severity, issue.getFieldValue(IssueField.SEVERITY));
-//        assertEquals(summary + ".new", issue.getFieldValue(IssueField.SUMMARY));
-//        assertEquals(url, issue.getFieldValue(IssueField.URL));
-//        assertEquals(version, issue.getFieldValue(IssueField.VERSION));
-//
-////        XXX changing a product might also imply the change of other fields!!!
-////
-////        String product = getProduct(issue);
-////        issue.setFieldValue(IssueField.PRODUCT, product);
-////        try {
-////            issue.submit();
-////        } catch (CoreException ex) {
-////            TestUtil.handleException(ex);
-////        }
-////
-////        issue.refresh();
-////        assertEquals(product, issue.getFieldValue(IssueField.PRODUCT));
-//
-//    }
-//
-//    public void testCC() throws Throwable {
-//        // WARNING: the test assumes that there are more than one value
-//        // for atributes like platform, versions etc.
-//
+//        assertEquals(product, issue.getFieldValue(IssueField.PRODUCT));
+
+    }
+
+    public void testCC() throws Throwable {
+        // WARNING: the test assumes that there are more than one value
+        // for atributes like platform, versions etc.
+
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+        String id = TestUtil.createIssue(getRepository(), summary);
+        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
+
+        // add a cc
+        issue.setFieldValue(IssueField.NEWCC, "dil@dil.com");
+        submit(issue);
+        issue.refresh();
+        assertEquals("dil@dil.com", issue.getFieldValue(IssueField.CC));
+
+        // add new cc
+        issue.setFieldValue(IssueField.NEWCC, "dil2@dil.com");
+        submit(issue);
+        issue.refresh();
+        List<String> ccs = issue.getFieldValues(IssueField.CC);
+        assertEquals(2, ccs.size());
+        assertTrue(ccs.contains("dil@dil.com"));
+        assertTrue(ccs.contains("dil2@dil.com"));
+
+        // add two cc-s at once
+        issue.setFieldValue(IssueField.NEWCC, "dil3@dil.com, dil4@dil.com");
+        submit(issue);
+        issue.refresh();
+        ccs = issue.getFieldValues(IssueField.CC);
+        assertEquals(4, ccs.size());
+        assertTrue(ccs.contains("dil@dil.com"));
+        assertTrue(ccs.contains("dil2@dil.com"));
+        assertTrue(ccs.contains("dil3@dil.com"));
+        assertTrue(ccs.contains("dil4@dil.com"));
+
+        // remove a cc
+        ccs = new ArrayList<String>();
+        ccs.add("dil4@dil.com");
+        ccs.add("dil@dil.com");
+        issue.setFieldValues(IssueField.REMOVECC, ccs);
+        submit(issue);
+        issue.refresh();
+        ccs = issue.getFieldValues(IssueField.CC);
+        assertEquals(2, ccs.size());
+        assertTrue(ccs.contains("dil2@dil.com"));
+        assertTrue(ccs.contains("dil3@dil.com"));
+    }
+
+    
+    public void testStartResolveFixedVerifiedClosedReopen() throws Throwable {
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+        String id = TestUtil.createIssue(getRepository(), summary);
+        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
+        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
+        assertEquals("", issue.getFieldValue(IssueField.RESOLUTION));
+
+        issue.setFieldValue(IssueField.ASSIGNED_TO_NAME, getRepository().getUsername());
+        issue.accept();
+        submit(issue);
+        issue.refresh();
+        assertEquals("ASSIGNED", issue.getFieldValue(IssueField.STATUS));
+        assertEquals("", issue.getFieldValue(IssueField.RESOLUTION));
+
+        issue.resolve("FIXED");
+        submit(issue);
+        issue.refresh();
+        assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
+        assertEquals("FIXED", issue.getFieldValue(IssueField.RESOLUTION));
+
+        issue.verify();
+        submit(issue);
+        issue.refresh();
+        assertEquals("VERIFIED", issue.getFieldValue(IssueField.STATUS));
+        assertEquals("FIXED", issue.getFieldValue(IssueField.RESOLUTION));
+
+        issue.close();
+        submit(issue);
+        issue.refresh();
+        assertEquals("CLOSED", issue.getFieldValue(IssueField.STATUS));
+        assertEquals("FIXED", issue.getFieldValue(IssueField.RESOLUTION));
+
+        // we do not support this yet
+//        issue.duplicate("1");
+//        submit(issue);
+//        issue.refresh();
+//        assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
+//        assertEquals("DUPLICATE", issue.getFieldValue(IssueField.RESOLUTION));
+
+        issue.reopen();
+        submit(issue);
+        issue.refresh();
+        assertEquals("REOPENED", issue.getFieldValue(IssueField.STATUS));
+        assertEquals("", issue.getFieldValue(IssueField.RESOLUTION));
+    }
+
+    public void testResolveNew() throws Throwable {
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+
+        List<String> rs = Bugzilla.getInstance().getResolutions(getRepository());
+        for (String r : rs) {
+            if(r.equals("DUPLICATE") ||
+               r.equals("MOVED"))
+            {
+                continue;  // used and tested in a different way
+            }
+            String id = TestUtil.createIssue(getRepository(), summary);
+            BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+            assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
+            assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
+            assertEquals("", issue.getFieldValue(IssueField.RESOLUTION));
+
+            issue.resolve(r);
+            submit(issue);
+            issue.refresh();
+            assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
+            assertEquals(r, issue.getFieldValue(IssueField.RESOLUTION));
+        }
+    }
+
+    //    we do not support this yet
+//    public void testResolveClosed() throws Throwable {
 //        long ts = System.currentTimeMillis();
 //        String summary = "somary" + ts;
-//        String id = TestUtil.createIssue(getRepository(), summary);
-//        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
-//        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
 //
-//        // add a cc
-//        issue.setFieldValue(IssueField.NEWCC, "dil@dil.com");
-//        submit(issue);
-//        issue.refresh();
-//        assertEquals("dil@dil.com", issue.getFieldValue(IssueField.CC));
-//
-//        // add new cc
-//        issue.setFieldValue(IssueField.NEWCC, "dil2@dil.com");
-//        submit(issue);
-//        issue.refresh();
-//        List<String> ccs = issue.getFieldValues(IssueField.CC);
-//        assertEquals(2, ccs.size());
-//        assertTrue(ccs.contains("dil@dil.com"));
-//        assertTrue(ccs.contains("dil2@dil.com"));
-//
-//        // add two cc-s at once
-//        issue.setFieldValue(IssueField.NEWCC, "dil3@dil.com, dil4@dil.com");
-//        submit(issue);
-//        issue.refresh();
-//        ccs = issue.getFieldValues(IssueField.CC);
-//        assertEquals(4, ccs.size());
-//        assertTrue(ccs.contains("dil@dil.com"));
-//        assertTrue(ccs.contains("dil2@dil.com"));
-//        assertTrue(ccs.contains("dil3@dil.com"));
-//        assertTrue(ccs.contains("dil4@dil.com"));
-//
-//        // remove a cc
-//        ccs = new ArrayList<String>();
-//        ccs.add("dil4@dil.com");
-//        ccs.add("dil@dil.com");
-//        issue.setFieldValues(IssueField.REMOVECC, ccs);
-//        submit(issue);
-//        issue.refresh();
-//        ccs = issue.getFieldValues(IssueField.CC);
-//        assertEquals(2, ccs.size());
-//        assertTrue(ccs.contains("dil2@dil.com"));
-//        assertTrue(ccs.contains("dil3@dil.com"));
-//    }
-//
-//    public void testResolveFixedVerifiedClosedReopen() throws Throwable {
-//        long ts = System.currentTimeMillis();
-//        String summary = "somary" + ts;
 //        String id = TestUtil.createIssue(getRepository(), summary);
 //        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
 //        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
 //        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
 //        assertEquals("", issue.getFieldValue(IssueField.RESOLUTION));
 //
+//        // fix
 //        issue.resolve("FIXED");
 //        submit(issue);
 //        issue.refresh();
 //        assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
 //        assertEquals("FIXED", issue.getFieldValue(IssueField.RESOLUTION));
 //
-//        issue.verify();
-//        submit(issue);
-//        issue.refresh();
-//        assertEquals("VERIFIED", issue.getFieldValue(IssueField.STATUS));
-//        assertEquals("FIXED", issue.getFieldValue(IssueField.RESOLUTION));
+//        // try to change to another resolution
+//        List<String> rs = Bugzilla.getInstance().getResolutions(getRepository());
+//        for (String r : rs) {
+//            if(r.equals("DUPLICATE") ||
+//               r.equals("MOVED") ||
+//               r.equals("FIXED")) // already fixed
+//            {
+//                continue;  // used and tested in a different way
+//            }
 //
-//        issue.close();
-//        submit(issue);
-//        issue.refresh();
-//        assertEquals("CLOSED", issue.getFieldValue(IssueField.STATUS));
-//        assertEquals("FIXED", issue.getFieldValue(IssueField.RESOLUTION));
-//
-//        issue.reopen();
-//        submit(issue);
-//        issue.refresh();
-//        assertEquals("REOPENED", issue.getFieldValue(IssueField.STATUS));
-//        assertEquals("", issue.getFieldValue(IssueField.RESOLUTION));
-//    }
-//
-//    public void testResolveDuplicateReopen() throws Throwable {
-//        long ts = System.currentTimeMillis();
-//        String summary = "somary" + ts;
-//        String id = TestUtil.createIssue(getRepository(), summary);
-//        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
-//        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
-//        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
-//
-//        issue.duplicate("1");
-//        submit(issue);
-//        issue.refresh();
-//
-//        assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
-//        assertEquals("DUPLICATE", issue.getFieldValue(IssueField.RESOLUTION));
-//
-//        issue.reopen();
-//        submit(issue);
-//        issue.refresh();
-//        assertEquals("REOPENED", issue.getFieldValue(IssueField.STATUS));
-//        assertEquals("", issue.getFieldValue(IssueField.RESOLUTION));
-//
-//        // XXX get dupl ID
-//
-//    }
-//
-//    public void testReassign() throws Throwable {
-//        long ts = System.currentTimeMillis();
-//        String summary = "somary" + ts;
-//        String id = TestUtil.createIssue(getRepository(), summary);
-//        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
-//        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
-//        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
-//        assertEquals("dil@dil.com", issue.getFieldValue(IssueField.ASSIGEND_TO));
-//
-//        issue.reassigne("dil2@dil.com");
-//        submit(issue);
-//        issue.refresh();
-//
-//        assertEquals("dil2@dil.com", issue.getFieldValue(IssueField.ASSIGEND_TO));
-//    }
-//
-//    public void testAddComment() throws Throwable {
-//        long ts = System.currentTimeMillis();
-//        String summary = "somary" + ts;
-//        String id = TestUtil.createIssue(getRepository(), summary);
-//        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
-//        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
-//        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
-//        assertEquals("dil@dil.com", issue.getFieldValue(IssueField.ASSIGEND_TO));
-//
-//        String comment = "koment";
-//        issue.addComment(comment);
-//        submit(issue);
-//        issue.refresh();
-//
-//        Comment[] comments = issue.getComments();
-//        assertEquals(1, comments.length);
-//        assertEquals(comment, issue.getComments()[0].getText());
-//    }
-//
-//    public void testAddCommentClose() throws Throwable {
-//        long ts = System.currentTimeMillis();
-//        String summary = "somary" + ts;
-//        String id = TestUtil.createIssue(getRepository(), summary);
-//        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
-//        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
-//        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
-//        assertEquals("dil@dil.com", issue.getFieldValue(IssueField.ASSIGEND_TO));
-//
-//        String comment = "koment";
-//        issue.addComment(comment, true);
-//        issue.refresh();
-//
-//        Comment[] comments = issue.getComments();
-//        assertEquals(1, comments.length);
-//        assertEquals(comment, issue.getComments()[0].getText());
-//
-//        assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
-//        assertEquals("FIXED", issue.getFieldValue(IssueField.RESOLUTION));
+//            issue.resolve(r);
+//            submit(issue);
+//            issue.refresh();
+//            assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
+//            assertEquals(r, issue.getFieldValue(IssueField.RESOLUTION));
+//        }
 //    }
 
 
-    public void testAddAttachment() throws Throwable {
+    public void testResolveDuplicateReopen() throws Throwable {
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+        String id = TestUtil.createIssue(getRepository(), summary);
+        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
+        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
+
+        issue.duplicate("1");
+        submit(issue);
+        issue.refresh();
+
+        assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
+        assertEquals("DUPLICATE", issue.getFieldValue(IssueField.RESOLUTION));
+
+        issue.reopen();
+        submit(issue);
+        issue.refresh();
+        assertEquals("REOPENED", issue.getFieldValue(IssueField.STATUS));
+        assertEquals("", issue.getFieldValue(IssueField.RESOLUTION));
+
+        // XXX get dupl ID
+
+    }
+
+    public void testReassign() throws Throwable {
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+        String id = TestUtil.createIssue(getRepository(), summary);
+        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
+        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
+        assertEquals("dil@dil.com", issue.getFieldValue(IssueField.ASSIGNED_TO));
+
+        issue.reassigne("dil2@dil.com");
+        submit(issue);
+        issue.refresh();
+
+        assertEquals("dil2@dil.com", issue.getFieldValue(IssueField.ASSIGNED_TO));
+    }
+
+    public void testComment() throws Throwable {
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+        String id = TestUtil.createIssue(getRepository(), summary);
+        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
+        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
+        assertEquals("dil@dil.com", issue.getFieldValue(IssueField.ASSIGNED_TO));
+
+        // add comment
+        String comment = "koment";
+        issue.addComment(comment);
+        submit(issue);
+        issue.refresh();
+
+        // get comment
+        Comment[] comments = issue.getComments();
+        assertEquals(1, comments.length);
+        assertEquals(comment, issue.getComments()[0].getText());
+    }
+
+    public void testAddCommentClose() throws Throwable {
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+        String id = TestUtil.createIssue(getRepository(), summary);
+        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
+        assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
+        assertEquals("dil@dil.com", issue.getFieldValue(IssueField.ASSIGNED_TO));
+
+        String comment = "koment";
+        issue.addComment(comment, true);
+        issue.refresh();
+
+        Comment[] comments = issue.getComments();
+        assertEquals(1, comments.length);
+        assertEquals(comment, issue.getComments()[0].getText());
+
+        assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
+        assertEquals("FIXED", issue.getFieldValue(IssueField.RESOLUTION));
+    }
+
+
+    public void testAttachment() throws Throwable {
         try {
             long ts = System.currentTimeMillis();
             String summary = "somary" + ts;
@@ -345,23 +457,27 @@ public class IssueTest extends NbTestCase implements TestConstants {
             BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
             assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
             assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
-            assertEquals("dil@dil.com", issue.getFieldValue(IssueField.ASSIGEND_TO));
+            assertEquals("dil@dil.com", issue.getFieldValue(IssueField.ASSIGNED_TO));
 
+            // add attachment
             String atttext = "my first attchement";
             String attcomment = "my first attchement";
             String attdesc = "file containing text";
             File f = getAttachmentFile(atttext);
             issue.addAttachment(f, attcomment, attdesc, "text/plain");
             issue.refresh();
+
+            // get attachment
             Attachment[] atts = issue.getAttachments();
             assertEquals(1, atts.length);
             assertEquals(attdesc, atts[0].getDesc());
 
+            // get attachment data
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             atts[0].getAttachementData(os);
             String fileConttents = os.toString();
             assertEquals(atttext, fileConttents);
-            
+
         } catch (Exception e) {
             TestUtil.handleException(e);
         }

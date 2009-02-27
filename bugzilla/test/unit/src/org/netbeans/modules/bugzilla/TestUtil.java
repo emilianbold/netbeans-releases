@@ -134,7 +134,7 @@ public class TestUtil implements TestConstants {
     public static String createIssue(BugzillaRepository repo, String summary) throws MalformedURLException, CoreException {
         BugzillaRepositoryConnector brc = Bugzilla.getInstance().getRepositoryConnector();
         TaskRepository tr = repo.getTaskRepository();
-        TaskData data = TestUtil.createTaskData(brc, tr, summary, "desc", "bug");
+        TaskData data = TestUtil.createTaskData(brc, tr, summary, ISSUE_DESCRIPTION, ISSUE_SEVERITY);
         RepositoryResponse rr = TestUtil.postTaskData(brc, tr, data);
         return rr.getTaskId();
     }
