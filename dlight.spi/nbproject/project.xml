@@ -8,7 +8,6 @@
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.dlight.core.stack</friend>
-                <friend>org.netbeans.modules.dlight.dwarfreader</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <package>org.netbeans.modules.dlight.spi</package>
             </friend-packages>

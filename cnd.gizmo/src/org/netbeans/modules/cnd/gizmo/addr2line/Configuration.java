@@ -21,7 +21,7 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.netbeans.modules.dlight.dwarfreader.addr2line;
+package org.netbeans.modules.cnd.gizmo.addr2line;
 
 class Configuration {
 

@@ -36,10 +36,10 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.dwarfreader;
+package org.netbeans.modules.cnd.gizmo;
 
 import java.io.File;
-import org.netbeans.modules.dlight.dwarfreader.addr2line.Dwarf2NameFinder;
+import org.netbeans.modules.cnd.gizmo.addr2line.Dwarf2NameFinder;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.openide.util.lookup.ServiceProvider;
 
