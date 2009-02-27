@@ -45,6 +45,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
@@ -90,8 +93,14 @@ public class IssueTest extends NbTestCase implements TestConstants {
         String summary = "somary" + ts;
         String id = TestUtil.createIssue(getRepository(), summary);
         BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
-
         assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
+
+        for (IssueField f : IssueField.values()) {
+            // haven't seen anything yet, everything's new
+            assertEquals(BugzillaIssue.FIELD_STATUS_IRELEVANT, issue.getFieldStatus(f));
+        }
+        setSeen(issue); // reset status
+
 
         String keyword = getKeyword(issue);
         String milestone = getMilestone(issue);
@@ -100,19 +109,20 @@ public class IssueTest extends NbTestCase implements TestConstants {
         String resolution = getResolution(issue);
         String version = getVersion(issue);
         String assignee = "dil@dil.com";
+        String reporter = "dil@dil.com";
         String qaContact = "dil@dil.com";
         String assigneeName = "dilino";
         String qaContactName = "dilino";
         String blocks = "1";
         String depends = "2";
+        String newcc = "dil@dil.com";
         String cc = "dil@dil.com";
         String url = "http://new.ulr";
         String component = getComponent(issue);
         String severity = getSeverity(issue);
 
-        // CC handled in separate test
-        issue.setFieldValue(IssueField.ASSIGNED_TO,assignee);
-        issue.setFieldValue(IssueField.ASSIGNED_TO_NAME, assigneeName);
+//        issue.setFieldValue(IssueField.ASSIGNED_TO, assignee);
+//        issue.setFieldValue(IssueField.ASSIGNED_TO_NAME, assigneeName);
         issue.setFieldValue(IssueField.BLOCKS, blocks);
         issue.setFieldValue(IssueField.COMPONENT, component);
         issue.setFieldValue(IssueField.DEPENDS_ON, depends);
@@ -126,31 +136,26 @@ public class IssueTest extends NbTestCase implements TestConstants {
         issue.setFieldValue(IssueField.SUMMARY, summary + ".new");
         issue.setFieldValue(IssueField.URL, url);
         issue.setFieldValue(IssueField.VERSION, version);
-        issue.setFieldValue(IssueField.NEWCC, cc);
+        issue.setFieldValue(IssueField.NEWCC, newcc);
 
         // can't be changed
 //      DESCRIPTION
 //      PRODUCT
-
         // won't test those too
 //      CREATION
 //      MODIFICATION
-
         // handled in separate tests
 //      STATUS
 //      RESOLUTION
 //      REMOVECC
 //      CC
+//      ASSIGNED_TO
+//      ASSIGNED_TO_NAME
 
-        try {
-            issue.submit();
-        } catch (CoreException ex) {
-            TestUtil.handleException(ex);
-        }
+        submit(issue);
 
-        issue.refresh();
-
-        assertEquals(assignee, issue.getFieldValue(IssueField.REPORTER));
+        // assert values
+        assertEquals(reporter, issue.getFieldValue(IssueField.REPORTER));
         assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
         assertEquals(assignee, issue.getFieldValue(IssueField.ASSIGNED_TO));
         assertEquals(assigneeName, issue.getFieldValue(IssueField.ASSIGNED_TO_NAME));
@@ -172,23 +177,116 @@ public class IssueTest extends NbTestCase implements TestConstants {
         assertEquals(ISSUE_DESCRIPTION, issue.getFieldValue(IssueField.DESCRIPTION));
         assertEquals(TEST_PROJECT, issue.getFieldValue(IssueField.PRODUCT));
 
-        keyword = getKeyword(issue);
+        // assert status
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.REPORTER);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.STATUS);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.ASSIGNED_TO);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.ASSIGNED_TO_NAME);
+        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.BLOCKS);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.COMPONENT);
+        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.DEPENDS_ON);
+        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.KEYWORDS);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.MILESTONE);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.PLATFORM);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.PRIORITY);
+        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.QA_CONTACT);
+        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.QA_CONTACT_NAME);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.SEVERITY);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.SUMMARY);
+        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.URL);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.VERSION);
+        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.CC);
+
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.DESCRIPTION);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.PRODUCT);
+
+        setSeen(issue); // reset status
+
+        keyword = keyword + "," + getKeyword(issue);
         milestone = getMilestone(issue);
         platform = getPlatform(issue);
         priority = getPriority(issue);
         resolution = getResolution(issue);
         version = getVersion(issue);
-        assignee = "dil@dil.com";
-        qaContact = "dil@dil.com";
-        assigneeName = "dilino";
-        qaContactName = "dilino";
-        blocks = "1";
-        depends = "2";
-        cc = "dil@dil.com";
-        url = "http://new.ulr";
+        qaContact = "dil2@dil.com";
+        qaContactName = "dilino2";
+        blocks = "1,3";
+        depends = "2,4";
+        newcc = "dil2@dil.com";
+        url = "http://evennewer.ulr";
         component = getComponent(issue);
         severity = getSeverity(issue);
 
+        issue.setFieldValue(IssueField.BLOCKS, blocks);
+        issue.setFieldValue(IssueField.COMPONENT, component);
+        issue.setFieldValue(IssueField.DEPENDS_ON, depends);
+        issue.setFieldValue(IssueField.KEYWORDS, keyword);
+        issue.setFieldValue(IssueField.MILESTONE, milestone);
+        issue.setFieldValue(IssueField.PLATFORM, platform);
+        issue.setFieldValue(IssueField.PRIORITY, priority);
+        issue.setFieldValue(IssueField.QA_CONTACT, qaContact);
+        issue.setFieldValue(IssueField.QA_CONTACT_NAME, qaContactName);
+        issue.setFieldValue(IssueField.SEVERITY, getSeverity(issue));
+        issue.setFieldValue(IssueField.SUMMARY, summary + ".new");
+        issue.setFieldValue(IssueField.URL, url);
+        issue.setFieldValue(IssueField.VERSION, version);
+        issue.setFieldValue(IssueField.NEWCC, newcc);
+
+        submit(issue);
+
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.REPORTER);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.STATUS);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.ASSIGNED_TO);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.ASSIGNED_TO_NAME);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.BLOCKS);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.COMPONENT);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.DEPENDS_ON);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.KEYWORDS);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.MILESTONE);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.PLATFORM);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.PRIORITY);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.QA_CONTACT);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.QA_CONTACT_NAME);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.SEVERITY);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.SUMMARY);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.URL);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.VERSION);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.CC);
+
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.DESCRIPTION);
+        assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, IssueField.PRODUCT);
+
+        setSeen(issue);
+
+        qaContact = "";
+        qaContactName = "";
+        blocks = "";
+        depends = "";
+        url = "";
+        keyword = "";
+
+        issue.setFieldValue(IssueField.BLOCKS, blocks);
+        issue.setFieldValue(IssueField.DEPENDS_ON, depends);
+        issue.setFieldValue(IssueField.KEYWORDS, keyword);
+        issue.setFieldValue(IssueField.QA_CONTACT, qaContact);
+        issue.setFieldValue(IssueField.QA_CONTACT_NAME, qaContactName);
+        issue.setFieldValue(IssueField.URL, url);
+
+        submit(issue);
+
+        assertEquals(blocks, issue.getFieldValue(IssueField.BLOCKS));
+        assertEquals(depends, issue.getFieldValue(IssueField.DEPENDS_ON));
+        assertEquals(keyword, issue.getFieldValue(IssueField.KEYWORDS));
+// XXX WTF        assertEquals(qaContact, issue.getFieldValue(IssueField.QA_CONTACT));
+// XXX WTF       assertEquals(qaContactName, issue.getFieldValue(IssueField.QA_CONTACT_NAME));
+        assertEquals(url, issue.getFieldValue(IssueField.URL));
+
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.BLOCKS);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.DEPENDS_ON);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.KEYWORDS);
+// XXX WTF       assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.QA_CONTACT);
+// XXX WTF       assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.QA_CONTACT_NAME);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.URL);
 
 //        XXX changing a product might also imply the change of other fields!!!
 //
@@ -215,31 +313,36 @@ public class IssueTest extends NbTestCase implements TestConstants {
         BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
         assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
 
+        setSeen(issue); // reset status
+
         // add a cc
         issue.setFieldValue(IssueField.NEWCC, "dil@dil.com");
         submit(issue);
-        issue.refresh();
         assertEquals("dil@dil.com", issue.getFieldValue(IssueField.CC));
+        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.CC);
+        setSeen(issue); // reset status
 
         // add new cc
         issue.setFieldValue(IssueField.NEWCC, "dil2@dil.com");
         submit(issue);
-        issue.refresh();
         List<String> ccs = issue.getFieldValues(IssueField.CC);
         assertEquals(2, ccs.size());
         assertTrue(ccs.contains("dil@dil.com"));
         assertTrue(ccs.contains("dil2@dil.com"));
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.CC);
 
         // add two cc-s at once
         issue.setFieldValue(IssueField.NEWCC, "dil3@dil.com, dil4@dil.com");
         submit(issue);
-        issue.refresh();
         ccs = issue.getFieldValues(IssueField.CC);
         assertEquals(4, ccs.size());
         assertTrue(ccs.contains("dil@dil.com"));
         assertTrue(ccs.contains("dil2@dil.com"));
         assertTrue(ccs.contains("dil3@dil.com"));
         assertTrue(ccs.contains("dil4@dil.com"));
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.CC);
+
+        setSeen(issue); // reset status
 
         // remove a cc
         ccs = new ArrayList<String>();
@@ -247,14 +350,26 @@ public class IssueTest extends NbTestCase implements TestConstants {
         ccs.add("dil@dil.com");
         issue.setFieldValues(IssueField.REMOVECC, ccs);
         submit(issue);
-        issue.refresh();
         ccs = issue.getFieldValues(IssueField.CC);
         assertEquals(2, ccs.size());
         assertTrue(ccs.contains("dil2@dil.com"));
         assertTrue(ccs.contains("dil3@dil.com"));
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.CC);
+
+        setSeen(issue); // reset status
+
+        // remove all
+        ccs = new ArrayList<String>();
+        ccs.add("dil3@dil.com");
+        ccs.add("dil2@dil.com");
+        issue.setFieldValues(IssueField.REMOVECC, ccs);
+        submit(issue);
+        ccs = issue.getFieldValues(IssueField.CC);
+        assertEquals(0, ccs.size());
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.CC);
+
     }
 
-    
     public void testStartResolveFixedVerifiedClosedReopen() throws Throwable {
         long ts = System.currentTimeMillis();
         String summary = "somary" + ts;
@@ -267,38 +382,32 @@ public class IssueTest extends NbTestCase implements TestConstants {
         issue.setFieldValue(IssueField.ASSIGNED_TO_NAME, getRepository().getUsername());
         issue.accept();
         submit(issue);
-        issue.refresh();
         assertEquals("ASSIGNED", issue.getFieldValue(IssueField.STATUS));
         assertEquals("", issue.getFieldValue(IssueField.RESOLUTION));
 
         issue.resolve("FIXED");
         submit(issue);
-        issue.refresh();
         assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
         assertEquals("FIXED", issue.getFieldValue(IssueField.RESOLUTION));
 
         issue.verify();
         submit(issue);
-        issue.refresh();
         assertEquals("VERIFIED", issue.getFieldValue(IssueField.STATUS));
         assertEquals("FIXED", issue.getFieldValue(IssueField.RESOLUTION));
 
         issue.close();
         submit(issue);
-        issue.refresh();
         assertEquals("CLOSED", issue.getFieldValue(IssueField.STATUS));
         assertEquals("FIXED", issue.getFieldValue(IssueField.RESOLUTION));
 
         // we do not support this yet
 //        issue.duplicate("1");
 //        submit(issue);
-//        issue.refresh();
 //        assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
 //        assertEquals("DUPLICATE", issue.getFieldValue(IssueField.RESOLUTION));
 
         issue.reopen();
         submit(issue);
-        issue.refresh();
         assertEquals("REOPENED", issue.getFieldValue(IssueField.STATUS));
         assertEquals("", issue.getFieldValue(IssueField.RESOLUTION));
     }
@@ -322,7 +431,6 @@ public class IssueTest extends NbTestCase implements TestConstants {
 
             issue.resolve(r);
             submit(issue);
-            issue.refresh();
             assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
             assertEquals(r, issue.getFieldValue(IssueField.RESOLUTION));
         }
@@ -342,7 +450,6 @@ public class IssueTest extends NbTestCase implements TestConstants {
 //        // fix
 //        issue.resolve("FIXED");
 //        submit(issue);
-//        issue.refresh();
 //        assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
 //        assertEquals("FIXED", issue.getFieldValue(IssueField.RESOLUTION));
 //
@@ -358,7 +465,6 @@ public class IssueTest extends NbTestCase implements TestConstants {
 //
 //            issue.resolve(r);
 //            submit(issue);
-//            issue.refresh();
 //            assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
 //            assertEquals(r, issue.getFieldValue(IssueField.RESOLUTION));
 //        }
@@ -375,14 +481,12 @@ public class IssueTest extends NbTestCase implements TestConstants {
 
         issue.duplicate("1");
         submit(issue);
-        issue.refresh();
 
         assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
         assertEquals("DUPLICATE", issue.getFieldValue(IssueField.RESOLUTION));
 
         issue.reopen();
         submit(issue);
-        issue.refresh();
         assertEquals("REOPENED", issue.getFieldValue(IssueField.STATUS));
         assertEquals("", issue.getFieldValue(IssueField.RESOLUTION));
 
@@ -401,7 +505,6 @@ public class IssueTest extends NbTestCase implements TestConstants {
 
         issue.reassigne("dil2@dil.com");
         submit(issue);
-        issue.refresh();
 
         assertEquals("dil2@dil.com", issue.getFieldValue(IssueField.ASSIGNED_TO));
     }
@@ -415,16 +518,26 @@ public class IssueTest extends NbTestCase implements TestConstants {
         assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
         assertEquals("dil@dil.com", issue.getFieldValue(IssueField.ASSIGNED_TO));
 
+        setSeen(issue);
+
         // add comment
         String comment = "koment";
         issue.addComment(comment);
         submit(issue);
-        issue.refresh();
+        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.COMMENT_COUNT);
 
         // get comment
         Comment[] comments = issue.getComments();
         assertEquals(1, comments.length);
         assertEquals(comment, issue.getComments()[0].getText());
+
+        setSeen(issue);
+
+        // one more comment
+        comment = "1 more koment";
+        issue.addComment(comment);
+        submit(issue);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.COMMENT_COUNT);
     }
 
     public void testAddCommentClose() throws Throwable {
@@ -459,9 +572,11 @@ public class IssueTest extends NbTestCase implements TestConstants {
             assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
             assertEquals("dil@dil.com", issue.getFieldValue(IssueField.ASSIGNED_TO));
 
+            setSeen(issue);
+
             // add attachment
-            String atttext = "my first attchement";
-            String attcomment = "my first attchement";
+            String atttext = "my first attachement";
+            String attcomment = "my first attachement";
             String attdesc = "file containing text";
             File f = getAttachmentFile(atttext);
             issue.addAttachment(f, attcomment, attdesc, "text/plain");
@@ -471,6 +586,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
             Attachment[] atts = issue.getAttachments();
             assertEquals(1, atts.length);
             assertEquals(attdesc, atts[0].getDesc());
+            assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.ATTACHEMENT_COUNT);
 
             // get attachment data
             ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -478,9 +594,63 @@ public class IssueTest extends NbTestCase implements TestConstants {
             String fileConttents = os.toString();
             assertEquals(atttext, fileConttents);
 
+            setSeen(issue);
+            
+            // one more  attachment
+            atttext = "my second attachement";
+            attcomment = "my second attachement";
+            attdesc = "file containing text";
+            f = getAttachmentFile(atttext);
+            issue.addAttachment(f, attcomment, attdesc, "text/plain");
+            issue.refresh();
+
+            // get attachment
+            atts = issue.getAttachments();
+            assertEquals(2, atts.length);
+            assertEquals(attdesc, atts[0].getDesc());
+            assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.ATTACHEMENT_COUNT);
+
         } catch (Exception e) {
             TestUtil.handleException(e);
         }
+    }
+
+    public void testRemoveQA() {
+        fail("no idea how to do this !!!");
+    }
+
+    private void assertStatus(int expectedStatus, BugzillaIssue issue, IssueField f) {
+        int status = issue.getFieldStatus(f);
+        if(status != expectedStatus) {
+            fail("expected [" + getName(expectedStatus) + "], " +
+                 "was [" + getName(status)+ "] " +
+                 "because of value [" + issue.getFieldValue(f) + "] " +
+                 "vs [" + getSeenValue(issue, f) + "]");
+        }
+    }
+
+    private String getName(int s) {
+        switch(s) {
+            case BugzillaIssue.FIELD_STATUS_IRELEVANT:
+                return "Irelevant";
+            case BugzillaIssue.FIELD_STATUS_NEW :
+                return "New";
+            case BugzillaIssue.FIELD_STATUS_MODIFIED :
+                return "Modified";
+            case BugzillaIssue.FIELD_STATUS_UPTODATE :
+                return "Uptodate";
+            default :
+                throw new IllegalStateException("Wrong status " + s);
+        }
+    }
+
+    private String getSeenValue(BugzillaIssue issue, IssueField f) {
+        Map<String, String> m = getRepository().getIssuesCache().getSeenAttributes(issue.getID());
+        if(m == null) {
+            return "";
+        }
+        String ret = m.get(f.getKey());
+        return ret != null ? ret : "";
     }
 
     private BugzillaRepository getRepository() {
@@ -544,12 +714,26 @@ public class IssueTest extends NbTestCase implements TestConstants {
         return l.get(0);
     }
 
+    private void setSeen(BugzillaIssue issue) throws SecurityException, InterruptedException {
+        LogHandler lh = new LogHandler("finished storing issue");
+        Bugzilla.LOG.addHandler(lh);
+        issue.setSeen(true, true);
+        while (!lh.done) {
+            Thread.sleep(100);
+        }
+        for (IssueField f : IssueField.values()) {
+            // seen -> everything's uptodate
+            assertEquals(BugzillaIssue.FIELD_STATUS_UPTODATE, issue.getFieldStatus(f));
+        }
+    }
+
     private void submit(BugzillaIssue issue) throws Throwable {
         try {
             issue.submit();
         } catch (CoreException ex) {
             TestUtil.handleException(ex);
         }
+        issue.refresh();
     }
 
     private File getAttachmentFile(String content) throws Exception {
@@ -571,5 +755,22 @@ public class IssueTest extends NbTestCase implements TestConstants {
         } finally {
             try { if (fw != null) fw.close(); } catch (IOException iOException) { }
         }
+    }
+
+    private class LogHandler extends Handler {
+        private final String msg;
+        private boolean done = false;
+        public LogHandler(String msg) {
+            this.msg = msg;
+        }
+
+        @Override
+        public void publish(LogRecord record) {
+            if(!done) done = record.getMessage().startsWith(msg);
+        }
+        @Override
+        public void flush() { }
+        @Override
+        public void close() throws SecurityException { }
     }
 }
