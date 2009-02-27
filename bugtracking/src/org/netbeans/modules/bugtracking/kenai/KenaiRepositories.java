@@ -70,30 +70,22 @@ public class KenaiRepositories {
         return instance;
     }
 
-    Repository getRepository(ProjectHandle ph, QueryAccessorImpl qaImpl) {
-        Repository repository = map.get(ph.getId());
+    Repository getRepository(KenaiProject kp, ProjectHandle ph, QueryAccessorImpl qaImpl) {
+        Repository repository = map.get(kp.getName());
         if(repository != null) {
             return repository;
         }
         BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        KenaiProject kp = null;
         for (BugtrackingConnector c : connectors) {
             KenaiSupport support = c.getKenaiSupport();
             if(support != null) {
-                if(kp == null) {
-                    kp = getKenaiProject(ph);
-                    if(kp == null) {
-                        // XXX log!
-                        return null;
-                    }
-                }
                 repository = support.createRepository(kp);
                 if(repository != null) {
                     // XXX what if more repos?!
-                    if(qaImpl != null) {
+                    if((qaImpl != null) && (ph != null)) {
                         repository.addPropertyChangeListener(new RepositoryListener(repository, ph, qaImpl));
                     }
-                    map.put(ph.getId(), repository);
+                    map.put(kp.getName(), repository);
                     return repository;
                 }
             }
@@ -102,7 +94,16 @@ public class KenaiRepositories {
     }
 
     public Repository getRepository(ProjectHandle ph) {
-        return getRepository(ph, null);
+        KenaiProject kp = getKenaiProject(ph);
+        if(kp == null) {
+            // XXX log!
+            return null;
+        }
+        return getRepository(kp, null, null);
+    }
+
+    public Repository getRepository(KenaiProject kp) {
+        return getRepository(kp, null, null);
     }
 
     private class RepositoryListener implements PropertyChangeListener {

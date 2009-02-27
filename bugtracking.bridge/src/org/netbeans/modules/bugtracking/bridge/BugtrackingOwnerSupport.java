@@ -39,13 +39,27 @@
 
 package org.netbeans.modules.bugtracking.bridge;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -68,6 +82,10 @@ public class BugtrackingOwnerSupport {
     }
     
     public Repository getRepository(File file) {
+        return getRepository(file, null);
+    }
+
+    public Repository getRepository(File file, String issueId) {
         // check cached values firts
         // XXX - todo
         // 1.) cache repository for a VCS topmostanagedParent
@@ -82,30 +100,132 @@ public class BugtrackingOwnerSupport {
         // its metadata eventually
         // 2.) store in cache
         if(repo == null) {
-            repo = getBugtrackingOwner(file);
+            repo = getBugtrackingOwner(file, issueId);
             LOG.log(Level.FINER, " caching repository [" + repo + "] for file " + file); // NOI18N
             fileToRepo.put(file, repo);
         }
 
-        // XXX
-        // 1.) there was no repository assotiated with the file
-        // neither does it belong to a kenai project ->
-        // -> ask user if he want's to create a new one
-        // 2.) store in cache
         return repo;
     }
 
-    // XXX dummy
-    private Repository getBugtrackingOwner(File file) {
-        Repository[] repos = BugtrackingUtil.getKnownRepositories();
-        
-        for (Repository r : repos) {
-            if(r.getDisplayName().indexOf("office") > -1) { // XXX
-                return r;
-            }
+    private Repository getBugtrackingOwner(File file, String issueId) {
+        FileObject fileObject = FileUtil.toFileObject(file);
+        if (fileObject == null) {
+            return null;
+        }
+
+        Object attValue = fileObject.getAttribute(
+                                   "ProvidedExtensions.RemoteLocation");//NOI18N
+        if (attValue instanceof String) {
+            //XXX - if we do not get any Repository, finish the search?
+            return getKenaiBugtrackingRepository(fileObject, (String) attValue);
+        }
+
+        VersioningSystem owner = VersioningSupport.getOwner(file);
+        if (owner == null) {
+            return null;
+        }
+
+        //XXX: should be the nearest managed ancestor (rather than topmost)
+        File topmostManagedAncestor = owner.getTopmostManagedAncestor(file);
+        if (topmostManagedAncestor == null) {
+            assert false;       //this should not happen
+            return null;
+        }
+
+        Repository repo = fileToRepo.get(topmostManagedAncestor);
+        if (repo != null) {
+            LOG.log(Level.FINER, " found cached repository [" + repo    //NOI18N
+                                 + "] for directory " + topmostManagedAncestor); //NOI18N
+            return repo;
+        }
+
+        repo = askUserToSpecifyRepository(fileObject, issueId);
+        if (repo != null) {
+            fileToRepo.put(topmostManagedAncestor, repo);
+            return repo;
         }
 
         return null;
+    }
+
+    private Repository getKenaiBugtrackingRepository(FileObject fileObj,
+                                                     String remoteLocation) {
+        try {
+            KenaiProject project = KenaiProject.forRepository(remoteLocation);
+            Repository repository = (project != null) ? getKenaiBugtrackingRepository(project)
+                                                      : null;
+            return repository;
+        } catch (KenaiException ex) {
+            LOG.throwing(getClass().getName(),     //class name
+                         "getBugtrackingOwner",    //method name        //NOI18N
+                         ex);
+            return null;
+        }
+    }
+
+    private Repository getKenaiBugtrackingRepository(KenaiProject project) {
+        return BugtrackingUtil.getKenaiBugtrackingRepository(project);
+    }
+
+    private Repository askUserToSpecifyRepository(FileObject file, String issueId) {
+        Repository[] repos = BugtrackingUtil.getKnownRepositories();
+        BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
+
+        final RepositorySelectorPanel selectorPanel = new RepositorySelectorPanel(repos, connectors);
+
+        final String dialogTitle = getMessage("LBL_BugtrackerSelectorTitle"); //NOI18N
+        final String selectButtonLabel = getMessage("CTL_Select");            //NOI18N
+
+        class ButtonActionListener implements ActionListener {
+            private Dialog dialog;
+            void setDialog(Dialog dialog) {
+                this.dialog = dialog;
+            }
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == selectButtonLabel) {
+                    boolean valuesAreValid = selectorPanel.validateValues();
+                    if (valuesAreValid) {
+                        assert dialog != null;
+                        dialog.setVisible(false);
+                        dialog.dispose();
+                    }
+                }
+            }
+        }
+
+        final ButtonActionListener actionListener = new ButtonActionListener();
+
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(selectorPanel,
+                             dialogTitle,
+                             true,
+                             new Object[] {selectButtonLabel, DialogDescriptor.CANCEL_OPTION},
+                             selectButtonLabel,
+                             DialogDescriptor.DEFAULT_ALIGN,
+                             null,      //HelpCtx
+                             actionListener);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        actionListener.setDialog(dialog);
+
+        dialog.pack();
+        dialog.setVisible(true);
+
+        if (dialogDescriptor.getValue() == selectButtonLabel) {
+            Repository repository = selectorPanel.getSelectedRepository();
+            try {
+                repository.getController().applyChanges();
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+                repository = null;
+            }
+            return repository;
+        } else {
+            return null;
+        }
+    }
+
+    private String getMessage(String msgKey) {
+        return NbBundle.getMessage(BugtrackingOwnerSupport.class, msgKey);
     }
 
 }

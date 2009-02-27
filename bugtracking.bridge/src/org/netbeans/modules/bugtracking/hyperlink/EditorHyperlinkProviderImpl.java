@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,11 +34,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.hyperlink;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.util.EnumSet;
 import java.util.List;
@@ -55,11 +56,12 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.IssueFinder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * 
@@ -84,8 +86,7 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
     }
 
     public void performClickAction(Document doc, int offset, HyperlinkType type) {
-        // XXX run async
-        String issueId = getIssueId(doc, offset, type);
+        final String issueId = getIssueId(doc, offset, type);
         if(issueId == null) return;
 
         DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
@@ -98,12 +99,24 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
         }
         if(file == null) return;
         
-        Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file);
+        final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId);
         if(repo == null) return;
 
-        Issue issue = repo.getIssue(issueId);
-        if(issue == null) return;
-        issue.open();
+        class IssueDisplayer implements Runnable {
+            private Issue issue = null;
+            public void run() {
+                if (issue == null) {
+                    issue = repo.getIssue(issueId);
+                    if (issue != null) {
+                        EventQueue.invokeLater(this);
+                    }
+                } else {
+                    assert EventQueue.isDispatchThread();
+                    issue.open();
+                }
+            }
+        }
+        RequestProcessor.getDefault().post(new IssueDisplayer());
     }
 
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
@@ -113,12 +126,14 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
     // XXX get/unify from/with hyperlink provider
     private String getIssueId(Document doc, int offset, HyperlinkType type) {
         int[] idx = getIssueSpan(doc, offset, type);
-        if(idx == null) return "";
+        if (idx == null) {
+            return null;
+        }
         String issueId = null;
         try {
             for (int i = 1; i < idx.length; i++) {
                 if(idx[i-1] <= offset && offset <= idx[i]) {
-                    issueId = doc.getText(idx[i-1], idx[i] - idx[i-1]);
+                    issueId = IssueFinder.getIssueNumber(doc.getText(idx[i-1], idx[i] - idx[i-1]));
                     break;
                 }
             }
@@ -145,8 +160,7 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
                 t.id().name().toUpperCase().indexOf("COMMENT") > -1)                    // consider this as a fallback
             {
                 String text = t.text().toString();
-                text = text.replace("\n", ""); // XXX hack
-                int[] span = BugtrackingUtil.getIssueSpans(text);
+                int[] span = IssueFinder.getIssueSpans(text);
                 for (int i = 1; i < span.length; i += 2) {
                     if(ts.offset() + span[i-1] <= offset && offset <= ts.offset() + span[i]) {
                         return new int[] {ts.offset() + span[i-1], ts.offset() + span[i]};

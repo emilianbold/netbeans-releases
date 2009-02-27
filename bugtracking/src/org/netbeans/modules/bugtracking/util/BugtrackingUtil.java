@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.util;
@@ -51,11 +51,14 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.windows.TopComponent;
@@ -136,6 +139,14 @@ public class BugtrackingUtil {
         return BugtrackingManager.getInstance().getKnownRepositories();
     }
 
+    public static BugtrackingConnector[] getBugtrackingConnectors() {
+        return BugtrackingManager.getInstance().getConnectors();
+    }
+
+    public static Repository getKenaiBugtrackingRepository(KenaiProject project) {
+        return KenaiRepositories.getInstance().getRepository(project);
+    }
+
     public static String scramble(String str) {
         return Scrambler.getInstance().scramble(str);
     }
@@ -144,7 +155,4 @@ public class BugtrackingUtil {
         return Scrambler.getInstance().descramble(str);
     }
 
-    public static int[] getIssueSpans(String text) {
-        return IssueFinder.getIssueSpans(text);
-    }
 }

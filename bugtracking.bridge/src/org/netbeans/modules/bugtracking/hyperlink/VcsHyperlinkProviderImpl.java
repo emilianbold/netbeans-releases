@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,18 +34,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.hyperlink;
 
+import java.awt.EventQueue;
 import java.io.File;
 import org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.IssueFinder;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Provides hyperlink functionality on issue reference in VCS artefects as e.g. log messages in Serach History
@@ -57,7 +59,7 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
 
     @Override
     public int[] getSpans(String text) {
-        return BugtrackingUtil.getIssueSpans(text);
+        return IssueFinder.getIssueSpans(text);
     }
 
     @Override
@@ -68,20 +70,31 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
     @Override
     public void onClick(File file, String text, int offsetStart, int offsetEnd) {
         // XXX run async
-        String issueId = getIssueId(text, offsetStart, offsetEnd);
+        final String issueId = getIssueId(text, offsetStart, offsetEnd);
         if(issueId == null) return;
 
-        Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file);
+        final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId);
         if(repo == null) return;
         
-        Issue issue = repo.getIssue(issueId);
-        if(issue == null) return;
-        
-        issue.open();
+        class IssueDisplayer implements Runnable {
+            private Issue issue = null;
+            public void run() {
+                if (issue == null) {
+                    issue = repo.getIssue(issueId);
+                    if (issue != null) {
+                        EventQueue.invokeLater(this);
+                    }
+                } else {
+                    assert EventQueue.isDispatchThread();
+                    issue.open();
+                }
+            }
+        }
+        RequestProcessor.getDefault().post(new IssueDisplayer());
     }
 
     private String getIssueId(String text, int offsetStart, int offsetEnd) {        
-        return text.substring(offsetStart, offsetEnd);
+        return IssueFinder.getIssueNumber(text.substring(offsetStart, offsetEnd));
     }
 
 }
