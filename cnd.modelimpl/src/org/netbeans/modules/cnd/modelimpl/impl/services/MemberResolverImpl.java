@@ -83,8 +83,8 @@ public final class MemberResolverImpl {
     }       
 
     private void getClassMembers(CsmClass cls, CharSequence name, List<CsmMember> res){
-        Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(cls,
-                    CsmSelect.getDefault().getFilterBuilder().createNameFilter(name.toString(), true, true, false));
+        Iterator<CsmMember> it = CsmSelect.getClassMembers(cls,
+                    CsmSelect.getFilterBuilder().createNameFilter(name.toString(), true, true, false));
         while(it.hasNext()){
             CsmMember m = it.next();
             if (CsmSortUtilities.matchName(m.getName(), name, true, true)){

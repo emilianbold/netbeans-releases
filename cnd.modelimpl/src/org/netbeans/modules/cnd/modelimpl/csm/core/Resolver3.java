@@ -113,8 +113,8 @@ public class Resolver3 implements Resolver {
     
     private void findContext() {
         contextFound = true;
-        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(0, offset);
-        findContext(CsmSelect.getDefault().getDeclarations(file, filter), filter);
+        CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(0, offset);
+        findContext(CsmSelect.getDeclarations(file, filter), filter);
     }
     
     private Set<CsmFile> visitedFiles = new HashSet<CsmFile>();
@@ -261,7 +261,7 @@ public class Resolver3 implements Resolver {
                 CsmNamespaceDefinition nd = (CsmNamespaceDefinition) decl;
                 if( nd.getStartOffset() < this.offset && this.offset < nd.getEndOffset()  ) {
                     containingNamespace = nd.getNamespace();
-                    findContext(CsmSelect.getDefault().getDeclarations(nd, filter), filter);
+                    findContext(CsmSelect.getDeclarations(nd, filter), filter);
                 }
             } else if(   decl.getKind() == CsmDeclaration.Kind.CLASS
                     || decl.getKind() == CsmDeclaration.Kind.STRUCT
@@ -391,8 +391,8 @@ public class Resolver3 implements Resolver {
         }
         visitedFiles.add(file);
         
-        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(0, offset);
-        Iterator<CsmInclude> iter = CsmSelect.getDefault().getIncludes(file, filter);
+        CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(0, offset);
+        Iterator<CsmInclude> iter = CsmSelect.getIncludes(file, filter);
         while (iter.hasNext()){
             CsmInclude inc = iter.next();
             CsmFile incFile = inc.getIncludeFile();
@@ -403,7 +403,7 @@ public class Resolver3 implements Resolver {
                 offset = oldOffset;
             }
         }
-        gatherMaps(CsmSelect.getDefault().getDeclarations(file, filter));
+        gatherMaps(CsmSelect.getDeclarations(file, filter));
     }
     
     protected void gatherMaps(Iterable<? extends CsmObject> declarations) {
@@ -447,8 +447,8 @@ public class Resolver3 implements Resolver {
     
     private CsmClassifier findNestedClassifier(CsmClassifier clazz) {
         if (CsmKindUtilities.isClass(clazz)) {
-            Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers((CsmClass)clazz,
-                    CsmSelect.getDefault().getFilterBuilder().createNameFilter(currName().toString(), true, true, false));
+            Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass)clazz,
+                    CsmSelect.getFilterBuilder().createNameFilter(currName().toString(), true, true, false));
             while(it.hasNext()) {
                 CsmMember member = it.next();
                 if( CharSequenceKey.Comparator.compare(currName(),member.getName())==0 ) {
@@ -462,10 +462,10 @@ public class Resolver3 implements Resolver {
     }
     
     private void doProcessTypedefsInUpperNamespaces(CsmNamespaceDefinition nsd) {
-        CsmFilter filter =  CsmSelect.getDefault().getFilterBuilder().createKindFilter(
+        CsmFilter filter =  CsmSelect.getFilterBuilder().createKindFilter(
                                   CsmDeclaration.Kind.NAMESPACE_DEFINITION,
                                   CsmDeclaration.Kind.TYPEDEF);
-        for (Iterator iter = CsmSelect.getDefault().getDeclarations(nsd, filter); iter.hasNext();) {
+        for (Iterator iter = CsmSelect.getDeclarations(nsd, filter); iter.hasNext();) {
             CsmDeclaration decl = (CsmDeclaration) iter.next();
             if( decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
                 processTypedefsInUpperNamespaces((CsmNamespaceDefinition) decl);

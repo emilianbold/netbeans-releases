@@ -595,7 +595,7 @@ abstract public class CsmCompletionQuery {
             return null;
         }
         CsmClass cls = (CsmClass) classifier;
-        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter("operator " + opKind.getImage(), false, true, false); // NOI18N
+        CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter("operator " + opKind.getImage(), false, true, false); // NOI18N
         return getOperatorCheckBaseClasses(cls, contextFile, filter, opKind, new AntiLoop());
     }
 
@@ -604,7 +604,7 @@ abstract public class CsmCompletionQuery {
             return null;
         }
         antiLoop.add(cls);
-        Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(cls, filter);
+        Iterator<CsmMember> it = CsmSelect.getClassMembers(cls, filter);
         while (it.hasNext()) {
             CsmMember member = it.next();
             if (CsmKindUtilities.isOperator(member)) {

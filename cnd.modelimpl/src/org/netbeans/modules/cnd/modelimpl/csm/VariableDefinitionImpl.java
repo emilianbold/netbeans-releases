@@ -196,13 +196,13 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 	if( def == null ) {
 	    CsmObject owner = findOwner();
 	    if( owner instanceof CsmClass ) {
-                CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(), true, true, false);
-		def = findByName(CsmSelect.getDefault().getClassMembers((CsmClass)owner, filter), getName());
+                CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(getName().toString(), true, true, false);
+		def = findByName(CsmSelect.getClassMembers((CsmClass)owner, filter), getName());
 	    }  else if( owner instanceof CsmNamespace ) {
-                CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createCompoundFilter(
-                         CsmSelect.getDefault().getFilterBuilder().createKindFilter(CsmDeclaration.Kind.VARIABLE),
-                         CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(), true, true, false));
-                Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(((CsmNamespace)owner), filter);
+                CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
+                         CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.VARIABLE),
+                         CsmSelect.getFilterBuilder().createNameFilter(getName().toString(), true, true, false));
+                Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(((CsmNamespace)owner), filter);
                 while (it.hasNext()) {
                     def = it.next();
                 }

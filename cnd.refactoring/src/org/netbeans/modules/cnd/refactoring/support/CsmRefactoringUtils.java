@@ -348,8 +348,8 @@ public final class CsmRefactoringUtils {
     public static CsmObject findInnerFileObject(CsmFile file, int offset) {
         assert (file != null) : "can't be null file in findInnerFileObject";
         // check file declarations
-        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(offset);
-        CsmObject lastObject = findInnerDeclaration(CsmSelect.getDefault().getDeclarations(file, filter), offset);
+        CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(offset);
+        CsmObject lastObject = findInnerDeclaration(CsmSelect.getDeclarations(file, filter), offset);
 //        // check macros if needed
 //        lastObject = lastObject != null ? lastObject : findObject(file.getMacros(), context, offset);
         return lastObject;
