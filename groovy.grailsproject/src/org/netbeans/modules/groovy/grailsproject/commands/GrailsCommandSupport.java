@@ -335,13 +335,17 @@ public final class GrailsCommandSupport {
         private final GrailsProject project;
         private final boolean debug;
 
+        private boolean running;
+
         public ServerURLProcessor(GrailsProject project, boolean debug) {
             this.project = project;
             this.debug = debug;
         }
 
         public void processLine(String line) {
-            if (line.contains("Browse to http:/")) {
+            if (!running && line.contains("Browse to http://")) {
+                running = true;
+
                 String urlString = line.substring(line.indexOf("http://"));
 
                 URL url;

@@ -34,10 +34,12 @@
     -->
     <folder name="Toolbars">
         <folder name="Build">
+            <!--
             <file name="org-netbeans-modules-cnd-gizmo-actions-StartGizmoAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/DLight/org-netbeans-modules-cnd-gizmo-actions-StartGizmoAction.instance"/>
                 <attr name="position" intvalue="0"/>
             </file>
+            -->
         </folder>
     </folder>
 

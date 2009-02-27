@@ -215,9 +215,10 @@ public class CsmDisplayUtilities {
                     tooltipText = getHtmlizedString("DSC_PosMacroTooltip", macro.getName(), macro.getText()); // NOI18N
                     break;
                 case USER_SPECIFIED:
-                default:
                     tooltipText = getHtmlizedString("DSC_ProjectMacroTooltip", macro.getName(), macro.getText()); // NOI18N
                     break;
+                default:
+                    throw new IllegalArgumentException("unexpected macro kind:" + macro.getKind() + " in macro:" + macro); // NOI18N
             }
         } else if (CsmKindUtilities.isInclude(item)) {
             CsmInclude incl = (CsmInclude)item;
