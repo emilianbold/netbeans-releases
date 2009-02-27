@@ -337,7 +337,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
 //    }
 
 
-    public void testAddAttachement() throws Throwable {
+    public void testAddAttachment() throws Throwable {
         try {
             long ts = System.currentTimeMillis();
             String summary = "somary" + ts;
