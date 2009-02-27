@@ -62,7 +62,7 @@ public class ChatNotifications {
 
     private static ChatNotifications instance;
 
-    private HashMap<String, Room> groupMessages = new HashMap<String, Room>();
+    private HashMap<String, MessagingHandleImpl> groupMessages = new HashMap<String, MessagingHandleImpl>();
     
     private ChatNotifications() {
     }
@@ -75,9 +75,9 @@ public class ChatNotifications {
     }
 
     public void removeGroup(String name) {
-        Room r=groupMessages.get(name);
+        MessagingHandleImpl r=groupMessages.get(name);
         if (r!=null) {
-            r.notification.dispose();
+            r.disposeNotification();
             groupMessages.remove(r);
         }
     }
@@ -85,17 +85,12 @@ public class ChatNotifications {
     void addGroupMessage(Message msg) {
         assert !SwingUtilities.isEventDispatchThread();
         final String chatRoomName = StringUtils.parseName(msg.getFrom());
-        Room r = groupMessages.get(chatRoomName);
-        final int count;
-        if (r!=null) {
-            count = r.msgCount+1;
-            r.notification.dispose();
-        } else {
-            count=1;
-        }
+        final MessagingHandleImpl r = getMessagingHandle(chatRoomName);
+        r.setMessageCount(r.getMessageCount()+1);
+        r.disposeNotification();
         String t=null;
         try {
-            t = NbBundle.getMessage(ChatTopComponent.class, "LBL_GroupChatNotification",new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), count});
+            t = NbBundle.getMessage(ChatTopComponent.class, "LBL_GroupChatNotification", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), r.getMessageCount()});
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -116,7 +111,7 @@ public class ChatNotifications {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 Notification n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, l, Priority.NORMAL);
-                groupMessages.put(chatRoomName, new Room(count, n));
+                r.setNotification(n);
             }
         });
 
@@ -126,25 +121,17 @@ public class ChatNotifications {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    int getMessageCountFor(String name) {
-        Room room = groupMessages.get(name);
-        if (room!=null) {
-            return room.msgCount;
+    public synchronized  MessagingHandleImpl getMessagingHandle(String id) {
+        MessagingHandleImpl handle=groupMessages.get(id);
+        if (handle==null) {
+            handle =new MessagingHandleImpl();
+            groupMessages.put(id, handle);
         }
-        return 0;
+        return handle;
     }
 
     private Icon getIcon() {
         return null;
-    }
-
-    private class Room {
-        private int msgCount;
-        private Notification notification;
-        private Room(int count, Notification n) {
-            msgCount=count;
-            this.notification=n;
-        }
     }
 }
 

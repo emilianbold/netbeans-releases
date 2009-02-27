@@ -175,8 +175,18 @@ public class ChatTopComponent extends TopComponent {
     }
 
 
-    public void setActive(String parseName) {
-        chats.setSelectedIndex(chats.indexOfTab(parseName));
+    public void setActive(String name) {
+        ChatNotifications.getDefault().removeGroup(name);
+        final int indexOfTab = chats.indexOfTab(name);
+        if (indexOfTab < 0) {
+            MultiUserChat muc = KenaiConnection.getDefault().getChat(name);
+            if (muc != null) {
+                ChatPanel chatPanel = new ChatPanel(muc);
+                addChat(chatPanel);
+            }
+
+        }
+        chats.setSelectedIndex(indexOfTab);
     }
 
 
@@ -184,6 +194,7 @@ public class ChatTopComponent extends TopComponent {
         ChatNotifications.getDefault().removeGroup(chatPanel.getName());
         chats.addTab(chatPanel.getName(),chatPanel);
         open.add(chatPanel.getName());
+        validate();
         StringBuffer b= new StringBuffer();
         Iterator<String> it = open.iterator();
         while (it.hasNext()) {

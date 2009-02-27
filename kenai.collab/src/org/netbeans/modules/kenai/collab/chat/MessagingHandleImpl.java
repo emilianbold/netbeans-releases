@@ -41,8 +41,8 @@ package org.netbeans.modules.kenai.collab.chat;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
+import org.openide.awt.Notification;
 
 /**
  *
@@ -51,20 +51,50 @@ import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
 public class MessagingHandleImpl extends MessagingHandle {
 
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    private MultiUserChat muc;
+    private Notification notification;
+    private int onlineCount;
+    private int messageCount;
 
-    MessagingHandleImpl(MultiUserChat chat) {
-        this.muc=chat;
+    MessagingHandleImpl() {
     }
-
-    @Override
-    public int getOnlineCount() {
-        return this.muc.getOccupantsCount();
-    }
-
-    @Override
+    /**
+     * Get the value of messageCount
+     *
+     * @return the value of messageCount
+     */
     public int getMessageCount() {
-         return ChatNotifications.getDefault().getMessageCountFor(muc.getRoom());
+        return messageCount;
+    }
+
+    /**
+     * Set the value of messageCount
+     *
+     * @param messageCount new value of messageCount
+     */
+    public void setMessageCount(int messageCount) {
+        int oldMessageCount = this.messageCount;
+        this.messageCount = messageCount;
+        propertyChangeSupport.firePropertyChange(PROP_MESSAGE_COUNT, oldMessageCount, messageCount);
+    }
+
+    /**
+     * Get the value of onlineCount
+     *
+     * @return the value of onlineCount
+     */
+    public int getOnlineCount() {
+        return onlineCount;
+    }
+
+    /**
+     * Set the value of onlineCount
+     *
+     * @param onlineCount new value of onlineCount
+     */
+    public void setOnlineCount(int onlineCount) {
+        int oldOnlineCount = this.onlineCount;
+        this.onlineCount = onlineCount;
+        propertyChangeSupport.firePropertyChange(PROP_ONLINE_COUNT, oldOnlineCount, onlineCount);
     }
 
     /**
@@ -85,5 +115,17 @@ public class MessagingHandleImpl extends MessagingHandle {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
+    public Notification getNotification() {
+        return notification;
+    }
 
+    public void setNotification(Notification notification) {
+        this.notification = notification;
+    }
+
+    void disposeNotification() {
+        if (notification!=null)
+            notification.dispose();
+        setMessageCount(0);
+    }
 }

@@ -67,7 +67,6 @@ public class PresenceIndicator {
 
     private JLabel label;
     private MouseL helper;
-    private HashSet<String> onlineUsers = new HashSet();
 
     public static enum Status {
         ONLINE,
@@ -115,36 +114,48 @@ public class PresenceIndicator {
         }
     }
 
+    private static RequestProcessor presenceUpdater = new RequestProcessor();
+
+
     public class PresenceListener implements PacketListener {
-        private String tip;
+        private RequestProcessor.Task task;
+        public PresenceListener() {
+            task = presenceUpdater.create(new Runnable() {
+
+                public void run() {
+                    HashSet<String> onlineUsers = new HashSet();
+                    StringBuffer tipBuffer = new StringBuffer();
+                    tipBuffer.append("<html><body>");
+
+                    for (MultiUserChat muc : KenaiConnection.getDefault().getChats()) {
+                        String displayName = null;
+                        displayName = StringUtils.parseName(muc.getRoom());
+                        tipBuffer.append("<b>" + displayName + "</b><br>");
+                        Iterator<String> i = muc.getOccupants();
+                        ChatNotifications.getDefault().getMessagingHandle(displayName).setOnlineCount(muc.getOccupantsCount());
+                        while (i.hasNext()) {
+                            String uname = StringUtils.parseResource(i.next());
+                            onlineUsers.add(uname);
+                            tipBuffer.append(uname + "<br>");
+                        }
+                    }
+                    tipBuffer.append("</body></html>");
+                    if (onlineUsers.size() == 0) {
+                        setStatus(Status.OFFLINE);
+                    } else {
+                        label.setToolTipText(tipBuffer.toString());
+                        label.setText(String.valueOf(onlineUsers.size()));
+                    }
+
+                }
+            });
+        }
 
         /**
          * @param packet
          */
         public void processPacket(Packet packet) {
-            onlineUsers.clear();
-            StringBuffer tipBuffer = new StringBuffer();
-            tipBuffer.append("<html><body>");
-
-            for (MultiUserChat muc :KenaiConnection.getDefault().getChats()) {
-                String displayName = null;
-                displayName = StringUtils.parseName(muc.getRoom());
-                tipBuffer.append("<b>"+displayName+"</b><br>");
-                Iterator<String> i = muc.getOccupants();
-                while(i.hasNext()) {
-                    String uname = StringUtils.parseResource(i.next());
-                    onlineUsers.add(uname);
-                    tipBuffer.append(uname + "<br>");
-                }
-            }
-            tipBuffer.append("</body></html>");
-            this.tip=tipBuffer.toString();
-            if (onlineUsers.size()==0) {
-                setStatus(Status.OFFLINE);
-            } else {
-                label.setToolTipText(this.tip);
-                label.setText(String.valueOf(onlineUsers.size()));
-            }
+            task.schedule(100);
         }
     }
 }

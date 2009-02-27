@@ -68,6 +68,7 @@ public class RestConnection {
         //set the identification of the client
         System.setProperty("http.agent", System.getProperty("user.name") + " (from NetBeans IDE)");
     }
+    public static final int TIMEOUT = 30 * 1000;
     private HttpURLConnection conn;
     private String date;
 
@@ -99,6 +100,7 @@ public class RestConnection {
                 conn.setUseCaches(false);
                 conn.setDefaultUseCaches(false);
                 conn.setAllowUserInteraction(true);
+                conn.setConnectTimeout(TIMEOUT);
                 //TODO: KenaiAuthenticator not working. Why?
                 //this is just workaround this should be implemented properly
                 PasswordAuthentication a = Kenai.getDefault().getPasswordAuthentication();

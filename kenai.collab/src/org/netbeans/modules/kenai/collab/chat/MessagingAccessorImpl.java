@@ -55,16 +55,17 @@ public class MessagingAccessorImpl extends MessagingAccessor {
 
     @Override
     public MessagingHandle getMessaging(ProjectHandle project) {
-        return new MessagingHandleImpl(KenaiConnection.getDefault().getChat(project.getId()));
+        return ChatNotifications.getDefault().getMessagingHandle(project.getId());
     }
 
     @Override
     public ActionListener getOpenMessagesAction(final ProjectHandle project) {
         return new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
-                final ChatTopComponent aDefault = ChatTopComponent.getDefault();
-                aDefault.requestActive();
-                aDefault.setActive(project.getId());
+                final ChatTopComponent chatTC = ChatTopComponent.getDefault();
+                chatTC.open();
+                chatTC.requestActive();
+                chatTC.setActive(project.getId());
             }
         };
     }
