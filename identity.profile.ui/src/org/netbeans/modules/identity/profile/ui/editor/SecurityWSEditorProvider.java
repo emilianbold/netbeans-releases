@@ -51,8 +51,8 @@
 package org.netbeans.modules.identity.profile.ui.editor;
 
 import org.netbeans.modules.identity.profile.ui.support.J2eeProjectHelper;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
+import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
 import org.openide.nodes.Node;
 
 /**
@@ -62,7 +62,7 @@ import org.openide.nodes.Node;
  *
  * @author Vidhya Narayanan
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider.class)
 public class SecurityWSEditorProvider implements WSEditorProvider {
 
     /** Creates a new instance of SecurityWSEditorProvider */

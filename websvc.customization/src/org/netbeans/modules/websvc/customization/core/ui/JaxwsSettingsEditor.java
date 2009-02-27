@@ -48,7 +48,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.project.config.WsimportOption;
 import org.netbeans.modules.websvc.api.jaxws.project.config.WsimportOptions;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.customization.jaxwssettings.panel.WsimportOptionsPanel;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;

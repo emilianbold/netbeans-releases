@@ -75,7 +75,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
 import org.netbeans.modules.websvc.wsitconf.ui.service.BindingPanel;
 import org.netbeans.modules.xml.xam.ModelSource;

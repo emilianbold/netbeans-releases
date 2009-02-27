@@ -40,7 +40,7 @@
  */
 
 /*
- * WSEditor.java
+ * WSEditorProvider.java
  *
  * Created on March 9, 2006, 2:38 PM
  *
@@ -48,40 +48,23 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.websvc.core.wseditor.spi;
+package org.netbeans.modules.websvc.spi.wseditor;
 
-import javax.swing.JComponent;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.openide.nodes.Node;
 
 /**
  *
  * @author Roderico Cruz
  */
-public interface WSEditor {
-    /**
-     * Return the main panel of the editor
+public interface WSEditorProvider {
+     /**
+     * This is used to determine if this editor should be displayed
      */
-    JComponent createWSEditorComponent(Node node, JaxWsModel jaxWsModel);   
-
-    /**
-     * The title text that will be displayed in the tab corresponding
-     * to the editor.
-     */
-    String getTitle();
+    boolean enable(Node node);
     
-    /**
-     * This is called when the OK button is selected 
+    /*
+     * Create an instance of the editor component
      */
-    void save(Node node, JaxWsModel jaxWsModel);
-    
-    /**
-     * This is called when the Cancel button is selected
-     */
-    void cancel(Node node, JaxWsModel jaxWsModel);
-    
-    /**
-     *  Provides a description text that will be displayed at the top of the editor
-     */
-    String getDescription();
+     WSEditor createWSEditor();
 }
