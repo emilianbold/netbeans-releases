@@ -448,7 +448,7 @@ public class Resolver3 implements Resolver {
     private CsmClassifier findNestedClassifier(CsmClassifier clazz) {
         if (CsmKindUtilities.isClass(clazz)) {
             Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass)clazz,
-                    CsmSelect.getFilterBuilder().createNameFilter(currName().toString(), true, true, false));
+                    CsmSelect.getFilterBuilder().createNameFilter(currName(), true, true, false));
             while(it.hasNext()) {
                 CsmMember member = it.next();
                 if( CharSequenceKey.Comparator.compare(currName(),member.getName())==0 ) {

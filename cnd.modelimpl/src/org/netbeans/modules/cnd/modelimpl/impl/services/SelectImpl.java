@@ -323,7 +323,7 @@ public class SelectImpl implements CsmSelectProvider {
         }
 
         @SuppressWarnings("unchecked")
-        public CsmFilter createNameFilter(final String strPrefix, final boolean match, final boolean caseSensitive, final boolean allowEmptyName) {
+        public CsmFilter createNameFilter(final CharSequence strPrefix, final boolean match, final boolean caseSensitive, final boolean allowEmptyName) {
             return new NameFilterImpl(allowEmptyName, strPrefix, match, caseSensitive);
         }
 
@@ -371,11 +371,11 @@ public class SelectImpl implements CsmSelectProvider {
 
         private static class NameFilterImpl implements Filter {
             private final boolean allowEmptyName;
-            private final String strPrefix;
+            private final CharSequence strPrefix;
             private final boolean match;
             private final boolean caseSensitive;
             
-            public NameFilterImpl(boolean allowEmptyName, String strPrefix, boolean match, boolean caseSensitive) {
+            public NameFilterImpl(boolean allowEmptyName, CharSequence strPrefix, boolean match, boolean caseSensitive) {
                 this.allowEmptyName = allowEmptyName;
                 this.strPrefix = strPrefix;
                 this.match = match;

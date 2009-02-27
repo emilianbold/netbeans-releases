@@ -196,12 +196,12 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 	if( def == null ) {
 	    CsmObject owner = findOwner();
 	    if( owner instanceof CsmClass ) {
-                CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(getName().toString(), true, true, false);
+                CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false);
 		def = findByName(CsmSelect.getClassMembers((CsmClass)owner, filter), getName());
 	    }  else if( owner instanceof CsmNamespace ) {
                 CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
                          CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.VARIABLE),
-                         CsmSelect.getFilterBuilder().createNameFilter(getName().toString(), true, true, false));
+                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
                 Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(((CsmNamespace)owner), filter);
                 while (it.hasNext()) {
                     def = it.next();

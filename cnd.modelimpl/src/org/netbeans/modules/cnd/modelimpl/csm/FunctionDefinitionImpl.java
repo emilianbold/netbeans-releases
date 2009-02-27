@@ -155,14 +155,14 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
             CsmObject owner = findOwner(parent);
             if (owner instanceof CsmClass) {
                 Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass) owner,
-                        CsmSelect.getFilterBuilder().createNameFilter(getName().toString(), true, true, false));
+                        CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
                 def = findByName(it, getName());
                 if (def == null && isOperator()) {
                     def = fixCastOperator((CsmClass)owner);
                 }
             } else if (owner instanceof CsmNamespace) {
                 Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(((CsmNamespace) owner),
-                        CsmSelect.getFilterBuilder().createNameFilter(getName().toString(), true, true, false));
+                        CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
                 def = findByName(it, getName());
             }
         }

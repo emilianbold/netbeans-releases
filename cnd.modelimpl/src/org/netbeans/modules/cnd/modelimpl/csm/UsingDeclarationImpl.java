@@ -117,7 +117,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                 if (namespace != null) {
                     CharSequence lastName = rawName[rawName.length - 1];
                     CsmDeclaration bestChoice = null;
-                    CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(lastName.toString(), true, true, false);
+                    CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(lastName, true, true, false);
 
                     // we should try searching not only in namespace resolved found,
                     // but in numspaces with the same name in required projects
