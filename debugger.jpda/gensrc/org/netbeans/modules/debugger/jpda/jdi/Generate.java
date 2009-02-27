@@ -498,19 +498,23 @@ public class Generate {
         }
         w.write(" {\n");
         w.write("        try {\n");
+
+        StringBuffer exec = new StringBuffer();
         if (!"void".equals(rType)) {
-            w.write("            return ");
+            exec.append("            return ");
         } else {
-            w.write("            ");
+            exec.append("            ");
         }
-        w.write("a."+mName+"(");
+        exec.append("a."+mName+"(");
         for (int i = 0; i < paramNames.length; i++) {
             if (i > 0) {
-                w.write(", ");
+                exec.append(", ");
             }
-            w.write(paramNames[i]);
+            exec.append(paramNames[i]);
         }
-        w.write(");\n");
+        exec.append(");\n");
+        w.write(methodImpl(className, mName, exec.toString()));
+
         w.write("        }");
         /*// First re-throw the checked exceptions:
         for (int i = 0; i < exceptionTypes.length; i++) {
@@ -932,6 +936,24 @@ public class Generate {
         }
         if (index < l) return index;
         else return -1;
+    }
+
+    // Custom code can be provided here to override the original invocation
+    private static String methodImpl(String className, String methodName, String exec) {
+        if (com.sun.jdi.ThreadReference.class.getName().equals(className) && methodName.equals("popFrames")) {
+            String catchJDWPException = "            try {\n"+
+                                        "    "+exec+
+                                        "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                        "                if (iex.errorCode() == 32) { // OPAQUE_FRAME\n"+
+                                        "                    // "+com.sun.jdi.NativeMethodException.class.getSimpleName()+" should be thrown here!\n"+
+                                        "                    throw new "+com.sun.jdi.NativeMethodException.class.getName()+"(iex.getMessage());\n"+
+                                        "                } else {\n"+
+                                        "                    throw iex; // re-throw the original\n"+
+                                        "                }\n"+
+                                        "            }\n";
+            return catchJDWPException;
+        }
+        return exec;
     }
 
     public static void main(String[] args) {

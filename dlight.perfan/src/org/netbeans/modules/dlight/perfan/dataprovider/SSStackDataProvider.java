@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import org.netbeans.modules.dlight.perfan.util.TasksCachedProcessor;
 import org.netbeans.modules.dlight.perfan.util.Computable;
 import java.util.ArrayList;
@@ -55,11 +57,10 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
+import org.netbeans.modules.dlight.perfan.storage.impl.Metrics;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.util.CollectionToStringConvertor;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.openide.util.Exceptions;
 
 /**
  * This class suppose to be thread-safe.
@@ -87,12 +88,13 @@ class SSStackDataProvider implements StackDataProvider {
     private static final Logger log = DLightLogger.getLogger(SSStackDataProvider.class);
     private final Computable<HotSpotFunctionsFetcherParams, List<FunctionCall>> hotSpotFunctionsFetcher =
             new TasksCachedProcessor<HotSpotFunctionsFetcherParams, List<FunctionCall>>(new HotSpotFunctionsFetcher(), true);
-    int[] index = new int[]{1, 2, 3, 4};
     private List<FunctionMetric> metricsList = Arrays.asList(
             TimeMetric.UserFuncTimeExclusive,
             TimeMetric.UserFuncTimeInclusive,
             TimeMetric.SyncWaitCallInclusive,
-            TimeMetric.SyncWaitTimeInclusive);
+            TimeMetric.SyncWaitTimeInclusive,
+            MemoryMetric.LeakBytesMetric,
+            MemoryMetric.LeaksCountMetric);
     private PerfanDataStorage storage;
 
     private static enum CC_MODE {
@@ -158,7 +160,7 @@ class SSStackDataProvider implements StackDataProvider {
         try {
             return hotSpotFunctionsFetcher.compute(new HotSpotFunctionsFetcherParams(columns, orderBy, limit));
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            log.fine("HotSpotFunctionsFetcher interrupted."); // NOI18N
         }
 
         return Collections.emptyList();
@@ -201,10 +203,19 @@ class SSStackDataProvider implements StackDataProvider {
                 final List<Column> columns,
                 final List<Column> orderBy,
                 final int limit) {
+
+            if (columns == null) {
+                throw new NullPointerException();
+            }
+
+            if (columns.isEmpty()) {
+                throw new IllegalArgumentException("HotSpotFunctionsFetcherParams: empty columns list!"); // NOI18N
+            }
+
             this.columns = columns;
-            this.orderBy = orderBy;
+            this.orderBy = orderBy == null ? Arrays.asList(columns.get(0)) : orderBy;
             this.limit = limit;
-            this.metrics = MetricsHandler.getMetrics(columns, orderBy);
+            this.metrics = Metrics.constructFrom(columns, orderBy);
         }
 
         @Override
@@ -228,13 +239,19 @@ class SSStackDataProvider implements StackDataProvider {
     private class HotSpotFunctionsFetcher
             implements Computable<HotSpotFunctionsFetcherParams, List<FunctionCall>> {
 
+        private final DecimalFormat df = new DecimalFormat();
+
+        public HotSpotFunctionsFetcher() {
+            df.getDecimalFormatSymbols().setDecimalSeparator(',');
+        }
+
         public List<FunctionCall> compute(HotSpotFunctionsFetcherParams taskArguments) throws InterruptedException {
             log.fine("Started to fetch Hot Spot Functions"); // NOI18N
-            
+
             Metrics metrics = taskArguments.metrics;
 
             String[] er_result = storage.getTopFunctions(
-                    metrics.mspec, metrics.msort, taskArguments.limit);
+                    metrics, taskArguments.limit);
 
             if (er_result == null || er_result.length == 0) {
                 return Collections.emptyList();
@@ -243,101 +260,58 @@ class SSStackDataProvider implements StackDataProvider {
             int limit = Math.min(er_result.length, taskArguments.limit);
             ArrayList<FunctionCall> result = new ArrayList<FunctionCall>(limit);
 
+            int colCount = taskArguments.columns.size();
+            Column primarySortColumn = taskArguments.orderBy.get(0);
+
             for (int i = 0; i < limit; i++) {
-                String[] info = er_result[i].split("[ \t]+"); // NOI18N
-                String name = info[metrics.nameIdx];
+                String[] info = er_result[i].split("[ \t]+", colCount); // NOI18N
+                String name = info[colCount - 1];
                 Function f = new FunctionImpl(name, name.hashCode());
 
                 Map<FunctionMetric, Object> metricsValues =
                         new HashMap<FunctionMetric, Object>();
 
-                for (int midx = 0; midx < info.length; midx++) {
-                    if (midx == metrics.nameIdx) {
-                        continue;
+                // Will skip function if value of primary sorting metric == 0
+                boolean skipFunction = false;
+                
+                for (int midx = 0; midx < colCount - 1; midx++) {
+                    Column col = taskArguments.columns.get(midx);
+                    String colName = col.getColumnName();
+                    Class colClass = col.getColumnClass();
+                    FunctionMetric metric = getMetricInstance(colName);
+
+                    Object value = info[midx];
+                    try {
+                        Number nvalue = df.parse(info[midx]);
+
+                        if (col == primarySortColumn && nvalue.intValue() == 0) {
+                            skipFunction = true;
+                            break;
+                        }
+                        
+                        if (Integer.class == colClass) {
+                            value = new Integer(nvalue.intValue());
+                        } else if (Double.class == colClass) {
+                            value = new Double(nvalue.doubleValue());
+                        } else if (Float.class == colClass) {
+                            value = new Float(nvalue.floatValue());
+                        }
+
+                    } catch (ParseException ex) {
+                        // use plain info[midx]
                     }
-
-                    String columnData = info[midx];
-                    FunctionMetric metric = getMetricInstance(taskArguments.columns.get(midx).getColumnName());
-                    String svalue = columnData.replaceAll(",", "."); // NOI18N
-
-                    metricsValues.put(metric, Double.parseDouble(svalue));
+                    metricsValues.put(metric, value);
                 }
 
-                FunctionCallImpl fc = new FunctionCallImpl(f, metricsValues);
-                result.add(fc);
+                if (!skipFunction) {
+                    FunctionCallImpl fc = new FunctionCallImpl(f, metricsValues);
+                    result.add(fc);
+                }
             }
 
             log.fine("Done with Hot Spot Functions fetching"); // NOI18N
 
             return result;
-        }
-    }
-
-    private static class Metrics {
-
-        private final String mspec;
-        private final String msort;
-        private final int nameIdx;
-
-        public Metrics(String mspec, String msort, int nameIdx) {
-            this.mspec = mspec;
-            this.msort = msort;
-            this.nameIdx = nameIdx;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof Metrics)) {
-                throw new IllegalArgumentException();
-            }
-            Metrics o = (Metrics) obj;
-            return o.msort.equals(msort) && o.mspec.equals(mspec);
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 89 * hash + (this.mspec != null ? this.mspec.hashCode() : 0);
-            hash = 89 * hash + (this.msort != null ? this.msort.hashCode() : 0);
-            return hash;
-        }
-    }
-
-    private static class MetricsHandler {
-
-        private final static CollectionToStringConvertor<Column> convertor;
-
-
-        static {
-            convertor = new CollectionToStringConvertor<Column>(":", // NOI18N
-                    new CollectionToStringConvertor.Convertor<Column>() {
-
-                public String itemToString(Column item) {
-                    return item.getColumnName();
-                }
-            });
-        }
-
-        static Metrics getMetrics(List<Column> columns, List<Column> orderBy) {
-            String mspecResult = convertor.collectionToString(columns);
-            String msortResult = convertor.collectionToString(orderBy);
-
-            if ("".equals(msortResult)) { // NOI18N
-                msortResult = "i.user"; // NOI18N
-            }
-
-            int nameColumnIdx = -1;
-
-            for (int i = 0; i < columns.size(); i++) {
-                if (nameColumnIdx < 0 &&
-                        columns.get(i).getColumnName().equals("name")) { // NOI18N
-                    nameColumnIdx = i;
-                    break;
-                }
-            }
-
-            assert nameColumnIdx >= 0;
-            return new Metrics(mspecResult, msortResult, nameColumnIdx);
         }
     }
 }

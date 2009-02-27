@@ -150,7 +150,7 @@ public class GroovyLineBreakpoint extends Breakpoint {
         if (javalb != null) {
             javalb.setSuspend(s);
         }
-        firePropertyChange(PROP_SUSPEND, new Integer(old), new Integer(s));
+        firePropertyChange(PROP_SUSPEND, Integer.valueOf(old), Integer.valueOf(s));
     }
     
     /**
@@ -284,7 +284,7 @@ public class GroovyLineBreakpoint extends Breakpoint {
         if (javalb != null) {
             javalb.setLineNumber(ln);
         }
-        firePropertyChange(PROP_LINE_NUMBER, new Integer(old), new Integer(getLineNumber()));
+        firePropertyChange(PROP_LINE_NUMBER, Integer.valueOf(old), Integer.valueOf(getLineNumber()));
     }
     
     /**
