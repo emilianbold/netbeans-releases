@@ -43,6 +43,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +84,35 @@ public class IssueTest extends NbTestCase implements TestConstants {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void testStatusOpenIssue() throws MalformedURLException, CoreException, InterruptedException, IOException, Throwable {
+        long ts = System.currentTimeMillis();
+        String summary = "somary" + ts;
+        String id = TestUtil.createIssue(getRepository(), summary);
+        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+        assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
+
+        setSeen(issue);
+
+        String keyword = getKeyword(issue);
+        issue.setFieldValue(IssueField.KEYWORDS, keyword);
+        submit(issue);
+        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.KEYWORDS);
+
+        issue.open();
+
+        for (int i = 0; i < 100; i++) {
+            if(BugzillaIssue.FIELD_STATUS_NEW != issue.getFieldStatus(IssueField.KEYWORDS)) {
+                break;
+            }
+            Thread.sleep(500);
+        }
+
+        keyword = getKeyword(issue);
+        issue.setFieldValue(IssueField.KEYWORDS, keyword);
+        submit(issue);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.KEYWORDS);
     }
 
     public void testFields() throws Throwable {
@@ -595,7 +625,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
             assertEquals(atttext, fileConttents);
 
             setSeen(issue);
-            
+
             // one more  attachment
             atttext = "my second attachement";
             attcomment = "my second attachement";
