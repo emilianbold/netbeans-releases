@@ -111,6 +111,7 @@ public class CommentsPanel extends JPanel {
     }
 
     public void setIssue(BugzillaIssue issue) {
+        removeAll();
         this.issue = issue;
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);

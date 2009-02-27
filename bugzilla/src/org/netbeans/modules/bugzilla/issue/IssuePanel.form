@@ -21,8 +21,8 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jSeparator1" alignment="1" pref="669" max="32767" attributes="0"/>
-          <Component id="dummyCommentsPanel" alignment="0" pref="669" max="32767" attributes="0"/>
+          <Component id="jSeparator1" alignment="1" pref="462" max="32767" attributes="0"/>
+          <Component id="dummyCommentsPanel" alignment="0" pref="462" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
@@ -94,7 +94,7 @@
                           <Component id="qaContactField" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="scrollPane1" pref="495" max="32767" attributes="0"/>
+                  <Component id="scrollPane1" pref="344" max="32767" attributes="0"/>
                   <Component id="attachmentsPanel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -102,7 +102,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="headerLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="649" max="32767" attributes="0"/>
+              <EmptySpace pref="452" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -453,6 +453,9 @@
           <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.submitButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="submitButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="cancelButton">
       <Properties>

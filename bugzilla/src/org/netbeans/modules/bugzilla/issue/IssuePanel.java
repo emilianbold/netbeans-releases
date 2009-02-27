@@ -43,11 +43,15 @@ import java.awt.Color;
 import java.awt.Font;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import org.eclipse.core.runtime.CoreException;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -63,6 +67,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private BugzillaIssue issue;
     private CommentsPanel commentsPanel;
     private int resolvedIndex;
+    private Map<BugzillaIssue.IssueField,String> initialValues = new HashMap<BugzillaIssue.IssueField,String>();
 
     public IssuePanel() {
         initComponents();
@@ -105,6 +110,7 @@ public class IssuePanel extends javax.swing.JPanel {
             ccField.setText(issue.getFieldValue(BugzillaIssue.IssueField.CC));
             dependsField.setText(issue.getFieldValue(BugzillaIssue.IssueField.DEPENDS_ON));
             blocksField.setText(issue.getFieldValue(BugzillaIssue.IssueField.BLOCKS));
+            addCommentArea.setText(""); // NOI18N
             commentsPanel.setIssue(issue);
             updateFieldStatuses();
         } catch (CoreException cex) {
@@ -138,7 +144,6 @@ public class IssuePanel extends javax.swing.JPanel {
         updateFieldStatus(BugzillaIssue.IssueField.COMPONENT, componentLabel);
         updateFieldStatus(BugzillaIssue.IssueField.VERSION, versionLabel);
         updateFieldStatus(BugzillaIssue.IssueField.PLATFORM, platformLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.VERSION, versionLabel);
         updateFieldStatus(BugzillaIssue.IssueField.STATUS, statusLabel);
         updateFieldStatus(BugzillaIssue.IssueField.RESOLUTION, resolutionLabel);
         updateFieldStatus(BugzillaIssue.IssueField.PRIORITY, priorityLabel);
@@ -154,6 +159,7 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void updateFieldStatus(BugzillaIssue.IssueField field, JLabel label) {
+        initialValues.put(field, issue.getFieldValue(field));
         boolean highlight = (issue.getFieldStatus(field) != BugzillaIssue.IssueField.STATUS_UPTODATE);
         label.setOpaque(highlight);
         if (highlight) {
@@ -161,6 +167,20 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
+    private void storeFieldValue(BugzillaIssue.IssueField field, JComboBox combo) {
+        storeFieldValue(field, combo.getSelectedItem().toString());
+    }
+
+    private void storeFieldValue(BugzillaIssue.IssueField field, JTextField textField) {
+        storeFieldValue(field, textField.getText());
+    }
+
+    private void storeFieldValue(BugzillaIssue.IssueField field, String value) {
+        if (!value.equals(initialValues.get(field))) {
+            issue.setFieldValue(field, value);
+        }
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -295,6 +315,11 @@ public class IssuePanel extends javax.swing.JPanel {
         scrollPane1.setViewportView(addCommentArea);
 
         submitButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
+        submitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                submitButtonActionPerformed(evt);
+            }
+        });
 
         cancelButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.cancelButton.text")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -524,6 +549,39 @@ public class IssuePanel extends javax.swing.JPanel {
         addCommentArea.setText(""); // NOI18N
     }//GEN-LAST:event_cancelButtonActionPerformed
 
+    private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
+        storeFieldValue(BugzillaIssue.IssueField.PRODUCT, productCombo);
+        storeFieldValue(BugzillaIssue.IssueField.COMPONENT, componentCombo);
+        storeFieldValue(BugzillaIssue.IssueField.VERSION, versionCombo);
+        storeFieldValue(BugzillaIssue.IssueField.PLATFORM, platformCombo);
+        storeFieldValue(BugzillaIssue.IssueField.STATUS, statusCombo);
+        if (resolutionCombo.isVisible()) {
+            storeFieldValue(BugzillaIssue.IssueField.RESOLUTION, resolutionCombo);
+        } else {
+            storeFieldValue(BugzillaIssue.IssueField.RESOLUTION, ""); // NOI18N
+        }
+        storeFieldValue(BugzillaIssue.IssueField.PRIORITY, priorityCombo);
+        storeFieldValue(BugzillaIssue.IssueField.SEVERITY, severityCombo);
+        storeFieldValue(BugzillaIssue.IssueField.MILESTONE, targetMilestoneCombo);
+        storeFieldValue(BugzillaIssue.IssueField.URL, urlField);
+        storeFieldValue(BugzillaIssue.IssueField.KEYWORDS, keywordsField);
+        storeFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO, assignedField);
+        storeFieldValue(BugzillaIssue.IssueField.QA_CONTACT, qaContactField);
+        storeFieldValue(BugzillaIssue.IssueField.CC, ccField);
+        storeFieldValue(BugzillaIssue.IssueField.DEPENDS_ON, dependsField);
+        storeFieldValue(BugzillaIssue.IssueField.BLOCKS, blocksField);
+        // PENDING attachment modifications
+        try {
+            if (!"".equals(addCommentArea.getText().trim())) { // NOI18N
+                issue.addComment(addCommentArea.getText());
+            }
+            issue.submit();
+            issue.refresh();
+            setIssue(issue);
+        } catch (CoreException cex) {
+            cex.printStackTrace();
+        }
+    }//GEN-LAST:event_submitButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea addCommentArea;
