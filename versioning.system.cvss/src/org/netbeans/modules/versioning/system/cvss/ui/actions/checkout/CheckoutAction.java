@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.checkout;
 
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.versioning.system.cvss.ui.wizards.CheckoutWizard;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
@@ -50,29 +49,17 @@ import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.executor.CheckoutExecutor;
 import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.util.*;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.actions.SystemAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.ErrorManager;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import org.netbeans.modules.versioning.util.ProjectUtilities;
 
 /**
  * Shows checkout wizard, performs the checkout,
@@ -177,7 +164,7 @@ public final class CheckoutAction extends SystemAction {
         CheckoutExecutor executor = new CheckoutExecutor(cvs, cmd, gtx);
         group.addExecutor(executor);
         if (CvsModuleConfig.getDefault().getPreferences().getBoolean(SHOW_CHECKOUT_COMPLETED, true) && scanProject) {
-            group.addBarrier(new CheckoutCompletedController(executor, workingFolder, scanProject));
+            group.addBarrier(new CheckoutCompletedController(executor, workingFolder));
         }
 
         if (execute) {
@@ -187,20 +174,14 @@ public final class CheckoutAction extends SystemAction {
     }
 
     /** On task finish shows next steps UI.*/
-    private class CheckoutCompletedController implements Runnable, ActionListener {
+    private class CheckoutCompletedController implements Runnable {
 
         private final CheckoutExecutor executor;
         private final File workingFolder;
-        private final boolean openProject;
 
-        private CheckoutCompletedPanel panel;
-        private Dialog dialog;
-        private Project projectToBeOpened;
-
-        public CheckoutCompletedController(CheckoutExecutor executor, File workingFolder, boolean openProject) {
+        public CheckoutCompletedController(CheckoutExecutor executor, File workingFolder) {
             this.executor = executor;
             this.workingFolder = workingFolder;
-            this.openProject = openProject;
         }
 
         public void run() {
@@ -209,7 +190,8 @@ public final class CheckoutAction extends SystemAction {
                 return;
             }
 
-            List checkedOutProjects = new LinkedList();
+            Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
+            checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
             File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
             // checkout creates new folders and cache must be aware of them
             refreshRecursively(normalizedWorkingFolder);
@@ -220,76 +202,21 @@ public final class CheckoutAction extends SystemAction {
                 Iterator it = executor.getExpandedModules().iterator();
                 while (it.hasNext()) {
                     String module = (String) it.next();
-                    if (".".equals(module)) {  // NOI18N
-                        checkedOutProjects = ProjectUtilities.scanForProjects(fo);
+                    if (".".equals(module)) {                   // NOI18N
+                        // root folder is scanned, skip remaining modules
+                        ProjectUtilities.scanForProjects(fo, checkedOutProjects);
                         break;
                     } else {
                         FileObject subfolder = fo.getFileObject(module);
                         if (subfolder != null) {
                             executor.getGroup().progress(name);
-                            checkedOutProjects.addAll(ProjectUtilities.scanForProjects(subfolder));
+                            ProjectUtilities.scanForProjects(subfolder, checkedOutProjects);
                         }
                     }
                 }
             }
-
-            panel = new CheckoutCompletedPanel();
-            panel.openButton.addActionListener(this);
-            panel.createButton.addActionListener(this);
-            panel.closeButton.addActionListener(this);
-            panel.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
-            panel.againCheckBox.setVisible(openProject == false);
-            String title = NbBundle.getMessage(CheckoutAction.class, "BK1008");
-            DialogDescriptor descriptor = new DialogDescriptor(panel, title);
-            descriptor.setModal(true);
-
-            // move buttons from dialog to descriptor
-            panel.remove(panel.openButton);
-            panel.remove(panel.createButton);
-            panel.remove(panel.closeButton);
-
-            Object[] options = null;
-            if (checkedOutProjects.size() > 1) {
-                String msg = NbBundle.getMessage(CheckoutAction.class, "BK1009", new Integer(checkedOutProjects.size()));
-                panel.jLabel1.setText(msg);
-                options = new Object[] {
-                    panel.openButton,
-                    panel.closeButton
-                };
-            } else if (checkedOutProjects.size() == 1) {
-                Project project = (Project) checkedOutProjects.iterator().next();
-                projectToBeOpened = project;
-                ProjectInformation projectInformation = ProjectUtils.getInformation(project);
-                String projectName = projectInformation.getDisplayName();
-                String msg = NbBundle.getMessage(CheckoutAction.class, "BK1011", projectName);
-                panel.jLabel1.setText(msg);
-                panel.openButton.setText(NbBundle.getMessage(CheckoutAction.class, "BK1012"));
-                options = new Object[] {
-                    panel.openButton,
-                    panel.closeButton
-                };
-            } else {
-                String msg = NbBundle.getMessage(CheckoutAction.class, "BK1010");
-                panel.jLabel1.setText(msg);
-                options = new Object[] {
-                    panel.createButton,
-                    panel.closeButton
-                };
-
-            }
-
-            descriptor.setMessageType(DialogDescriptor.INFORMATION_MESSAGE);
-            descriptor.setOptions(options);
-            descriptor.setClosingOptions(options);
-            descriptor.setHelpCtx(new HelpCtx(CheckoutCompletedPanel.class));
-            dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-            dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CheckoutAction.class, "ACSD_CheckoutCompleted_Dialog"));
-
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    dialog.setVisible(true);
-                }
-            });
+            // open project selection
+            ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
         }
 
         /**
@@ -301,52 +228,6 @@ public final class CheckoutAction extends SystemAction {
             if (folder == null) return;
             refreshRecursively(folder.getParentFile());
             CvsVersioningSystem.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            Object src = e.getSource();
-            dialog.setVisible(false);
-            if (panel.openButton.equals(src)) {
-                // show project chooser
-                if (projectToBeOpened == null) {
-                    JFileChooser chooser = ProjectChooser.projectChooser();
-                    chooser.setCurrentDirectory(workingFolder);
-                    chooser.setMultiSelectionEnabled(true);
-                    chooser.showOpenDialog(dialog);
-                    File [] projectDirs = chooser.getSelectedFiles();
-                    for (int i = 0; i < projectDirs.length; i++) {
-                        File projectDir = projectDirs[i];
-                        FileObject projectFolder = FileUtil.toFileObject(projectDir);
-                        if (projectFolder != null) {
-                            try {
-                                Project p = ProjectManager.getDefault().findProject(projectFolder);
-                                if (p != null) {
-                                    openProject(p);
-                                }
-                            } catch (IOException e1) {
-                                ErrorManager err = ErrorManager.getDefault();
-                                err.annotate(e1, NbBundle.getMessage(CheckoutAction.class, "BK1014", projectFolder));
-                                err.notify(e1);
-                            }
-                        }
-                    }
-                } else {
-                    if (projectToBeOpened == null) return; 
-                    openProject(projectToBeOpened);
-                }
-
-            } else if (panel.createButton.equals(src)) {
-                ProjectUtilities.newProjectWizard(workingFolder);
-            }
-            if (panel.againCheckBox.isSelected()) {
-                CvsModuleConfig.getDefault().getPreferences().putBoolean(SHOW_CHECKOUT_COMPLETED, false);
-            }
-        }
-
-        private void openProject(Project p) {
-            Project[] projects = new Project[] {p};
-            OpenProjects.getDefault().open(projects, false);
-            ProjectUtilities.selectAndExpandProject(p);
         }
     }
 }
