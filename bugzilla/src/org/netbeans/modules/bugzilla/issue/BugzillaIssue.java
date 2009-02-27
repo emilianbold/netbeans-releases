@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import org.apache.commons.httpclient.HttpException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -81,6 +82,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public class BugzillaIssue extends Issue {
+
     private TaskData data;
     private BugzillaRepository repository;
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";
@@ -553,6 +555,7 @@ public class BugzillaIssue extends Issue {
 
 
     void addAttachment(File f, String comment, String desc, String contentType) throws HttpException, IOException, CoreException  {
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(f);
         attachmentSource.setContentType(contentType);
         BugzillaTaskAttachmentHandler.AttachmentPartSource source = new BugzillaTaskAttachmentHandler.AttachmentPartSource(attachmentSource);
@@ -589,6 +592,7 @@ public class BugzillaIssue extends Issue {
 
     // XXX carefull - implicit refresh
     public void addComment(String comment, boolean close) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         if(comment == null && !close) {
             return;
         }
@@ -616,10 +620,13 @@ public class BugzillaIssue extends Issue {
     }
 
     void submit() throws CoreException {
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
+        // XXX evaluate rr
     }
 
     public void refresh() {
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         try {
             TaskData td = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), data.getTaskId(), new NullProgressMonitor());
             setTaskData(td);
@@ -741,6 +748,7 @@ public class BugzillaIssue extends Issue {
         }
 
         public void getAttachementData(OutputStream os) throws MalformedURLException, IOException, CoreException {
+            assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
             Bugzilla.getInstance().getClient(repository).getAttachmentData(id, os, new NullProgressMonitor());
         }
     }

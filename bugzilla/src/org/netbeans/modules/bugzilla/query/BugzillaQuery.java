@@ -120,7 +120,7 @@ public class BugzillaQuery extends Query {
     public void refresh() {
 
         assert urlParameters != null;
-        assert !SwingUtilities.isEventDispatchThread();
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
 
         executeQuery(new Runnable() {
             public void run() {

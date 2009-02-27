@@ -60,7 +60,6 @@ public class IssuesCache {
     private Map<String, BugzillaIssue> issueMap;
     private Map<String, IssueData> seenIssueData; // XXX merge with issue XXX rename - isn't related only to seen 
 
-    private Map<Query, String> queryIssues;
     private BugzillaRepository repository;
 
     IssuesCache(BugzillaRepository repo) {
@@ -177,20 +176,6 @@ public class IssuesCache {
         return new ArrayList<String>(0);
     }
 
-//    private int computeStatus(boolean seen, IssueData oldData, Map<String, String> attrNew) {
-//        if(oldData == null || oldData.attributes == null) {
-//            return Query.ISSUE_STATUS_NEW;
-//        }
-//        if(isChanged(oldData.attributes, attrNew)) {
-//            return Query.ISSUE_STATUS_MODIFIED;
-//        }
-//        if(seen) {
-//            return Query.ISSUE_STATUS_UPTODATE;
-//        } else {
-//            return Query.ISSUE_STATUS_NEW;
-//        }
-//    }
-
     private Map<String, BugzillaIssue> getCache() {
         if(issueMap == null) {
             issueMap = new HashMap<String, BugzillaIssue>();
@@ -214,13 +199,6 @@ public class IssuesCache {
             seenIssueData = new HashMap<String, IssueData>();
         }
         return seenIssueData;
-    }
-
-    private Map<Query, String> getQueryIssues() {
-        if(queryIssues == null) {
-            queryIssues = new HashMap<Query, String>();
-        }
-        return queryIssues;
     }
 
     private class IssueData {
