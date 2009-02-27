@@ -108,7 +108,7 @@ public class ConvertClusterPath extends Task {
             log("Converted path: '" + absPath.toString() + "'.", Project.MSG_VERBOSE);
 
             // When cluster does not exist, it is either bare name or one with different number
-            final Pattern pat = Pattern.compile("(?:.*[\\\\/])?([^/\\\\]*?)([0-9]+)?[/\\\\]?$");
+            final Pattern pat = Pattern.compile("(?:.*[\\\\/])?([^/\\\\]*?)([0-9.]+)?[/\\\\]?$");
             Path convPath = new Path(fakeproj);
 
             for (Iterator it = absPath.iterator(); it.hasNext();) {
