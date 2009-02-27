@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.derby.support;
 import java.io.File;
 import java.io.IOException;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -105,6 +106,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     try {
       initStorageTypes();
       stackStorage = new SQLStackStorage(this);
+      connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
     } catch (SQLException ex) {
       logger.log(Level.SEVERE, null, ex);
     } catch (IOException ex) {
