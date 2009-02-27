@@ -50,6 +50,7 @@
 
 package org.netbeans.modules.websvc.core.wseditor.support;
 
+import org.netbeans.modules.websvc.api.support.EditWSAttributesCookie;
 import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.event.WindowAdapter;
