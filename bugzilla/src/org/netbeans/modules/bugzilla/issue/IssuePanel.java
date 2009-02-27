@@ -96,7 +96,7 @@ public class IssuePanel extends javax.swing.JPanel {
             String reportedTxt = MessageFormat.format(format, issue.getFieldValue(BugzillaIssue.IssueField.CREATION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER));
             reportedField.setText(reportedTxt);
             modifiedField.setText(issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION));
-            assignedField.setText(issue.getFieldValue(BugzillaIssue.IssueField.ASSIGEND_TO));
+            assignedField.setText(issue.getFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO));
             qaContactField.setText(issue.getFieldValue(BugzillaIssue.IssueField.QA_CONTACT));
             ccField.setText(issue.getFieldValue(BugzillaIssue.IssueField.CC));
             dependsField.setText(issue.getFieldValue(BugzillaIssue.IssueField.DEPENDS_ON));

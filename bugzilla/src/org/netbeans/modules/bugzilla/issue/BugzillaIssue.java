@@ -74,7 +74,6 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -107,7 +106,7 @@ public class BugzillaIssue extends Issue {
         PLATFORM(BugzillaAttribute.REP_PLATFORM.getKey()),
         MILESTONE(BugzillaAttribute.TARGET_MILESTONE.getKey()),
         REPORTER(BugzillaAttribute.REPORTER.getKey()),
-        ASSIGEND_TO(BugzillaAttribute.ASSIGNED_TO.getKey()),
+        ASSIGNED_TO(BugzillaAttribute.ASSIGNED_TO.getKey()),
         ASSIGNED_TO_NAME(BugzillaAttribute.ASSIGNED_TO_NAME.getKey()),
         QA_CONTACT(BugzillaAttribute.QA_CONTACT.getKey()),
         QA_CONTACT_NAME(BugzillaAttribute.QA_CONTACT_NAME.getKey()),
@@ -293,7 +292,7 @@ public class BugzillaIssue extends Issue {
                         case URL :
                             ret = changedCount + " changes, incl. url";
                             break;
-                        case ASSIGEND_TO :
+                        case ASSIGNED_TO :
                             ret = changedCount + " changes, incl. Assignee";
                             break;
                         case QA_CONTACT :
@@ -384,9 +383,9 @@ public class BugzillaIssue extends Issue {
     }
 
     int getFieldStatus(IssueField f) {
-        Map<String, String> a = getAttributes();
+        Map<String, String> a = repository.getIssuesCache().getSeenAttributes(getID());
         String seenValue = a.get(f.key);
-        if(seenValue == null) {
+        if(seenValue == null && getFieldValue(f) != null) {
             return IssueField.STATUS_NEW;
         } else if (!seenValue.equals(getFieldValue(f))) {
             return IssueField.STATUS_MODIFIED;
@@ -414,8 +413,12 @@ public class BugzillaIssue extends Issue {
     void resolve(String resolution) {
         setOperation(BugzillaOperation.resolve);
         TaskAttribute rta = data.getRoot();
-        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);
-        ta.setValue(resolution);        
+        TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.resolve.getInputId());
+        ta.setValue(resolution);
+    }
+
+    void accept() {
+        setOperation(BugzillaOperation.accept);
     }
 
     void duplicate(String id) {
