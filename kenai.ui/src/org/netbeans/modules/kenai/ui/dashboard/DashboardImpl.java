@@ -40,7 +40,6 @@
 package org.netbeans.modules.kenai.ui.dashboard;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -56,7 +55,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractListModel;
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -290,6 +288,7 @@ public final class DashboardImpl extends Dashboard {
     public void close() {
         synchronized( LOCK ) {
             treeList.setModel(EMPTY_MODEL);
+            model.clear();
             opened = false;
         }
     }
@@ -306,6 +305,16 @@ public final class DashboardImpl extends Dashboard {
             switchContent();
         }
         return dashboardComponent;
+    }
+
+    private void fillModel() {
+        synchronized( LOCK ) {
+            if( model.getSize() > 0 )
+                return;
+            switchUserNode();
+            addProjectsToModel(-1, memberProjects);
+            addProjectsToModel(-1, otherProjects);
+        }
     }
 
     private void switchContent() {
@@ -327,6 +336,7 @@ public final class DashboardImpl extends Dashboard {
                         dashboardComponent.repaint();
                     }
                 } else {
+                    fillModel();
                     treeList.setModel(model);
                     if( !isTreeListShowing ) {
                         dashboardComponent.removeAll();
@@ -398,7 +408,10 @@ public final class DashboardImpl extends Dashboard {
         clearMessages();
         synchronized( LOCK ) {
             removeProjectsFromModel( otherProjects );
-            otherProjects.addAll(projects);
+            for( ProjectHandle p : projects ) {
+                if( !otherProjects.contains( p ) )
+                    otherProjects.add( p );
+            }
             otherProjectsLoaded = true;
             addProjectsToModel( -1, otherProjects );
             storeOtherProjects();
