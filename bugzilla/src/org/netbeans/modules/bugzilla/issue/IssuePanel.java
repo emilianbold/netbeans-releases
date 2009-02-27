@@ -146,7 +146,7 @@ public class IssuePanel extends javax.swing.JPanel {
         updateFieldStatus(BugzillaIssue.IssueField.MILESTONE, targetMilestoneLabel);
         updateFieldStatus(BugzillaIssue.IssueField.URL, urlLabel);
         updateFieldStatus(BugzillaIssue.IssueField.KEYWORDS, keywordsLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.ASSIGEND_TO, assignedLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.ASSIGNED_TO, assignedLabel);
         updateFieldStatus(BugzillaIssue.IssueField.QA_CONTACT, qaContactLabel);
         updateFieldStatus(BugzillaIssue.IssueField.CC, ccLabel);
         updateFieldStatus(BugzillaIssue.IssueField.DEPENDS_ON, dependsLabel);
