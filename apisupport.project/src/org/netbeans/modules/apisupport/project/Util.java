@@ -72,6 +72,7 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -83,7 +84,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
-import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
@@ -524,44 +525,7 @@ public final class Util {
             lock.releaseLock();
         }
     }
-    
-    /**
-     * Find Javadoc URL for NetBeans.org modules. May return <code>null</code>.
-     */
-    public static URL findJavadocForNetBeansOrgModules(final ModuleDependency dep) {
-        ModuleEntry entry = dep.getModuleEntry();
-        File destDir = entry.getDestDir();
-        File nbOrg = null;
-        if (destDir.getParent() != null) {
-            nbOrg = destDir.getParentFile().getParentFile();
-        }
-        if (nbOrg == null) {
-            throw new IllegalArgumentException("ModuleDependency " + dep +  // NOI18N
-                    " doesn't represent nb.org module"); // NOI18N
-        }
-        File builtJavadoc = new File(nbOrg, "nbbuild/build/javadoc"); // NOI18N
-        URL[] javadocURLs = null;
-        if (builtJavadoc.exists()) {
-            File[] javadocs = builtJavadoc.listFiles();
-            javadocURLs = new URL[javadocs.length];
-            for (int i = 0; i < javadocs.length; i++) {
-                javadocURLs[i] = FileUtil.urlForArchiveOrDir(javadocs[i]);
-            }
-        }
-        return javadocURLs == null ? null : findJavadocURL(
-                dep.getModuleEntry().getCodeNameBase().replace('.', '-'), javadocURLs);
-    }
-    
-    /**
-     * Find Javadoc URL for the given module dependency using Javadoc roots of
-     * the given platform. May return <code>null</code>.
-     */
-    public static URL findJavadoc(final ModuleDependency dep, final NbPlatform platform) {
-        String cnbdashes = dep.getModuleEntry().getCodeNameBase().replace('.', '-');
-        URL[] roots = platform.getJavadocRoots();
-        return roots == null ? null : findJavadocURL(cnbdashes, roots);
-    }
-    
+
     public static boolean isValidSFSPath(final String path) {
         return path.matches(SFS_VALID_PATH_RE);
     }
@@ -636,7 +600,7 @@ public final class Util {
         return true;
     }
     
-    private static URL findJavadocURL(final String cnbdashes, final URL[] roots) {
+    public static URL findJavadocURL(final String cnbdashes, final URL[] roots) {
         URL indexURL = null;
         for (int i = 0; i < roots.length; i++) {
             URL root = roots[i];
@@ -950,5 +914,21 @@ public final class Util {
         assert prov != null;
         return prov.getSourceDirectory();
     }
-    
+
+    public static String urlsToAntPath(final URL[] urls) {
+        return ClassPathSupport.createClassPath(urls).toString(ClassPath.PathConversionMode.WARN);
+    }
+
+    public static URL[] findURLs(final String path) {
+        if (path == null) {
+            return new URL[0];
+        }
+        String[] pieces = PropertyUtils.tokenizePath(path);
+        URL[] urls = new URL[pieces.length];
+        for (int i = 0; i < pieces.length; i++) {
+            // XXX perhaps also support http: URLs somehow?
+            urls[i] = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(new File(pieces[i])));
+        }
+        return urls;
+    }
 }
