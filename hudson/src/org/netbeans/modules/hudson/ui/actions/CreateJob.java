@@ -50,7 +50,6 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.api.HudsonJob;
-import org.netbeans.modules.hudson.impl.HudsonConnector;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
@@ -97,19 +96,29 @@ public class CreateJob extends AbstractAction {
         try {
             Document doc = creator.configure();
             String createItemURL = instance.getUrl() + "createItem?name=" + URLEncoder.encode(name, "UTF-8"); // NOI18N
-            HttpURLConnection conn = HudsonConnector.followRedirects(new URL(createItemURL).openConnection());
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Content-Type", "text/xml");
-            conn.connect();
-            OutputStream os = conn.getOutputStream();
-            try {
-                XMLUtil.write(doc, os, "UTF-8"); // NOI18N
-            } finally {
-                os.close();
-            }
-            int responseCode = conn.getResponseCode();
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                throw new IOException("Server rejected creation of job " + name + " with response code " + responseCode); // NOI18N
+            HttpURLConnection conn = (HttpURLConnection) new URL(createItemURL).openConnection();
+            REDIRECT: while (/*javac rejects true*/conn != null) {
+                conn.setDoOutput(true);
+                conn.setRequestProperty("Content-Type", "text/xml");
+                conn.connect();
+                OutputStream os = conn.getOutputStream();
+                try {
+                    XMLUtil.write(doc, os, "UTF-8"); // NOI18N
+                } finally {
+                    os.close();
+                }
+                int responseCode = conn.getResponseCode();
+                switch (responseCode) {
+                // Cannot use HudsonConnector.followRedirects here because of doOutput
+                case HttpURLConnection.HTTP_MOVED_PERM:
+                case HttpURLConnection.HTTP_MOVED_TEMP:
+                    conn = (HttpURLConnection) new URL(conn.getHeaderField("Location")).openConnection();
+                    continue REDIRECT;
+                case HttpURLConnection.HTTP_OK:
+                    break REDIRECT;
+                default:
+                    throw new IOException("Server rejected creation of job " + name + " with response code " + responseCode); // NOI18N
+                }
             }
             URLDisplayer.getDefault().showURL(new URL(instance.getUrl() + "job/" + URLEncoder.encode(name, "UTF-8") + "/")); // NOI18N
             instance.synchronize();
