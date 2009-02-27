@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.vcshooks;
@@ -102,7 +102,7 @@ public class HgHookImpl extends HgHook {
             return;
         }
         
-        Repository repo = support.getRepository(file);
+        Repository repo = support.getRepository(file, issue.getID());
         if(repo == null) {
             LOG.log(Level.FINE, " could not find repository for " + file);      // NOI18N
             return;
