@@ -127,7 +127,8 @@ public class Controller {
     }
 
     void removeTab(NbIO io) {
-        ioToTab.remove(io);
+        OutputTab tab = ioToTab.remove(io);
+        removeFromUpdater(tab);
     }
 
     private static final String KEY_FONTSIZE = "fontsize";

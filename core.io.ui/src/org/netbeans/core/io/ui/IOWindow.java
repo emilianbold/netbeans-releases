@@ -276,6 +276,10 @@ public final class IOWindow implements IOContainer.Provider {
         @Override
         public void requestActive() {
             super.requestActive();
+            JComponent tab = getSelectedTab();
+            if (tab != null) {
+                tab.requestFocus();
+            }
         }
 
         @Override
@@ -364,6 +368,7 @@ public final class IOWindow implements IOContainer.Provider {
             if (singleTab == null) {
                 pane.setSelectedComponent(comp);
             }
+            checkTabSelChange();
         }
 
         public JComponent getSelectedTab() {
