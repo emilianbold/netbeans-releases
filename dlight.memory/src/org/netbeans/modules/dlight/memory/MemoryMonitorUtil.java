@@ -112,7 +112,8 @@ class MemoryMonitorUtil {
             String relativePath = "bin" + File.separator + platformPath + File.separator + nameWithSuffix; //NOI18N
             File file = InstalledFileLocator.getDefault().locate(relativePath, null, false);
             if (file != null && file.exists()) {
-                return file.getParentFile().getAbsolutePath() + "${_isa}" + '/' + file.getName();
+                return file.getAbsolutePath();
+//                return file.getParentFile().getAbsolutePath() + "${_isa}" + '/' + file.getName();
             }
         }
         return null;

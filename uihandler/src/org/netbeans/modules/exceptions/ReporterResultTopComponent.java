@@ -130,7 +130,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        showMyIssues();
+        showMyIssues(true);
     }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JEditorPane dataDisplayer;
@@ -180,7 +180,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         if (showUpload) {
             return;
         }
-        showMyIssues();
+        showMyIssues(false);
     }
 
     @Override
@@ -224,10 +224,10 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         showUpload = true;
         open();
         showUpload = false;
-        loadPage(url);
+        loadPage(url, true);
     }
 
-    private void showMyIssues() {
+    private void showMyIssues(boolean show) {
         String urlStr = null;
         String userName = new ExceptionsSettings().getUserName();
         if (userName != null && !"".equals(userName)) {             //NOI18N
@@ -238,36 +238,43 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
                 urlStr = NbBundle.getMessage(ReporterResultTopComponent.class, "userIdURL") + userId;
             }
         }
+        if (urlStr == null) {
+            return; // XXX prompt to log in?
+        }
         try {
-            loadPage(new URL(urlStr));
+            loadPage(new URL(urlStr), show);
         } catch (MalformedURLException ex) {
             handleIOException(urlStr, ex);
         }
     }
 
-    private void loadPage(URL url) {
+    private void loadPage(URL url, boolean show) {
         assert (EventQueue.isDispatchThread());
         try {
             dataDisplayer.setPage(getLoadingPageURL(url));
         } catch (IOException ex) {
             handleIOException(url, ex);
         }
-        RequestProcessor.getDefault().post(new PageUploader(url));
+        RequestProcessor.getDefault().post(new PageUploader(url, show));
     }
 
     private class PageUploader implements Runnable{
 
         private URL localData = null;
         private final URL url;
+        private final boolean show;
 
-        private PageUploader(URL url) {
+        private PageUploader(URL url, boolean show) {
             this.url = url;
+            this.show = show;
         }
 
             public void run() {
                 try {
                     if (EventQueue.isDispatchThread()) {
-                        ReporterResultTopComponent.this.requestVisible();
+                        if (show) {
+                            ReporterResultTopComponent.this.requestVisible();
+                        }
                         dataDisplayer.setPage(localData);
                     } else {
                         LOG.fine("Loading: " + url);        //NOI18N

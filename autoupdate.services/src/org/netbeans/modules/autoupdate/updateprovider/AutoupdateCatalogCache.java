@@ -124,6 +124,7 @@ public class AutoupdateCatalogCache {
         if (cache != null && cache.exists ()) {
             if(cache.length() == 0) {
                 err.log(Level.INFO, "Cache file " + cache + " exists and of zero size");
+                return null;
             }
             URL url = null;
             try {
@@ -155,10 +156,10 @@ public class AutoupdateCatalogCache {
 
         NetworkAccess.NetworkListener nwl = new NetworkAccess.NetworkListener () {
 
-            public void streamOpened (InputStream stream) {
+            public void streamOpened (InputStream stream, int contentLength) {
                 err.log (Level.FINE, "Successfully started reading URI " + sourceUrl);
                 try {
-                    doCopy (sourceUrl, stream, cache, temp);
+                    doCopy (sourceUrl, stream, cache, temp, contentLength);
                 } catch (IOException ex) {
                     storeException (ex);
                 }
@@ -206,7 +207,7 @@ public class AutoupdateCatalogCache {
         return storedException;
     }
     
-    private void doCopy (URL sourceUrl, InputStream is, File cache, File temp) throws IOException {
+    private void doCopy (URL sourceUrl, InputStream is, File cache, File temp, int contentLength) throws IOException {
         
         OutputStream os = null;
         int read = 0;
@@ -223,6 +224,14 @@ public class AutoupdateCatalogCache {
             os.flush ();
             os.close ();
             os = null;
+            if(contentLength!=-1 && contentLength!=totalRead) {
+                err.log(Level.INFO, "Content length was reported as " + contentLength + " bytes, but read " + totalRead + " bytes from " + sourceUrl);
+                throw new IOException("unexpected closed connection to " + sourceUrl);
+            }
+            if(totalRead==0) {
+                err.log(Level.INFO, "Connection content length was " + contentLength + " bytes (read " + totalRead + "bytes), catalog size can`t be that size - likely server with catalog at " + sourceUrl + " is temporary down");
+                throw new IOException("zero sized catalog reported at " + sourceUrl);
+            }
             synchronized (this) {
                 if (cache.exists () && ! cache.delete ()) {
                     err.log (Level.INFO, "Cannot delete cache " + cache);
@@ -234,9 +243,8 @@ public class AutoupdateCatalogCache {
                     cache.delete();
                 }
             }
-            if(totalRead==0) {
-                err.log (Level.INFO, "Read zero bytes from server");
-            }
+            err.log (Level.INFO, "Read " + totalRead + " bytes from catalog at " + sourceUrl);
+            
             if(temp.length()==0) {
                 err.log (Level.INFO, "Temp cache size is zero bytes");
             }

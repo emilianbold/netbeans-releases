@@ -114,30 +114,7 @@ public class DataNode extends AbstractNode {
         String newDisplayName;
         
         if (prim.isRoot()) {
-            // Special case - getName{,Ext} will just return "".
-            // Used to be handled by org.netbeans.core.RootFolderNode
-            // but might as well do it here.
-            // XXX replace with #37549
-            File f = FileUtil.toFile(prim);
-            if (f == null) {
-                // Check for a JAR root explicitly.
-                FileObject archiveFile = FileUtil.getArchiveFile(prim);
-                if (archiveFile != null) {
-                    f = FileUtil.toFile(archiveFile);
-                }
-            }
-            if (f != null) {
-                // E.g. /tmp/foo or /tmp/foo.jar
-                newDisplayName = f.getAbsolutePath();
-            } else {
-                try {
-                    // E.g. http://webdavhost.nowhere.net/mystuff/
-                    newDisplayName = prim.getURL().toExternalForm();
-                } catch (FileStateInvalidException e) {
-                    // Should not happen in practice.
-                    newDisplayName = "???"; // NOI18N
-                }
-            }
+            newDisplayName = FileUtil.getFileDisplayName(prim);
         } else if (showFileExtensions || obj instanceof DataFolder || obj instanceof DefaultDataObject) {
             newDisplayName = prim.getNameExt();
         } else {
@@ -170,7 +147,6 @@ public class DataNode extends AbstractNode {
             if (rename) {
                 obj.rename (name);
             }
-
             super.setName (name);
             updateDisplayName ();
         } catch (IOException ex) {
@@ -188,6 +164,7 @@ public class DataNode extends AbstractNode {
     * @param name new name for the object
     * @exception IllegalArgumentException if the rename failed
     */
+    @Override
     public void setName (String name) {
         setName (name, true);
     }
@@ -199,6 +176,7 @@ public class DataNode extends AbstractNode {
      * in {@link DataObject#createNodeDelegate}.
      * @return the desired name
     */
+    @Override
     public String getDisplayName () {
         String s = super.getDisplayName ();
 
@@ -222,6 +200,7 @@ public class DataNode extends AbstractNode {
       * @see org.openide.nodes.Node#getHtmlDisplayName
       * @since 4.13 
       */
+     @Override
      public String getHtmlDisplayName() {
          try {
              FileSystem.Status stat = 
@@ -294,6 +273,7 @@ public class DataNode extends AbstractNode {
         return img;
     }
     
+    @Override
     public HelpCtx getHelpCtx () {
         return obj.getHelpCtx ();
     }
@@ -301,6 +281,7 @@ public class DataNode extends AbstractNode {
     /** Indicate whether the node may be renamed.
     * @return tests {@link DataObject#isRenameAllowed}
     */
+    @Override
     public boolean canRename () {
         return obj.isRenameAllowed ();
     }
@@ -308,12 +289,14 @@ public class DataNode extends AbstractNode {
     /** Indicate whether the node may be destroyed.
      * @return tests {@link DataObject#isDeleteAllowed}
      */
+    @Override
     public boolean canDestroy () {
         return obj.isDeleteAllowed ();
     }
 
     /* Destroyes the node
     */
+    @Override
     public void destroy () throws IOException {
         if (obj.isDeleteAllowed ()) {
             obj.delete ();
@@ -324,6 +307,7 @@ public class DataNode extends AbstractNode {
     /* Returns true if this object allows copying.
     * @returns true if this object allows copying.
     */
+    @Override
     public boolean canCopy () {
         return obj.isCopyAllowed ();
     }
@@ -331,6 +315,7 @@ public class DataNode extends AbstractNode {
     /* Returns true if this object allows cutting.
     * @returns true if this object allows cutting.
     */
+    @Override
     public boolean canCut () {
         return obj.isMoveAllowed ();
     }
@@ -345,6 +330,7 @@ public class DataNode extends AbstractNode {
      *             data loader specify actions.
     */
     @Deprecated
+    @Override
     protected SystemAction[] createActions () {
         return null;
     }
@@ -353,6 +339,7 @@ public class DataNode extends AbstractNode {
     * @see DataLoader#getActions
     * @return array of actions or <code>null</code>
     */
+    @Override
     public Action[] getActions (boolean context) {
         if (systemActions == null) {
             systemActions = createActions ();
@@ -375,6 +362,7 @@ public class DataNode extends AbstractNode {
     * @return array of actions or <code>null</code>
     */
     @Deprecated
+    @Override
     public SystemAction[] getActions () {
         if (systemActions == null) {
             systemActions = createActions ();
@@ -396,6 +384,7 @@ public class DataNode extends AbstractNode {
     *    Otherwise the abstract node's default action is returned, if <code>null</code> then
     *    the first action returned from getActions (false) method is used.
     */
+    @Override
     public Action getPreferredAction () {
         if (obj.isTemplate ()) {
             return null;
@@ -442,6 +431,7 @@ public class DataNode extends AbstractNode {
     * overwrite it.
     * @return the default sheet to use
     */
+    @Override
     protected Sheet createSheet () {
         Sheet s = Sheet.createDefault ();
         Sheet.Set ss = s.get (Sheet.PROPERTIES);
@@ -553,6 +543,7 @@ public class DataNode extends AbstractNode {
     * @throws IOException if it could not copy
     * @see org.openide.nodes.NodeTransfer
     */
+    @Override
     public Transferable clipboardCopy () throws IOException {
         ExTransferable t = ExTransferable.create (super.clipboardCopy ());
         t.put (LoaderTransfer.transferable (
@@ -570,6 +561,7 @@ public class DataNode extends AbstractNode {
     * @throws IOException if it could not cut
     * @see org.openide.nodes.NodeTransfer
     */
+    @Override
     public Transferable clipboardCut () throws IOException {
         ExTransferable t = ExTransferable.create (super.clipboardCut ());
         t.put (LoaderTransfer.transferable (
@@ -651,11 +643,13 @@ public class DataNode extends AbstractNode {
                 }
             }
 
+            @Override
             public boolean canWrite() {
                 return obj.isRenameAllowed();
             }
             // #33296 - suppress custom editor
 
+            @Override
             public Object getValue(String key) {
                 if ("suppressCustomEditor".equals(key)) {
                     return Boolean.TRUE;
@@ -732,6 +726,7 @@ public class DataNode extends AbstractNode {
     /** Handle for location of given data object.
     * @return handle that remembers the data object.
     */
+    @Override
     public Node.Handle getHandle () {
         return new ObjectHandle(obj, obj.isValid() ? (this != obj.getNodeDelegate()) : /* to be safe */ true);
     }
@@ -1050,16 +1045,19 @@ public class DataNode extends AbstractNode {
             return obj_files.toArray(a);
         }
 
+        @Override
         public boolean equals(Object obj) {
             lazyInitialization();
-            return obj_files.equals(obj);
+            return (obj instanceof Set) && obj_files.equals(obj);
         }
 
+        @Override
         public String toString() {
             lazyInitialization();
             return obj_files.toString();
         }
 
+        @Override
         public int hashCode() {
             lazyInitialization();
             return obj_files.hashCode();

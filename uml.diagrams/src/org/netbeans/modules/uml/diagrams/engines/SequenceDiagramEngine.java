@@ -965,8 +965,15 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
             if(reconnectingSource && replacementNode==originalSource)return;
             else if(!reconnectingSource && replacementNode==originalTarget)return;
             IPresentationElement edge = (IPresentationElement)getScene().findObject(connectionWidget);
-            IRelationship relationship = (IRelationship)edge.getFirstSubject();
+            IElement relationship = edge.getFirstSubject();
             
+
+            Widget sourceWidget = connectionWidget.getSourceAnchor().getRelatedWidget();
+            IPresentationElement sourceElement = (IPresentationElement)getScene().findObject(sourceWidget);
+
+            Widget targeteWidget = connectionWidget.getTargetAnchor().getRelatedWidget();
+            IPresentationElement targetElement = (IPresentationElement)getScene().findObject(targeteWidget);
+
             if (replacementWidget == null)
             {
                 getScene().removeEdge(edge);
@@ -979,9 +986,9 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                 if(factory != null)
                 {
                     factory.reconnectSource(relationship, 
-                                            originalSource.getFirstSubject(),
+                                            sourceElement.getFirstSubject(),
                                             replacementNode.getFirstSubject(),
-                                            originalTarget.getFirstSubject());
+                                            targetElement.getFirstSubject());
                 }
             }
             else
@@ -991,9 +998,9 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                 if(factory != null)
                 {
                     factory.reconnectTarget(relationship, 
-                                            originalTarget.getFirstSubject(),
+                                            targetElement.getFirstSubject(),
                                             replacementNode.getFirstSubject(),
-                                            originalSource.getFirstSubject());
+                                            sourceElement.getFirstSubject());
                 }
             }
         }
