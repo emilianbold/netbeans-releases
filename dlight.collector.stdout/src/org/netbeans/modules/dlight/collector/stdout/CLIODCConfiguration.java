@@ -68,6 +68,7 @@ public final class CLIODCConfiguration
     private final Map<String, String> envs;
     private final List<DataTableMetadata> dataTablesMetadata;
     private boolean indicatorDataProvider;
+    private String collectorName;
 
 
     static {
@@ -100,6 +101,10 @@ public final class CLIODCConfiguration
         this.parser = parser;
         this.dataTablesMetadata = dataTablesMetadata;
         this.envs = new HashMap<String, String>();
+    }
+
+    public void setName(String collectorName){
+        this.collectorName = collectorName;
     }
 
     /**
@@ -189,6 +194,11 @@ public final class CLIODCConfiguration
         @Override
         public Map<String, String> getDLightTargetExecutionEnv(CLIODCConfiguration configuration) {
             return configuration.envs;
+        }
+
+        @Override
+        public String getName(CLIODCConfiguration configuration) {
+            return configuration.collectorName;
         }
     }
 }

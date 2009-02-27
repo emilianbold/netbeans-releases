@@ -328,7 +328,8 @@ public abstract class SQLDataStorage extends DataStorage {
       if (line.endsWith(";")) {
         String sql = buf.toString();
         buf.setLength(0);
-        s.execute(sql);
+        String sqlToExecute = sql.substring(0, sql.length() - 1) + getSQLQueriesDelimeter();
+        s.execute(sqlToExecute);
       }
     }
     s.close();
