@@ -368,6 +368,7 @@ public final class IOWindow implements IOContainer.Provider {
             if (singleTab == null) {
                 pane.setSelectedComponent(comp);
             }
+            checkTabSelChange();
         }
 
         public JComponent getSelectedTab() {
