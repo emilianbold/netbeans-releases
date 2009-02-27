@@ -53,11 +53,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -305,8 +303,22 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
                         for (int point : indentLevels.keySet()) {
                             int indentDelta = indentLevels.get(point);
                             int lineNumber = Utilities.getLineOffset(doc, point);
-                            Integer lineDelta = indentDeltaByLine.get(lineNumber);
+                            int rowStart = Utilities.getRowStart(doc, point);
 
+                            int firstNonWSBefore = Utilities.getFirstNonWhiteFwd(doc, rowStart);
+
+                            if (firstNonWSBefore < rowStart){
+                                lineNumber ++;
+                            } else {
+                                int rowEnd = Utilities.getRowEnd(doc, point);
+                                int firstNonWSAfter = Utilities.getFirstNonWhiteFwd(doc, point);
+
+                                if (firstNonWSAfter > rowEnd){
+                                    lineNumber ++;
+                                }
+                            }
+
+                            Integer lineDelta = indentDeltaByLine.get(lineNumber);
                             indentDeltaByLine.put(lineNumber, lineDelta == null
                                     ? indentDelta : lineDelta + indentDelta);
                         }
@@ -314,6 +326,7 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
                         for (int i = 0, currentIndent = 0; i < numberOfLines; i++) {
                             int lineStart = Utilities.getRowStartFromLineOffset(doc, i);
                             Integer lineDelta = indentDeltaByLine.get(i);
+                            System.err.println("lineDelta[" + i + "]=" + lineDelta);
 
                             if (lineDelta != null) {
                                 currentIndent += lineDelta;

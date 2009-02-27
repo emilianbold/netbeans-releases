@@ -99,6 +99,7 @@ public class TasksCachedProcessor<P, R>
                 cache.remove(arg, f);
             } catch (ExecutionException e) {
                 System.err.println("!!! " + e.getMessage());
+                e.printStackTrace(System.err);
             } finally {
                 if (removeOnCompletion) {
                     cache.remove(arg, f);

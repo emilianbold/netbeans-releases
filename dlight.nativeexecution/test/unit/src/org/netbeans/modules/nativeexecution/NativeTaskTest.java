@@ -40,7 +40,11 @@ package org.netbeans.modules.nativeexecution;
 
 import java.io.CharArrayWriter;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -54,12 +58,13 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.util.Exceptions;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -88,6 +93,69 @@ public class NativeTaskTest {
     public void tearDown() {
     }
     static int count = 0;
+
+
+    @Test
+    public void testDemangle(){
+
+        System.out.println("STart-TestDEmangle");
+        final ExecutionEnvironment env = new ExecutionEnvironment();
+        final String dem_util_path="/usr/sfw/bin/gc++filt";
+        final String functionName = "fractal_2`_Z10Mandelbrotv+0x602";
+        final String nameToDemangle ;
+        if (functionName.indexOf("`") != -1 && functionName.indexOf("+") != -1){
+            nameToDemangle = functionName.substring(functionName.indexOf("`") + 1, functionName.indexOf("+")); //NOI18N;
+        }else{
+            nameToDemangle = functionName;
+        }
+        System.out.println("name to demangle=" + nameToDemangle);
+        Future<String> myResult =   Executors.newCachedThreadPool().submit(new Callable<String>() {
+
+            public String call() {
+                NativeProcessBuilder npb = new NativeProcessBuilder(env, dem_util_path + " " + nameToDemangle); //NOI18N
+                ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
+                    InputOutput.NULL);
+                StringWriter result = new StringWriter();
+                descriptor = descriptor.outProcessorFactory(new InputRedirectorFactory(result));
+                ExecutionService execService = ExecutionService.newService(
+                    npb, descriptor, "Demangling function " + nameToDemangle); // NOI18N
+                Future<Integer> res = execService.run();
+                try {
+                    res.get();
+                    return result.toString();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+                //process.
+                return nameToDemangle;
+            }
+        });
+        try {
+            System.out.println("result is = " + myResult.get());
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+    }
+
+    private class InputRedirectorFactory implements ExecutionDescriptor.InputProcessorFactory {
+
+        private final Writer writer;
+
+        public InputRedirectorFactory(Writer writer) {
+            this.writer = writer;
+        }
+
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return InputProcessors.copying(writer);
+        }
+    }
+    
 
     /**
      * Test of run method, of class NativeTask.

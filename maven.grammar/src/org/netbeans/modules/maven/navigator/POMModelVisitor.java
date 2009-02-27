@@ -40,11 +40,20 @@
 package org.netbeans.modules.maven.navigator;
 
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.maven.model.pom.Activation;
 import org.netbeans.modules.maven.model.pom.ActivationCustom;
 import org.netbeans.modules.maven.model.pom.ActivationFile;
@@ -71,6 +80,7 @@ import org.netbeans.modules.maven.model.pom.Notifier;
 import org.netbeans.modules.maven.model.pom.Organization;
 import org.netbeans.modules.maven.model.pom.POMComponent;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMQName;
 import org.netbeans.modules.maven.model.pom.POMQNames;
 import org.netbeans.modules.maven.model.pom.Parent;
@@ -90,6 +100,7 @@ import org.netbeans.modules.maven.model.pom.Resource;
 import org.netbeans.modules.maven.model.pom.Scm;
 import org.netbeans.modules.maven.model.pom.Site;
 import org.netbeans.modules.maven.model.pom.StringList;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -97,6 +108,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -105,30 +117,25 @@ import org.openide.util.lookup.Lookups;
  */
 public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POMComponentVisitor {
 
-    private Map<String, Node> childs = new LinkedHashMap<String, Node>();
+    private Map<String, POMCutHolder> childs = new LinkedHashMap<String, POMCutHolder>();
     private int count = 0;
-    private POMQNames names;
-    private boolean filterUndefined;
+    private POMModelPanel.Configuration configuration;
+    private POMCutHolder parent;
 
-    public POMModelVisitor(POMQNames names, boolean filterUndefined) {
-        this.names = names;
-        this.filterUndefined = filterUndefined;
+    POMModelVisitor(POMCutHolder parent, POMModelPanel.Configuration configuration) {
+        this.parent = parent;
+        this.configuration = configuration;
     }
 
     public void reset() {
-         childs = new LinkedHashMap<String, Node>();
+         childs = new LinkedHashMap<String, POMCutHolder>();
          count = 0;
     }
 
-    Node[] getChildNodes() {
-        List<Node> toRet = new ArrayList<Node>();
-        for (Node nd : childs.values()) {
-            POMCutHolder cut = nd.getLookup().lookup(POMCutHolder.class);
-            if (!filterUndefined || POMModelPanel.definesValue(cut.getCutValues())) {
-                toRet.add(nd);
-            }
-        }
-        return toRet.toArray(new Node[0]);
+    POMCutHolder[] getChildValues() {
+        List<POMCutHolder> toRet = new ArrayList<POMCutHolder>();
+        toRet.addAll(childs.values());
+        return toRet.toArray(new POMCutHolder[0]);
     }
 
     public void visit(Project target) {
@@ -137,6 +144,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             t = null;
         }
         //ordered by appearance in pom schema..
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.MODELVERSION, NbBundle.getMessage(POMModelVisitor.class, "MODEL_VERSION"), t != null ? t.getModelVersion() : null);
         checkChildString(names.GROUPID, NbBundle.getMessage(POMModelVisitor.class, "GROUPID"), t != null ? t.getGroupId() : null);
         checkChildString(names.ARTIFACTID, NbBundle.getMessage(POMModelVisitor.class, "ARTIFACTID"), t != null ? t.getArtifactId() : null);
@@ -234,6 +242,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
         checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
 
@@ -245,6 +254,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildObject(names.DIST_REPOSITORY, DeploymentRepository.class, NbBundle.getMessage(POMModelVisitor.class, "REPOSITORY"), t != null ? t.getRepository() : null);
         checkChildObject(names.DIST_SNAPSHOTREPOSITORY, DeploymentRepository.class, NbBundle.getMessage(POMModelVisitor.class, "SNAPSHOT_REPOSITORY"), t != null ? t.getSnapshotRepository() : null);
         checkChildObject(names.SITE, Site.class, NbBundle.getMessage(POMModelVisitor.class, "SITE"), t != null ? t.getSite() : null);
@@ -258,6 +268,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
         checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
         checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
@@ -270,6 +281,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
         checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
         checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
@@ -283,6 +295,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.MAVEN, NbBundle.getMessage(POMModelVisitor.class, "MAVEN"), t != null ? t.getMaven() : null);
 
         count++;
@@ -293,6 +306,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
         checkChildString(names.EMAIL, NbBundle.getMessage(POMModelVisitor.class, "EMAIL"), t != null ? t.getEmail() : null);
         checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
@@ -307,6 +321,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.CONNECTION, NbBundle.getMessage(POMModelVisitor.class, "CONNECTION"), t != null ? t.getConnection() : null);
         checkChildString(names.DEVELOPERCONNECTION, NbBundle.getMessage(POMModelVisitor.class, "DEVELOPER_CONNECTION"), t != null ? t.getDeveloperConnection() : null);
         checkChildString(names.TAG, NbBundle.getMessage(POMModelVisitor.class, "TAG"), t != null ? t.getTag() : null);
@@ -320,6 +335,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.SYSTEM, NbBundle.getMessage(POMModelVisitor.class, "SYSTEM"), t != null ? t.getSystem() : null);
         checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
 
@@ -331,6 +347,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.SYSTEM, NbBundle.getMessage(POMModelVisitor.class, "SYSTEM"), t != null ? t.getSystem() : null);
         checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
 
@@ -346,6 +363,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
         checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
         checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
@@ -361,6 +379,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.ENABLED, NbBundle.getMessage(POMModelVisitor.class, "ENABLED"), t != null ? (t.isEnabled() != null ? t.isEnabled().toString() : null) : null);
         checkChildString(names.UPDATEPOLICY, NbBundle.getMessage(POMModelVisitor.class, "UPDATE_POLICY"), t != null ? t.getUpdatePolicy() : null);
         checkChildString(names.CHECKSUMPOLICY, NbBundle.getMessage(POMModelVisitor.class, "CHECKSUM_POLICY"), t != null ? t.getChecksumPolicy() : null);
@@ -373,6 +392,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
         checkChildObject(names.ACTIVATION, Activation.class, NbBundle.getMessage(POMModelVisitor.class, "ACTIVATION"), t != null ? t.getActivation() : null);
         checkChildObject(names.BUILD, BuildBase.class, NbBundle.getMessage(POMModelVisitor.class, "BUILD"), t != null ? t.getBuildBase() : null);
@@ -412,6 +432,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.DEFAULTGOAL, NbBundle.getMessage(POMModelVisitor.class, "DEFAULT_GOAL"), t != null ? t.getDefaultGoal() : null);
         this.<Resource>checkListObject(names.RESOURCES, names.RESOURCE,
                 Resource.class, NbBundle.getMessage(POMModelVisitor.class, "RESOURCES"),
@@ -457,6 +478,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.GROUPID, NbBundle.getMessage(POMModelVisitor.class, "GROUPID"), t != null ? t.getGroupId() : null);
         checkChildString(names.ARTIFACTID, NbBundle.getMessage(POMModelVisitor.class, "ARTIFACTID"), t != null ? t.getArtifactId() : null);
         checkChildString(names.VERSION, NbBundle.getMessage(POMModelVisitor.class, "VERSION"), t != null ? t.getVersion() : null);
@@ -473,7 +495,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                     }
                 });
         checkDependencies(t);
-        checkStringListObject(names.GOALS, names.GOAL, "Goals", t != null ? t.getGoals() : null);
+        checkStringListObject(names.GOALS, names.GOAL, org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "GOALS"), t != null ? t.getGoals() : null);
         checkChildString(names.INHERITED, NbBundle.getMessage(POMModelVisitor.class, "INHERITED"), t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
         checkChildObject(names.CONFIGURATION, Configuration.class, NbBundle.getMessage(POMModelVisitor.class, "CONFIGURATION"), t != null ? t.getConfiguration() : null);
 
@@ -485,6 +507,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.GROUPID, NbBundle.getMessage(POMModelVisitor.class, "GROUPID"), t != null ? t.getGroupId() : null);
         checkChildString(names.ARTIFACTID, NbBundle.getMessage(POMModelVisitor.class, "ARTIFACTID"), t != null ? t.getArtifactId() : null);
         checkChildString(names.VERSION, NbBundle.getMessage(POMModelVisitor.class, "VERSION"), t != null ? t.getVersion() : null);
@@ -509,6 +532,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.GROUPID, NbBundle.getMessage(POMModelVisitor.class, "GROUPID"), t != null ? t.getGroupId() : null);
         checkChildString(names.ARTIFACTID, NbBundle.getMessage(POMModelVisitor.class, "ARTIFACTID"), t != null ? t.getArtifactId() : null);
 
@@ -520,6 +544,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
         checkChildString(names.PHASE, NbBundle.getMessage(POMModelVisitor.class, "PHASE"), t != null ? t.getPhase() : null);
         checkChildString(names.INHERITED, NbBundle.getMessage(POMModelVisitor.class, "INHERITED"), t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
@@ -533,11 +558,12 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.TARGETPATH, NbBundle.getMessage(POMModelVisitor.class, "TARGET_PATH"), t != null ? t.getTargetPath() : null);
         //TODO filtering
         checkChildString(names.DIRECTORY, NbBundle.getMessage(POMModelVisitor.class, "DIRECTORY"), t != null ? t.getDirectory() : null);
-        checkStringListObject(names.INCLUDES, names.INCLUDE, "Includes", t != null ? t.getIncludes() : null);
-        checkStringListObject(names.EXCLUDES, names.EXCLUDE, "Excludes", t != null ? t.getExcludes() : null);
+        checkStringListObject(names.INCLUDES, names.INCLUDE, org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "INCLUDES"), t != null ? t.getIncludes() : null);
+        checkStringListObject(names.EXCLUDES, names.EXCLUDE, org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "EXCLUDES"), t != null ? t.getExcludes() : null);
 
         count++;
     }
@@ -547,6 +573,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         this.<Plugin>checkListObject(names.PLUGINS, names.PLUGIN,
                 Plugin.class, NbBundle.getMessage(POMModelVisitor.class, "PLUGINS"),
                 t != null ? t.getPlugins() : null,
@@ -571,6 +598,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.EXCLUDEDEFAULTS, NbBundle.getMessage(POMModelVisitor.class, "EXCLUDE_DEFAULTS"), t != null ? (t.isExcludeDefaults() != null ? t.isExcludeDefaults().toString() : null) : null);
         checkChildString(names.OUTPUTDIRECTORY, NbBundle.getMessage(POMModelVisitor.class, "OUTPUT_DIRECTORY"), t != null ? t.getOutputDirectory() : null);
         this.<ReportPlugin>checkListObject(names.REPORTPLUGINS, names.REPORTPLUGIN,
@@ -593,6 +621,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.GROUPID, NbBundle.getMessage(POMModelVisitor.class, "GROUPID"), t != null ? t.getGroupId() : null);
         checkChildString(names.ARTIFACTID, NbBundle.getMessage(POMModelVisitor.class, "ARTIFACTID"), t != null ? t.getArtifactId() : null);
         checkChildString(names.VERSION, NbBundle.getMessage(POMModelVisitor.class, "VERSION"), t != null ? t.getVersion() : null);
@@ -618,10 +647,11 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
         checkChildObject(names.CONFIGURATION, Configuration.class, NbBundle.getMessage(POMModelVisitor.class, "CONFIGURATION"), t != null ? t.getConfiguration() : null);
         checkChildString(names.INHERITED, NbBundle.getMessage(POMModelVisitor.class, "INHERITED"), t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
-        checkStringListObject(names.REPORTS, names.REPORT, "Reports", t != null ? t.getReports() : null);
+        checkStringListObject(names.REPORTS, names.REPORT, org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "REPORTS"), t != null ? t.getReports() : null);
 
         count++;
     }
@@ -631,6 +661,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildObject(names.ACTIVATIONOS, ActivationOS.class, NbBundle.getMessage(POMModelVisitor.class, "OPERATING_SYSTEM"), t != null ? t.getActivationOS() : null);
         checkChildObject(names.ACTIVATIONPROPERTY, ActivationProperty.class, NbBundle.getMessage(POMModelVisitor.class, "PROPERTY"), t != null ? t.getActivationProperty() : null);
         checkChildObject(names.ACTIVATIONFILE, ActivationFile.class, NbBundle.getMessage(POMModelVisitor.class, "FILE"), t != null ? t.getActivationFile() : null);
@@ -666,6 +697,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.SOURCEDIRECTORY, NbBundle.getMessage(POMModelVisitor.class, "SOURCE_DIRECTORY"), t != null ? t.getSourceDirectory() : null);
         //just ignore script directory
         checkChildString(names.TESTSOURCEDIRECTORY, NbBundle.getMessage(POMModelVisitor.class, "TEST_SOURCE_DIRECTORY"), t != null ? t.getTestSourceDirectory() : null);
@@ -680,7 +712,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                         return gr + ":" + c.getArtifactId(); //NOI18N
                     }
                     public String createName(Extension c) {
-                        return c.getArtifactId() != null ? c.getArtifactId() : "Extension";
+                        return c.getArtifactId() != null ? c.getArtifactId() : org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "EXTENSION");
                     }
                 });
         checkChildString(names.DEFAULTGOAL, NbBundle.getMessage(POMModelVisitor.class, "DEFAULT_GOAL"), t != null ? t.getDefaultGoal() : null);
@@ -728,6 +760,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.GROUPID, NbBundle.getMessage(POMModelVisitor.class, "GROUPID"), t != null ? t.getGroupId() : null);
         checkChildString(names.ARTIFACTID, NbBundle.getMessage(POMModelVisitor.class, "ARTIFACTID"), t != null ? t.getArtifactId() : null);
         checkChildString(names.VERSION, NbBundle.getMessage(POMModelVisitor.class, "VERSION"), t != null ? t.getVersion() : null);
@@ -738,6 +771,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
         checkChildString(names.URL, NbBundle.getMessage(POMModelVisitor.class, "URL"), t != null ? t.getUrl() : null);
         count++;
@@ -748,6 +782,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
         checkChildString(names.SUBSCRIBE, NbBundle.getMessage(POMModelVisitor.class, "SUBSCRIBE"), t != null ? t.getSubscribe() : null);
         checkChildString(names.UNSUBSCRIBE, NbBundle.getMessage(POMModelVisitor.class, "UNSUBSCRIBE"), t != null ? t.getUnsubscribe() : null);
@@ -761,6 +796,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null && !t.isInDocumentModel()) {
             t = null;
         }
+        POMQNames names = parent.getPOMQNames();
         checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
         checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
         checkChildString(names.EMAIL, NbBundle.getMessage(POMModelVisitor.class, "EMAIL"), t != null ? t.getEmail() : null);
@@ -780,8 +816,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null) {
             doVisit(t.getAnyElements());
         }
-        for (Node prop : childs.values()) {
-            growToSize(count, prop.getLookup().lookup(POMCutHolder.class));
+        for (POMCutHolder prop : childs.values()) {
+            growToSize(count, prop);
         }
         count++;
     }
@@ -797,8 +833,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null) {
             doVisit(t.getConfigurationElements());
         }
-        for (Node prop : childs.values()) {
-            growToSize(count, prop.getLookup().lookup(POMCutHolder.class));
+        for (POMCutHolder prop : childs.values()) {
+            growToSize(count, prop);
         }
 
         count++;
@@ -808,20 +844,19 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         for (POMExtensibilityElement el : elems) {
             List<POMExtensibilityElement> any = el.getAnyElements();
             if (any != null && !any.isEmpty()) {
-                Node nd = childs.get(el.getQName().getLocalPart());
+                POMCutHolder nd = childs.get(el.getQName().getLocalPart());
                 if (nd == null) {
-                    POMCutHolder cutter = new POMCutHolder();
-                    nd = new ObjectNode(Lookups.fixed(cutter, el.getQName()), new PomChildren(cutter, names, POMExtensibilityElement.class, filterUndefined), el.getQName().getLocalPart());
+                    nd = new SingleObjectCH(parent, el.getQName(), el.getQName().getLocalPart(), POMExtensibilityElement.class, configuration);
                     childs.put(el.getQName().getLocalPart(), nd);
                 }
-                fillValues(count, nd.getLookup().lookup(POMCutHolder.class), el);
+                fillValues(count, nd, el);
             } else {
-                Node nd = childs.get(el.getQName().getLocalPart());
+                POMCutHolder nd = childs.get(el.getQName().getLocalPart());
                 if (nd == null) {
-                    nd = new SingleFieldNode(Lookups.fixed(new POMCutHolder()), el.getQName().getLocalPart());
+                    nd = new SingleFieldCH(parent, el.getQName(), el.getQName().getLocalPart());
                     childs.put(el.getQName().getLocalPart(), nd);
                 }
-                fillValues(count, nd.getLookup().lookup(POMCutHolder.class), el.getElementText());
+                fillValues(count, nd, el.getElementText());
             }
         }
 
@@ -835,17 +870,17 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null) {
             Map<String, String> props = t.getProperties();
             for (Map.Entry<String, String> ent : props.entrySet()) {
-                Node nd = childs.get(ent.getKey());
+                POMCutHolder nd = childs.get(ent.getKey());
                 if (nd == null) {
-                    nd = new SingleFieldNode(Lookups.fixed(new POMCutHolder()), ent.getKey());
+                    nd = new SingleFieldCH(parent, ent.getKey());
                     childs.put(ent.getKey(), nd);
                 }
-                fillValues(count, nd.getLookup().lookup(POMCutHolder.class), ent.getValue());
+                fillValues(count, nd, ent.getValue());
             }
         }
 
-        for (Node prop : childs.values()) {
-            growToSize(count, prop.getLookup().lookup(POMCutHolder.class));
+        for (POMCutHolder prop : childs.values()) {
+            growToSize(count, prop);
         }
 
         count++;
@@ -858,59 +893,57 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     @SuppressWarnings("unchecked")
     private void checkChildString(POMQName qname, String displayName, String value) {
-        Node nd = childs.get(qname.getName());
+        POMCutHolder nd = childs.get(qname.getName());
         if (nd == null) {
-            nd = new SingleFieldNode(Lookups.fixed(new POMCutHolder(), qname), displayName);
+            nd = new SingleFieldCH(parent, qname, displayName);
             childs.put(qname.getName(), nd);
         }
-        fillValues(count, nd.getLookup().lookup(POMCutHolder.class), value);
+        fillValues(count, nd, value);
     }
 
     private void checkChildObject(POMQName qname, Class type, String displayName, POMComponent value) {
-        Node nd = childs.get(qname.getName());
+        POMCutHolder  nd = childs.get(qname.getName());
         if (nd == null) {
-            POMCutHolder cutter = new POMCutHolder();
-            nd = new ObjectNode(Lookups.fixed(cutter, qname), new PomChildren(cutter, names, type, filterUndefined), displayName);
+            nd = new SingleObjectCH(parent, qname, displayName, type, configuration);
             childs.put(qname.getName(), nd);
         }
-        fillValues(count, nd.getLookup().lookup(POMCutHolder.class), value);
+        fillValues(count, nd, value);
     }
 
 
     private <T extends POMComponent> void checkListObject(POMQName qname, POMQName childName, Class type, String displayName, List<T> values, KeyGenerator<T> keygen) {
-        Node nd = childs.get(qname.getName());
+        POMCutHolder nd = childs.get(qname.getName());
         if (nd == null) {
-            POMCutHolder cutter = new POMCutHolder();
-            nd = new ListNode(Lookups.fixed(cutter, qname), new PomListChildren<T>(cutter, names, type, keygen, true, childName), displayName);
+            nd = new ListObjectCH<T>(parent, qname, childName, type, keygen, displayName, configuration);
             childs.put(qname.getName(), nd);
         }
-        fillValues(count, nd.getLookup().lookup(POMCutHolder.class), values);
+        fillValues(count, nd, values);
     }
 
     private void checkStringListObject(POMQName qname, POMQName childName, String displayName, List<String> values) {
-        Node nd = childs.get(qname.getName());
+        POMCutHolder nd = childs.get(qname.getName());
         if (nd == null) {
-            POMCutHolder cutter = new POMCutHolder();
-            nd = new ListNode(Lookups.fixed(cutter, qname), new PomStringListChildren(cutter, childName), displayName);
+            nd =  new ListStringCH(parent, qname, childName, displayName, configuration);
             childs.put(qname.getName(), nd);
         }
-        fillValues(count, nd.getLookup().lookup(POMCutHolder.class), values);
+        fillValues(count, nd, values);
     }
 
 
 
-    private void fillValues(int current, POMCutHolder cutHolder, Object value) {
+    private static void fillValues(int current, POMCutHolder cutHolder, Object value) {
         growToSize(current, cutHolder);
         cutHolder.addCut(value);
     }
 
-    private void growToSize(int count, POMCutHolder cutHolder) {
+    private static void growToSize(int count, POMCutHolder cutHolder) {
         while (cutHolder.getCutsSize() < count) {
             cutHolder.addCut(null);
         }
     }
 
     private void checkDependencies(DependencyContainer container) {
+        POMQNames names = parent.getPOMQNames();
         this.<Dependency>checkListObject(names.DEPENDENCIES, names.DEPENDENCY,
                 Dependency.class, NbBundle.getMessage(POMModelVisitor.class, "DEPENDENCIES"),
                 container != null ? container.getDependencies() : null,
@@ -924,50 +957,6 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 });
 
     }
-
-//    private static Children createOverrideListChildren(ChildrenCreator subs, List<List> values) {
-//        Children toRet = new Children.Array();
-//        int count = 0;
-//        for (List lst : values) {
-//            if (lst != null && lst.size() > 0) {
-//                for (Object o : lst) {
-//                    List objectList = new ArrayList(Collections.nCopies(count, null));
-//                    objectList.add(o);
-//                    toRet.add(new Node[] {
-//                        new ObjectNode(Lookup.EMPTY, subs.createChildren(objectList),  subs.createName(o), objectList)
-//                    });
-//                }
-//                break;
-//            }
-//            count = count + 1;
-//        }
-//
-//        return toRet;
-//    }
-//
-//    private static Children createMergeListChildren(ChildrenCreator2 subs, List<POMModel> key, List<List> values) {
-//        Children toRet = new Children.Array();
-//        HashMap<Object, List> content = new HashMap<Object, List>();
-//        List order = new ArrayList();
-//
-//        int count = 0;
-//        for (List lst : values) {
-//            if (lst != null && lst.size() > 0) {
-//                for (Object o : lst) {
-//                    processObjectList(o, content, count, subs);
-//                            new ArrayList(Collections.nCopies(count, null));
-//                }
-//            }
-//            count = count + 1;
-//        }
-//        for (Map.Entry<Object, List> entry : content.entrySet()) {
-//            toRet.add(new Node[] {
-//                new ObjectNode(Lookup.EMPTY, subs.createChildren(entry.getValue(), key), key, subs.createName(entry.getKey()), entry.getValue())
-//            });
-//        }
-//
-//        return toRet;
-//    }
 
 
     private interface KeyGenerator<T extends POMComponent> {
@@ -983,8 +972,44 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     }
 
-    static class POMCutHolder {
+    abstract static class POMCutHolder {
         private List cuts = new ArrayList();
+
+        POMCutHolder parent;
+        private POMModel[] models;
+        private POMQNames names;
+
+        protected POMCutHolder(POMModel[] source, POMQNames names) {
+            models = source;
+            this.names = names;
+        }
+
+        protected POMCutHolder(POMCutHolder parent) {
+            this.parent = parent;
+        }
+
+        public POMModel[] getSource() {
+            if (models != null) {
+                return models;
+            }
+            if (parent != null) {
+                return parent.getSource();
+            }
+            throw new IllegalStateException();
+        }
+
+        public POMQNames getPOMQNames() {
+            if (names != null) {
+                return names;
+            }
+            if (parent != null) {
+                return parent.getPOMQNames();
+            }
+            throw new IllegalStateException();
+        }
+
+
+
         Object[] getCutValues() {
             return cuts.toArray();
         }
@@ -1007,7 +1032,134 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         int getCutsSize() {
             return cuts.size();
         }
+
+        abstract Node createNode();
     }
+
+    private static class SingleFieldCH extends POMCutHolder {
+        private Object qname;
+        private String display;
+
+        private SingleFieldCH(POMCutHolder parent, POMQName qname, String displayName) {
+            super(parent);
+            this.qname = qname;
+            this.display = displayName;
+        }
+
+        private SingleFieldCH(POMCutHolder parent, QName qname, String displayName) {
+            super(parent);
+            this.qname = qname;
+            this.display = displayName;
+        }
+
+        private SingleFieldCH(POMCutHolder parent, String displayName) {
+            super(parent);
+            this.qname = displayName;
+            this.display = displayName;
+        }
+
+
+        @Override
+        Node createNode() {
+            return new SingleFieldNode(Lookups.fixed(this, qname), display);
+        }
+    }
+
+    static class SingleObjectCH extends POMCutHolder {
+        private Object qname;
+        private String display;
+        private Class type;
+        private POMModelPanel.Configuration configuration;
+
+        SingleObjectCH(POMModel[] models, POMQNames names, POMQName qname, Class type, POMModelPanel.Configuration config) {
+            super(models, names);
+            this.qname = qname;
+            this.display = "root"; //NOI18N
+            this.type = type;
+            this.configuration = config;
+        }
+
+        private SingleObjectCH(POMCutHolder parent, POMQName qname, String displayName, Class type, POMModelPanel.Configuration config) {
+            super(parent);
+            this.qname = qname;
+            this.display = displayName;
+            this.type = type;
+            this.configuration = config;
+        }
+
+        private SingleObjectCH(POMCutHolder parent, QName qname, String displayName, Class type, POMModelPanel.Configuration config) {
+            super(parent);
+            this.qname = qname;
+            this.display = displayName;
+            this.type = type;
+            this.configuration = config;
+        }
+
+        private SingleObjectCH(POMCutHolder parent, POMQName qname, String displayName) {
+            super(parent);
+            this.qname = qname;
+            this.display = displayName;
+        }
+
+
+        @Override
+        Node createNode() {
+            if (type == null) {
+                return new ObjectNode(Lookups.fixed(this, qname), Children.LEAF, display);
+            }
+            return new ObjectNode(Lookups.fixed(this, qname), new PomChildren(this, getPOMQNames(), type, configuration), display);
+        }
+    }
+
+    static class ListObjectCH<T extends POMComponent> extends POMCutHolder {
+        private POMQName qname;
+        private POMQName childName;
+        private String displayName;
+        private Class type;
+        private KeyGenerator<T> keygen;
+        private POMModelPanel.Configuration configuration;
+
+        private ListObjectCH(POMCutHolder parent, POMQName qname, POMQName childName, Class type, KeyGenerator<T> keygen, String displayName, POMModelPanel.Configuration configuration) {
+            super(parent);
+            this.qname = qname;
+            this.childName = childName;
+            this.displayName = displayName;
+            this.type = type;
+            this.keygen = keygen;
+            this.configuration = configuration;
+        }
+
+        Class getListClass() {
+            return type;
+        }
+
+        @Override
+        Node createNode() {
+            return new ListNode(Lookups.fixed(this, qname), new PomListChildren<T>(this, getPOMQNames(), type, keygen, configuration, childName), displayName);
+        }
+
+    }
+
+    private static class ListStringCH extends POMCutHolder {
+        private POMQName qname;
+        private String display;
+        private POMQName childName;
+        private POMModelPanel.Configuration configuration;
+
+        private ListStringCH(POMCutHolder parent, POMQName qname, POMQName childName, String displayName, POMModelPanel.Configuration configuration) {
+            super(parent);
+            this.qname = qname;
+            this.display = displayName;
+            this.childName = childName;
+            this.configuration = configuration;
+        }
+
+        @Override
+        Node createNode() {
+            return new ListNode(Lookups.fixed(this, qname), new PomStringListChildren(this, childName), display);
+        }
+    }
+
 
     private static Image[] ICONS = new Image[] {
         ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/value.png"), // NOI18N
@@ -1035,6 +1187,47 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
 
         @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {
+                new SelectAction(this)
+            };
+        }
+
+        @Override
+        public Action getPreferredAction() {
+            return new SelectAction(this, 0);
+        }
+
+
+        @Override
+        public String getShortDescription() {
+            String[] values = getLookup().lookup(POMCutHolder.class).getCutValuesAsString();
+            POMModel[] mdls = getLookup().lookup(POMCutHolder.class).getSource();
+            StringBuffer buff = new StringBuffer();
+            int index = 0;
+            buff.append("<html>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_Defined_in") +
+                    "<p><table><thead><tr><th>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_ArtifactId") +
+                    "</th><th>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_Value") +
+                    "</th></tr></thead><tbody>"); //NOI18N
+            for (POMModel mdl : mdls) {
+                String artifact = mdl.getProject().getArtifactId();
+                buff.append("<tr><td>"); //NOI18N
+                buff.append(artifact != null ? artifact : "project");
+                buff.append("</td><td>"); //NOI18N
+                buff.append(values[index] != null ? values[index] : org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "UNDEFINED"));
+                buff.append("</td></tr>");//NOI18N
+                index++;
+            }
+            buff.append("</tbody></table>");//NOI18N
+
+            return buff.toString();
+        }
+
+
+        @Override
         public String getHtmlDisplayName() {
             String[] values = getLookup().lookup(POMCutHolder.class).getCutValuesAsString();
 
@@ -1043,15 +1236,15 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 dispVal = NbBundle.getMessage(POMModelVisitor.class, "UNDEFINED");
             }
             boolean override = POMModelPanel.overridesParentValue(values);
-            String overrideStart = override ? "<b>" : "";
-            String overrideEnd = override ? "</b>" : "";
+            String overrideStart = override ? "<b>" : ""; //NOI18N
+            String overrideEnd = override ? "</b>" : ""; //NOI18N
             boolean inherited = !POMModelPanel.isValueDefinedInCurrent(values);
-            String inheritedStart = inherited ? "<i>" : "";
-            String inheritedEnd = inherited ? "</i>" : "";
+            String inheritedStart = inherited ? "<i>" : ""; //NOI18N
+            String inheritedEnd = inherited ? "</i>" : ""; //NOI18N
 
-            String message = "<html>" +
+            String message = "<html>" + //NOI18N
                     inheritedStart + overrideStart +
-                    key + " : " + dispVal +
+                    key + " : " + dispVal + //NOI18N
                     overrideEnd + inheritedEnd;
             return message;
         }
@@ -1078,19 +1271,32 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
 
         @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {
+                new SelectAction(this)
+            };
+        }
+
+        @Override
+        public Action getPreferredAction() {
+            return new SelectAction(this, 0);
+        }
+
+
+        @Override
         public String getHtmlDisplayName() {
             Object[] values = getLookup().lookup(POMCutHolder.class).getCutValues();
             String dispVal = POMModelPanel.definesValue(values) ? "" : NbBundle.getMessage(POMModelVisitor.class, "UNDEFINED");
             boolean override = POMModelPanel.overridesParentValue(values);
-            String overrideStart = override ? "<b>" : "";
-            String overrideEnd = override ? "</b>" : "";
+            String overrideStart = override ? "<b>" : ""; //NOI18N
+            String overrideEnd = override ? "</b>" : ""; //NOI18N
             boolean inherited = !POMModelPanel.isValueDefinedInCurrent(values);
-            String inheritedStart = inherited ? "<i>" : "";
-            String inheritedEnd = inherited ? "</i>" : "";
+            String inheritedStart = inherited ? "<i>" : ""; //NOI18N
+            String inheritedEnd = inherited ? "</i>" : ""; //NOI18N
 
-            String message = "<html>" +
+            String message = "<html>" + //NOI18N
                     inheritedStart + overrideStart +
-                    key + " " + dispVal +
+                    key + " " + dispVal + //NOI18N
                     overrideEnd + inheritedEnd;
 
             return message;
@@ -1106,6 +1312,34 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             return getIcon(type);
         }
 
+        @Override
+        public String getShortDescription() {
+            Object[] values = getLookup().lookup(POMCutHolder.class).getCutValues();
+            POMModel[] mdls = getLookup().lookup(POMCutHolder.class).getSource();
+            StringBuffer buff = new StringBuffer();
+            int index = 0;
+            buff.append("<html>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_Defined_in") +
+                    "<p><table><thead><tr><th>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_ArtifactId") +
+                    "</th><th>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_IS_DEFINED") +
+                    "</th></tr></thead><tbody>"); //NOI18N
+            for (POMModel mdl : mdls) {
+                String artifact = mdl.getProject().getArtifactId();
+                buff.append("<tr><td>"); //NOI18N
+                buff.append(artifact != null ? artifact : "project");
+                buff.append("</td><td>"); //NOI18N
+                buff.append(values[index] != null ? org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_YES") : org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_NO"));
+                buff.append("</td></tr>");//NOI18N
+                index++;
+            }
+            buff.append("</tbody></table>");//NOI18N
+
+            return buff.toString();
+        }
+
+
     }
 
     private static class ListNode extends AbstractNode {
@@ -1117,6 +1351,19 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             setName(name);
             this.key = name;
         }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {
+                new SelectAction(this)
+            };
+        }
+
+        @Override
+        public Action getPreferredAction() {
+            return new SelectAction(this, 0);
+        }
+
 
         @Override
         public String getHtmlDisplayName() {
@@ -1138,6 +1385,34 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
 
         @Override
+        public String getShortDescription() {
+            Object[] values = getLookup().lookup(POMCutHolder.class).getCutValues();
+            POMModel[] mdls = getLookup().lookup(POMCutHolder.class).getSource();
+            StringBuffer buff = new StringBuffer();
+            int index = 0;
+            buff.append("<html>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_Defined_in") +
+                    "<p><table><thead><tr><th>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_ArtifactId") +
+                    "</th><th>" + //NOI18N
+                    NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_IS_DEFINED") +
+                    "</th></tr></thead><tbody>"); //NOI18N
+            for (POMModel mdl : mdls) {
+                String artifact = mdl.getProject().getArtifactId();
+                buff.append("<tr><td>"); //NOI18N
+                buff.append(artifact != null ? artifact : "project");
+                buff.append("</td><td>"); //NOI18N
+                buff.append(values[index] != null ? NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_YES") : NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_NO"));
+                buff.append("</td></tr>");//NOI18N
+                index++;
+            }
+            buff.append("</tbody></table>");//NOI18N
+
+            return buff.toString();
+        }
+
+
+        @Override
         public Image getIcon(int type) {
              return getIconForCutHolder(getLookup().lookup(POMCutHolder.class));
         }
@@ -1149,36 +1424,51 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     }
 
-    static class PomChildren extends Children.Keys<Object> {
-        private Object[] one = new Object[] {new Object()};
-        private POMCutHolder holder;
+    static class PomChildren extends Children.Keys<POMCutHolder> implements PropertyChangeListener {
+        private POMCutHolder parentHolder;
         private POMQNames names;
         private POMModelVisitor visitor;
         private Class type;
-        private boolean filterUndefined;
-        public PomChildren(POMCutHolder holder, POMQNames names, Class type, boolean filterUndefined) {
-            setKeys(one);
-            this.holder = holder;
+        private POMModelPanel.Configuration configuration;
+        private List<POMCutHolder> children;
+
+        public PomChildren(POMCutHolder parent, POMQNames names, Class type, POMModelPanel.Configuration config) {
+            this.parentHolder = parent;
             this.names = names;
             this.type = type;
-            this.filterUndefined = filterUndefined;
+            this.configuration = config;
         }
 
-        public void reshow(boolean filterUndefined) {
-            this.filterUndefined = filterUndefined;
-            this.refreshKey(one[0]);
+        private void reshow() {
+            List<POMCutHolder> childs = children;
+            if (childs != null) {
+                for (POMCutHolder h : childs) {
+                    if (!POMModelPanel.definesValue(h.getCutValues())) {
+                        refreshKey(h);
+                    }
+                }
+            }
         }
 
         @Override
-        protected Node[] createNodes(Object key) {
-            boolean hasNonNullValue = false;
-            visitor = new POMModelVisitor(names, filterUndefined);
+        protected void addNotify() {
+            super.addNotify();
+            setKeys(rescan(new POMModelVisitor(parentHolder, configuration)));
+            configuration.addPropertyChangeListener(this);
+        }
+
+        @Override
+        protected void removeNotify() {
+            super.removeNotify();
+            children = null;
+            configuration.removePropertyChangeListener(this);
+
+        }
+
+        private List<POMCutHolder> rescan(POMModelVisitor visitor) {
             try {
                 Method m = POMModelVisitor.class.getMethod("visit", type); //NOI18N
-                for (Object comp : holder.getCutValues()) {
-                    if (comp != null) {
-                        hasNonNullValue = true;
-                    }
+                for (Object comp : parentHolder.getCutValues()) {
                     try {
                         m.invoke(visitor, comp);
                     } catch (Exception ex) {
@@ -1188,28 +1478,41 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-            return hasNonNullValue ? visitor.getChildNodes() : new Node[0];
+            children = Arrays.asList(visitor.getChildValues());
+            return children;
+        }
+
+        @Override
+        protected Node[] createNodes(POMCutHolder childkey) {
+            if (configuration.isFilterUndefined() && !POMModelPanel.definesValue(childkey.getCutValues())) {
+                return new Node[0];
+            }
+            return new Node[] {childkey.createNode()};
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            reshow();
         }
 
 
     }
 
-    class PomListChildren<T extends POMComponent> extends Children.Keys<Object> {
+    static class PomListChildren<T extends POMComponent> extends Children.Keys<Object> {
         private Object[] one = new Object[] {new Object()};
         private POMCutHolder holder;
         private POMQNames names;
         private Class type;
         private KeyGenerator<T> keyGenerator;
-        private boolean override;
         private POMQName childName;
-        public PomListChildren(POMCutHolder holder, POMQNames names, Class type, KeyGenerator<T> generator, boolean override, POMQName childName) {
+        private POMModelPanel.Configuration configuration;
+        public PomListChildren(POMCutHolder holder, POMQNames names, Class type, KeyGenerator<T> generator, POMModelPanel.Configuration configuration, POMQName childName) {
             setKeys(one);
             this.holder = holder;
             this.names = names;
             this.type = type;
             this.keyGenerator = generator;
-            this.override = override;
             this.childName = childName;
+            this.configuration = configuration;
         }
 
         public void reshow() {
@@ -1241,18 +1544,21 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 level++;
             }
             for (List<T> lst : cut.values()) {
-                POMCutHolder cutHolder = new POMCutHolder();
                 T topMost = null;
                 for (T c : lst) {
-                    cutHolder.addCut(c);
                     if (topMost == null) {
                         topMost = c;
                     }
                 }
-                growToSize(holder.getCutsSize(), cutHolder);
 
                 String itemName = keyGenerator.createName(topMost);
-                toRet.add(new ObjectNode(Lookups.fixed(cutHolder, childName), new PomChildren(cutHolder, names, type, filterUndefined), itemName));
+                POMCutHolder cutHolder = new SingleObjectCH(holder, childName, itemName, type, configuration);
+                for (T c : lst) {
+                    cutHolder.addCut(c);
+                }
+                growToSize(holder.getCutsSize(), cutHolder);
+
+                toRet.add(new ObjectNode(Lookups.fixed(cutHolder, childName), new PomChildren(cutHolder, names, type, configuration), itemName));
             }
 
             return toRet.toArray(new Node[0]);
@@ -1266,7 +1572,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
     }
 
-    class PomStringListChildren extends Children.Keys<Object> {
+    static class PomStringListChildren extends Children.Keys<Object> {
         private Object[] one = new Object[] {new Object()};
         private POMCutHolder holder;
         private POMQName childName;
@@ -1304,16 +1610,17 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 level++;
             }
             for (List<String> lst : cut.values()) {
-                POMCutHolder cutHolder = new POMCutHolder();
                 String topMost = null;
                 for (String c : lst) {
-                    cutHolder.addCut(c);
                     if (topMost == null) {
                         topMost = c;
                     }
                 }
+                POMCutHolder cutHolder = new SingleObjectCH(holder, childName, topMost);
+                for (String c : lst) {
+                    cutHolder.addCut(c);
+                }
                 growToSize(holder.getCutsSize(), cutHolder);
-                toRet.add(new ObjectNode(Lookups.fixed(cutHolder, childName), Children.LEAF, topMost));
             }
 
             return toRet.toArray(new Node[0]);
@@ -1328,5 +1635,48 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     }
 
+
+    static class SelectAction extends AbstractAction implements Presenter.Popup {
+        private Node node;
+        private int layer = -1;
+
+        SelectAction(Node node) {
+            this.node = node;
+        }
+
+        SelectAction(Node node, int layer) {
+            this.node = node;
+            this.layer = layer;
+        }
+        public void actionPerformed(ActionEvent e) {
+            if (layer != -1) {
+                POMModelPanel.selectByNode(node, null, layer);
+            }
+        }
+
+        public JMenuItem getPopupPresenter() {
+            JMenu menu = new JMenu();
+            menu.setText(org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "ACT_Show"));
+            POMCutHolder pch = node.getLookup().lookup(POMCutHolder.class);
+            POMModel[] mdls = pch.getSource();
+            Object[] val = pch.getCutValues();
+            int index = 0;
+            for (POMModel mdl : mdls) {
+                String artifact = mdl.getProject().getArtifactId();
+                JMenuItem item = new JMenuItem();
+                item.setAction(new SelectAction(node, index));
+                if (index == 0) {
+                    item.setText(NbBundle.getMessage(POMModelVisitor.class, "ACT_Current", artifact != null ? artifact : "project"));
+                } else {
+                    item.setText(NbBundle.getMessage(POMModelVisitor.class, "ACT_PARENT", artifact != null ? artifact : "project"));
+                }
+                item.setEnabled(val[index] != null);
+                menu.add(item);
+                index++;
+            }
+            return menu;
+        }
+
+    }
 
 }

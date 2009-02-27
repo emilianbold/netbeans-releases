@@ -5,11 +5,13 @@
 
 package org.netbeans.modules.dlight.visualizers;
 
-import org.netbeans.modules.dlight.core.stack.spi.SourceFileInfoProvider.LineInfo;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
+
+
 
 
 public interface SourceSupportProvider {
-    public void showSource(LineInfo lineInfo, boolean isReadOnly);
-    public void showSource(LineInfo lineInfo);
+    public void showSource(SourceFileInfo lineInfo, boolean isReadOnly);
+    public void showSource(SourceFileInfo lineInfo);
 
 }
