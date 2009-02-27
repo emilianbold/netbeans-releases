@@ -74,7 +74,6 @@ import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -100,10 +99,6 @@ public class BugzillaRepository extends Repository {
 
     public TaskRepository getTaskRepository() {
         return taskRepository;
-    }
-
-    public Issue createIssue() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -132,7 +127,7 @@ public class BugzillaRepository extends Repository {
     }
 
     public Issue getIssue(String id) {
-        assert !SwingUtilities.isEventDispatchThread();
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         TaskData taskData;
         try {
             taskData = Bugzilla.getInstance().getRepositoryConnector().getTaskData(taskRepository, id, new NullProgressMonitor());
@@ -146,6 +141,7 @@ public class BugzillaRepository extends Repository {
     @Override
     // XXX create repo wih product if kenai project and use in queries
     public Issue[] simpleSearch(final String criteria) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         String[] keywords = criteria.split(" ");
 
         List<BugzillaIssue> issues = new ArrayList<BugzillaIssue>();
@@ -175,6 +171,7 @@ public class BugzillaRepository extends Repository {
 
     private void executeQuery(String queryUrl, final List<BugzillaIssue> issues)  {
         assert taskRepository != null;
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         TaskDataCollector collector = new TaskDataCollector() {
             public void accept(TaskData taskData) {
                 issues.add(new BugzillaIssue(taskData, BugzillaRepository.this)); // we don't cache this issues
@@ -258,6 +255,11 @@ public class BugzillaRepository extends Repository {
     @Override
     public Image getIcon() {
         return null;
+    }
+
+    @Override
+    public Issue createIssue() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     private class Controller extends BugtrackingController implements DocumentListener, ActionListener {

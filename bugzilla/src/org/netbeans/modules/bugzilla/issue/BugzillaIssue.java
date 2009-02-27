@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import org.apache.commons.httpclient.HttpException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -81,6 +82,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public class BugzillaIssue extends Issue {
+
     private TaskData data;
     private BugzillaRepository repository;
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";
@@ -94,6 +96,26 @@ public class BugzillaIssue extends Issue {
     static final String LABEL_NAME_STATUS       = "bugzilla.issue.status";
     static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution";
     static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary";
+
+    /**
+     * Issue wasn't seen yet
+     */
+    static final int FIELD_STATUS_IRELEVANT = -1;
+
+    /**
+     * Field wasn't changed since the issue was seen the last time
+     */
+    static final int FIELD_STATUS_UPTODATE = 1;
+
+    /**
+     * Field has a value in oposite to the last time when it was seen
+     */
+    static final int FIELD_STATUS_NEW = 2;
+
+    /**
+     * Field was changed since the issue was seen the last time
+     */
+    static final int FIELD_STATUS_MODIFIED = 4;
 
     enum IssueField {
         SUMMARY(TaskAttribute.SUMMARY),
@@ -120,16 +142,28 @@ public class BugzillaIssue extends Issue {
         SEVERITY(BugzillaAttribute.BUG_SEVERITY.getKey()),
         DESCRIPTION(TaskAttribute.DESCRIPTION),
         CREATION(TaskAttribute.DATE_CREATION),
-        MODIFICATION(TaskAttribute.DATE_MODIFICATION);
+        MODIFICATION(TaskAttribute.DATE_MODIFICATION),
+        COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, false),
+        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false);
 
         private final String key;
-
-        public static int STATUS_UPTODATE = 1;
-        public static int STATUS_NEW = 2;
-        public static int STATUS_MODIFIED = 4;
+        private boolean singleAttribute;
 
         IssueField(String key) {
+            this(key, true);
+        }
+        IssueField(String key, boolean singleAttribute) {
             this.key = key;
+            this.singleAttribute = singleAttribute;
+        }
+        public String getKey() {
+            return key;
+        }
+        public boolean isSingleAttribute() {
+            return singleAttribute;
+        }
+        public boolean isReadOnly() {
+            return !singleAttribute;
         }
     }
 
@@ -183,6 +217,17 @@ public class BugzillaIssue extends Issue {
     @Override
     public void setSeen(boolean seen) {
         setSeen(seen, true);
+    }
+
+    public void setSeen(final boolean seen, final boolean cacheRefresh) {
+        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                BugzillaIssue.super.setSeen(seen);
+                if(cacheRefresh) {
+                    repository.getIssuesCache().setSeen(getID(), seen, getAttributes());
+                }
+            }
+        });
     }
 
     @Override
@@ -348,19 +393,53 @@ public class BugzillaIssue extends Issue {
         return data;
     }
 
-    public void setSeen(boolean seen, boolean cacheRefresh) {
-        super.setSeen(seen);
-        if(cacheRefresh) {
-            repository.getIssuesCache().setSeen(getID(), seen, getAttributes());
+    /**
+     * Returns
+     *
+     * @param f
+     * @return
+     */
+    String getFieldValue(IssueField f) {
+        if(f.isSingleAttribute()) {
+            TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+            if(a != null && a.getValues().size() > 1) {
+                return listValues(a);
+            }
+            return a != null ? a.getValue() : "";
+        } else {
+            List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, f.key);
+            return "" + ( attrs != null && attrs.size() > 0 ?  attrs.size() : ""); // returning 0 would set status MODIFIED instead of NEW
         }
     }
 
-    String getFieldValue(IssueField f) {
-        TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
-        return a != null ? a.getValue() : "";
+    /**
+     * Returns a comma separated list created
+     * from the values returned by TaskAttribute.getValues()
+     * 
+     * @param a
+     * @return
+     */
+    private String listValues(TaskAttribute a) {
+        if(a == null) {
+            return "";
+        }
+        StringBuffer sb = new StringBuffer();
+        List<String> l = a.getValues();
+        for (int i = 0; i < l.size(); i++) {
+            String s = l.get(i);
+            sb.append(s);
+            if(i < l.size() -1) {
+                sb.append(",");
+            }
+        }
+        return sb.toString();
     }
 
     void setFieldValue(IssueField f, String value) {
+        if(f.isReadOnly()) {
+            assert false : "can't set value into IssueField " + f.name();
+            return;
+        }
         TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
         if(a == null) {
             a = new TaskAttribute(data.getRoot(), f.key);
@@ -368,10 +447,15 @@ public class BugzillaIssue extends Issue {
         a.setValue(value);
     }
 
-
     List<String> getFieldValues(IssueField f) {
-        TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
-        return a != null ? a.getValues() : Collections.EMPTY_LIST;
+        if(f.isSingleAttribute()) {
+            TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+            return a != null ? a.getValues() : Collections.EMPTY_LIST;
+        } else {
+            List<String> ret = new ArrayList();
+            ret.add(getFieldValue(f));
+            return ret;
+        }
     }
 
     void setFieldValues(IssueField f, List<String> ccs) {
@@ -382,28 +466,32 @@ public class BugzillaIssue extends Issue {
         a.setValues(ccs);
     }
 
+    /**
+     * Returns a status value for the given field<br>
+     * <ul>
+     *  <li>{@link #FIELD_STATUS_IRELEVANT} - issue wasn't seen yet
+     *  <li>{@link #FIELD_STATUS_UPTODATE} - field value wasn't changed
+     *  <li>{@link #FIELD_STATUS_MODIFIED} - field value was changed
+     *  <li>{@link #FIELD_STATUS_NEW} - field has a value for the first time since it was seen
+     * </ul>
+     * @param f IssueField
+     * @return a status value
+     */
     int getFieldStatus(IssueField f) {
-        Map<String, String> a = repository.getIssuesCache().getSeenAttributes(getID());
-        String seenValue = a.get(f.key);
-        if(seenValue == null && getFieldValue(f) != null) {
-            return IssueField.STATUS_NEW;
-        } else if (!seenValue.equals(getFieldValue(f))) {
-            return IssueField.STATUS_MODIFIED;
+        if(!wasSeen()) {
+            return FIELD_STATUS_IRELEVANT;
         }
-        return IssueField.STATUS_UPTODATE;
-    }
-
-    // XXX get rid of this
-    Set<TaskAttribute> getResolveAttributes(String resolution) {
-        Set<TaskAttribute> attrs = new HashSet<TaskAttribute>();
-        TaskAttribute rta = data.getRoot();
-        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.OPERATION);
-        ta.setValue(BugzillaOperation.resolve.getInputId());
-        attrs.add(ta);
-        ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);
-        ta.setValue(resolution);
-        attrs.add(ta);
-        return attrs;
+        Map<String, String> a = repository.getIssuesCache().getSeenAttributes(getID());
+        String seenValue = a != null ? a.get(f.key) : null;
+        if(seenValue == null) {
+            seenValue.equals("");
+        }
+        if(seenValue.equals("") && !seenValue.equals(getFieldValue(f))) {
+            return FIELD_STATUS_NEW;
+        } else if (!seenValue.equals(getFieldValue(f))) {
+            return FIELD_STATUS_MODIFIED;
+        }
+        return FIELD_STATUS_UPTODATE;
     }
 
     private IssueNode createNode() {
@@ -467,6 +555,7 @@ public class BugzillaIssue extends Issue {
 
 
     void addAttachment(File f, String comment, String desc, String contentType) throws HttpException, IOException, CoreException  {
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(f);
         attachmentSource.setContentType(contentType);
         BugzillaTaskAttachmentHandler.AttachmentPartSource source = new BugzillaTaskAttachmentHandler.AttachmentPartSource(attachmentSource);
@@ -503,6 +592,7 @@ public class BugzillaIssue extends Issue {
 
     // XXX carefull - implicit refresh
     public void addComment(String comment, boolean close) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         if(comment == null && !close) {
             return;
         }
@@ -530,10 +620,13 @@ public class BugzillaIssue extends Issue {
     }
 
     void submit() throws CoreException {
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
+        // XXX evaluate rr
     }
 
     public void refresh() {
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         try {
             TaskData td = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), data.getTaskId(), new NullProgressMonitor());
             setTaskData(td);
@@ -655,6 +748,7 @@ public class BugzillaIssue extends Issue {
         }
 
         public void getAttachementData(OutputStream os) throws MalformedURLException, IOException, CoreException {
+            assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
             Bugzilla.getInstance().getClient(repository).getAttachmentData(id, os, new NullProgressMonitor());
         }
     }
