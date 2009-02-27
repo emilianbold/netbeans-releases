@@ -51,7 +51,7 @@ class SectionFinder {
     private static final class debug extends Level {
 
         private debug() {
-            super("DWARF-2(ELF-32)", Level.INFO.intValue());
+            super("DWARF-2(ELF-32)", Level.INFO.intValue()); // NOI18N
         }
     }
     private static final boolean WORDS_BIGENDIAN =
@@ -115,27 +115,27 @@ class SectionFinder {
         @Override
         public String toString() {
             java.lang.StringBuffer str = new java.lang.StringBuffer(super.toString());
-            str.append(" [ e_ident: ");
+            str.append(" [ e_ident: "); // NOI18N
             for (int i = 0; i < EI_NIDENT; i++) {
                 if (e_ident[i] < 0x10 && e_ident[i] >= 0) {
                     str.append('0');
                 }
                 str.append(Integer.toHexString(e_ident[i] & 0xFF));
             }
-            str.append("; e_type: ").append(e_type & 0xFFFF);
-            str.append("; e_machine: ").append(e_machine & 0xFFFF);
-            str.append("; e_version: ").append(e_version & 0xFFFF);
-            str.append("; e_entry: 0x").append(Long.toHexString(e_entry));
-            str.append("; e_phoff: ").append((long) e_phoff & 0xFFFFFFFFL);
-            str.append("; e_shoff: ").append((long) e_shoff & 0xFFFFFFFFL);
-            str.append("; e_flags: 0x").append(Integer.toHexString(e_flags));
-            str.append("; e_ehsize: ").append(e_ehsize & 0xFFFF);
-            str.append("; e_phentsize: ").append(e_phentsize & 0xFFFF);
-            str.append("; e_phentnum: ").append(e_phentnum & 0xFFFF);
-            str.append("; e_shentsize: ").append(e_shentsize & 0xFFFF);
-            str.append("; e_shnum: ").append(e_shnum & 0xFFFF);
-            str.append("; e_shstrndx: ").append(e_shstrndx & 0xFFFF);
-            str.append(" ]");
+            str.append("; e_type: ").append(e_type & 0xFFFF); // NOI18N
+            str.append("; e_machine: ").append(e_machine & 0xFFFF); // NOI18N
+            str.append("; e_version: ").append(e_version & 0xFFFF); // NOI18N
+            str.append("; e_entry: 0x").append(Long.toHexString(e_entry)); // NOI18N
+            str.append("; e_phoff: ").append((long) e_phoff & 0xFFFFFFFFL); // NOI18N
+            str.append("; e_shoff: ").append((long) e_shoff & 0xFFFFFFFFL); // NOI18N
+            str.append("; e_flags: 0x").append(Integer.toHexString(e_flags)); // NOI18N
+            str.append("; e_ehsize: ").append(e_ehsize & 0xFFFF); // NOI18N
+            str.append("; e_phentsize: ").append(e_phentsize & 0xFFFF); // NOI18N
+            str.append("; e_phentnum: ").append(e_phentnum & 0xFFFF); // NOI18N
+            str.append("; e_shentsize: ").append(e_shentsize & 0xFFFF); // NOI18N
+            str.append("; e_shnum: ").append(e_shnum & 0xFFFF); // NOI18N
+            str.append("; e_shstrndx: ").append(e_shstrndx & 0xFFFF); // NOI18N
+            str.append(" ]"); // NOI18N
             return str.toString();
         }
     }
@@ -176,17 +176,17 @@ class SectionFinder {
         @Override
         public String toString() {
             java.lang.StringBuffer str = new java.lang.StringBuffer(super.toString());
-            str.append(" [ sh_name: ").append(sh_name);
-            str.append("; sh_type: ").append(sh_type);
-            str.append("; sh_flags: 0x").append(Long.toHexString(sh_flags));
-            str.append("; sh_addr: 0x").append(Long.toHexString(sh_addr));
-            str.append("; sh_offset: ").append(sh_offset);
-            str.append("; sh_size: ").append(sh_size);
-            str.append("; sh_link: ").append(sh_link);
-            str.append("; sh_info: ").append(sh_info);
-            str.append("; sh_addralgin: ").append(sh_addralign);
-            str.append("; sh_entsize: ").append(sh_entsize);
-            str.append(" ]");
+            str.append(" [ sh_name: ").append(sh_name); // NOI18N
+            str.append("; sh_type: ").append(sh_type); // NOI18N
+            str.append("; sh_flags: 0x").append(Long.toHexString(sh_flags)); // NOI18N
+            str.append("; sh_addr: 0x").append(Long.toHexString(sh_addr)); // NOI18N
+            str.append("; sh_offset: ").append(sh_offset); // NOI18N
+            str.append("; sh_size: ").append(sh_size); // NOI18N
+            str.append("; sh_link: ").append(sh_link); // NOI18N
+            str.append("; sh_info: ").append(sh_info); // NOI18N
+            str.append("; sh_addralgin: ").append(sh_addralign); // NOI18N
+            str.append("; sh_entsize: ").append(sh_entsize); // NOI18N
+            str.append(" ]"); // NOI18N
             return str.toString();
         }
     }
@@ -203,19 +203,19 @@ class SectionFinder {
     static MappedByteBuffer mapSection(String file, String section)
             throws IOException {
         if (Configuration.DEBUG) {
-            logger.log(DEBUG, "mapSection {0}", file);
+            logger.log(DEBUG, "mapSection {0}", file); // NOI18N
         }
-        RandomAccessFile f = new RandomAccessFile(file, "r");
+        RandomAccessFile f = new RandomAccessFile(file, "r"); // NOI18N
 
         /** Read the ELF header. */
         Elf32_Ehdr ehdr = new Elf32_Ehdr();
         ehdr.read(f);
         if (ehdr.e_ident[0] != ELFMAG0 || ehdr.e_ident[1] != ELFMAG1 || ehdr.e_ident[2] != ELFMAG2 || ehdr.e_ident[3] != ELFMAG3) {
             f.close();
-            throw new IOException(file + ": not an ELF file");
+            throw new IOException(file + ": not an ELF file"); // NOI18N
         }
         if (Configuration.DEBUG) {
-            logger.log(DEBUG, "read ELF header: {0}", ehdr);
+            logger.log(DEBUG, "read ELF header: {0}", ehdr); // NOI18N
         }
 
         /* Read the string table section header. */
@@ -223,11 +223,11 @@ class SectionFinder {
         f.seek(ehdr.e_shoff + (ehdr.e_shstrndx * Elf32_Shdr.sizeof()));
         strtabhdr.read(f);
         if (Configuration.DEBUG) {
-            logger.log(DEBUG, "read string table section header: {0}", strtabhdr);
+            logger.log(DEBUG, "read string table section header: {0}", strtabhdr); // NOI18N
         }
 
         Elf32_Shdr shdr = new Elf32_Shdr();
-        byte[] target_bytes = section.getBytes("ISO8859-1");
+        byte[] target_bytes = section.getBytes("ISO8859-1"); // NOI18N
         byte[] buf = new byte[target_bytes.length + 1];
         boolean found = false;
 
@@ -237,14 +237,14 @@ class SectionFinder {
             f.seek(ehdr.e_shoff + (i * Elf32_Shdr.sizeof()));
             shdr.read(f);
             if (Configuration.DEBUG) {
-                logger.log(DEBUG, "checking section: {0}", shdr);
+                logger.log(DEBUG, "checking section: {0}", shdr); // NOI18N
             }
 
             // Read the section name from the string table.
             f.seek(strtabhdr.sh_offset + shdr.sh_name);
             f.readFully(buf);
             if (Configuration.DEBUG) {
-                logger.log(DEBUG, "this section is \"{0}\"", new String(buf));
+                logger.log(DEBUG, "this section is \"{0}\"", new String(buf)); // NOI18N
             }
             for (int j = 0; j < target_bytes.length; j++) {
                 if (target_bytes[j] != buf[j]) {
@@ -256,7 +256,7 @@ class SectionFinder {
             }
 
             if (Configuration.DEBUG) {
-                logger.log(DEBUG, "found section {0}: {1}", new Object[]{section, shdr});
+                logger.log(DEBUG, "found section {0}: {1}", new Object[]{section, shdr}); // NOI18N
             }
             found = true;
             break;
@@ -264,7 +264,7 @@ class SectionFinder {
 
         if (!found) {
             f.close();
-            throw new IOException("no section " + section + " found in " + file);
+            throw new IOException("no section " + section + " found in " + file); // NOI18N
         }
 
         try {
