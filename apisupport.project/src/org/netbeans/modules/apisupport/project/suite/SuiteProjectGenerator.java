@@ -52,7 +52,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
-import org.netbeans.modules.apisupport.project.ui.customizer.ClusterUtils;
+import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerLibraries;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
@@ -160,9 +160,8 @@ public class SuiteProjectGenerator {
                     // Will be stripped of version suffix if appropriate for the platform.
                     suiteProps.setEnabledClusters(new String[] {bootstrapModule.getClusterDirectory().getName()});
                 } else {
-                    suiteProps.setClusterPath(new ClusterInfo[] {
-                        ClusterInfo.create(bootstrapModule.getClusterDirectory(), true, true)
-                    });
+                    suiteProps.setClusterPath(Collections.singletonList(
+                            ClusterInfo.create(bootstrapModule.getClusterDirectory(), true, true)));
                 }
             }
         }

@@ -37,19 +37,24 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.apisupport.project.ui.customizer;
+package org.netbeans.modules.apisupport.project.universe;
 
+import org.netbeans.modules.apisupport.project.ui.customizer.*;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -141,8 +146,21 @@ public final class ClusterUtils {
             enabledPaths.addAll(Arrays.asList(paths));
         }
 
+        Map<File, String> srcRootsMap = new HashMap<File, String>();
+        Map<String, String> props = eval.getProperties();
+        for (Map.Entry<String, String> entry : props.entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith(SuiteProperties.CLUSTER_SRC_PREFIX) &&
+                    key.endsWith(NbPlatform.PLATFORM_SOURCES_SUFFIX)) {
+                String cd = key.substring(SuiteProperties.CLUSTER_SRC_PREFIX.length(),
+                        key.length() - NbPlatform.PLATFORM_SOURCES_SUFFIX.length());
+                File cf = PropertyUtils.resolveFile(root, cd);
+                srcRootsMap.put(cf, entry.getValue());
+                // TODO C.P javadoc for external clusters
+            }
+        }
+
         for (String path : wp) {
-            // TODO C.P sources/javadoc for external clusters
             boolean isPlaf = path.contains("${" + SuiteProperties.ACTIVE_NB_PLATFORM_DIR_PROPERTY + "}");
             File cd = evaluateClusterPathEntry(path, root, eval, nbPlatformRoot);
             Project prj = null;
@@ -168,7 +186,11 @@ public final class ClusterUtils {
                 }
             }
             boolean enabled = (pathsWDC == null) || enabledPaths.contains(path);
-            clusterPath.add(ClusterInfo.createFromCP(cd, prj, isPlaf, enabled));
+            URL[] srcRoots = null;
+            if (srcRootsMap.containsKey(cd)) {
+                srcRoots = Util.findURLs(srcRootsMap.get(cd));
+            }
+            clusterPath.add(ClusterInfo.createFromCP(cd, prj, isPlaf, srcRoots, enabled));
         }
         return clusterPath;
     }

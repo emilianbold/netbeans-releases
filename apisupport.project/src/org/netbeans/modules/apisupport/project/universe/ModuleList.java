@@ -43,7 +43,6 @@ package org.netbeans.modules.apisupport.project.universe;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -55,6 +54,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,7 +73,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
-import org.netbeans.modules.apisupport.project.ui.customizer.ClusterUtils;
+import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -232,6 +232,19 @@ public final class ModuleList {
                 return Collections.emptySet();
             }
         }
+    }
+
+    public static URL[] getSourceRootsForExternalModule(File binaryRootF) {
+        Set<ModuleEntry> candidates = getKnownEntries(binaryRootF);
+        List<URL> roots = new ArrayList<URL>();
+
+        for (ModuleEntry entry : candidates) {
+            if (entry instanceof BinaryClusterEntry) {
+                BinaryClusterEntry bce = (BinaryClusterEntry) entry;
+                roots.addAll(Arrays.asList(bce.getSourceRoots()));
+            }
+        }
+        return roots.toArray(new URL[roots.size()]);
     }
 
     private static void registerEntry(ModuleEntry entry, Set<File> files) {
@@ -534,7 +547,6 @@ public final class ModuleList {
                     mm.getReleaseVersion(), mm.getProvidedTokens(),
                     publicPackages, friends, mm.isDeprecated(), src);
         } else {
-            // TODO C.P what is nbdestdir good for here?
             entry = new ExternalEntry(basedir, cnb, clusterDir, PropertyUtils.resolveFile(clusterDir, module),
                     cpextra.toString(), nbdestdir, mm.getReleaseVersion(),
                     mm.getProvidedTokens(), publicPackages, friends, mm.isDeprecated(), src);
@@ -675,7 +687,11 @@ public final class ModuleList {
             } else {
                 File cd = ci.getClusterDir();
                 // null nbdestdir for external clusters
-                lists.add(findOrCreateModuleListFromCluster(cd, ci.isPlatformCluster() ? cd.getParentFile() : null ));
+                ModuleList ml = findOrCreateModuleListFromCluster(cd, ci.isPlatformCluster() ? cd.getParentFile() : null, ci);
+                for (ModuleEntry e : ml.getAllEntriesSoft()) {
+//                    if (e.)
+                }
+                lists.add(ml);
             }
         }
         return lists;
@@ -799,7 +815,7 @@ public final class ModuleList {
         }
         ModuleList[] lists = new ModuleList[clusters.length];
         for (int i = 0; i < clusters.length; i++) {
-            lists[i] = findOrCreateModuleListFromCluster(clusters[i], root);
+            lists[i] = findOrCreateModuleListFromCluster(clusters[i], root, null);
         }
         return merge(lists, root);
     }
@@ -818,13 +834,14 @@ public final class ModuleList {
      *
      * @param cluster Cluster dir
      * @param nbDestDir <tt>netbeans.dest.dir</tt> folder for NB.org modules, may be <tt>null</tt>
+     * @param ci Cluster info, passed when scanning external cluster, may be <tt>null</tt>
      * @return List of modules in the cluster
      * @throws java.io.IOException
      */
-    private static ModuleList findOrCreateModuleListFromCluster(File cluster, File nbDestDir) throws IOException {
+    private static ModuleList findOrCreateModuleListFromCluster(File cluster, File nbDestDir, ClusterInfo ci) throws IOException {
         ModuleList list = binaryLists.get(cluster);
         if (list == null) {
-            list = scanCluster(cluster, nbDestDir, true);
+            list = scanCluster(cluster, nbDestDir, true, ci);
             binaryLists.put(cluster, list);
         }
         return list;
@@ -836,9 +853,10 @@ public final class ModuleList {
      * @param nbDestDir <tt>netbeans.dest.dir</tt> folder for NB.org modules, may be <tt>null</tt>
      * @param entries Map to be filled with module entries found in cluster
      * @param registerEntry Whether register entries in known entries in ModuleList
+     * @param ci Cluster info, passed when scanning external cluster, may be <tt>null</tt>
      * @throws java.io.IOException
      */
-    public static ModuleList scanCluster(File cluster, File nbDestDir, boolean registerEntry) throws IOException {
+    public static ModuleList scanCluster(File cluster, File nbDestDir, boolean registerEntry, ClusterInfo ci) throws IOException {
         Map<String, ModuleEntry> entries = new HashMap<String, ModuleEntry>();
         for (String moduleDir : MODULE_DIRS) {
             File dir = new File(cluster, moduleDir.replace('/', File.separatorChar));
@@ -871,7 +889,18 @@ public final class ModuleList {
                         exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
                     }
                 }
-                ModuleEntry entry = new BinaryEntry(codenamebase, m, exts, nbDestDir, cluster, mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(), mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated(), mm.getModuleDependencies());
+                ModuleEntry entry = (ci == null || ci.isPlatformCluster())
+                        ? new BinaryEntry(codenamebase, m, exts, nbDestDir, cluster,
+                        mm.getReleaseVersion(), mm.getSpecificationVersion(),
+                        mm.getProvidedTokens(), mm.getPublicPackages(),
+                        mm.getFriends(), mm.isDeprecated(),
+                        mm.getModuleDependencies())
+                    : new BinaryClusterEntry(codenamebase, m, exts, cluster,
+                    mm.getReleaseVersion(), mm.getSpecificationVersion(),
+                    mm.getProvidedTokens(), mm.getPublicPackages(),
+                    mm.getFriends(), mm.isDeprecated(),
+                    mm.getModuleDependencies(),
+                    ci.getSourceRoots(), null);
                 if (entries.containsKey(codenamebase)) {
                     Util.err.log(ErrorManager.WARNING, "Warning: two modules found with the same code name base (" + codenamebase + "): " + entries.get(codenamebase) + " and " + entry);
                 } else {

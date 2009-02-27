@@ -72,6 +72,7 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -83,7 +84,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
-import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
@@ -913,5 +914,21 @@ public final class Util {
         assert prov != null;
         return prov.getSourceDirectory();
     }
-    
+
+    public static String urlsToAntPath(final URL[] urls) {
+        return ClassPathSupport.createClassPath(urls).toString(ClassPath.PathConversionMode.WARN);
+    }
+
+    public static URL[] findURLs(final String path) {
+        if (path == null) {
+            return new URL[0];
+        }
+        String[] pieces = PropertyUtils.tokenizePath(path);
+        URL[] urls = new URL[pieces.length];
+        for (int i = 0; i < pieces.length; i++) {
+            // XXX perhaps also support http: URLs somehow?
+            urls[i] = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(new File(pieces[i])));
+        }
+        return urls;
+    }
 }

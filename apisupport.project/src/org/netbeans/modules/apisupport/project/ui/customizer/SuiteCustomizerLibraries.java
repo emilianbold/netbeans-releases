@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
@@ -136,7 +137,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         view.setRootVisible(false);
         view.setDefaultActionAllowed(false);
         // col widths: 60%, 10%, 30%
-        // TODO C.P TTV is clumsy, rewrite to Outline (without Nodes) or OutlineView
+        // XXX TTV is clumsy, rewrite to Outline (without Nodes) or OutlineView
         Dimension dim = view.getPreferredSize();
         int firstW = 80 * dim.width / 100,
             secW = 5 * dim.width / 100;
@@ -232,7 +233,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return;
     }
 
-    // TODO C.P support "universal" "${nbplatform.active.dir}/*" entry in the cluster.path
+    // XXX support "universal" "${nbplatform.active.dir}/*" entry in the cluster.path? not needed
     // meaning "all platform clusters", recognized in harness and in UI;
     // it would allow easy switch among platforms with different clusters;
     // update also code of SuiteProjectGenerator#createPlatformProperties
@@ -271,6 +272,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         boolean canRemove = nodes.length > 0;
         boolean canEdit = nodes.length == 1;
         for (Node node : nodes) {
+            if (! (node instanceof Enabled)) {
+                canRemove = canEdit = false;
+                break;
+            }
             Enabled en = (Enabled) node;
             canRemove &= en instanceof ClusterNode && ! en.isPlatformNode();
             canEdit &= isExternalCluster(en);
@@ -300,7 +305,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     private void addExtCluster(ClusterInfo ci) {
         Children.SortedArray moduleCh = new Children.SortedArray();
         try {
-            ModuleList ml = ModuleList.scanCluster(ci.getClusterDir(), null, false);
+            ModuleList ml = ModuleList.scanCluster(ci.getClusterDir(), null, false, ci);
             moduleCh.setComparator(MODULES_COMPARATOR);
             for (ModuleEntry entry : ml.getAllEntries()) {
                 moduleCh.add(new Node[] { new BinaryModuleNode(entry, true) });
@@ -357,7 +362,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     
     @Override
     public void store() {
-        // TODO C.P: if platform contains new enough harness, store c.p, otherwise old way
         // TODO C.P: disable buttons/show button "Upgrade"??? on old harness
         Set<String> enabledClusters = new TreeSet<String>();
         Set<String> disabledModules = new TreeSet<String>();
@@ -397,7 +401,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     }
                 }
             }
-            getProperties().setClusterPath(clusterPath.toArray(new ClusterInfo[clusterPath.size()]));
+            getProperties().setClusterPath(clusterPath);
         }
         getProperties().setDisabledModules(disabledModules.toArray(new String[disabledModules.size()]));
     }
@@ -624,7 +628,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         assert nodes.length == 1;
         ClusterNode node = (ClusterNode) nodes[0];
         assert isExternalCluster(node);
-        ClusterInfo ci = EditClusterPanel.showEditDialog(node.getClusterInfo());
+        ClusterInfo ci = EditClusterPanel.showEditDialog(node.getClusterInfo(), getProperties().getProject());
         if (ci != null)
             node.setClusterInfo(ci);
     }//GEN-LAST:event_editButtonActionPerformed
@@ -666,7 +670,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 ClusterInfo ci = ClusterInfo.create(clusterDirectory, true, enabled);
                 cluster = new ClusterNode(ci, modules);
                 clusterToNode.put(clusterDirectory, cluster);
-                // TODO C.P description of cluster node (full path)
                 libChildren.platformNodes.add(cluster);
             }
             
@@ -967,7 +970,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             super.setEnabled(s);
             if (ci != null && ci.isEnabled() != s) {
                 ci = ClusterInfo.createFromCP(ci.getClusterDir(), ci.getProject(),
-                        ci.isPlatformCluster(), s);
+                        ci.isPlatformCluster(), ci.getSourceRoots(), s);
             }
         }
 
@@ -1370,7 +1373,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return universeModules;
     }
 
-    // TODO C.P warnings don't distinguish between external and platform clusterPath
     String[] findWarning(Set<UniverseModule> universeModules, Set<File> enabledClusters, Set<String> disabledModules) {
         SortedMap<String,UniverseModule> sortedModules = new TreeMap<String,UniverseModule>();
         Set<UniverseModule> excluded = new HashSet<UniverseModule>();

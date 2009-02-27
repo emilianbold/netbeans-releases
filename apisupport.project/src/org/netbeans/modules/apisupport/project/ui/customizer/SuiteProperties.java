@@ -41,13 +41,12 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,14 +54,10 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.SuiteProvider;
-import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.SuiteSubModulesListModel;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -71,8 +66,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.ErrorManager;
 
 /**
  * Provides convenient access to a lot of Suite Module's properties.
@@ -92,6 +86,7 @@ public final class SuiteProperties extends ModuleProperties {
     public static final String ACTIVE_NB_PLATFORM_DIR_PROPERTY = "nbplatform.active.dir";    // NOI18N
     public static final String CLUSTER_PATH_PROPERTY = "cluster.path";    // NOI18N
     public static final String CLUSTER_PATH_WDC_PROPERTY = "cluster.path.with.disabled.clusters";    // NOI18N
+    public static final String CLUSTER_SRC_PREFIX = "extcluster.";    // NOI18N
 
     private NbPlatform activePlatform;
     private JavaPlatform activeJavaPlatform;
@@ -119,6 +114,7 @@ public final class SuiteProperties extends ModuleProperties {
     /** keeps all information related to branding*/
     private final BasicBrandingModel brandingModel;
     private Set<ClusterInfo> clusterPath;
+    private boolean refreshBuildScripts;
     
     /**
      * Creates a new instance of SuiteProperties
@@ -224,6 +220,7 @@ public final class SuiteProperties extends ModuleProperties {
     }
     
     public void storeProperties() throws IOException {
+        assert ProjectManager.mutex().isWriteAccess();
         NbPlatform plaf = getActivePlatform();
         ModuleProperties.storePlatform(getHelper(), plaf);
         ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), false);
@@ -291,6 +288,11 @@ public final class SuiteProperties extends ModuleProperties {
                             anyDisabled = true;
                         }
                         cpwdc.add(entry);
+
+                        if (ci.isExternalCluster() && ci.getSourceRoots() != null) {
+                            String propName = CLUSTER_SRC_PREFIX + entry + NbPlatform.PLATFORM_SOURCES_SUFFIX;
+                            ep.setProperty(propName, Util.urlsToAntPath(ci.getSourceRoots()));
+                        }
                     }
                 }
                 if (anyDisabled) {
@@ -302,9 +304,22 @@ public final class SuiteProperties extends ModuleProperties {
                 ep.remove(ENABLED_CLUSTERS_PROPERTY);
             }
             getHelper().putProperties("nbproject/platform.properties", ep); // NOI18N
+            if (refreshBuildScripts) {
+                // setting cluster.path for the 1st time, needs to adjust build-impl.xm alul of all sub-projects
+                try {
+                    Set<NbModuleProject> subprojects = SuiteUtils.getSubProjects(getProject());
+                    for (NbModuleProject prj : subprojects) {
+                        prj.refreshBuildScripts(false, plaf);
+                    }
+                    getProject().refreshBuildScripts(false);
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
             changedDisabledModules = false;
             changedEnabledClusters = false;
             clusterPathChanged = false;
+            refreshBuildScripts = false;
         }
         
         super.storeProperties();
@@ -331,15 +346,13 @@ public final class SuiteProperties extends ModuleProperties {
         return clusterPath;
     }
 
-    public void setClusterPath(ClusterInfo[] clusterPathList) {
-        assert clusterPath != null; // there is a small chance that this may get correctly called even before getClusterPath(), but probably not
-        Set<ClusterInfo> newClusterPath = new LinkedHashSet<ClusterInfo>(Arrays.asList(clusterPathList));
-        if (newClusterPath.equals(clusterPath))
+    public void setClusterPath(List<ClusterInfo> clusterPathList) {
+        Set<ClusterInfo> newClusterPath = new LinkedHashSet<ClusterInfo>(clusterPathList);
+        if (newClusterPath.equals(getClusterPath()))
             return;
         if (clusterPath.isEmpty()) {
             // setting cluster.path for the 1st time, needs to adjust build-impl.xml of all sub-projects
-            Set<NbModuleProject> subprojects = SuiteUtils.getSubProjects(getProject());
-
+            refreshBuildScripts = true;
         }
         clusterPath = newClusterPath;
         clusterPathChanged = true;

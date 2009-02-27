@@ -198,7 +198,7 @@ final class NetBeansOrgCachedEntry extends AbstractEntryWithSources {
         return "NetBeansOrgCachedEntry[" + getSourceLocation() + (officialEntry != null ? "->" + officialEntry : "") + "]"; // NOI18N
     }
 
-    public URL getJavadoc() {
+    public URL getJavadoc(final NbPlatform platform) {
         if (javadoc == null)
             javadoc = NetBeansOrgEntry.findJavadocForNetBeansOrgModules(this, nbdestdir);
         return javadoc;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,47 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.apisupport.project.universe;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.openide.modules.Dependency;
 
-final class BinaryEntry extends AbstractBinaryEntry {
-    private final File nbdestdir;
-    
-    public BinaryEntry(String cnb, File jar, File[] exts, File nbdestdir, File clusterDir,
+/**
+ * Entry for module in external binary cluster.
+ * @author Richard Michalsky
+ */
+final class BinaryClusterEntry  extends AbstractBinaryEntry {
+    private URL[] javadocRoots;
+    private URL[] sourceRoots;
+
+    public BinaryClusterEntry(String cnb, File jar, File[] exts, File clusterDir,
             String releaseVersion, String specVersion, String[] providedTokens,
             ManifestManager.PackageExport[] publicPackages, String[] friends,
-            boolean deprecated, Set<Dependency> moduleDependencies) {
+            boolean deprecated, Set<Dependency> moduleDependencies,
+            URL[] sourceRoots, URL[] javadocRoots) {
         super(cnb, jar, exts, clusterDir, releaseVersion, specVersion, providedTokens,
                 publicPackages, friends, deprecated, moduleDependencies);
-        this.nbdestdir = nbdestdir;
-        if (nbdestdir == null)
-            throw new NullPointerException("nbdestdir must not be null.");    // NOI18N
+        this.javadocRoots = javadocRoots != null ? javadocRoots : new URL[0];
+        this.sourceRoots = sourceRoots != null ? sourceRoots : new URL[0];
     }
-    
-    //private boolean recurring;
+
     public File getSourceLocation() {
-        NbPlatform platform = NbPlatform.getPlatformByDestDir(nbdestdir);
-            /*
-            assert !recurring : jar;
-            recurring = true;
-            try {
-             */
-        return platform.getSourceLocationOfModule(getJarLocation());
-            /*
-            } finally {
-                recurring = false;
-            }
-             */
+        return null;    // TODO C.P may actually return something meaningful?
     }
-    
+
+    public URL[] getSourceRoots() {
+        return sourceRoots;
+    }
+
     public String toString() {
-        File source = getSourceLocation();
-        return "BinaryEntry[" + getJarLocation() + (source != null ? "," + source : "") + "]"; // NOI18N
+//        File source = getSourceLocation();
+        return "BinaryClusterEntry[" + getJarLocation() + /*(source != null ? "," + source : "") +*/ "]"; // NOI18N
     }
 }

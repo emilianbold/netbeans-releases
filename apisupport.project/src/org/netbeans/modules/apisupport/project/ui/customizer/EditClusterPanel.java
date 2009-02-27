@@ -45,8 +45,10 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import java.awt.Dialog;
 import java.io.File;
+import java.net.URL;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
@@ -55,12 +57,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizerJavadoc;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizerSources;
+import org.netbeans.modules.apisupport.project.universe.SourceRootsSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -83,7 +85,9 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
      */
     static ClusterInfo showAddDialog(Project prj) {
         EditClusterPanel panel = new EditClusterPanel();
-        panel.prjDir = prj.getProjectDirectory();
+        panel.prjDir = FileUtil.toFile(prj.getProjectDirectory());
+        SourceRootsSupport srs = new SourceRootsSupport(new URL[0], null, null);
+        panel.sourcesPanel.setSourceRootsProvider(srs);
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel,
                 NbBundle.getMessage(EditClusterPanel.class, "CTL_AddCluster_Title"), // NOI18N
@@ -99,7 +103,7 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
         dlg.setVisible(true);
         ClusterInfo retVal = null;
         if (descriptor.getValue() == panel.okButton) {
-            retVal = ClusterInfo.create(new File(panel.clusterDirText.getText()), false, true);
+            retVal = ClusterInfo.create(panel.getAbsoluteClusterPath(), false, true);
 
         }
         dlg.dispose();
@@ -113,8 +117,12 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
      * @param ci Original cluster info 
      * @return Updated cluster info or null if user cancelled the dialog
      */
-    static ClusterInfo showEditDialog(ClusterInfo ci) {
+    static ClusterInfo showEditDialog(ClusterInfo ci, Project prj) {
         EditClusterPanel panel = new EditClusterPanel();
+        panel.prjDir = FileUtil.toFile(prj.getProjectDirectory());
+        SourceRootsSupport srs = new SourceRootsSupport(
+                ci.getSourceRoots() == null ? new URL[0] : ci.getSourceRoots(), null, null);
+        panel.sourcesPanel.setSourceRootsProvider(srs);
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel,
                 NbBundle.getMessage(EditClusterPanel.class, "CTL_EditCluster_Title"), // NOI18N
@@ -132,14 +140,14 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
         dlg.setVisible(true);
         ClusterInfo retVal = null;
         if (descriptor.getValue() == panel.okButton) {
-            retVal = ClusterInfo.create(new File(panel.clusterDirText.getText()), false, true); // TODO C.P src & javadoc
+            retVal = ClusterInfo.createExternal(panel.getAbsoluteClusterPath(), srs.getSourceRoots(), true); // TODO C.P javadoc
         }
         dlg.dispose();
         return retVal;
     }
 
     private ClusterInfo clusterInfo;
-    private FileObject prjDir;
+    private File prjDir;
 
     /** Creates new form EditClusterPanel */
     public EditClusterPanel() {
@@ -147,6 +155,11 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
         okButton = new JButton();
         Mnemonics.setLocalizedText(okButton,
             NbBundle.getMessage(EditClusterPanel.class, "CTL_OK"));
+    }
+
+    private File getAbsoluteClusterPath() {
+        String maybeRelPath = clusterDirText.getText();
+        return PropertyUtils.resolveFile(prjDir, maybeRelPath);
     }
 
     /** This method is called from within the constructor to
@@ -232,7 +245,7 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
                         org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "MSG_NotValidCluster")));
             } else {
                 ModuleUISettings.getDefault().setLastUsedClusterLocation(file.getParentFile().getAbsolutePath());
-                String relPath = PropertyUtils.relativizeFile(FileUtil.toFile(prjDir), file);
+                String relPath = PropertyUtils.relativizeFile(prjDir, file);
                 clusterDirText.setText(relPath);
             }
         }
@@ -251,7 +264,7 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
     }
 
     private void updateDialog() {
-        okButton.setEnabled((new File(clusterDirText.getText())).exists());
+        okButton.setEnabled((getAbsoluteClusterPath()).exists());
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
