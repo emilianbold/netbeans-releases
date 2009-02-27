@@ -117,9 +117,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             System.err.println("function ast " + ast.getText() + " without childs in file " + file.getAbsolutePath());            
         }
         if (!isStatic()) {
-            CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(
+            CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(
                                name.toString(), true, true, false);
-            Iterator<CsmFunction> it = CsmSelect.getDefault().getStaticFunctions(file, filter);
+            Iterator<CsmFunction> it = CsmSelect.getStaticFunctions(file, filter);
             while(it.hasNext()){
                 CsmFunction fun = it.next();
                 if( name.equals(fun.getName()) ) {
@@ -375,9 +375,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      */
     public CsmFunctionDefinition getDefinition() {
         if( isCStyleStatic() ) {
-            CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(
+            CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(
                                getName().toString(), true, true, false);
-            Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(getContainingFile(), filter);
+            Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(getContainingFile(), filter);
             while(it.hasNext()){
                 CsmDeclaration decl = it.next();
                 if( CsmKindUtilities.isFunctionDefinition(decl) ) {
