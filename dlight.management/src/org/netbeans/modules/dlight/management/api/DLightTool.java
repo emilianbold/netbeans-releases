@@ -60,7 +60,6 @@ import org.netbeans.modules.dlight.spi.impl.DataCollectorProvider;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.impl.IDPProvider;
-import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -137,8 +136,8 @@ public final class DLightTool implements Validateable<DLightTarget> {
       }
 
       addIndicator(indicator);
-      IndicatorAccessor.getDefault().setToolName(indicator, toolName);
-
+      // Name is already set in IndicatorProvider.createIndicator()
+      // IndicatorAccessor.getDefault().setToolName(indicator, toolName);
     }
   }
 

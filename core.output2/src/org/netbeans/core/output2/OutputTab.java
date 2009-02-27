@@ -44,6 +44,7 @@ package org.netbeans.core.output2;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FileDialog;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -51,9 +52,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -74,6 +79,7 @@ import javax.swing.text.Document;
 import org.netbeans.core.output2.Controller.ControllerOutputEvent;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
@@ -279,7 +285,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         return (c != WindowManager.getDefault().getMainWindow());
     }
 
-    void hasOutputListenersChanged(boolean hasOutputListeners) {
+     void hasOutputListenersChanged(boolean hasOutputListeners) {
         if (hasOutputListeners && getOutputPane().isScrollLocked()) {
             navigateToFirstErrorLine();
         }
@@ -654,23 +660,25 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             }
         }
 
+        List<TabAction> activeActions = new ArrayList<TabAction>(popupItems.length);
         for (int i = 0; i < popupItems.length; i++) {
             if (popupItems[i] instanceof JSeparator) {
                 popup.add((JSeparator) popupItems[i]);
             } else {
                 if (popupItems[i] != wrapAction) {
-                    if (popupItems[i] == closeAction && !io.getIOContainer().isCloseable(this)) {
+                    if ((popupItems[i] == closeAction && !io.getIOContainer().isCloseable(this))
+                            || (popupItems[i] == fontTypeAction && getOutputPane().isWrapped())) {
                         continue;
                     }
                     JMenuItem item = popup.add((Action) popupItems[i]);
+                    activeActions.add((TabAction) popupItems[i]);
                     if (popupItems[i] == findAction) {
                         item.setMnemonic(KeyEvent.VK_F);
                     }
                 } else {
-                    JCheckBoxMenuItem item =
-                            new JCheckBoxMenuItem((Action) popupItems[i]);
-
+                    JCheckBoxMenuItem item = new JCheckBoxMenuItem((Action) popupItems[i]);
                     item.setSelected(getOutputPane().isWrapped());
+                    activeActions.add((TabAction) popupItems[i]);
                     popup.add(item);
                 }
             }
@@ -682,7 +690,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         c.getInputMap().remove(esc);
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).remove(esc);
 
-        popup.addPopupMenuListener(new PMListener(popupItems, escHandle));
+        popup.addPopupMenuListener(new PMListener(activeActions, escHandle));
         popup.show(src, p.x, p.y);
 
     }
@@ -699,6 +707,23 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         boolean hasErrors = out == null ? false : out.getLines().firstListenerLine() != -1;
         nextErrorAction.setEnabled(hasErrors);
         prevErrorAction.setEnabled(hasErrors);
+    }
+
+    private void showFontChooser() {
+        PropertyEditor pe = PropertyEditorManager.findEditor(Font.class);
+        if (pe != null) {
+            pe.setValue(getOutputPane().getViewFont());
+            DialogDescriptor dd = new DialogDescriptor(pe.getCustomEditor(), NbBundle.getMessage(OutputTab.class, "LBL_Font_Chooser_Title"));  // NOI18N
+            String defaultFont = NbBundle.getMessage(OutputTab.class, "BTN_Defaul_Font");
+            dd.setOptions(new Object[]{DialogDescriptor.OK_OPTION, defaultFont, DialogDescriptor.CANCEL_OPTION});  // NOI18N
+            DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
+            if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+                Font f = (Font) pe.getValue();
+                Controller.getDefault().changeFont(f);
+            } else if (dd.getValue() == defaultFont) {
+                Controller.getDefault().changeFont(null);
+            }
+        }
     }
 
     private void disableHtmlName() {
@@ -729,6 +754,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     private static final int ACTION_PREVTAB = 14;
     private static final int ACTION_LARGERFONT = 15;
     private static final int ACTION_SMALLERFONT = 16;
+    private static final int ACTION_FONTTYPE = 17;
 
     Action copyAction = new TabAction(ACTION_COPY, "ACTION_COPY"); //NOI18N
     Action wrapAction = new TabAction(ACTION_WRAP, "ACTION_WRAP"); //NOI18N
@@ -742,6 +768,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     Action findPreviousAction = new TabAction(ACTION_FINDPREVIOUS, "ACTION_FIND_PREVIOUS"); //NOI18N
     Action largerFontAction = new TabAction(ACTION_LARGERFONT, "ACTION_LARGER_FONT"); //NOI18N
     Action smallerFontAction = new TabAction(ACTION_SMALLERFONT, "ACTION_SMALLER_FONT"); //NOI18N
+    Action fontTypeAction = new TabAction(ACTION_FONTTYPE, "ACTION_FONT_TYPE"); //NOI18N
 
     Action navToLineAction = new TabAction(ACTION_NAVTOLINE, "navToLine", //NOI18N
             KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
@@ -754,7 +781,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             (KeyStroke) null);
     private Object[] popupItems = new Object[]{
         copyAction, new JSeparator(), findAction, findNextAction, new JSeparator(),
-        wrapAction, largerFontAction, smallerFontAction, new JSeparator(), saveAsAction,
+        wrapAction, largerFontAction, smallerFontAction, fontTypeAction, new JSeparator(), saveAsAction,
         clearAction, closeAction,};
 
     /**
@@ -887,10 +914,13 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     }
                     break;
                 case ACTION_SMALLERFONT:
-                    Controller.getDefault().changeFontSizeBy(-1);
+                    Controller.getDefault().changeFontSizeBy(-1, getOutputPane().isWrapped());
                     break;
                 case ACTION_LARGERFONT:
-                    Controller.getDefault().changeFontSizeBy(1);
+                    Controller.getDefault().changeFontSizeBy(1, getOutputPane().isWrapped());
+                    break;
+                case ACTION_FONTTYPE:
+                    showFontChooser();
                     break;
                 default:
                     assert false;
@@ -944,10 +974,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
      */
     private class PMListener implements PopupMenuListener {
 
-        private Object[] popupItems;
+        private List<TabAction> popupItems;
         private Object handle;
 
-        PMListener(Object[] popupItems, Object escHandle) {
+        PMListener(List<TabAction> popupItems, Object escHandle) {
             this.popupItems = popupItems;
             handle = escHandle;
         }
@@ -964,10 +994,8 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
             //hack end
             popup.removePopupMenuListener(this);
-            for (int i = 0; i < popupItems.length; i++) {
-                if (popupItems[i] instanceof OutputTab.TabAction) {
-                    ((OutputTab.TabAction) popupItems[i]).clearListeners();
-                }
+            for (TabAction action : popupItems) {
+                action.clearListeners();
             }
         }
 

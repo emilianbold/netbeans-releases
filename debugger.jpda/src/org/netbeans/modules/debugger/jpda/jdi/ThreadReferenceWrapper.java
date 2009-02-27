@@ -402,7 +402,16 @@ public final class ThreadReferenceWrapper {
 
     public static void popFrames(com.sun.jdi.ThreadReference a, com.sun.jdi.StackFrame b) throws com.sun.jdi.IncompatibleThreadStateException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
         try {
-            a.popFrames(b);
+            try {
+                a.popFrames(b);
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 32) { // OPAQUE_FRAME
+                    // NativeMethodException should be thrown here!
+                    throw new com.sun.jdi.NativeMethodException(iex.getMessage());
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);

@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -102,7 +103,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
     TreeTableVisualizer(TreeTableVisualizerConfiguration configuration,
         TreeTableDataProvider<T> dataProvider) {
-        timerHandler = new OnTimerRefreshVisualizerHandler(this, 5);
+        timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.configuration = configuration;
         this.dataProvider = dataProvider;
         treeModel = new DefaultTreeModel(TREE_ROOT);

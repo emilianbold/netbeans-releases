@@ -55,6 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -132,6 +133,8 @@ public class Operator {
      * @param  finalizer  thread to be started upon death of the remote VM
      *                    or upon disconnection from the VM
      *                    (may be <TT>null</TT>)
+     * @param resumeLock Debugger's access lock under which threads should be
+     *                   resumed after events are processed.
     */
     public Operator (
         VirtualMachine virtualMachine,
@@ -251,7 +254,13 @@ public class Operator {
                      int suspendPolicy = EventSetWrapper.suspendPolicy(eventSet);
                      boolean suspendedAll = suspendPolicy == EventRequest.SUSPEND_ALL;
                      JPDAThreadImpl suspendedThread = null;
-                     if (!silent && suspendedAll) debugger.notifySuspendAll();
+                     Lock eventAccessLock = null;
+                     try {
+                     if (!silent && suspendedAll) {
+                         eventAccessLock = debugger.accessLock.writeLock();
+                         eventAccessLock.lock();
+                         debugger.notifySuspendAll();
+                     }
                      if (suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD) {
                          ThreadReference tref = null;
                          for (Event e: eventSet) {
@@ -262,6 +271,8 @@ public class Operator {
                          }
                          if (tref != null && !silent) {
                             suspendedThread = debugger.getThread(tref);
+                            eventAccessLock = suspendedThread.accessLock.writeLock();
+                            eventAccessLock.lock();
                             suspendedThread.notifySuspended();
                          }
                      }
@@ -337,6 +348,11 @@ public class Operator {
                                  ErrorManager.getDefault().notify(ex);
                              }
                      } // while
+                     } finally {
+                         if (eventAccessLock != null) {
+                             eventAccessLock.unlock();
+                         }
+                     }
                      //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
                      if (logger.isLoggable(Level.FINE)) {
                          logger.fine("JDI events dispatched (resume " + (resume && (!startEventOnly)) + ")");

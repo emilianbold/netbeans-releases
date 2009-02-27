@@ -68,7 +68,7 @@ public abstract class AbstractTextRenderingComponent extends SVGComponent {
 
     protected abstract SVGLocatableElement getHiddenTextElement();
     
-    protected String truncateToShownText( String text , float boundWidth ) {
+    protected String truncateToShownText( String text , int boundWidth ) {
         return getRenderer().truncateToShownText(text, boundWidth);
     }
     

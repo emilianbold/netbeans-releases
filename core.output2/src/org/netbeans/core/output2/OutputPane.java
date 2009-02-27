@@ -211,6 +211,7 @@ class OutputPane extends AbstractOutputPane {
     public void setWrapped (boolean val) {
         if (val != isWrapped() || !(getEditorKit() instanceof OutputEditorKit)) {
             NbPreferences.forModule(OutputPane.class).putBoolean("wrap", val); //NOI18N
+            textView.setFont(val ? Controller.getDefault().getCurrentFontMS() : Controller.getDefault().getCurrentFont());
             final int pos = textView.getCaret().getDot();
             Cursor cursor = textView.getCursor();
             try {
@@ -295,7 +296,7 @@ class OutputPane extends AbstractOutputPane {
 
     @Override
     protected void changeFontSizeBy(int change) {
-        Controller.getDefault().changeFontSizeBy(change);
+        Controller.getDefault().changeFontSizeBy(change, isWrapped());
     }
 
     //#83118 - remove the "control shift 0" from editor pane to lt the Open Project action through
