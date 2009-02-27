@@ -41,6 +41,8 @@ package org.netbeans.modules.bugzilla.issue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -469,8 +471,8 @@ public class BugzillaIssue extends Issue {
 //        try {
             Bugzilla.getInstance().getClient(repository).postAttachment(
                     getID(), 
-                    comment, 
-                    desc, 
+                    comment,
+                    desc,
                     attachmentSource.getContentType(), 
                     false, 
                     source, 
@@ -551,7 +553,7 @@ public class BugzillaIssue extends Issue {
             try {
                 d = CC_DATE_FORMAT.parse(a.getMappedAttribute(TaskAttribute.COMMENT_DATE).getValue());
             } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
+                Bugzilla.LOG.log(Level.SEVERE, null, ex);
             }
             when = d;            
             // XXX check for NULL
@@ -582,18 +584,31 @@ public class BugzillaIssue extends Issue {
         private final String filename;
         private final String author;
         private final Date date;
+        private final String id;
+        private String contentType;
+        private String isDeprected;
+        private String size;
+        private String isPatch;
+        private String url;
+
 
         public Attachment(TaskAttribute ta) {
+            id = ta.getValue();
             Date d = null;
             try {
                 d = CC_DATE_FORMAT.parse(ta.getMappedAttribute(TaskAttribute.ATTACHMENT_DATE).getValues().get(0));// XXX value or values?
             } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
+                Bugzilla.LOG.log(Level.SEVERE, null, ex);
             }
             date = d;
             filename = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_FILENAME).getValue();
             desc = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION).getValues().get(0);// XXX value or values?
             author = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_AUTHOR).getMappedAttribute(TaskAttribute.PERSON_NAME).getValue();
+            contentType = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_CONTENT_TYPE).getValue();
+            isDeprected = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_IS_DEPRECATED).getValue();
+            isPatch = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_IS_PATCH).getValue();
+            size = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_SIZE).getValue();
+            url = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_URL).getValue();
         }
 
         public String getAuthor() {
@@ -610,6 +625,34 @@ public class BugzillaIssue extends Issue {
 
         public String getFilename() {
             return filename;
+        }
+
+        public String getContentType() {
+            return contentType;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getIsDeprected() {
+            return isDeprected;
+        }
+
+        public String getIsPatch() {
+            return isPatch;
+        }
+
+        public String getSize() {
+            return size;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void getAttachementData(OutputStream os) throws MalformedURLException, IOException, CoreException {
+            Bugzilla.getInstance().getClient(repository).getAttachmentData(id, os, new NullProgressMonitor());
         }
     }
 
