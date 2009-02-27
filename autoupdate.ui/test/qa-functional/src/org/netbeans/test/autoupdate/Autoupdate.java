@@ -72,6 +72,7 @@ import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
 import org.netbeans.jemmy.util.Dumper;
 import java.io.*;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
@@ -218,6 +219,55 @@ public class Autoupdate extends JellyTestCase
     // Check there is combo box
     new JComboBoxOperator( jdPlugins, 0 );
 
+    // Check each of specified centers is accessible
+    /*
+    for( int i = 0; i < iOriginalRows; i++ )
+    {
+      // Select row
+      jtTable.clickOnCell( i, 1 );
+      Sleep( 100 );
+
+      // Press edit and get address
+      jbEdit.pushNoBlock( );
+      JDialogOperator jdUpdate = new JDialogOperator( "Update Center Customizer" );
+      JTextFieldOperator jtUrl = new JTextFieldOperator( jdUpdate, 0 );
+      String sAddr = jtUrl.getText( );
+      JButtonOperator jbClose = new JButtonOperator( jdUpdate, "Cancel" );
+      jbClose.push( );
+      jdUpdate.waitClosed( );
+
+      // Download data
+      String sContent = "";
+      try
+      {
+        URL u = new URL( sAddr );
+        HttpURLConnection http = ( HttpURLConnection )u.openConnection( );
+        http.setConnectTimeout( 30000 );
+        http.setReadTimeout( 60000 );
+        http.connect( );
+        InputStream is = http.getInputStream( );
+        byte[] b = new byte[ 1024 ];
+        int iReaden;
+        while( -1 != ( iReaden = is.read( b ) ) )
+        {
+          //sContent = sContent + new String( b, 0, iReaden );
+        }
+        http.disconnect( );
+        is.close( );
+      }
+      catch( java.net.MalformedURLException ex )
+      {
+        System.out.println( "Error: " + ex.getMessage( ) + "\n" );
+        fail( "Malformed URL used for specified update center: " + sAddr );
+      }
+      catch( IOException ex )
+      {
+        System.out.println( "Error: " + ex.getMessage( ) + "\n" );
+        fail( "Unable to download data from specified update center: " + sAddr );
+      }
+    }
+    */
+
     // Edit for default selection
     jbEdit.pushNoBlock( );
     JDialogOperator jdUpdate = new JDialogOperator( "Update Center Customizer" );
@@ -333,95 +383,33 @@ public class Autoupdate extends JellyTestCase
       }
     }
 
-    /*
-
     // Check buttons
-    JButtonOperator jbEdit = new JButtonOperator( jdPlugins, "Edit" );
-    JButtonOperator jbRemove = new JButtonOperator( jdPlugins, "Remove" );
-    JButtonOperator jbAdd = new JButtonOperator( jdPlugins, "Add" );
-    JButtonOperator jbProxy = new JButtonOperator( jdPlugins, "Proxy Settings" );
-    new JToggleButtonOperator( jdPlugins, "Force install into shared directories" );
+    JButtonOperator jbUninstall = new JButtonOperator( jdPlugins, "Uninstall" );
 
     // Check table
     JTableOperator jtTable = new JTableOperator( jdPlugins, 0 );
     int iOriginalRows = jtTable.getRowCount( );
 
-    // Check there is combo box
-    new JComboBoxOperator( jdPlugins, 0 );
+    for( int i = 0; i < 10; i++ )
+    {
+      // Check uninstall disabled
+      if( jbUninstall.isEnabled( ) )
+        fail( "Uninstall button enabled without selection." );
+      // Click first column
+      jtTable.clickOnCell( i, 0 );
+      // Check uninstall enabled
+      if( !jbUninstall.isEnabled( ) )
+        fail( "Uninstall button disabled with selection." );
 
-    // Edit for default selection
-    jbEdit.pushNoBlock( );
-    JDialogOperator jdUpdate = new JDialogOperator( "Update Center Customizer" );
-    JTextFieldOperator jtUrl = new JTextFieldOperator( jdUpdate, 0 );
-    JTextFieldOperator jtName = new JTextFieldOperator( jdUpdate, 1 );
-    String sUrl = jtUrl.getText( );
-    String sName = jtName.getText( );
-    JButtonOperator jbClose = new JButtonOperator( jdUpdate, "Cancel" );
-    jbClose.push( );
-    jdUpdate.waitClosed( );
+      // Check 
+        // ToDo
 
-    // Add new center
-    jbAdd.pushNoBlock( );
-    jdUpdate = new JDialogOperator( "Update Center Customizer" );
-    // Check OK is disabled
-    JButtonOperator jbOk = new JButtonOperator( jdUpdate, "OK" );
-    if( jbOk.isEnabled( ) )
-      fail( "OK button originally enabled." );
-
-    // Use already existing name
-    jtName = new JTextFieldOperator( jdUpdate, 1 );
-    String sDefault = jtName.getText( );
-    jtName.setText( sName );
-    if( jbOk.isEnabled( ) )
-      fail( "OK button enabled for duplicate name." );
-    jtName.setText( sDefault );
-
-    // Enter correct url
-    jtUrl = new JTextFieldOperator( jdUpdate, 0 );
-    jtUrl.setText( sUrl );
-    Sleep( 500 );
-    if( !jbOk.isEnabled( ) )
-      fail( "OK button was not enabled after text entering." );
-    JToggleButtonOperator jtCheck = new JToggleButtonOperator( jdUpdate, "Check for updates automatically" );
-    jtCheck.setSelected( false );
-    jbOk.push( );
-    jdUpdate.waitClosed( );
-    if( ( 1 + iOriginalRows ) != jtTable.getRowCount( ) )
-      fail( "Failed to add new center." );
-
-    // Deselect existing centers and check number of available plugins
-      // ToDo
-
-    // Try to remove
-    jtTable.clickOnCell( iOriginalRows, 1 );
-    jbRemove.pushNoBlock( );
-    JDialogOperator jdConfirm = new JDialogOperator( "Question" );
-    JButtonOperator jbNo = new JButtonOperator( jdConfirm, "No" );
-    jbNo.push( );
-    jdConfirm.waitClosed( );
-
-    // Remove
-    jbRemove.pushNoBlock( );
-    jdConfirm = new JDialogOperator( "Question" );
-    JButtonOperator jbYes = new JButtonOperator( jdConfirm, "Yes" );
-    jbYes.push( );
-    jdConfirm.waitClosed( );
-    // Check removed
-    if( iOriginalRows != jtTable.getRowCount( ) )
-      fail( "Failed to remove center." );
-
-    // Check proxy settings are accessible
-    jbProxy.pushNoBlock( );
-    JDialogOperator jdOptions = new JDialogOperator( "Options" );
-    new JLabelOperator( jdOptions, "Proxy Settings:" );
-    JButtonOperator jbCancel = new JButtonOperator( jdOptions, "Cancel" );
-    jbCancel.push( );
-    jdOptions.waitClosed( );
-
-    // Check periods
-      // ToDo
-
-    */
+      // Click first column
+      jtTable.clickOnCell( i, 0 );
+      // Check uninstall disabled
+      if( jbUninstall.isEnabled( ) )
+        fail( "Uninstall button enabled without selection." );
+    }
 
     // Close by button
     JButtonOperator jbClose = new JButtonOperator( jdPlugins, "Close" );
@@ -443,103 +431,41 @@ public class Autoupdate extends JellyTestCase
     JTabbedPaneOperator jtTabs = new JTabbedPaneOperator( jdPlugins, 0 );
     jtTabs.setSelectedIndex( jtTabs.findPage( "Available Plugins" ) );
 
-    //Sleep( 60000 );
-
-    /*
+    Sleep( 1000 );
 
     // Check buttons
-    JButtonOperator jbEdit = new JButtonOperator( jdPlugins, "Edit" );
-    JButtonOperator jbRemove = new JButtonOperator( jdPlugins, "Remove" );
-    JButtonOperator jbAdd = new JButtonOperator( jdPlugins, "Add" );
-    JButtonOperator jbProxy = new JButtonOperator( jdPlugins, "Proxy Settings" );
-    new JToggleButtonOperator( jdPlugins, "Force install into shared directories" );
+    JButtonOperator jbReload = new JButtonOperator( jdPlugins, "Reload Catalog" );
+    JButtonOperator jbInstall = new JButtonOperator( jdPlugins, "Install" );
 
     // Check table
     JTableOperator jtTable = new JTableOperator( jdPlugins, 0 );
     int iOriginalRows = jtTable.getRowCount( );
 
-    // Check there is combo box
-    new JComboBoxOperator( jdPlugins, 0 );
+    for( int i = 0; i < iOriginalRows; i++ )
+    {
+      // Check install disabled
+      if( jbInstall.isEnabled( ) )
+        fail( "Install button enabled without selection." );
+      // Click first column
+      jtTable.clickOnCell( i, 0 );
+      // Check install enabled
+      if( !jbInstall.isEnabled( ) )
+        fail( "Install button disabled with selection." );
 
-    // Edit for default selection
-    jbEdit.pushNoBlock( );
-    JDialogOperator jdUpdate = new JDialogOperator( "Update Center Customizer" );
-    JTextFieldOperator jtUrl = new JTextFieldOperator( jdUpdate, 0 );
-    JTextFieldOperator jtName = new JTextFieldOperator( jdUpdate, 1 );
-    String sUrl = jtUrl.getText( );
-    String sName = jtName.getText( );
-    JButtonOperator jbClose = new JButtonOperator( jdUpdate, "Cancel" );
-    jbClose.push( );
-    jdUpdate.waitClosed( );
+      // Check 
+        // ToDo
 
-    // Add new center
-    jbAdd.pushNoBlock( );
-    jdUpdate = new JDialogOperator( "Update Center Customizer" );
-    // Check OK is disabled
-    JButtonOperator jbOk = new JButtonOperator( jdUpdate, "OK" );
-    if( jbOk.isEnabled( ) )
-      fail( "OK button originally enabled." );
-
-    // Use already existing name
-    jtName = new JTextFieldOperator( jdUpdate, 1 );
-    String sDefault = jtName.getText( );
-    jtName.setText( sName );
-    if( jbOk.isEnabled( ) )
-      fail( "OK button enabled for duplicate name." );
-    jtName.setText( sDefault );
-
-    // Enter correct url
-    jtUrl = new JTextFieldOperator( jdUpdate, 0 );
-    jtUrl.setText( sUrl );
-    Sleep( 500 );
-    if( !jbOk.isEnabled( ) )
-      fail( "OK button was not enabled after text entering." );
-    JToggleButtonOperator jtCheck = new JToggleButtonOperator( jdUpdate, "Check for updates automatically" );
-    jtCheck.setSelected( false );
-    jbOk.push( );
-    jdUpdate.waitClosed( );
-    if( ( 1 + iOriginalRows ) != jtTable.getRowCount( ) )
-      fail( "Failed to add new center." );
-
-    // Deselect existing centers and check number of available plugins
-      // ToDo
-
-    // Try to remove
-    jtTable.clickOnCell( iOriginalRows, 1 );
-    jbRemove.pushNoBlock( );
-    JDialogOperator jdConfirm = new JDialogOperator( "Question" );
-    JButtonOperator jbNo = new JButtonOperator( jdConfirm, "No" );
-    jbNo.push( );
-    jdConfirm.waitClosed( );
-
-    // Remove
-    jbRemove.pushNoBlock( );
-    jdConfirm = new JDialogOperator( "Question" );
-    JButtonOperator jbYes = new JButtonOperator( jdConfirm, "Yes" );
-    jbYes.push( );
-    jdConfirm.waitClosed( );
-    // Check removed
-    if( iOriginalRows != jtTable.getRowCount( ) )
-      fail( "Failed to remove center." );
-
-    // Check proxy settings are accessible
-    jbProxy.pushNoBlock( );
-    JDialogOperator jdOptions = new JDialogOperator( "Options" );
-    new JLabelOperator( jdOptions, "Proxy Settings:" );
-    JButtonOperator jbCancel = new JButtonOperator( jdOptions, "Cancel" );
-    jbCancel.push( );
-    jdOptions.waitClosed( );
-
-    // Check periods
-      // ToDo
-
-    */
+      // Click first column
+      jtTable.clickOnCell( i, 0 );
+      // Check install disabled
+      if( jbInstall.isEnabled( ) )
+        fail( "Install button enabled without selection." );
+    }
 
     // Close by button
     JButtonOperator jbClose = new JButtonOperator( jdPlugins, "Close" );
     jbClose.push( );
     jdPlugins.waitClosed( );
-
     endTest( );
   }
 
@@ -554,96 +480,6 @@ public class Autoupdate extends JellyTestCase
 
     JTabbedPaneOperator jtTabs = new JTabbedPaneOperator( jdPlugins, 0 );
     jtTabs.setSelectedIndex( jtTabs.findPage( "Updated" ) );
-
-    /*
-
-    // Check buttons
-    JButtonOperator jbEdit = new JButtonOperator( jdPlugins, "Edit" );
-    JButtonOperator jbRemove = new JButtonOperator( jdPlugins, "Remove" );
-    JButtonOperator jbAdd = new JButtonOperator( jdPlugins, "Add" );
-    JButtonOperator jbProxy = new JButtonOperator( jdPlugins, "Proxy Settings" );
-    new JToggleButtonOperator( jdPlugins, "Force install into shared directories" );
-
-    // Check table
-    JTableOperator jtTable = new JTableOperator( jdPlugins, 0 );
-    int iOriginalRows = jtTable.getRowCount( );
-
-    // Check there is combo box
-    new JComboBoxOperator( jdPlugins, 0 );
-
-    // Edit for default selection
-    jbEdit.pushNoBlock( );
-    JDialogOperator jdUpdate = new JDialogOperator( "Update Center Customizer" );
-    JTextFieldOperator jtUrl = new JTextFieldOperator( jdUpdate, 0 );
-    JTextFieldOperator jtName = new JTextFieldOperator( jdUpdate, 1 );
-    String sUrl = jtUrl.getText( );
-    String sName = jtName.getText( );
-    JButtonOperator jbClose = new JButtonOperator( jdUpdate, "Cancel" );
-    jbClose.push( );
-    jdUpdate.waitClosed( );
-
-    // Add new center
-    jbAdd.pushNoBlock( );
-    jdUpdate = new JDialogOperator( "Update Center Customizer" );
-    // Check OK is disabled
-    JButtonOperator jbOk = new JButtonOperator( jdUpdate, "OK" );
-    if( jbOk.isEnabled( ) )
-      fail( "OK button originally enabled." );
-
-    // Use already existing name
-    jtName = new JTextFieldOperator( jdUpdate, 1 );
-    String sDefault = jtName.getText( );
-    jtName.setText( sName );
-    if( jbOk.isEnabled( ) )
-      fail( "OK button enabled for duplicate name." );
-    jtName.setText( sDefault );
-
-    // Enter correct url
-    jtUrl = new JTextFieldOperator( jdUpdate, 0 );
-    jtUrl.setText( sUrl );
-    Sleep( 500 );
-    if( !jbOk.isEnabled( ) )
-      fail( "OK button was not enabled after text entering." );
-    JToggleButtonOperator jtCheck = new JToggleButtonOperator( jdUpdate, "Check for updates automatically" );
-    jtCheck.setSelected( false );
-    jbOk.push( );
-    jdUpdate.waitClosed( );
-    if( ( 1 + iOriginalRows ) != jtTable.getRowCount( ) )
-      fail( "Failed to add new center." );
-
-    // Deselect existing centers and check number of available plugins
-      // ToDo
-
-    // Try to remove
-    jtTable.clickOnCell( iOriginalRows, 1 );
-    jbRemove.pushNoBlock( );
-    JDialogOperator jdConfirm = new JDialogOperator( "Question" );
-    JButtonOperator jbNo = new JButtonOperator( jdConfirm, "No" );
-    jbNo.push( );
-    jdConfirm.waitClosed( );
-
-    // Remove
-    jbRemove.pushNoBlock( );
-    jdConfirm = new JDialogOperator( "Question" );
-    JButtonOperator jbYes = new JButtonOperator( jdConfirm, "Yes" );
-    jbYes.push( );
-    jdConfirm.waitClosed( );
-    // Check removed
-    if( iOriginalRows != jtTable.getRowCount( ) )
-      fail( "Failed to remove center." );
-
-    // Check proxy settings are accessible
-    jbProxy.pushNoBlock( );
-    JDialogOperator jdOptions = new JDialogOperator( "Options" );
-    new JLabelOperator( jdOptions, "Proxy Settings:" );
-    JButtonOperator jbCancel = new JButtonOperator( jdOptions, "Cancel" );
-    jbCancel.push( );
-    jdOptions.waitClosed( );
-
-    // Check periods
-      // ToDo
-
-    */
 
     // Close by button
     JButtonOperator jbClose = new JButtonOperator( jdPlugins, "Close" );
@@ -665,95 +501,13 @@ public class Autoupdate extends JellyTestCase
     JTabbedPaneOperator jtTabs = new JTabbedPaneOperator( jdPlugins, 0 );
     jtTabs.setSelectedIndex( jtTabs.findPage( "Downloaded" ) );
 
-    /*
-
     // Check buttons
-    JButtonOperator jbEdit = new JButtonOperator( jdPlugins, "Edit" );
-    JButtonOperator jbRemove = new JButtonOperator( jdPlugins, "Remove" );
-    JButtonOperator jbAdd = new JButtonOperator( jdPlugins, "Add" );
-    JButtonOperator jbProxy = new JButtonOperator( jdPlugins, "Proxy Settings" );
-    new JToggleButtonOperator( jdPlugins, "Force install into shared directories" );
+    JButtonOperator jbAdd = new JButtonOperator( jdPlugins, "Add Plugins..." );
+    JButtonOperator jbInstall = new JButtonOperator( jdPlugins, "Install" );
 
     // Check table
     JTableOperator jtTable = new JTableOperator( jdPlugins, 0 );
     int iOriginalRows = jtTable.getRowCount( );
-
-    // Check there is combo box
-    new JComboBoxOperator( jdPlugins, 0 );
-
-    // Edit for default selection
-    jbEdit.pushNoBlock( );
-    JDialogOperator jdUpdate = new JDialogOperator( "Update Center Customizer" );
-    JTextFieldOperator jtUrl = new JTextFieldOperator( jdUpdate, 0 );
-    JTextFieldOperator jtName = new JTextFieldOperator( jdUpdate, 1 );
-    String sUrl = jtUrl.getText( );
-    String sName = jtName.getText( );
-    JButtonOperator jbClose = new JButtonOperator( jdUpdate, "Cancel" );
-    jbClose.push( );
-    jdUpdate.waitClosed( );
-
-    // Add new center
-    jbAdd.pushNoBlock( );
-    jdUpdate = new JDialogOperator( "Update Center Customizer" );
-    // Check OK is disabled
-    JButtonOperator jbOk = new JButtonOperator( jdUpdate, "OK" );
-    if( jbOk.isEnabled( ) )
-      fail( "OK button originally enabled." );
-
-    // Use already existing name
-    jtName = new JTextFieldOperator( jdUpdate, 1 );
-    String sDefault = jtName.getText( );
-    jtName.setText( sName );
-    if( jbOk.isEnabled( ) )
-      fail( "OK button enabled for duplicate name." );
-    jtName.setText( sDefault );
-
-    // Enter correct url
-    jtUrl = new JTextFieldOperator( jdUpdate, 0 );
-    jtUrl.setText( sUrl );
-    Sleep( 500 );
-    if( !jbOk.isEnabled( ) )
-      fail( "OK button was not enabled after text entering." );
-    JToggleButtonOperator jtCheck = new JToggleButtonOperator( jdUpdate, "Check for updates automatically" );
-    jtCheck.setSelected( false );
-    jbOk.push( );
-    jdUpdate.waitClosed( );
-    if( ( 1 + iOriginalRows ) != jtTable.getRowCount( ) )
-      fail( "Failed to add new center." );
-
-    // Deselect existing centers and check number of available plugins
-      // ToDo
-
-    // Try to remove
-    jtTable.clickOnCell( iOriginalRows, 1 );
-    jbRemove.pushNoBlock( );
-    JDialogOperator jdConfirm = new JDialogOperator( "Question" );
-    JButtonOperator jbNo = new JButtonOperator( jdConfirm, "No" );
-    jbNo.push( );
-    jdConfirm.waitClosed( );
-
-    // Remove
-    jbRemove.pushNoBlock( );
-    jdConfirm = new JDialogOperator( "Question" );
-    JButtonOperator jbYes = new JButtonOperator( jdConfirm, "Yes" );
-    jbYes.push( );
-    jdConfirm.waitClosed( );
-    // Check removed
-    if( iOriginalRows != jtTable.getRowCount( ) )
-      fail( "Failed to remove center." );
-
-    // Check proxy settings are accessible
-    jbProxy.pushNoBlock( );
-    JDialogOperator jdOptions = new JDialogOperator( "Options" );
-    new JLabelOperator( jdOptions, "Proxy Settings:" );
-    JButtonOperator jbCancel = new JButtonOperator( jdOptions, "Cancel" );
-    jbCancel.push( );
-    jdOptions.waitClosed( );
-
-    // Check periods
-      // ToDo
-
-    */
 
     // Close by button
     JButtonOperator jbClose = new JButtonOperator( jdPlugins, "Close" );

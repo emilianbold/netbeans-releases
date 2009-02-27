@@ -55,4 +55,5 @@ public abstract class FunctionCall{
 
   public abstract Object getMetricValue(FunctionMetric metric);
   public abstract Object getMetricValue(String metric_id);
+  public abstract boolean hasMetric(String metric_id);
 }

@@ -51,13 +51,12 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="250"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.apisupport.Bundle"/>
                     <attr name="provider" stringvalue="nexus"/>
-                    <attr name="repoUrl" stringvalue="http://deadlock.netbeans.org/maven2/"/>
-                    <attr name="repoIndexUrl" stringvalue="http://deadlock.netbeans.org/maven2/.index/netbeans/"/>
+                    <attr name="repoUrl" stringvalue="http://bits.netbeans.org/maven2/"/>
+                    <attr name="repoIndexUrl" stringvalue="http://bits.netbeans.org/maven2/.index/"/>
                 </file>
             </folder>
             <folder name="ProjectActions">
                 <file name="NBMReload.instance">
-                    <attr name="instanceOf" stringvalue="javax.swing.Action" />
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.maven.apisupport.NbmActionGoalProvider.createReloadAction"/>
                     <attr name="position" intvalue="1000"/>
                 </file>
@@ -68,7 +67,7 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.apisupport.Bundle"/>
                     <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
                     <attr name="artifactId" stringvalue="nbm-archetype"/>
-                    <attr name="version" stringvalue="1.0.1"/>
+                    <attr name="version" stringvalue="1.1"/>
                     <!--attr name="repository" stringvalue=""/-->
                     <attr name="nameBundleKey" stringvalue="TIT_NBM_Archetype"/>
                     <attr name="descriptionBundleKey" stringvalue="DESC_NBM_Archetype"/>
@@ -78,7 +77,7 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.apisupport.Bundle"/>
                     <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
                     <attr name="artifactId" stringvalue="netbeans-platform-app-archetype"/>
-                    <attr name="version" stringvalue="1.0.2"/>
+                    <attr name="version" stringvalue="1.1"/>
                     <!--attr name="repository" stringvalue=""/-->
                     <attr name="nameBundleKey" stringvalue="TIT_Platform_Application_Archetype"/>
                     <attr name="descriptionBundleKey" stringvalue="DESC_Platform_Application_Archetype"/>

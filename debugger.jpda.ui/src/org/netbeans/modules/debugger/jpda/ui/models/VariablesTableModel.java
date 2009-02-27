@@ -178,18 +178,36 @@ public class VariablesTableModel implements TableModel, Constants {
             ) {
                 if (row instanceof This)
                     return true;
-                else
-                if ( row instanceof LocalVariable ||
-                     row instanceof Field ||
-                     row instanceof JPDAWatch
-                ) {
-                    if (WatchesNodeModel.isEmptyWatch(row)) {
-                        return true;
-                    } else {
-                        return !debugger.canBeModified();
+                else {
+                    if (row instanceof JPDAWatch && row instanceof Refreshable) {
+                        if (!((Refreshable) row).isCurrent()) {
+                            return true;
+                        }
+                        try {
+                            // Retrieve the evaluated watch so that we can test if it's an object variable or not.
+                            java.lang.reflect.Method getEvaluatedWatchMethod = row.getClass().getDeclaredMethod("getEvaluatedWatch");
+                            getEvaluatedWatchMethod.setAccessible(true);
+                            row = (JPDAWatch) getEvaluatedWatchMethod.invoke(row);
+                        } catch (Exception ex) {
+                            // Log it only
+                            ex.printStackTrace();
+                        }
                     }
-                } else {
-                    return true;
+                    if (row instanceof ObjectVariable) {
+                        return true;
+                    }
+                    if ( row instanceof LocalVariable ||
+                         row instanceof Field ||
+                         row instanceof JPDAWatch
+                    ) {
+                        if (WatchesNodeModel.isEmptyWatch(row)) {
+                            return true;
+                        } else {
+                            return !debugger.canBeModified();
+                        }
+                    } else {
+                        return true;
+                    }
                 }
             }
         }

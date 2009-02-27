@@ -45,6 +45,11 @@ import java.awt.Dialog;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,6 +62,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -92,6 +99,8 @@ import org.xml.sax.InputSource;
  * @author David Calavera, Petr Hejl
  */
 public class GrailsPluginsManager {
+
+    private static Logger LOGGER = Logger.getLogger(GrailsPluginsManager.class.getName());
 
     private final GrailsProject project;
 
@@ -132,57 +141,6 @@ public class GrailsPluginsManager {
         }
 
         return processor.getPlugins();
-    }
-
-    public File getPluginsDir(GrailsPlatform platform) {
-        File projectRoot = FileUtil.toFile(project.getProjectDirectory());
-
-        if (GrailsPlatform.Version.VERSION_1_1.compareTo(platform.getVersion()) <= 0) {
-            File buildConfig = new File(projectRoot,
-                    "grails-app" + File.separator + "conf" + File.separator + "BuildConfig.groovy"); // NOI18N
-
-            // FIXME global plugins and buildConfig
-//            if (!buildConfig.exists() || !buildConfig.canRead()) {
-                File pluginsDirFile;
-                String strPluginsDir = System.getProperty("grails.project.plugins.dir"); // NOI18N
-                if (strPluginsDir == null) {
-                    File projectWorkDirFile;
-                    String projectWorkDir = System.getProperty("grails.project.work.dir"); // NOI18N
-                    if (projectWorkDir == null) {
-                        File workDirFile;
-                        String workDir = System.getProperty("grails.work.dir"); // NOI18N
-                        if (workDir == null) {
-                            workDir = System.getProperty("user.home"); // NOI18N
-                            workDir = workDir + File.separator + ".grails" + File.separator + platform.getVersion(); // NOI18N
-                            workDirFile = new File(workDir);
-                        } else {
-                            workDirFile = new File(workDir);
-                            if (!workDirFile.isAbsolute()) {
-                                workDirFile = new File(projectRoot, workDir);
-                            }
-                        }
-                        projectWorkDirFile = new File(workDirFile, "projects" + File.separator + projectRoot.getName()); // NOI18N
-                    } else {
-                        projectWorkDirFile = new File(projectWorkDir);
-                        if (!projectWorkDirFile.isAbsolute()) {
-                            projectWorkDirFile = new File(projectRoot, projectWorkDir);
-                        }
-                    }
-                    pluginsDirFile = new File(projectWorkDirFile, "plugins"); // NOI18N
-                } else {
-                    pluginsDirFile = new File(strPluginsDir);
-                    if (!pluginsDirFile.isAbsolute()) {
-                        pluginsDirFile = new File(projectRoot, strPluginsDir);
-                    }
-                }
-
-                return pluginsDirFile;
-//            } else {
-//
-//            }
-        }
-
-        return new File(projectRoot, "plugins"); // NOI18N
     }
 
     public List<GrailsPlugin> loadInstalledPlugins() {
@@ -322,7 +280,7 @@ public class GrailsPluginsManager {
         }
         executor.shutdown();
 
-        FileUtil.refreshFor(getPluginsDir(GrailsProjectConfig.forProject(project).getGrailsPlatform()));
+        FileUtil.refreshFor(project.getBuildConfig().getProjectPluginsDir());
         return installed;
     }
     
@@ -485,6 +443,6 @@ public class GrailsPluginsManager {
         public List<GrailsPlugin> getPlugins() {
             return plugins;
         }
-
     }
+
 }

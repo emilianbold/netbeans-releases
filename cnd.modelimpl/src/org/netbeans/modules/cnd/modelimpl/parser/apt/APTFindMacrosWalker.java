@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -329,9 +330,14 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         private CsmFile getTargetFile() {
             CsmFile current = UIDCsmConverter.UIDtoFile(mi.targetFile);
             if (current != null && mi.includePath != null) {
-                ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(mi.includePath);
+                File searchFile = new File(mi.includePath);
+                ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(searchFile.getAbsolutePath());
+                if (targetPrj == null) {
+                    searchFile = FileUtil.normalizeFile(searchFile);
+                    targetPrj = ((ProjectBase) current.getProject()).findFileProject(searchFile.getAbsolutePath());
+                }
                 if (targetPrj != null) {
-                    current = targetPrj.getFile(new File(mi.includePath));
+                    current = targetPrj.getFile(searchFile);
                     // if file belongs to project, it should be not null
                     // but info could be obsolete
                 }

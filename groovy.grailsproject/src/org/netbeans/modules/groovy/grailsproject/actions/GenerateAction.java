@@ -47,6 +47,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
@@ -134,7 +135,7 @@ public abstract class GenerateAction extends NodeAction {
             return false;
         }
 
-        GrailsProject prj = (GrailsProject) FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
+        Project prj = FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
         FileObject domainDir = prj.getProjectDirectory().getFileObject(DOMAIN_DIR);
         if (domainDir == null) {
             return false;
