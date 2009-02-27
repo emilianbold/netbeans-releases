@@ -113,40 +113,40 @@
               <Component id="headerLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="productLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="productLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="productCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="reportedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="reportedField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="componentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="componentLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="componentCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="modifiedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="modifiedField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="versionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="versionLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="versionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="platformLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="platformLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="platformCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="assignedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="assignedLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="assignedField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="qaContactLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="qaContactLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="qaContactField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="ccLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="ccLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="statusCombo" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="statusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="statusLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="ccField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -156,42 +156,42 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="dependsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="dependsLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="dependsField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="blocksLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="blocksLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="priorityCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="priorityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="priorityLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="blocksField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="severityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="severityLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="severityCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="targetMilestoneLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="targetMilestoneLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="targetMilestoneCombo" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="dummyLabel1" linkSize="2" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="urlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="urlLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="keywordsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="keywordsLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="keywordsField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="attachmentsLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="attachmentsLabel" linkSize="5" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="dummyLabel2" linkSize="2" min="-2" max="-2" attributes="0"/>
                   </Group>
