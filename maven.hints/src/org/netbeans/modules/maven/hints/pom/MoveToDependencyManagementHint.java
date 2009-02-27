@@ -161,13 +161,12 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
                 dps = prf.getDependencies();
             }
             if (dps == null) {
-                System.out.println("huh? " + pc);
                 return info;
             }
             List<Dependency> deps = extractSelectedDeps(dps, start, end);
 
             MoveToDependencyManagementPanel pnl = new MoveToDependencyManagementPanel(fl);
-            DialogDescriptor dd = new DialogDescriptor(pnl, "Move to DependencyManagement");
+            DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(MoveToDependencyManagementHint.class, "TIT_MoveDepMan"));
             Object ret = DialogDisplayer.getDefault().notify(dd);
             if (ret == DialogDescriptor.OK_OPTION) {
                 //TODO add the versions to the selected DM section.
