@@ -254,11 +254,11 @@ public final class CsmRefactoringUtils {
 
     public static Collection<CsmFunction> getConstructors(CsmClass cls) {
         Collection<CsmFunction> out = new ArrayList<CsmFunction>();
-        CsmFilterBuilder filterBuilder = CsmSelect.getDefault().getFilterBuilder();
+        CsmFilterBuilder filterBuilder = CsmSelect.getFilterBuilder();
         CsmSelect.CsmFilter filter = filterBuilder.createCompoundFilter(
                 filterBuilder.createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION),
                 filterBuilder.createNameFilter(cls.getName().toString(), true, true, false));
-        Iterator<CsmMember> classMembers = CsmSelect.getDefault().getClassMembers(cls, filter);
+        Iterator<CsmMember> classMembers = CsmSelect.getClassMembers(cls, filter);
         while (classMembers.hasNext()) {
             CsmMember csmMember = classMembers.next();
             if (CsmKindUtilities.isConstructor(csmMember)) {
