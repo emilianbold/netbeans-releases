@@ -69,3 +69,6 @@ cvs@xml.netbeans.org=api.xml/*,editor.structure/*,libs.jxpath/*,o.n.xml.libs.jxp
 cvs@xtest.netbeans.org=nbjunit/*
 dkonecny@netbeans.org=css.visual/*,css.editor/*,html/*,html.editor/*,html.editor.lib/*,html.lexer/*,web.jspparser/*,web.core/*,web.core.syntax/*,jsp.lexer/*,editor.structure/*,gsf/*,gsf.api/*,gsfpath.api/*
 jglick@netbeans.org=hudson*/*
+tstupka@netbeans.org=bugtracking*/*,bugzilla/*,libs.bugtracking/*,libs.bugzilla/*
+mpetras@netbeans.org=bugtracking*/*,bugzilla/*,libs.bugtracking/*,libs.bugzilla/*
+jstola@netbeans.org=bugtracking*/*,bugzilla/*,libs.bugtracking/*,libs.bugzilla/*
