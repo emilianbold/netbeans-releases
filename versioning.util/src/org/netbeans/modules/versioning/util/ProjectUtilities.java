@@ -38,10 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.mercurial.ui.clone;
+package org.netbeans.modules.versioning.util;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -51,19 +50,24 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.filesystems.FileObject;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.netbeans.modules.mercurial.Mercurial;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
-import java.util.LinkedList;
 import java.util.Enumeration;
 import java.util.Collections;
 import java.io.IOException;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.versioning.util.projects.ProjectOpener;
+import org.netbeans.spi.project.SubprojectProvider;
 
 /**
  * Simpliied nb_all/projects/projectui/src/org/netbeans/modules/project/ui/ProjectUtilities.java,
@@ -72,11 +76,22 @@ import java.io.File;
  *
  * @author Petr Kuzel       
  */
-final class ProjectUtilities {
+public final class ProjectUtilities {
 
     private static final String ProjectTab_ID_LOGICAL = "projectTabLogical_tc"; // NOI18N
+    public static final Logger LOG = Logger.getLogger(ProjectUtilities.class.getName());
 
-    public static void selectAndExpandProject( final Project p ) {
+    /**
+     * Guides user through a project opening process.
+     * @param checkedOutProjects list of scanned checkout projects
+     * @param workingFolder implicit folder to create a new project in if user selects <em>Create New Project</em> in the following dialog
+     */
+    public static void openCheckedOutProjects(Map<Project, Set<Project>> checkedOutProjects, File workingFolder) {
+        ProjectOpener opener = new ProjectOpener(checkedOutProjects, workingFolder);
+        opener.openCheckedOutProjects();
+    }
+
+    public static void selectAndExpandProject( final Project project ) {
 
         // invoke later to select the being opened project if the focus is outside ProjectTab
         SwingUtilities.invokeLater (new Runnable () {
@@ -88,19 +103,19 @@ final class ProjectUtilities {
                     Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Cannot find Project widnow, aborting.");
                     return;
                 }
-                Node root = ptLogial.getExplorerManager ().getRootContext ();
-                // Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
-                Node projNode = root.getChildren ().findChild( ProjectUtils.getInformation( p ).getName() );
-                if ( projNode != null ) {
-                    try {
-                        ptLogial.getExplorerManager ().setSelectedNodes( new Node[] { projNode } );
-                    } catch (Exception ignore) {
-                        // may ignore it
+                Node root = ptLogial.getExplorerManager ().getRootContext ();                
+                for(Node projNode : root.getChildren().getNodes()) {
+                    Project p = projNode.getLookup().lookup(Project.class);
+                    if(p != null && p.getProjectDirectory().equals(project.getProjectDirectory())) {
+                        try {
+                            ptLogial.getExplorerManager ().setSelectedNodes( new Node[] { projNode } );
+                        } catch (Exception ignore) {
+                            // may ignore it
+                        }    
                     }
-                }
+                }                
             }
         });
-
     }
 
     /* Singleton accessor. As ProjectTab is persistent singleton this
@@ -125,10 +140,9 @@ final class ProjectUtilities {
      * typical <i>... from Existing Sources</i> panel
      * <i>Add</i> button behaviour.
      * </ul>
+     * @param workingDirectory
      */
     public static void newProjectWizard(File workingDirectory) {
-        if(workingDirectory == null) return;
-        
         Action action = CommonProjectActions.newProjectAction();
         if (action != null) {
             File original = ProjectChooser.getProjectsFolder();
@@ -146,41 +160,43 @@ final class ProjectUtilities {
 
     /**
      * Scans given folder (and subfolder into deep 5) for projects.
-     * @return List of {@link Project}s never <code>null</code>.
+     * @param scanRoot root folder to scan
+     * @param foundProjects found projects sorted by its parents, root folders are under <code>null</code> key.
+     * <strong>The key for root folder must be present and its value must be initialized.</strong>
      */
-    public static List<Project> scanForProjects(FileObject scanRoot) {
+    public static void scanForProjects(FileObject scanRoot, Map<Project, Set<Project>> foundProjects) {
         ProjectManager.getDefault().clearNonProjectCache();
-        return scanForProjectsRecursively(scanRoot, 5);
+        assert foundProjects.get(null) != null;
+        scanForProjectsRecursively(scanRoot, foundProjects, null, 5);
     }
 
-    private static List<Project> scanForProjectsRecursively(FileObject scanRoot, int deep) {
-        if (scanRoot == null || deep <= 0) return Collections.emptyList();
-        List<Project> projects = new LinkedList<Project>();
+    private static void scanForProjectsRecursively(FileObject scanRoot, Map<Project, Set<Project>> projects, Project parentProject, int deep) {
+        if (deep <= 0) return;
         ProjectManager projectManager = ProjectManager.getDefault();
         if (scanRoot.isFolder() && projectManager.isProject(scanRoot)) {
             try {
                 Project prj = projectManager.findProject(scanRoot);
                 if(prj != null) {
-                    projects.add(prj);   
-                }                
+                    Set<Project> siblings = projects.get(parentProject);
+                    assert siblings != null;
+                    parentProject = prj; // set parent for recursion
+                    siblings.add(prj);
+                    projects.put(prj, new HashSet<Project>()); // insert project with no children so far
+                }
             } catch (IOException e) {
                 // it happens for all apisupport projects unless
                 // checked out into directory that contains nbbuild and openide folders
                 // apisupport project is valid only if placed in defined directory structure
-                Throwable cause = new Throwable("HG.PU: ignoring suspicious project folder...");  // NOI18N
-                e.initCause(cause);
-                Mercurial.LOG.log(Level.INFO, null, e);
+                LOG.log(Level.INFO, " ignoring suspicious project folder...", e);    // NOI18N
             }
         }
         Enumeration en = scanRoot.getChildren(false);
         while (en.hasMoreElements()) {
             FileObject fo = (FileObject) en.nextElement();
             if (fo.isFolder()) {
-                List<Project> nested = scanForProjectsRecursively(fo, deep -1);  // RECURSION
-                projects.addAll(nested);
+                scanForProjectsRecursively(fo, projects, parentProject, deep - 1);  // RECURSION
             }
         }
-        return projects;
     }
 
     private static boolean performAction (Action a) {
@@ -192,9 +208,70 @@ final class ProjectUtilities {
             a.actionPerformed(ae);
             return true;
         } catch (Exception e) {
-            Mercurial.LOG.log(Level.WARNING, null, e);
+            LOG.log(Level.WARNING, null, e);
             return false;
         }
     }
 
+    private ProjectUtilities() {
+    }
+
+    /**
+     * Returns direct subprojects
+     * @param p parent project
+     * @return collection of direct subprojects
+     */
+    public static Set<? extends Project> getSubProjects (Project p) {
+        Set<? extends Project> subprojects = null;
+        SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
+        if (spp != null) {
+            subprojects = spp.getSubprojects();
+        } else {
+            subprojects = Collections.emptySet();
+        }
+        return subprojects;
+    }
+
+    /**
+     * Gets all subprojects recursively
+     * @param p project to scan
+     * @param result all subprojects
+     * @param cache temporary cache of projects
+     */
+    public static void addSubprojects(Project p, Set<Project> result, Map<Project, Set<? extends Project>> cache) {
+        // original in ProjectUI API
+        Set<? extends Project> subprojects = cache.get(p);
+        if (subprojects == null) {
+            // p's subprojects have not yet been searched
+            SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
+            if (spp != null) {
+                subprojects = spp.getSubprojects();
+            } else {
+                subprojects = Collections.emptySet();
+            }
+            cache.put(p, subprojects);
+            for (Project sp : subprojects) {
+                result.add(sp);
+                addSubprojects(sp, result, cache);
+            }
+        }
+    }
+
+    /**
+     * Sorts the initial list of projects into sortedProjects with keys as their parent projects
+     * @param rootProjects initial projects. All projects but the root ones will be removed.
+     * @param sortedProjects sorted projects
+     */
+    public static void sortProjectsByParents (List<Project> rootProjects, Map<Project, Set<Project>> sortedProjects) {
+        ArrayList<Project> sortedList = new ArrayList<Project>(rootProjects.size());
+        Collections.sort(sortedList, new Comparator<Project>() {
+            public int compare(Project o1, Project o2) {
+                String p1 = o1.getProjectDirectory().getPath();
+                String p2 = o2.getProjectDirectory().getPath();
+                return p1.compareTo(p2);
+            }
+        });
+
+        
+    }
 }

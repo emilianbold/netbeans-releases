@@ -40,151 +40,41 @@
  */
 package org.netbeans.modules.mercurial.ui.clone;
 
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Level;
-import javax.swing.BorderFactory;
-import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.mercurial.HgProgressSupport;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.versioning.util.ProjectUtilities;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class CloneCompleted implements ActionListener {
+public class CloneCompleted {
 
     private final File workingFolder;
-    private final boolean openProject;
-
-    private CloneCompletedPanel panel;
-    private Dialog dialog;
-    private Project projectToBeOpened;
 
     public CloneCompleted(File workingFolder) {
-        this.openProject = true;
         this.workingFolder = workingFolder;
     }
 
     public void scanForProjects(HgProgressSupport support) {
-
-        List<Project> clonedProjects = new LinkedList<Project>();
+        Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
+        checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
         File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
         FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
         if (fo != null) {
-            clonedProjects = ProjectUtilities.scanForProjects(fo);
+            ProjectUtilities.scanForProjects(fo, checkedOutProjects);
         }
-
-        panel = new CloneCompletedPanel();
-        panel.openButton.addActionListener(this);
-        panel.createButton.addActionListener(this);
-        panel.closeButton.addActionListener(this);
-        panel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
-        panel.againCheckBox.setVisible(openProject == false);
-        String title = NbBundle.getMessage(CloneAction.class, "BK3008"); // NOI18N
-        DialogDescriptor descriptor = new DialogDescriptor(panel, title);
-        descriptor.setModal(true);
-
-        // move buttons from dialog to descriptor
-        panel.remove(panel.openButton);
-        panel.remove(panel.createButton);
-        panel.remove(panel.closeButton);
-
-        Object[] options = null;
-        if (clonedProjects.size() > 1) {
-            String msg = NbBundle.getMessage(CloneAction.class, "BK3009", new Integer(clonedProjects.size()));   // NOI18N
-            panel.jLabel1.setText(msg);
-            options = new Object[]{panel.openButton, panel.closeButton};
-        } else if (clonedProjects.size() == 1) {
-            Project project = (Project) clonedProjects.iterator().next();
-            projectToBeOpened = project;
-            ProjectInformation projectInformation = ProjectUtils.getInformation(project);
-            String projectName = projectInformation.getDisplayName();
-            String msg = NbBundle.getMessage(CloneAction.class, "BK3011", projectName);                              // NOI18N
-            panel.jLabel1.setText(msg);
-            panel.openButton.setText(NbBundle.getMessage(CloneAction.class, "BK3012"));                              // NOI18N
-            options = new Object[]{panel.openButton, panel.closeButton};
-        } else {
-            String msg = NbBundle.getMessage(CloneAction.class, "BK3010");                                           // NOI18N
-            panel.jLabel1.setText(msg);
-            options = new Object[]{panel.createButton, panel.closeButton};
-        }
-
-        descriptor.setMessageType(DialogDescriptor.INFORMATION_MESSAGE);
-        descriptor.setOptions(options);
-        descriptor.setClosingOptions(options);
-        descriptor.setHelpCtx(new HelpCtx(CloneCompletedPanel.class));
-        dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CloneAction.class, "ACSD_CloneCompleted_Dialog")); // NOI18N
         if (support != null && support.isCanceled()) {
             return;
         }
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                dialog.setVisible(true);
-            }
-        });
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        Object src = e.getSource();
-        dialog.setVisible(false);
-        if (panel.openButton.equals(src)) {
-            // show project chooser
-            if (projectToBeOpened == null) {
-                JFileChooser chooser = ProjectChooser.projectChooser();
-                chooser.setCurrentDirectory(workingFolder);
-                chooser.setMultiSelectionEnabled(true);
-                chooser.showOpenDialog(dialog);
-                File[] projectDirs = chooser.getSelectedFiles();
-                for (int i = 0; i < projectDirs.length; i++) {
-                    File projectDir = projectDirs[i];
-                    FileObject projectFolder = FileUtil.toFileObject(projectDir);
-                    if (projectFolder != null) {
-                        try {
-                            if(projectFolder != null){
-                                Project p = ProjectManager.getDefault().findProject(projectFolder);
-                                openProject(p);
-                            }
-                        } catch (IOException e1) {
-                            Throwable cause = new Throwable(NbBundle.getMessage(CloneAction.class, "BK1014", projectFolder));
-                            e1.initCause(cause);
-                            Mercurial.LOG.log(Level.INFO, null, e1);
-                        }
-                    }
-                }
-            } else {
-                openProject(projectToBeOpened);
-            }
-        } else if (panel.createButton.equals(src)) {
-            ProjectUtilities.newProjectWizard(workingFolder);
-        }
-    }
-
-    private void openProject(Project p) {
-        if(p == null) return;
-        
-        Project[] projects = new Project[]{p};
-        OpenProjects.getDefault().open(projects, false);
-        ProjectUtilities.selectAndExpandProject(p);
+        // open project selection
+        ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
     }
 }
