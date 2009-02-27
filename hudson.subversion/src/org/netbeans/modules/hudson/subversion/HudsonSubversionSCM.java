@@ -87,11 +87,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
                     loc.appendChild(doc.createElement("remote")).appendChild(doc.createTextNode(urlS));
                     loc.appendChild(doc.createElement("local")).appendChild(doc.createTextNode("."));
                     configXmlSCM.appendChild(doc.createElement("useUpdate")).appendChild(doc.createTextNode("true"));
-                    root.appendChild(doc.createElement("triggers")). // XXX reuse existing <triggers> if found
-                            appendChild(doc.createElement("hudson.triggers.SCMTrigger")).
-                            appendChild(doc.createElement("spec")).
-                            // XXX pretty arbitrary but seems like a decent first guess
-                            appendChild(doc.createTextNode("@hourly"));
+                    Helper.addTrigger(doc);
                 }
             };
         } catch (IOException ex) {

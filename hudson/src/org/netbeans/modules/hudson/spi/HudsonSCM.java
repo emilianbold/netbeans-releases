@@ -70,6 +70,8 @@ public interface HudsonSCM {
          */
         void configure(Document configXml);
 
+        // XXX should permit SCM to say that project is in a specific subdir
+
     }
 
     /**
@@ -89,5 +91,23 @@ public interface HudsonSCM {
      * @return a list of parsed changelog items, or null if the SCM is unrecognized
      */
     List<? extends HudsonJobChangeItem> parseChangeSet(Element changeSet);
+
+    /**
+     * Convenience methods for SCM implementations.
+     */
+    class Helper {
+
+        private Helper() {}
+
+        public static void addTrigger(Document configXml) {
+            Element root = configXml.getDocumentElement();
+            root.appendChild(configXml.createElement("triggers")). // XXX reuse existing <triggers> if found
+                    appendChild(configXml.createElement("hudson.triggers.SCMTrigger")).
+                    appendChild(configXml.createElement("spec")).
+                    // XXX pretty arbitrary but seems like a decent first guess
+                    appendChild(configXml.createTextNode("@hourly"));
+        }
+
+    }
 
 }
