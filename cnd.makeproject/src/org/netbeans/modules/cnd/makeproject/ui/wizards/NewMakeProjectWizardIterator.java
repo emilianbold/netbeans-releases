@@ -260,7 +260,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
 
                     // Add arguments to configure script?
                     String configureArguments = (String)wiz.getProperty("configureArguments"); // NOI18N
-                    if (configureArguments != null) {
+                    if (configureArguments != null && node.getCookie(ShellExecSupport.class) != null) {
                         ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
                         // Keep user arguments as is in args[0]
                         ses.setArguments(new String[] {configureArguments});
