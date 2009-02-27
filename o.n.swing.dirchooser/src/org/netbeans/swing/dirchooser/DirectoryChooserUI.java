@@ -1586,15 +1586,13 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         JRootPane pane = fileChooser.getRootPane();
-        blocker = new InputBlocker();
-        if(pane != null) {
-            pane.setGlassPane(blocker);
-        }
+        if( null == blocker )
+            blocker = new InputBlocker();
         
         if(type == Cursor.WAIT_CURSOR) {
-            blocker.block();
+            blocker.block(pane);
         } else if (type == Cursor.DEFAULT_CURSOR){
-            blocker.unBlock();
+            blocker.unBlock(pane);
         }
     }
     

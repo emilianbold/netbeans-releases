@@ -55,26 +55,46 @@ import javax.swing.event.*;
  */
 public class InputBlocker extends JComponent implements MouseInputListener {
     
-    private Cursor cursor;
-    
     public InputBlocker() {
-        addListeners();
+    }
+
+    private void addListeners(Component c) {
+        for( MouseListener ml : c.getMouseListeners() ) {
+            if( ml == this )
+                return;
+        }
+        c.addMouseListener(this);
+        c.addMouseMotionListener(this);
+    }
+
+    private void removeListeners(Component c) {
+        c.removeMouseListener(this);
+        c.removeMouseMotionListener(this);
     }
     
-    private void addListeners() {
-        addMouseListener(this);
-        addMouseMotionListener(this);
+    public void block(JRootPane rootPane) {
+        if( null == rootPane )
+            return;
+        Component glassPane = rootPane.getGlassPane();
+        if( null == glassPane ) {
+            rootPane.setGlassPane(this);
+            glassPane = this;
+        }
+        glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        addListeners(glassPane);
+        glassPane.setVisible(true);
     }
     
-    public void block() {
-        cursor = getCursor();
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        setVisible(true);
-    }
-    
-    public void unBlock() {
-        setCursor(cursor);
-        setVisible(false);
+    public void unBlock(JRootPane rootPane) {
+        if( null == rootPane )
+            return;
+        Component glassPane = rootPane.getGlassPane();
+        if( null == glassPane ) {
+            return;
+        }
+        removeListeners(glassPane);
+        glassPane.setCursor(null);
+        glassPane.setVisible(false);
     }
 
     public void mouseClicked(MouseEvent e) {
