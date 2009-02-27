@@ -46,9 +46,9 @@ import junit.framework.TestCase;
  *
  * @author mkleint
  */
-public class NexusRepositoryIndexserImplTest extends TestCase {
+public class NexusRepositoryIndexerImplTest extends TestCase {
     
-    public NexusRepositoryIndexserImplTest(String testName) {
+    public NexusRepositoryIndexerImplTest(String testName) {
         super(testName);
     }            
     
