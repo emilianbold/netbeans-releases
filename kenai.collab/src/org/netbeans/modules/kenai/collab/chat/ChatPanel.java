@@ -42,6 +42,8 @@ package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
@@ -60,7 +62,6 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.packet.DelayInformation;
-import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -95,7 +96,8 @@ public class ChatPanel extends javax.swing.JPanel {
 //        users.setModel(new BuddyListModel(chat));
 //        users.setModel(new BuddyListModel(ctrl.getRoster()));
 //        chat.addParticipantListener(getBuddyListModel());
-        chat.addParticipantListener(new PresenceListener());
+        MessagingHandleImpl handle = ChatNotifications.getDefault().getMessagingHandle(getName());
+        handle.addPropertyChangeListener(new PresenceListener());
         KenaiConnection.getDefault().join(chat,new ChatListener());
         //KenaiConnection.getDefault().join(chat);
         inbox.setBackground(Color.WHITE);
@@ -184,18 +186,15 @@ public class ChatPanel extends javax.swing.JPanel {
     //insertPresence(presence);
     }
 
-    private class PresenceListener implements PacketListener {
+    private class PresenceListener implements PropertyChangeListener {
 
-        public void processPacket(Packet packet) {
-            final Presence presence = (Presence) packet;
+        public void propertyChange(PropertyChangeEvent arg0) {
             java.awt.EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    refreshOnlineStatus();
+                }
+            });
 
-            public void run() {
-                 refreshOnlineStatus();
-                //setEndSelection();
-                //insertPresence(presence);
-            }
-        });
         }
     }
 
