@@ -40,6 +40,7 @@
 package org.netbeans.modules.kenai.ui.dashboard;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -54,9 +55,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractListModel;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -80,14 +84,25 @@ import org.openide.util.RequestProcessor;
 public final class DashboardImpl extends Dashboard {
 
     private LoginHandle login;
-    private TreeListModel model;
-    private ArrayList<ProjectHandle> memberProjects;
+    private final TreeListModel model = new TreeListModel();
+    private static final ListModel EMPTY_MODEL = new AbstractListModel() {
+        public int getSize() {
+            return 0;
+        }
+        public Object getElementAt(int index) {
+            return null;
+        }
+    };
+    private final TreeList treeList = new TreeList(model);
+    private final ArrayList<ProjectHandle> memberProjects = new ArrayList<ProjectHandle>(50);
     private final ArrayList<ProjectHandle> otherProjects = new ArrayList<ProjectHandle>(50);
-    private JPanel dashboardComponent;
+    private final JPanel dashboardComponent;
     private final PropertyChangeListener userListener;
     private boolean opened = false;
+    private boolean memberProjectsLoaded = false;
+    private boolean otherProjectsLoaded = false;
 
-    private static final long TIMEOUT_INTERVAL_MILLIS = 5*1000;
+    private static final long TIMEOUT_INTERVAL_MILLIS = 60*1000;
 
     private OtherProjectsLoader otherProjectsLoader;
     private MemberProjectsLoader memberProjectsLoader;
@@ -97,7 +112,9 @@ public final class DashboardImpl extends Dashboard {
 
     private final Object LOCK = new Object();
 
-    public DashboardImpl() {
+    private DashboardImpl() {
+        dashboardComponent = new JPanel(new BorderLayout());
+        dashboardComponent.setBackground(ColorManager.defaultBackground);
         userListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if( LoginHandle.PROP_MEMBER_PROJECT_LIST.equals(evt.getPropertyName()) ) {
@@ -107,7 +124,8 @@ public final class DashboardImpl extends Dashboard {
         };
         final Kenai kenai = Kenai.getDefault();
         final PasswordAuthentication pa = kenai.getPasswordAuthentication();
-        setUser(pa==null?null:new LoginHandleImpl(pa.getUserName()));
+        this.login = pa==null ? null : new LoginHandleImpl(pa.getUserName());
+        switchUserNode();
         kenai.addPropertyChangeListener(Kenai.PROP_LOGIN, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
                 final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
@@ -121,7 +139,11 @@ public final class DashboardImpl extends Dashboard {
     }
 
     public static DashboardImpl getInstance() {
-        return (DashboardImpl) Dashboard.getDefault();
+        return Holder.theInstance;
+    }
+
+    private static class Holder {
+        private static final DashboardImpl theInstance = new DashboardImpl();
     }
 
     /**
@@ -136,34 +158,18 @@ public final class DashboardImpl extends Dashboard {
                 this.login.removePropertyChangeListener(userListener);
             }
             this.login = login;
+            removeProjectsFromModel(memberProjects);
+            memberProjects.clear();
+            memberProjectsLoaded = false;
+            switchUserNode();
             if( isOpened() ) {
-                if( null != memberProjects )
-                    removeProjectsFromModel(memberProjects);
-            }
-            memberProjects = null;
-            if( isOpened() ) {
-                Runnable r = new Runnable() {
-                    public void run() {
-                        initTreeList();
-                        if( null != loginNode )
-                            model.removeRoot( loginNode );
-                        if( null != userNode )
-                            model.removeRoot( userNode );
-                        if( null == login ) {
-                            userNode = new UserNode(login, DashboardImpl.this);
-                            model.addRoot(0, userNode);
-                        } else {
-                            loginNode = new LoginNode(DashboardImpl.this);
-                            model.addRoot(0, userNode);
-                        }
-                        startLoadingMemberProjects();
-                    }
-                };
-                if( SwingUtilities.isEventDispatchThread() ) {
-                    r.run();
-                } else {
-                    SwingUtilities.invokeLater(r);
+                if( null != login ) {
+                    startLoadingMemberProjects();
                 }
+                switchContent();
+            }
+            if( null != this.login ) {
+                this.login.addPropertyChangeListener(userListener);
             }
         }
     }
@@ -179,11 +185,11 @@ public final class DashboardImpl extends Dashboard {
                 otherProjects.add(project);
                 storeOtherProjects();
             }
+            ArrayList<ProjectHandle> tmp = new ArrayList<ProjectHandle>(1);
+            tmp.add(project);
+            addProjectsToModel(-1, tmp);
             if( isOpened() ) {
-                initTreeList();
-                ArrayList<ProjectHandle> tmp = new ArrayList<ProjectHandle>(1);
-                tmp.add(project);
-                addProjectsToModel(-1, tmp);
+                switchContent();
             }
         }
     }
@@ -195,11 +201,11 @@ public final class DashboardImpl extends Dashboard {
             }
             otherProjects.remove(project);
             storeOtherProjects();
+            ArrayList<ProjectHandle> tmp = new ArrayList<ProjectHandle>(1);
+            tmp.add(project);
+            removeProjectsFromModel(tmp);
             if( isOpened() ) {
-                initTreeList();
-                ArrayList<ProjectHandle> tmp = new ArrayList<ProjectHandle>(1);
-                tmp.add(project);
-                removeProjectsFromModel(tmp);
+                switchContent();
             }
         }
     }
@@ -227,38 +233,43 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void setErrorMessage( String msg ) {
-        if( null != userNode )
-            userNode.setError(msg);
+        synchronized( LOCK ) {
+            if( null != userNode )
+                userNode.setError(msg);
+        }
     }
 
     private void setStatusMessage( String msg ) {
-        if( null != userNode )
-            userNode.setStatus(msg);
+        synchronized( LOCK ) {
+            if( null != userNode )
+                userNode.setStatus(msg);
+        }
     }
 
     private void clearMessages() {
-        if( null != userNode )
-            userNode.clearMessage();
+        synchronized( LOCK ) {
+            if( null != userNode )
+                userNode.clearMessage();
+        }
     }
 
-    private void initTreeList() {
-        if( null != model ) {
-            return;
+    private void switchUserNode() {
+        if( null != loginNode ) {
+            model.removeRoot(loginNode);
+            loginNode = null;
         }
-        dashboardComponent.removeAll();
-        model = new TreeListModel();
-        if( null == login ) {
+        if( null != userNode ) {
+            model.removeRoot(userNode);
+            userNode = null;
+        }
+
+        if( null == this.login ) {
             loginNode = new LoginNode(this);
-            model.addRoot(-1, loginNode);
+            model.addRoot(0, loginNode);
         } else {
             userNode = new UserNode(login, this);
-            model.addRoot(-1, userNode);
+            model.addRoot(0, userNode);
         }
-        TreeList treeList = new TreeList(model);
-        dashboardComponent.add(treeList, BorderLayout.CENTER);
-        dashboardComponent.invalidate();
-        dashboardComponent.revalidate();
-        dashboardComponent.repaint();
     }
     
     boolean isOpened() {
@@ -267,22 +278,18 @@ public final class DashboardImpl extends Dashboard {
 
     void refreshMemberProjects() {
         synchronized( LOCK ) {
+            removeProjectsFromModel(memberProjects);
+            memberProjects.clear();
+            memberProjectsLoaded = false;
             if( isOpened() ) {
                 startLoadingMemberProjects();
-            } else {
-                memberProjects = null;
             }
         }
     }
 
     public void close() {
         synchronized( LOCK ) {
-            if( null != dashboardComponent )
-                dashboardComponent.removeAll();
-            dashboardComponent = null;
-            if( null != model )
-                model.clear();
-            model = null;
+            treeList.setModel(EMPTY_MODEL);
             opened = false;
         }
     }
@@ -290,20 +297,52 @@ public final class DashboardImpl extends Dashboard {
     public JComponent getComponent() {
         synchronized( LOCK ) {
             opened = true;
-            if( otherProjects.isEmpty() ) {
+            if( null != login && !memberProjectsLoaded ) {
+                startLoadingMemberProjects();
+            }
+            if( !otherProjectsLoaded ) {
                 startLoadingOtherProjects();
             }
-            dashboardComponent = new JPanel(new BorderLayout());
-            dashboardComponent.setBackground(ColorManager.defaultBackground);
-            if( null == login && otherProjects.isEmpty() ) {
-                dashboardComponent.add( createEmptyContent(), BorderLayout.CENTER );
-            } else {
-                initTreeList();
-                if( null == memberProjects )
-                    startLoadingMemberProjects();
-            }
+            switchContent();
         }
         return dashboardComponent;
+    }
+
+    private void switchContent() {
+        Runnable r = new Runnable() {
+            public void run() {
+                boolean isEmpty = true;
+
+                synchronized( LOCK ) {
+                    isEmpty = null == DashboardImpl.this.login && otherProjects.isEmpty();
+                }
+
+                boolean isTreeListShowing = treeList.getParent() == dashboardComponent;
+                if( isEmpty ) {
+                    if( isTreeListShowing|| dashboardComponent.getComponentCount() == 0 ) {
+                        dashboardComponent.removeAll();
+                        dashboardComponent.add(createEmptyContent(), BorderLayout.CENTER);
+                        dashboardComponent.invalidate();
+                        dashboardComponent.revalidate();
+                        dashboardComponent.repaint();
+                    }
+                } else {
+                    treeList.setModel(model);
+                    if( !isTreeListShowing ) {
+                        dashboardComponent.removeAll();
+                        dashboardComponent.add(treeList, BorderLayout.CENTER);
+                        dashboardComponent.invalidate();
+                        dashboardComponent.revalidate();
+                        dashboardComponent.repaint();
+                    }
+                }
+            }
+        };
+        if( SwingUtilities.isEventDispatchThread() ) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
     }
 
     private JComponent createEmptyContent() {
@@ -358,17 +397,14 @@ public final class DashboardImpl extends Dashboard {
     private void setOtherProjects(ArrayList<ProjectHandle> projects) {
         clearMessages();
         synchronized( LOCK ) {
-            if( isOpened() ) {
-                initTreeList();
-                removeProjectsFromModel( otherProjects );
-                otherProjects.clear();
-                otherProjects.addAll(projects);
-                addProjectsToModel( -1, otherProjects );
-            } else {
-                otherProjects.clear();
-                otherProjects.addAll(projects);
-            }
+            removeProjectsFromModel( otherProjects );
+            otherProjects.addAll(projects);
+            otherProjectsLoaded = true;
+            addProjectsToModel( -1, otherProjects );
             storeOtherProjects();
+            if( isOpened() ) {
+                switchContent();
+            }
         }
     }
 
@@ -390,14 +426,13 @@ public final class DashboardImpl extends Dashboard {
     private void setMemberProjects(ArrayList<ProjectHandle> projects) {
         clearMessages();
         synchronized( LOCK ) {
+            removeProjectsFromModel( memberProjects );
+            memberProjects.clear();
+            memberProjects.addAll(projects);
+            memberProjectsLoaded = true;
+            addProjectsToModel( 1, memberProjects );
             if( isOpened() ) {
-                initTreeList();
-                if( null != memberProjects )
-                    removeProjectsFromModel( memberProjects );
-                memberProjects = projects;
-                addProjectsToModel( 1, memberProjects );
-            } else {
-                memberProjects = projects;
+                switchContent();
             }
         }
     }

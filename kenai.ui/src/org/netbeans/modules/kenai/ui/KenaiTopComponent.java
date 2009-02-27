@@ -121,7 +121,6 @@ final class KenaiTopComponent extends TopComponent {
     @Override
     public void componentOpened() {
         removeAll();
-        //TODO use login handle from previous session (if any)
         JScrollPane scroll = new JScrollPane( DashboardImpl.getInstance().getComponent() );
         scroll.setBorder(BorderFactory.createEmptyBorder());
         add( scroll, BorderLayout.CENTER );
