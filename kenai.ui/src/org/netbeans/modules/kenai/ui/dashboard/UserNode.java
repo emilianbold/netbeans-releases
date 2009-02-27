@@ -127,18 +127,21 @@ public class UserNode extends LeafNode {
         if( null != lblStatus )
             lblStatus.setText(text);
         statusText = text;
+        fireContentChanged();
     }
 
     void setError( String text ) {
         if( null != lblStatus )
         lblStatus.setText(text);
         errorText = text;
+        fireContentChanged();
     }
 
     void clearMessage() {
         if( null != lblStatus )
-        lblStatus.setText(null);
+            lblStatus.setText(null);
         statusText = null;
         errorText = null;
+        fireContentChanged();
     }
 }

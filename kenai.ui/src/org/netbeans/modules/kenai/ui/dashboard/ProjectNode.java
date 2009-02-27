@@ -73,6 +73,8 @@ public class ProjectNode extends TreeListNode {
     private JLabel lbl = null;
     private LinkButton btnDetails = null;
 
+    private final Object LOCK = new Object();
+
     public ProjectNode( ProjectHandle project ) {
         super( true, null );
         this.project = project;
@@ -102,19 +104,21 @@ public class ProjectNode extends TreeListNode {
 
     @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-        if( null == component ) {
-            component = new JPanel( new GridBagLayout() );
-            component.setOpaque(false);
-            lbl = new JLabel(project.getDisplayName());
-            component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,3), 0,0) );
+        synchronized( LOCK ) {
+            if( null == component ) {
+                component = new JPanel( new GridBagLayout() );
+                component.setOpaque(false);
+                lbl = new JLabel(project.getDisplayName());
+                component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,3), 0,0) );
 
-            component.add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
-            btnDetails = new LinkButton(NbBundle.getMessage(ProjectNode.class, "LBL_ProjectDetails"), accessor.getDetailsAction(project)); //NOI18N
-            component.add( btnDetails, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                component.add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
+                btnDetails = new LinkButton(NbBundle.getMessage(ProjectNode.class, "LBL_ProjectDetails"), accessor.getDetailsAction(project)); //NOI18N
+                component.add( btnDetails, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+            }
+            lbl.setForeground(foreground);
+            btnDetails.setForeground(foreground, isSelected);
+            return component;
         }
-        lbl.setForeground(foreground);
-        btnDetails.setForeground(foreground, isSelected);
-        return component;
     }
 
     @Override

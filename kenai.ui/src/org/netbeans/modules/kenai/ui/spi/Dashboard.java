@@ -15,7 +15,7 @@ import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 public abstract class Dashboard {
 
     public static Dashboard getDefault() {
-        return Holder.instance;
+        return DashboardImpl.getInstance();
     }
 
     /**
@@ -34,8 +34,4 @@ public abstract class Dashboard {
     public abstract void addNonMemberProject( ProjectHandle project );
 
     public abstract void removeProject( ProjectHandle project );
-
-    private static class Holder {
-        private static final Dashboard instance = new DashboardImpl();
-    }
 }
