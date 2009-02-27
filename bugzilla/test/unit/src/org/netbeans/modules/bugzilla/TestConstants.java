@@ -52,6 +52,9 @@ public interface TestConstants {
 //    public static final String REPO_URL     = "http://129.157.20.136/bugzilla"; //
     public static final String REPO_USER    = "dil@dil.com";
 
+    public static final String ISSUE_SEVERITY    = "bug";
+    public static final String ISSUE_DESCRIPTION = "big bug";
+
     static NullProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor();
 
     public static final String project_json = "" +
