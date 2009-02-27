@@ -194,6 +194,12 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
      */
     void componentClosed() {
         setups = null;
+        /**
+         * must disable these actions, otherwise key shortcuts would trigger them even after tab closure
+         * see #159266
+         */
+        prevAction.setEnabled(false);
+        nextAction.setEnabled(false);
         cancelBackgroundTasks(); 
     }
 
