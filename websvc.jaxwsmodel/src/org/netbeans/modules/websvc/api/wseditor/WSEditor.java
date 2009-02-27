@@ -40,48 +40,48 @@
  */
 
 /*
- * WSEditorProviderRegistry.java
+ * WSEditor.java
  *
- * Created on February 17, 2006, 10:31 AM
+ * Created on March 9, 2006, 2:38 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.websvc.core.wseditor.spi;
+package org.netbeans.modules.websvc.api.wseditor;
 
-import java.util.HashSet;
-import java.util.Set;
+import javax.swing.JComponent;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Roderico Cruz
  */
-public class WSEditorProviderRegistry {
-    
-    static WSEditorProviderRegistry registry = new WSEditorProviderRegistry();
-    
-    private Set<WSEditorProvider> editors = new HashSet<WSEditorProvider>();
+public interface WSEditor {
+    /**
+     * Return the main panel of the editor
+     */
+    JComponent createWSEditorComponent(Node node, JaxWsModel jaxWsModel);   
+
+    /**
+     * The title text that will be displayed in the tab corresponding
+     * to the editor.
+     */
+    String getTitle();
     
     /**
-     * Creates a new instance of WSEditorProviderRegistry
+     * This is called when the OK button is selected 
      */
-    private WSEditorProviderRegistry() {
-    }
+    void save(Node node, JaxWsModel jaxWsModel);
     
-    public static WSEditorProviderRegistry getDefault(){
-        return registry;
-    }
+    /**
+     * This is called when the Cancel button is selected
+     */
+    void cancel(Node node, JaxWsModel jaxWsModel);
     
-    public void register(WSEditorProvider provider){
-        editors.add(provider);
-    }
-    
-    public void unregister(WSEditorProvider provider){
-        editors.remove(provider);
-    }
-    
-    public Set<WSEditorProvider> getEditorProviders(){
-        return editors;
-    }
+    /**
+     *  Provides a description text that will be displayed at the top of the editor
+     */
+    String getDescription();
 }

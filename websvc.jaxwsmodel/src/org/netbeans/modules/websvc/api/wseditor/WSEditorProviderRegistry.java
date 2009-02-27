@@ -40,23 +40,49 @@
  */
 
 /*
- * SaveSetter.java
+ * WSEditorProviderRegistry.java
  *
- * Created on March 1, 2006, 6:36 PM
+ * Created on February 17, 2006, 10:31 AM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.websvc.core.wseditor.spi;
+package org.netbeans.modules.websvc.api.wseditor;
+
+import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
  * @author Roderico Cruz
  */
-public interface SaveSetter {
+public class WSEditorProviderRegistry {
+    
+    static WSEditorProviderRegistry registry = new WSEditorProviderRegistry();
+    
+    private Set<WSEditorProvider> editors = new HashSet<WSEditorProvider>();
+    
     /**
-     * Sets the dirty flag on the editor
+     * Creates a new instance of WSEditorProviderRegistry
      */
-    public void setDirty();
+    private WSEditorProviderRegistry() {
+    }
+    
+    public static WSEditorProviderRegistry getDefault(){
+        return registry;
+    }
+    
+    public void register(WSEditorProvider provider){
+        editors.add(provider);
+    }
+    
+    public void unregister(WSEditorProvider provider){
+        editors.remove(provider);
+    }
+    
+    public Set<WSEditorProvider> getEditorProviders(){
+        return editors;
+    }
 }

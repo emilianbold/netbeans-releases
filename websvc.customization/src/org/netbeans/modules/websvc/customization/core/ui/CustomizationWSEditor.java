@@ -59,7 +59,7 @@ import javax.swing.undo.UndoManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.customization.multiview.WSCustomizationTopComponent;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
