@@ -87,36 +87,43 @@ public class IssueStorage {
 
     public void storeIssue(String repoUrl, String issueID, boolean seen, Map<String, String> attrs) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt";
-        File repoFolder = getRepoFolder(repoUrl);
+        Bugzilla.LOG.log(Level.FINE, "start storing issue {0} - {1}", new Object[] {repoUrl, issueID});
         try {
+            File repoFolder = getRepoFolder(repoUrl);
             storeIssueAtributes(repoFolder, issueID, seen, attrs);
         } catch (InterruptedException ex) {
             Bugzilla.LOG.log(Level.WARNING, null, ex);
             IOException ioe = new IOException(ex.getMessage());
             ioe.initCause(ex);
             throw ioe;
+        } finally {
+            Bugzilla.LOG.log(Level.FINE, "finished storing issue {0} - {1}", new Object[] {repoUrl, issueID});
         }
     }
 
-    public Map<String, String> readIssue(String repoUrl, String id) throws IOException {
+    public Map<String, String> readIssue(String repoUrl, String issueID) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt";
-        File repoFolder = getRepoFolder(repoUrl);
+        Bugzilla.LOG.log(Level.FINE, "start reading issue {0} - {1}", new Object[] {repoUrl, issueID});
         try {
-            return readIssue(repoFolder, id);
+            File repoFolder = getRepoFolder(repoUrl);
+            return readIssue(repoFolder, issueID);
         } catch (InterruptedException ex) {
             Bugzilla.LOG.log(Level.WARNING, null, ex);
             IOException ioe = new IOException(ex.getMessage());
             ioe.initCause(ex);
             throw ioe;
+        } finally {
+            Bugzilla.LOG.log(Level.FINE, "finished reading issue {0} - {1}", new Object[] {repoUrl, issueID});
         }
     }
 
     public List<String> readQuery(String repoUrl, String queryName) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt";
-        File repoFolder = getRepoFolder(repoUrl);
-        if(!repoFolder.exists()) return Collections.EMPTY_LIST;
-
+        Bugzilla.LOG.log(Level.FINE, "start reading query {0} - {1}", new Object[] {repoUrl, queryName});
         try {
+            File repoFolder = getRepoFolder(repoUrl);
+            if(!repoFolder.exists()) return Collections.EMPTY_LIST;
+
             DataInputStream dis = getQueryInputStream(repoFolder, queryName);
             if(dis == null) return Collections.EMPTY_LIST;
             List<String> ids = new ArrayList<String>();
@@ -135,14 +142,16 @@ public class IssueStorage {
             IOException ioe = new IOException(ex.getMessage());
             ioe.initCause(ex);
             throw ioe;
+        } finally {
+            Bugzilla.LOG.log(Level.FINE, "finished reading query {0} - {1}", new Object[] {repoUrl, queryName});
         }
     }
 
     void storeQuery(String repoUrl, String queryName, String[] ids) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt";
-        File repoFolder = getRepoFolder(repoUrl);
-
+        Bugzilla.LOG.log(Level.FINE, "start storing query {0} - {1}", new Object[] {repoUrl, queryName});
         try {
+            File repoFolder = getRepoFolder(repoUrl);
             DataOutputStream dos = null;
             try {
                 dos = getQueryOutputStream(repoFolder, queryName);
@@ -159,6 +168,8 @@ public class IssueStorage {
             IOException ioe = new IOException(ex.getMessage());
             ioe.initCause(ex);
             throw ioe;
+        } finally {
+            Bugzilla.LOG.log(Level.FINE, "finished storing query {0} - {1}", new Object[] {repoUrl, queryName});
         }
     }
 
