@@ -39,12 +39,14 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import org.eclipse.core.runtime.CoreException;
 import org.jdesktop.layout.GroupLayout;
@@ -57,6 +59,7 @@ import org.openide.util.NbBundle;
  * @author Jan Stola
  */
 public class IssuePanel extends javax.swing.JPanel {
+    private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
     private BugzillaIssue issue;
     private CommentsPanel commentsPanel;
     private int resolvedIndex;
@@ -103,6 +106,7 @@ public class IssuePanel extends javax.swing.JPanel {
             dependsField.setText(issue.getFieldValue(BugzillaIssue.IssueField.DEPENDS_ON));
             blocksField.setText(issue.getFieldValue(BugzillaIssue.IssueField.BLOCKS));
             commentsPanel.setIssue(issue);
+            updateFieldStatuses();
         } catch (CoreException cex) {
             cex.printStackTrace();
         } catch (IOException ioex) {
@@ -127,6 +131,34 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private ComboBoxModel toComboModel(List<String> items) {
         return new DefaultComboBoxModel(items.toArray());
+    }
+
+    private void updateFieldStatuses() {
+        updateFieldStatus(BugzillaIssue.IssueField.PRODUCT, productLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.COMPONENT, componentLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.VERSION, versionLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.PLATFORM, platformLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.VERSION, versionLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.STATUS, statusLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.RESOLUTION, resolutionLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.PRIORITY, priorityLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.SEVERITY, severityLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.MILESTONE, targetMilestoneLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.URL, urlLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.KEYWORDS, keywordsLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.ASSIGEND_TO, assignedLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.QA_CONTACT, qaContactLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.CC, ccLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.DEPENDS_ON, dependsLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.BLOCKS, blocksLabel);
+    }
+
+    private void updateFieldStatus(BugzillaIssue.IssueField field, JLabel label) {
+        boolean highlight = (issue.getFieldStatus(field) != BugzillaIssue.IssueField.STATUS_UPTODATE);
+        label.setOpaque(highlight);
+        if (highlight) {
+            label.setBackground(HIGHLIGHT_COLOR);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -454,7 +486,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
         layout.linkSize(new java.awt.Component[] {dummyLabel1, dummyLabel2, targetMilestoneCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
-        layout.linkSize(new java.awt.Component[] {resolutionLabel, statusCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {assignedLabel, attachmentsLabel, blocksLabel, ccLabel, componentLabel, dependsLabel, keywordsLabel, platformLabel, priorityLabel, productLabel, qaContactLabel, resolutionLabel, severityLabel, statusCombo, statusLabel, targetMilestoneLabel, urlLabel, versionLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
     }// </editor-fold>//GEN-END:initComponents
 
