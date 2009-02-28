@@ -144,7 +144,7 @@ public class CppTypeProvider implements TypeProvider {
     
     private void processNamespace(CsmNamespace nsp, Set<TypeDescriptor> result, CsmSelect.CsmFilter filter) {
         if( TRACE ) System.err.printf("processNamespace %s\n", nsp.getQualifiedName());
-        for( Iterator<CsmOffsetableDeclaration> iter  = CsmSelect.getDefault().getDeclarations(nsp, filter); iter.hasNext(); ) {
+        for( Iterator<CsmOffsetableDeclaration> iter  = CsmSelect.getDeclarations(nsp, filter); iter.hasNext(); ) {
             if( isCancelled ) {
 		return;
 	    }

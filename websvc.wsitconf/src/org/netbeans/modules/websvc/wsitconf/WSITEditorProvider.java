@@ -40,15 +40,15 @@
  */
 package org.netbeans.modules.websvc.wsitconf;
 
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
+import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
 import org.openide.nodes.Node;
 
 /**
  *
  * @author Martin Grebac
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider.class)
 public class WSITEditorProvider implements WSEditorProvider {
     
     /**

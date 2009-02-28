@@ -547,8 +547,18 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             if (node instanceof DefaultMutableTreeNode) {
                 DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
                 Object nodeObject = treeNode.getUserObject();
-                return (nodeObject instanceof DataRow) ? ((DataRow) nodeObject).getStringValue(AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getNodeColumnName(configuration))
-                    : nodeObject.toString();
+                String result = "";
+                if (nodeObject instanceof DataRow){
+                    DataRow dataRow = ((DataRow) nodeObject);
+                    String columnName = AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getNodeColumnName(configuration);
+//
+//                    if (configuration.getMetadata().getColumnByName(columnName).getColumnClass() == MangledNa)
+//                    Object value = dataRow.getStringValue();
+                    result = dataRow.getStringValue(columnName);
+                }else{
+                    result = nodeObject.toString();
+                }
+                return result;
             }
             return "Unknown";
         }

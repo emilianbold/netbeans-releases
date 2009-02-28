@@ -51,6 +51,7 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.storage.MangledNameType;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.cpu.impl.CpuIndicatorConfiguration;
@@ -77,9 +78,9 @@ public final class DLightCPUToolConfigurationProvider
 
 
     static {
-        Column utime = new _Column(Float.class, "utime"); // NOI18N
-        Column stime = new _Column(Float.class, "stime"); // NOI18N
-        Column wtime = new _Column(Float.class, "wtime"); // NOI18N
+        Column utime = new Column("utime", Float.class, loc("CPUMonitorTool.ColumnName.utime"), null); // NOI18N
+        Column stime = new Column("stime", Float.class, loc("CPUMonitorTool.ColumnName.stime"), null); // NOI18N
+        Column wtime = new Column("wtime", Float.class, loc("CPUMonitorTool.ColumnName.wtime"), null); // NOI18N
 
         indicatorColumns = Arrays.asList(utime, stime, wtime);
     }
@@ -169,10 +170,10 @@ public final class DLightCPUToolConfigurationProvider
     }
 
     private DataTableMetadata createProfilerTableMetadata() {
-        Column cpuId = new _Column(Integer.class, "cpu_id"); // NOI18N
-        Column threadId = new _Column(Integer.class, "thread_id"); // NOI18N
-        Column timestamp = new _Column(Long.class, "time_stamp"); // NOI18N
-        Column stackId = new _Column(Integer.class, "leaf_id"); // NOI18N
+        Column cpuId = new Column("cpu_id", Integer.class,  loc("CPUMonitorTool.ColumnName.cpu_id"), null); // NOI18N
+        Column threadId = new Column("thread_id", Integer.class, loc("CPUMonitorTool.ColumnName.thread_id"), null); // NOI18N
+        Column timestamp = new Column("time_stamp",  Long.class, loc("CPUMonitorTool.ColumnName.time_stamp"), null); // NOI18N
+        Column stackId = new Column("leaf_id", Integer.class, loc("CPUMonitorTool.ColumnName.leaf_id"), null); // NOI18N
 
         return new DataTableMetadata("CallStack", // NOI18N
                 Arrays.asList(cpuId, threadId, timestamp, stackId));
@@ -182,8 +183,8 @@ public final class DLightCPUToolConfigurationProvider
             DataTableMetadata profilerTableMetadata) {
 
         List<Column> columns = new ArrayList<Column>();
-        columns.add(new _Column(String.class, "name")); // NOI18N
-        columns.add(new _Column(String.class, "name_quilified")); // NOI18N
+        columns.add(new Column("name", String.class, loc("CPUMonitorTool.ColumnName.name"), null)); // NOI18N
+        columns.add(new Column("name_qualified", String.class, loc("CPUMonitorTool.ColumnName.name_qualified"), null)); // NOI18N
 
         List<FunctionMetric> metricsList = SQLStackStorage.METRICS;
 
@@ -238,12 +239,5 @@ public final class DLightCPUToolConfigurationProvider
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(
                 DLightCPUToolConfigurationProvider.class, key, params);
-    }
-
-    private static class _Column extends Column {
-
-        public _Column(Class clazz, String name) {
-            super(name, clazz, loc("CPUMonitorTool.ColumnName." + name), null); // NOI18N
-        }
     }
 }

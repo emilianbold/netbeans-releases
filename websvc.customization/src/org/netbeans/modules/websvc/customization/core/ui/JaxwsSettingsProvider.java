@@ -40,8 +40,8 @@
 package org.netbeans.modules.websvc.customization.core.ui;
 
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
+import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -49,7 +49,7 @@ import org.openide.util.Lookup;
  *
  * @author rico
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider.class)
 public class JaxwsSettingsProvider implements WSEditorProvider{
 
     public boolean enable(Node node) {

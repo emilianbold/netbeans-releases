@@ -47,7 +47,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mt154047
  */
-/*@ServiceProvider(service = DemanglingFunctionNameServiceFactory.class)*/
+@ServiceProvider(service = DemanglingFunctionNameServiceFactory.class)
 public final class  CndDemanglingFunctionNameServiceFactory  implements DemanglingFunctionNameServiceFactory{
 
     public DemanglingFunctionNameService getForCurrentSession() {

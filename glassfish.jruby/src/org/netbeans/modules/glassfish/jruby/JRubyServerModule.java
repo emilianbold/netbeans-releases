@@ -273,7 +273,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
                 }
             } catch(Exception ex) {
                 // Assume application is not deployed correctly.  Not expected.
-                Logger.getLogger("glassfish.javaee").log(Level.FINE, ex.getLocalizedMessage(), ex);
+                Logger.getLogger("glassfish-jruby").log(Level.FINE, ex.getLocalizedMessage(), ex);
                 return false;
             }
             return true;

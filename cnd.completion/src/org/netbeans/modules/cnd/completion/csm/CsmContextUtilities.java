@@ -184,8 +184,8 @@ public class CsmContextUtilities {
     
     private static void getFileLocalMacros(CsmFile file, List<CsmMacro> res, Set<String> alredyInList,
             String strPrefix, boolean match, boolean caseSensitive){
-        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, false);
-        for (Iterator itFile = CsmSelect.getDefault().getMacros(file, filter); itFile.hasNext();) {
+        CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, false);
+        for (Iterator itFile = CsmSelect.getMacros(file, filter); itFile.hasNext();) {
             CsmMacro macro = (CsmMacro) itFile.next();
             //if (macro.getStartOffset() > offsetInScope) {
             //    break;
@@ -330,7 +330,7 @@ public class CsmContextUtilities {
     public static CsmFilter createFilter(final CsmDeclaration.Kind[] kinds, final String strPrefix,
             final boolean match, boolean caseSensitive, final boolean returnUnnamedMembers){
         CsmFilter filter = null;
-        CsmFilterBuilder builder = CsmSelect.getDefault().getFilterBuilder();
+        CsmFilterBuilder builder = CsmSelect.getFilterBuilder();
         if (kinds != null && strPrefix != null){
             filter = builder.createCompoundFilter(
                      builder.createKindFilter(kinds),
@@ -353,7 +353,7 @@ public class CsmContextUtilities {
                 CsmFile file = (CsmFile)scope;
                 CsmFilter fileFilter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.NAMESPACE_DEFINITION},
                                    null, match, caseSensitive, true);
-                for (Iterator itFile = CsmSelect.getDefault().getDeclarations(file, fileFilter); itFile.hasNext();) {
+                for (Iterator itFile = CsmSelect.getDeclarations(file, fileFilter); itFile.hasNext();) {
                     CsmDeclaration decl = (CsmDeclaration) itFile.next();
                     if (canBreak(offsetInScope, decl, context)) {
                         break;
@@ -367,7 +367,7 @@ public class CsmContextUtilities {
                         CsmNamespaceDefinition ns = (CsmNamespaceDefinition)decl;
                         CsmFilter filter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM},
                                 strPrefix, match, caseSensitive, true);
-                        for(Iterator i = CsmSelect.getDefault().getDeclarations(ns, filter); i.hasNext();){
+                        for(Iterator i = CsmSelect.getDeclarations(ns, filter); i.hasNext();){
                             CsmDeclaration nsDecl = (CsmDeclaration) i.next();
                             if (canBreak(offsetInScope, nsDecl, context)) {
                                 break;

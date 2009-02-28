@@ -50,6 +50,13 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ159307() throws Exception {
+        // IZ#159307: Wrong recognition of local constructor as global function
+        performTest("iz159307.cpp", 13, 12, "iz159307.cpp", 7, 9);
+        performTest("iz159307.cpp", 13, 30, "iz159307.cpp", 9, 9);
+        performTest("iz159307.cpp", 14, 15, "iz159307.cpp", 1, 1);
+    }
+
     public void testIZ159156() throws Exception {
         // IZ#159156: Wrong type resolving scope sequence in Resolver3
         performTest("iz159156.cpp", 18, 18, "iz159156.cpp", 2, 5);

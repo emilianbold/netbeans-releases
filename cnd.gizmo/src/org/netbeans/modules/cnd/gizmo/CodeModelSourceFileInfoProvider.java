@@ -36,9 +36,11 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.gizmo;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.Iterator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -49,30 +51,40 @@ import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.openide.util.lookup.ServiceProvider;
 
-
-
 /**
  *
  */
-@ServiceProvider(service=SourceFileInfoProvider.class)
-public final class CodeModelSourceFileInfoProvider  implements SourceFileInfoProvider {
+@ServiceProvider(service = SourceFileInfoProvider.class)
+public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProvider {
 
-    public SourceFileInfo fileName(String functionName) throws SourceFileInfoCannotBeProvided{
+    public SourceFileInfo fileName(String functionName, long offset, File executable) throws SourceFileInfoCannotBeProvided {
         //get project current name
         Project prj = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
-        if (prj.getLookup().lookup(NativeProject.class) == null){
+        if (prj.getLookup().lookup(NativeProject.class) == null) {
             throw new SourceFileInfoCannotBeProvided();
         }
         CsmProject csmProject = CsmModelAccessor.getModel().getProject(prj);
-        if (csmProject == null){
+        if (csmProject == null) {
             throw new SourceFileInfoCannotBeProvided();
         }
         CsmDeclaration csmDeclaration = csmProject.findDeclaration(functionName);
-        if (!CsmKindUtilities.isOffsetableDeclaration(csmDeclaration)){
+        if (csmDeclaration == null) {
+            Collection<CsmProject> libraries = csmProject.getLibraries();
+            Iterator<CsmProject> iterator = libraries.iterator();
+            for (CsmProject library : libraries) {
+                csmDeclaration = library.findDeclaration(functionName);
+                if (csmDeclaration != null) {
+                    break;
+                }
+            }
+        }
+        if (csmDeclaration == null) {
+            throw new SourceFileInfoCannotBeProvided();
+        }
+        if (!CsmKindUtilities.isOffsetableDeclaration(csmDeclaration)) {
             //do not know how to deal with this
             throw new SourceFileInfoCannotBeProvided();
         }
-        return new SourceFileInfoProvider.SourceFileInfo(((CsmOffsetable)csmDeclaration).getContainingFile().getAbsolutePath().toString(), ((CsmOffsetable)csmDeclaration).getStartOffset());
+        return new SourceFileInfoProvider.SourceFileInfo(((CsmOffsetable) csmDeclaration).getContainingFile().getAbsolutePath().toString(), ((CsmOffsetable) csmDeclaration).getStartOffset());
     }
-
 }

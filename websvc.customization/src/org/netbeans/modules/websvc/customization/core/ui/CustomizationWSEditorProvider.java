@@ -51,15 +51,15 @@ package org.netbeans.modules.websvc.customization.core.ui;
 
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
+import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
 import org.openide.nodes.Node;
 
 /**
  *
  * @author Roderico Cruz
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider.class)
 public class CustomizationWSEditorProvider
         implements WSEditorProvider{
     

@@ -113,8 +113,8 @@ public class Resolver3 implements Resolver {
     
     private void findContext() {
         contextFound = true;
-        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(0, offset);
-        findContext(CsmSelect.getDefault().getDeclarations(file, filter), filter);
+        CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(0, offset);
+        findContext(CsmSelect.getDeclarations(file, filter), filter);
     }
     
     private Set<CsmFile> visitedFiles = new HashSet<CsmFile>();
@@ -148,7 +148,7 @@ public class Resolver3 implements Resolver {
         }
         return result;
     }
-    
+
     private CsmClassifier findClassifier(CharSequence qualifiedName) {
         // try to find visible classifier
         CsmClassifier result = CsmClassifierResolver.getDefault().findClassifierUsedInFile(qualifiedName, getStartFile(), needClasses());
@@ -158,8 +158,23 @@ public class Resolver3 implements Resolver {
     public CsmFile getStartFile() {
         return startFile;
     }
+
+    private CsmNamespace findNamespace(CsmNamespace ns, CharSequence qualifiedNamePart) {
+        CsmNamespace result = null;
+        if (ns == null) {
+            result = findNamespace(qualifiedNamePart);
+        } else {
+            CsmNamespace containingNs = ns;
+            while (containingNs != null && result == null) {
+                String fqn = (containingNs.isGlobal() ? "" : (containingNs.getQualifiedName() + "::")) + qualifiedNamePart; // NOI18N
+                result = findNamespace(fqn);
+                containingNs = containingNs.getParent();
+            }
+        }
+        return result;
+    }
     
-    public CsmNamespace findNamespace(CharSequence qualifiedName) {
+    private CsmNamespace findNamespace(CharSequence qualifiedName) {
         CsmNamespace result = project.findNamespace(qualifiedName);
         if( result == null ) {
             for (Iterator iter = project.getLibraries().iterator(); iter.hasNext() && result == null;) {
@@ -246,7 +261,7 @@ public class Resolver3 implements Resolver {
                 CsmNamespaceDefinition nd = (CsmNamespaceDefinition) decl;
                 if( nd.getStartOffset() < this.offset && this.offset < nd.getEndOffset()  ) {
                     containingNamespace = nd.getNamespace();
-                    findContext(CsmSelect.getDefault().getDeclarations(nd, filter), filter);
+                    findContext(CsmSelect.getDeclarations(nd, filter), filter);
                 }
             } else if(   decl.getKind() == CsmDeclaration.Kind.CLASS
                     || decl.getKind() == CsmDeclaration.Kind.STRUCT
@@ -309,6 +324,19 @@ public class Resolver3 implements Resolver {
                 break;
             }
         }
+        if (result == null) {
+            for (CsmDeclaration decl : CsmUsingResolver.getDefault().findUsedDeclarations(containingNS)) {
+                if (CharSequenceKey.Comparator.compare(nameToken, decl.getName()) == 0) {
+                    if (CsmKindUtilities.isClassifier(decl) && needClassifiers()) {
+                        result = decl;
+                        break;
+                    } else if (CsmKindUtilities.isClass(decl) && needClasses()) {
+                        result = decl;
+                        break;
+                    }
+                }
+            }
+        }
         return result;
     }
     
@@ -363,8 +391,8 @@ public class Resolver3 implements Resolver {
         }
         visitedFiles.add(file);
         
-        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(0, offset);
-        Iterator<CsmInclude> iter = CsmSelect.getDefault().getIncludes(file, filter);
+        CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(0, offset);
+        Iterator<CsmInclude> iter = CsmSelect.getIncludes(file, filter);
         while (iter.hasNext()){
             CsmInclude inc = iter.next();
             CsmFile incFile = inc.getIncludeFile();
@@ -375,7 +403,7 @@ public class Resolver3 implements Resolver {
                 offset = oldOffset;
             }
         }
-        gatherMaps(CsmSelect.getDefault().getDeclarations(file, filter));
+        gatherMaps(CsmSelect.getDeclarations(file, filter));
     }
     
     protected void gatherMaps(Iterable<? extends CsmObject> declarations) {
@@ -419,8 +447,8 @@ public class Resolver3 implements Resolver {
     
     private CsmClassifier findNestedClassifier(CsmClassifier clazz) {
         if (CsmKindUtilities.isClass(clazz)) {
-            Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers((CsmClass)clazz,
-                    CsmSelect.getDefault().getFilterBuilder().createNameFilter(currName().toString(), true, true, false));
+            Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass)clazz,
+                    CsmSelect.getFilterBuilder().createNameFilter(currName(), true, true, false));
             while(it.hasNext()) {
                 CsmMember member = it.next();
                 if( CharSequenceKey.Comparator.compare(currName(),member.getName())==0 ) {
@@ -434,10 +462,10 @@ public class Resolver3 implements Resolver {
     }
     
     private void doProcessTypedefsInUpperNamespaces(CsmNamespaceDefinition nsd) {
-        CsmFilter filter =  CsmSelect.getDefault().getFilterBuilder().createKindFilter(
+        CsmFilter filter =  CsmSelect.getFilterBuilder().createKindFilter(
                                   CsmDeclaration.Kind.NAMESPACE_DEFINITION,
                                   CsmDeclaration.Kind.TYPEDEF);
-        for (Iterator iter = CsmSelect.getDefault().getDeclarations(nsd, filter); iter.hasNext();) {
+        for (Iterator iter = CsmSelect.getDeclarations(nsd, filter); iter.hasNext();) {
             CsmDeclaration decl = (CsmDeclaration) iter.next();
             if( decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
                 processTypedefsInUpperNamespaces((CsmNamespaceDefinition) decl);
@@ -609,12 +637,8 @@ public class Resolver3 implements Resolver {
                 }
             }
             if( result == null  && needNamespaces()) {
-                if(getContainingNamespace() != null) {
-                    result = findNamespace(getContainingNamespace().getQualifiedName() + "::" + nameTokens[0]); // NOI18N
-                }
-                if (result == null) {
-                    result = findNamespace(nameTokens[0]);                    
-                }
+                containingNS = getContainingNamespace();
+                result = findNamespace(containingNS, nameTokens[0]);
             }
             if (result == null  && needClassifiers()){
                 result = findClassifier(nameTokens[0]);
@@ -689,11 +713,8 @@ public class Resolver3 implements Resolver {
                 result = findClassifier(containingNS, sb.toString());                
             }
             if( result == null && needNamespaces()) {
-//                containingNS = getContainingNamespace();
-//                result = findClassifier(containingNS, sb.toString());
-//            }
-//            if( result == null ) {
-                result = findNamespace(sb.toString());
+                containingNS = getContainingNamespace();
+                result = findNamespace(containingNS, sb.toString());
             }
             if( result == null && needClassifiers()) {
                 gatherMaps(file);

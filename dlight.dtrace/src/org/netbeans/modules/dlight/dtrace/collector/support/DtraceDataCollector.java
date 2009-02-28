@@ -173,6 +173,12 @@ public final class DtraceDataCollector
                 cfgInfo.getIndicatorFiringFactor(configuration);
     }
 
+    public String getName() {
+        return "DTrace";//NOI18N
+    }
+
+
+
     void setProcessLineCallback(ProcessLineCallback callback) {
         this.callback = callback;
     }

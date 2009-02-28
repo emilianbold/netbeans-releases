@@ -47,7 +47,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.identity.profile.ui.SecurityView;
 import org.netbeans.modules.identity.profile.ui.WSCSecurityView;
 import org.netbeans.modules.identity.profile.ui.WSPSecurityView;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.openide.nodes.Node;
 import org.netbeans.modules.identity.profile.ui.MessagePanel;

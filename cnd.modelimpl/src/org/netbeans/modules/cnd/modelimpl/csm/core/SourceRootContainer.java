@@ -94,7 +94,7 @@ public class SourceRootContainer {
         }
     }
     
-    public void addFile(File file){
+    private void addFile(File file){
         File parentFile = FileUtil.normalizeFile(file).getParentFile();
         String path = parentFile.getAbsolutePath();
         addPath(path);
@@ -118,21 +118,21 @@ public class SourceRootContainer {
         }
     }
     
-    public void removeSources(List<NativeFileItem> items){
-        for( NativeFileItem nativeFileItem : items ) {
-            removeFile(nativeFileItem.getFile());
-        }
-    }
-    
-    public void removeFile(File file){
-        String path = FileUtil.normalizeFile(file).getParent();
-        Integer integer = projectRoots.get(path);
-        if (integer != null) {
-            if (integer.intValue() > 1) {
-                projectRoots.put(path, integer - 1);
-            } else {
-                projectRoots.remove(path);
-            }
-        }
-    }
+//    public void removeSources(List<NativeFileItem> items){
+//        for( NativeFileItem nativeFileItem : items ) {
+//            removeFile(nativeFileItem.getFile());
+//        }
+//    }
+//
+//    private void removeFile(File file){
+//        String path = FileUtil.normalizeFile(file).getParent();
+//        Integer integer = projectRoots.get(path);
+//        if (integer != null) {
+//            if (integer.intValue() > 1) {
+//                projectRoots.put(path, integer - 1);
+//            } else {
+//                projectRoots.remove(path);
+//            }
+//        }
+//    }
 }

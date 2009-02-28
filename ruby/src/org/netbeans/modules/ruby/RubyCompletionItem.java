@@ -62,7 +62,6 @@ import org.openide.util.ImageUtilities;
 class RubyCompletionItem extends DefaultCompletionProposal {
 
     private static final boolean FORCE_COMPLETION_SPACES = Boolean.getBoolean("ruby.complete.spaces"); // NOI18N
-
     protected final CompletionRequest request;
     protected final Element element;
     protected boolean symbol;
@@ -475,7 +474,7 @@ class RubyCompletionItem extends DefaultCompletionProposal {
 
     static class MethodItem extends RubyCompletionItem {
 
-        private final IndexedMethod method;
+        protected final IndexedMethod method;
 
         MethodItem(IndexedMethod element, int anchorOffset, CompletionRequest request) {
             super(element, anchorOffset, request);
@@ -593,10 +592,10 @@ class RubyCompletionItem extends DefaultCompletionProposal {
             StringBuilder sb = new StringBuilder();
             sb.append(insertPrefix);
 
-            if (hasHashArgs) {
+            if (hasHashArgs && skipHashes()) {
                 // Uhm, no don't do this until we get to the first arg that takes a hash
                 // For methods with hashes, rely on code completion to insert args
-                sb.append(" ");
+                sb.append(getInsertSuffix());
                 return sb.toString();
             }
 
@@ -668,6 +667,14 @@ class RubyCompletionItem extends DefaultCompletionProposal {
 //            }
 
             return sb.toString();
+        }
+
+        protected boolean skipHashes() {
+            return true;
+        }
+
+        protected String getInsertSuffix() {
+            return " ";
         }
 
         @Override
@@ -791,6 +798,87 @@ class RubyCompletionItem extends DefaultCompletionProposal {
 
             return element.getKind();
         }
+    }
+
+    /**
+     * Represents a completion item for a dynamic finder method, such as 
+     * "find_all_by_name_and_price".
+     */
+    static class FinderMethodItem extends MethodItem {
+
+        public FinderMethodItem(IndexedMethod element, int anchorOffset, CompletionRequest request) {
+            super(element, anchorOffset, request);
+        }
+
+        @Override
+        protected boolean skipHashes() {
+            // XXX: should return false, returning true for perf reasons now
+            return true;
+        }
+    }
+
+    static class VirtualFinderMethodItem extends MethodItem {
+
+        private final String prefix;
+
+        public VirtualFinderMethodItem(IndexedMethod element, int anchorOffset, CompletionRequest request, String prefix) {
+            super(element, anchorOffset, request);
+            this.prefix = prefix;
+        }
+
+        @Override
+        protected boolean skipHashes() {
+            // XXX: should return false, returning true for perf reasons now
+            return true;
+        }
+
+        @Override
+        protected String getInsertSuffix() {
+            return "";
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            ElementKind kind = getKind();
+            boolean emphasize = !method.isInherited();
+            if (emphasize) {
+                formatter.emphasis(true);
+            }
+            formatter.name(kind, true);
+            formatter.appendText(prefix + "...");
+            formatter.name(kind, false);
+            if (emphasize) {
+                formatter.emphasis(false);
+            }
+            return formatter.getText();
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            // Top level methods (defined on Object) : print
+            // the defining file instead
+            if (method.isTopLevel() && method.getRequire() != null) {
+                formatter.appendText(method.getRequire());
+
+                return formatter.getText();
+            }
+
+            String in = method.getIn();
+
+            if (in != null) {
+                formatter.appendText(in);
+                return formatter.getText();
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public String getInsertPrefix() {
+            return prefix;
+        }
+
+
     }
 
     private static boolean forceCompletionSpaces() {

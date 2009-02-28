@@ -46,7 +46,7 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeMap;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 

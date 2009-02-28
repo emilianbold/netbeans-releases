@@ -1268,7 +1268,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     entry.setStates(statesToKeep, new FileContainer.StatePair(newState, pcState));
                     ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean,
                             clean ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
-                    if (TraceFlags.TRACE_PC_STATE) {
+                    if (TraceFlags.TRACE_PC_STATE || TraceFlags.TRACE_PC_STATE_COMPARISION) {
                         traceIncludeScheduling(csmFile, newState, pcState, clean,
                                 statesToParse, statesToKeep);
                     }

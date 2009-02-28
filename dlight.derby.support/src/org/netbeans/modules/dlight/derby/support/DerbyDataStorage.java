@@ -38,14 +38,11 @@
  */
 package org.netbeans.modules.dlight.derby.support;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -108,9 +105,8 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     super(url);
     try {
       initStorageTypes();
-      initTables();
       stackStorage = new SQLStackStorage(this);
-
+      connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
     } catch (SQLException ex) {
       logger.log(Level.SEVERE, null, ex);
     } catch (IOException ex) {
@@ -125,34 +121,6 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     }
     return super.classToType(clazz);
   }
-
-
-
-  private void initTables() throws SQLException, IOException {
-    InputStream is = DerbyDataStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/derby/support/schema.sql");
-    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-    executeSQL(reader);
-    reader.close();
-  }
-
-  private void executeSQL(BufferedReader reader) throws SQLException, IOException {
-    String line;
-    StringBuilder buf = new StringBuilder();
-    Statement s = connection.createStatement();
-    while ((line = reader.readLine()) != null) {
-      if (line.startsWith("-- ")) {
-        continue;
-      }
-      buf.append(line);
-      if (line.endsWith(";")) {
-        String sql = buf.toString();
-        buf.setLength(0);
-        s.execute(sql.substring(0, sql.length() - 1));
-      }
-    }
-    s.close();
-  }
-
 
   @Override
   protected void connect(String dburl) {

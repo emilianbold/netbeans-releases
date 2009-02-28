@@ -50,6 +50,7 @@
 
 package org.netbeans.modules.websvc.core.wseditor.support;
 
+import org.netbeans.modules.websvc.api.support.EditWSAttributesCookie;
 import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.event.WindowAdapter;
@@ -62,9 +63,9 @@ import java.util.WeakHashMap;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProviderRegistry;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
+import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
+import org.netbeans.modules.websvc.api.wseditor.WSEditorProviderRegistry;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

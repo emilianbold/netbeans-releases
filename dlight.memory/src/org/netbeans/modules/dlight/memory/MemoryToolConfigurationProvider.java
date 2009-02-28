@@ -63,33 +63,35 @@ import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public final class MemoryToolConfigurationProvider
-        implements DLightToolConfigurationProvider {
+public final class MemoryToolConfigurationProvider implements DLightToolConfigurationProvider {
 
     private static final boolean useCollector =
             Util.getBoolean("dlight.memory.collector", true); // NOI18N
     private static final boolean redirectStdErr =
             Util.getBoolean("dlight.memory.log.stderr", false); // NOI18N
-    private static final boolean USE_SUNSTUDIO =
-            Boolean.getBoolean("gizmo.mem.sunstudio"); // NOI18N
+//    private static final boolean USE_SUNSTUDIO =
+//            Boolean.getBoolean("gizmo.mem.sunstudio"); // NOI18N
+    public static final String USE_SUNSTUDIO_COLLECTORS = "SunStudioDataCollectors"; // NOI18N
+    private static boolean USE_SUNSTUDIO = NbPreferences.forModule(DLightToolConfigurationProvider.class).getBoolean(USE_SUNSTUDIO_COLLECTORS,  Boolean.getBoolean("gizmo.mem.sunstudio"));
     private static final String TOOL_NAME = loc("MemoryTool.ToolName"); // NOI18N
     private static final Column totalColumn;
     private static final DataTableMetadata rawTableMetadata;
 
 
     static {
-        final Column timestampColumn = new _Column(Long.class, "timestamp"); // NOI18N
-        final Column kindColumn = new _Column(Integer.class, "kind"); // NOI18N
-        final Column sizeColumn = new _Column(Integer.class, "size"); // NOI18N
-        final Column addressColumn = new _Column(Long.class, "address"); // NOI18N
-        final Column stackColumn = new _Column(Integer.class, "stackid"); // NOI18N
+        final Column timestampColumn = new Column("timestamp", Long.class, loc("MemoryTool.ColumnName.timestamp"), null); // NOI18N
+        final Column kindColumn = new Column("kind", Integer.class, loc("MemoryTool.ColumnName.kind"), null); // NOI18N
+        final Column sizeColumn = new Column("size", Integer.class, loc("MemoryTool.ColumnName.size"), null); // NOI18N
+        final Column addressColumn = new Column("address", Long.class, loc("MemoryTool.ColumnName.address"), null); // NOI18N
+        final Column stackColumn = new Column("stackid", Integer.class, loc("MemoryTool.ColumnName.stackid"), null); // NOI18N
 
-        totalColumn = new _Column(Integer.class, "total"); // NOI18N
+        totalColumn = new Column("total", Integer.class, loc("MemoryTool.ColumnName.total"), null); // NOI18N
 
         List<Column> columns = Arrays.asList(
                 timestampColumn,
@@ -151,9 +153,10 @@ public final class MemoryToolConfigurationProvider
 
         final DataTableMetadata indicatorTableMetadata =
                 new DataTableMetadata("magent", Arrays.asList(totalColumn)); // NOI18N
-        String monitor = MemoryMonitorUtil.getMonitorCmd();
-        String envVar = MemoryMonitorUtil.getEnvVar();
-        String agent = MemoryMonitorUtil.getAgentLib();
+
+        String monitor = NativeToolsUtil.getExecutable("mmonitor");
+        String envVar = NativeToolsUtil.getLdPreloadEnvVarName();
+        String agent = NativeToolsUtil.getSharefLibrary("magent");
 
         DLightLogger.instance.fine("Memory Indicator:\nmonitor:\n" + // NOI18N
                 monitor + "\nagent:\n" + agent + "\n\n"); // NOI18N
@@ -205,8 +208,8 @@ public final class MemoryToolConfigurationProvider
     private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
 
         List<Column> viewColumns = Arrays.asList(
-                (Column) new _Column(String.class, "func_name"), // NOI18N
-                (Column) new _Column(Long.class, "leak")); // NOI18N
+                new Column("func_name", String.class, loc("MemoryTool.ColumnName.func_name"), null), // NOI18N
+                 new Column("leak", Long.class, loc("MemoryTool.ColumnName.leak"), null)); // NOI18N
 
         String sql =
                 "SELECT func.func_name as func_name, SUM(size) as leak " + // NOI18N
@@ -366,10 +369,10 @@ public final class MemoryToolConfigurationProvider
                 MemoryToolConfigurationProvider.class, key, params);
     }
 
-    private static class _Column extends Column {
-
-        public _Column(Class clazz, String name) {
-            super(name, clazz, loc("MemoryTool.ColumnName." + name), null); // NOI18N
-        }
-    }
+//    private static class _Column extends Column {
+//
+//        public _Column(Class clazz, String name) {
+//            super(name, clazz, loc("MemoryTool.ColumnName." + name), null); // NOI18N
+//        }
+//    }
 }

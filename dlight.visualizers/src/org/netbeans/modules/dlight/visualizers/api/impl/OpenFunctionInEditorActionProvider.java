@@ -44,7 +44,8 @@ public final class OpenFunctionInEditorActionProvider {
         while (iterator.hasNext()){
             SourceFileInfoProvider provider = iterator.next();
             try{
-                final SourceFileInfo lineInfo = provider.fileName(functionName);
+                // TODO: pass meaningful values for offset and executable
+                final SourceFileInfo lineInfo = provider.fileName(functionName, 0, null);
                 if (lineInfo != null && lineInfo.isSourceKnown()){
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
