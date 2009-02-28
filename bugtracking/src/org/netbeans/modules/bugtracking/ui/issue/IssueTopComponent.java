@@ -74,7 +74,6 @@ public final class IssueTopComponent extends TopComponent {
 
     public void setIssue(Issue issue) {
         this.issue = issue;
-        issue.refresh();
         add(issue.getControler().getComponent(), BorderLayout.CENTER);
 
         setName(issue.getDisplayName());
