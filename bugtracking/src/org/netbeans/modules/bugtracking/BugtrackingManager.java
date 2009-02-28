@@ -52,6 +52,7 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.RequestProcessor;
 
 /**
  * Top level class that manages issues from all repositories.  
@@ -66,6 +67,8 @@ public final class BugtrackingManager implements LookupListener {
     private Set<Repository>         repos;
 
     public static Logger LOG = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager");
+
+    private RequestProcessor rp = new RequestProcessor("Bugtracking manager", 1);
 
     /**
      * Holds all registered connectors.
@@ -101,6 +104,10 @@ public final class BugtrackingManager implements LookupListener {
             initRepos();
         }
         return repos;
+    }
+
+    public RequestProcessor getRequestProcessor() {
+        return rp;
     }
 
     private synchronized void init() {

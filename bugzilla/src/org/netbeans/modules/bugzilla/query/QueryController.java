@@ -79,6 +79,7 @@ import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.query.QueryParameter.CheckBoxParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ComboParameter;
@@ -621,7 +622,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
             public void run() {
                 Issue[] issues = query.getIssues();
                 for (Issue issue : issues) {
-                    issue.getNode().setSeen(true); // XXX via node?
+                    try {
+                        ((BugzillaIssue) issue).setSeen(true);
+                    } catch (IOException ex) {
+                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         });

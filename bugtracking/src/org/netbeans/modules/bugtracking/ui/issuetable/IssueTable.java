@@ -42,6 +42,7 @@
 package org.netbeans.modules.bugtracking.ui.issuetable;
 
 import java.awt.Component;
+import java.io.IOException;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
@@ -59,7 +60,9 @@ import java.awt.Graphics;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -105,6 +108,7 @@ public class IssueTable implements MouseListener, AncestorListener {
 
     private static Icon seenHeaderIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-header.png")); // NOI18N
     private static Icon seenValueIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-value.png")); // NOI18N
+    private Set<Issue> issues = new HashSet<Issue>();
 
     private static final Comparator NodeComparator = new Comparator() {
         public int compare(Object o1, Object o2) {
@@ -157,7 +161,13 @@ public class IssueTable implements MouseListener, AncestorListener {
 
     public void setFilter(Filter filter) {
         this.filter = filter;
-        queryDataChanged();
+        List<IssueNode> issueNodes = new ArrayList<IssueNode>(issues.size());
+        for (Issue issue : issues) {
+            if(filter == null || filter.accept(issue)) {
+                issueNodes.add(issue.getNode());
+            }
+        }
+        setTableModel(issueNodes.toArray(new IssueNode[issueNodes.size()]));
     }
 
     void setDefaultColumnSizes() {
@@ -222,17 +232,6 @@ public class IssueTable implements MouseListener, AncestorListener {
         tableModel.setProperties(properties.toArray(new Node.Property[properties.size()]));
     }
 
-    private void queryDataChanged() {
-        Issue[] issues = query.getIssues();
-        List<IssueNode> issueNodes = new ArrayList<IssueNode>(issues.length);
-        for (Issue issue : issues) {
-            if(filter == null || filter.accept(issue)) {
-                issueNodes.add(issue.getNode());
-            }
-        }
-        setTableModel(issueNodes.toArray(new IssueNode[issueNodes.size()]));
-    }
-
     private void setTableModel(IssueNode[] nodes) {
         tableModel.setNodes(nodes);
     }
@@ -270,7 +269,16 @@ public class IssueTable implements MouseListener, AncestorListener {
                 int column = table.columnAtPoint(e.getPoint());
                 if(column != seenColumnIdx) return;
                 IssueNode in = (IssueNode) tableModel.getNodes()[row];
-                in.setSeen(!in.wasSeen());
+                final Issue issue = in.getLookup().lookup(Issue.class);
+                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                    public void run() {
+                        try {
+                            issue.setSeen(!issue.wasSeen());
+                        } catch (IOException ex) {
+                            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                        }
+                    }
+                });
             }
         }
     }
@@ -321,18 +329,19 @@ public class IssueTable implements MouseListener, AncestorListener {
                 IssueProperty p = (IssueNode.IssueProperty) value;
                 try {
                     Issue issue = p.getIssue();
-                    int status = query.getIssueStatus(issue);
-                    if(!issue.wasSeen() || status == Query.ISSUE_STATUS_OBSOLETE) {
-                        switch(status) {
-                            case Query.ISSUE_STATUS_NEW :
-                                format = issueUnseenFormat;
-                                break;
-                            case Query.ISSUE_STATUS_OBSOLETE :
-                                format = issueObsoleteFormat;
-                                break;
-                            case Query.ISSUE_STATUS_MODIFIED :
-                                format = issueModifiedFormat;
-                                break;
+                    if(!query.contains(issue)) {
+                        format = issueObsoleteFormat;
+                    } else {
+                        int status = query.getIssueStatus(issue);
+                        if(!issue.wasSeen()) {
+                            switch(status) {
+                                case Issue.ISSUE_STATUS_NEW :
+                                    format = issueUnseenFormat;
+                                    break;
+                                case Issue.ISSUE_STATUS_MODIFIED :
+                                    format = issueModifiedFormat;
+                                    break;
+                            }
                         }
                     }
                     tooltip = (String) p.getValue();
@@ -351,6 +360,7 @@ public class IssueTable implements MouseListener, AncestorListener {
             return renderer;
         }
 
+        @Override
         protected void paintComponent(Graphics g) {
             MessageFormat format = (MessageFormat) getClientProperty("format");
             String s = computeFitText(getText());
@@ -395,21 +405,22 @@ public class IssueTable implements MouseListener, AncestorListener {
         }
     }
 
-
     private class NotifyListener implements QueryNotifyListener {
         public void notifyData(final Issue issue) {
+            issues.add(issue);
             if(filter == null || filter.accept(issue)) {
-                tableModel.insertNode(issue.getNode());
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        tableModel.insertNode(issue.getNode());
+                    }
+                });
             }
         }
-
         public void started() {
+            issues.clear();
             IssueTable.this.setTableModel(new IssueNode[0]);
         }
-
-        public void finished() {
-
-        }
+        public void finished() { }
     }
 
     private class SeenDescriptor extends ColumnDescriptor {

@@ -70,6 +70,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.Cancellable;
@@ -88,7 +89,7 @@ public class BugzillaRepository extends Repository {
     private TaskRepository taskRepository;
     private Controller controller;
     private Set<Query> queries = null;
-    private IssuesCache cache;
+    private IssueCache cache;
 
     BugzillaRepository() { }
 
@@ -135,7 +136,12 @@ public class BugzillaRepository extends Repository {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
             return null;
         }
-        return getIssuesCache().setIssueData(taskData);
+        try {
+            return getIssueCache().setIssueData(id, taskData);
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
 
     @Override
@@ -198,9 +204,9 @@ public class BugzillaRepository extends Repository {
         return getQueriesIntern().toArray(new Query[queries.size()]);
     }
 
-    public IssuesCache getIssuesCache() {
+    public IssueCache getIssueCache() {
         if(cache == null) {
-            cache = new IssuesCache(this);
+            cache = new Cache();
         }
         return cache;
     }
@@ -376,6 +382,16 @@ public class BugzillaRepository extends Repository {
 
     }
 
-
+    private class Cache extends IssueCache {
+        Cache() {
+            super(BugzillaRepository.this.getUrl());
+        }
+        public Issue createIssue(TaskData taskData) {
+            return new BugzillaIssue(taskData, (BugzillaRepository) BugzillaRepository.this);
+        }
+        public void setTaskData(Issue issue, TaskData taskData) {
+            ((BugzillaIssue)issue).setTaskData(taskData); // XXX triggers events under lock
+        }
+    }
 
 }

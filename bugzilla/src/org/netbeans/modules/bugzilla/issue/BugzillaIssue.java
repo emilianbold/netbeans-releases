@@ -49,11 +49,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.apache.commons.httpclient.HttpException;
@@ -175,6 +173,7 @@ public class BugzillaIssue extends Issue {
     public static ColumnDescriptor[] DESCRIPTORS;
 
     public BugzillaIssue(TaskData data, BugzillaRepository repo) {
+        super(repo);
         this.data = data;
         this.repository = repo;
     }
@@ -215,22 +214,6 @@ public class BugzillaIssue extends Issue {
     }
 
     @Override
-    public void setSeen(boolean seen) {
-        setSeen(seen, true);
-    }
-
-    public void setSeen(final boolean seen, final boolean cacheRefresh) {
-        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
-            public void run() {
-                BugzillaIssue.super.setSeen(seen);
-                if(cacheRefresh) {
-                    repository.getIssuesCache().setSeen(getID(), seen, getAttributes());
-                }
-            }
-        });
-    }
-
-    @Override
     public String toString() {
         String str = getID() + " : "  + getSummary();
         return str;
@@ -250,11 +233,18 @@ public class BugzillaIssue extends Issue {
             attributes = new HashMap<String, String>();
             attributes.put("id", getID());
             for (IssueField field : IssueField.values()) {
-                attributes.put(field.key, getFieldValue(field));
+                String value = getFieldValue(field);
+                if(value != null && !value.trim().equals("")) {
+                    attributes.put(field.key, value);
+                }
             }
         }
-        attributes.put("seen", wasSeen() ? "1" : "0"); // XXX
         return attributes;
+    }
+
+    @Override
+    public void setSeen(boolean seen) throws IOException {
+        super.setSeen(seen);
     }
 
     @Override
@@ -262,12 +252,12 @@ public class BugzillaIssue extends Issue {
         if(wasSeen()) {
             return "";
         }
-        int status = repository.getIssuesCache().getStatus(getID());
-        if(status == Query.ISSUE_STATUS_NEW) {
+        int status = repository.getIssueCache().getStatus(getID());
+        if(status == Issue.ISSUE_STATUS_NEW) {
             return "New";
-        } else if(status == Query.ISSUE_STATUS_MODIFIED) {
+        } else if(status == Issue.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
-            Map<String, String> seenAtributes = repository.getIssuesCache().getSeenAttributes(getID());
+            Map<String, String> seenAtributes = getSeenAttributes();
             assert seenAtributes != null;
             for (IssueField f : IssueField.values()) {
                 String value = getFieldValue(f);
@@ -481,10 +471,10 @@ public class BugzillaIssue extends Issue {
         if(!wasSeen()) {
             return FIELD_STATUS_IRELEVANT;
         }
-        Map<String, String> a = repository.getIssuesCache().getSeenAttributes(getID());
+        Map<String, String> a = getSeenAttributes();
         String seenValue = a != null ? a.get(f.key) : null;
         if(seenValue == null) {
-            seenValue.equals("");
+            seenValue = "";
         }
         if(seenValue.equals("") && !seenValue.equals(getFieldValue(f))) {
             return FIELD_STATUS_NEW;
@@ -637,7 +627,15 @@ public class BugzillaIssue extends Issue {
             controller.refreshViewData();
         }
     }
-    
+
+    private Map<String, String> getSeenAttributes() {
+        Map<String, String> seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+        if(seenAtributes == null) {
+            seenAtributes = new HashMap<String, String>();
+        }
+        return seenAtributes;
+    }
+
     class Comment {
         private final Date when;
         private final String who;

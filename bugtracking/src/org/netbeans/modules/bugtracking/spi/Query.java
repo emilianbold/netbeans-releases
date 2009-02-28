@@ -60,19 +60,6 @@ public abstract class Query implements Comparable<Query> {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    public static final int ISSUE_STATUS_UNKNOWN        = 0;
-    public static final int ISSUE_STATUS_SEEN           = 2;
-    public static final int ISSUE_STATUS_NEW            = 4; 
-    public static final int ISSUE_STATUS_MODIFIED       = 8;
-    public static final int ISSUE_STATUS_OBSOLETE       = 16;
-    public static final int ISSUE_STATUS_NOT_OBSOLETE   =
-                                ISSUE_STATUS_SEEN |
-                                ISSUE_STATUS_NEW |
-                                ISSUE_STATUS_MODIFIED;
-    public static final int ISSUE_STATUS_NOT_SEEN   =
-                                ISSUE_STATUS_NEW |
-                                ISSUE_STATUS_MODIFIED;
-
     public static Filter FILTER_ALL = new AllFilter();
     public static Filter FILTER_NOT_SEEN = new NotSeenFilter();
     public Filter FILTER_OUTOFDATE = new OutOfDateFilter(this);
@@ -173,6 +160,13 @@ public abstract class Query implements Comparable<Query> {
         return getIssues(~0);
     }
 
+    /**
+     * Returns true if the issue doesn't belong to the query 
+     * @param issue
+     * @return
+     */
+    public abstract boolean contains(Issue issue);
+    
     /**
      * Returns all issues given by the last refresh for
      * which applies that their ID or summary contains the
@@ -368,7 +362,7 @@ public abstract class Query implements Comparable<Query> {
         }
         @Override
         public boolean accept(Issue issue) {
-            return query.getIssueStatus(issue) == Query.ISSUE_STATUS_OBSOLETE;
+            return !query.contains(issue);
         }
     }
 

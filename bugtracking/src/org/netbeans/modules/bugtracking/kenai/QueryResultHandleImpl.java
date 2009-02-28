@@ -83,7 +83,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
         Issue[] issues;
         switch(status) {
 
-            case Query.ISSUE_STATUS_NOT_OBSOLETE:
+            case Issue.ISSUE_STATUS_ALL:
 
                 issues = query.getIssues(status);
                 return new QueryResultHandleImpl(
@@ -91,15 +91,15 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                         totalFormat.format(new Object[] {issues != null ? issues.length : 0}, new StringBuffer(), null).toString(),
                         null);
 
-            case Query.ISSUE_STATUS_NOT_SEEN:
+            case Issue.ISSUE_STATUS_NOT_SEEN:
 
                 int newIssues = 0, modifiedIssues = 0, unseenIssues = 0;
-                issues = query.getIssues(Query.ISSUE_STATUS_NEW);
+                issues = query.getIssues(Issue.ISSUE_STATUS_NEW);
                 if(issues != null) {
                     newIssues = issues.length;
                 }
 
-                issues = query.getIssues(Query.ISSUE_STATUS_MODIFIED);
+                issues = query.getIssues(Issue.ISSUE_STATUS_MODIFIED);
                 if(issues != null) {
                     modifiedIssues = issues.length;
                 }
