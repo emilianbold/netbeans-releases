@@ -64,7 +64,7 @@ public class QueryAccessorImpl extends QueryAccessor {
 
     @Override
     public List<QueryHandle> getQueries(ProjectHandle project) {
-        Repository repo = KenaiRepositories.getInstance().getRepository(null, project, this);
+        Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
         if(repo == null) {
             // XXX log this inconvenience
             return EMPTY_QH_LIST;
@@ -97,7 +97,7 @@ public class QueryAccessorImpl extends QueryAccessor {
 
     @Override
     public ActionListener getFindIssueAction(ProjectHandle project) {
-        final Repository repo = KenaiRepositories.getInstance().getRepository(null, project, this);
+        final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
         // XXX what if repo null!
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
