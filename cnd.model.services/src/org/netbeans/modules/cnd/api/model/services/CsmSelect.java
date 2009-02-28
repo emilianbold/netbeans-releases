@@ -39,8 +39,12 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -50,7 +54,9 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmSelectProvider;
 import org.openide.util.Lookup;
 
@@ -101,7 +107,64 @@ public class CsmSelect {
     public static Iterator<CsmMember> getClassMembers(CsmClass cls, CsmFilter filter)  {
         return getDefault().getClassMembers(cls, filter);
     }
-    
+
+    public static Iterator<CsmFunction> getFunctions(CsmProject project, CharSequence qualifiedName) {
+        // ensure that qName does NOT start with "::"
+        if (qualifiedName.length() > 1 && qualifiedName.charAt(0) == ':' && qualifiedName.charAt(1) == ':') {
+            qualifiedName = qualifiedName.subSequence(2, qualifiedName.length());
+        }
+        Collection<CsmFunction> result = new ArrayList<CsmFunction>();
+	getFunctions(project, qualifiedName, result, new LinkedHashSet<CsmProject>());
+	return result.iterator();
+    }
+
+    // NB: qName does NOT start with "::"
+    private static void getFunctions(CsmProject project, CharSequence qName,
+            Collection<CsmFunction> result, Collection<CsmProject> processedProjects) {
+        if (!processedProjects.contains(project)) {
+            processedProjects.add(project);
+            // find "::" in Name
+            int pos = -1;
+            for (int i = qName.length()-2; i > 1; i--) {
+                if (qName.charAt(i) == ':' && qName.charAt(i+1) == ':') { //NOI18N
+                    pos = i;
+                    break;
+                }
+            }
+            if (pos == -1) {
+                // qName resides in global namespace
+                CsmFilter filter = getFilterBuilder().createNameFilter(qName, true, true, false);
+                getFunctions(CsmSelect.getDeclarations(project.getGlobalNamespace(), filter), result);
+            } else {
+                // split qName into owner name and function name
+                CharSequence ownerQName = qName.subSequence(0, pos);
+                CharSequence funcName = qName.subSequence(pos+2, qName.length());
+                CsmNamespace nsp = project.findNamespace(ownerQName);
+                CsmFilter filter = getFilterBuilder().createNameFilter(funcName, true, true, false);
+                if (nsp != null) {
+                    getFunctions(CsmSelect.getDeclarations(nsp, filter), result);
+                }
+                for (CsmClassifier cls : project.findClassifiers(ownerQName)) {
+                    if (CsmKindUtilities.isClass(cls)) {
+                        getFunctions(CsmSelect.getClassMembers((CsmClass) cls, filter), result);
+                    }
+                }
+            }
+            for (CsmProject lib : project.getLibraries()) {
+                getFunctions(lib, qName, result, processedProjects);
+            }
+        }
+    }
+
+    private static void getFunctions(Iterator<? extends CsmOffsetableDeclaration> iter, Collection<CsmFunction> result) {
+        while (iter.hasNext()) {
+            CsmOffsetableDeclaration decl = iter.next();
+            if (CsmKindUtilities.isFunction(decl)) {
+                result.add((CsmFunction) decl);
+            }
+        }
+    }
+
     private CsmSelect() {
     }
     

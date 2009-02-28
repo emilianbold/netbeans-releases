@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.repository.access;
 
 import java.io.File;
@@ -55,69 +54,76 @@ import org.openide.util.RequestProcessor;
  * (iz #115491, http://www.netbeans.org/issues/show_bug.cgi?id=115491)
  * @author Vladimir Kvashin
  */
-public class FindFileWhileClosingProject  extends RepositoryAccessTestBase {
+public class FindFileWhileClosingProject extends RepositoryAccessTestBase {
 
     private final static boolean verbose;
+
+
     static {
         verbose = true; // Boolean.getBoolean("test.get.file.while.closing.project.verbose");
-        if( verbose ) {
+        if (verbose) {
             System.setProperty("cnd.modelimpl.timing", "true");
             System.setProperty("cnd.modelimpl.timing.per.file.flat", "true");
             System.setProperty("cnd.repository.listener.trace", "true");
             System.setProperty("cnd.trace.close.project", "true");
-	    System.setProperty("cnd.repository.workaround.nulldata", "true");
+            System.setProperty("cnd.repository.workaround.nulldata", "true");
         }
     }
 
     public FindFileWhileClosingProject(String testName) {
-	super(testName);
+        super(testName);
     }
 
     public void testGetFileWhileClosingProject() throws Exception {
 
-	File projectRoot = getDataFile("quote_nosyshdr");
-	
-	int count = Integer.getInteger("test.get.file.while.closing.project.laps", 500);
-	
-	final TraceModelBase traceModel = new  TraceModelBase();
-	traceModel.processArguments(projectRoot.getAbsolutePath());
-	ModelImpl model = traceModel.getModel();
-	
-	List<String> files = new ArrayList<String>(traceModel.getFiles().size());
-	for( File file : traceModel.getFiles() ) {
-	    files.add(file.getAbsolutePath());
-	}
-	
-	for (int i = 0; i < count; i++) {
-	    
-	    System.err.printf("%s: processing project %s. Pass %d \n", getBriefClassName(), projectRoot.getAbsolutePath(), i);
-	    
-	    final CsmProject project = traceModel.getProject();
-	    project.waitParse();
-	    Cancellable task = model.enqueueModelTask(new Runnable() {
-		public void run() {
+        File projectRoot = getDataFile("quote_nosyshdr");
+
+        int count = Integer.getInteger("test.get.file.while.closing.project.laps", 500);
+
+        final TraceModelBase traceModel = new TraceModelBase();
+        traceModel.processArguments(projectRoot.getAbsolutePath());
+        ModelImpl model = traceModel.getModel();
+
+        List<String> files = new ArrayList<String>(traceModel.getFiles().size());
+        for (File file : traceModel.getFiles()) {
+            files.add(file.getAbsolutePath());
+        }
+
+        for (int i = 0; i < count; i++) {
+
+            System.err.printf("%s: processing project %s. Pass %d \n", getBriefClassName(), projectRoot.getAbsolutePath(), i);
+
+            final CsmProject project = traceModel.getProject();
+            project.waitParse();
+            Cancellable task = model.enqueueModelTask(new Runnable() {
+
+                public void run() {
                     TraceModelBase.closeProject(project);
-		}
-	    }, "Closing Project " + i); //NOI18N
-	    for( String path : files ) {
+                }
+            }, "Closing Project " + i); //NOI18N
+            for (String path : files) {
                 try {
                     CsmFile csmFile = project.findFile(path);
-                    if( verbose ) System.err.printf("\tfind %s -> %s \n", path, csmFile);
-                }
-                catch( Throwable e ) {
+                    if (verbose) {
+                        System.err.printf("\tfind %s -> %s \n", path, csmFile);
+                    }
+                } catch (Throwable e) {
                     registerException(e);
                 }
-		assertNoExceptions();
-	    }
-	    if( task instanceof RequestProcessor.Task ) {
-		if( verbose ) System.err.printf("Waiting util close task finishes...\n");
-		((RequestProcessor.Task) task).waitFinished();
-		if( verbose ) System.err.printf("\tClose task has finished.\n");
-	    }
-	    assertNoExceptions();
-	    traceModel.resetProject();
-	}
-	assertNoExceptions();
+                assertNoExceptions();
+            }
+            if (task instanceof RequestProcessor.Task) {
+                if (verbose) {
+                    System.err.printf("Waiting util close task finishes...\n");
+                }
+                ((RequestProcessor.Task) task).waitFinished();
+                if (verbose) {
+                    System.err.printf("\tClose task has finished.\n");
+                }
+            }
+            assertNoExceptions();
+            traceModel.resetProject();
+        }
+        assertNoExceptions();
     }
-    
 }
