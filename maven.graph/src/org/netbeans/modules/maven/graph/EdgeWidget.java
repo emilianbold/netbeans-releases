@@ -49,37 +49,52 @@ import org.netbeans.api.visual.widget.ConnectionWidget;
  * @author mkleint
  */
 public class EdgeWidget extends ConnectionWidget {
+    public static final int DISABLED = 0;
+    public static final int GRAYED = 1;
+    public static final int REGULAR = 2;
+    public static final int HIGHLIGHTED = 3;
+
     private ArtifactGraphEdge edge;
+    private int state = REGULAR;
 
     public EdgeWidget(DependencyGraphScene scene, ArtifactGraphEdge edge) {
         super(scene);
         this.edge = edge;
-        setupAppearance();
-    }
-
-    void setupAppearance() {
         setTargetAnchorShape(AnchorShape.TRIANGLE_FILLED);
-        if (edge.isPrimary()) {
-            setLineColor(Color.BLACK);
-        } else {
-            if (edge.getTarget().getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                setLineColor(Color.RED.darker());
-                setToolTipText("Conflicting version of " + edge.getTarget().getArtifact().getArtifactId() + ": " + edge.getTarget().getArtifact().getVersion() );
-            } else {
-                setLineColor(Color.LIGHT_GRAY);
-            }
-        }
-    }
-    public void switchToHidden() {
-        setLineColor(Color.LIGHT_GRAY);
-        setVisible(true);
-        this.revalidate();
     }
 
-    public void switchToDefault() {
-        setupAppearance();
-        setVisible(true);
-        this.revalidate();
+    public void setState (int state) {
+        this.state = state;
+        updateAppearance();
+    }
+
+    private void updateAppearance () {
+        Color c = Color.BLACK;
+        switch (state) {
+            case REGULAR:
+                if (edge.isPrimary()) {
+                    c = Color.BLACK;
+                } else {
+                    if (edge.getTarget().getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+                        c = Color.RED.darker();
+                        setToolTipText("Conflicting version of " + edge.getTarget().getArtifact().getArtifactId() + ": " + edge.getTarget().getArtifact().getVersion() );
+                    } else {
+                        c = Color.LIGHT_GRAY;
+                    }
+                }
+                break;
+            case DISABLED:
+                c = Color.LIGHT_GRAY;
+                setToolTipText("");
+                break;
+            case GRAYED:
+                c = Color.LIGHT_GRAY;
+                break;
+            case HIGHLIGHTED:
+                c = Color.BLACK;
+                break;
+        }
+        setLineColor(c);
     }
 
 }

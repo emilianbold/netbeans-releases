@@ -54,6 +54,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.visual.action.TwoStateHoverProvider;
 import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -94,7 +95,7 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
 
     private static final int UNSELECTED = 1;
     private static final int SELECTED = 2;
-    private static final int INSPECTED = 3;
+    private static final int READABLE = 3;
 
     private static final Image lockImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/lock.png");
     private static final Image brokenLockImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/lock-broken.png");
@@ -361,7 +362,7 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
             repaint();
         } else if (previous == ENSURE_READABLE) {
             artifactW.setPreferredBounds(artifactW.getPreferredBounds());
-            updateContent();
+            updateFonts();
             getScene().getSceneAnimator().animatePreferredBounds(artifactW, null);
         }
     }
@@ -378,21 +379,46 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
         hoverState = ENSURE_READABLE;
         artifactW.setPreferredBounds(artifactW.getPreferredBounds());
         bringToFront();
-        updateContent();
+        updateFonts();
         getScene().getSceneAnimator().animatePreferredBounds(artifactW, null);
     }
 
-    private void updateContent () {
+    public void setSelected (boolean select) {
+        this.selectState = select ? SELECTED : UNSELECTED;
+        updateFonts();
+    }
+
+    public boolean isSelected () {
+        return selectState == SELECTED;
+    }
+
+    public void setReadable (boolean readable) {
+        this.selectState = readable ? READABLE : UNSELECTED;
+        updateFonts();
+    }
+
+    public boolean isReadable () {
+        return selectState == READABLE;
+    }
+
+    private void updateFonts () {
+        Font f;
         Font origF = getOrigFont();
-        float ratio = (float) Math.max (1, 1.0f / Math.max(0.0001f, getScene().getZoomFactor()));
-        Font f = hoverState != ENSURE_READABLE ? origF : origF.deriveFont(origF.getSize() * ratio);
+        if (hoverState == ENSURE_READABLE || selectState != UNSELECTED) {
+            // enlarge fonts so that content is readable
+            float fSizeRatio = getScene().getDefaultFont().getSize() / (float)origF.getSize();
+            float ratio = (float) Math.max (1, fSizeRatio / Math.max(0.0001f, getScene().getZoomFactor()));
+            f = origF.deriveFont(origF.getSize() * ratio);
+        } else {
+            f = origF;
+        }
         artifactW.setFont(f);
         versionW.setFont(f);
     }
 
     private Font getOrigFont () {
         if (origFont == null) {
-            origFont = getFont();
+            origFont = artifactW.getFont();
             if (origFont == null) {
                 origFont = getScene().getDefaultFont();
             }

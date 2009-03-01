@@ -39,7 +39,9 @@
 package org.netbeans.modules.maven.graph;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
@@ -56,7 +58,6 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
-import org.netbeans.api.visual.model.ObjectSceneEventType;
 import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -196,11 +197,58 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                 ArtifactGraphNode node = (ArtifactGraphNode)findObject(w);
                 if (node != null) {
                     setSelectedObjects(Collections.singleton(node));
+                    System.out.println("selected object: " + node.getArtifact().getArtifact().getArtifactId());
+                    highlightRelated(node);
+                    ((ArtifactWidget)w).setSelected(true);
+                    ((ArtifactWidget)w).setGrayed(false);
                     return;
                 }
                 w = w.getParentWidget();
             }
         }
+
+        private void highlightRelated (ArtifactGraphNode node) {
+            List<ArtifactGraphNode> highlightNodes = new ArrayList<ArtifactGraphNode>();
+            List<ArtifactGraphEdge> highlightEdges = new ArrayList<ArtifactGraphEdge>();
+
+            List<DependencyNode> children = (List<DependencyNode>)node.getArtifact().getChildren();
+            for (DependencyNode n : children) {
+                highlightNodes.add(getGraphNodeRepresentant(n));
+            }
+
+            highlightEdges.addAll(findNodeEdges(node, true, false));
+
+            DependencyNode curDepN = node.getArtifact();
+            DependencyNode parentDepN;
+            ArtifactGraphNode grNode;
+            while ((parentDepN = curDepN.getParent()) != null) {
+                grNode = getGraphNodeRepresentant(parentDepN);
+                highlightEdges.addAll(findEdgesBetween(grNode, getGraphNodeRepresentant(curDepN)));
+                highlightNodes.add(grNode);
+                curDepN = parentDepN;
+            }
+
+            EdgeWidget ew;
+            for (ArtifactGraphEdge curE : getEdges()) {
+                ew = (EdgeWidget) findWidget(curE);
+                if (highlightEdges.contains(curE)) {
+                    ew.setState(EdgeWidget.HIGHLIGHTED);
+                } else {
+                    ew.setState(EdgeWidget.DISABLED);
+                }
+            }
+            
+            ArtifactWidget aw;
+            boolean isHighlight;
+            for (ArtifactGraphNode curN : getNodes()) {
+                aw = (ArtifactWidget) findWidget(curN);
+                isHighlight = highlightNodes.contains(curN);
+                aw.setGrayed(!isHighlight);
+                aw.setReadable(isHighlight);
+            }
+
+        }
+
 
         /*** PopupMenuProvider ***/
 

@@ -132,6 +132,10 @@ public class ArtifactGraphNode {
         widget = wid;
     }
 
+    Widget getWidget() {
+        return widget;
+    }
+
     public int getManagedState() {
         return managedState;
     }
