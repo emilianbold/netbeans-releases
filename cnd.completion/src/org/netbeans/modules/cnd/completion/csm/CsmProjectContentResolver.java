@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -1053,7 +1054,7 @@ public final class CsmProjectContentResolver {
         minVisibility = visibilityInfo.visibility;
         inheritanceLevel = visibilityInfo.inheritanceLevel;
         boolean friend = visibilityInfo.friend;
-        Map<CharSequence, CsmMember> res = new HashMap<CharSequence, CsmMember>();
+        Map<CharSequence, CsmMember> res = new LinkedHashMap<CharSequence, CsmMember>(); // order is important
         CsmFilter memberFilter = CsmContextUtilities.createFilter(kinds,
                 strPrefix, match, caseSensitive, returnUnnamedMembers);
         Collection<CsmClass> classesAskedForMembers = new ArrayList(1);
@@ -1131,10 +1132,13 @@ public final class CsmProjectContentResolver {
 
                         Map<CharSequence, CsmMember> baseRes = getClassMembers(baseClass, contextDeclaration, kinds, strPrefix, staticOnly, match,
                                 handledClasses, nextMinVisibility, nextInheritanceLevel, inspectParentClasses, returnUnnamedMembers);
-                        // replace by own elements in inherited set
-                        if (baseRes != null && baseRes.size() > 0) {
-                            baseRes.putAll(res);
-                            res = baseRes;
+                        if (baseRes != null && !baseRes.isEmpty()) {
+                            // add parent members at the end
+                            for (Map.Entry<CharSequence, CsmMember> entry : baseRes.entrySet()) {
+                                if (!res.containsKey(entry.getKey())) {
+                                    res.put(entry.getKey(), entry.getValue());
+                                }
+                            }
                         }
                     }
                 }
