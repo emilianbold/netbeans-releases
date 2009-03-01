@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.model.services;
+package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.io.File;
 import java.util.Iterator;
@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
@@ -55,12 +56,12 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
  * Common base class for CsmSelect unit tests
  * @author Vladimir Kvashin
  */
-public abstract class CsmSelectTestBase extends ModelImplBaseTestCase {
+public abstract class SelectTestBase extends ModelImplBaseTestCase {
 
     private ModelImpl model;
     private TraceModelBase traceModel;
 
-    public CsmSelectTestBase(String name) {
+    public SelectTestBase(String name) {
         super(name);
     }
 

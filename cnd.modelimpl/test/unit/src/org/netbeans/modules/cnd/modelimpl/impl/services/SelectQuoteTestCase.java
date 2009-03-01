@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.model.services;
+package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.io.File;
 
@@ -45,10 +45,10 @@ import java.io.File;
  *
  * @author Vladimir Kvashin
  */
-public class CsmSelectQuoteTest extends CsmSelectTestBase {
+public class SelectQuoteTestCase extends SelectTestBase {
 
 
-    public CsmSelectQuoteTest(String name) {
+    public SelectQuoteTestCase(String name) {
         super(name);
     }
 
