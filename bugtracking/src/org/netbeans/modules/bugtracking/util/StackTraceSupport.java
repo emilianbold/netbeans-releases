@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;

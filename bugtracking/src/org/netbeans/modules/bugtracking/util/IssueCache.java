@@ -49,7 +49,6 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 
 /**
