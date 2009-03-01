@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,31 +31,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.impl.services;
+package org.netbeans.modules.debugger.jpda.ui.options;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import org.netbeans.api.debugger.Properties.Initializer;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 /**
- *
- * @author Vladimir Voskresensky
+ * Initializer of Java debugger options.
+ * 
+ * @author Martin Entlicher
  */
-public class ServicesTest extends BaseTestSuite {
-    
-    public ServicesTest() {
-        super("Model Services Impl");
-        
-        addTestSuite(UsingResolverImplTestCase.class);
-        addTestSuite(IncludeResolverImplTestCase.class);
-        addTestSuite(SelectModelTestCase.class);
-        addTestSuite(SelectQuoteTestCase.class);
+@DebuggerServiceRegistration(types={org.netbeans.api.debugger.Properties.Initializer.class})
+public class OptionsInitializer implements Initializer {
+
+    private static final String CLASS_FILTERS_ALL       = "debugger.sources.class_filters.all"; // NOI18N
+    private static final String CLASS_FILTERS_ENABLED   = "debugger.sources.class_filters.enabled"; // NOI18N
+
+
+    public String[] getSupportedPropertyNames() {
+        return new String[] {
+            CLASS_FILTERS_ALL,
+            CLASS_FILTERS_ENABLED,
+        };
     }
 
-    public static Test suite() {
-        TestSuite suite = new ServicesTest();
-        return suite;
-    }    
+    public Object getDefaultPropertyValue(String propertyName) {
+        if (CLASS_FILTERS_ALL.equals(propertyName)) {
+            Set allFilters = new LinkedHashSet<String>();
+            fillClassFilters(allFilters);
+            return allFilters;
+        }
+        if (CLASS_FILTERS_ENABLED.equals(propertyName)) {
+            Set<String> enabled = new HashSet();
+            fillClassFilters(enabled);
+            return enabled;
+        }
+        return null;
+    }
+
+    private static void fillClassFilters(Set filters) {
+        filters.add(ClassLoader.class.getName());
+        filters.add(StringBuffer.class.getName());
+        filters.add(StringBuilder.class.getName());
+        filters.add("java.lang.AbstractStringBuilder");
+        filters.add("java.lang.String");
+        filters.add("sun.*");
+        filters.add("sunw.*");
+    }
+
 }
