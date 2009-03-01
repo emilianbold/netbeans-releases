@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 
@@ -57,8 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
  * @author Vladimir Kvashin
  */
 public abstract class SelectTestBase extends ModelImplBaseTestCase {
-
-    private ModelImpl model;
+    private static final boolean TRACE = false;
     private TraceModelBase traceModel;
 
     public SelectTestBase(String name) {
@@ -73,7 +71,6 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
 	traceModel = new  TraceModelBase();
 	traceModel.setUseSysPredefined(true);
 	traceModel.processArguments(projectRoot.getAbsolutePath());
-	model = traceModel.getModel();
     }
 
     protected abstract File getProjectRoot();
@@ -85,8 +82,7 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
 
     @Override
     protected File getTestCaseDataDir() {
-	String dataPath = getDataDir().getAbsolutePath().replaceAll("model.services", "modelimpl"); //NOI18N
-        return new File(dataPath);
+        return getDataDir();
     }
 
 
@@ -106,7 +102,7 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
             if (CsmKindUtilities.isFunction(decl)) {
                 CsmFunction func = (CsmFunction) decl;
                 CharSequence qName = decl.getQualifiedName();
-                System.err.printf("Seearching for funcion %s\n", func);
+                if (TRACE) { System.err.printf("Seearching for funcion %s\n", func); }
                 Iterator<CsmFunction> iter = CsmSelect.getFunctions(project, qName);
                 assertTrue("Function " + qName.toString() + " not found", iter.hasNext());
             }

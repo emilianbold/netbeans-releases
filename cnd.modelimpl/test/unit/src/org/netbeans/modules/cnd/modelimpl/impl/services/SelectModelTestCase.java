@@ -59,7 +59,7 @@ public class SelectModelTestCase extends SelectTestBase {
 
 
 //    @Test
-    public void testGetFunctions() throws Exception {
+    public void testSelectModelGetFunctions() throws Exception {
         doTestGetFunctions();
     }
 

@@ -58,7 +58,7 @@ public class SelectQuoteTestCase extends SelectTestBase {
     }
 
 //    @Test
-    public void testGetFunctions() throws Exception {
+    public void testSelectQuoteGetFunctions() throws Exception {
         doTestGetFunctions();
     }
 
