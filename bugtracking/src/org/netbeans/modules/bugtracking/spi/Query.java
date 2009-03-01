@@ -62,6 +62,7 @@ public abstract class Query implements Comparable<Query> {
 
     public static Filter FILTER_ALL = new AllFilter();
     public static Filter FILTER_NOT_SEEN = new NotSeenFilter();
+    public Filter FILTER_NEW = new NewFilter(this);
     public Filter FILTER_OUTOFDATE = new OutOfDateFilter(this);
 
     /**
@@ -116,6 +117,7 @@ public abstract class Query implements Comparable<Query> {
     public Filter[] getFilters() {
         return new Filter[] {
             FILTER_ALL,
+            FILTER_NEW,
             FILTER_NOT_SEEN,
             new OutOfDateFilter(this)
         };    
@@ -348,6 +350,20 @@ public abstract class Query implements Comparable<Query> {
         @Override
         public boolean accept(Issue issue) {
             return !issue.wasSeen();
+        }
+    }
+    private static class NewFilter extends Filter {
+        private final Query query;
+        public NewFilter(Query query) {
+            this.query = query;
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(Query.class, "LBL_NewIssuesFilter");
+        }
+        @Override
+        public boolean accept(Issue issue) {
+            return query.getIssueStatus(issue) == Issue.ISSUE_STATUS_NEW;
         }
     }
     private static class OutOfDateFilter extends Filter {
