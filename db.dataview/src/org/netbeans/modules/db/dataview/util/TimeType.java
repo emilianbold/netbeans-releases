@@ -44,7 +44,10 @@ import java.sql.Time;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.util.NbBundle;
 
@@ -56,9 +59,9 @@ import org.openide.util.NbBundle;
  */
 public class TimeType {
 
-    public static final DateFormat DEFAULT_FOMAT = new SimpleDateFormat("HH:mm:ss"); // NOI18N
-    public static final DateFormat[] TIME_PARSING_FORMATS = new DateFormat[]{
-        DEFAULT_FOMAT,
+    public static final String DEFAULT_FOMAT_PATTERN = "HH:mm:ss"; // NOI18N
+    private static final DateFormat[] TIME_PARSING_FORMATS = new DateFormat[]{
+        new SimpleDateFormat (DEFAULT_FOMAT_PATTERN),
         DateFormat.getTimeInstance(),
         DateFormat.getTimeInstance(DateFormat.SHORT),
         DateFormat.getTimeInstance(DateFormat.LONG, TimestampType.LOCALE),
@@ -95,15 +98,7 @@ public class TimeType {
         } else if (value instanceof java.sql.Time) {
             return (Time) value;
         } else if (value instanceof String) {
-            java.util.Date dVal = null;
-            for (DateFormat fm : TIME_PARSING_FORMATS) {
-                try {
-                    dVal = fm.parse ((String) value);
-                    break;
-                } catch (ParseException ex) {
-                }
-            }
-
+            Date dVal = doParse ((String) value);
             if (dVal == null) {
                 throw new DBException(NbBundle.getMessage(TimeType.class,"LBL_invalid_time"));
             }
@@ -111,5 +106,18 @@ public class TimeType {
         } else {
             throw new DBException(NbBundle.getMessage(TimeType.class,"LBL_invalid_time"));
         }
+    }
+
+    private synchronized static Date doParse (String sVal) {
+        Date dVal = null;
+        for (DateFormat format : TIME_PARSING_FORMATS) {
+            try {
+                dVal = format.parse (sVal);
+                break;
+            } catch (ParseException ex) {
+                Logger.getLogger (TimeType.class.getName ()).log (Level.FINEST, ex.getLocalizedMessage () , ex);
+            }
+        }
+        return dVal;
     }
 }

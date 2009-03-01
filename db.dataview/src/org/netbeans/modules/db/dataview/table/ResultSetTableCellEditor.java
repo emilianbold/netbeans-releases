@@ -51,6 +51,7 @@ import java.awt.event.MouseEvent;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.EventObject;
 import javax.swing.AbstractCellEditor;
 import javax.swing.Action;
@@ -291,7 +292,7 @@ class DateTimePickerCellEditor extends AbstractCellEditor implements TableCellEd
     private JTable table;
 
     public DateTimePickerCellEditor() {
-        this(TimestampType.DEFAULT_FORMAT);
+        this(new SimpleDateFormat (TimestampType.DEFAULT_FORMAT_PATTERN));
     }
 
     /**
@@ -304,7 +305,7 @@ class DateTimePickerCellEditor extends AbstractCellEditor implements TableCellEd
 
         // JW: the copy is used to synchronize .. can 
         // we use something else?
-        this.dateFormat = dateFormat != null ? dateFormat : TimestampType.DEFAULT_FORMAT;
+        this.dateFormat = dateFormat != null ? dateFormat : new SimpleDateFormat (TimestampType.DEFAULT_FORMAT_PATTERN);
         datePicker = new JXDateTimePicker();
         // default border crushes the editor/combo
         datePicker.getEditor().setBorder(
