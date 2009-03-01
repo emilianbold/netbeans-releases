@@ -107,6 +107,9 @@ public class RepositoryUpdater2Test extends NbTestCase {
             public @Override void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
             }
 
+            public @Override void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+            }
+
             public @Override String getIndexerName() {
                 return indexer.getClass().getName();
             }

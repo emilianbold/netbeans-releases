@@ -1042,5 +1042,17 @@ public class JsIndexer extends EmbeddingIndexer {
                 LOG.log(Level.WARNING, null, ioe);
             }
         }
+
+        @Override
+        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+            try {
+                IndexingSupport is = IndexingSupport.getInstance(context);
+                for(Indexable i : dirty) {
+                    is.markDirtyDocuments(i);
+                }
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+            }
+        }
     } // End of Factory class
 }

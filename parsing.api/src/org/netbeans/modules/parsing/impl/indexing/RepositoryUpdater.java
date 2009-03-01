@@ -43,6 +43,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -59,6 +61,9 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
@@ -83,6 +88,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -93,7 +99,7 @@ import org.openide.util.TopologicalSortException;
  *
  * @author Tomas Zezula
  */
-public final class RepositoryUpdater implements PathRegistryListener, FileChangeListener, PropertyChangeListener {
+public final class RepositoryUpdater implements PathRegistryListener, FileChangeListener, PropertyChangeListener, DocumentListener {
 
     // -----------------------------------------------------------------------
     // Public implementation
@@ -275,6 +281,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     // -----------------------------------------------------------------------
 
     public void propertyChange(PropertyChangeEvent evt) {
+        assert SwingUtilities.isEventDispatchThread() : "Changes in focused editor component should be delivered on AWT"; //NOI18N
+        
         List<? extends JTextComponent> components = Collections.<JTextComponent>emptyList();
 
         if (evt.getPropertyName() == null) {
@@ -282,12 +290,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         } else if (evt.getPropertyName().equals(EditorRegistry.FOCUS_LOST_PROPERTY)) {
             if (evt.getOldValue() instanceof JTextComponent) {
-                components = Collections.singletonList((JTextComponent) evt.getOldValue());
+                JTextComponent jtc = (JTextComponent) evt.getOldValue();
+                components = Collections.singletonList(jtc);
+                handleActiveDocumentChange(jtc.getDocument(), null);
             }
             
         } else if (evt.getPropertyName().equals(EditorRegistry.FOCUS_GAINED_PROPERTY)) {
             if (evt.getNewValue() instanceof JTextComponent) {
-                components = Collections.singletonList((JTextComponent) evt.getNewValue());
+                JTextComponent jtc = (JTextComponent) evt.getNewValue();
+                components = Collections.singletonList(jtc);
+                handleActiveDocumentChange(null, jtc.getDocument());
             }
 
         } else if (evt.getPropertyName().equals(EditorRegistry.FOCUSED_DOCUMENT_PROPERTY)) {
@@ -298,6 +310,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             if (jtc != null) {
                 components = Collections.singletonList(jtc);
             }
+
+            handleActiveDocumentChange((Document) evt.getOldValue(), (Document) evt.getNewValue());
         }
 
         if (components.size() > 0) {
@@ -312,7 +326,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         Long lastSeenVersion = (Long) d.getProperty(PROP_LAST_SEEN_VERSION);
 
                         // check if we've ever seen this document, if it supports versioning
-                        // and if so then if the version saw last time is the same as the current one
+                        // and if so then if the version seen last time is the same as the current one
                         if (lastSeenVersion == null || version == 0 || lastSeenVersion < version) {
                             d.putProperty(PROP_LAST_SEEN_VERSION, version);
 
@@ -339,6 +353,64 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     // -----------------------------------------------------------------------
+    // DocumentListener implementation
+    // -----------------------------------------------------------------------
+
+    public void changedUpdate(DocumentEvent e) {
+        // no document modification
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+        removeUpdate(e);
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        final Reference<Document> ref = activeDocumentRef;
+        Document activeDocument = ref == null ? null : ref.get();
+        Document document = e.getDocument();
+
+        FileObject f = NbEditorUtilities.getFileObject(document);
+        if (f != null) {
+            URL root = getOwningSourceRoot(f);
+            if (root != null) {
+                if (activeDocument == document) {
+                    // An active document was modified, we've indexed that document berfore,
+                    // so mark it dirty
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Active document modified: " + FileUtil.getFileDisplayName(f) + " Owner: " + root); //NOI18N
+                    }
+
+                    Collection<? extends Indexable> dirty = Collections.singleton(SPIAccessor.getInstance().create(new FileObjectIndexable(URLMapper.findFileObject(root), f)));
+                    String mimeType = DocumentUtilities.getMimeType(document);
+                    Collection<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(CustomIndexerFactory.class);
+
+                    SupportAccessor.getInstance().beginTrans();
+                    try {
+                        for(CustomIndexerFactory factory : factories) {
+                            try {
+                                Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
+                                        factory.getIndexerName(), factory.getIndexVersion(), null, false);
+                                factory.filesDirty(dirty, ctx);
+                            } catch (IOException ex) {
+                                LOGGER.log(Level.WARNING, null, ex);
+                            }
+                        }
+                    } finally {
+                        SupportAccessor.getInstance().endTrans();
+                    }
+                } else {
+                    // an odd event, maybe we could just ignore it
+                    try {
+                        addIndexingJob(root, Collections.singleton(f.getURL()), false);
+                    } catch (FileStateInvalidException ex) {
+                        LOGGER.log(Level.WARNING, null, ex);
+                    }
+                }
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
     // Private implementation
     // -----------------------------------------------------------------------
 
@@ -355,6 +427,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     private volatile State state = State.CREATED;
     private volatile Task worker;
+
+    private volatile Reference<Document> activeDocumentRef = null;
 
     private RepositoryUpdater () {
         init ();
@@ -386,6 +460,35 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
     }
 
+    private void handleActiveDocumentChange(Document deactivated, Document activated) {
+        Document activeDocument = activeDocumentRef == null ? null : activeDocumentRef.get();
+
+        if (deactivated != null && deactivated == activeDocument) {
+            activeDocument.removeDocumentListener(this);
+            activeDocumentRef = null;
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Unregistering active document listener: activeDocument=" + activeDocument); //NOI18N
+            }
+        }
+
+        if (activated != null && activated != activeDocument) {
+            if (activeDocument != null) {
+                activeDocument.removeDocumentListener(this);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Unregistering active document listener: activeDocument=" + activeDocument); //NOI18N
+                }
+            }
+
+            activeDocument = activated;
+            activeDocumentRef = new WeakReference<Document>(activeDocument);
+            
+            activeDocument.addDocumentListener(this);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Registering active document listener: activeDocument=" + activeDocument); //NOI18N
+            }
+        }
+    }
+    
     private void submit (final Work  work) {
         Task t = getWorker ();
         assert t != null;
@@ -469,7 +572,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 Set<String> allMimeTypes = Util.getAllMimeTypes();
                 for (String mimeType : allMimeTypes) {
                     final Collection<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(CustomIndexerFactory.class);
-                    if (LOGGER.isLoggable(Level.FINE)) {
+                    if (LOGGER.isLoggable(Level.FINER)) {
                         LOGGER.fine("Using CustomIndexerFactories(" + mimeType + "): " + factories); //NOI18N
                     }
 
@@ -477,7 +580,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     try {
                         for (CustomIndexerFactory factory : factories) {
                             boolean b = factory.supportsEmbeddedIndexers();
-                            if (LOGGER.isLoggable(Level.FINE)) {
+                            if (LOGGER.isLoggable(Level.FINER)) {
                                 LOGGER.fine("CustomIndexerFactory: " + factory + ", supportsEmbeddedIndexers=" + b); //NOI18N
                             }
 
@@ -485,8 +588,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                             final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob);
                             factory.filesDeleted(deleted, ctx);
                             final Collection<? extends Indexable> indexables = resources.get(mimeType);
-                            if (indexables != null) {
+                            if (indexables != null && indexables.size() > 0) {
                                 final CustomIndexer indexer = factory.createIndexer();
+                                if (LOGGER.isLoggable(Level.FINE)) {
+                                    LOGGER.fine("Indexing " + indexables.size() + " indexables; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
+                                }
                                 SPIAccessor.getInstance().index(indexer, Collections.unmodifiableCollection(indexables), ctx);
                             }
                         }

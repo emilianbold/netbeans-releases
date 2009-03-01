@@ -87,6 +87,19 @@ public class TaskIndexerFactory extends CustomIndexerFactory {
     }
 
     @Override
+    public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+        try {
+            IndexingSupport is = IndexingSupport.getInstance(context);
+            for( Indexable idx : dirty ) {
+                System.out.println("dirty: " + idx.getURL().toString());
+                is.markDirtyDocuments(idx);
+            }
+        } catch( IOException ex ) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    @Override
     public boolean supportsEmbeddedIndexers() {
         return true;
     }

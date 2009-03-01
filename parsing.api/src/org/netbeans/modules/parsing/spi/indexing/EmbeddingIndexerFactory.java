@@ -64,6 +64,15 @@ public abstract class EmbeddingIndexerFactory {
      */
     public abstract void filesDeleted (Collection<? extends Indexable> deleted, Context context);
     
+    /**
+     * Called by indexing infrastructure to notify indexer that a file was modified and so its
+     * index may contain stale data.
+     *
+     * @param dirty the collection of dirty {@link Indexable}s
+     * @param context an indexing context
+     * @since 1.4
+     */
+    public abstract void filesDirty (Collection<? extends Indexable> dirty, Context context);
 
     /**
      * Return the name of this indexer. This name should be unique because the infrastructure 

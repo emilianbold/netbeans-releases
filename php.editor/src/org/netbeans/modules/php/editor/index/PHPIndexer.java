@@ -755,6 +755,18 @@ public final class PHPIndexer extends EmbeddingIndexer {
             }
         }
 
+        @Override
+        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+            try {
+                IndexingSupport is = IndexingSupport.getInstance(context);
+                for(Indexable i : dirty) {
+                    is.markDirtyDocuments(i);
+                }
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+            }
+        }
+        
         private boolean isPhpFile(FileObject file) {
             FileObject fo = null;
             String ext = file.getExt();

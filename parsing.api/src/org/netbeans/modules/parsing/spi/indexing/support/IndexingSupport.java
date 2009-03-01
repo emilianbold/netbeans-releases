@@ -44,6 +44,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
@@ -61,6 +63,8 @@ import org.openide.util.Parameters;
 //@NotThreadSafe
 public final class IndexingSupport {
 
+    private static final Logger LOG = Logger.getLogger(IndexingSupport.class.getName());
+    
     static {
         SupportAccessor.setInstance(new MyAccessor());
     }
@@ -87,12 +91,16 @@ public final class IndexingSupport {
         assert instances.isEmpty();
     }
 
-    static void endTrans () throws IOException {
+    static void endTrans () {
         try {
             for (Iterator<IndexingSupport> it = instances.values().iterator(); it.hasNext(); ) {
                 final IndexingSupport is = it.next();
                 it.remove();
-                is.spiIndex.store();
+                try {
+                    is.spiIndex.store();
+                } catch (IOException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                }
             }
         } finally {
             instances.clear();
@@ -144,6 +152,21 @@ public final class IndexingSupport {
         spiIndex.removeDocument (indexable.getRelativePath());
     }
 
+    /**
+     * Marks all documents for an <code>Indexable</code> as dirty. Any subsequent
+     * use of <code>QuerySupport</code> for those <code>Indexable</code>s will first
+     * refresh the documents (ie. call indexers) to make sure that the documents
+     * are up-to-date.
+     *
+     * @param indexable The {@link Indexable} whose documents will be marked as dirty.
+     * @since 1.4
+     */
+    public void markDirtyDocuments (final Indexable indexable) {
+        LOG.fine("markDirtyDocuments: " + indexable.getURL()); //NOI18N
+        
+        // XXX: todo
+    }
+
     private static String createkey (final Context ctx) {
         return ctx.getIndexFolder().getName() + SPIAccessor.getInstance().getIndexerName (ctx);
     }
@@ -156,7 +179,7 @@ public final class IndexingSupport {
         }
 
         @Override
-        public void endTrans() throws IOException {
+        public void endTrans() {
             IndexingSupport.endTrans();
         }
 

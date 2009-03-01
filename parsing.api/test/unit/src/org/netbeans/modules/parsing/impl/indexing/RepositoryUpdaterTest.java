@@ -380,7 +380,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         logger.setLevel (Level.FINEST);
         logger.addHandler(handler);
         indexerFactory.indexer.setExpectedFile(customFiles);
-        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
         MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
         mcpi1.addResource(this.srcRootWithFiles1);
         ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
@@ -398,7 +398,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         handler.reset();
         indexerFactory.indexer.setExpectedFile(new URL[0]);
-        eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0], new URL[0]);
         GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
@@ -414,7 +414,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         Thread.sleep(5000); //Wait for file system time
         handler.reset();
         indexerFactory.indexer.setExpectedFile(new URL[0]);
-        eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0], new URL[0]);
         File file = new File (embeddedFiles[0].toURI());
         file.setLastModified(System.currentTimeMillis());
         GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
@@ -432,7 +432,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         Thread.sleep(5000); //Wait for file system time
         handler.reset();
         indexerFactory.indexer.setExpectedFile(new URL[0]);
-        eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0], new URL[0]);
         file = new File (embeddedFiles[0].toURI());
         file.setLastModified(System.currentTimeMillis());
         file = new File (embeddedFiles[1].toURI());
@@ -445,6 +445,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, indexerFactory.indexer.getCount());
         assertEquals(1, eindexerFactory.indexer.getCount());
         assertEquals(0, eindexerFactory.indexer.expectedDeleted.size());
+        assertEquals(0, eindexerFactory.indexer.expectedDirty.size());
     }
 
 
@@ -454,7 +455,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         logger.setLevel (Level.FINEST);
         logger.addHandler(handler);
         indexerFactory.indexer.setExpectedFile(customFiles);
-        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
         MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
         mcpi1.addResource(this.srcRootWithFiles1);
         ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
@@ -468,7 +469,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         //Test modifications
         indexerFactory.indexer.setExpectedFile(new URL[0]);
-        eindexerFactory.indexer.setExpectedFile(new URL[]{f3.getURL()}, new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{f3.getURL()}, new URL[0], new URL[0]);
         final OutputStream out = f3.getOutputStream();
         try {
             out.write(0);
@@ -484,7 +485,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         File container = f.getParentFile();
         File newFile = new File (container,"c.emb");
         indexerFactory.indexer.setExpectedFile(new URL[0]);
-        eindexerFactory.indexer.setExpectedFile(new URL[]{newFile.toURI().toURL()}, new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{newFile.toURI().toURL()}, new URL[0], new URL[0]);
         assertNotNull(FileUtil.createData(newFile));
         assertTrue(indexerFactory.indexer.await());
         assertTrue(eindexerFactory.indexer.await());
@@ -497,7 +498,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         newFile = new File (newFolder,"d.emb");
         File newFile2 = new File (newFolder,"e.emb");
         indexerFactory.indexer.setExpectedFile(new URL[0]);
-        eindexerFactory.indexer.setExpectedFile(new URL[]{newFile.toURI().toURL(), newFile2.toURI().toURL()}, new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{newFile.toURI().toURL(), newFile2.toURI().toURL()}, new URL[0], new URL[0]);
         newFolder.mkdirs();
         touchFile (newFile);
         touchFile (newFile2);
@@ -510,13 +511,14 @@ public class RepositoryUpdaterTest extends NbTestCase {
         //Test file deleted
         handler.reset(TestHandler.Type.DELETE);
         indexerFactory.indexer.setExpectedFile(new URL[0]);
-        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[]{f3.getURL()});
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[]{f3.getURL()}, new URL[0]);
         f3.delete();
         assertTrue (handler.await());
         assertTrue(indexerFactory.indexer.await());
         assertTrue(eindexerFactory.indexer.await());
         assertEquals(0, eindexerFactory.indexer.counter);
         assertEquals(0,eindexerFactory.indexer.expectedDeleted.size());
+        assertEquals(0, eindexerFactory.indexer.expectedDirty.size());
     }
 
     private void touchFile (final File file) throws IOException {
@@ -921,6 +923,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
+        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+            
+        }
+
+        @Override
         public boolean supportsEmbeddedIndexers() {
             return false;
         }
@@ -982,12 +989,17 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         @Override
         public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
-
             for (Indexable i : deleted) {
                 indexer.expectedDeleted.remove(i.getURL());
             }
         }
 
+        @Override
+        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+            for (Indexable i : dirty) {
+                indexer.expectedDirty.remove(i.getURL());
+            }
+        }
     }
 
     private static class EmbIndexer extends EmbeddingIndexer {
@@ -996,12 +1008,15 @@ public class RepositoryUpdaterTest extends NbTestCase {
         private CountDownLatch latch;
         private volatile int counter;
         private Set<URL> expectedDeleted = new HashSet<URL>();
+        private Set<URL> expectedDirty = new HashSet<URL>();
 
-        public void setExpectedFile (URL[] files, URL[] deleted) {
+        public void setExpectedFile (URL[] files, URL[] deleted, URL[] dirty) {
             expectedFiles.clear();
             expectedFiles.addAll(Arrays.asList(files));
             expectedDeleted.clear();
             expectedDeleted.addAll(Arrays.asList(deleted));
+            expectedDirty.clear();
+            expectedDirty.addAll(Arrays.asList(dirty));
             counter = 0;
             latch = new CountDownLatch(expectedFiles.size());
         }

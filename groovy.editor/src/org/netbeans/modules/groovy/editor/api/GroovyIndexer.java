@@ -228,6 +228,18 @@ public class GroovyIndexer extends EmbeddingIndexer {
                 Exceptions.printStackTrace(ex);
             }
         }
+        
+        @Override
+        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+            try {
+                IndexingSupport is = IndexingSupport.getInstance(context);
+                for(Indexable i : dirty) {
+                    is.markDirtyDocuments(i);
+                }
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+            }
+        }
     }
     
     private static class TreeAnalyzer {
