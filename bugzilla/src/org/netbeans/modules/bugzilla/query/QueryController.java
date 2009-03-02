@@ -194,9 +194,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(query.isSaved()) {
             setAsSaved();
         }
-        if(urlParameters != null) {
-            postPopulate(urlParameters);
-        } 
+        postPopulate(urlParameters);
     }
 
     private <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, String parameter) {
