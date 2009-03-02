@@ -89,13 +89,13 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
         return tp;
     }
 
-    public static CndTokenProcessor<Token<CppTokenId>> create(Document doc, CsmFile file, CndTokenProcessor<Token<CppTokenId>> tp, int offset, List<CsmReference> macros) {
+    private static CndTokenProcessor<Token<CppTokenId>> create(Document doc, CsmFile file, CndTokenProcessor<Token<CppTokenId>> tp, int offset, List<CsmReference> macros) {
         CsmMacroExpansion.expand(doc, file, 0, 0);
         return new CsmExpandedTokenProcessor(doc, file, tp, offset, macros);
     }
 
-    public void start(int startOffset, int firstTokenOffset) {
-        tp.start(startOffset, firstTokenOffset);
+    public void start(int startOffset, int firstTokenOffset, int lastOffset) {
+        tp.start(startOffset, firstTokenOffset, lastOffset);
     }
 
     public void end(int offset, int lastTokenOffset) {
