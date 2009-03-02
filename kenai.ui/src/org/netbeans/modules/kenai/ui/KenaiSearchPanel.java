@@ -391,7 +391,8 @@ public class KenaiSearchPanel extends JPanel {
         panel.setLayout(new GridBagLayout());
         Color bgColor = UIManager.getColor("window"); // NOI18N
         panel.setBackground(bgColor != null ? bgColor : Color.WHITE);
-        panel.setBorder(UIManager.getBorder("ScrollPane.border")); // NOI18N
+        // XXX setting border like this doesn't work on Metal L&F
+        //panel.setBorder(UIManager.getBorder("ScrollPane.border")); // NOI18N
         return panel;
     }
 

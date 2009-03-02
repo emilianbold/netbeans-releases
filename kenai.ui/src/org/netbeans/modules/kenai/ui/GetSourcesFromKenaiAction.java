@@ -59,7 +59,7 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
         GetSourcesFromKenaiPanel getSourcesPanel = new GetSourcesFromKenaiPanel();
 
         DialogDescriptor dialogDesc = new DialogDescriptor(getSourcesPanel, dialogTitle,
-            true, options, options[0], DialogDescriptor.RIGHT_ALIGN, null, null);
+            true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
 
         Object option = DialogDisplayer.getDefault().notify(dialogDesc);
         if (options[0].equals(option)) {
