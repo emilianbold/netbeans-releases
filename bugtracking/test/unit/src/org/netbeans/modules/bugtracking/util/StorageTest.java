@@ -37,25 +37,26 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugtracking.util;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueNode;
 
 /**
  *
  * @author tomas
  */
-public class StorageTest extends NbTestCase implements TestConstants {
-
-    private static String REPO_NAME = "Beautiful";
-    private static String QUERY_NAME = "Hilarious";
+public class StorageTest extends NbTestCase {
 
     public StorageTest(String arg0) {
         super(arg0);
@@ -81,27 +82,39 @@ public class StorageTest extends NbTestCase implements TestConstants {
     public void testStorage() throws MalformedURLException, CoreException, IOException {
         final IssueStorage storage = IssueStorage.getInstance();
 
-        Map<String, Map<String, String>> m = new HashMap<String, Map<String, String>>();
         Map<String, String> attr1 = new HashMap<String, String>();
-        attr1.put("dummy", "dummy1");
+        attr1.put("dummy1", "dummy2");
+        attr1.put("dummy2", "dummy2");
+        attr1.put("dummy3", "dummy1");
         Map<String, String> attr2 = new HashMap<String, String>();
-        attr2.put("dummy", "dummy2");
+        attr2.put("dummy5", "dummy7");
+        attr2.put("dummy6", "dummy6");
+        attr2.put("dummy7", "dummy5");
         String id1 = "id1";
         String id2 = "id2";
-        
+
         String url = "http://test/bugzilla";
         String qName = "SomeQuery";
-
+        Issue i1 = new DummyIssue(id1, attr1);
+        Issue i2 = new DummyIssue(id2, attr2);
         storage.storeQuery(url, qName, new String[] {id1, id2});
-        storage.storeIssue(url, id1, true, attr1);
-        storage.storeIssue(url, id2, true, attr2);
+        storage.storeIssue(url, i1);
+        storage.storeIssue(url, i2);
 
-        Map<String, String> attr = storage.readIssue(url, id1);
+        List<String> issues = storage.readQuery(url, qName);
+        assertTrue(issues.contains(i1));
+        assertTrue(issues.contains(i2));
+
+        Map<String, String> attr = storage.readIssue(url, i1);
         if(attr == null) fail("missing issue id [" + id1 + "]");
-        assertAttribute(attr1, "dummy", "dummy1");
-        attr = storage.readIssue(url, id2);
+        assertAttribute(attr1, "dummy1", "dummy3");
+        assertAttribute(attr1, "dummy2", "dummy2");
+        assertAttribute(attr1, "dummy3", "dummy1");
+        attr = storage.readIssue(url, i2);
         if(attr == null) fail("missing issue id [" + id2 + "]");
-        assertAttribute(attr2, "dummy", "dummy2");
+        assertAttribute(attr2, "dummy5", "dummy7");
+        assertAttribute(attr2, "dummy6", "dummy6");
+        assertAttribute(attr2, "dummy7", "dummy5");
 
     }
 
@@ -109,5 +122,56 @@ public class StorageTest extends NbTestCase implements TestConstants {
         String v = attrs.get(attr);
         if(v == null) fail("missing attribute [" + attr + "]");
         if(!v.equals(value)) fail("value [" + v + "] for attribute [" + attr + "] instead of [" + value + "]");
+    }
+
+    private static class DummyIssue extends Issue {
+        private Map<String, String> m;
+        private String id;
+
+        public DummyIssue(String id, Map<String, String> m) {
+            this.m = m;
+            this.id = id;
+        }
+
+        @Override
+        public String getID() {
+            return id;
+        }
+
+        @Override
+        public Map<String, String> getAttributes() {
+            return m;
+        }
+
+        @Override
+        public void refresh() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addComment(String comment, boolean closeAsFixed) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public BugtrackingController getControler() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public IssueNode getNode() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public String getSummary() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getRecentChanges() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+
     }
 }
