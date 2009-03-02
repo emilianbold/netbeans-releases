@@ -52,19 +52,25 @@ package org.netbeans.modules.websvc.spi.wseditor;
 
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Roderico Cruz
  */
 public interface WSEditorProvider {
-     /**
-     * This is used to determine if this editor should be displayed
+
+    /** This is used to determine if this editor should be displayed.
+     *
+     * @param node node for which WS editor should be enabled or not.
+     * @return
      */
     boolean enable(Node node);
     
-    /*
-     * Create an instance of the editor component
+    /** Create an instance of the editor component
+     * 
+     * @param lookupContext lookup context, e.g. node lookup
+     * @return
      */
-     WSEditor createWSEditor();
+     WSEditor createWSEditor(Lookup lookupContext);
 }

@@ -50,10 +50,15 @@
 
 package org.netbeans.modules.identity.profile.ui.editor;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.identity.profile.ui.support.J2eeProjectHelper;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * Security editor provider for the web service attribuet editor.
@@ -68,9 +73,17 @@ public class SecurityWSEditorProvider implements WSEditorProvider {
     /** Creates a new instance of SecurityWSEditorProvider */
     public SecurityWSEditorProvider() {
     }
-    
-    public WSEditor createWSEditor() {
-        return new SecurityWSEditor();
+
+    public WSEditor createWSEditor(Lookup nodeLookup) {
+        FileObject srcRoot = nodeLookup.lookup(FileObject.class);
+        if (srcRoot != null) {
+            Project prj = FileOwnerQuery.getOwner(srcRoot);
+            JaxWsModel jaxWsModel = prj.getLookup().lookup(JaxWsModel.class);
+            if (jaxWsModel != null) {
+                return new SecurityWSEditor(jaxWsModel);
+            }
+        }
+        return null;
     }
     
     public boolean enable(Node node) {

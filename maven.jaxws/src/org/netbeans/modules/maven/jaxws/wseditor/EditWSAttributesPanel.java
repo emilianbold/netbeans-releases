@@ -39,12 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.core.wseditor.support;
+package org.netbeans.modules.maven.jaxws.wseditor;
 
 import java.awt.Component;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeMap;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -67,7 +68,7 @@ public class EditWSAttributesPanel extends javax.swing.JPanel {
         description = new StringBuffer("");
     }
     
-    public void addTabs(Set<WSEditor> editors, Node node){
+    public void addTabs(Set<WSEditor> editors, Node node, JaxWsModel jaxWsModel){
         jTabbedPane1.removeAll();
         treeMap.clear();
         

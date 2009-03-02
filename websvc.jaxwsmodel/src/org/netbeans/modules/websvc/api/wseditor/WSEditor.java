@@ -51,7 +51,6 @@
 package org.netbeans.modules.websvc.api.wseditor;
 
 import javax.swing.JComponent;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.openide.nodes.Node;
 
 /**
@@ -62,7 +61,7 @@ public interface WSEditor {
     /**
      * Return the main panel of the editor
      */
-    JComponent createWSEditorComponent(Node node, JaxWsModel jaxWsModel);   
+    JComponent createWSEditorComponent(Node node);   
 
     /**
      * The title text that will be displayed in the tab corresponding
@@ -73,12 +72,12 @@ public interface WSEditor {
     /**
      * This is called when the OK button is selected 
      */
-    void save(Node node, JaxWsModel jaxWsModel);
+    void save(Node node);
     
     /**
      * This is called when the Cancel button is selected
      */
-    void cancel(Node node, JaxWsModel jaxWsModel);
+    void cancel(Node node);
     
     /**
      *  Provides a description text that will be displayed at the top of the editor
