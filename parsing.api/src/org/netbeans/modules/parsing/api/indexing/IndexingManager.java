@@ -41,6 +41,7 @@ package org.netbeans.modules.parsing.api.indexing;
 
 import java.net.URL;
 import java.util.Collection;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 
 /**
@@ -67,7 +68,7 @@ public final class IndexingManager {
      * @return <code>true</code> if there are indexing tasks running, otherwise <code>false</code>.
      */
     public boolean isIndexing() {
-        return RepositoryUpdater.getDefault().isScanInProgress();
+        return Utilities.isScanInProgress();
     }
 
     /**
