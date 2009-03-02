@@ -970,7 +970,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             super.setEnabled(s);
             if (ci != null && ci.isEnabled() != s) {
                 ci = ClusterInfo.createFromCP(ci.getClusterDir(), ci.getProject(),
-                        ci.isPlatformCluster(), ci.getSourceRoots(), s);
+                        ci.isPlatformCluster(), ci.getSourceRoots(), ci.getJavadocRoots(), s);
             }
         }
 

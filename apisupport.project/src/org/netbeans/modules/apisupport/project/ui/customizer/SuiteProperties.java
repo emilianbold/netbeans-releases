@@ -289,9 +289,15 @@ public final class SuiteProperties extends ModuleProperties {
                         }
                         cpwdc.add(entry);
 
-                        if (ci.isExternalCluster() && ci.getSourceRoots() != null) {
-                            String propName = CLUSTER_SRC_PREFIX + entry + NbPlatform.PLATFORM_SOURCES_SUFFIX;
-                            ep.setProperty(propName, Util.urlsToAntPath(ci.getSourceRoots()));
+                        if (ci.isExternalCluster()) {
+                            if (ci.getSourceRoots() != null) {
+                                String propName = CLUSTER_SRC_PREFIX + entry + NbPlatform.PLATFORM_SOURCES_SUFFIX;
+                                ep.setProperty(propName, Util.urlsToAntPath(ci.getSourceRoots()));
+                            }
+                            if (ci.getJavadocRoots() != null) {
+                                String propName = CLUSTER_SRC_PREFIX + entry + NbPlatform.PLATFORM_JAVADOC_SUFFIX;
+                                ep.setProperty(propName, Util.urlsToAntPath(ci.getJavadocRoots()));
+                            }
                         }
                     }
                 }
