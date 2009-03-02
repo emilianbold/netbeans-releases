@@ -84,6 +84,8 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     static final String DEF_FILE_PERM = "deffileperm"; // NOI18N
     static final String DEF_OWNER = "defowner"; // NOI18N
     static final String DEF_GROUP = "defgroup"; // NOI18N
+
+    static final String PREF_APP_LANGUAGE = "prefAppLanguage";// Prefered language when creating new Application projects
     
     static public MakeOptions getInstance() {
         if (instance == null) {
@@ -218,6 +220,18 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         getPreferences().put(DEF_GROUP, value);
         if (!oldValue.equals(value))
             firePropertyChange(DEF_GROUP, oldValue, value);
+    }
+
+
+    // Prefered language when creating new Application projects
+    public String getPrefApplicationLanguage() {
+        return getPreferences().get(PREF_APP_LANGUAGE, "C++"); // NOI18N
+    }
+    public void setPrefApplicationLanguage(String value) {
+        String oldValue = getPrefApplicationLanguage();
+        getPreferences().put(PREF_APP_LANGUAGE, value);
+        if (!oldValue.equals(value))
+            firePropertyChange(PREF_APP_LANGUAGE, oldValue, value);
     }
     
     public void propertyChange(PropertyChangeEvent pce) {

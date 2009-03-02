@@ -53,10 +53,11 @@ import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
-public class EvaluatorTreeModel extends CachedChildrenTreeModel {
+public class EvaluatorTreeModelFilter implements TreeModelFilter {
 
     public static final String HISTORY_NODE =
         "org/netbeans/modules/debugger/jpda/resources/field.gif";
@@ -68,69 +69,8 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
 
     EvaluatorListener evalListener = new EvaluatorListener();
 
-    public EvaluatorTreeModel() {
+    public EvaluatorTreeModelFilter() {
         CodeEvaluator.addResultListener(evalListener);
-    }
-
-    public Object getRoot() {
-        return TreeModel.ROOT;
-    }
-
-    public boolean isLeaf(Object node) throws UnknownTypeException {
-        if (TreeModel.ROOT.equals(node)) {
-            return false;
-        } else if (node instanceof SpecialNode) {
-            return ((SpecialNode)node).isLeaf();
-        }
-        return true;
-        //throw new UnknownTypeException(node.toString());
-    }
-
-    @Override
-    protected Object[] computeChildren(Object node) throws UnknownTypeException {
-        if (node instanceof SpecialNode) {
-            return ((SpecialNode) node).getChildren(0, 0);
-        }
-        if (node == TreeModel.ROOT) {
-            Variable result = CodeEvaluator.getResult();
-            ArrayList items = CodeEvaluator.getHistory();
-            int count = 0;
-            if (result != null) {
-                count++;
-            }
-            if (items.size() > 0) {
-                count++;
-            }
-            Object[] children = new Object[count];
-            int index = 0;
-            if (result != null) {
-                children[index++] = result;
-            }
-            if (items.size() > 0) {
-                children[index] = new HistoryNode();
-            }
-            return children;
-        }
-        throw new UnknownTypeException(node.toString());
-    }
-
-    public int getChildrenCount(Object node) throws UnknownTypeException {
-        if (TreeModel.ROOT.equals(node)) {
-            Variable result = CodeEvaluator.getResult();
-            ArrayList items = CodeEvaluator.getHistory();
-            int count = 0;
-            if (result != null) {
-                count++;
-            }
-            if (items.size() > 0) {
-                count++;
-            }
-            return count;
-        }
-        if (node instanceof SpecialNode) {
-            return ((SpecialNode)node).getChildrenCount();
-        }
-        return Integer.MAX_VALUE;
     }
 
     public void addModelListener(ModelListener l) {
@@ -146,11 +86,11 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
     }
 
     public void fireNodeChanged (Object node) {
-        try {
-            recomputeChildren();
-        } catch (UnknownTypeException ex) {
-            return;
-        }
+//        try {
+//            recomputeChildren();
+//        } catch (UnknownTypeException ex) {
+//            return;
+//        }
         ModelListener[] ls;
         synchronized (listeners) {
             ls = listeners.toArray(new ModelListener[0]);
@@ -161,8 +101,68 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
         }
     }
 
+    public Object getRoot(TreeModel original) {
+        return TreeModel.ROOT;
+    }
+
+    public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
+        if (parent instanceof EvaluatorTreeModel.SpecialNode) {
+            return ((EvaluatorTreeModel.SpecialNode) parent).getChildren(from, to);
+        }
+        if (parent == TreeModel.ROOT) {
+            Variable result = CodeEvaluator.getResult();
+            ArrayList items = CodeEvaluator.getHistory();
+            int count = 0;
+            if (result != null) {
+                count++;
+            }
+            if (items.size() > 0) {
+                count++;
+            }
+            Object[] children = new Object[count];
+            int index = 0;
+            if (result != null) {
+                children[index++] = result;
+            }
+            if (items.size() > 0) {
+                children[index] = new EvaluatorTreeModel.HistoryNode();
+            }
+            return children;
+        }
+        return original.getChildren(parent, from, to);
+    }
+
+    public int getChildrenCount(TreeModel original, Object node) throws UnknownTypeException {
+        if (TreeModel.ROOT.equals(node)) {
+            Variable result = CodeEvaluator.getResult();
+            ArrayList items = CodeEvaluator.getHistory();
+            int count = 0;
+            if (result != null) {
+                count++;
+            }
+            if (items.size() > 0) {
+                count++;
+            }
+            return count;
+        }
+        if (node instanceof EvaluatorTreeModel.SpecialNode) {
+            return ((EvaluatorTreeModel.SpecialNode)node).getChildrenCount();
+        }
+        return original.getChildrenCount(node);
+    }
+
+    public boolean isLeaf(TreeModel original, Object node) throws UnknownTypeException {
+        if (TreeModel.ROOT.equals(node)) {
+            return false;
+        } else if (node instanceof EvaluatorTreeModel.SpecialNode) {
+            return ((EvaluatorTreeModel.SpecialNode)node).isLeaf();
+        }
+        return original.isLeaf(node);
+    }
+
     // **************************************************************************
 
+    /*
     abstract static class SpecialNode {
 
         abstract Object [] getChildren(int from, int to);
@@ -181,7 +181,7 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
 
     }
 
-    static class HistoryNode extends SpecialNode {
+    private static class HistoryNode extends SpecialNode {
 
         @Override
         Object [] getChildren(int from, int to) {
@@ -207,7 +207,7 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
 
         @Override
         String getDisplayName() {
-            return NbBundle.getBundle(EvaluatorTreeModel.class).getString("MSG_EvaluatorHistoryFilterNode"); // NOI18N
+            return NbBundle.getBundle(EvaluatorTreeModelFilter.class).getString("MSG_EvaluatorHistoryFilterNode"); // NOI18N
         }
 
         @Override
@@ -227,7 +227,7 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
 
         @Override
         String getShortDescription() {
-            return NbBundle.getBundle(EvaluatorTreeModel.class).getString("CTL_EvaluatorHistoryNode"); // NOI18N
+            return NbBundle.getBundle(EvaluatorTreeModelFilter.class).getString("CTL_EvaluatorHistoryNode"); // NOI18N
         }
 
         @Override
@@ -237,7 +237,7 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
 
     }
 
-    static class ItemNode extends SpecialNode {
+    private static class ItemNode extends SpecialNode {
 
         HistoryPanel.Item item;
 
@@ -286,7 +286,7 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
 
         @Override
         String getShortDescription() {
-            return NbBundle.getBundle(EvaluatorTreeModel.class).getString("CTL_EvaluatorHistoryItem"); // NOI18N
+            return NbBundle.getBundle(EvaluatorTreeModelFilter.class).getString("CTL_EvaluatorHistoryItem"); // NOI18N
         }
 
         @Override
@@ -302,6 +302,7 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
         }
 
     }
+     */
 
     // **************************************************************************
 
