@@ -48,7 +48,7 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.websvc.core.wseditor.support;
+package org.netbeans.modules.maven.jaxws.wseditor;
 
 import org.netbeans.modules.websvc.api.support.EditWSAttributesCookie;
 import java.awt.Cursor;
@@ -81,9 +81,8 @@ import org.openide.windows.WindowManager;
 public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
 
     /** Creates a new instance of EditWSAttributesCookieImpl */
-    public EditWSAttributesCookieImpl(Node node, JaxWsModel jaxWsModel) {
+    public EditWSAttributesCookieImpl(Node node) {
         this.node = node;
-        this.jaxWsModel = jaxWsModel;
     }
 
     @Override
@@ -115,7 +114,7 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
             cachedTopComponents.put(this, tc);
         }
         populatePanels();
-        tc.addTabs(editors, node);
+        tc.addTabs(editors, node, jaxWsModel);
         DialogDescriptor dialogDesc = new DialogDescriptor(tc, node.getName());
         dialogDesc.setHelpCtx(new HelpCtx(EditWSAttributesCookieImpl.class));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
@@ -145,7 +144,6 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
             this.editors = editors;
         }
 
-        @Override
         public void windowClosing(WindowEvent e) {
             for (WSEditor editor : editors) {
                 editor.cancel(node);

@@ -49,11 +49,16 @@
 
 package org.netbeans.modules.websvc.customization.core.ui;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -62,26 +67,31 @@ import org.openide.nodes.Node;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider.class)
 public class CustomizationWSEditorProvider
         implements WSEditorProvider{
-    
-    /** Creates a new instance of CustomWSAttributeEditorProvider */
-    public CustomizationWSEditorProvider() {
-    }
-    
-    public WSEditor createWSEditor() {
-        return new CustomizationWSEditor();
+
+    public WSEditor createWSEditor(Lookup nodeLookup) {
+        FileObject srcRoot = nodeLookup.lookup(FileObject.class);
+        if (srcRoot != null) {
+            Project prj = FileOwnerQuery.getOwner(srcRoot);
+            JaxWsModel jaxWsModel = prj.getLookup().lookup(JaxWsModel.class);
+            if (jaxWsModel != null) {
+                new CustomizationWSEditor(jaxWsModel);
+            }
+        }
+        return null;
     }
     
     public boolean enable(Node node) {
-        Client client = (Client)node.getLookup().lookup(Client.class);
-        if(client != null){
-            return true;
-        } else{
-            Service service = (Service)node.getLookup().lookup(Service.class);
-            if(service != null){
-                return (service.getWsdlUrl() != null);
+        Client client = node.getLookup().lookup(Client.class);
+        boolean doEnable = false;
+        if (client != null) {
+            doEnable = true;
+        } else {
+            Service service = node.getLookup().lookup(Service.class);
+            if (service != null && service.getWsdlUrl() != null) {
+                doEnable = true;
             }
         }
-        return false;
+        return doEnable;
     }
     
 }
