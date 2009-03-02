@@ -23,7 +23,6 @@
  */
 package org.netbeans.modules.cnd.gizmo.addr2line;
 
-// import gnu.classpath.Configuration;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteOrder;

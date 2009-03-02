@@ -23,7 +23,6 @@
  */
 package org.netbeans.modules.cnd.gizmo.addr2line;
 
-// import gnu.classpath.Configuration;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
@@ -132,17 +131,23 @@ public class Dwarf2NameFinder {
             dw2 = SectionFinder.mapSection(binaryFile, DEBUG_LINE);
             this.binaryFile = binaryFile;
 
-            Runtime r = Runtime.getRuntime();
-            System.out.println("mem free = " + r.freeMemory() + " total = " + r.totalMemory()); // NOI18N
-            System.out.print("Scanning " + binaryFile + "..."); // NOI18N
-            long now = -System.currentTimeMillis();
+            long now;
+            if (Configuration.DEBUG) {
+                Runtime r = Runtime.getRuntime();
+                System.out.println("mem free = " + r.freeMemory() + " total = " + r.totalMemory()); // NOI18N
+                System.out.print("Scanning " + binaryFile + "..."); // NOI18N
+                now = -System.currentTimeMillis();
+            }
             scan();
-            now += System.currentTimeMillis();
-            System.out.println("done"); // NOI18N
-            System.out.println("scanned " + cache.size() + " compilation units in " + now + " nss"); // NOI18N
-            System.gc();
-            System.out.println("mem free = " + r.freeMemory() + " total = " + r.totalMemory()); // NOI18N
-            System.err.println(cache);
+            if (Configuration.DEBUG) {
+                now += System.currentTimeMillis();
+                Runtime r = Runtime.getRuntime();
+                System.out.println("done"); // NOI18N
+                System.out.println("scanned " + cache.size() + " compilation units in " + now + " nss"); // NOI18N
+                System.gc();
+                System.out.println("mem free = " + r.freeMemory() + " total = " + r.totalMemory()); // NOI18N
+                System.err.println(cache);
+            }
         } catch (IOException ioe) {
             if (Configuration.DEBUG) {
                 logger.log(DEBUG, "can''t map .debug_line in {0}: {1}", new Object[]{binaryFile, ioe.getMessage()});
@@ -176,7 +181,9 @@ public class Dwarf2NameFinder {
 
         CacheEntry e = (CacheEntry) cache.get(target);
         if (e != null) {
-            System.out.println("got cache entry " + e); // NOI18N
+            if (Configuration.DEBUG) {
+                System.out.println("got cache entry " + e); // NOI18N
+            }
             if (interpret(target, e.section, e.fileNames, e.header, false)) {
                 return;
             }
