@@ -339,6 +339,7 @@ public final class IOWindow implements IOContainer.Provider {
                 checkTabSelChange();
                 setFocusable(true);
                 revalidate();
+                repaint();
             } else if (pane.getParent() == this) {
                 assert pane.getTabCount() > 1;
                 pane.remove(comp);
