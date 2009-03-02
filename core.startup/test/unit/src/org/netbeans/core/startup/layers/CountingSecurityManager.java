@@ -443,7 +443,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (file.endsWith("tests.jar")) {
             return false;
         }
-        if (file.startsWith(System.getProperty("java.home").replaceAll("/[^/]*$", ""))) {
+        if (file.startsWith(System.getProperty("java.home").replaceAll("[/\\\\][^/\\\\]*$", ""))) {
             return false;
         }
         if (file.startsWith(System.getProperty("netbeans.home") + File.separator + "lib")) {
