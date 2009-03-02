@@ -59,6 +59,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.jivesoftware.smackx.muc.MultiUserChat;
@@ -137,6 +138,10 @@ public class ChatTopComponent extends TopComponent {
                 }
             }
         });
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            chats.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            chats.setOpaque(true);
+        }
         //putClientProperty("netbeans.winsys.tc.keep_preferred_size_when_slided_in", Boolean.TRUE);
     }
 
