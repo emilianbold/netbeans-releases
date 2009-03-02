@@ -443,7 +443,7 @@ public class BugzillaIssue extends Issue {
             TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
             return a != null ? a.getValues() : Collections.EMPTY_LIST;
         } else {
-            List<String> ret = new ArrayList();
+            List<String> ret = new ArrayList<String>();
             ret.add(getFieldValue(f));
             return ret;
         }

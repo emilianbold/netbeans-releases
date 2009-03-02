@@ -148,7 +148,7 @@ public class BugzillaConfig {
         if (keys == null || keys.length == 0) {
             return new String[0];
         }
-        List<String> ret = new ArrayList();
+        List<String> ret = new ArrayList<String>();
         for (String key : keys) {
             if (key.startsWith(prefix)) {
                 ret.add(key.substring(prefix.length()));

@@ -387,7 +387,7 @@ public class BugzillaRepository extends Repository {
             super(BugzillaRepository.this.getUrl());
         }
         protected Issue createIssue(TaskData taskData) {
-            return new BugzillaIssue(taskData, (BugzillaRepository) BugzillaRepository.this);
+            return new BugzillaIssue(taskData, BugzillaRepository.this);
         }
         protected void setTaskData(Issue issue, TaskData taskData) {
             ((BugzillaIssue)issue).setTaskData(taskData); // XXX triggers events under lock
