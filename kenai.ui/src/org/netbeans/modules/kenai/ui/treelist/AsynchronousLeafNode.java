@@ -141,13 +141,17 @@ public abstract class AsynchronousLeafNode extends LeafNode {
      * Invoke this method to recreate node's renderer component.
      */
     protected final void refresh() {
-        synchronized( LOCK ) {
-            loaded = false;
-            if( null != inner )
-                panel.remove(inner);
-            inner = null;
-            startLoading();
-        }
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                synchronized( LOCK ) {
+                    loaded = false;
+                    if( null != inner )
+                        panel.remove(inner);
+                    inner = null;
+                    startLoading();
+                }
+            }
+        });
     }
 
     private void startLoading() {

@@ -66,7 +66,7 @@ public abstract class TreeListNode {
      * elapses then node's renderer shows an error message.
      */
     static final long TIMEOUT_INTERVAL_MILLIS = 
-            NbPreferences.forModule(TreeListNode.class).getInt("node.expand.timeoutmillis", 60 * 1000); //NOI18N
+            NbPreferences.forModule(TreeListNode.class).getInt("node.expand.timeoutmillis", 5 * 60 * 1000); //NOI18N
 
     private final boolean expandable;
     private final TreeListNode parent;
@@ -124,21 +124,25 @@ public abstract class TreeListNode {
      * Invoke this method when node's children must be reloaded.
      */
     protected final void refreshChildren() {
-        synchronized( LOCK ) {
-            if( null != children ) {
-                for( TreeListNode node : children )
-                    node.dispose();
-                children = null;
-                if( null != listener )
-                    listener.childrenRemoved(this);
-            }
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                synchronized( LOCK ) {
+                    if( null != children ) {
+                        for( TreeListNode node : children )
+                            node.dispose();
+                        children = null;
+                        if( null != listener )
+                            listener.childrenRemoved(TreeListNode.this);
+                    }
 
-            if( this.expanded ) {
-                startLoadingChildren();
-                if( null != listener )
-                    listener.childrenAdded(this);
+                    if( expanded ) {
+                        startLoadingChildren();
+                        if( null != listener )
+                            listener.childrenAdded(TreeListNode.this);
+                    }
+                }
             }
-        }
+        });
     }
     
     final JComponent getRenderer( Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowHeight ) {
