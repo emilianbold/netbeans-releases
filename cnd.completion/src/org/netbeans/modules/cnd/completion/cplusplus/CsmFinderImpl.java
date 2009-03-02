@@ -260,14 +260,15 @@ public class CsmFinderImpl implements CsmFinder {
             if (checkStopAfterAppendAllNamespaceElements(ns, name, exactMatch, searchNested, searchFirst, true, csmFile, contResolver, ret, false, new HashSet<CharSequence>(), vasitedNamespaces)) {
                 return ret;
             }
-            if (!prj.isArtificial()) {
+            final Collection<CsmProject> libraries = prj.getLibraries();
+            if (!libraries.isEmpty()) {
                 HashSet<CharSequence> set = new HashSet<CharSequence>();
                 for (Object o : ret) {
                     if (CsmKindUtilities.isQualified((CsmObject) o)) {
                         set.add(((CsmQualifiedNamedElement) o).getQualifiedName());
                     }
                 }
-                for (CsmProject lib : prj.getLibraries()) {
+                for (CsmProject lib : libraries) {
                     CsmNamespace libNmsp;
                     if (ns.isGlobal()) {
                         libNmsp = lib.getGlobalNamespace();
