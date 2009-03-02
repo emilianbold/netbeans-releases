@@ -453,7 +453,7 @@
                 prefix="wsrp"/>
             
             <get
-                src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb65/pp30_beta/build.txt"
+                src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb65/pp30/build.txt"
                 dest="${temp.file}"/>
             <loadfile property="portalpack.build.number"
           	    srcFile="${temp.file}">
