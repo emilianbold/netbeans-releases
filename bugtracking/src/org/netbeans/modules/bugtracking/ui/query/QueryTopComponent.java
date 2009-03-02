@@ -420,7 +420,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     }
 
     private void onRepoSelected() {
-        SwingUtilities.invokeLater(new Runnable() {
+        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 Repository repo = (Repository) repositoryComboBox.getSelectedItem();
                 if (repo == null) {
@@ -438,11 +438,15 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
 
                 updateSavedQueries(repo);
 
-                BugtrackingController c = query.getController();
-                panel.add(c.getComponent());
-                query.addPropertyChangeListener(QueryTopComponent.this);
-                revalidate();
-                repaint();
+                final BugtrackingController c = query.getController();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        panel.add(c.getComponent());
+                        query.addPropertyChangeListener(QueryTopComponent.this);
+                        revalidate();
+                        repaint();
+                    }
+                });
             }
         });
     }
