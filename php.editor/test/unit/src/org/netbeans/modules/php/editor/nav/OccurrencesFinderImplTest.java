@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.nav;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,6 +47,8 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -805,5 +808,15 @@ public class OccurrencesFinderImplTest extends TestBase {
         }
 
         assertEquals(golden, out);
+    }
+
+    @Override
+    protected FileObject[] createSourceClassPathsForTest() {
+        try {
+            return new FileObject[]{toFileObject(workDirToFileObject(), "src", true)};//NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 }

@@ -75,7 +75,6 @@ public class PHPIndexTest extends NbTestCase {
     @Override
     public void setUp() throws Exception {
         FileObject f = FileUtil.getConfigFile(FOLDER + "/text/html");
-        
         if (f != null) {
             f.delete();
         }

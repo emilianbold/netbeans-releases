@@ -39,9 +39,16 @@
 
 package org.netbeans.modules.php.editor.parser;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -94,16 +101,26 @@ public class PhpStructureScannerTest extends ParserTestBase{
 
     @Override
     protected String getTestResult(String filename) throws Exception {
-        return null;
-//        StringBuffer sb = new StringBuffer();
-//        CompilationInfo info = getInfo("testfiles/" + filename +".php");
-//        PhpStructureScanner instance = new PhpStructureScanner();
-//        List<? extends StructureItem> result = instance.scan(info);
-//        for (StructureItem structureItem : result) {
-//            sb.append(printStructureItem(structureItem, 0));
-//            sb.append("\n");
-//        }
-//        return sb.toString();
+        StringBuffer sb = new StringBuffer();
+        FileObject testFile = getTestFile("testfiles/" + filename + ".php");
+
+        Source testSource = getTestSource(testFile);
+
+        final PhpStructureScanner instance = new PhpStructureScanner();
+        final List<StructureItem> result = new ArrayList<StructureItem>();
+        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                PHPParseResult info = (PHPParseResult)resultIterator.getParserResult();
+                result.addAll(instance.scan(info));
+            }
+        });
+        for (StructureItem structureItem : result) {
+            sb.append(printStructureItem(structureItem, 0));
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
     private String printStructureItem(StructureItem structureItem, int indent) {

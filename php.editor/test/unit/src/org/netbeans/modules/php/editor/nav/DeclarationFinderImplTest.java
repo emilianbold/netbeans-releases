@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.nav;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -47,6 +48,8 @@ import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -56,6 +59,11 @@ public class DeclarationFinderImplTest extends TestBase {
 
     public DeclarationFinderImplTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();        
     }
 
     public void testParamVarPropInPhpDocTest() throws Exception {
@@ -2187,6 +2195,16 @@ public class DeclarationFinderImplTest extends TestBase {
         });
     }
 
+    @Override
+    protected FileObject[] createSourceClassPathsForTest() {
+        try {
+            return new FileObject[]{toFileObject(workDirToFileObject(), "src", true)};//NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
     private static final class Golden {
         private String declarationFile;
         private int declarationOffset;
@@ -2232,5 +2250,4 @@ public class DeclarationFinderImplTest extends TestBase {
         }
 
     }
-
 }

@@ -41,28 +41,33 @@ package org.netbeans.modules.php.editor.nav;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
+import java.util.Collections;
+import java.util.Map;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class TestBase extends CslTestBase {
+public abstract class TestBase extends CslTestBase {
     
     public TestBase(String testName) {
         super(testName);
@@ -88,6 +93,8 @@ public class TestBase extends CslTestBase {
 
     @Override
     public void setUp() throws Exception {
+        super.setUp();
+        PHPIndex.setClusterUrl("file:/bogus"); // No translation
         FileObject f = FileUtil.getConfigFile(FOLDER + "/text/html");
         
         if (f != null) {
@@ -120,44 +127,23 @@ public class TestBase extends CslTestBase {
     }
     
     protected void performTest(String[] code, final UserTask task) throws Exception {
-//        clearWorkDir();
-//        FileUtil.refreshAll();
+        clearWorkDir();
+        FileUtil.refreshAll();
+
+        FileObject workDir = FileUtil.toFileObject(getWorkDir());
+        FileObject folder = workDir.createFolder("src");
+        int index = -1;
 //
-//        FileObject workDir = FileUtil.toFileObject(getWorkDir());
-//        FileObject cache = workDir.createFolder("cache");
-//        FileObject folder = workDir.createFolder("src");
-//        FileObject cluster = workDir.createFolder("cluster");
-//        int index = -1;
+        for (String c : code) {
+            FileObject f = FileUtil.createData(folder, computeFileName(index));
+            TestUtilities.copyStringToFile(f, c);
+            index++;
+        }
 //
-//        for (String c : code) {
-//            FileObject f = FileUtil.createData(folder, computeFileName(index));
-//            TestUtilities.copyStringToFile(f, c);
-//            index++;
-//        }
-//
-//        System.setProperty("netbeans.user", FileUtil.toFile(cache).getAbsolutePath());
-//        PHPIndex.setClusterUrl(cluster.getURL().toExternalForm());
-//        CountDownLatch l = RepositoryUpdater.getDefault().scheduleCompilationAndWait(folder, folder);
-//
-//        l.await();
-//
-//        final FileObject test = folder.getFileObject("test.php");
-//
-//        Document doc = openDocument(test);
-//
-//        ClassPath empty = ClassPathSupport.createClassPath(new FileObject[0]);
-//        ClassPath source = ClassPathSupport.createClassPath(folder);
-//        ClasspathInfo info = ClasspathInfo.create(empty, empty, source);
-//        Source s = Source.create(info, test);
-//
-//        s.runUserActionTask(new CancellableTask<CompilationController>() {
-//            public void cancel() {}
-//            public void run(CompilationController parameter) throws Exception {
-//                parameter.toPhase(Phase.UP_TO_DATE);
-//
-//                task.run(parameter);
-//            }
-//        }, true);
+        final FileObject test = folder.getFileObject("test.php");
+
+        Source testSource = getTestSource(test);
+        ParserManager.parse(Collections.singleton(testSource), task);
     }
 
     private static Document openDocument(FileObject fileObject) throws Exception {
@@ -169,5 +155,55 @@ public class TestBase extends CslTestBase {
         
         return ec.openDocument();
     }
+
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new PHPLanguage();
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return PHPLanguage.PHP_MIME_TYPE;
+    }
+
+    @Override
+    protected final Map<String, ClassPath> createClassPathsForTest() {
+        FileObject[] srcFolders = createSourceClassPathsForTest();
+        return srcFolders != null ? Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(srcFolders)
+        ) : null;
+    }
+
+
+    protected FileObject[] createSourceClassPathsForTest() {
+        return null;
+    }
+
+    protected final FileObject[] createSourceClassPathsForTest(FileObject base, String relativePath) {
+        try {
+            return new FileObject[]{toFileObject(base, relativePath, true)};
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    protected final FileObject workDirToFileObject() throws IOException {
+        FileObject workDir = null;
+        assert getWorkDir().exists();
+        workDir = FileUtil.toFileObject(getWorkDir());
+        return workDir;
+    }
     
+    protected final FileObject toFileObject(FileObject base, String relativePath, boolean isFolder) throws IOException {
+        FileObject retval = null;
+        if (isFolder) {
+            retval = FileUtil.createFolder(base, relativePath);
+        } else {
+            retval = FileUtil.createData(base, relativePath);
+        }
+        return retval;
+    }
+
 }
