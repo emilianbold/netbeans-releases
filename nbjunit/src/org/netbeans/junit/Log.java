@@ -304,8 +304,11 @@ public final class Log extends Handler {
                 sb.append("\n  ").append(s.toString());
             }
         }
-        
-        getLog(record).println(sb.toString());
+        try {
+            getLog(record).println(sb.toString());
+        } catch (LinkageError err) {
+            // prevent circular references
+        }
 
 
         messages.append(sb.toString());
