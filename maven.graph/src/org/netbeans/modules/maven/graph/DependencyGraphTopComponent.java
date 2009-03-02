@@ -42,7 +42,6 @@ package org.netbeans.modules.maven.graph;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
@@ -56,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
@@ -67,7 +67,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -91,6 +90,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     final JScrollPane pane = new JScrollPane();
     private boolean isMultiview = false;
     
+    private HighlightVisitor highlightV;
     
     private Timer timer = new Timer(500, new ActionListener() {
         public void actionPerformed(ActionEvent arg0) {
@@ -105,7 +105,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         associateLookup(lookup);
         initComponents();
 //        project = proj;
-        sldDepth.getLabelTable().put(new Integer(0), new JLabel(NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_All")));
+        //sldDepth.getLabelTable().put(new Integer(0), new JLabel(NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_All")));
         timer.setDelay(500);
         timer.setRepeats(false);
         txtFind.getDocument().addDocumentListener(new DocumentListener() {
@@ -194,8 +194,8 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     public void componentOpened() {
         super.componentOpened();
         pane.setWheelScrollingEnabled(true);
-        sldDepth.setEnabled(false);
-        sldDepth.setVisible(false);
+        maxPathSpinner.setEnabled(false);
+        maxPathSpinner.setVisible(false);
         txtFind.setEnabled(false);
         btnBigger.setEnabled(false);
         btnSmaller.setEnabled(false);
@@ -252,9 +252,10 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         btnSmaller = new javax.swing.JButton();
         lblFind = new javax.swing.JLabel();
         txtFind = new javax.swing.JTextField();
+        lblPath = new javax.swing.JLabel();
+        maxPathSpinner = new javax.swing.JSpinner();
         lblScopes = new javax.swing.JLabel();
         comScopes = new javax.swing.JComboBox();
-        sldDepth = new javax.swing.JSlider();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -293,24 +294,26 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         txtFind.setPreferredSize(new java.awt.Dimension(150, 19));
         jToolBar1.add(txtFind);
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblScopes, org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.lblScopes.text")); // NOI18N
-        jToolBar1.add(lblScopes);
-        jToolBar1.add(comScopes);
+        jPanel1.add(jToolBar1);
 
-        sldDepth.setMajorTickSpacing(1);
-        sldDepth.setMaximum(5);
-        sldDepth.setPaintLabels(true);
-        sldDepth.setSnapToTicks(true);
-        sldDepth.setValue(0);
-        sldDepth.setPreferredSize(new java.awt.Dimension(150, 25));
-        sldDepth.addChangeListener(new javax.swing.event.ChangeListener() {
+        lblPath.setLabelFor(maxPathSpinner);
+        org.openide.awt.Mnemonics.setLocalizedText(lblPath, org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.lblPath.text")); // NOI18N
+        lblPath.setToolTipText(org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.maxPathSpinner.toolTipText")); // NOI18N
+        jPanel1.add(lblPath);
+
+        maxPathSpinner.setModel(new javax.swing.SpinnerNumberModel(1, 1, 5, 1));
+        maxPathSpinner.setToolTipText(org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.maxPathSpinner.toolTipText")); // NOI18N
+        maxPathSpinner.setRequestFocusEnabled(false);
+        maxPathSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                sldDepthStateChanged(evt);
+                maxPathSpinnerStateChanged(evt);
             }
         });
-        jToolBar1.add(sldDepth);
+        jPanel1.add(maxPathSpinner);
 
-        jPanel1.add(jToolBar1);
+        org.openide.awt.Mnemonics.setLocalizedText(lblScopes, org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.lblScopes.text")); // NOI18N
+        jPanel1.add(lblScopes);
+        jPanel1.add(comScopes);
 
         add(jPanel1, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents
@@ -339,32 +342,9 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         
     }//GEN-LAST:event_btnBiggerActionPerformed
 
-    private void sldDepthStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldDepthStateChanged
-        if (!sldDepth.isEnabled() || sldDepth.getValueIsAdjusting()) {
-            return;
-        }
-
-        HighlightVisitor visitor = new HighlightVisitor(scene);
-        int value = sldDepth.getValue();
-        visitor.setMaxDepth(value == 0 ? Integer.MAX_VALUE : value);
-        DependencyNode node = scene.getRootGraphNode().getArtifact();
-        node.accept(visitor);
-        Dimension dim = visitor.getVisibleRectangle().getSize ();
-        Dimension viewDim = pane.getViewportBorderBounds ().getSize ();
-        double zoom = Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height);
-        scene.setZoomFactor (Math.min(zoom, 1));
-
-        scene.validate();
-        Rectangle viewpoint = scene.convertSceneToView(visitor.getVisibleRectangle());
-        int hgrow = ((viewDim.width - viewpoint.width) / 2) - 5;
-        int wgrow = ((viewDim.height - viewpoint.height) / 2) - 5;
-        viewpoint.grow(hgrow, wgrow);
-        scene.getView().scrollRectToVisible(viewpoint);
-
-        revalidate();
-        repaint();
-
-    }//GEN-LAST:event_sldDepthStateChanged
+    private void maxPathSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_maxPathSpinnerStateChanged
+        depthHighlight();
+    }//GEN-LAST:event_maxPathSpinnerStateChanged
 
     
     
@@ -375,8 +355,9 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     private javax.swing.JPanel jPanel1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JLabel lblFind;
+    private javax.swing.JLabel lblPath;
     private javax.swing.JLabel lblScopes;
-    private javax.swing.JSlider sldDepth;
+    private javax.swing.JSpinner maxPathSpinner;
     private javax.swing.JTextField txtFind;
     // End of variables declaration//GEN-END:variables
 
@@ -384,6 +365,23 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         createScene();
     }
 
+    /** Highlights/diminishes graph nodes and edges based on path from root depth */
+    public void depthHighlight () {
+        if (highlightV == null) {
+            highlightV = new HighlightVisitor(scene);
+        }
+        //int value = sldDepth.getValue();
+        int value = ((SpinnerNumberModel)maxPathSpinner.getModel()).getNumber().intValue();
+        highlightV.setMaxDepth(value);
+        DependencyNode node = scene.getRootGraphNode().getArtifact();
+        node.accept(highlightV);
+        scene.validate();
+        scene.repaint();
+    }
+
+    JScrollPane getScrollPane () {
+        return pane;
+    }
 
     private void createScene() {
         Iterator<? extends DependencyNode> it1 = result.allInstances().iterator();
@@ -394,7 +392,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
             final DependencyNode root = it1.next();
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    scene = new DependencyGraphScene(prj, nbProj);
+                    scene = new DependencyGraphScene(prj, nbProj, DependencyGraphTopComponent.this);
                     GraphConstructor constr = new GraphConstructor(scene);
                     root.accept(constr);
                     SwingUtilities.invokeLater(new Runnable() {
@@ -411,9 +409,13 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                             btnSmaller.setEnabled(true);
                             comScopes.setEnabled(true);
                             if (scene.getMaxNodeDepth() > 1) {
-                                sldDepth.setMaximum(scene.getMaxNodeDepth());
+                                /*sldDepth.setMaximum(scene.getMaxNodeDepth());
                                 sldDepth.setEnabled(true);
-                                sldDepth.setVisible(true);
+                                sldDepth.setVisible(true);*/
+                                ((SpinnerNumberModel)maxPathSpinner.getModel()).
+                                        setMaximum(Integer.valueOf(scene.getMaxNodeDepth()));
+                                maxPathSpinner.setEnabled(true);
+                                maxPathSpinner.setVisible(true);
                             }
                         }
                     });
@@ -450,10 +452,11 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
             toolbar.add(lblFind);
             toolbar.add(txtFind);
             toolbar.addSeparator(space);
+            toolbar.add(lblPath);
+            toolbar.add(maxPathSpinner);
+            toolbar.addSeparator(space);
             toolbar.add(lblScopes);
             toolbar.add(comScopes);
-            toolbar.addSeparator(space);
-            toolbar.add(sldDepth);
         }
         return toolbar;
     }

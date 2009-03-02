@@ -78,6 +78,7 @@ class HighlightVisitor implements DependencyNodeVisitor {
             ArtifactGraphNode grNode = scene.getGraphNodeRepresentant(node);
             ArtifactWidget aw = (ArtifactWidget) scene.findWidget(grNode);
             Collection<ArtifactGraphEdge> edges = scene.findNodeEdges(grNode, true, true);
+            aw.setReadable(false);
             if (path.size() > max) {
                 aw.setGrayed(true);
                 for (ArtifactGraphEdge e : edges) {

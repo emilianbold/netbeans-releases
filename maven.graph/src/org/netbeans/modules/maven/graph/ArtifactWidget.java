@@ -52,10 +52,9 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.netbeans.api.visual.action.TwoStateHoverProvider;
 import org.netbeans.api.visual.border.BorderFactory;
-import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LevelOfDetailsWidget;
@@ -67,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
-class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionListener {
+class ArtifactWidget extends Widget implements ActionListener {
 
     final Color ROOT = new Color(178, 228, 255);
     final Color DIRECTS = new Color(178, 228, 255);
@@ -89,22 +88,14 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
     private static final int RIGHT_TOP = 3;
     private static final int RIGHT_BOTTOM = 4;
 
-    private static final int UNHOVERED = 1;
-    private static final int HOVERED = 2;
-    private static final int ENSURE_READABLE = 3;
-
-    private static final int UNSELECTED = 1;
-    private static final int SELECTED = 2;
-    private static final int READABLE = 3;
-
     private static final Image lockImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/lock.png");
     private static final Image brokenLockImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/lock-broken.png");
 
     private ArtifactGraphNode node;
     private String currentSearchTerm;
     private List<String> scopes;
-    private int hoverState = UNHOVERED;
-    private int selectState = UNSELECTED;
+    private boolean readable = false;
+    private boolean enlargedFromHover = false;
 
     private Timer hoverTimer;
     private Color hoverBorderC;
@@ -285,8 +276,8 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
             }
         }
 
-        if (hoverState != UNHOVERED) {
-            paintHover(g, bounds, hoverBorderC);
+        if (getState().isHovered() || getState().isSelected()) {
+            paintHover(g, bounds, hoverBorderC, getState().isSelected());
         }
     }
 
@@ -342,69 +333,89 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
         g.fillRect(bounds.x, bounds.y + bounds.height - thickness, bounds.width, thickness);
     }
 
-    private static void paintHover (Graphics2D g, Rectangle bounds, Color c) {
+    private static void paintHover (Graphics2D g, Rectangle bounds, Color c, boolean selected) {
         g.setColor(c);
         g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
         g.drawRect(bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height - 2);
-        g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 150));
+        if (!selected) {
+            g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 150));
+        }
         g.drawRect(bounds.x + 2, bounds.y + 2, bounds.width - 4, bounds.height - 4);
-        g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 75));
+        if (selected) {
+            g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 150));
+        } else {
+            g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 75));
+        }
         g.drawRect(bounds.x + 3, bounds.y + 3, bounds.width - 6, bounds.height - 6);
     }
 
-    /*** TwoStateHoverProvider ***/
+    @Override
+    protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
+        super.notifyStateChanged(previousState, state);
 
-    public void unsetHovering(Widget widget) {
-        hoverTimer.stop();
-        int previous = hoverState;
-        hoverState = UNHOVERED;
-        if (previous == HOVERED) {
-            repaint();
-        } else if (previous == ENSURE_READABLE) {
-            artifactW.setPreferredBounds(artifactW.getPreferredBounds());
-            updateFonts();
-            getScene().getSceneAnimator().animatePreferredBounds(artifactW, null);
+        boolean repaintNeeded = false;
+        boolean updateNeeded = false;
+
+        if (!previousState.isHovered() && state.isHovered()) {
+            hoverTimer.restart();
+            repaintNeeded = true;
         }
-    }
 
-    public void setHovering(Widget widget) {
-        hoverState = HOVERED;
-        hoverTimer.restart();
-        repaint();
+        if (previousState.isHovered() && !state.isHovered()) {
+            hoverTimer.stop();
+            repaintNeeded = true;
+            updateNeeded = enlargedFromHover;
+            enlargedFromHover = false;
+        }
+        
+        if (previousState.isSelected() != state.isSelected()) {
+            updateNeeded = true;
+        }
+
+        if (updateNeeded) {
+            updateContent();
+        } else if (repaintNeeded) {
+            repaint();
+        }
+
+        if (previousState.isHighlighted() != state.isHighlighted()) {
+            System.out.println(node.getArtifact().getArtifact().getArtifactId() +
+                    " highlighted state changed: " + state.isHighlighted());
+        }
     }
 
     /*** ActionListener ***/
 
     public void actionPerformed(ActionEvent e) {
-        hoverState = ENSURE_READABLE;
-        artifactW.setPreferredBounds(artifactW.getPreferredBounds());
-        bringToFront();
-        updateFonts();
-        getScene().getSceneAnimator().animatePreferredBounds(artifactW, null);
-    }
-
-    public void setSelected (boolean select) {
-        this.selectState = select ? SELECTED : UNSELECTED;
-        updateFonts();
-    }
-
-    public boolean isSelected () {
-        return selectState == SELECTED;
+        enlargedFromHover = true;
+        updateContent();
     }
 
     public void setReadable (boolean readable) {
-        this.selectState = readable ? READABLE : UNSELECTED;
-        updateFonts();
+        if (this.readable == readable) {
+            return;
+        }
+        this.readable = readable;
+        updateContent();
     }
 
     public boolean isReadable () {
-        return selectState == READABLE;
+        return readable;
     }
 
-    private void updateFonts () {
+    public ArtifactGraphNode getNode () {
+        return node;
+    }
+
+    private void updateContent () {
+        artifactW.setPreferredBounds(artifactW.getPreferredBounds());
+
+        boolean makeReadable = getState().isSelected() || enlargedFromHover || readable;
+
         Font f;
         Font origF = getOrigFont();
-        if (hoverState == ENSURE_READABLE || selectState != UNSELECTED) {
+        if (makeReadable) {
+            bringToFront();
             // enlarge fonts so that content is readable
             float fSizeRatio = getScene().getDefaultFont().getSize() / (float)origF.getSize();
             float ratio = (float) Math.max (1, fSizeRatio / Math.max(0.0001f, getScene().getZoomFactor()));
@@ -414,6 +425,8 @@ class ArtifactWidget extends Widget implements TwoStateHoverProvider, ActionList
         }
         artifactW.setFont(f);
         versionW.setFont(f);
+
+        getScene().getSceneAnimator().animatePreferredBounds(artifactW, null);
     }
 
     private Font getOrigFont () {

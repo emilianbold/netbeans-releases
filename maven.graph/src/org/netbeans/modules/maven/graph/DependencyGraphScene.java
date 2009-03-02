@@ -38,9 +38,10 @@
  */
 package org.netbeans.modules.maven.graph;
 
+import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
@@ -50,18 +51,20 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.MoveProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.SelectProvider;
-import org.netbeans.api.visual.action.TwoStateHoverProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.graph.GraphScene;
+import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
@@ -82,27 +85,30 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction(allActionsP);
     private WidgetAction zoomAction = ActionFactory.createMouseCenteredZoomAction(1.1);
     private WidgetAction panAction = ActionFactory.createPanAction();
-    private WidgetAction selectAction = ActionFactory.createSelectAction(allActionsP);
-    private WidgetAction hoverAction = ActionFactory.createHoverAction(allActionsP);
+    private WidgetAction editAction = ActionFactory.createEditAction(allActionsP);
     private FruchtermanReingoldLayout layout;
-    private MavenProject project;
     private int maxDepth = 0;
-    private Project nbProject;
+    private final MavenProject project;
+    private final Project nbProject;
+    private final DependencyGraphTopComponent tc;
+    private SceneLayout fitViewL;
     
     /** Creates a new instance ofla DependencyGraphScene */
-    DependencyGraphScene(MavenProject prj, Project nbProj) {
+    DependencyGraphScene(MavenProject prj, Project nbProj, DependencyGraphTopComponent tc) {
         project = prj;
         nbProject = nbProj;
+        this.tc = tc;
         mainLayer = new LayerWidget(this);
         addChild(mainLayer);
         connectionLayer = new LayerWidget(this);
         addChild(connectionLayer);
         //hoverAction = createObjectHoverAction();
         //getActions ().addAction (ActionFactory.createMouseCenteredZoomAction (1.1));
-        getActions().addAction(hoverAction);
-        getActions().addAction(selectAction);
+        getActions().addAction(this.createObjectHoverAction());
+        getActions().addAction(ActionFactory.createSelectAction(allActionsP));
         getActions().addAction(zoomAction);
         getActions().addAction(panAction);
+        getActions().addAction(editAction);
         //addObjectSceneListener(new SceneListener(), ObjectSceneEventType.OBJECT_HOVER_CHANGED, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
     }
 
@@ -130,6 +136,10 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         return project;
     }
 
+    boolean isAnimated () {
+        return true;
+    }
+
     ArtifactGraphNode getGraphNodeRepresentant(DependencyNode node) {
         for (ArtifactGraphNode grnode : getNodes()) {
             if (grnode.represents(node)) {
@@ -151,9 +161,10 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         }
         root.setOpaque(true);
         
-        root.getActions().addAction(hoverAction);
+        root.getActions().addAction(this.createObjectHoverAction());
+        root.getActions().addAction(this.createSelectAction());
         root.getActions().addAction(moveAction);
-        root.getActions().addAction(selectAction);
+        root.getActions().addAction(editAction);
         root.getActions().addAction(popupMenuAction);
         
         return root;
@@ -179,19 +190,55 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         ((ConnectionWidget) findWidget(edge)).setTargetAnchor(AnchorFactory.createRectangularAnchor(wid));
     }
 
-    private class AllActionsProvider implements SelectProvider, PopupMenuProvider, TwoStateHoverProvider, MoveProvider {
+    void highlightRelated (ArtifactGraphNode node) {
+        List<ArtifactGraphNode> highlightNodes = new ArrayList<ArtifactGraphNode>();
+        List<ArtifactGraphEdge> highlightEdges = new ArrayList<ArtifactGraphEdge>();
 
-        /*** SelectProvider ***/
+        highlightNodes.add(node);
 
-        public boolean isAimingAllowed(Widget arg0, Point arg1, boolean arg2) {
-            return true;
+        List<DependencyNode> children = (List<DependencyNode>)node.getArtifact().getChildren();
+        for (DependencyNode n : children) {
+            highlightNodes.add(getGraphNodeRepresentant(n));
         }
 
-        public boolean isSelectionAllowed(Widget arg0, Point arg1, boolean arg2) {
-            return true;
+        highlightEdges.addAll(findNodeEdges(node, true, false));
+
+        DependencyNode curDepN = node.getArtifact();
+        DependencyNode parentDepN;
+        ArtifactGraphNode grNode;
+        while ((parentDepN = curDepN.getParent()) != null) {
+            grNode = getGraphNodeRepresentant(parentDepN);
+            highlightEdges.addAll(findEdgesBetween(grNode, getGraphNodeRepresentant(curDepN)));
+            highlightNodes.add(grNode);
+            curDepN = parentDepN;
         }
 
-        public void select(Widget wid, Point arg1, boolean arg2) {
+        EdgeWidget ew;
+        for (ArtifactGraphEdge curE : getEdges()) {
+            ew = (EdgeWidget) findWidget(curE);
+            if (highlightEdges.contains(curE)) {
+                ew.setState(EdgeWidget.HIGHLIGHTED);
+            } else {
+                ew.setState(EdgeWidget.DISABLED);
+            }
+        }
+
+        ArtifactWidget aw;
+        boolean isHighlight;
+        for (ArtifactGraphNode curN : getNodes()) {
+            aw = (ArtifactWidget) findWidget(curN);
+            isHighlight = highlightNodes.contains(curN);
+            aw.setGrayed(!isHighlight);
+            aw.setReadable(isHighlight);
+        }
+
+    }
+
+    private class AllActionsProvider implements PopupMenuProvider, 
+            MoveProvider, EditProvider, SelectProvider {
+
+/*        public void select(Widget wid, Point arg1, boolean arg2) {
+            System.out.println("select called...");
             Widget w = wid;
             while (w != null) {
                 ArtifactGraphNode node = (ArtifactGraphNode)findObject(w);
@@ -200,55 +247,11 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                     System.out.println("selected object: " + node.getArtifact().getArtifact().getArtifactId());
                     highlightRelated(node);
                     ((ArtifactWidget)w).setSelected(true);
-                    ((ArtifactWidget)w).setGrayed(false);
                     return;
                 }
                 w = w.getParentWidget();
             }
-        }
-
-        private void highlightRelated (ArtifactGraphNode node) {
-            List<ArtifactGraphNode> highlightNodes = new ArrayList<ArtifactGraphNode>();
-            List<ArtifactGraphEdge> highlightEdges = new ArrayList<ArtifactGraphEdge>();
-
-            List<DependencyNode> children = (List<DependencyNode>)node.getArtifact().getChildren();
-            for (DependencyNode n : children) {
-                highlightNodes.add(getGraphNodeRepresentant(n));
-            }
-
-            highlightEdges.addAll(findNodeEdges(node, true, false));
-
-            DependencyNode curDepN = node.getArtifact();
-            DependencyNode parentDepN;
-            ArtifactGraphNode grNode;
-            while ((parentDepN = curDepN.getParent()) != null) {
-                grNode = getGraphNodeRepresentant(parentDepN);
-                highlightEdges.addAll(findEdgesBetween(grNode, getGraphNodeRepresentant(curDepN)));
-                highlightNodes.add(grNode);
-                curDepN = parentDepN;
-            }
-
-            EdgeWidget ew;
-            for (ArtifactGraphEdge curE : getEdges()) {
-                ew = (EdgeWidget) findWidget(curE);
-                if (highlightEdges.contains(curE)) {
-                    ew.setState(EdgeWidget.HIGHLIGHTED);
-                } else {
-                    ew.setState(EdgeWidget.DISABLED);
-                }
-            }
-            
-            ArtifactWidget aw;
-            boolean isHighlight;
-            for (ArtifactGraphNode curN : getNodes()) {
-                aw = (ArtifactWidget) findWidget(curN);
-                isHighlight = highlightNodes.contains(curN);
-                aw.setGrayed(!isHighlight);
-                aw.setReadable(isHighlight);
-            }
-
-        }
-
+        }*/
 
         /*** PopupMenuProvider ***/
 
@@ -276,20 +279,70 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             widget.setPreferredLocation (location);
         }
 
-        /*** TwoStateHoverProvider ***/
+        /*** EditProvider ***/
 
-        public void unsetHovering(Widget widget) {
-            if (widget instanceof TwoStateHoverProvider) {
-                ((TwoStateHoverProvider)widget).unsetHovering(widget);
+        public void edit(Widget widget) {
+            System.out.println("Edit called...");
+            ArtifactGraphNode grN = (ArtifactGraphNode) findObject(widget);
+            if (grN != null) {
+                highlightRelated(grN);
+            } else {
+                // scene doubleclick
+                getFitToViewLayout().invokeLayout();
             }
         }
 
-        public void setHovering(Widget widget) {
-            if (widget instanceof TwoStateHoverProvider) {
-                ((TwoStateHoverProvider)widget).setHovering(widget);
-            }
+        public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
+            return false;
         }
 
+        public boolean isSelectionAllowed(Widget widget, Point localLocation, boolean invertSelection) {
+            return true;
+        }
+
+        public void select(Widget widget, Point localLocation, boolean invertSelection) {
+            DependencyGraphScene.this.tc.depthHighlight();
+        }
+    }
+
+    @Override
+    protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
+        super.notifyStateChanged(previousState, state);
+
+        if (!previousState.isSelected() && state.isSelected()) {
+            tc.depthHighlight();
+        }
+    }
+
+    private SceneLayout getFitToViewLayout () {
+        if (fitViewL == null) {
+            fitViewL = new FitToViewLayout(this);
+        }
+        return fitViewL;
+    }
+
+    private class FitToViewLayout extends SceneLayout {
+
+        public FitToViewLayout(Scene scene) {
+            super(scene);
+        }
+
+        @Override
+        protected void performLayout() {
+            Rectangle rectangle = new Rectangle (0, 0, 1, 1);
+            for (Widget widget : getChildren ())
+                rectangle = rectangle.union (widget.convertLocalToScene (widget.getBounds ()));
+            rectangle.grow(5, 5);
+            Dimension dim = rectangle.getSize();
+            Dimension viewDim = DependencyGraphScene.this.tc.getScrollPane().
+                    getViewportBorderBounds ().getSize ();
+            double zf = Math.min ((double) viewDim.width / dim.width, (double) viewDim.height / dim.height);
+            if (isAnimated()) {
+                getSceneAnimator().animateZoomFactor(zf);
+            } else {
+                setZoomFactor (zf);
+            }
+        }
     }
 
     public class SceneListener implements ObjectSceneListener {
