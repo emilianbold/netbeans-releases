@@ -82,7 +82,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     @Override
     public ProjectHandle getNonMemberProject(String projectId) {
         try {
-            return new ProjectHandleImpl(kenai.getProject(projectId));
+            return new ProjectHandleImpl(kenai.getProject(projectId,true));
         } catch (KenaiException ex) {
             throw new RuntimeException(ex);
         }
@@ -108,7 +108,6 @@ public class ProjectAccessorImpl extends ProjectAccessor {
         Action[] actions = new Action[]{
             (Action) getDetailsAction(project),
             new RemoveProjectAction(project),
-            new RefreshProjectAction(project)
         };
         return actions;
     }

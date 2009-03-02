@@ -72,12 +72,23 @@ public final class Kenai {
      * getNewValue() returns new PasswordAuthentication or null
      */
     public static final String PROP_LOGIN = "login";
+
+    /**
+     * fired when user login started
+     */
+    public static final String PROP_LOGIN_STARTED = "login_started";
+
+
+    /**
+     * fired when user login failed
+     */
+    public static final String PROP_LOGIN_FAILED = "login_failed";
     
     private static Kenai instance;
     private PasswordAuthentication auth = null;
     private static URL url;
 
-    HashMap<String, WeakReference<KenaiProject>> projectsCache = new HashMap<String, WeakReference<KenaiProject>>();
+    final HashMap<String, WeakReference<KenaiProject>> projectsCache = new HashMap<String, WeakReference<KenaiProject>>();
 
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
@@ -111,14 +122,22 @@ public final class Kenai {
      */
     public void login(final String username, final char [] password) throws KenaiException {
         PasswordAuthentication old = auth;
-        impl.verify(username, password);
-        auth = new PasswordAuthentication(username, password);
+        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_STARTED, null, null));
+        try {
+            synchronized (this) {
+                impl.verify(username, password);
+                auth = new PasswordAuthentication(username, password);
 //        Authenticator.setDefault(new Authenticator() {
 //            @Override
 //            protected PasswordAuthentication getPasswordAuthentication() {
 //                return auth;
 //            }
 //        });
+            }
+        } catch (KenaiException ke) {
+            propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_STARTED, null, null));
+            throw ke;
+        }
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
     }
 
@@ -216,13 +235,35 @@ public final class Kenai {
      * Get information about a specific project.
      *
      * @param name name of the project
+     * @param forceServerReload if true -> data will be downloaded from server.
+     * Otherwise data are returned from cache.
      * @return KenaiProject
      * @throws KenaiException
      */
-    public KenaiProject getProject(String name) throws KenaiException {
-        ProjectData prj = impl.getProject(name);
-        return KenaiProject.get(prj);
+    public KenaiProject getProject(String name, boolean forceServerReload) throws KenaiException {
+        if (forceServerReload) {
+            return _getProject(name);
+        } else {
+            KenaiProject result = KenaiProject.get(name);
+            if (result==null) {
+                return result;
+            }
+            return _getProject(name);
+        }
     }
+
+    /**
+     * Get information about a specific project.
+     *
+     * @param name name of the project
+     * @return instance of KenaiProject from cache or downloads KenaiProject
+     * from server if requested project is not available in cache
+     * @throws KenaiException
+     */
+    public KenaiProject getProject(String name) throws KenaiException {
+        return getProject(name, false);
+    }
+
 
     ProjectData getDetails(String name) throws KenaiException {
         return impl.getProject(name);
@@ -320,6 +361,7 @@ public final class Kenai {
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
     public Collection<KenaiProject> getMyProjects() throws KenaiException {
+        assert auth!=null:"you must login to get my projects";
         Collection<ProjectData> prjs = impl.getMyProjects();
         return new LazyCollection(prjs);
     }
@@ -330,6 +372,11 @@ public final class Kenai {
 
     void storeProjects(Collection<KenaiProject> projects) {
         Persistence.getInstance().storeProjects(projects);
+    }
+
+    private KenaiProject _getProject(String name) throws KenaiException {
+        ProjectData prj = impl.getProject(name);
+        return KenaiProject.get(prj);
     }
 
     private class LazyCollection<I,O> extends AbstractCollection<O> {
