@@ -326,7 +326,7 @@ public class CsmFinderImpl implements CsmFinder {
                 return true;
             }
         }
-        for (CsmNamespace ns : CsmUsingResolver.extractNamespaces(CsmUsingResolver.getDefault().findUsingDirectives(nmsp))) {
+        for (CsmNamespace ns : CsmUsingResolver.getDefault().findVisibleNamespaces(nmsp, file == null ? nmsp.getProject() : file.getProject())) {
             if (checkStopAfterAppendAllNamespaceElements(ns, name, exactMatch, searchNested, searchFirst, needFileLocal, file, contResolver, ret, merge, set, vasitedNamespaces)) {
                 return true;
             }
