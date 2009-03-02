@@ -198,7 +198,9 @@ public class JellyTestCase extends NbTestCase {
             // screen capture is performed when test fails and in dependency on system property
             if (captureScreen) {
                 try {
-                    PNGEncoder.captureScreen(getWorkDir().getAbsolutePath() + File.separator + "screen.png", PNGEncoder.COLOR_MODE);
+                    String captureFile = getWorkDir().getAbsolutePath() + File.separator + "screen.png";
+                    PNGEncoder.captureScreen(captureFile, PNGEncoder.COLOR_MODE);
+                    noteCaptureFile(captureFile);
                 } catch (Exception ex) {
                     ex.printStackTrace(getLog());
                 }
@@ -206,13 +208,36 @@ public class JellyTestCase extends NbTestCase {
             // XML dump is performed when test fails and in dependency on system property
             if (dumpScreen) {
                 try {
-                    Dumper.dumpAll(getWorkDir().getAbsolutePath() + File.separator + "screen.xml");
+                    String captureFile = getWorkDir().getAbsolutePath() + File.separator + "screen.xml";
+                    Dumper.dumpAll(captureFile);
+                    noteCaptureFile(captureFile);
                 } catch (Exception ex) {
                     ex.printStackTrace(getLog());
                 }
             }
             isScreenCaptured = true;
         }
+    }
+
+    /**
+     * If running inside Hudson, print a message to make it easy to see where the capture file might be archived.
+     */
+    private void noteCaptureFile(String captureFile) {
+        String hudsonURL = System.getenv("HUDSON_URL");
+        if (hudsonURL == null) {
+            return;
+        }
+        String workspace = System.getenv("WORKSPACE");
+        if (!workspace.endsWith(File.separator)) {
+            workspace += File.separator;
+        }
+        if (!captureFile.startsWith(workspace)) {
+            return;
+        }
+        String relCaptureFile = captureFile.substring(workspace.length()).replace(File.separatorChar, '/');
+        System.err.println("Capturing to:");
+        System.err.println(hudsonURL + "job/" + System.getenv("JOB_NAME") + "/" +
+                System.getenv("BUILD_NUMBER") + "/artifact/" + relCaptureFile);
     }
 
     /** Method called in case of fail or error just after screen shot and XML dumps. <br>
