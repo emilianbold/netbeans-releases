@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
@@ -66,6 +67,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -150,6 +152,11 @@ public class StartTask extends BasicTask<OperationState> {
         Process serverProcess = null;
         try {
             jdkHome = getJavaPlatformRoot(support);
+            // lookup the javadb start service and use it here.
+            RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
+            if (null != db && "true".equals(ip.get(GlassfishModule.START_DERBY_FLAG))) {
+                db.start();
+            }
             serverProcess = createProcess();
         } catch (IOException ex) {
             fireOperationStateChanged(OperationState.FAILED, 

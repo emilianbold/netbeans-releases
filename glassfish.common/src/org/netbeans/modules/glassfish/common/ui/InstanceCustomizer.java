@@ -59,6 +59,7 @@ public class InstanceCustomizer extends javax.swing.JPanel {
     private boolean monitorEnabledChanged = false;
     private boolean jdbcDriverDeployEnabledChanged = false;
     private boolean sessionEnabledChanged = false;
+    private boolean startDerbyChanged = false;
     
     public InstanceCustomizer(GlassfishModule commonSupport) {
         this.commonSupport = commonSupport;
@@ -90,6 +91,9 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         String sessionFlag = ip.get(GlassfishModule.SESSION_PRESERVATION_FLAG);
         boolean sessionEnabled = Boolean.parseBoolean(sessionFlag);
         enableSessionsCheckBox.setSelected(sessionEnabled);
+        String derbyFlag = ip.get(GlassfishModule.START_DERBY_FLAG);
+        boolean derbyEnabled = Boolean.parseBoolean(derbyFlag);
+        startDerby.setSelected(derbyEnabled);
 }
     
     private void persistFields() {
@@ -108,6 +112,10 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         if (sessionEnabledChanged) {
             String sessionsEnabled = Boolean.toString(enableSessionsCheckBox.isSelected());
             commonSupport.setEnvironmentProperty(GlassfishModule.SESSION_PRESERVATION_FLAG, sessionsEnabled, true);
+        }
+        if (startDerbyChanged) {
+            String derbyEnabled = Boolean.toString(startDerby.isSelected());
+            commonSupport.setEnvironmentProperty(GlassfishModule.START_DERBY_FLAG, derbyEnabled, true);
         }
     }
     
@@ -142,6 +150,7 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         monitorCheckBox = new javax.swing.JCheckBox();
         jdbcDriverDeployCheckBox = new javax.swing.JCheckBox();
         enableSessionsCheckBox = new javax.swing.JCheckBox();
+        startDerby = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_Common")); // NOI18N
 
@@ -185,6 +194,13 @@ public class InstanceCustomizer extends javax.swing.JPanel {
             }
         });
 
+        startDerby.setText(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_START_DERBY")); // NOI18N
+        startDerby.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startDerby(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -192,6 +208,7 @@ public class InstanceCustomizer extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(startDerby)
                     .add(jdbcDriverDeployCheckBox)
                     .add(monitorCheckBox)
                     .add(cometCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
@@ -202,9 +219,9 @@ public class InstanceCustomizer extends javax.swing.JPanel {
                             .add(labelDomainName))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(textLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
-                            .add(textDomainsFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
-                            .add(textDomainName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)))
+                            .add(textLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                            .add(textDomainsFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                            .add(textDomainName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)))
                     .add(enableSessionsCheckBox))
                 .addContainerGap())
         );
@@ -231,7 +248,9 @@ public class InstanceCustomizer extends javax.swing.JPanel {
                 .add(jdbcDriverDeployCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(enableSessionsCheckBox)
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(startDerby)
+                .addContainerGap(13, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -270,6 +289,10 @@ private void enableSessionsCheckBoxActionPerformed(java.awt.event.ActionEvent ev
     sessionEnabledChanged = true;
 }//GEN-LAST:event_enableSessionsCheckBoxActionPerformed
 
+private void startDerby(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startDerby
+    startDerbyChanged = true;
+}//GEN-LAST:event_startDerby
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cometCheckBox;
@@ -279,6 +302,7 @@ private void enableSessionsCheckBoxActionPerformed(java.awt.event.ActionEvent ev
     private javax.swing.JLabel labelDomainsFolder;
     private javax.swing.JLabel labelLocation;
     private javax.swing.JCheckBox monitorCheckBox;
+    private javax.swing.JCheckBox startDerby;
     private javax.swing.JTextField textDomainName;
     private javax.swing.JTextField textDomainsFolder;
     private javax.swing.JTextField textLocation;

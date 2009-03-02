@@ -73,6 +73,7 @@ public interface GlassfishModule {
     public static final String JAVA_PLATFORM_ATTR = "java.platform";
     public static final String HTTP_MONITOR_FLAG = "httpMonitorOn";
     public static final String DRIVER_DEPLOY_FLAG = "driverDeployOn";
+    public static final String START_DERBY_FLAG = "derbyStartOn";
     
     public static final String USE_SHARED_MEM_ATTR = "use.shared.mem"; // NOI18N
     public static final String DEBUG_PORT = "debugPort"; // NOI18N
