@@ -63,15 +63,16 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
 
     private final CndTokenProcessor<Token<CppTokenId>> tp;
     private final Document doc;
-    private final int offset;
+    private final int lastOffset;
     private boolean inMacro;
+    private int skipTill = -1;
     private final CsmFile file;
     private List<CsmReference> macros;
 
     private CsmExpandedTokenProcessor(Document doc, CsmFile file, CndTokenProcessor<Token<CppTokenId>> tp, int offset, List<CsmReference> macros) {
         this.tp = tp;
         this.doc = doc;
-        this.offset = offset;
+        this.lastOffset = offset;
         this.file = file;
         this.macros = macros;
     }
@@ -81,7 +82,7 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
             CsmFile file = CsmUtilities.getCsmFile(doc, true);
             if (file != null) {
                 List<CsmReference> macros = CsmFileInfoQuery.getDefault().getMacroUsages(file);
-                if (macros != null && !macros.isEmpty()) {
+                if (macros != null) {
                     return create(doc, file, tp, offset, macros);
                 }
             }
@@ -116,18 +117,28 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
 
     public boolean token(Token<CppTokenId> token, int tokenOffset) {
         // Additional logic only for macros
-        if (isMacro(token, tokenOffset) || inMacro) {
+        if (skipTill <= tokenOffset) {
+            skipTill = -1;
+        }
+        if (skipTill < 0 && (isMacro(token, tokenOffset) || inMacro)) {
             TokenSequence<CppTokenId> expTS = null;
             String expansion = CsmMacroExpansion.expand(doc, file, tokenOffset, tokenOffset + token.length());
             if (expansion != null) {
                 if (expansion.equals("")) { // NOI18N
-                    if (offset == -1 || tokenOffset + token.length() < offset) {
+                    if (lastOffset == -1 || tokenOffset + token.length() < lastOffset) {
                         return false;
                     }
                 } else if (inMacro) {
                     inMacro = false;
                 } else {
                     inMacro = true;
+                    int[] span = CsmMacroExpansion.getMacroExpansionSpan(doc, tokenOffset, false);
+                    if (span[0] < lastOffset && lastOffset <= span[1]) {
+                        // skip expansion of this macro
+                        skipTill = span[1];
+                        inMacro = false;
+                        return tp.token(token, tokenOffset);
+                    }
                     TokenHierarchy<String> hi = TokenHierarchy.create(expansion, CndLexerUtilities.getLanguage(doc));
                     List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(tokenOffset + token.length(), true);
                     // Go from inner to outer TSes

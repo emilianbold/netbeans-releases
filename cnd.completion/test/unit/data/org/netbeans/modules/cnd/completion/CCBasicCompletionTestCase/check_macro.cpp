@@ -4,7 +4,7 @@
 #define eat(x) x
 
 struct In_Macro {
-    int value;
+    In_Macro value;
 };
 
 void checkZero() {

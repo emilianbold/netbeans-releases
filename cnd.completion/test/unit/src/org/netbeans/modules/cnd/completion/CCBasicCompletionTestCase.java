@@ -319,5 +319,16 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         super.performTest("iz148011.cc", 12, 25);
     }
 
-    
+    public void testIZ159423() throws Exception {
+        // IZ#159423: Code completion doesn't display macros
+        performTest("check_macro.cpp", 11, 16);
+        performTest("check_macro.cpp", 11, 17);
+    }
+
+    public void testIZ159424() throws Exception {
+        // IZ#159423: Code Completion works wrongly in macros
+        performTest("check_macro.cpp", 13, 14);
+        performTest("check_macro.cpp", 13, 18, ".v");
+    }
+
 }
