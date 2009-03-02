@@ -81,7 +81,7 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
             CsmFile file = CsmUtilities.getCsmFile(doc, true);
             if (file != null) {
                 List<CsmReference> macros = CsmFileInfoQuery.getDefault().getMacroUsages(file);
-                if (macros != null) {
+                if (macros != null && !macros.isEmpty()) {
                     return create(doc, file, tp, offset, macros);
                 }
             }
