@@ -70,11 +70,11 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -89,7 +89,7 @@ public class BugzillaRepository extends Repository {
     private TaskRepository taskRepository;
     private Controller controller;
     private Set<Query> queries = null;
-    private IssuesCache cache;
+    private IssueCache cache;
 
     BugzillaRepository() { }
 
@@ -100,10 +100,6 @@ public class BugzillaRepository extends Repository {
 
     public TaskRepository getTaskRepository() {
         return taskRepository;
-    }
-
-    public Issue createIssue() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -132,7 +128,7 @@ public class BugzillaRepository extends Repository {
     }
 
     public Issue getIssue(String id) {
-        assert !SwingUtilities.isEventDispatchThread();
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         TaskData taskData;
         try {
             taskData = Bugzilla.getInstance().getRepositoryConnector().getTaskData(taskRepository, id, new NullProgressMonitor());
@@ -140,12 +136,18 @@ public class BugzillaRepository extends Repository {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
             return null;
         }
-        return getIssuesCache().setIssueData(taskData);
+        try {
+            return getIssueCache().setIssueData(id, taskData);
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
 
     @Override
     // XXX create repo wih product if kenai project and use in queries
     public Issue[] simpleSearch(final String criteria) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         String[] keywords = criteria.split(" ");
 
         List<BugzillaIssue> issues = new ArrayList<BugzillaIssue>();
@@ -175,6 +177,7 @@ public class BugzillaRepository extends Repository {
 
     private void executeQuery(String queryUrl, final List<BugzillaIssue> issues)  {
         assert taskRepository != null;
+        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         TaskDataCollector collector = new TaskDataCollector() {
             public void accept(TaskData taskData) {
                 issues.add(new BugzillaIssue(taskData, BugzillaRepository.this)); // we don't cache this issues
@@ -201,9 +204,9 @@ public class BugzillaRepository extends Repository {
         return getQueriesIntern().toArray(new Query[queries.size()]);
     }
 
-    public IssuesCache getIssuesCache() {
+    public IssueCache getIssueCache() {
         if(cache == null) {
-            cache = new IssuesCache(this);
+            cache = new Cache();
         }
         return cache;
     }
@@ -258,6 +261,11 @@ public class BugzillaRepository extends Repository {
     @Override
     public Image getIcon() {
         return null;
+    }
+
+    @Override
+    public Issue createIssue() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     private class Controller extends BugtrackingController implements DocumentListener, ActionListener {
@@ -374,6 +382,16 @@ public class BugzillaRepository extends Repository {
 
     }
 
-
+    private class Cache extends IssueCache {
+        Cache() {
+            super(BugzillaRepository.this.getUrl());
+        }
+        public Issue createIssue(TaskData taskData) {
+            return new BugzillaIssue(taskData, (BugzillaRepository) BugzillaRepository.this);
+        }
+        public void setTaskData(Issue issue, TaskData taskData) {
+            ((BugzillaIssue)issue).setTaskData(taskData); // XXX triggers events under lock
+        }
+    }
 
 }

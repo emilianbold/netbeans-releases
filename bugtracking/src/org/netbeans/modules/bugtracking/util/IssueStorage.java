@@ -37,9 +37,8 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugtracking.util;
 
-import com.sun.java.swing.plaf.windows.WindowsTreeUI.CollapsedIcon;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -61,20 +60,20 @@ import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.util.IssueCache.IssueEntry;
 
 /**
  *
- * XXX need cleanup
  * @author Tomas Stupka
  */
-public class IssueStorage {
+class IssueStorage {
 
     private static IssueStorage instance;
     private File storage;
     private static final String STORAGE_FILE  = "storage";          // NOI18N
     private static final String STORAGE_VERSION = "1.0";            // NOI18N
-    private final static Map<String, Map<String, String>> EMPTY = new HashMap<String, Map<String, String>>();
 
     private IssueStorage() { }
 
@@ -86,99 +85,84 @@ public class IssueStorage {
         return instance;
     }
 
-//    public void storeQuery(String repoUrl, String queryName, Map<String, Map<String, String>> attrs) throws IOException {
-//        File repoFolder = getRepoFolder(repoUrl);
-//
-//        try {
-//            DataOutputStream dos = null;
-//            try {
-//                dos = getQueryOutputStream(repoFolder, queryName);
-//                for (Entry<String, Map<String, String>> e : attrs.entrySet()) {
-//                    writeString(dos, e.getKey());
-//                    storeIssueAtributes(repoFolder, e.getKey(), e.getValue());
-//                }
-//                dos.flush();
-//            } finally {
-//                try { if(dos != null) dos.close(); } catch (IOException e) {}
-//            }
-//
-//        } catch (InterruptedException ex) {
-//            Bugzilla.LOG.log(Level.WARNING, null, ex);
-//            IOException ioe = new IOException(ex.getMessage());
-//            ioe.initCause(ex);
-//            throw ioe;
-//        }
-//    }
+    private void initStorage() {
+        storage = getStorageRootFile();
+        if(!storage.exists()) {
+            storage.mkdirs();
+        }
+        writeStorage();
+    }
 
-    public void storeIssue(String repoUrl, String issueID, boolean seen, Map<String, String> attrs) throws IOException {
-        File repoFolder = getRepoFolder(repoUrl);
+    public void storeIssue(String nameSpace, IssueEntry entry) throws IOException {
+        assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
+        BugtrackingManager.LOG.log(Level.FINE, "start storing issue {0} - {1}", new Object[] {nameSpace, entry.getId()}); // NOI18N
+        InputStream is = null;
+        DataOutputStream dos = null;
         try {
-            storeIssueAtributes(repoFolder, issueID, seen, attrs);
+            File folder = getNameSpaceFolder(nameSpace);
+            File file = new File(folder, entry.getId());
+
+            dos = getIssueOutputStream(file);
+            dos.writeBoolean(entry.wasSeen());
+            if(entry.getSeenAttributes() != null) {
+                for(Entry<String, String> e : entry.getSeenAttributes().entrySet()) {
+                    writeString(dos, e.getKey());
+                    writeString(dos, e.getValue());
+                }
+            }
+
         } catch (InterruptedException ex) {
-            Bugzilla.LOG.log(Level.WARNING, null, ex);
+            BugtrackingManager.LOG.log(Level.WARNING, null, ex);
             IOException ioe = new IOException(ex.getMessage());
             ioe.initCause(ex);
             throw ioe;
+        } finally {
+            BugtrackingManager.LOG.log(Level.FINE, "finished storing issue {0} - {1}", new Object[] {nameSpace, entry.getId()}); // NOI18N
+            try { if(dos != null) dos.close(); } catch (Exception e) {}
+            try { if(is != null) is.close(); } catch (Exception e) {}
         }
     }
 
-    public Map<String, String> readIssue(String repoUrl, String id) throws IOException {
-        File repoFolder = getRepoFolder(repoUrl);
+    public void readIssue(String nameSpace, IssueEntry entry) throws IOException {
+        assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
+        BugtrackingManager.LOG.log(Level.FINE, "start reading issue {0} - {1}", new Object[] {nameSpace, entry.getId()}); // NOI18N
+        DataInputStream is = null;
         try {
-            return readIssue(repoFolder, id);
+            File file = new File(getNameSpaceFolder(nameSpace), entry.getId());
+            if(!file.exists()) return;
+            is = getIssueInputStream(file);
+            Map<String, String> m = new HashMap<String, String>();
+            boolean seen = is.readBoolean();
+            while(true) {
+                try {
+                    String key = readString(is);
+                    String value = readString(is);
+                    m.put(key, value);
+                } catch (EOFException e) { // XXX
+                    break;
+                }
+            }
+            entry.setSeenAttributes(m);
+            entry.setSeen(seen);
         } catch (InterruptedException ex) {
-            Bugzilla.LOG.log(Level.WARNING, null, ex);
+            BugtrackingManager.LOG.log(Level.WARNING, null, ex);
             IOException ioe = new IOException(ex.getMessage());
             ioe.initCause(ex);
             throw ioe;
+        } finally {
+            BugtrackingManager.LOG.log(Level.FINE, "finished reading issue {0} - {1}", new Object[] {nameSpace, entry.getId()}); // NOI18N
+            if(is != null) try { is.close(); } catch(IOException e) {}
         }
     }
 
-//    public Map<String, Map<String, String>> readQuery(String repoUrl, String queryName) throws IOException {
-//        File repoFolder = getRepoFolder(repoUrl);
-//        if(!repoFolder.exists()) return EMPTY;
-//
-//        Map<String, Map<String, String>> m = new HashMap<String, Map<String, String>>();
-//        try {
-//
-//            // issue IDs
-//            DataInputStream dis = getQueryInputStream(repoFolder, queryName);
-//            List<String> ids = new ArrayList<String>();
-//            while(true) {
-//                String id = null;
-//                try {
-//                    id = readString(dis);
-//                } catch (EOFException e) {
-//                    break;
-//                }
-//                ids.add(id);
-//            }
-//
-//            // get issue attributes
-//            for (String id : ids) {
-//                Map<String, String> attr = readIssue(repoFolder, id);
-//                if(attr != null) {
-//                    m.put(id, attr);
-//                } else {
-//                    // XXX warning
-//                }
-//            }
-//
-//        } catch (InterruptedException ex) {
-//            Bugzilla.LOG.log(Level.WARNING, null, ex);
-//            IOException ioe = new IOException(ex.getMessage());
-//            ioe.initCause(ex);
-//            throw ioe;
-//        }
-//        return m;
-//    }
-
-    public List<String> readQuery(String repoUrl, String queryName) throws IOException {
-        File repoFolder = getRepoFolder(repoUrl);
-        if(!repoFolder.exists()) return Collections.EMPTY_LIST;
-
+    public List<String> readQuery(String nameSpace, String queryName) throws IOException {
+        assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
+        BugtrackingManager.LOG.log(Level.FINE, "start reading query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
         try {
-            DataInputStream dis = getQueryInputStream(repoFolder, queryName);
+            File folder = getNameSpaceFolder(nameSpace);
+            if(!folder.exists()) return Collections.EMPTY_LIST;
+
+            DataInputStream dis = getQueryInputStream(folder, queryName);
             if(dis == null) return Collections.EMPTY_LIST;
             List<String> ids = new ArrayList<String>();
             while(true) {
@@ -192,20 +176,23 @@ public class IssueStorage {
             }
             return ids;
         } catch (InterruptedException ex) {
-            Bugzilla.LOG.log(Level.WARNING, null, ex);
+            BugtrackingManager.LOG.log(Level.WARNING, null, ex);
             IOException ioe = new IOException(ex.getMessage());
             ioe.initCause(ex);
             throw ioe;
+        } finally {
+            BugtrackingManager.LOG.log(Level.FINE, "finished reading query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
         }
     }
 
-    void storeQuery(String repoUrl, String queryName, String[] ids) throws IOException {
-        File repoFolder = getRepoFolder(repoUrl);
-
+    void storeQuery(String nameSpace, String queryName, String[] ids) throws IOException {
+        assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
+        BugtrackingManager.LOG.log(Level.FINE, "start storing query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
         try {
+            File folder = getNameSpaceFolder(nameSpace);
             DataOutputStream dos = null;
             try {
-                dos = getQueryOutputStream(repoFolder, queryName);
+                dos = getQueryOutputStream(folder, queryName);
                 for (String id : ids) {
                     writeString(dos, id);
                 }
@@ -215,63 +202,18 @@ public class IssueStorage {
             }
 
         } catch (InterruptedException ex) {
-            Bugzilla.LOG.log(Level.WARNING, null, ex);
+            BugtrackingManager.LOG.log(Level.WARNING, null, ex);
             IOException ioe = new IOException(ex.getMessage());
             ioe.initCause(ex);
             throw ioe;
+        } finally {
+            BugtrackingManager.LOG.log(Level.FINE, "finished storing query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
         }
-    }
-
-    private Map<String, String> readIssue(File repoFolder, String id) throws IOException, InterruptedException {
-        File file = new File(repoFolder, id);
-        if(!file.exists()) return null;
-        DataInputStream is = getIssueInputStream(file);
-        Map<String, String> m = new HashMap<String, String>();
-        boolean seen = is.readBoolean();
-        while(true) {
-            try {
-                String key = readString(is);
-                String value = readString(is);
-                m.put(key, value);
-            } catch (EOFException e) { // XXX
-                break;
-            }
-        }
-        m.put("seen", seen ? "1" : "0"); // XXX ugly
-        return m;
-    }
-
-    private void initStorage() {
-        storage = getStorageRootFile();
-        if(!storage.exists()) {
-            storage.mkdirs();
-        }
-        writeStorage();
     }
 
     private File getStorageRootFile() {
         String userDir = System.getProperty("netbeans.user"); // NOI18N
-        return new File(new File(new File(userDir, "var"), "bugtracking"), "bugzilla"); // NOI18N
-    }
-
-    private void storeIssueAtributes(File repoFolder, String issueID, boolean seen, Map<String, String> attrs) throws IOException, InterruptedException {
-        File file = new File(repoFolder, issueID);
-        // XXX hold lock on issue files or synchronize whole storage?
-        InputStream is = null;
-        DataOutputStream dos = null;
-        try {
-            dos = getIssueOutputStream(file);
-            dos.writeBoolean(seen);
-            if(attrs != null) {
-                for(Entry<String, String> entry : attrs.entrySet()) {
-                    writeString(dos, entry.getKey());
-                    writeString(dos, entry.getValue());
-                }
-            }
-        } finally {
-            try { if(dos != null) dos.close(); } catch (Exception e) {}
-            try { if(is != null) is.close(); } catch (Exception e) {}
-        }
+        return new File(new File(userDir, "var"), "bugtracking"); // NOI18N
     }
 
     private void writeStorage() {
@@ -281,7 +223,7 @@ public class IssueStorage {
             writeString(dos, STORAGE_VERSION);
             dos.flush();
         } catch (Exception e) {
-            Bugzilla.LOG.log(Level.INFO, null, e);
+            BugtrackingManager.LOG.log(Level.INFO, null, e);
         } finally {
             if (dos != null) {
                 try { dos.close(); } catch (IOException e) { }
@@ -372,7 +314,7 @@ public class IssueStorage {
         }
     }
 
-    private File getRepoFolder(String url) {
+    private File getNameSpaceFolder(String url) {
         File folder = new File(storage, encode(url));
         if(!folder.exists()) {
             folder.mkdirs();
@@ -403,7 +345,7 @@ public class IssueStorage {
 
         for (int i = 0; i < url.length(); i++) {
             char c = url.charAt(i);
-            if (!isCharOrDigit(c)) {
+            if (!isAlowedChar(c)) {
                 sb.append('%');
                 sb.append(Integer.toHexString(c).toUpperCase());
             } else {
@@ -413,12 +355,12 @@ public class IssueStorage {
         return sb.toString();
     }
 
-//    private static boolean isEncodedByte(char c, String s, int i) {
-//        return c == '%' && i + 2 < s.length() && isHexDigit(s.charAt(i + 1)) && isHexDigit(s.charAt(i + 2));
-//    }
-
-    private static boolean isCharOrDigit(char c) {
-        return c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z';
+    private static boolean isAlowedChar(char c) {
+        return c >= '0' && c <= '9' ||
+               c >= 'A' && c <= 'Z' ||
+               c >= 'a' && c <= 'z' ||
+               c == '.' ||
+               c == '_';
     }
 
 }

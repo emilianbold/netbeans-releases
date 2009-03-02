@@ -59,8 +59,8 @@ public class IssueFinder {
     private static final String BUGWORDS = "bug,issue";                 //NOI18N
 
     private static final String BUGWORDS_RE = "(?:"                     //NOI18N
-                                              + BUGWORDS.replace(',', '|')
-                                              + ')';
+                                              + BUGWORDS.replace(',', '|') //NOI18N
+                                              + ')'; //NOI18N
 
     private static final String BUG_RE = BUGWORDS_RE
                                          + "[ \\t]*(?:[\\r\\n]+[ \\t]*\\*?[ \\t]*)*" //NOI18N

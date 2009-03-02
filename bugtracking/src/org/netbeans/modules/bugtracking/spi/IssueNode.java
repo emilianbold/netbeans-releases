@@ -42,6 +42,8 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
@@ -59,7 +61,6 @@ public abstract class IssueNode extends AbstractNode {
     
     private Issue issue;
 
-
     private String htmlDisplayName;
     private Action preferedAction = new AbstractAction() {
         public void actionPerformed(ActionEvent e) {
@@ -76,10 +77,17 @@ public abstract class IssueNode extends AbstractNode {
     }
 
     private IssueNode(Children children, Issue issue) {
-        super(children, Lookups.fixed());
+        super(children, Lookups.fixed(issue));
         this.issue = issue;
         initProperties();
         refreshHtmlDisplayName();
+        issue.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_SEEN_CHANGED)) {
+                    fireSeenValueChanged((Boolean)evt.getOldValue(), (Boolean)evt.getNewValue());
+                }
+            }
+        });
     }
 
     protected Issue getIssue() {
@@ -109,12 +117,6 @@ public abstract class IssueNode extends AbstractNode {
         return super.getCookie(klass);
     }
 
-    public void setSeen(boolean seen) {
-        boolean oldValue = issue.wasSeen();
-        issue.setSeen(seen);
-        fireSeenValueChanged(oldValue, seen);
-    }
-
     public boolean wasSeen() {
         return issue.wasSeen();
     }
@@ -141,23 +143,22 @@ public abstract class IssueNode extends AbstractNode {
         return htmlDisplayName;
     }
 
-//
-//    public void refresh() {
-//        refreshHtmlDisplayName();
-//    }
-
-    void fireSeenValueChanged(boolean oldValue, boolean newValue) {
+    void fireSeenValueChanged(final boolean oldValue, final boolean newValue) {
         if(oldValue != newValue) {
-            firePropertyChange(Issue.LABEL_NAME_SEEN, oldValue, newValue);
-            Property[] properties = getProperties();
-            for (Property p : properties) {
-                if(p instanceof IssueNode.IssueProperty) {
-                    String pName = ((IssueProperty)p).getName();
-                    if(!pName.equals(Issue.LABEL_NAME_SEEN)) {
-                        firePropertyChange(pName, null, null);
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    firePropertyChange(Issue.LABEL_NAME_SEEN, oldValue, newValue);
+                    Property[] properties = getProperties();
+                    for (Property p : properties) {
+                        if(p instanceof IssueNode.IssueProperty) {
+                            String pName = ((IssueProperty)p).getName();
+                            if(!pName.equals(Issue.LABEL_NAME_SEEN)) {
+                                firePropertyChange(pName, null, null);
+                            }
+                        }
                     }
                 }
-            }
+            });
         }
     }
 
@@ -172,7 +173,7 @@ public abstract class IssueNode extends AbstractNode {
     }
 
     /**
-     *
+     * An IssueNode Property
      */
     public abstract class IssueProperty extends org.openide.nodes.PropertySupport.ReadOnly implements Comparable<IssueProperty> {
         protected IssueProperty(String name, Class type, String displayName, String shortDescription) {

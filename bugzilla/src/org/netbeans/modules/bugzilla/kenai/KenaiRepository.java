@@ -58,11 +58,15 @@ public class KenaiRepository extends BugzillaRepository {
     private String urlParam;
     private Query[] definedQueries;
     private Image icon;
+    private String userMail;
+    private String product;
 
-    public KenaiRepository(String repoName, String url, String user, String password, String urlParam) {
+    public KenaiRepository(String repoName, String url, String user, String password, String host, String urlParam, String product) {
         super(repoName, url, user, password);
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
+        userMail = user + "@"+ host; // NOI18N XXX escape @?
+        this.product = product;
     }
 
     @Override
@@ -72,13 +76,17 @@ public class KenaiRepository extends BugzillaRepository {
 
     @Override
     public Query createQuery() {
-        BugzillaQuery q = new BugzillaQuery(null, this, urlParam, true, false);
-        return q;
+        return BugzillaQuery.forKenai(null, this, null, product, false);
     }
 
     @Override
     public Query[] getQueries() {
         Query[] qs = super.getQueries();
+        for (Query query : qs) {
+            BugzillaQuery bq = (BugzillaQuery) query;
+            bq.refresh(bq.getUrlParameters());
+            bq.getController().populateKenai(bq.getUrlParameters(), product); // XXX triggers populate 2x
+        }
         Query[] dq = getDefinedQueries();
         Query[] ret = new Query[qs.length + dq.length];
         System.arraycopy(qs, 0, ret, 0, qs.length);
@@ -90,21 +98,26 @@ public class KenaiRepository extends BugzillaRepository {
 
     private synchronized Query[] getDefinedQueries() {
         if(definedQueries == null) {
-            definedQueries = new Query[2];
+            definedQueries = new Query[1];
 
-            StringBuffer sb = new StringBuffer();
-            sb.append(urlParam);
-            sb.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, getUsername()));
-            BugzillaQuery myIssues = new BugzillaQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), this, sb.toString(), true, true); // NOI18N
-            myIssues.getController().onRefresh(); // XXX this is messy
+            StringBuffer url = new StringBuffer();
+            url.append(urlParam);
+            url.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, userMail));
+            BugzillaQuery myIssues =
+                    BugzillaQuery.forKenai(
+                        NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"),  // NOI18N
+                        this,
+                        url.toString(),
+                        product,
+                        true);
             definedQueries[0] = myIssues;
 
-            sb = new StringBuffer();
-            sb.append(urlParam);
-            sb.append(BugzillaConstants.ALL_ISSUES_PARAMETERS);
-            BugzillaQuery allIssues = new BugzillaQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, sb.toString(), true, true); // NOI18N
-            allIssues.getController().onRefresh(); // XXX this is messy
-            definedQueries[1] = allIssues;
+//            StringBuffer sb = new StringBuffer();
+//            sb.append(urlParam);
+//            sb.append(BugzillaConstants.ALL_ISSUES_PARAMETERS);
+//            BugzillaQuery allIssues = new BugzillaQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, sb.toString(), true, true); // NOI18N
+//            allIssues.getController().refresh();
+//            definedQueries[0] = allIssues;
 
         }
         return definedQueries;

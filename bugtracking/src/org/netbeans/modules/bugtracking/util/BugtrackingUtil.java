@@ -42,7 +42,6 @@ package org.netbeans.modules.bugtracking.util;
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

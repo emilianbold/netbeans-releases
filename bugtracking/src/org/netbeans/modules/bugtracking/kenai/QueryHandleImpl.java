@@ -63,8 +63,9 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
 
     public QueryHandleImpl(Query query) {
         this.query = query;
-        query.addPropertyChangeListener(this);
         changeSupport = new PropertyChangeSupport(query);
+        query.addPropertyChangeListener(this);
+        registerIssues();
     }
 
     @Override
@@ -97,11 +98,15 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
 
     public List<QueryResultHandle> getQueryResults() {
         List<QueryResultHandle> ret = new ArrayList<QueryResultHandle>();
-        QueryResultHandle qh = QueryResultHandleImpl.forStatus(query, Query.ISSUE_STATUS_NOT_OBSOLETE);
+        QueryResultHandle qh = QueryResultHandleImpl.forStatus(query, Issue.ISSUE_STATUS_ALL);
         if(qh != null) {
             ret.add(qh);
         }
-        qh = QueryResultHandleImpl.forStatus(query, Query.ISSUE_STATUS_NOT_SEEN);
+        qh = QueryResultHandleImpl.forStatus(query, Issue.ISSUE_STATUS_NOT_SEEN);
+        if(qh != null) {
+            ret.add(qh);
+        }
+        qh = QueryResultHandleImpl.forStatus(query, Issue.ISSUE_STATUS_NEW);
         if(qh != null) {
             ret.add(qh);
         }
@@ -112,7 +117,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
         for (Issue issue : issues) {
             issue.removePropertyChangeListener(this);
         }
-        issues = query.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE);
+        issues = query.getIssues(Issue.ISSUE_STATUS_ALL);
         for (Issue issue : issues) {
             issue.addPropertyChangeListener(this);
         }

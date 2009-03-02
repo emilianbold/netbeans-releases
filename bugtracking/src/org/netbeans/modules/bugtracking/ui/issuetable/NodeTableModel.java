@@ -102,23 +102,23 @@ public class NodeTableModel extends AbstractTableModel {
 
     /** listener on node properties changes, recreates displayed data */
     private PropertyChangeListener pcl = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                //fireTableDataChanged();
-                int row = rowForNode((Node) evt.getSource());
+        public void propertyChange(PropertyChangeEvent evt) {
+            //fireTableDataChanged();
+            int row = rowForNode((Node) evt.getSource());
 
-                if (row == -1) {
-                    return;
-                }
-
-                int column = columnForProperty(evt.getPropertyName());
-
-                if (column == -1) {
-                    fireTableRowsUpdated(row, row);
-                } else {
-                    fireTableCellUpdated(row, column);
-                }
+            if (row == -1) {
+                return;
             }
-        };
+
+            int column = columnForProperty(evt.getPropertyName());
+
+            if (column == -1) {
+                fireTableRowsUpdated(row, row);
+            } else {
+                fireTableCellUpdated(row, column);
+            }
+        }
+    };
 
     public Node[] getNodes() {
         return nodeRows;

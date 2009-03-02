@@ -47,6 +47,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
  */
 public interface BugzillaConstants {
     public static final String URL_ADVANCED_BUG_LIST = IBugzillaConstants.URL_BUGLIST + "?query_format=advanced"; //NOI18N
+    public static final String URL_BUG_IDS = IBugzillaConstants.URL_BUGLIST + "?bug_id="; //NOI18N
 
     public static final String MY_ISSUES_PARAMETERS_FORMAT =
             "&bug_status=UNCONFIRMED" +                                         //NOI18N

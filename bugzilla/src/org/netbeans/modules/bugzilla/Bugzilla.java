@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
@@ -68,6 +69,8 @@ public class Bugzilla {
 
     private RequestProcessor rp;
 
+    private Map<String, RepositoryConfiguration> repoToRepoconf = new HashMap<String, RepositoryConfiguration>();
+    
     private Bugzilla() {
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
@@ -270,7 +273,13 @@ public class Bugzilla {
     }
 
     private RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository) throws CoreException, IOException {
-        return getClient(repository).getRepositoryConfiguration(new NullProgressMonitor());
+        RepositoryConfiguration rc = repoToRepoconf.get(repository.getDisplayName());
+        if(rc == null) {
+            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
+            rc = getRepositoryConnector().getClientManager().getClient(repository.getTaskRepository(), new NullProgressMonitor()).getRepositoryConfiguration(new NullProgressMonitor());
+            repoToRepoconf.put(repository.getDisplayName(), rc);
+        }
+        return rc;
     }
 
 }

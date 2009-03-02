@@ -215,7 +215,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         long ts = System.currentTimeMillis();
 
         ts = System.currentTimeMillis();
-        q.refresh("whatver");
+        q.refresh("whatever");
         assertTrue(q.getLastRefresh() >= ts);
 
         ts = System.currentTimeMillis();

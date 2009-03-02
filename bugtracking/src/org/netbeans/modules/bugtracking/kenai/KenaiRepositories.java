@@ -70,7 +70,7 @@ public class KenaiRepositories {
         return instance;
     }
 
-    Repository getRepository(KenaiProject kp, ProjectHandle ph, QueryAccessorImpl qaImpl) {
+    public Repository getRepository(KenaiProject kp) {
         Repository repository = map.get(kp.getName());
         if(repository != null) {
             return repository;
@@ -82,9 +82,6 @@ public class KenaiRepositories {
                 repository = support.createRepository(kp);
                 if(repository != null) {
                     // XXX what if more repos?!
-                    if((qaImpl != null) && (ph != null)) {
-                        repository.addPropertyChangeListener(new RepositoryListener(repository, ph, qaImpl));
-                    }
                     map.put(kp.getName(), repository);
                     return repository;
                 }
@@ -93,17 +90,17 @@ public class KenaiRepositories {
         return null;
     }
 
-    public Repository getRepository(ProjectHandle ph) {
+    Repository getRepository(ProjectHandle ph, QueryAccessorImpl qaImpl) {
         KenaiProject kp = getKenaiProject(ph);
         if(kp == null) {
             // XXX log!
             return null;
         }
-        return getRepository(kp, null, null);
-    }
-
-    public Repository getRepository(KenaiProject kp) {
-        return getRepository(kp, null, null);
+        Repository repo = getRepository(kp);
+        if((qaImpl != null) && (ph != null)) {
+            repo.addPropertyChangeListener(new RepositoryListener(repo, ph, qaImpl));
+        }
+        return repo;
     }
 
     private class RepositoryListener implements PropertyChangeListener {
@@ -119,7 +116,7 @@ public class KenaiRepositories {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
-                qaImpl.fireQueriesChanged(ph, qaImpl.getQueries(repo, ph));
+                qaImpl.fireQueriesChanged(ph, qaImpl.getQueries(repo));
             }
         }
     }

@@ -567,18 +567,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
             setText(query.getDisplayName());
             this.setAction(new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            TopComponent tc = WindowManager.getDefault().findTopComponent(query.getDisplayName());
-                            if(tc == null) {
-                                tc = new QueryTopComponent(query);
-                            }
-                            if(!tc.isOpened()) {
-                                tc.open();
-                            }
-                            tc.requestActive();
-                        }
-                    });
+                    QueryAction.openQuery(query, repo);
                 }
             });
         }

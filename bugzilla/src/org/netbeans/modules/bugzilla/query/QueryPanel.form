@@ -941,10 +941,10 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="tableSummaryLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="557" max="32767" attributes="0"/>
+                      <EmptySpace pref="603" max="32767" attributes="0"/>
                       <Component id="filterLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="filterComboBox" min="-2" pref="137" max="-2" attributes="0"/>
+                      <Component id="filterComboBox" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

@@ -42,6 +42,7 @@ package org.netbeans.modules.bugtracking.spi;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.bugtracking.util.IssueCache;
 
 /**
  * 
@@ -121,6 +122,12 @@ public abstract class Repository {
      * @param criteria
      */
     public abstract Issue[] simpleSearch(String criteria);
+
+    protected abstract IssueCache getIssueCache();
+
+    IssueCache getCache() {
+        return getIssueCache();
+    }
 
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);

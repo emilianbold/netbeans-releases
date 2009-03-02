@@ -64,15 +64,15 @@ public class QueryAccessorImpl extends QueryAccessor {
 
     @Override
     public List<QueryHandle> getQueries(ProjectHandle project) {
-        Repository repo = KenaiRepositories.getInstance().getRepository(null, project, this);
+        Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
         if(repo == null) {
             // XXX log this inconvenience
             return EMPTY_QH_LIST;
         }        
-        return Collections.unmodifiableList(getQueries(repo, project));
+        return Collections.unmodifiableList(getQueries(repo));
     }
 
-    List<QueryHandle> getQueries(Repository repo, ProjectHandle project) {
+    List<QueryHandle> getQueries(Repository repo) {
         Query[] queries = repo.getQueries();
         if(queries == null || queries.length == 0) {
             // XXX is this possible - at least preset queries
@@ -97,7 +97,7 @@ public class QueryAccessorImpl extends QueryAccessor {
 
     @Override
     public ActionListener getFindIssueAction(ProjectHandle project) {
-        final Repository repo = KenaiRepositories.getInstance().getRepository(null, project, this);
+        final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
         // XXX what if repo null!
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {

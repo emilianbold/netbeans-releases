@@ -160,7 +160,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void updateFieldStatus(BugzillaIssue.IssueField field, JLabel label) {
         initialValues.put(field, issue.getFieldValue(field));
-        boolean highlight = (issue.getFieldStatus(field) != BugzillaIssue.IssueField.STATUS_UPTODATE);
+        boolean highlight = (issue.getFieldStatus(field) != BugzillaIssue.FIELD_STATUS_UPTODATE);
         label.setOpaque(highlight);
         if (highlight) {
             label.setBackground(HIGHLIGHT_COLOR);
