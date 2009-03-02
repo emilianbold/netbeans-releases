@@ -109,7 +109,7 @@ is the proper place.
             <api name="general"/>
             <summary>Register Ant based projects with @annotation</summary>
             <version major="1" minor="30"/>
-            <date day="4" month="23" year="2009"/>
+            <date day="3" month="3" year="2009"/>
             <author login="jtulach"/>
             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
             <description>
