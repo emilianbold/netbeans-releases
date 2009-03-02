@@ -58,6 +58,7 @@ import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.spi.util.MangledNameType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
@@ -208,7 +209,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
 
         List<Column> viewColumns = Arrays.asList(
-                new Column("func_name", String.class, loc("MemoryTool.ColumnName.func_name"), null), // NOI18N
+                new Column("func_name", MangledNameType.class, loc("MemoryTool.ColumnName.func_name"), null), // NOI18N
                  new Column("leak", Long.class, loc("MemoryTool.ColumnName.leak"), null)); // NOI18N
 
         String sql =
@@ -224,16 +225,16 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         DataTableMetadata viewTableMetadata = new DataTableMetadata(
                 "mem", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N
 
-        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration =
-                new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name"); // NOI18N
-
+//        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration =
+//                new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name"); // NOI18N
+        TableVisualizerConfiguration tableVisualizerConfiguration = new TableVisualizerConfiguration(viewTableMetadata);
         tableVisualizerConfiguration.setEmptyAnalyzeMessage(
                 loc("DetailedView.EmptyAnalyzeMessage")); // NOI18N
 
         tableVisualizerConfiguration.setEmptyRunningMessage(
                 loc("DetailedView.EmptyRunningMessage")); // NOI18N
 
-        tableVisualizerConfiguration.setDefaultActionProvider();
+        //tableVisualizerConfiguration.setDefaultActionProvider();
 
         return tableVisualizerConfiguration;
     }

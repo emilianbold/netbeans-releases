@@ -99,7 +99,7 @@ public class SQLStackStorage {
             demanglingService = factory.getForCurrentSession();
         } else {
             demanglingService = null;
-        }
+       }
     }
 
     private void initTables() throws SQLException, IOException {
@@ -194,7 +194,17 @@ public class SQLStackStorage {
             Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
             metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
             metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
-            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2), rs.getString(3)), metrics));
+            String func_name = rs.getString(2);
+            if (demanglingService != null){
+                try {
+                    func_name = demanglingService.demangle(func_name).get();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), func_name, rs.getString(3)), metrics));
         }
         rs.close();
         return result;
@@ -488,16 +498,16 @@ public class SQLStackStorage {
                                     PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Func (func_id, func_full_name, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?, ?)");
                                     stmt.setInt(1, addFunctionCmd.id);
                                     stmt.setString(2, addFunctionCmd.name.toString());
-                                    if (demanglingService == null) {
+//                                    if (demanglingService == null) {
                                         stmt.setString(3, addFunctionCmd.name.toString());
-                                    } else {
-                                        Future<String> demangled = demanglingService.demangle(addFunctionCmd.name.toString());
-                                        try {
-                                            stmt.setString(3, demangled.get());
-                                        } catch (ExecutionException ex) {
-                                            stmt.setString(3, addFunctionCmd.name.toString());
-                                        }
-                                    }
+//                                    } else {
+//                                        Future<String> demangled = demanglingService.demangle(addFunctionCmd.name.toString());
+//                                        try {
+//                                            stmt.setString(3, demangled.get());
+//                                        } catch (ExecutionException ex) {
+//                                            stmt.setString(3, addFunctionCmd.name.toString());
+//                                        }
+//                                    }
                                     UpdateMetrics metrics = funcMetrics.remove(addFunctionCmd.id);
                                     if (metrics == null) {
                                         stmt.setLong(4, 0);
