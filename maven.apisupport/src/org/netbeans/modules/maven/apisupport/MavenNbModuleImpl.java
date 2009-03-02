@@ -260,6 +260,18 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         tsk.schedule(200);
         return true;
     }
+
+    /**
+     * 6.7 and higher apisupport uses this to add projects to Libraries for suite.
+     *
+     * Cannot use Maven-based apisupport projects this way as it doesn't build
+     * modules into clusters. Workaround is to unpack resulting NBM somewhere
+     * and add it as an external binary cluster.
+     * @return null
+     */
+    public File getModuleJarLocation() {
+        return null;
+    }
     
     private class DependencyAdder implements Runnable {
         List<Dependency> toAdd = new ArrayList<Dependency>();

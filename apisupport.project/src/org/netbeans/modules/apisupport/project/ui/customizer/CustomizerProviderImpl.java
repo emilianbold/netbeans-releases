@@ -87,13 +87,6 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
         moduleProps.storeProperties();
     }
     
-    void postSave() throws IOException {
-        if (moduleProps.isModuleListRefreshNeeded()) {
-            moduleProps.getModuleList().refresh();
-            moduleProps.setModuleListRefreshNeeded(false);
-        }
-    }
-    
     void dialogCleanup() {
         moduleProps = null;
     }

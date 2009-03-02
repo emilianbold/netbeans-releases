@@ -593,19 +593,19 @@ public class Resolver3 implements Resolver {
         
         if( nameTokens.length == 1 ) {
             if( result == null && needClassifiers()) {
-                containingNS = getContainingNamespace();
-                result = findClassifier(containingNS, nameTokens[0]);
-                if (result == null && containingNS != null) {
-                    result = resolveInUsings(containingNS, nameTokens[0]);
-                }
-            }
-            if( result == null && needClassifiers()) {
                 CsmClass cls = getContainingClass();
                 result = resolveInClass(cls, nameTokens[0]);
                 if( result == null ) {
                     if (parentResolver == null || !((Resolver3)parentResolver).resolveInBaseClass) {
                         result = resolveInBaseClasses(cls, nameTokens[0]);
                     }
+                }
+            }
+            if (result == null && needClassifiers()) {
+                containingNS = getContainingNamespace();
+                result = findClassifier(containingNS, nameTokens[0]);
+                if (result == null && containingNS != null) {
+                    result = resolveInUsings(containingNS, nameTokens[0]);
                 }
             }
             if( result == null  && needNamespaces()) {
