@@ -44,6 +44,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -101,7 +102,11 @@ public class QueryAccessorImpl extends QueryAccessor {
         // XXX what if repo null!
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                QueryAction.openQuery(null, repo);
+                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() { // XXX add post method to BM
+                    public void run() {
+                        QueryAction.openQuery(null, repo);
+                    }
+                });          
             }
         };
     }
