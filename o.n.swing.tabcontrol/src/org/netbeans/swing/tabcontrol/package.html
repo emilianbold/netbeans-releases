@@ -39,7 +39,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<html><head><title>TabbedContainer and TabDisplayer</title</head><body>
+<html><body>
 <h2>TabDisplayer and TabbedControl</h2>
 This package contains two gui components:
 <ul>
@@ -56,17 +56,10 @@ Where these classes differ from JTabbedPane is as follows:
 <li>Very granular event model - TabDataModel is designed on the assumption that the application may atomically add/remove/modify discontiguous ranges of tabs, their contents, titles or icons, and that such operations should be handled atomically, generating a single event/repaint</li>
 </ul>
 
-Besides this module the <a href="org/netbeans/swing/popupswitcher/package-summary.html">org.netbeans.swing.popupswitcher</a>
+Besides this module the <a href="../popupswitcher/package-summary.html">org.netbeans.swing.popupswitcher</a>
 package is used from core/windows too. Classes contained in the package are
 rather general and therefore this package could be moved in the future. It is
 placed here only due to current modules dependencies. Consequently the package
 is not intended for external use.<br/>
-
-<h2>How it works</h2>
-
-Pending... <a href="architecture-summary.html">Architecture Summary is available</a>.
-<br>
-<a href="apichanges.html"> Changes </a> document.
-
 
 </body></html>
