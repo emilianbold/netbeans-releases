@@ -55,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.core.stack.api.Function;
@@ -121,7 +120,7 @@ public class SQLStackStorage {
             int funcId = generateFuncId(funcName);
             updateMetrics(funcId, false, sampleDuration, !funcs.contains(funcId), isLeaf);
             funcs.add(funcId);
-            int nodeId = generateNodeId(callerId, funcId);
+            int nodeId = generateNodeId(callerId, funcId, getOffset(funcName));
             updateMetrics(nodeId, true, sampleDuration, true, isLeaf);
             callerId = nodeId;
         }
@@ -211,11 +210,11 @@ public class SQLStackStorage {
     }
 
 ////////////////////////////////////////////////////////////////////////////////
-    private void updateMetrics(int id, boolean funcOrCall, long sampleDuration, boolean addIncl, boolean addExcl) {
+    private void updateMetrics(int id, boolean funcOrNode, long sampleDuration, boolean addIncl, boolean addExcl) {
         if (0 < sampleDuration) {
             UpdateMetrics cmd = new UpdateMetrics();
             cmd.objId = id;
-            cmd.funcOrNode = funcOrCall;
+            cmd.funcOrNode = funcOrNode;
             if (addIncl) {
                 cmd.cpuTimeInclusive = sampleDuration;
             }
@@ -226,9 +225,9 @@ public class SQLStackStorage {
         }
     }
 
-    private int generateNodeId(int callerId, int funcId) {
+    private int generateNodeId(int callerId, int funcId, long offset) {
         synchronized (nodeCache) {
-            NodeCacheKey cacheKey = new NodeCacheKey(callerId, funcId);
+            NodeCacheKey cacheKey = new NodeCacheKey(callerId, funcId, offset);
             Integer nodeId = nodeCache.get(cacheKey);
             if (nodeId == null) {
                 nodeId = ++nodeIdSequence;
@@ -236,6 +235,7 @@ public class SQLStackStorage {
                 cmd.id = nodeId;
                 cmd.callerId = callerId;
                 cmd.funcId = funcId;
+                cmd.offset = offset;
                 executor.submitCommand(cmd);
                 nodeCache.put(cacheKey, nodeId);
             }
@@ -244,6 +244,10 @@ public class SQLStackStorage {
     }
 
     private int generateFuncId(CharSequence funcName) {
+        int plusPos = lastIndexOf(funcName, '+'); // NOI18N
+        if (0 <= plusPos) {
+            funcName = funcName.subSequence(0, plusPos);
+        }
         synchronized (funcCache) {
             Integer funcId = funcCache.get(funcName);
             if (funcId == null) {
@@ -256,6 +260,27 @@ public class SQLStackStorage {
             }
             return funcId;
         }
+    }
+
+    private long getOffset(CharSequence cs) {
+        int plusPos = lastIndexOf(cs, '+'); // NOI18N
+        if (0 <= plusPos) {
+            try {
+                return Long.parseLong(cs.subSequence(plusPos + 3, cs.length()).toString(), 16);
+            } catch (NumberFormatException ex) {
+                // ignore
+            }
+        }
+        return 0l;
+    }
+
+    private int lastIndexOf(CharSequence cs, char c) {
+        for (int i = cs.length() - 1; 0 <= i; --i) {
+            if (cs.charAt(i) == c) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private PreparedStatement prepareCallersSelect(FunctionCall[] path) throws SQLException {
@@ -310,10 +335,12 @@ public class SQLStackStorage {
 
         private final int callerId;
         private final int funcId;
+        private long offset;
 
-        public NodeCacheKey(int callerId, int funcId) {
+        public NodeCacheKey(int callerId, int funcId, long offset) {
             this.callerId = callerId;
             this.funcId = funcId;
+            this.offset = offset;
         }
 
         @Override
@@ -322,12 +349,12 @@ public class SQLStackStorage {
                 return false;
             }
             final NodeCacheKey that = (NodeCacheKey) obj;
-            return callerId == that.callerId && funcId == that.funcId;
+            return callerId == that.callerId && funcId == that.funcId && offset == that.offset;
         }
 
         @Override
         public int hashCode() {
-            return 13 * callerId + 17 * funcId;
+            return 13 * callerId + 17 * funcId + ((int)(offset >> 32) | (int)offset);
         }
     }
 
@@ -421,6 +448,7 @@ public class SQLStackStorage {
         public int id;
         public int callerId;
         public int funcId;
+        public long offset;
     }
 
     private static class UpdateMetrics {
@@ -433,6 +461,16 @@ public class SQLStackStorage {
         public void add(UpdateMetrics delta) {
             cpuTimeInclusive += delta.cpuTimeInclusive;
             cpuTimeExclusive += delta.cpuTimeExclusive;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            buf.append(funcOrNode? "func" : "node"); // NO18N
+            buf.append(" id=").append(objId); // NOI18N
+            buf.append(": time_incl+=").append(cpuTimeInclusive); // NOI18N
+            buf.append(", time_excl+=").append(cpuTimeExclusive); // NOI18N
+            return buf.toString();
         }
     }
 
@@ -519,17 +557,18 @@ public class SQLStackStorage {
                                     stmt.executeUpdate();
                                 } else if (cmd instanceof AddNode) {
                                     AddNode addNodeCmd = (AddNode) cmd;
-                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Node (node_id, caller_id, func_id, time_incl, time_excl) VALUES (?, ?, ?, ?, ?)");
+                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Node (node_id, caller_id, func_id, offset, time_incl, time_excl) VALUES (?, ?, ?, ?, ?, ?)");
                                     stmt.setInt(1, addNodeCmd.id);
                                     stmt.setInt(2, addNodeCmd.callerId);
                                     stmt.setInt(3, addNodeCmd.funcId);
+                                    stmt.setLong(4, addNodeCmd.offset);
                                     UpdateMetrics metrics = nodeMetrics.remove(addNodeCmd.id);
                                     if (metrics == null) {
-                                        stmt.setLong(4, 0);
                                         stmt.setLong(5, 0);
+                                        stmt.setLong(6, 0);
                                     } else {
-                                        stmt.setLong(4, metrics.cpuTimeInclusive);
-                                        stmt.setLong(5, metrics.cpuTimeExclusive);
+                                        stmt.setLong(5, metrics.cpuTimeInclusive);
+                                        stmt.setLong(6, metrics.cpuTimeExclusive);
                                     }
                                     stmt.executeUpdate();
                                 }

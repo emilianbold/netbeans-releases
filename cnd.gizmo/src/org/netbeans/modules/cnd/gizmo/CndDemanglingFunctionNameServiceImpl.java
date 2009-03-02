@@ -116,14 +116,17 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         env = new ExecutionEnvironment();
     }
 
-    public Future<String> demangle(final String functionName) {
+    public Future<String> demangle(String functionName) {
         //get current Project
-        final String nameToDemangle;
-        if (functionName.indexOf("`") != -1 && functionName.indexOf("+") != -1) { // NOI18N
-            nameToDemangle = functionName.substring(functionName.indexOf("`") + 1, functionName.indexOf("+")); //NOI18N;
-        } else {
-            nameToDemangle = functionName;
+        int plusPos = functionName.indexOf('+'); // NOI18N
+        if (0 <= plusPos) {
+            functionName = functionName.substring(0, plusPos);
         }
+        int tickPos = functionName.indexOf('`'); // NOI18N
+        if (0 <= tickPos) {
+            functionName = functionName.substring(tickPos + 1);
+        }
+        final String nameToDemangle = functionName;
         final CharSequence nameToDemangleSeq = nameToDemangle.subSequence(0, nameToDemangle.length());
 
         return DLightExecutorService.service.submit(new Callable<String>() {
