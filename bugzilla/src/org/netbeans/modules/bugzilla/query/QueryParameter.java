@@ -292,7 +292,9 @@ public abstract class QueryParameter {
         @Override
         public void setValues(ParameterValue[] pvs) {
             assert pvs.length < 2;
-            if(pvs.length == 0 || pvs[0] == null);
+            if(pvs.length == 0 || pvs[0] == null) {
+                return;
+            }
             txt.setText(pvs[0].getValue().replace("+", " "));
         }
         @Override
@@ -315,7 +317,9 @@ public abstract class QueryParameter {
         @Override
         public void setValues(ParameterValue[] pvs) {
             assert pvs.length < 2;
-            if(pvs.length == 0 || pvs[0] == null);
+            if(pvs.length == 0 || pvs[0] == null) {
+                return;
+            }
             chk.setSelected(pvs[0].getValue().equals("1"));
         }
         @Override
