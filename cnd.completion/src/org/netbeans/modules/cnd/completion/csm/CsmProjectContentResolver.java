@@ -1210,7 +1210,7 @@ public final class CsmProjectContentResolver {
         //it = ns.getDeclarations().iterator();
         //filterDeclarations(it, res, kinds, strPrefix, match, returnUnnamedMembers);
         filterDeclarations(ns, res, kinds, strPrefix, match, returnUnnamedMembers);
-        if (!ns.getProject().isArtificial() && !ns.isGlobal()) {
+        if (!ns.isGlobal()) {
             for (CsmProject lib : ns.getProject().getLibraries()) {
                 CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
                 if (n != null && !handledNS.contains(n)) {
