@@ -39,8 +39,15 @@
 
 package org.netbeans.modules.php.editor.parser;
 
-import org.netbeans.modules.php.editor.PHPLanguage;
+import java.util.Collections;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -177,32 +184,65 @@ public class SanitizeSourceTest extends ParserTestBase {
     }
 
     protected String getTestResult(String filename) throws Exception {
-        return null;
-//        GsfTestCompilationInfo info = getInfo("testfiles/" + filename + ".php");
-//        StringBuffer textresult = new StringBuffer();
-//        int offset = info.getText().indexOf('^');
-//        if (offset > -1) {
-//            String content = info.getText();
-//            content = content.substring(0, offset) + content.substring(offset+1, content.length()-1);
-//            info = getInfoForText(content, "testFile.php");
-//            info.setCaretOffset(offset);
-//        }
-//
-//        ParserResult result = info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
-//
-//        if (result == null) {
-//            textresult.append("Not possible to parse");
-//        } else {
-//            PHPParseResult phpResult = (PHPParseResult)result;
-//            Program program = phpResult.getProgram();
-//
-//            if (program != null){
-//                textresult.append((new PrintASTVisitor()).printTree(program, 0));
-//            }
-//            else {
-//                textresult.append("Program is null");
-//            }
-//        }
-//        return textresult.toString();
+        FileObject testFile = getTestFile("testfiles/" + filename + ".php");
+
+        Source testSource = getTestSource(testFile);
+        String caretLine="^";
+        final int caretOffset;
+        if (caretLine != null) {
+            caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(testSource, caretOffset);
+        } else {
+            caretOffset = -1;
+        }
+
+        final StringBuffer textresult = new StringBuffer();
+        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result r = caretOffset == -1 ? resultIterator.getParserResult() : resultIterator.getParserResult(caretOffset);
+                assertTrue(r instanceof ParserResult);
+                PHPParseResult phpResult = (PHPParseResult)r;
+                Program program = phpResult.getProgram();
+
+                if (program != null) {
+                    textresult.append((new PrintASTVisitor()).printTree(program, 0));
+                } else {
+                    textresult.append("Program is null");
+                }
+
+            }
+        });
+
+        return textresult.toString();
     }
+
+    /*protected String getTestResult(String filename) throws Exception {
+        return null;
+        GsfTestCompilationInfo info = getInfo("testfiles/" + filename + ".php");
+        StringBuffer textresult = new StringBuffer();
+        int offset = info.getText().indexOf('^');
+        if (offset > -1) {
+            String content = info.getText();
+            content = content.substring(0, offset) + content.substring(offset+1, content.length()-1);
+            info = getInfoForText(content, "testFile.php");
+            info.setCaretOffset(offset);
+        }
+
+        ParserResult result = info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
+
+        if (result == null) {
+            textresult.append("Not possible to parse");
+        } else {
+            PHPParseResult phpResult = (PHPParseResult)result;
+            Program program = phpResult.getProgram();
+
+            if (program != null){
+                textresult.append((new PrintASTVisitor()).printTree(program, 0));
+            }
+            else {
+                textresult.append("Program is null");
+            }
+        }
+        return textresult.toString();
+    }*/
 }

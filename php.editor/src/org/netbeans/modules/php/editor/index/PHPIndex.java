@@ -410,7 +410,7 @@ public class PHPIndex {
         Map<String, IndexedFunction> methods = new TreeMap<String, IndexedFunction>();
         
         // #147730 - prefer the current file
-        FileObject currentFile = context.getSnapshot().getSource().getFileObject();
+        FileObject currentFile = (context != null) ? context.getSnapshot().getSource().getFileObject() : null;
         Set<String> currentFileClasses = new HashSet<String>();
 
         for (String className : getClassAncestors(context, typeName)) {
