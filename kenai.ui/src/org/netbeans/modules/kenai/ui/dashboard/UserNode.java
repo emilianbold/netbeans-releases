@@ -91,7 +91,7 @@ public class UserNode extends LeafNode {
             btnOpenProject = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_OpenProject"), ProjectAccessor.getDefault().getOpenNonMemberProjectAction()); //NOI18N
             btnRefresh = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_Refresh"), new ActionListener() { //NOI18N
                 public void actionPerformed(ActionEvent e) {
-                    DashboardImpl.getInstance().refreshMemberProjects();
+                    DashboardImpl.getInstance().refreshProjects();
                 }
             });
 
