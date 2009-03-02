@@ -457,6 +457,17 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
                 }
             }
         }
+        
+        // mac osx
+        dirs = System.getProperty("java.ext.dirs");
+        if (dirs != null) {
+            for (String dir : dirs.split(File.pathSeparator)) {
+                if (file.startsWith(dir)) {
+                    return false;
+                }
+            }
+        }
+
         return true;
     }
 
