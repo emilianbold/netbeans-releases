@@ -186,10 +186,10 @@ public class Resolver3 implements Resolver {
     }
 
     public Collection<CsmProject> getLibraries() {
-        return getLibraries(this.startFile.getProject());
+        return getSearchLibraries(this.startFile.getProject());
     }
 
-    public static Collection<CsmProject> getLibraries(CsmProject prj) {
+    public static Collection<CsmProject> getSearchLibraries(CsmProject prj) {
         if (prj.isArtificial() && prj instanceof ProjectBase) {
             List<ProjectBase> dependentProjects = ((ProjectBase)prj).getDependentProjects();
             Set<CsmProject> libs = new HashSet<CsmProject>();

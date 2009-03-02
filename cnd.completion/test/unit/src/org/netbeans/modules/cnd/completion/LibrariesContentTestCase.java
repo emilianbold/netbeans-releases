@@ -65,25 +65,33 @@ public class LibrariesContentTestCase extends CompletionBaseTestCase {
         super.setSysIncludes(sysIncludes);
         return srcDir;
     }
-    
-    public void testGlobalFunsWithPrefix() throws Exception {
-        super.performTest("src/main.cc", 6, 5, "f");
-        super.performTest("src/main.cc", 6, 5, "::f");
-    }
 
     private void checkDir(File srcDir) {
         assertTrue("Not existing directory" + srcDir, srcDir.exists());
         assertTrue("Not directory" + srcDir, srcDir.isDirectory());
     }
-    
+
+    public void testGlobalFunsWithPrefix() throws Exception {
+        super.performTest("src/main.cc", 6, 5, "f");
+        super.performTest("src/main.cc", 6, 5, "::f");
+    }
+
     public void testLibraryClassStaticFunctions() throws Exception {
         super.performTest("src/main.cc", 6, 5, "AAA::f");
         super.performTest("src/main.cc", 6, 5, "BBB::f");
     }
-    
+
     public void testMergeOfLibrariesNamespaces() throws Exception {
         super.performTest("src/main.cc", 6, 5, "common::decl_from");
         super.performTest("src/include_sys2_file.h", 5, 5, "common::decl_from");
         super.performTest("src/include_sys1_file.h", 5, 5, "common::decl_from");
     }
+
+    public void testStdSizeT() throws Exception {
+        super.performTest("src/main.cc", 13, 5, "ns_sttdd::s");
+    }
+
+//    public void testStdSizeTGlob() throws Exception {
+//        super.performTest("sys_include/sys1_incl_sys2.h", 5, 14);
+//    }
 }

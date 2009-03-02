@@ -91,7 +91,7 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
         }
         // Let's also look for similarly named namespace in libraries,
         // like it's done in CsmProjectContentResolver.getNamespaceMembers()
-        if (!namespace.getProject().isArtificial() && !namespace.isGlobal()) {
+        if (!namespace.isGlobal()) {
             for(CsmProject lib : namespace.getProject().getLibraries()){
                 CsmNamespace ns = lib.findNamespace(namespace.getQualifiedName());
                 if (ns != null) {

@@ -129,7 +129,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                     if (resolver != null) {
                         libraries = resolver.getLibraries();
                     } else {
-                        libraries = Resolver3.getLibraries(prjBase);
+                        libraries = Resolver3.getSearchLibraries(prjBase);
                     }
                     for (CsmProject lib : libraries) {
                         CsmNamespace libNs = lib.findNamespace(nspQName);
