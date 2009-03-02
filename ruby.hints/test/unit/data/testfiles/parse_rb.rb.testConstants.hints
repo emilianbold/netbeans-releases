@@ -1,0 +1,15 @@
+  TokenDefinitions = [
+  ----------------
+HINT:Style: Constants traditionally use uppercase letters only
+  TkReading2Token = {}
+  ---------------
+HINT:Style: Constants traditionally use uppercase letters only
+  TkSymbol2Token = {}
+  --------------
+HINT:Style: Constants traditionally use uppercase letters only
+  Ltype2Token = {
+  -----------
+HINT:Style: Constants traditionally use uppercase letters only
+  DLtype2Token = {
+  ------------
+HINT:Style: Constants traditionally use uppercase letters only
