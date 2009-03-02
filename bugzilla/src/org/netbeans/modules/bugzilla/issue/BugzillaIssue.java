@@ -73,6 +73,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -619,7 +620,9 @@ public class BugzillaIssue extends Issue {
         assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         try {
             TaskData td = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), data.getTaskId(), new NullProgressMonitor());
-            setTaskData(td);
+            getRepository().getIssueCache().setIssueData(getID(), td); // XXX
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }

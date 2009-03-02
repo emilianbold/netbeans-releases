@@ -159,13 +159,14 @@ public abstract class Issue {
     final public void open() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                IssueTopComponent tc = new IssueTopComponent();
-                tc.setIssue(Issue.this);
+                final IssueTopComponent tc = new IssueTopComponent();
                 tc.open();
                 tc.requestActive();
+                tc.setIssue(Issue.this);
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
                     public void run() {
                         try {
+                            Issue.this.refresh();
                             Issue.this.setSeen(true);
                         } catch (IOException ex) {
                             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);

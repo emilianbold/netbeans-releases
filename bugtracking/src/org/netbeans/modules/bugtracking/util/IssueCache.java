@@ -65,9 +65,9 @@ public abstract class IssueCache {
         this.nameSpace = nameSpace;
     }
 
-    public abstract Issue createIssue(TaskData taskData);
+    protected abstract Issue createIssue(TaskData taskData);
 
-    public abstract void setTaskData(Issue issue, TaskData taskData);
+    protected abstract void setTaskData(Issue issue, TaskData taskData);
 
     public synchronized Issue setIssueData(String id, TaskData taskData) throws IOException {
         IssueEntry entry = getCache().get(id);

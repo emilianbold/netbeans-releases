@@ -386,10 +386,10 @@ public class BugzillaRepository extends Repository {
         Cache() {
             super(BugzillaRepository.this.getUrl());
         }
-        public Issue createIssue(TaskData taskData) {
+        protected Issue createIssue(TaskData taskData) {
             return new BugzillaIssue(taskData, (BugzillaRepository) BugzillaRepository.this);
         }
-        public void setTaskData(Issue issue, TaskData taskData) {
+        protected void setTaskData(Issue issue, TaskData taskData) {
             ((BugzillaIssue)issue).setTaskData(taskData); // XXX triggers events under lock
         }
     }
