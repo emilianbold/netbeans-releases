@@ -117,10 +117,10 @@ public class BugtrackingOwnerSupport {
         Object attValue = fileObject.getAttribute(
                                    "ProvidedExtensions.RemoteLocation");//NOI18N
         if (attValue instanceof String) {
-            Repository repository = getKenaiBugtrackingRepository(fileObject, (String) attValue);
+            Repository repository = getKenaiBugtrackingRepository((String) attValue);
             if (repository != null) {
                 return repository;
-            }
+        }
         }
 
         VersioningSystem owner = VersioningSupport.getOwner(file);
@@ -151,16 +151,15 @@ public class BugtrackingOwnerSupport {
         return null;
     }
 
-    private Repository getKenaiBugtrackingRepository(FileObject fileObj,
-                                                     String remoteLocation) {
+    private Repository getKenaiBugtrackingRepository(String remoteLocation) {
         try {
             KenaiProject project = KenaiProject.forRepository(remoteLocation);
             Repository repository = (project != null) ? getKenaiBugtrackingRepository(project)
                                                       : null;
             return repository;
         } catch (KenaiException ex) {
-            LOG.throwing(getClass().getName(),     //class name
-                         "getBugtrackingOwner",    //method name        //NOI18N
+            LOG.throwing(getClass().getName(),                    //class name
+                         "getKenaiBugtrackingRepository(String)", //method name //NOI18N
                          ex);
             return null;
         }
