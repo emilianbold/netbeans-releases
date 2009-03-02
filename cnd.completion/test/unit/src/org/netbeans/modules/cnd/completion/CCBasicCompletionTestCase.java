@@ -318,4 +318,6 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     public void testStringLiteral() throws Exception {
         super.performTest("iz148011.cc", 12, 25);
     }
+
+    
 }
