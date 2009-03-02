@@ -9,5 +9,7 @@
     <target name="netbeans" depends="projectized-common.netbeans">
         <chmod dir="${cluster}/bin" perm="ugo+rx" includes="**/magent*"/>
         <chmod dir="${cluster}/bin" perm="ugo+rx" includes="**/mmonitor*"/>
+        <chmod dir="${cluster}/bin" perm="ugo+rx" includes="**/sagent*"/>
+        <chmod dir="${cluster}/bin" perm="ugo+rx" includes="**/smonitor*"/>
     </target>
 </project>
