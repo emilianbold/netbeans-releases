@@ -64,6 +64,7 @@ public class KenaiSupportImpl extends KenaiSupport {
             if(!f.getName().equals("bz")) { // XXX constant?                // NOI18N
                 return null;
             }
+            String host = f.getLocation().getHost();
             String location = f.getLocation().toString();
             int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
             if(idx <= 0) {
@@ -76,15 +77,18 @@ public class KenaiSupportImpl extends KenaiSupport {
             }
             String productParamUrl = null;
             String productAttribute = "product=";
+            String product = null;
             idx = location.indexOf(productAttribute);
             if(idx <= 0) {
                 Bugzilla.LOG.warning("can't get bugtracking product from [" + project.getName() + ", " + location + "]"); // NOI18N
             } else {
                 productParamUrl = location.substring(idx);
+                product = location.substring(idx + productAttribute.length());
             }
             String user = Kenai.getDefault().getPasswordAuthentication().getUserName();
             String psswd = new String(Kenai.getDefault().getPasswordAuthentication().getPassword());
-            return new KenaiRepository(project.getDisplayName(), url, user, psswd, productParamUrl);
+
+            return new KenaiRepository(project.getDisplayName(), url, user, psswd, host, productParamUrl, product);
         }
         return null;
     }

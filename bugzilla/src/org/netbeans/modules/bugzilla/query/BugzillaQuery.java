@@ -68,19 +68,19 @@ public class BugzillaQuery extends Query {
 
     private String urlParameters;
     private boolean firstRun = true;
-    private boolean kenai;
+//    private boolean kenai;
 
     public BugzillaQuery(BugzillaRepository repository) {
         super();
         this.repository = repository;
     }
 
-    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean kenai, boolean saved) {
+    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved) {
         super();
         this.name = name;
         this.repository = repository;
         this.urlParameters = urlParameters;
-        this.kenai = kenai;
+//        this.kenai = kenai;
         this.saved = saved;
     }
 
@@ -92,6 +92,13 @@ public class BugzillaQuery extends Query {
         setSaved(true);
     }
 
+    public static BugzillaQuery forKenai(String name, BugzillaRepository repository, String urlParameters, String product, boolean saved) {
+        BugzillaQuery q = new BugzillaQuery(name, repository, null, true);
+        q.getController().populateKenai(urlParameters, product); // bypass async populate
+        if(urlParameters != null) q.refresh(urlParameters);     // and get the issues eventually
+        return q;
+    }
+
     @Override
     public String getDisplayName() {
         return name;
@@ -99,7 +106,7 @@ public class BugzillaQuery extends Query {
 
     @Override
     public String getTooltip() {
-        return name + " - " + repository.getDisplayName();
+        return name + " - " + repository.getDisplayName(); // NOI18N
     }
 
     @Override
@@ -143,7 +150,7 @@ public class BugzillaQuery extends Query {
 
                     StringBuffer url = new StringBuffer();
                     url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST);
-                    url.append(urlParameters);
+                    url.append(urlParameters); // XXX encode url?
                     TaskRepository taskRepository = repository.getTaskRepository();
                     BugzillaUtil.performQuery(taskRepository, url.toString(), new IssuesCollector(true));
 
@@ -188,7 +195,7 @@ public class BugzillaQuery extends Query {
         return issues.size();
     }
 
-    void refresh(String urlParameters) {
+    public void refresh(String urlParameters) {
         assert urlParameters != null;
         this.urlParameters = urlParameters;
         refresh();
@@ -201,14 +208,20 @@ public class BugzillaQuery extends Query {
     public void setName(String name) {
         this.name = name;
     }
-
-    public boolean isKenai() {
-        return kenai;
-    }
+//
+//    public boolean isKenai() {
+//        return kenai;
+//    }
 
     @Override
     public void setSaved(boolean saved) {
         super.setSaved(saved);
+    }
+
+    @Override
+    public void setFilter(Filter filter) {
+        getController().selectFilter(filter);
+        super.setFilter(filter);
     }
 
     @Override

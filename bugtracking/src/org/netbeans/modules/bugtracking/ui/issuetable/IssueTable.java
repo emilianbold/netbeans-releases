@@ -409,9 +409,10 @@ public class IssueTable implements MouseListener, AncestorListener {
         public void notifyData(final Issue issue) {
             issues.add(issue);
             if(filter == null || filter.accept(issue)) {
+                final IssueNode node = issue.getNode();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        tableModel.insertNode(issue.getNode());
+                        tableModel.insertNode(node);
                     }
                 });
             }

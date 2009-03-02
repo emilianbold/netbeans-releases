@@ -69,10 +69,10 @@ public class QueryAccessorImpl extends QueryAccessor {
             // XXX log this inconvenience
             return EMPTY_QH_LIST;
         }        
-        return Collections.unmodifiableList(getQueries(repo, project));
+        return Collections.unmodifiableList(getQueries(repo));
     }
 
-    List<QueryHandle> getQueries(Repository repo, ProjectHandle project) {
+    List<QueryHandle> getQueries(Repository repo) {
         Query[] queries = repo.getQueries();
         if(queries == null || queries.length == 0) {
             // XXX is this possible - at least preset queries

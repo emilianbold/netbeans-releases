@@ -116,7 +116,7 @@ public class KenaiRepositories {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
-                qaImpl.fireQueriesChanged(ph, qaImpl.getQueries(repo, ph));
+                qaImpl.fireQueriesChanged(ph, qaImpl.getQueries(repo));
             }
         }
     }

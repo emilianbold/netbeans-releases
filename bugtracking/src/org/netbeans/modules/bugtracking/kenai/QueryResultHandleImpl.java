@@ -89,34 +89,35 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 return new QueryResultHandleImpl(
                         query,
                         totalFormat.format(new Object[] {issues != null ? issues.length : 0}, new StringBuffer(), null).toString(),
-                        null);
+                        Query.FILTER_ALL);
 
             case Issue.ISSUE_STATUS_NOT_SEEN:
 
-                int newIssues = 0, modifiedIssues = 0, unseenIssues = 0;
-                issues = query.getIssues(Issue.ISSUE_STATUS_NEW);
-                if(issues != null) {
-                    newIssues = issues.length;
-                }
-
-                issues = query.getIssues(Issue.ISSUE_STATUS_MODIFIED);
-                if(issues != null) {
-                    modifiedIssues = issues.length;
-                }
-
-                unseenIssues = newIssues + modifiedIssues;
-                if(unseenIssues == 0) {
+                int notIssues = 0;
+                issues = query.getIssues(Issue.ISSUE_STATUS_NOT_SEEN);
+                if(issues == null || issues.length == 0) {
                     return null;
                 }
+                notIssues = issues.length;
 
                 StringBuffer label = new StringBuffer();
-                unseenFormat.format(new Object[] {unseenIssues}, label, null);
-                if(newIssues > 0) {
-                    label.append("; ");
-                    newFormat.format(new Object[] {newIssues}, label, null);
-                }
+                unseenFormat.format(new Object[] {notIssues}, label, null);
                 
                 return new QueryResultHandleImpl(query, label.toString(), Query.FILTER_NOT_SEEN);
+
+            case Issue.ISSUE_STATUS_NEW:
+
+                int newIssues = 0;
+                issues = query.getIssues(Issue.ISSUE_STATUS_NEW);
+                if(issues == null || issues.length == 0) {
+                    return null;
+                }
+                newIssues = issues.length;
+
+                label = new StringBuffer();
+                newFormat.format(new Object[] {newIssues}, label, null);
+
+                return new QueryResultHandleImpl(query, label.toString(), query.FILTER_NEW);
 
             default:
                 throw new IllegalStateException("wrong status value [" + status + "]"); // NOI18N

@@ -57,6 +57,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.Query.Filter;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -189,11 +191,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                   // NOI18N
 
-
         if(query.isSaved()) {
             setAsSaved();
         }
-        populate(urlParameters);
+        if(urlParameters != null) {
+            postPopulate(urlParameters);
+        } 
     }
 
     private <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, String parameter) {
@@ -253,7 +256,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         return sb.toString();
     }
 
-    void populate(final String urlParameters) {
+    void postPopulate(final String urlParameters) {
         enableFields(false);
 
         final Task[] t = new Task[1];
@@ -274,48 +277,104 @@ public class QueryController extends BugtrackingController implements DocumentLi
             public void run() {
                 handle.start();
                 try {
-                    Bugzilla.LOG.fine("Starting populate query controller"); // NOI18N
-                    // NOI18N
-                    Bugzilla bgz = Bugzilla.getInstance();
-                    productParameter.setParameterValues(toParameterValues(bgz.getProducts(repository)));
-                    if (panel.productList.getModel().getSize() > 0) {
-                        panel.productList.setSelectedIndex(0);
-                        populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
-                    }
-                    statusParameter.setParameterValues(toParameterValues(bgz.getStatusValues(repository)));
-                    resolutionParameter.setParameterValues(toParameterValues(bgz.getResolutions(repository)));
-                    priorityParameter.setParameterValues(toParameterValues(bgz.getPriorities(repository)));
-                    changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
-                    summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-                    commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-                    keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
-                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
-                    panel.changedToTextField.setText("Now"); // NOI18N
-                    // NOI18N
-                    if (urlParameters != null) {
-                        setParameters(urlParameters);
-                    }
-                    panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
-                    panel.jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                    panel.jScrollPane3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                    panel.jScrollPane4.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                    panel.jScrollPane5.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                    panel.jScrollPane6.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                    panel.jScrollPane7.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                } catch (MalformedURLException ex) {
-                    Bugzilla.LOG.log(Level.SEVERE, null, ex);
-                } catch (CoreException ex) {
-                    Bugzilla.LOG.log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                    populate(urlParameters);
                 } finally {
                     enableFields(true);
                     handle.finish();
                     panel.showRetrievingProgress(false, progressBar, null, !query.isSaved());
-                    Bugzilla.LOG.fine("Finnished populate query controller"); // NOI18N
                 }
             }
         });
+    }
+
+    public void populate(String urlParameters) {
+        Bugzilla.LOG.fine("Starting populate query controller"); // NOI18N
+        try {
+            Bugzilla bgz = Bugzilla.getInstance();
+            productParameter.setParameterValues(toParameterValues(bgz.getProducts(repository)));
+            if (panel.productList.getModel().getSize() > 0) {
+                panel.productList.setSelectedIndex(0);
+                populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
+            }
+            statusParameter.setParameterValues(toParameterValues(bgz.getStatusValues(repository)));
+            resolutionParameter.setParameterValues(toParameterValues(bgz.getResolutions(repository)));
+            priorityParameter.setParameterValues(toParameterValues(bgz.getPriorities(repository)));
+            changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
+            summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
+            commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
+            keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
+            peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
+            panel.changedToTextField.setText("Now"); // XXX
+            if (urlParameters != null) {
+                setParameters(urlParameters);
+            }
+            panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
+            panel.jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            panel.jScrollPane3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            panel.jScrollPane4.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            panel.jScrollPane5.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            panel.jScrollPane6.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            panel.jScrollPane7.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        } catch (MalformedURLException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        } finally {
+            Bugzilla.LOG.fine("Finnished populate query controller"); // NOI18N
+        }
+    }
+
+    // XXX ugly
+    public void populateKenai(String urlParameters, String product) {
+        Bugzilla.LOG.fine("Starting populate query controller"); // NOI18N
+        try {
+            Bugzilla bgz = Bugzilla.getInstance();
+
+            List<String> products = bgz.getProducts(repository);
+            Iterator<String> i = products.iterator();
+            while(i.hasNext()) {
+                String p = i.next();
+                if(!p.equals(product)) {
+                    i.remove();
+                }
+            }
+            productParameter.setParameterValues(toParameterValues(products));
+            productParameter.setAlwaysDisabled(true);
+
+            if (panel.productList.getModel().getSize() > 0) {
+                panel.productList.setSelectedIndex(0);
+                populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
+            }
+            statusParameter.setParameterValues(toParameterValues(bgz.getStatusValues(repository)));
+            resolutionParameter.setParameterValues(toParameterValues(bgz.getResolutions(repository)));
+            priorityParameter.setParameterValues(toParameterValues(bgz.getPriorities(repository)));
+            changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
+            summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
+            commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
+            keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
+            peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
+            panel.changedToTextField.setText("Now"); // XXX
+            if (urlParameters != null) {
+                setParameters(urlParameters);
+            }
+            panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
+            panel.jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            panel.jScrollPane3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            panel.jScrollPane4.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            panel.jScrollPane5.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            panel.jScrollPane6.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            panel.jScrollPane7.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        } catch (MalformedURLException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        } finally {
+            Bugzilla.LOG.fine("Finnished populate query controller"); // NOI18N
+        }
     }
 
     void enableFields(boolean bl) {
@@ -484,6 +543,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         setAsSaved();
     }
 
+    public void selectFilter(Filter filter) {
+        if(filter != null) {
+            panel.filterComboBox.setSelectedItem(filter);
+        }
+    }
+
     private void setAsSaved() {
         panel.setSaved(query.getDisplayName(), getLastRefresh());
         panel.setModifyVisible(false);
@@ -576,15 +641,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     if(lastChageFrom != null && !lastChageFrom.equals("")) {
                         BugzillaConfig.getInstance().setLastChangeFrom(lastChageFrom);
                     }
-                    // XXX isn't thread safe
-                    if(panel.urlPanel.isVisible()) {
-                        // XXX check url format etc...
-                        // XXX what if there is a different host in queries repository as in the url?
-                        query.refresh(panel.urlTextField.getText());
-                    } else {
-                        query.refresh(getUrlParameters());
-                        // XXX querydataChanged
-                    }
+                    refresh();
                 } finally {
                     panel.setQueryRunning(false);
                     task = null;
@@ -598,19 +655,24 @@ public class QueryController extends BugtrackingController implements DocumentLi
             public void run() {
                 panel.setQueryRunning(true);
                 try {
-                    if(panel.urlPanel.isVisible()) {
-                        // XXX check url format etc...
-                        // XXX what if there is a different host in queries repository as in the url?
-                        query.refresh(panel.urlTextField.getText());
-                    } else {
-                        query.refresh(getUrlParameters());
-                    }
+                    refresh();
                 } finally {
                     panel.setQueryRunning(false);
                     task = null;
                 }
             }
+
         });        
+    }
+
+    public void refresh() {
+        if (panel.urlPanel.isVisible()) {
+            // XXX check url format etc...
+            // XXX what if there is a different host in queries repository as in the url?
+            query.refresh(panel.urlTextField.getText());
+        } else {
+            query.refresh(getUrlParameters());
+        }
     }
 
     private void onModify() {
@@ -770,9 +832,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
             if(pv != null) {
                 List<ParameterValue> pvs = e.getValue();    
                 pv.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
-            }
-            if(query.isKenai()) {
-                pv.setAlwaysDisabled(true);
             }
         }
     }
