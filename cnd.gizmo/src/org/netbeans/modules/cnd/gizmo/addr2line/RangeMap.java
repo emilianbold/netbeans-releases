@@ -83,7 +83,7 @@ public final class RangeMap {
         return ranges.toString();
     }
 
-    private class RangeComparator implements Comparator<Range> {
+    private static class RangeComparator implements Comparator<Range> {
 
         public int compare(Range r1, Range r2) {
             if (r1.overlaps(r2)) {
@@ -97,7 +97,7 @@ public final class RangeMap {
         }
     }
 
-    private class Range {
+    private static class Range {
 
         final long begin;
         final long end;
@@ -128,6 +128,12 @@ public final class RangeMap {
 
         boolean equals(Range that) {
             return (this.begin == that.begin && this.end == that.end);
+        }
+
+        @Override
+        public int hashCode() {
+            long hash = 3 * begin + 7 * end;
+            return (int) (hash >> 32) | (int) hash;
         }
 
         boolean overlaps(Range that) {

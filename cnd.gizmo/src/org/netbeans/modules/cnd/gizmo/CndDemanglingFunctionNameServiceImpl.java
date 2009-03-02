@@ -40,7 +40,6 @@ package org.netbeans.modules.cnd.gizmo;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -161,7 +160,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
 
     }
 
-    private class InputRedirectorFactory implements ExecutionDescriptor.InputProcessorFactory {
+    private static class InputRedirectorFactory implements ExecutionDescriptor.InputProcessorFactory {
 
         private final Writer writer;
 
