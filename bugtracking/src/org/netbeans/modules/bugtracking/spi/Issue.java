@@ -167,10 +167,9 @@ public abstract class Issue {
                 }
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        final IssueTopComponent tc = new IssueTopComponent();
+                        final IssueTopComponent tc = IssueTopComponent.find(Issue.this);
                         tc.open();
                         tc.requestActive();
-                        tc.setIssue(Issue.this);
                     }
                 });
             }

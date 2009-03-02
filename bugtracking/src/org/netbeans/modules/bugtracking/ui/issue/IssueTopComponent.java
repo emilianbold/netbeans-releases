@@ -40,24 +40,22 @@
 package org.netbeans.modules.bugtracking.ui.issue;
 
 import java.awt.BorderLayout;
-import java.io.Serializable;
-import java.util.logging.Logger;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-//import org.openide.util.Utilities;
 
 /**
- * Top component which displays something.
+ * Top component that displays information about one issue.
+ *
+ * @author Jan Stola, Tomas Stupka
  */
 public final class IssueTopComponent extends TopComponent {
-
-    private static IssueTopComponent instance;
+    private static Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
 
-    private static final String PREFERRED_ID = "IssueTopComponent";
     private Issue issue;
 
     public IssueTopComponent() {
@@ -73,6 +71,7 @@ public final class IssueTopComponent extends TopComponent {
     }
 
     public void setIssue(Issue issue) {
+        assert (this.issue == null);
         this.issue = issue;
         add(issue.getControler().getComponent(), BorderLayout.CENTER);
 
@@ -94,69 +93,31 @@ public final class IssueTopComponent extends TopComponent {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
-    /**
-     * Gets default instance. Do not use directly: reserved for *.settings files only,
-     * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
-     * To obtain the singleton instance, use {@link #findInstance}.
-     */
-    public static synchronized IssueTopComponent getDefault() {
-        if (instance == null) {
-            instance = new IssueTopComponent();
-        }
-        return instance;
-    }
-
-    /**
-     * Obtain the IssueTopComponent instance. Never call {@link #getDefault} directly!
-     */
-    public static synchronized IssueTopComponent findInstance() {
-        TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
-        if (win == null) {
-            Logger.getLogger(IssueTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
-            return getDefault();
-        }
-        if (win instanceof IssueTopComponent) {
-            return (IssueTopComponent) win;
-        }
-        Logger.getLogger(IssueTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
-        return getDefault();
-    }
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+        return TopComponent.PERSISTENCE_NEVER;
     }
 
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
+        openIssues.add(this);
     }
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        openIssues.remove(this);
     }
 
-    /** replaces this in object stream */
-    @Override
-    public Object writeReplace() {
-        return new ResolvableHelper();
-    }
-
-    @Override
-    protected String preferredID() {
-        return PREFERRED_ID;
-    }
-
-    final static class ResolvableHelper implements Serializable {
-
-        private static final long serialVersionUID = 1L;
-
-        public Object readResolve() {
-            return IssueTopComponent.getDefault();
+    public static synchronized IssueTopComponent find(Issue issue) {
+        for (IssueTopComponent tc : openIssues) {
+            if (issue.equals(tc.getIssue())) {
+                return tc;
+            }
         }
+        IssueTopComponent tc = new IssueTopComponent();
+        tc.setIssue(issue);
+        return tc;
     }
+
 }
