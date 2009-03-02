@@ -211,12 +211,21 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertNotNull(f4);
         assertEquals(EMIME, f4.getMIMEType());
         embeddedFiles = new URL[] {f3.getURL(), f4.getURL()};
+
+        waitForRepositoryUpdaterInit();
+    }
+
+    /* package */ static void waitForRepositoryUpdaterInit() throws Exception {
+        RepositoryUpdater.getDefault().start();
         RepositoryUpdater.State state;
+        long time = System.currentTimeMillis();
         do {
+            if (System.currentTimeMillis() - time > 60000) {
+                fail("Waiting for RepositoryUpdater.init() timed out");
+            }
             Thread.sleep(100);
             state = RepositoryUpdater.getDefault().getState();
         } while (state != RepositoryUpdater.State.INITIALIZED_AFTER_FIRST_SCAN);
-
     }
 
     public void testPathAddedRemovedChanged () throws Exception {

@@ -88,6 +88,8 @@ public class RepositoryUpdater2Test extends NbTestCase {
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests");
         logger.setLevel(Level.FINEST);
         logger.addHandler(ruSync);
+
+        RepositoryUpdaterTest.waitForRepositoryUpdaterInit();
     }
 
     public void testAddIndexingJob() throws Exception {

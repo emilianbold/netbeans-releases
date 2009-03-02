@@ -112,7 +112,33 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         return instance;
     }
 
-    public synchronized void close () {
+    public synchronized void start() {
+        if (state == State.CREATED) {
+            LOGGER.fine("Initializing..."); //NOI18N
+            PathRegistry.getDefault().addPathRegistryListener(this);
+            FileUtil.addFileChangeListener(this);
+            EditorRegistry.addPropertyChangeListener(this);
+
+            state = State.INITIALIZED;
+            submit(new RootsWork(scannedRoots, scannedBinaries) {
+                public @Override void getDone() {
+                    try {
+                        super.getDone();
+                    } finally {
+                        if (state == State.INITIALIZED) {
+                            synchronized (RepositoryUpdater.this) {
+                                if (state == State.INITIALIZED) {
+                                    state = State.INITIALIZED_AFTER_FIRST_SCAN;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    public synchronized void stop() {
         state = State.CLOSED;
         LOGGER.fine("Closing..."); //NOI18N
 
@@ -431,33 +457,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private volatile Reference<Document> activeDocumentRef = null;
 
     private RepositoryUpdater () {
-        init ();
-    }
-
-    private synchronized void init () {
-        if (state == State.CREATED) {
-            LOGGER.fine("Initializing..."); //NOI18N
-            PathRegistry.getDefault().addPathRegistryListener(this);
-            FileUtil.addFileChangeListener(this);
-            EditorRegistry.addPropertyChangeListener(this);
-
-            state = State.INITIALIZED;
-            submit(new RootsWork(scannedRoots, scannedBinaries) {
-                public @Override void getDone() {
-                    try {
-                        super.getDone();
-                    } finally {
-                        if (state == State.INITIALIZED) {
-                            synchronized (RepositoryUpdater.this) {
-                                if (state == State.INITIALIZED) {
-                                    state = State.INITIALIZED_AFTER_FIRST_SCAN;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        // no-op
     }
 
     private void handleActiveDocumentChange(Document deactivated, Document activated) {
