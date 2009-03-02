@@ -94,10 +94,15 @@ public class CustomizationWSEditor implements WSEditor {
     private boolean jaxwsDirty;
     private Definitions primaryDefinitions;
     private UndoManager undoManager;
+    private JaxWsModel jaxWsModel;
 
     /**
      * Creates a new instance of CustomizationWSEditor
      */
+    public CustomizationWSEditor(JaxWsModel jaxWsModel) {
+        this.jaxWsModel = jaxWsModel;
+    }
+    
     public CustomizationWSEditor() {
     }
 
@@ -154,12 +159,12 @@ public class CustomizationWSEditor implements WSEditor {
         }
     }
 
-    public void save(final Node node, final JaxWsModel jaxWsModel) {
+    public void save(final Node node) {
         saveAndRefresh(node, jaxWsModel);
         removeListeners();
     }
 
-    public JComponent createWSEditorComponent(Node node, JaxWsModel jaxWsModel) {
+    public JComponent createWSEditorComponent(Node node) {
         try {
             initializeModels(node);
         } catch (Exception e) {
@@ -290,7 +295,7 @@ public class CustomizationWSEditor implements WSEditor {
         return model;
     }
 
-    public void cancel(Node node, JaxWsModel jaxWsModel) {
+    public void cancel(Node node) {
         if (undoManager != null) {
             while (undoManager.canUndo()) {
                 undoManager.undo();

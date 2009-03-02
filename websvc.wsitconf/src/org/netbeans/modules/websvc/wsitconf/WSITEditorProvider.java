@@ -40,9 +40,16 @@
  */
 package org.netbeans.modules.websvc.wsitconf;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -57,11 +64,29 @@ public class WSITEditorProvider implements WSEditorProvider {
     public WSITEditorProvider () {
     }
 
-    public WSEditor createWSEditor() {
-        return new WSITEditor();
+    public WSEditor createWSEditor(Lookup nodeLookup) {
+        FileObject srcRoot = nodeLookup.lookup(FileObject.class);
+        if (srcRoot != null) {
+            Project prj = FileOwnerQuery.getOwner(srcRoot);
+            JaxWsModel jaxWsModel = prj.getLookup().lookup(JaxWsModel.class);
+            if (jaxWsModel != null) {
+                return new WSITEditor(jaxWsModel);
+            }
+        }
+        return null;
     }
 
-    public boolean enable(Node node) {        
-        return true;        
+    public boolean enable(Node node) {
+        Client client = node.getLookup().lookup(Client.class);
+        boolean doEnable = false;
+        if (client != null) {
+            doEnable = true;
+        } else {
+            Service service = node.getLookup().lookup(Service.class);
+            if (service != null) {
+                doEnable = true;
+            }
+        }
+        return doEnable;
     }
 }
