@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -54,9 +55,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import org.eclipse.core.runtime.CoreException;
 import org.jdesktop.layout.GroupLayout;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -571,16 +575,31 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(BugzillaIssue.IssueField.DEPENDS_ON, dependsField);
         storeFieldValue(BugzillaIssue.IssueField.BLOCKS, blocksField);
         // PENDING attachment modifications
-        try {
             if (!"".equals(addCommentArea.getText().trim())) { // NOI18N
                 issue.addComment(addCommentArea.getText());
             }
-            issue.submit();
-            issue.refresh();
-            setIssue(issue);
-        } catch (CoreException cex) {
-            cex.printStackTrace();
-        }
+            String submitMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitMessage"); // NOI18N
+            String submitMessage = MessageFormat.format(submitMessageFormat, issue.getID());
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(submitMessage);
+            handle.start();
+            handle.switchToIndeterminate();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        issue.submit();
+                        issue.refresh();
+                    } catch (CoreException cex) {
+                        cex.printStackTrace();
+                    } finally {
+                        handle.finish();
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                setIssue(issue);
+                            }
+                        });
+                    }
+                }
+            });
     }//GEN-LAST:event_submitButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
