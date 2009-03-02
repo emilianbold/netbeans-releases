@@ -54,50 +54,50 @@ import javax.swing.JTextField;
  * @author Tomas Stupka
  */
 public abstract class QueryParameter {
-    final static ParameterValue[] EMPTY_PARAMETER_VALUE = new ParameterValue[] {new ParameterValue("", "")};
+    final static ParameterValue[] EMPTY_PARAMETER_VALUE = new ParameterValue[] {new ParameterValue("", "")}; // NOI18N
 
-    static final ParameterValue PV_CONTAINS_ALL_KEYWORDS = new ParameterValue("contains all keywords",  "allwords");
-    static final ParameterValue PV_CONTAINS_ANY_KEYWORDS = new ParameterValue("contains any keywords",  "anywords");
-    static final ParameterValue PV_CONTAINS_NONE_KEYWORDS = new ParameterValue("contains none keywords", "nowords");
+    static final ParameterValue PV_CONTAINS_ALL_KEYWORDS = new ParameterValue("contains all keywords",  "allwords"); // NOI18N
+    static final ParameterValue PV_CONTAINS_ANY_KEYWORDS = new ParameterValue("contains any keywords",  "anywords"); // NOI18N
+    static final ParameterValue PV_CONTAINS_NONE_KEYWORDS = new ParameterValue("contains none keywords", "nowords"); // NOI18N
 
-    static final ParameterValue PV_CONTAINS = new ParameterValue("contains", "substring");
-    static final ParameterValue PV_IS = new ParameterValue("is", "exact");
-    static final ParameterValue PV_MATCHES_REGEX = new ParameterValue("matches the regexp", "regexp");
-    static final ParameterValue PV_DOESNT_MATCH_REGEX = new ParameterValue("doesn't match the regexp", "notregexp");
+    static final ParameterValue PV_CONTAINS = new ParameterValue("contains", "substring"); // NOI18N
+    static final ParameterValue PV_IS = new ParameterValue("is", "exact"); // NOI18N
+    static final ParameterValue PV_MATCHES_REGEX = new ParameterValue("matches the regexp", "regexp"); // NOI18N
+    static final ParameterValue PV_DOESNT_MATCH_REGEX = new ParameterValue("doesn't match the regexp", "notregexp"); // NOI18N
 
-    static final ParameterValue PV_CONTAINS_ALL_STRINGS = new ParameterValue("contains all of the words/strings", "allwordssubstr");
-    static final ParameterValue PV_CONTAINS_ANY_STRINGS = new ParameterValue("contains any of the words/strings", "anywordssubstr");
-    static final ParameterValue PV_CONTAINS_THE_STRING = new ParameterValue("contains the string", "substring");
-    static final ParameterValue PV_CONTAINS_THE_STRING_CASE = new ParameterValue("contains the string (exact case)", "casesubstring");
-    static final ParameterValue PV_CONTAINS_ALL_WORDS = new ParameterValue("contains all of the words", "allwords");
-    static final ParameterValue PV_CONTAINS_ANY_WORDS = new ParameterValue("contains any of the words", "anywords");
+    static final ParameterValue PV_CONTAINS_ALL_STRINGS = new ParameterValue("contains all of the words/strings", "allwordssubstr"); // NOI18N
+    static final ParameterValue PV_CONTAINS_ANY_STRINGS = new ParameterValue("contains any of the words/strings", "anywordssubstr"); // NOI18N
+    static final ParameterValue PV_CONTAINS_THE_STRING = new ParameterValue("contains the string", "substring"); // NOI18N
+    static final ParameterValue PV_CONTAINS_THE_STRING_CASE = new ParameterValue("contains the string (exact case)", "casesubstring"); // NOI18N
+    static final ParameterValue PV_CONTAINS_ALL_WORDS = new ParameterValue("contains all of the words", "allwords"); // NOI18N
+    static final ParameterValue PV_CONTAINS_ANY_WORDS = new ParameterValue("contains any of the words", "anywords"); // NOI18N
 
-    static final ParameterValue PV_FIELD_BUG_CREATION = new ParameterValue("[Bug+creation]", "[Bug+creation]");
-    static final ParameterValue PV_FIELD_ALIAS = new ParameterValue("alias", "alias");
-    static final ParameterValue PV_FIELD_ASSIGNED_TO = new ParameterValue("assigned_to", "assigned_to");
-    static final ParameterValue PV_FIELD_LIST_ACCESSIBLE = new ParameterValue("cclist_accessible", "cclist_accessible");
-    static final ParameterValue PV_FIELD_COMPONENT = new ParameterValue("component", "component");
-    static final ParameterValue PV_FIELD_DEADLINE = new ParameterValue("deadline", "deadline");
-    static final ParameterValue PV_FIELD_EVER_CONFIRMED = new ParameterValue("everconfirmed", "everconfirmed");
-    static final ParameterValue PV_FIELD_REP_PLARFORM = new ParameterValue("rep_platform", "rep_platform");
-    static final ParameterValue PV_FIELD_REMAINING_TIME = new ParameterValue("remaining_time", "remaining_time");
-    static final ParameterValue PV_FIELD_WORK_TIME = new ParameterValue("work_time", "work_time");
-    static final ParameterValue PV_FIELD_KEYWORDS = new ParameterValue("keywords", "keywords");
-    static final ParameterValue PV_FIELD_ESTIMATED_TIME = new ParameterValue("estimated_time", "estimated_time");
-    static final ParameterValue PV_FIELD_OP_SYS = new ParameterValue("op_sys", "op_sys");
+    static final ParameterValue PV_FIELD_BUG_CREATION = new ParameterValue("[Bug+creation]", "[Bug+creation]"); // NOI18N
+    static final ParameterValue PV_FIELD_ALIAS = new ParameterValue("alias", "alias"); // NOI18N
+    static final ParameterValue PV_FIELD_ASSIGNED_TO = new ParameterValue("assigned_to", "assigned_to"); // NOI18N
+    static final ParameterValue PV_FIELD_LIST_ACCESSIBLE = new ParameterValue("cclist_accessible", "cclist_accessible"); // NOI18N
+    static final ParameterValue PV_FIELD_COMPONENT = new ParameterValue("component", "component"); // NOI18N
+    static final ParameterValue PV_FIELD_DEADLINE = new ParameterValue("deadline", "deadline"); // NOI18N
+    static final ParameterValue PV_FIELD_EVER_CONFIRMED = new ParameterValue("everconfirmed", "everconfirmed"); // NOI18N
+    static final ParameterValue PV_FIELD_REP_PLARFORM = new ParameterValue("rep_platform", "rep_platform"); // NOI18N
+    static final ParameterValue PV_FIELD_REMAINING_TIME = new ParameterValue("remaining_time", "remaining_time"); // NOI18N
+    static final ParameterValue PV_FIELD_WORK_TIME = new ParameterValue("work_time", "work_time"); // NOI18N
+    static final ParameterValue PV_FIELD_KEYWORDS = new ParameterValue("keywords", "keywords"); // NOI18N
+    static final ParameterValue PV_FIELD_ESTIMATED_TIME = new ParameterValue("estimated_time", "estimated_time"); // NOI18N
+    static final ParameterValue PV_FIELD_OP_SYS = new ParameterValue("op_sys", "op_sys"); // NOI18N
     static final ParameterValue PV_FIELD_PRIORITY = new ParameterValue("priority", "priority");
-    static final ParameterValue PV_FIELD_PRODUCT = new ParameterValue("product", "product");
-    static final ParameterValue PV_FIELD_QA_CONTACT = new ParameterValue("qa_contact", "qa_contact");
-    static final ParameterValue PV_FIELD_REPORTER_ACCESSIBLE = new ParameterValue("reporter_accessible", "reporter_accessible");
-    static final ParameterValue PV_FIELD_RESOLUTION = new ParameterValue("resolution", "resolution");
-    static final ParameterValue PV_FIELD_BUG_SEVERITY = new ParameterValue("bug_severity", "bug_severity");
-    static final ParameterValue PV_FIELD_BUG_STATUS = new ParameterValue("bug_status", "bug_status");
-    static final ParameterValue PV_FIELD_SHORT_DESC = new ParameterValue("short_desc", "short_desc");
-    static final ParameterValue PV_FIELD_TARGET_MILESTONE = new ParameterValue("target_milestone", "target_milestone");
-    static final ParameterValue PV_FIELD_BUG_FILE_LOC = new ParameterValue("bug_file_loc", "bug_file_loc");
-    static final ParameterValue PV_FIELD_VERSION = new ParameterValue("version", "version");
-    static final ParameterValue PV_FIELD_VOTES = new ParameterValue("votes", "votes");
-    static final ParameterValue PV_FIELD_STATUS_WHITEBOARD = new ParameterValue("status_whiteboard", "status_whiteboard");
+    static final ParameterValue PV_FIELD_PRODUCT = new ParameterValue("product", "product"); // NOI18N
+    static final ParameterValue PV_FIELD_QA_CONTACT = new ParameterValue("qa_contact", "qa_contact"); // NOI18N
+    static final ParameterValue PV_FIELD_REPORTER_ACCESSIBLE = new ParameterValue("reporter_accessible", "reporter_accessible"); // NOI18N
+    static final ParameterValue PV_FIELD_RESOLUTION = new ParameterValue("resolution", "resolution"); // NOI18N
+    static final ParameterValue PV_FIELD_BUG_SEVERITY = new ParameterValue("bug_severity", "bug_severity"); // NOI18N
+    static final ParameterValue PV_FIELD_BUG_STATUS = new ParameterValue("bug_status", "bug_status"); // NOI18N
+    static final ParameterValue PV_FIELD_SHORT_DESC = new ParameterValue("short_desc", "short_desc"); // NOI18N
+    static final ParameterValue PV_FIELD_TARGET_MILESTONE = new ParameterValue("target_milestone", "target_milestone"); // NOI18N
+    static final ParameterValue PV_FIELD_BUG_FILE_LOC = new ParameterValue("bug_file_loc", "bug_file_loc"); // NOI18N
+    static final ParameterValue PV_FIELD_VERSION = new ParameterValue("version", "version"); // NOI18N
+    static final ParameterValue PV_FIELD_VOTES = new ParameterValue("votes", "votes"); // NOI18N
+    static final ParameterValue PV_FIELD_STATUS_WHITEBOARD = new ParameterValue("status_whiteboard", "status_whiteboard"); // NOI18N
 
     static final ParameterValue[] PV_TEXT_SEARCH_VALUES =  new ParameterValue[] {
         PV_CONTAINS_ALL_STRINGS,
@@ -169,9 +169,9 @@ public abstract class QueryParameter {
         StringBuffer sb = new StringBuffer();
         ParameterValue[] values = getValues();
         for (ParameterValue pv : values) {
-            sb.append("&");
+            sb.append("&"); // NOI18N
             sb.append(getParameter());
-            sb.append("=");
+            sb.append("="); // NOI18N
             sb.append(pv.getValue());
         }
         return sb;
@@ -180,9 +180,9 @@ public abstract class QueryParameter {
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        sb.append("[");
+        sb.append("["); // NOI18N
         sb.append(get());
-        sb.append("]");
+        sb.append("]"); // NOI18N
         return sb.toString();
     }
 
