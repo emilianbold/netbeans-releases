@@ -195,7 +195,7 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
         return true;
     }
     
-    public boolean isValid() {
+    public boolean isStateValid() {
         if (getAPIName().length() == 0  ||  !isValidClassName(getAPIName())) {
             errorPanel.setErrorBundleMessage("ERR_AddAPI_InvPackage");//NOI18N
             return false;
@@ -253,7 +253,7 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
     
     public void actionPerformed(@SuppressWarnings("unused")
 	final java.awt.event.ActionEvent e) {
-        dd.setValid(isValid());
+        dd.setValid(isStateValid());
     }
     
     public void changedUpdate(@SuppressWarnings("unused")

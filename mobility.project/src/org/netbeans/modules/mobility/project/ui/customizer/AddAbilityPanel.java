@@ -83,7 +83,7 @@ public class AddAbilityPanel extends javax.swing.JPanel implements ActionListene
         if (comp instanceof JTextComponent)
             ((JTextComponent) comp).getDocument().addDocumentListener(this);
         tValue.getDocument().addDocumentListener(this);
-        isValid();
+        isStateValid();
     }
     
     public String getKey() {
@@ -100,7 +100,7 @@ public class AddAbilityPanel extends javax.swing.JPanel implements ActionListene
         actionPerformed(null);
     }
     
-    public boolean isValid() {
+    public boolean isStateValid() {
         final String key = getKey();
         if (!isValidAbility(key)) {
             errorPanel.setErrorBundleMessage("ERR_AddAbil_MustBeJavaIdentifier"); //NOI18N
@@ -197,7 +197,7 @@ public class AddAbilityPanel extends javax.swing.JPanel implements ActionListene
     
     public void actionPerformed(@SuppressWarnings("unused")
 	final java.awt.event.ActionEvent e) {
-        dd.setValid(isValid());
+        dd.setValid(isStateValid());
     }
     
     public void changedUpdate(@SuppressWarnings("unused")
