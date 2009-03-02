@@ -27,7 +27,7 @@ public class Installer extends ModuleInstall {
             public void run () {
                 RP.post(new Runnable() {
                     public void run() {
-                        RepositoryUpdater.getDefault();
+                        RepositoryUpdater.getDefault().start();
                     }
                 });
             }
@@ -37,7 +37,7 @@ public class Installer extends ModuleInstall {
     @Override
     public boolean closing () {
         final boolean ret = super.closing();
-        RepositoryUpdater.getDefault().close();
+        RepositoryUpdater.getDefault().stop();
         return ret;
     }
 }
