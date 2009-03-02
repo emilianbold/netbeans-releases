@@ -29,10 +29,10 @@ import java.util.TreeMap;
 
 public final class RangeMap {
 
-    private SortedMap ranges;
+    private SortedMap<Range, Object> ranges;
 
     public RangeMap() {
-        ranges = new TreeMap(new RangeComparator());
+        ranges = new TreeMap<Range, Object>(new RangeComparator());
     }
 
     /**
@@ -83,12 +83,9 @@ public final class RangeMap {
         return ranges.toString();
     }
 
-    private class RangeComparator implements Comparator {
+    private class RangeComparator implements Comparator<Range> {
 
-        public int compare(Object o1, Object o2) {
-            Range r1 = (Range) o1;
-            Range r2 = (Range) o2;
-
+        public int compare(Range r1, Range r2) {
             if (r1.overlaps(r2)) {
                 return 0;
             }

@@ -234,7 +234,7 @@ public class Dwarf2NameFinder {
             }
 
             // Read the file names.
-            LinkedList fnames = new LinkedList();
+            LinkedList<String> fnames = new LinkedList<String>();
             while (prologue.hasRemaining()) {
                 String fname = getString(prologue);
                 if (Configuration.DEBUG) {
