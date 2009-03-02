@@ -47,10 +47,11 @@ import org.eclipse.core.runtime.NullProgressMonitor;
  */
 public interface TestConstants {
     public static final String TEST_PROJECT = "TestProduct";
-    public static final String REPO_PASSWD  = "dilino";
-    public static final String REPO_URL     = "http://192.168.0.7/bugzilla";
+    public static final String REPO_PASSWD  = "kenai";
+    public static final String REPO_URL     = "http://129.157.21.129/bugzilla"; // jara
+//    public static final String REPO_URL     = "http://192.168.0.7/bugzilla";
 //    public static final String REPO_URL     = "http://129.157.20.136/bugzilla"; //
-    public static final String REPO_USER    = "dil@dil.com";
+    public static final String REPO_USER    = "jaromir.uhrik@gmail.com";
 
     public static final String ISSUE_SEVERITY    = "bug";
     public static final String ISSUE_DESCRIPTION = "big bug";

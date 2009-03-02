@@ -109,7 +109,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         q.refresh();
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<Issue> il = nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE);
+        List<Issue> il = nl.getIssues(Issue.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
         Issue i = il.get(0);
         assertEquals(summary, i.getSummary());
@@ -121,7 +121,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         q.refresh(p);
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        il = nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE);
+        il = nl.getIssues(Issue.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
         i = il.get(0);
         assertEquals(summary, i.getSummary());
@@ -149,7 +149,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         q.refresh();
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(1, nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE).size());
+        assertEquals(1, nl.getIssues(Issue.ISSUE_STATUS_ALL).size());
         assertEquals(1, q.getIssues().length);
         Issue i = q.getIssues()[0];
         assertEquals(summary1, i.getSummary());
@@ -159,7 +159,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         q.refresh(p);
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(1, nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE).size());
+        assertEquals(1, nl.getIssues(Issue.ISSUE_STATUS_ALL).size());
         assertEquals(1, q.getIssues().length);
         i = q.getIssues()[0];
         assertEquals(summary1, i.getSummary());
@@ -172,7 +172,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         issues = q.getIssues();
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(2, nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE).size());
+        assertEquals(2, nl.getIssues(Issue.ISSUE_STATUS_ALL).size());
         assertEquals(2, issues.length);
         List<String> summaries = new ArrayList<String>();
         List<String> ids = new ArrayList<String>();
@@ -252,7 +252,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
 
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<Issue> il = nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE);
+        List<Issue> il = nl.getIssues(Issue.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
         Issue i = il.get(0);
         assertEquals(summary, i.getSummary());
@@ -267,7 +267,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
 
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        il = nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE);
+        il = nl.getIssues(Issue.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
         i = il.get(0);
         assertEquals(summary, i.getSummary());
@@ -304,7 +304,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
 
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<Issue> il = nl.getIssues(Query.ISSUE_STATUS_NOT_OBSOLETE);
+        List<Issue> il = nl.getIssues(Issue.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
         Issue i = il.get(0);
         assertEquals(summary, i.getSummary());

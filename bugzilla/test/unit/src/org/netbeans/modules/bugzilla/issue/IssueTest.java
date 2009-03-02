@@ -675,7 +675,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
     }
 
     private String getSeenValue(BugzillaIssue issue, IssueField f) {
-        Map<String, String> m = getRepository().getIssuesCache().getSeenAttributes(issue.getID());
+        Map<String, String> m = getRepository().getIssueCache().getSeenAttributes(issue.getID());
         if(m == null) {
             return "";
         }
@@ -744,10 +744,10 @@ public class IssueTest extends NbTestCase implements TestConstants {
         return l.get(0);
     }
 
-    private void setSeen(BugzillaIssue issue) throws SecurityException, InterruptedException {
+    private void setSeen(BugzillaIssue issue) throws SecurityException, InterruptedException, IOException {
         LogHandler lh = new LogHandler("finished storing issue");
         Bugzilla.LOG.addHandler(lh);
-        issue.setSeen(true, true);
+        issue.setSeen(true);
         while (!lh.done) {
             Thread.sleep(100);
         }
