@@ -112,7 +112,8 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         new Thread(new Runnable() {
             public void run() {
                 try {
-                    DLightToolkitManagement.getInstance().startSession(handle.get());
+                    session = handle.get();
+                    DLightToolkitManagement.getInstance().startSession(session);
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (ExecutionException ex) {

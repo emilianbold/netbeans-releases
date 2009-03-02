@@ -125,8 +125,8 @@ class SectionFinder {
             str.append("; e_machine: ").append(e_machine & 0xFFFF); // NOI18N
             str.append("; e_version: ").append(e_version & 0xFFFF); // NOI18N
             str.append("; e_entry: 0x").append(Long.toHexString(e_entry)); // NOI18N
-            str.append("; e_phoff: ").append((long) e_phoff & 0xFFFFFFFFL); // NOI18N
-            str.append("; e_shoff: ").append((long) e_shoff & 0xFFFFFFFFL); // NOI18N
+            str.append("; e_phoff: ").append(e_phoff & 0xFFFFFFFFL); // NOI18N
+            str.append("; e_shoff: ").append(e_shoff & 0xFFFFFFFFL); // NOI18N
             str.append("; e_flags: 0x").append(Integer.toHexString(e_flags)); // NOI18N
             str.append("; e_ehsize: ").append(e_ehsize & 0xFFFF); // NOI18N
             str.append("; e_phentsize: ").append(e_phentsize & 0xFFFF); // NOI18N

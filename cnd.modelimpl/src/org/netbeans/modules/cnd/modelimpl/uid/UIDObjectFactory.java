@@ -347,17 +347,20 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     protected SelfPersistent createObject(int handler, DataInput aStream) throws IOException {
         
         SelfPersistent anUID;
-        boolean share = true;
+        boolean share = false;
         switch (handler) {
             case UID_PROJECT_UID:
+                share = true;
                 anUID = new ProjectUID(aStream);
                 break;
                 
             case UID_NAMESPACE_UID:
+                share = true;
                 anUID = new NamespaceUID(aStream);
                 break;
                 
             case UID_FILE_UID:
+                share = true;
                 anUID = new FileUID(aStream);
                 break;
                 
@@ -374,13 +377,16 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                 break;
                 
             case UID_MACRO_UID:
+                share = true;
                 anUID = new MacroUID(aStream);
                 break;
                 
             case UID_INCLUDE_UID:
+                share = true;
                 anUID = new IncludeUID(aStream);
                 break;
 
+            // no reason to cache declaration and more detailed uids.
             case UID_PARAM_LIST_UID:
                 anUID = new ParamListUID(aStream);
                 break;
@@ -404,15 +410,15 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                 break;
                 
             case UID_UNRESOLVED_CLASS:
-		anUID = new UIDUtilities.UnresolvedClassUID(aStream);
+                anUID = new UIDUtilities.UnresolvedClassUID(aStream);
                 break;
 
             case UID_UNRESOLVED_FILE:
-		anUID = new UIDUtilities.UnresolvedFileUID(aStream);
+                anUID = new UIDUtilities.UnresolvedFileUID(aStream);
                 break;
 
             case UID_UNRESOLVED_NAMESPACE:
-		anUID = new UIDUtilities.UnresolvedNamespaceUID(aStream);
+                anUID = new UIDUtilities.UnresolvedNamespaceUID(aStream);
                 break;
             default:
                 throw new IllegalArgumentException("The UID is an instance of unknown class: " + handler); //NOI18N
@@ -423,6 +429,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             CsmUID shared = UIDManager.instance().getSharedUID((CsmUID)anUID);
             assert shared != null;
             assert shared instanceof SelfPersistent;
+            anUID = (SelfPersistent) shared;
         }
         return anUID;
     }

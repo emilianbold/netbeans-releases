@@ -36,60 +36,48 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.storage;
+package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.beans.PropertyEditorSupport;
-import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
+import java.io.DataInput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
  *
- * @author mt154047
+ * @author Alexander Simon
  */
-public class MangledNameTypeEditor extends PropertyEditorSupport {
+public final class ClassifierContainerKey extends ProjectNameBasedKey {
 
+    public ClassifierContainerKey(String project) {
+        super(project);
+    }
 
-    /**
-     * Creates new instance.
-     */
-    public MangledNameTypeEditor() {
+    public ClassifierContainerKey(DataInput in) throws IOException {
+        super(in);
+    }
+
+    public int getSecondaryAt(int level) {
+        assert (level == 0);
+        return KeyObjectFactory.KEY_CLASSIFIER_CONTAINER_KEY;
+    }
+
+    public int getSecondaryDepth() {
+        return 1;
+    }
+
+    public PersistentFactory getPersistentFactory() {
+        return CsmObjectFactory.instance();
     }
 
     @Override
-    public String getAsText() {
-        return ((MangledNameType) getValue()).demangle();
+    public Key.Behavior getBehavior() {
+        return Key.Behavior.LargeAndMutable;
     }
 
     @Override
-    public void setValue(Object value) {
-        if (value instanceof String) {
-            super.setValue(new MangledNameType(value + ""));
-            return;
-        }
-        super.setValue(value);
-    }
-
-    @Override
-    public Object getValue() {
-        return super.getValue();
-    }
-
-
-
-//
-//    @Override
-//    public String getAsText() {
-//        if (!(getValue() instanceof Time)){
-//            return getValue() + "";
-//        }
-//        return ((Time) getValue() == null ? "0" : ((Time) getValue()).equals(zeroTime) ? "0" : format.format(((Time) getValue()).getNanos() / 1e9));
-//    }
-//
-    @Override
-    public void setAsText(String text) {
-        throw new UnsupportedOperationException();
+    public String toString() {
+        return "ClassifierContainerKey " + getProjectName(); // NOI18N
     }
 }

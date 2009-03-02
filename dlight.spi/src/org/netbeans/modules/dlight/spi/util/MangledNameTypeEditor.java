@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,24 +31,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.spi.util;
 
-package org.netbeans.cnd.api.lexer;
-
-import org.netbeans.api.lexer.Token;
+import java.beans.PropertyEditorSupport;
+import java.util.concurrent.ExecutionException;
+import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
+import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author mt154047
  */
-public interface CndTokenProcessor<T extends Token> {
-    void start(int startOffset, int firstTokenOffset, int lastOffset);
-    void end(int offset, int lastTokenOffset);
-    boolean isStopped();
+public class MangledNameTypeEditor extends PropertyEditorSupport {
+
+
     /**
-     *
-     * @param token current token
-     * @return true if token processor is interested in getting embedding of input token as well
+     * Creates new instance.
      */
-    boolean token(T token, int tokenOffset);
+    public MangledNameTypeEditor() {
+    }
+
+    @Override
+    public String getAsText() {
+        return ((MangledNameType) getValue()).demangle();
+    }
+
+    @Override
+    public void setValue(Object value) {
+        if (value instanceof String) {
+            super.setValue(new MangledNameType(value + ""));
+            return;
+        }
+        super.setValue(value);
+    }
+
+    @Override
+    public Object getValue() {
+        return super.getValue();
+    }
+
+
+
+//
+//    @Override
+//    public String getAsText() {
+//        if (!(getValue() instanceof Time)){
+//            return getValue() + "";
+//        }
+//        return ((Time) getValue() == null ? "0" : ((Time) getValue()).equals(zeroTime) ? "0" : format.format(((Time) getValue()).getNanos() / 1e9));
+//    }
+//
+    @Override
+    public void setAsText(String text) {
+        throw new UnsupportedOperationException();
+    }
 }

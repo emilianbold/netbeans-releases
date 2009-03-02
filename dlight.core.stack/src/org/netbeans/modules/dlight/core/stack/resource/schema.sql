@@ -11,6 +11,7 @@ CREATE TABLE Node (
     node_id INT NOT NULL,
     caller_id INT NOT NULL,
     func_id INT NOT NULL,
+    offset BIGINT NOT NULL,
     time_incl BIGINT NOT NULL DEFAULT 0,
     time_excl BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY (node_id)
