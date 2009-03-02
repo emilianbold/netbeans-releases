@@ -52,24 +52,34 @@ import org.openide.windows.TopComponent;
  * @author Jan Stola, Tomas Stupka
  */
 public final class IssueTopComponent extends TopComponent {
+    /** Set of opened {@code IssueTopComponent}s. */
     private static Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
-    /** path to the icon used by the component and its open action */
-//    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
-
+    /** Issue displayed by this top-component. */
     private Issue issue;
 
+    /**
+     * Creates new {@code IssueTopComponent}.
+     */
     public IssueTopComponent() {
         initComponents();
-        setName(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent"));
-        setToolTipText(NbBundle.getMessage(IssueTopComponent.class, "HINT_IssueTopComponent"));
-//        setIcon(Utilities.loadImage(ICON_PATH, true));
-        
+        setName(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent")); // NOI18N
+        setToolTipText(NbBundle.getMessage(IssueTopComponent.class, "HINT_IssueTopComponent")); // NOI18N
     }
 
+    /**
+     * Returns issue displayed by this top-component.
+     *
+     * @return issue displayed by this top-component.
+     */
     public Issue getIssue() {
         return issue;
     }
 
+    /**
+     * Sets issue displayed by this top-component.
+     *
+     * @param issue displayed by this top-component.
+     */
     public void setIssue(Issue issue) {
         assert (this.issue == null);
         this.issue = issue;
@@ -109,6 +119,12 @@ public final class IssueTopComponent extends TopComponent {
         openIssues.remove(this);
     }
 
+    /**
+     * Returns top-component that should display the given issue.
+     *
+     * @param issue issue for which the top-component should be found.
+     * @return top-component that should display the given issue.
+     */
     public static synchronized IssueTopComponent find(Issue issue) {
         for (IssueTopComponent tc : openIssues) {
             if (issue.equals(tc.getIssue())) {
