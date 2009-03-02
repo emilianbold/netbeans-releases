@@ -74,7 +74,7 @@ public class CustomizationWSEditorProvider
             Project prj = FileOwnerQuery.getOwner(srcRoot);
             JaxWsModel jaxWsModel = prj.getLookup().lookup(JaxWsModel.class);
             if (jaxWsModel != null) {
-                new CustomizationWSEditor(jaxWsModel);
+                return new CustomizationWSEditor(jaxWsModel);
             }
         }
         return null;
