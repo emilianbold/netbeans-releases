@@ -85,7 +85,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     static final String DEF_OWNER = "defowner"; // NOI18N
     static final String DEF_GROUP = "defgroup"; // NOI18N
 
-    static final String PREF_APP_LANGUAGE = "prefAppLanguage";// Prefered language when creating new Application projects
+    static final String PREF_APP_LANGUAGE = "prefAppLanguage"; // NOI18N // Prefered language when creating new Application projects
     
     static public MakeOptions getInstance() {
         if (instance == null) {
