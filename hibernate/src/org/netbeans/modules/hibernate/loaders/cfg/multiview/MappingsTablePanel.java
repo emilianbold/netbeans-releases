@@ -118,7 +118,7 @@ public class MappingsTablePanel extends DefaultTablePanel {
 
             if (add) {
                 // enambe/disable OK button
-                dialog.setValid(dialogPanel.isValid()); 
+                dialog.setValid(dialogPanel.isDataValid());
             } 
 
             javax.swing.event.DocumentListener docListener = new EditDialog.DocListener(dialog);
