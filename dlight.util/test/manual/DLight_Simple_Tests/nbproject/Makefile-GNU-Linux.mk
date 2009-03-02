@@ -19,8 +19,8 @@ FC=
 AS=as
 
 # Macros
-CND_PLATFORM=GNU-MacOSX
-CND_CONF=MAC
+CND_PLATFORM=GNU-Linux-x86
+CND_CONF=GNU-Linux
 CND_DISTDIR=dist
 
 # Include project Makefile
@@ -58,11 +58,11 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	${MAKE}  -f nbproject/Makefile-MAC.mk dist/MAC/GNU-MacOSX/dlight_simple_tests
+	${MAKE}  -f nbproject/Makefile-GNU-Linux.mk dist/GNU-Linux/GNU-Linux-x86/dlight_simple_tests
 
-dist/MAC/GNU-MacOSX/dlight_simple_tests: ${OBJECTFILES}
-	${MKDIR} -p dist/MAC/GNU-MacOSX
-	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/dlight_simple_tests ${OBJECTFILES} ${LDLIBSOPTIONS} 
+dist/GNU-Linux/GNU-Linux-x86/dlight_simple_tests: ${OBJECTFILES}
+	${MKDIR} -p dist/GNU-Linux/GNU-Linux-x86
+	${LINK.cc} -lpthread -ldl -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/dlight_simple_tests ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/deadlock.o: deadlock.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -109,8 +109,8 @@ ${OBJECTDIR}/test_sync.o: test_sync.cpp
 
 # Clean Targets
 .clean-conf:
-	${RM} -r build/MAC
-	${RM} dist/MAC/GNU-MacOSX/dlight_simple_tests
+	${RM} -r build/GNU-Linux
+	${RM} dist/GNU-Linux/GNU-Linux-x86/dlight_simple_tests
 
 # Subprojects
 .clean-subprojects:
