@@ -168,7 +168,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         setupServicesListModels();
 
         // XXX set the defaults
-        // XXX here will be some condition
+        // XXX here will be some condition ???
         showRepoOnKenaiGUI();
         showIssuesOnKenaiGUI();
 
@@ -1008,7 +1008,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         noIssueTrackingDescLabel.setVisible(show);
     }
 
-    private File getDefaultRepoFolder() {
+    private static File getDefaultRepoFolder() {
         File defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
         if (defaultDir != null && defaultDir.exists() && defaultDir.isDirectory()) {
             String nbPrjDirName = NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "DIR_NetBeansProjects");

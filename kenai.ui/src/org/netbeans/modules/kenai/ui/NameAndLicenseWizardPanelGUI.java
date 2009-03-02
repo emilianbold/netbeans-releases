@@ -45,6 +45,7 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -613,10 +614,12 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     private void setUsername(String uName) {
         if (uName != null) {
             usernameLabel.setText(uName);
+            usernameLabel.setForeground(Color.BLUE);
             usernameLabel.setEnabled(true);
         } else {
             usernameLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.notLoggedIn"));
+            usernameLabel.setForeground(Color.BLACK);
             usernameLabel.setEnabled(false);
         }
     }

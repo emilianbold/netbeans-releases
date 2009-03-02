@@ -45,33 +45,40 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
+import java.util.Arrays;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.subversion.api.Subversion;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Milan
+ * @author Milan Kubec
  */
-public class GetFromKenaiPanel extends javax.swing.JPanel {
+public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 
     /** Creates new form GetFromKenaiPanel */
-    public GetFromKenaiPanel() {
+    public GetSourcesFromKenaiPanel() {
         initComponents();
+        refreshUsername();
     }
 
     /** This method is called from within the constructor to
@@ -84,40 +91,40 @@ public class GetFromKenaiPanel extends javax.swing.JPanel {
     private void initComponents() {
         GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new JLabel();
+        loggedInLabel = new JLabel();
         usernameLabel = new JLabel();
         loginButton = new JButton();
-        jLabel3 = new JLabel();
-        jComboBox1 = new JComboBox();
-        jButton2 = new JButton();
-        jLabel4 = new JLabel();
-        jLabel5 = new JLabel();
-        jTextField1 = new JTextField();
-        jButton3 = new JButton();
-        jLabel6 = new JLabel();
-        jLabel7 = new JLabel();
-        jTextField2 = new JTextField();
-        jButton4 = new JButton();
+        kenaiRepoLabel = new JLabel();
+        kenaiRepoComboBox = new JComboBox();
+        browseKenaiButton = new JButton();
+        projectPreviewLabel = new JLabel();
+        repoFolderLabel = new JLabel();
+        repoFolderTextField = new JTextField();
+        browseRepoButton = new JButton();
+        localFolderDescLabel = new JLabel();
+        localFolderLabel = new JLabel();
+        localFolderTextField = new JTextField();
+        browseLocalButton = new JButton();
         proxyConfigButton = new JButton();
 
         setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
-        setPreferredSize(new Dimension(600, 400));
+        setPreferredSize(new Dimension(700, 350));
         setLayout(new GridBagLayout());
 
-        jLabel1.setText(NbBundle.getMessage(GetFromKenaiPanel.class, "GetFromKenaiPanel.jLabel1.text")); // NOI18N
+        loggedInLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.loggedInLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 4, 4);
-        add(jLabel1, gridBagConstraints);
+        add(loggedInLabel, gridBagConstraints);
 
-        usernameLabel.setText(NbBundle.getMessage(GetFromKenaiPanel.class, "GetFromKenaiPanel.notLoggedIn")); // NOI18N
+        usernameLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetFromKenaiPanel.notLoggedIn")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 4, 4, 0);
         add(usernameLabel, gridBagConstraints);
 
-        loginButton.setText(NbBundle.getMessage(GetFromKenaiPanel.class, "GetFromKenaiPanel.loginButton.text")); // NOI18N
+        loginButton.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.loginButton.text")); // NOI18N
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 loginButtonActionPerformed(evt);
@@ -130,29 +137,34 @@ public class GetFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(0, 0, 4, 0);
         add(loginButton, gridBagConstraints);
 
-        jLabel3.setText(NbBundle.getMessage(GetFromKenaiPanel.class, "GetFromKenaiPanel.jLabel3.text")); // NOI18N
+        kenaiRepoLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.kenaiRepoLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 0, 4);
-        add(jLabel3, gridBagConstraints);
+        add(kenaiRepoLabel, gridBagConstraints);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        add(jComboBox1, gridBagConstraints);
+        add(kenaiRepoComboBox, gridBagConstraints);
 
-        jButton2.setText(NbBundle.getMessage(GetFromKenaiPanel.class, "GetFromKenaiPanel.jButton2.text")); // NOI18N
+        browseKenaiButton.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseKenaiButton.text")); // NOI18N
+        browseKenaiButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                browseKenaiButtonActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
-        add(jButton2, gridBagConstraints);
+        add(browseKenaiButton, gridBagConstraints);
 
-        jLabel4.setText(NbBundle.getMessage(GetFromKenaiPanel.class, "GetFromKenaiPanel.jLabel4.text")); // NOI18N
+        projectPreviewLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.projectPreviewLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -160,67 +172,77 @@ public class GetFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 6, 16, 0);
-        add(jLabel4, gridBagConstraints);
+        add(projectPreviewLabel, gridBagConstraints);
 
-        jLabel5.setText(NbBundle.getMessage(GetFromKenaiPanel.class, "GetFromKenaiPanel.jLabel5.text")); // NOI18N
+        repoFolderLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.repoFolderLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 0, 4);
-        add(jLabel5, gridBagConstraints);
+        add(repoFolderLabel, gridBagConstraints);
 
-        jTextField1.setText(NbBundle.getMessage(GetFromKenaiPanel.class, "GetFromKenaiPanel.jTextField1.text")); // NOI18N
+        repoFolderTextField.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.repoFolderTextField.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        add(jTextField1, gridBagConstraints);
+        add(repoFolderTextField, gridBagConstraints);
 
-        jButton3.setText(NbBundle.getMessage(GetFromKenaiPanel.class, "GetFromKenaiPanel.jButton3.text")); // NOI18N
+        browseRepoButton.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseRepoButton.text")); // NOI18N
+        browseRepoButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                browseRepoButtonActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
-        add(jButton3, gridBagConstraints);
+        add(browseRepoButton, gridBagConstraints);
 
-        jLabel6.setText(NbBundle.getMessage(GetFromKenaiPanel.class, "GetFromKenaiPanel.jLabel6.text")); // NOI18N
+        localFolderDescLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderDescLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(20, 0, 4, 0);
-        add(jLabel6, gridBagConstraints);
+        gridBagConstraints.insets = new Insets(24, 0, 6, 0);
+        add(localFolderDescLabel, gridBagConstraints);
 
-        jLabel7.setText(NbBundle.getMessage(GetFromKenaiPanel.class, "GetFromKenaiPanel.jLabel7.text")); // NOI18N
+        localFolderLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 0, 4);
-        add(jLabel7, gridBagConstraints);
+        add(localFolderLabel, gridBagConstraints);
 
-        jTextField2.setText(NbBundle.getMessage(GetFromKenaiPanel.class, "GetFromKenaiPanel.jTextField2.text")); // NOI18N
+        localFolderTextField.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderTextField.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        add(jTextField2, gridBagConstraints);
+        add(localFolderTextField, gridBagConstraints);
 
-        jButton4.setText(NbBundle.getMessage(GetFromKenaiPanel.class, "GetFromKenaiPanel.jButton4.text")); // NOI18N
+        browseLocalButton.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseLocalButton.text")); // NOI18N
+        browseLocalButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                browseLocalButtonActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
-        add(jButton4, gridBagConstraints);
+        add(browseLocalButton, gridBagConstraints);
 
-        proxyConfigButton.setText(NbBundle.getMessage(GetFromKenaiPanel.class, "GetFromKenaiPanel.proxyConfigButton.text")); // NOI18N
+        proxyConfigButton.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.proxyConfigButton.text")); // NOI18N
         proxyConfigButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 proxyConfigButtonActionPerformed(evt);
@@ -248,22 +270,55 @@ public class GetFromKenaiPanel extends javax.swing.JPanel {
         OptionsDisplayer.getDefault().open("General"); // NOI18N
 }//GEN-LAST:event_proxyConfigButtonActionPerformed
 
+    private void browseKenaiButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseKenaiButtonActionPerformed
+        
+        
+
+}//GEN-LAST:event_browseKenaiButtonActionPerformed
+
+    private void browseRepoButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseRepoButtonActionPerformed
+        
+        PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
+        String svnFolders[] = null;
+        try {
+            svnFolders = Subversion.selectRepositoryFolders("Select Repository Folder", "",
+                    passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        System.out.println(Arrays.asList(svnFolders));
+
+    }//GEN-LAST:event_browseRepoButtonActionPerformed
+
+    private void browseLocalButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseLocalButtonActionPerformed
+
+        // XXX open the chooser in folder entered in the text field
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int returnVal = chooser.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File selFile = chooser.getSelectedFile();
+            localFolderTextField.setText(selFile.getAbsolutePath());
+        }
+        
+    }//GEN-LAST:event_browseLocalButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JButton jButton2;
-    private JButton jButton3;
-    private JButton jButton4;
-    private JComboBox jComboBox1;
-    private JLabel jLabel1;
-    private JLabel jLabel3;
-    private JLabel jLabel4;
-    private JLabel jLabel5;
-    private JLabel jLabel6;
-    private JLabel jLabel7;
-    private JTextField jTextField1;
-    private JTextField jTextField2;
+    private JButton browseKenaiButton;
+    private JButton browseLocalButton;
+    private JButton browseRepoButton;
+    private JComboBox kenaiRepoComboBox;
+    private JLabel kenaiRepoLabel;
+    private JLabel localFolderDescLabel;
+    private JLabel localFolderLabel;
+    private JTextField localFolderTextField;
+    private JLabel loggedInLabel;
     private JButton loginButton;
+    private JLabel projectPreviewLabel;
     private JButton proxyConfigButton;
+    private JLabel repoFolderLabel;
+    private JTextField repoFolderTextField;
     private JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
 
@@ -279,10 +334,12 @@ public class GetFromKenaiPanel extends javax.swing.JPanel {
     private void setUsername(String uName) {
         if (uName != null) {
             usernameLabel.setText(uName);
+            usernameLabel.setForeground(Color.BLUE);
             usernameLabel.setEnabled(true);
         } else {
-            usernameLabel.setText(NbBundle.getMessage(GetFromKenaiPanel.class,
+            usernameLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
                     "GetFromKenaiPanel.notLoggedIn"));
+            usernameLabel.setForeground(Color.BLACK);
             usernameLabel.setEnabled(false);
         }
     }

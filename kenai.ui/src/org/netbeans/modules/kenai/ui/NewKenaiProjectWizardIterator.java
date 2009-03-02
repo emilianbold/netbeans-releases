@@ -40,6 +40,7 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -52,8 +53,11 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiErrorMessage;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -96,7 +100,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
     private Logger logger = Logger.getLogger(NewKenaiProjectWizardIterator.class.getName());
 
-    public Set instantiate(ProgressHandle handle) throws IOException {
+    public Set<KenaiProject> instantiate(ProgressHandle handle) throws IOException {
 
         handle.start();
 
@@ -178,20 +182,24 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 //        }
 
         // After the repository is created it must be checked out
-        
+        // local folder to checkout needs to be created if not exists
 
         // Show Project creation summary
         
 
-        // Open the project
-//        try {
-//           Kenai.getDefault().getProject(newPrjName).open();
-//        } catch (KenaiException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
+        // Open the project in Dashboard
+        Set<KenaiProject> set = new HashSet<KenaiProject>();
+        try {
+            KenaiProject project = Kenai.getDefault().getProject(newPrjName);
+            Dashboard.getDefault().addNonMemberProject(new ProjectHandleImpl(project));
+            set.add(project);
+        } catch (KenaiException ex) {
+            Exceptions.printStackTrace(ex);
+        }
 
         handle.finish();
-        return null;
+
+        return set;
         
     }
 

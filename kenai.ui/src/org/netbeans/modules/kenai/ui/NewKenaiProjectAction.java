@@ -38,27 +38,60 @@
  */
 package org.netbeans.modules.kenai.ui;
 
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import java.text.MessageFormat;
+import java.util.Set;
+import javax.swing.JButton;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 
 public final class NewKenaiProjectAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
+
         WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
         wizardDescriptor.setTitle("New Kenai Project");
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
-        dialog.setVisible(true);
-        dialog.toFront();
+
+        DialogDisplayer.getDefault().notify(wizardDescriptor);
+        
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
-            // do something
+            Set<KenaiProject> createdProjects = wizardDescriptor.getInstantiatedObjects();
+            // everything should be created, show summary
+            // XXX check the project is really created
+            // returning the repo will be needed as well
+            showLandingPage(createdProjects);
         }
+
+    }
+
+    private void showLandingPage(Set<KenaiProject> projects) {
+
+        Object options[] = new Object[3];
+        options[0] = new JButton("Go to Kenai.com");
+        options[1] = new JButton("Create New Project...");
+        options[2] = new JButton("Close");
+
+        DialogDescriptor dialogDesc = new DialogDescriptor(new LandingPagePanel(), "New Kenai Project",
+            true, options, options[0], DialogDescriptor.RIGHT_ALIGN, null, null);
+
+        Object option = DialogDisplayer.getDefault().notify(dialogDesc);
+        
+        if (options[0].equals(option)) { // open Kenai project page
+            KenaiProject kp = projects.iterator().next();
+            URL projectUrl = kp.getWebLocation();
+            URLDisplayer.getDefault().showURL(projectUrl);
+        } else if (options[1].equals(option)) { // create NB project
+            System.out.println("Opening new project wizard in created repository");
+        }
+
     }
     
 }
