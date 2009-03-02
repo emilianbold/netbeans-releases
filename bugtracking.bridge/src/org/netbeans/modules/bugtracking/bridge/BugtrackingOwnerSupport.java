@@ -117,8 +117,10 @@ public class BugtrackingOwnerSupport {
         Object attValue = fileObject.getAttribute(
                                    "ProvidedExtensions.RemoteLocation");//NOI18N
         if (attValue instanceof String) {
-            //XXX - if we do not get any Repository, finish the search?
-            return getKenaiBugtrackingRepository(fileObject, (String) attValue);
+            Repository repository = getKenaiBugtrackingRepository(fileObject, (String) attValue);
+            if (repository != null) {
+                return repository;
+            }
         }
 
         VersioningSystem owner = VersioningSupport.getOwner(file);
