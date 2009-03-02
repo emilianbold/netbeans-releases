@@ -60,7 +60,7 @@
       Overrides the '-pre-package' target in product.xml.
     -->
     <target name="-pre-package">
-        <set property="pp.inside.dir" value="portalpack30_core"/>
+        <set property="pp.inside.dir" value="portalpack_3_0_core"/>
         <move todir="${data.directory}">
             <fileset dir="${data.directory}/${pp.inside.dir}">
                 <include name="**/*"/>
