@@ -3,6 +3,12 @@
 <filesystem>
     <folder name="Actions">
         <folder name="Team">
+            <file name="org-netbeans-modules-kenai-ui-GetSourcesFromKenaiAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.kenai.ui.GetSourcesFromKenaiAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#CTL_GetSourcesFromKenaiAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+            </file>
             <file name="org-netbeans-modules-kenai-ui-LoginAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
                 <attr name="delegate" methodvalue="org.netbeans.modules.kenai.ui.LoginAction.getDefault"/>
@@ -14,16 +20,12 @@
                 <attr name="delegate" newvalue="org.netbeans.modules.kenai.ui.OpenKenaiProjectAction"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#CTL_OpenKenaiProjectAction"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="noIconInMenu" stringvalue="false"/>
             </file>
-        </folder>
-        <folder name="Versioning">
             <file name="org-netbeans-modules-kenai-ui-NewKenaiProjectAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
                 <attr name="delegate" newvalue="org.netbeans.modules.kenai.ui.NewKenaiProjectAction"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#CTL_NewKenaiProjectAction"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="noIconInMenu" stringvalue="false"/>
             </file>
         </folder>
         <folder name="Window">
@@ -45,12 +47,16 @@
                     <attr name="position" intvalue="100"/>
                 </file>
                 <file name="org-netbeans-modules-kenai-ui-NewKenaiProjectAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Versioning/org-netbeans-modules-kenai-ui-NewKenaiProjectAction.instance"/>
-                    <attr name="position" intvalue="400"/>
+                    <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-NewKenaiProjectAction.instance"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
                 <file name="org-netbeans-modules-kenai-ui-OpenKenaiProjectAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-OpenKenaiProjectAction.instance"/>
                     <attr name="position" intvalue="300"/>
+                </file>
+                <file name="org-netbeans-modules-kenai-ui-GetSourcesFromKenaiAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-GetSourcesFromKenaiAction.instance"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
             </folder>
         </folder>
