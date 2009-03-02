@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.storage;
+package org.netbeans.modules.dlight.spi.util;
 
 import java.beans.PropertyEditorSupport;
 import java.util.concurrent.ExecutionException;
