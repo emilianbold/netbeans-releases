@@ -289,6 +289,17 @@ public final class DashboardImpl extends Dashboard {
         }
     }
 
+    private void refreshMemberProjects() {
+        synchronized( LOCK ) {
+            removeProjectsFromModel(memberProjects);
+            memberProjects.clear();
+            memberProjectsLoaded = false;
+            if( isOpened() ) {
+                startLoadingMemberProjects();
+            }
+        }
+    }
+
     public void close() {
         synchronized( LOCK ) {
             treeList.setModel(EMPTY_MODEL);
