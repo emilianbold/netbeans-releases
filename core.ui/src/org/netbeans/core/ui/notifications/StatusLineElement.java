@@ -39,73 +39,29 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.autoupdate.ui.wizards;
+package org.netbeans.core.ui.notifications;
 
-import org.netbeans.modules.autoupdate.ui.actions.*;
 import java.awt.Component;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.openide.awt.StatusLineElementProvider;
-import org.openide.util.ImageUtilities;
 
 /**
+ * Status line element showing icon for Notifications.
  *
- * @author  Jiri Rechtacek
+ * @author S. Aubrecht
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.awt.StatusLineElementProvider.class, position=601)
-public final class RestartNeededNotification implements StatusLineElementProvider {
+@org.openide.util.lookup.ServiceProvider(service=org.openide.awt.StatusLineElementProvider.class, position=600)
+public final class StatusLineElement implements StatusLineElementProvider {
 
     public Component getStatusLineElement () {
-        return getUpdatesVisualizer ();
+        return getVisualizer ();
     }
 
-    private static UpdatesFlasher flasher = null;
-    
-    private static Runnable onMouseClick = null;
+    private static FlashingIcon icon = null;
 
-    /**
-     * Return an icon that is flashing when a new internal exception occurs. 
-     * Clicking the icon opens the regular exception dialog box. The icon
-     * disappears (is hidden) after a short period of time and the exception
-     * list is cleared.
-     *
-     * @return A flashing icon component or null if console logging is switched on.
-     */
-    private static Component getUpdatesVisualizer () {
-        if (null == flasher) {
-            ImageIcon img1 = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/restart.png", false); // NOI18N
-            assert img1 != null : "Icon cannot be null.";
-            flasher = new UpdatesFlasher (img1);
+    private static Component getVisualizer () {
+        if (null == icon) {
+            icon = new FlashingIcon();
         }
-        return flasher;
+        return icon;
     }
-    
-    static UpdatesFlasher getFlasher (Runnable whatRunOnMouseClick) {
-        onMouseClick = whatRunOnMouseClick;
-        return flasher;
-    }
-    
-    static class UpdatesFlasher extends FlashingIcon {
-        public UpdatesFlasher (Icon img1) {
-            super (img1);
-            DISAPPEAR_DELAY_MILLIS = -1;
-            STOP_FLASHING_DELAY = 0;
-        }
-
-        /**
-         * User clicked the flashing icon, display the exception window.
-         */
-        protected void onMouseClick () {
-            if (onMouseClick != null) {
-                onMouseClick.run ();
-            }
-        }
-        
-        /**
-         * The flashing icon disappeared (timed-out), clear the current
-         * exception list.
-         */
-        protected void timeout () {}
-    }
-    
 }

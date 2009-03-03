@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,26 +34,62 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.autoupdate.pluginimporter;
+package org.netbeans.core.ui.notifications;
 
-import java.awt.Component;
-import javax.swing.JPanel;
-import org.openide.awt.StatusLineElementProvider;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer.Priority;
 
 /**
+ * Notification implementation.
  *
- * @author Jirka Rechtacek
+ * @author S. Aubrecht
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.awt.StatusLineElementProvider.class, position=590)
-public class StatusLineImportIcon implements StatusLineElementProvider {
-    public static JPanel statusPanel = new JPanel ();
+class NotificationImpl extends Notification implements Comparable<NotificationImpl> {
 
-    public Component getStatusLineElement () {
-        return statusPanel;
+    private String title;
+    private Icon icon;
+    private Priority priority;
+    private JComponent balloonComp;
+    private JComponent popupComponent;
 
+    void init( String title, Icon icon, Priority priority, JComponent balloonComp, JComponent popupComponent ) {
+        this.title = title;
+        this.icon = icon;
+        this.priority = priority;
+        this.balloonComp = balloonComp;
+        this.popupComponent = popupComponent;
     }
 
+    @Override
+    public void clear() {
+        NotificationDisplayerImpl.getInstance().remove(this);
+    }
+
+    public int compareTo(NotificationImpl n) {
+        int res = priority.compareTo(n.priority);
+        if( 0 == res )
+            res = title.compareTo(n.title);
+        return res;
+    }
+
+    public JComponent getBalloonComp() {
+        return balloonComp;
+    }
+
+    public Icon getIcon() {
+        return icon;
+    }
+
+    public JComponent getPopupComponent() {
+        return popupComponent;
+    }
+
+    public String getTitle() {
+        return title;
+    }
 }

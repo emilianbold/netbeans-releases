@@ -274,7 +274,22 @@ public final class DashboardImpl extends Dashboard {
         return opened;
     }
 
-    void refreshMemberProjects() {
+    void refreshProjects() {
+        synchronized( LOCK ) {
+            removeProjectsFromModel(memberProjects);
+            memberProjects.clear();
+            memberProjectsLoaded = false;
+            removeProjectsFromModel(otherProjects);
+            otherProjects.clear();
+            otherProjectsLoaded = false;
+            if( isOpened() ) {
+                startLoadingMemberProjects();
+                startLoadingOtherProjects();
+            }
+        }
+    }
+
+    private void refreshMemberProjects() {
         synchronized( LOCK ) {
             removeProjectsFromModel(memberProjects);
             memberProjects.clear();

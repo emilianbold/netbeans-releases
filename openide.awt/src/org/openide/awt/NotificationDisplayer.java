@@ -81,10 +81,12 @@ public abstract class NotificationDisplayer {
      * is non-null then this text will be presented as a clickable link.
      * @param detailsAction Action to invoke when user click details text or null.
      * @return New notification.
+     * @throws NullPointerException If any argument is null.
      */
     public Notification notify( String title, Icon icon,
-            String detailsText, ActionListener detailsAction ) {
-        return notify( title, icon, detailsText, detailsAction, Priority.NORMAL);
+            String detailsText, ActionListener detailsAction ) throws NullPointerException {
+        return notify( title, icon, detailsText, detailsAction, Priority.NORMAL)
+                ;
     }
 
     /**
@@ -96,9 +98,11 @@ public abstract class NotificationDisplayer {
      * @param detailsAction Action to invoke when user click details text or null.
      * @param priority Notification priority
      * @return New notification.
+     * @throws NullPointerException If any argument is null.
      */
     public abstract Notification notify( String title, Icon icon,
-            String detailsText, ActionListener detailsAction, Priority priority);
+            String detailsText, ActionListener detailsAction, Priority priority)
+            throws NullPointerException;
 
     /**
      * Create and show new notification with customized content.
@@ -110,9 +114,11 @@ public abstract class NotificationDisplayer {
      * in notifications popup list. 
      * @param priority Notification priority.
      * @return New notification.
+     * @throws NullPointerException If any argument is null.
      */
     public abstract Notification notify( String title, Icon icon,
-            JComponent balloonDetails, JComponent popupDetails, Priority priority);
+            JComponent balloonDetails, JComponent popupDetails, Priority priority)
+            throws NullPointerException;
 
 
     /**
@@ -158,7 +164,7 @@ public abstract class NotificationDisplayer {
         }
 
         @Override
-        public void dispose() {
+        public void clear() {
             msg.clear(0);
         }
     }

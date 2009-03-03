@@ -52,5 +52,5 @@ public abstract class Notification {
     /**
      * Remove this notification from the list of active notifications.
      */
-    public abstract void dispose();
+    public abstract void clear();
 }

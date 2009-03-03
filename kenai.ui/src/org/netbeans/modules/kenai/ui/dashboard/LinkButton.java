@@ -48,6 +48,7 @@ import javax.swing.DefaultButtonModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.plaf.UIResource;
 
 /**
  * Button with no border painted looking like a hypertext link.
@@ -97,12 +98,15 @@ public class LinkButton extends JButton {
      * @param isSelected True if the button is selected.
      */
     public void setForeground( Color foreground, boolean isSelected ) {
-        if( isSelected )
+        if( isSelected ) {
+            if( foreground instanceof UIResource )
+                foreground = new Color(foreground.getRGB());
             setForeground(foreground);
-        else if( isEnabled() )
+        } else if( isEnabled() ) {
             setForeground(ColorManager.linkColor);
-        else
+        } else {
             setForeground(ColorManager.disabledColor);
+        }
     }
 
     private void init( ActionListener al ) {
