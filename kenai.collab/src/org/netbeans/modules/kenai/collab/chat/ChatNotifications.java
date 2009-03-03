@@ -43,6 +43,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
@@ -52,15 +53,19 @@ import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Jan Becicka
  */
 public class ChatNotifications {
-
+    
+    private static ImageIcon ONLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.gif"));
     private static ChatNotifications instance;
+    private RequestProcessor notificationsAdder = new RequestProcessor();
 
     private HashMap<String, MessagingHandleImpl> groupMessages = new HashMap<String, MessagingHandleImpl>();
     
@@ -74,47 +79,53 @@ public class ChatNotifications {
         return instance;
     }
 
-    public void removeGroup(String name) {
+    public synchronized void removeGroup(String name) {
         MessagingHandleImpl r=groupMessages.get(name);
         if (r!=null) {
             r.disposeNotification();
+            r.setMessageCount(0);
             groupMessages.remove(r);
         }
     }
 
-    void addGroupMessage(Message msg) {
-        assert !SwingUtilities.isEventDispatchThread();
-        final String chatRoomName = StringUtils.parseName(msg.getFrom());
-        final MessagingHandleImpl r = getMessagingHandle(chatRoomName);
-        r.setMessageCount(r.getMessageCount()+1);
-        r.disposeNotification();
-        String t=null;
-        try {
-            t = NbBundle.getMessage(ChatTopComponent.class, "LBL_GroupChatNotification", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), r.getMessageCount()});
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        final String title =t;
-        
-        final String description=NbBundle.getMessage(ChatTopComponent.class, "LBL_ReadIt");
-        
-        final ActionListener l = new ActionListener() {
+    void addGroupMessage(final Message msg) {
+        notificationsAdder.post(new Runnable() {
 
-            public void actionPerformed(ActionEvent arg0) {
-                final ChatTopComponent chatTC = ChatTopComponent.getDefault();
-                chatTC.open();
-                chatTC.requestActive();
-                chatTC.setActive(StringUtils.parseName(chatRoomName));
-            }
-        };
-
-        SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                Notification n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, l, Priority.NORMAL);
-                r.setNotification(n);
+
+                final String chatRoomName = StringUtils.parseName(msg.getFrom());
+                final MessagingHandleImpl r = getMessagingHandle(chatRoomName);
+                r.setMessageCount(r.getMessageCount() + 1);
+                String t = null;
+                try {
+                    t = NbBundle.getMessage(ChatTopComponent.class, "LBL_GroupChatNotification", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), r.getMessageCount()});
+                } catch (KenaiException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                final String title = t;
+
+                final String description = NbBundle.getMessage(ChatTopComponent.class, "LBL_ReadIt");
+
+                final ActionListener l = new ActionListener() {
+
+                    public void actionPerformed(ActionEvent arg0) {
+                        final ChatTopComponent chatTC = ChatTopComponent.getDefault();
+                        chatTC.open();
+                        chatTC.requestActive();
+                        chatTC.setActive(chatRoomName);
+                    }
+                };
+
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        r.disposeNotification();
+                        Notification n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, l, Priority.NORMAL);
+                        r.setNotification(n);
+                    }
+                });
             }
         });
-
     }
 
     void addPrivateMessage(Message msg) {
@@ -131,7 +142,7 @@ public class ChatNotifications {
     }
 
     private Icon getIcon() {
-        return null;
+        return ONLINE;
     }
 }
 

@@ -185,11 +185,7 @@ public class KenaiConnection implements PropertyChangeListener {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     if (listener == null || !ChatTopComponent.isInitedAndVisible(name)) {
-                        RequestProcessor.getDefault().post(new Runnable() {
-                            public void run() {
-                                chatNotifications.addGroupMessage(msg);
-                            }
-                        });
+                        chatNotifications.addGroupMessage(msg);
                     }
                 }
             });

@@ -119,8 +119,10 @@ public class ChatTopComponent extends TopComponent {
         ChangeListener changeListener = new ChangeListener() {
             public void stateChanged(ChangeEvent changeEvent) {
                 int index = chats.getSelectedIndex();
-                if (index>=0)
+                if (index>=0) {
                     chats.setForegroundAt(index, Color.BLACK);
+                    ChatNotifications.getDefault().removeGroup(chats.getTitleAt(index));
+                }
             }
         };
 
@@ -238,7 +240,7 @@ public class ChatTopComponent extends TopComponent {
 
 
     public static boolean isInitedAndVisible(String name) {
-        return instance==null?false:instance.isVisible()&&instance.open.contains(name);
+        return instance==null?false:instance.isVisible()&&instance.isOpened()&&instance.open.contains(name);
     }
 
     private void putChats() {
