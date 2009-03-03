@@ -67,11 +67,11 @@ import static org.netbeans.modules.refactoring.java.test.Utilities.*;
  */
 public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
 
-    private ClassPath boot;
-    private ClassPath source;
-    private ClassPath compile;
+    ClassPath boot;
+    ClassPath source;
+    ClassPath compile;
     
-    private FileObject projectDir;
+    FileObject projectDir;
 
     final MyHandler handler;
     final List<PerformanceData> data;
