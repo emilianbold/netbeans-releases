@@ -105,6 +105,7 @@ public class CreateDomain extends Thread {
         Process process = null;
         // attempt to do the domian/instance create HERE
         File irf = platformLocation;
+        int retVal = 0;
         if (null != irf && irf.exists()) {
             PDCancel pdcan;
             String installRoot = irf.getAbsolutePath();
@@ -176,7 +177,6 @@ public class CreateDomain extends Thread {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                         ex);
             }
-            int retVal = 0;
             if (null != process) {
                 try {
                     retVal = process.waitFor();
@@ -188,6 +188,8 @@ public class CreateDomain extends Thread {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                             ie);
                 }
+            } else {
+                retVal = -1;
             }
             if (null != ph) {
                 ph.finish();
