@@ -87,6 +87,14 @@ public class IssuePanel extends javax.swing.JPanel {
         ((GroupLayout)getLayout()).replace(dummyCommentsPanel, scrollPane);
     }
 
+    void setIssueInAWT(final BugzillaIssue issue) {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                setIssue(issue);
+            }
+        });
+    }
+
     public void setIssue(BugzillaIssue issue) {
         this.issue = issue;
         try {
@@ -241,6 +249,7 @@ public class IssuePanel extends javax.swing.JPanel {
         attachmentsPanel = new javax.swing.JPanel();
         jSeparator1 = new javax.swing.JSeparator();
         headerLabel = new javax.swing.JLabel();
+        refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
@@ -345,6 +354,13 @@ public class IssuePanel extends javax.swing.JPanel {
             .add(0, 0, Short.MAX_VALUE)
         );
 
+        refreshButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.text")); // NOI18N
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -419,6 +435,10 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(headerLabel)
                 .addContainerGap(452, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(412, Short.MAX_VALUE)
+                .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {cancelButton, submitButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -427,23 +447,26 @@ public class IssuePanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(headerLabel)
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(productLabel)
-                    .add(productCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(reportedLabel)
-                    .add(reportedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(componentLabel)
-                    .add(componentCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(modifiedLabel)
-                    .add(modifiedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(versionLabel)
-                    .add(versionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(headerLabel)
+                        .add(18, 18, 18)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(productLabel)
+                            .add(productCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(reportedLabel)
+                            .add(reportedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(componentLabel)
+                            .add(componentCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(modifiedLabel)
+                            .add(modifiedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(versionLabel)
+                            .add(versionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(platformLabel)
@@ -589,18 +612,30 @@ public class IssuePanel extends javax.swing.JPanel {
                         issue.submit();
                         issue.refresh();
                     } catch (CoreException cex) {
+                        System.out.println(cex.getStatus().getMessage());
                         cex.printStackTrace();
                     } finally {
                         handle.finish();
-                        EventQueue.invokeLater(new Runnable() {
-                            public void run() {
-                                setIssue(issue);
-                            }
-                        });
+                        setIssueInAWT(issue);
                     }
                 }
             });
     }//GEN-LAST:event_submitButtonActionPerformed
+
+    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+        String refreshMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshMessage"); // NOI18N
+        String refreshMessage = MessageFormat.format(refreshMessageFormat, issue.getID());
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(refreshMessage);
+        handle.start();
+        handle.switchToIndeterminate();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                issue.refresh();
+                handle.finish();
+                setIssueInAWT(issue);
+            }
+        });
+    }//GEN-LAST:event_refreshButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea addCommentArea;
@@ -635,6 +670,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel productLabel;
     private javax.swing.JTextField qaContactField;
     private javax.swing.JLabel qaContactLabel;
+    private org.netbeans.modules.bugtracking.util.LinkButton refreshButton;
     private javax.swing.JTextField reportedField;
     private javax.swing.JLabel reportedLabel;
     private javax.swing.JComboBox resolutionCombo;
