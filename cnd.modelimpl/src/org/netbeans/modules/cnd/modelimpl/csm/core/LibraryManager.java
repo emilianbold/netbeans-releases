@@ -133,23 +133,23 @@ public final class LibraryManager {
         ProjectBase res = searchInProjectFiles(baseProject, searchFor);
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
-                trace("Projects", curFile, resolvedPath, res, baseProject);
-            }//NOI18N
+                trace("Projects", curFile, resolvedPath, res, baseProject);//NOI18N
+            }
             return res;
         }
         String folder = FileUtil.normalizeFile(new File(resolvedPath.getFolder())).getAbsolutePath();
         res = searchInProjectRoots(baseProject, getPathToFolder(folder, resolvedPath.getPath()));
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
-                trace("Projects roots", curFile, resolvedPath, res, baseProject);
-            }//NOI18N
+                trace("Projects roots", curFile, resolvedPath, res, baseProject);//NOI18N
+            }
             return res;
         }
         res = searchInProjectFilesArtificial(baseProject, searchFor);
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
-                trace("Libraries", curFile, resolvedPath, res, baseProject);
-            }//NOI18N
+                trace("Libraries", curFile, resolvedPath, res, baseProject);//NOI18N
+            }
             return res;
         }
         res = searchInProjectRootsArtificial(baseProject, getPathToFolder(folder, resolvedPath.getPath()));
@@ -157,8 +157,8 @@ public final class LibraryManager {
             if (resolvedPath.isDefaultSearchPath()) {
                 res = curFile.getProjectImpl(true);
                 if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
-                    trace("Base Project as Default Search Path", curFile, resolvedPath, res, baseProject);
-                }//NOI18N
+                    trace("Base Project as Default Search Path", curFile, resolvedPath, res, baseProject);//NOI18N
+                }
             } else if (!baseProject.isArtificial()) {
                 res = getLibrary((ProjectImpl) baseProject, folder);
                 if (res == null) {
@@ -168,18 +168,18 @@ public final class LibraryManager {
                     res = baseProject;
                 }
                 if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
-                    trace("Library for folder " + folder, curFile, resolvedPath, res, baseProject);
-                } //NOI18N
+                    trace("Library for folder " + folder, curFile, resolvedPath, res, baseProject); //NOI18N
+                }
             } else {
                 res = baseProject;
                 if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
-                    trace("Base Project", curFile, resolvedPath, res, baseProject);
-                }//NOI18N
+                    trace("Base Project", curFile, resolvedPath, res, baseProject);//NOI18N
+                }
             }
         } else {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
-                trace("Libraries roots", curFile, resolvedPath, res, baseProject);
-            }//NOI18N
+                trace("Libraries roots", curFile, resolvedPath, res, baseProject);//NOI18N
+            }
         }
         return res;
     }
