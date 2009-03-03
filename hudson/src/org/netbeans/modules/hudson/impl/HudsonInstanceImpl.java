@@ -65,7 +65,7 @@ import org.netbeans.modules.hudson.api.HudsonView;
 import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
 import org.netbeans.modules.hudson.ui.HudsonJobView;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
-import org.netbeans.modules.hudson.ui.notification.HudsonNotificationController;
+import org.netbeans.modules.hudson.ui.notification.ProblemNotificationController;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -94,6 +94,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     private Collection<HudsonJob> jobs = new ArrayList<HudsonJob>();
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
     private final Collection<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
+    private ProblemNotificationController problemNotificationController;
     /**
      * Must be kept here, not in {@link HudsonJobImpl}, because that is transient
      * and this should persist across refreshes.
@@ -142,15 +143,12 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                         }
                     }, true);
                 }
-                
-                // Notify failed jobs
-                Utilities.invokeInAWTThread(new Runnable() {
-                    public void run() {
-                        // Updates jobs views in the cache
-                        HudsonNotificationController.getDefault().notify(failedJobs);
-                    }
-                }, true);
-                
+
+                if (problemNotificationController == null) {
+                    problemNotificationController = new ProblemNotificationController(instance);
+                }
+                problemNotificationController.updateNotifications();
+
                 // When job detail is opened and job was removed, close view
                 for (final HudsonJobView v : HudsonJobView.getCachedInstances()) {
                     if (instance.equals(v.getJob().getLookup().lookup(HudsonInstance.class))) {

@@ -10,7 +10,6 @@
         <ant dir="../hudson.subversion" target="netbeans"/>
         <ant dir="../hudson.mercurial" target="netbeans"/>
         <ant dir="../hudson.j2seproject" target="netbeans"/>
-        <ant dir="../hudson.kenai" target="netbeans"/>
         <ant dir="../nbbuild" target="tryme-debug"/>
     </target>
 </project>

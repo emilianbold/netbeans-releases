@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.kenai;
+package org.netbeans.modules.hudson.ui.notification;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
