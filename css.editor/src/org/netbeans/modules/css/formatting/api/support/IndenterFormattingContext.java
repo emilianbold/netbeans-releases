@@ -44,39 +44,33 @@ import java.util.List;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.indent.spi.IndentTask;
 
-public final class IndenterFormattingContext implements IndentTask.FormattingContext {
+public final class IndenterFormattingContext {
 
     private boolean firstIndenter = false;
     private boolean lastIndenter = false;
     private boolean initialized = false;
     private BaseDocument doc;
 
-    // value: DocumentListener
-    private static final String LISTENER = "IndenterFormattingContext.listener";
-    // value: List<Change>
-    private static final String CHANGES = "IndenterFormattingContext.changes";
-    // value: List<List<Line>>
-    private static final String DATA = "IndenterFormattingContext.indentedLines";
+    private DocumentListener listener;
+    private List<Change> changes;
+    private List<List<AbstractIndenter.Line>> indentedLines;
+
+    private IndenterFormattingContext delegate;
 
     public IndenterFormattingContext(BaseDocument doc) {
         this.doc = doc;
     }
 
-    void setFirstIndenter() {
-        this.firstIndenter = true;
-        initialized = true;
-
-        if (getListener() != null) {
-            // should never happen; perhaps only in a case of a recovery:
-            doc.removeDocumentListener(getListener());
+    void initFirstIndenter() {
+        assert !initialized;
+        if (isInitialized()) {
+            return;
         }
-
-        final List<Change> changes = new ArrayList<Change>();
-
-        DocumentListener l = new DocumentListener() {
-
+        firstIndenter = true;
+        initialized = true;
+        changes = new ArrayList<Change>();
+        listener = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 changes.add(new Change(e.getOffset(), e.getLength()));
             }
@@ -89,22 +83,24 @@ public final class IndenterFormattingContext implements IndentTask.FormattingCon
                 // ignore
             }
         };
-        doc.addDocumentListener(l);
+        doc.addDocumentListener(listener);
+        indentedLines = new ArrayList<List<AbstractIndenter.Line>>();
+    }
 
-        doc.putProperty(LISTENER, l);
-        doc.putProperty(CHANGES, changes);
-        doc.putProperty(DATA, new ArrayList<List<AbstractIndenter.Line>>());
+    void setDelegate(IndenterFormattingContext delegate) {
+        assert !initialized;
+        assert delegate.isFirstIndenter();
+        initialized = true;
+        this.delegate = delegate;
     }
 
     List<Change> getAndClearChanges() {
-        List<Change> changes = (List<Change>)doc.getProperty(CHANGES);
+        if (delegate != null) {
+            return delegate.getAndClearChanges();
+        }
         List<Change> result = new ArrayList<Change>(changes);
         changes.clear();
         return result;
-    }
-
-    private DocumentListener getListener() {
-        return (DocumentListener)doc.getProperty(LISTENER);
     }
 
     public boolean isFirstIndenter() {
@@ -113,7 +109,6 @@ public final class IndenterFormattingContext implements IndentTask.FormattingCon
 
     void setLastIndenter() {
         this.lastIndenter = true;
-        initialized = true;
     }
 
     public boolean isLastIndenter() {
@@ -125,23 +120,40 @@ public final class IndenterFormattingContext implements IndentTask.FormattingCon
     }
 
     void disableListener() {
-        assert getListener() != null;
-        doc.removeDocumentListener(getListener());
+        if (delegate != null) {
+            delegate.disableListener();
+            return;
+        }
+        assert listener != null;
+        doc.removeDocumentListener(listener);
     }
 
     void enableListener() {
-        assert getListener() != null;
-        doc.addDocumentListener(getListener());
+        if (delegate != null) {
+            delegate.enableListener();
+            return;
+        }
+        assert listener != null;
+        doc.addDocumentListener(listener);
     }
 
     void removeListener() {
-        assert getListener() != null;
-        doc.removeDocumentListener(getListener());
-        doc.putProperty(LISTENER, null);
+        if (delegate != null) {
+            delegate.removeListener();
+            initialized = false;
+            return;
+        }
+        assert listener != null;
+        doc.removeDocumentListener(listener);
+        initialized = false;
+        listener = null;
     }
 
     List<List<AbstractIndenter.Line>> getIndentationData() {
-        return (List<List<AbstractIndenter.Line>>)doc.getProperty(DATA);
+        if (delegate != null) {
+            return delegate.getIndentationData();
+        }
+        return indentedLines;
     }
 
     static class Change {

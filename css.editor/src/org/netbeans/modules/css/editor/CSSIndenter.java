@@ -81,7 +81,8 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
     }
 
     @Override
-    protected int getFormatStableStart(JoinedTokenSequence<CSSTokenId> ts, int startOffset, int endOffset) {
+    protected int getFormatStableStart(JoinedTokenSequence<CSSTokenId> ts, int startOffset, int endOffset,
+            AbstractIndenter.OffsetRanges rangesToIgnore) {
         ts.move(startOffset);
 
         if (!ts.movePrevious()) {

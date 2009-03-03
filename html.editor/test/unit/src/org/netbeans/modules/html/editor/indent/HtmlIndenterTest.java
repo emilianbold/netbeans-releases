@@ -166,6 +166,14 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline(
             "<meta ^http-equiv=\"Content-Type\" content=\"text/html; charset=US-ASCII\">",
             "<meta \n    ^http-equiv=\"Content-Type\" content=\"text/html; charset=US-ASCII\">", null);
+
+        // those two tests are for particular condition in AI.calculateLineIndent():
+        insertNewline(
+                "          <table><tr><td>^</td>",
+                "          <table><tr><td>\n                  ^</td>", null);
+        insertNewline(
+                "          <table><tr><td>\n                  ^</td>",
+                "          <table><tr><td>\n                  \n                  ^</td>", null);
     }
 
 }

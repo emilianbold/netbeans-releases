@@ -53,13 +53,8 @@ import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.openide.util.Exceptions;
 
-
-// TODO: handle 
-//              unclosed tags
-
-
 /**
- *
+ * Implementation of AbstractIndenter for tag based languages.
  */
 abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends AbstractIndenter<T1> {
 
@@ -111,42 +106,94 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     }
 
     @Override
-    protected int getFormatStableStart(JoinedTokenSequence<T1> ts, int startOffset, int endOffset) {
+    protected int getFormatStableStart(JoinedTokenSequence<T1> ts, int startOffset, int endOffset,
+            AbstractIndenter.OffsetRanges rangesToIgnore) {
 
         // find open tag (with manadatory close tag) we are inside and use it
         // as formatting start; by "we are inside" is meant that all tags between
-        // startOffset and endOffset lies wihtin it - that's why we start searching
+        // startOffset and endOffset lies within it - that's why we start searching
         // form endOffset here:
         ts.move(endOffset, false);
 
         // go backwards and find a tag in which reformatting area lies:
         while (ts.movePrevious()) {
             Token<T1> tk = ts.token();
-            if (isCloseTagNameToken(tk)) {
-                // find tag open and keep searching backwards:
+            if (isForeignLanguageStartToken(tk)) {
+                break;
+            }
+            // if closing tag was found jump to opening one but
+            // only if both opening and closing tags are mandatory - not doing
+            // so can result in wrong pair matching:
+            if (isCloseTagNameToken(tk) && !isClosingTagOptional(getTokenName(tk)) && !isOpeningTagOptional(getTokenName(tk))) {
+                // find tag open and keep searching backwards ignoring it:
                 moveToOpeningTag(ts);
-            } else if (isOpenTagNameToken(tk) && !isClosingTagOptional(getTokenName(tk)) &&
+                continue;
+            }
+            if (isOpenTagNameToken(tk) && !isClosingTagOptional(getTokenName(tk)) &&
                     ts.offset() < startOffset) {
-                ts.movePrevious();
+                break;
             }
         }
-
         // now go backward and find opening tag on the beginning of line:
-        while (ts.movePrevious()) {
+        int foundOffset = -1;
+        do {
             Token tk = ts.token();
 
-            if (isStartTagSymbol(tk)) {
+            if (isStartTagSymbol(tk) || isForeignLanguageStartToken(tk)) {
                 try {
                     int firstNonWhite = Utilities.getRowFirstNonWhite(getDocument(), ts.offset());
                     if (firstNonWhite != -1 && firstNonWhite == ts.offset()) {
-                        return ts.offset();
+                        foundOffset = ts.offset();
+                        break;
                     }
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
+        } while (ts.movePrevious());
+        if (foundOffset == -1) {
+            foundOffset = LexUtilities.getTokenSequenceStartOffset(ts);
         }
-        return LexUtilities.getTokenSequenceStartOffset(ts);
+        eliminateUnnecessaryTags(ts, startOffset, foundOffset, rangesToIgnore);
+        return foundOffset;
+    }
+
+    private void eliminateUnnecessaryTags(JoinedTokenSequence<T1> ts, int from, int to, AbstractIndenter.OffsetRanges rangesToIgnore) {
+        ts.move(from, false);
+
+        // go backwards and find any closed tags with in given range and eliminate them:
+        while (ts.movePrevious()) {
+            Token<T1> tk = ts.token();
+            // if closing tag was found jump to opening one but
+            // only if both opening and closing tags are mandatory - not doing
+            // so can result in wrong pair matching:
+            if (isCloseTagNameToken(tk) && !isClosingTagOptional(getTokenName(tk)) && !isOpeningTagOptional(getTokenName(tk))) {
+                int rangeEnd;
+                if (ts.moveNext()) {
+                    // add ">":
+                    assert isEndTagSymbol(ts.token()) : "token="+ts.token()+" ts="+ts;
+                    rangeEnd = ts.offset()+getTokenName(ts.token()).length();
+                    ts.movePrevious();
+                } else {
+                    rangeEnd = ts.offset()+getTokenName(ts.token()).length();
+                }
+                // find tag open and keep searching backwards ignoring it:
+                if (moveToOpeningTag(ts)) {
+                    int rangeStart;
+                    if (ts.movePrevious()) {
+                        // add "<"
+                        assert isStartTagSymbol(ts.token()) : "token="+ts.token()+" ts="+ts;
+                        rangeStart = ts.offset();
+                    } else {
+                        rangeStart = ts.offset();
+                    }
+                    if (rangeStart < rangeEnd) {
+                        rangesToIgnore.add(rangeStart, rangeEnd);
+                    }
+                }
+            }
+        }
+
     }
 
     private final MarkupItem createMarkupItem(Token<T1> token, boolean openingTag, int indentation) {
@@ -183,7 +230,6 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             if (searchedTagName.equalsIgnoreCase(getTokenName(tk))) {
                 if (isOpenTagNameToken(tk)) {
                     if (balance == 0) {
-                        tokenSequence.movePrevious();
                         return true;
                     }
                     balance--;
@@ -506,7 +552,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 if (index != -1) {
                     i = index;
                 } else if (DEBUG) {
-                    System.err.println("WARNING: cannot find open tag for "+item+" before index "+i+": "+getStack());
+                    System.err.println("WARNING: cannot find open tag for "+item+" before index "+i+": "+(getStack().size() < 30 ? getStack() : "[too many items]"));
                 }
                 continue;
             } else {
@@ -567,7 +613,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 if (index != -1) {
                     i = index;
                 } else if (AbstractIndenter.DEBUG) {
-                    System.err.println("WARNING: cannot find open tag for "+item+" before index "+i+": "+getStack());
+                    System.err.println("WARNING: cannot find open tag for "+item+" before index "+i+": "+(getStack().size() < 30 ? getStack() : "[too many items]"));
                 }
                 continue;
             } else {

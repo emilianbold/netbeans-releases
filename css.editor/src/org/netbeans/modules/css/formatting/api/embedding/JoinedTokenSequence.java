@@ -66,6 +66,11 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
         return index + currentTokenSequence().index();
     }
 
+    private void setCurrentTokenSequenceIndex(int index) {
+        currentTokenSequence = index;
+        currentTSW = null;
+    }
+
     public void moveIndex(int ind) {
         checkCurrentTokenSequence();
         String s = ""+ind;
@@ -76,18 +81,27 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
         if (tokenSequence < 0 || tokenSequence >= tss.size()) {
             throw new IllegalStateException("index "+ind+" is out of boundaries "+tss );
         }
-        currentTokenSequence = tokenSequence;
+        setCurrentTokenSequenceIndex(tokenSequence);
         currentTokenSequence().moveIndex(tokenIndex);
     }
 
     public TokenSequence<T1> currentTokenSequence() {
         checkCurrentTokenSequence();
-        return tss.get(currentTokenSequence).getTokenSequence();
+        return getTokenSequenceWrapper().getTokenSequence();
     }
 
     public boolean isCurrentTokenSequenceVirtual() {
         checkCurrentTokenSequence();
-        return tss.get(currentTokenSequence).isVirtual();
+        return getTokenSequenceWrapper().isVirtual();
+    }
+
+    private TokenSequenceWrapper<T1> currentTSW;
+
+    private TokenSequenceWrapper<T1> getTokenSequenceWrapper() {
+        if (currentTSW == null) {
+            currentTSW = tss.get(currentTokenSequence);
+        }
+        return currentTSW;
     }
 
     public List<TokenSequenceWrapper<T1>> getContextDataTokenSequences() {
@@ -95,12 +109,12 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
     }
 
     public void moveStart() {
-        currentTokenSequence = 0;
+        setCurrentTokenSequenceIndex(0);
         currentTokenSequence().moveStart();
     }
 
     public void moveEnd() {
-        currentTokenSequence = tss.size()-1;
+        setCurrentTokenSequenceIndex(tss.size()-1);
         currentTokenSequence().moveEnd();
     }
 
@@ -110,7 +124,7 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
 
         if (!moreTokens) {
             if (currentTokenSequence < tss.size()-1) {
-                currentTokenSequence++;
+                setCurrentTokenSequenceIndex(currentTokenSequence+1);
                 currentTokenSequence().moveStart();
                 moveNext();
             } else {
@@ -127,7 +141,7 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
 
         if (!moreTokens) {
             if (currentTokenSequence > 0) {
-                currentTokenSequence--;
+                setCurrentTokenSequenceIndex(currentTokenSequence-1);
                 currentTokenSequence().moveEnd();
                 movePrevious();
             } else {
@@ -144,15 +158,8 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
             if (cdts.isVirtual()) {
                 continue;
             }
-            TokenSequence<T1> ts = cdts.getTokenSequence();
-            ts.moveStart();
-            ts.moveNext();
-            int start = ts.offset();
-            ts.moveEnd();
-            ts.movePrevious();
-            int end = ts.offset() + ts.token().length();
-            if (offset >= start && offset <= end) {
-                currentTokenSequence = i;
+            if (offset >= cdts.getStart() && offset <= cdts.getEnd()) {
+                setCurrentTokenSequenceIndex(i);
                 return currentTokenSequence().move(offset);
             }
         }
@@ -167,34 +174,27 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
             if (cdts.isVirtual()) {
                 continue;
             }
-            TokenSequence<T1> ts = cdts.getTokenSequence();
-            ts.moveStart();
-            ts.moveNext();
-            int start = ts.offset();
-            ts.moveEnd();
-            ts.movePrevious();
-            int end = ts.offset() + ts.token().length();
-            if (offset >= start && offset <= end) {
-                currentTokenSequence = i;
+            if (offset >= cdts.getStart() && offset <= cdts.getEnd()) {
+                setCurrentTokenSequenceIndex(i);
                 currentTokenSequence().move(offset);
                 return true;
             }
-            if (forward && start > offset) {
-                currentTokenSequence = i;
+            if (forward && cdts.getStart() > offset) {
+                setCurrentTokenSequenceIndex(i);
                 currentTokenSequence().moveStart();
                 return true;
             }
             if (!forward) {
-                if (start > offset) {
+                if (cdts.getStart() > offset) {
                     if (previous != -1) {
-                        currentTokenSequence = previous;
+                        setCurrentTokenSequenceIndex(previous);
                         currentTokenSequence().moveEnd();
                         return true;
                     } else {
                         return false;
                     }
-                } else if (i == tss.size()-1 && end < offset) {
-                    currentTokenSequence = i;
+                } else if (i == tss.size()-1 && cdts.getEnd() < offset) {
+                    setCurrentTokenSequenceIndex(i);
                     currentTokenSequence().moveEnd();
                     return true;
                 }
@@ -210,10 +210,7 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
         if (isCurrentTokenSequenceVirtual()) {
             assert currentTokenSequence > 0;
             TokenSequenceWrapper<T1> cdts = tss.get(currentTokenSequence-1);
-            TokenSequence<T1> ts = cdts.getTokenSequence();
-            ts.moveEnd();
-            ts.movePrevious();
-            return ts.offset() + ts.token().length();
+            return cdts.getEnd();
         } else {
             return currentTokenSequence().offset();
         }
@@ -230,7 +227,7 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
         StringBuffer sb = new StringBuffer();
         for (TokenSequenceWrapper<T1> cdts : tss) {
             String s = "";
-            if (currentTokenSequence != -1 && cdts == tss.get(currentTokenSequence)) {
+            if (currentTokenSequence != -1 && cdts == getTokenSequenceWrapper()) {
                 s = "CURRENT,";
             }
             sb.append("ContextDataTokenSequence["+s+"ts="+cdts.getTokenSequence().toString()+",virtual="+cdts.isVirtual()+"],");
@@ -244,14 +241,30 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
     public static final class TokenSequenceWrapper<T1 extends TokenId> {
         private TokenSequence<T1> ts;
         private boolean virtual;
+        private int start;
+        private int end;
 
         public TokenSequenceWrapper(TokenSequence<T1> ts, boolean virtual) {
             this.ts = ts;
             this.virtual = virtual;
+            ts.moveStart();
+            ts.moveNext();
+            start = ts.offset();
+            ts.moveEnd();
+            ts.movePrevious();
+            end = ts.offset() + ts.token().length();
         }
 
         public TokenSequence<T1> getTokenSequence() {
             return ts;
+        }
+
+        public int getEnd() {
+            return end;
+        }
+
+        public int getStart() {
+            return start;
         }
 
         public boolean isVirtual() {

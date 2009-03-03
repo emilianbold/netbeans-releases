@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.html.editor.indent;
 
-import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.Language;
@@ -50,16 +49,19 @@ import org.netbeans.editor.ext.html.HTMLLexerFormatter;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Implementation of IndentTask for text/html mimetype.
  *
  * @author Marek Fukala
  */
-public class HtmlIndentTask implements IndentTask.ContextAwareIndentTask {
+public class HtmlIndentTask implements IndentTask, Lookup.Provider {
 
     private Context context;
     private HtmlIndenter indenter;
+    private Lookup lookup;
 
 //    private FileObject fo;
     
@@ -67,6 +69,7 @@ public class HtmlIndentTask implements IndentTask.ContextAwareIndentTask {
         this.context = context;
         //fo = NbEditorUtilities.getFileObject(context.document());
         indenter = new HtmlIndenter(context);
+        lookup = Lookups.singleton(indenter.createFormattingContext());
     }
 
     public void reindent() throws BadLocationException {
@@ -91,12 +94,9 @@ public class HtmlIndentTask implements IndentTask.ContextAwareIndentTask {
 
         return new HTMLLexerFormatter(languagePath);
     }
-    
-    public void beforeReindent(List<FormattingContext> contexts) {
-        indenter.beforeReindent(contexts);
-    }
 
-    public FormattingContext createFormattingContext() {
-        return indenter.createFormattingContext();
+    public Lookup getLookup() {
+        return lookup;
     }
+    
 }

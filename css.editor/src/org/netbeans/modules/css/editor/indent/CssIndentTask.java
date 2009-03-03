@@ -27,22 +27,24 @@
  */
 package org.netbeans.modules.css.editor.indent;
 
-import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.css.editor.CSSIndenter;
-import org.netbeans.modules.editor.indent.spi.IndentTask.FormattingContext;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
-public class CssIndentTask implements IndentTask.ContextAwareIndentTask {
+public class CssIndentTask implements IndentTask, Lookup.Provider {
 
     private Context context;
     private CSSIndenter indenter;
+    private Lookup lookup;
     
     CssIndentTask(Context context) {
         this.context = context;
         indenter = new CSSIndenter(context);
+        lookup = Lookups.singleton(indenter.createFormattingContext());
     }
 
     public void reindent() throws BadLocationException {
@@ -54,11 +56,8 @@ public class CssIndentTask implements IndentTask.ContextAwareIndentTask {
         return null;
     }
 
-    public void beforeReindent(List<FormattingContext> contexts) {
-        indenter.beforeReindent(contexts);
+    public Lookup getLookup() {
+        return lookup;
     }
 
-    public FormattingContext createFormattingContext() {
-        return indenter.createFormattingContext();
-    }
 }

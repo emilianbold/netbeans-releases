@@ -40,14 +40,20 @@
 package org.netbeans.modules.web.core.syntax.formatting;
 
 import java.io.File;
+import java.util.List;
+import java.util.concurrent.Semaphore;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ext.html.parser.SyntaxElement;
+import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
@@ -57,6 +63,7 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.html.editor.NbReaderProvider;
+import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.java.source.parsing.ClassParserFactory;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
@@ -135,6 +142,32 @@ public class JspIndenterTest extends TestBase2 {
         }
     }
 
+    private void forceHTMLParsingAndWait(String file, String mimeType, Language language) throws Exception {
+        FileObject fo = getTestFile(file);
+        BaseDocument doc = getDocument(fo, mimeType, language);
+        LanguagePath htmlLP = LanguagePath.get(language);
+        Semaphore s = new Semaphore(1);
+        Listener l = new Listener(doc, s);
+        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(l);
+        s.acquire();
+        s.release();
+    }
+
+    private static class Listener extends EmbeddingUpdater {
+        private Semaphore s;
+        public Listener(Document doc, Semaphore s) throws InterruptedException {
+            super(doc);
+            this.s = s;
+            s.acquire();
+        }
+        @Override
+        public void parsingFinished(List<SyntaxElement> elements) {
+            super.parsingFinished(elements);
+            s.release();
+        }
+
+    }
+
     @Override
     protected boolean runInEQ() {
         return true;
@@ -145,6 +178,7 @@ public class JspIndenterTest extends TestBase2 {
     }
 
     public void testFormattingCase002() throws Exception {
+        forceHTMLParsingAndWait("FormattingProject/web/case002.jsp", "text/x-jsp", JspTokenId.language());
         reformatFileContents("FormattingProject/web/case002.jsp",new IndentPrefs(4,4));
     }
 
@@ -184,6 +218,9 @@ public class JspIndenterTest extends TestBase2 {
     }
 
     public void testIndentation() throws Exception {
+//        insertNewline("<style>\n     h1 {\n        <%= System.\n   somth() ^%>",
+//                      "<style>\n     h1 {\n        <%= System.\n   somth() \n        ^%>", null);
+
         insertNewline("<jsp:useBean>^", "<jsp:useBean>\n    ^", null);
         insertNewline("^<jsp:body>", "\n^<jsp:body>", null);
 

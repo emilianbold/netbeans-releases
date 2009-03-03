@@ -27,13 +27,13 @@
  */
 package org.netbeans.modules.web.core.syntax.indent;
 
-import java.util.List;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.editor.indent.spi.IndentTask.FormattingContext;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.netbeans.modules.web.core.syntax.formatting.JspIndenter;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Implementation of IndentTask for text/x-jsp mimetype.
@@ -42,14 +42,16 @@ import org.netbeans.modules.web.core.syntax.formatting.JspIndenter;
  */
                                         
 
-public class JspIndentTask implements IndentTask.ContextAwareIndentTask {
+public class JspIndentTask implements IndentTask, Lookup.Provider {
 
     private Context context;
     private JspIndenter indenter;
+    private Lookup lookup;
     
     JspIndentTask(Context context) {
         this.context = context;
         indenter = new JspIndenter(context);
+        lookup = Lookups.singleton(indenter.createFormattingContext());
     }
 
     public void reindent() throws BadLocationException {
@@ -61,11 +63,7 @@ public class JspIndentTask implements IndentTask.ContextAwareIndentTask {
         return null;
     }
 
-    public void beforeReindent(List<FormattingContext> contexts) {
-        indenter.beforeReindent(contexts);
-    }
-
-    public FormattingContext createFormattingContext() {
-        return indenter.createFormattingContext();
+    public Lookup getLookup() {
+        return lookup;
     }
 }
