@@ -345,8 +345,8 @@ public class AstUtilitiesTest extends RubyTestBase {
         List<FileObject> files = findJRubyRubyFiles();
         for (FileObject file : files) {
             Parser.Result parserResult = getParserResult(file);
-            BaseDocument doc = RubyUtils.getDocument(parserResult);
-            assertNotNull(doc);
+            BaseDocument doc = RubyUtils.getDocument(parserResult, true);
+            assertNotNull("Document for file: " + file.getPath() + " must not be null.", doc);
             List<Node> allNodes = new ArrayList<Node>();
             Node root = AstUtilities.getRoot(parserResult);
             if (root == null || root.isInvisible()) {
@@ -438,7 +438,7 @@ public class AstUtilitiesTest extends RubyTestBase {
     }
 
     public void testFindArguments1() throws Exception {
-        Parser.Result parserResult = getParserResult("testfiles/arguments.rb");
+        Parser.Result parserResult = getParserResult("testfiles/ape.rb");
         String text = getText(parserResult);
         int caretOffset = getCaretOffset(text, "might_^fail(uri, requested_e_coll, requested_m_coll)");
         Node root = AstUtilities.getRoot(parserResult);
@@ -469,7 +469,7 @@ public class AstUtilitiesTest extends RubyTestBase {
     }
 
     public void testFindArguments2() throws Exception {
-        Parser.Result parserResult = getParserResult("testfiles/arguments.rb");
+        Parser.Result parserResult = getParserResult("testfiles/rubygems.rb");
         String text = getText(parserResult);
         //int caretOffset = 2755; // "new" call from failed earlier test
         int caretOffset = getCaretOffset(text, "MUTEX = Mutex.^new");
@@ -484,7 +484,7 @@ public class AstUtilitiesTest extends RubyTestBase {
     }
 
     public void testFindArguments3() throws Exception {
-        Parser.Result parserResult = getParserResult("testfiles/arguments.rb");
+        Parser.Result parserResult = getParserResult("testfiles/rubygems.rb");
         String text = getText(parserResult);
         //int caretOffset = 2755; // "new" call from failed earlier test
         int caretOffset = getCaretOffset(text, "Gem.ac^tivate(gem_name, *version_requirements)");

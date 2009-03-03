@@ -15,9 +15,9 @@ Not Searchable Keys:
 
 Document 1
 Searchable Keys:
-  class : MyTest
-  class-ig : mytest
-  fqn : MyTest
+  class : TwoClassesTest
+  class-ig : twoclassestest
+  fqn : TwoClassesTest
   method : mymethod
   method : myother
   require : twoclasses
