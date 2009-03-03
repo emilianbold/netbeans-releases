@@ -46,6 +46,7 @@ import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -80,6 +81,10 @@ public abstract class SPIAccessor {
             String indexerName, int indexerVersion, IndexFactoryImpl factory,
             boolean followUpJob) throws IOException;
 
+    public abstract void context_attachIndexingSupport(Context context, IndexingSupport support);
+
+    public abstract IndexingSupport context_getAttachedIndexingSupport(Context context);
+    
     public abstract String getIndexerName (Context ctx);
 
     public abstract int getIndexerVersion (Context ctx);

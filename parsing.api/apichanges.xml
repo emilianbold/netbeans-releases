@@ -107,6 +107,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="IndexingManager-refreshIndexAndWait">
+      <api name="ParsingAPI"/>
+      <summary>Adding IndexingManager.refreshIndexAndWait()</summary>
+      <version major="1" minor="5"/>
+      <date day="2" month="3" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Adding <code>IndexingManager.refreshIndexAndWait(URL, Collection&lt;? extends URL&gt;)</code>
+              for synchronous index refreshing.
+          </p>
+      </description>
+  </change>
+
   <change id="Support-for-dirty-files">
       <api name="ParsingAPI"/>
       <summary>Support for marking files dirty</summary>

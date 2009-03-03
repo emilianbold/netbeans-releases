@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -82,7 +83,9 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -120,7 +123,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             EditorRegistry.addPropertyChangeListener(this);
 
             state = State.INITIALIZED;
-            submit(new RootsWork(scannedRoots, scannedBinaries) {
+            getWorker().schedule(new RootsWork(scannedRoots, scannedBinaries) {
                 public @Override void getDone() {
                     try {
                         super.getDone();
@@ -134,7 +137,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         }
                     }
                 }
-            });
+            }, false);
         }
     }
 
@@ -165,7 +168,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
      *   being reindexed due to ordinary change events (eg. when classpath roots are
      *   added/removed, file is modified, editor tabs are switched, etc).
      */
-    public void addIndexingJob(URL rootUrl, Collection<? extends URL> fileUrls, boolean followUpJob) {
+    public void addIndexingJob(URL rootUrl, Collection<? extends URL> fileUrls, boolean followUpJob, boolean wait) {
         assert rootUrl != null;
 
         FileObject root = URLMapper.findFileObject(rootUrl);
@@ -183,7 +186,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     if (FileUtil.isParentOf(root, file)) {
                         files.add(file);
                     } else {
-                        LOGGER.warning(file + " does not lie under " + root + ", not indexing it"); //NOI18N
+                        if (LOGGER.isLoggable(Level.WARNING)) {
+                            LOGGER.warning(file + " does not lie under " + root + ", not indexing it"); //NOI18N
+                        }
                     }
                 }
             }
@@ -196,7 +201,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         if (flw != null) {
-            getWorker().schedule(flw);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Scheduling index refreshing: root=" + rootUrl + ", files=" + fileUrls); //NOI18N
+            }
+
+            getWorker().schedule(flw, wait);
         }
     }
     
@@ -227,7 +236,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             sb.append("====\n"); //NOI18N
             LOGGER.fine(sb.toString());
         }
-        submit(new RootsWork(scannedRoots, scannedBinaries));
+        getWorker().schedule(new RootsWork(scannedRoots, scannedBinaries), false);
     }
 
     // -----------------------------------------------------------------------
@@ -246,7 +255,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         if ( root != null && VisibilityQuery.getDefault().isVisible(fo)) {
-            submit(new FileListWork(root, Collections.singleton(fo), false));
+            getWorker().schedule(new FileListWork(root, Collections.singleton(fo), false), false);
         }
     }
 
@@ -261,7 +270,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (root != null && VisibilityQuery.getDefault().isVisible(fo) &&
             FileUtil.getMIMEType(fo, PathRecognizerRegistry.getDefault().getMimeTypesAsArray()) != null)
         {
-            submit(new FileListWork(root, Collections.singleton(fo), false));
+            getWorker().schedule(new FileListWork(root, Collections.singleton(fo), false), false);
         }
     }
 
@@ -276,7 +285,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (root != null && VisibilityQuery.getDefault().isVisible(fo) &&
             FileUtil.getMIMEType(fo, PathRecognizerRegistry.getDefault().getMimeTypesAsArray()) != null)
         {
-            submit(new FileListWork(root, Collections.singleton(fo), false));
+            getWorker().schedule(new FileListWork(root, Collections.singleton(fo), false), false);
         }
     }
 
@@ -290,7 +299,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         if (root != null &&  VisibilityQuery.getDefault().isVisible(fo)
             /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
-            submit(new DeleteWork(root, fo));
+            getWorker().schedule(new DeleteWork(root, fo), false);
         }
     }
 
@@ -373,7 +382,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
 
             for(FileListWork job : jobs.values()) {
-                submit(job);
+                getWorker().schedule(job, false);
             }
         }
     }
@@ -408,26 +417,32 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                     Collection<? extends Indexable> dirty = Collections.singleton(SPIAccessor.getInstance().create(new FileObjectIndexable(URLMapper.findFileObject(root), f)));
                     String mimeType = DocumentUtilities.getMimeType(document);
-                    Collection<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(CustomIndexerFactory.class);
+                    Collection<? extends CustomIndexerFactory> customIndexerFactories = MimeLookup.getLookup(mimeType).lookupAll(CustomIndexerFactory.class);
+                    Collection<? extends EmbeddingIndexerFactory> embeddingIndexerFactories = MimeLookup.getLookup(mimeType).lookupAll(EmbeddingIndexerFactory.class);
 
-                    SupportAccessor.getInstance().beginTrans();
-                    try {
-                        for(CustomIndexerFactory factory : factories) {
-                            try {
-                                Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
-                                        factory.getIndexerName(), factory.getIndexVersion(), null, false);
-                                factory.filesDirty(dirty, ctx);
-                            } catch (IOException ex) {
-                                LOGGER.log(Level.WARNING, null, ex);
-                            }
+                    for(CustomIndexerFactory factory : customIndexerFactories) {
+                        try {
+                            Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
+                                    factory.getIndexerName(), factory.getIndexVersion(), null, false);
+                            factory.filesDirty(dirty, ctx);
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.WARNING, null, ex);
                         }
-                    } finally {
-                        SupportAccessor.getInstance().endTrans();
+                    }
+
+                    for(EmbeddingIndexerFactory factory : embeddingIndexerFactories) {
+                        try {
+                            Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
+                                    factory.getIndexerName(), factory.getIndexVersion(), null, false);
+                            factory.filesDirty(dirty, ctx);
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.WARNING, null, ex);
+                        }
                     }
                 } else {
                     // an odd event, maybe we could just ignore it
                     try {
-                        addIndexingJob(root, Collections.singleton(f.getURL()), false);
+                        addIndexingJob(root, Collections.singleton(f.getURL()), false, false);
                     } catch (FileStateInvalidException ex) {
                         LOGGER.log(Level.WARNING, null, ex);
                     }
@@ -466,36 +481,23 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (deactivated != null && deactivated == activeDocument) {
             activeDocument.removeDocumentListener(this);
             activeDocumentRef = null;
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Unregistering active document listener: activeDocument=" + activeDocument); //NOI18N
-            }
+            LOGGER.log(Level.FINE, "Unregistering active document listener: activeDocument={0}", activeDocument); //NOI18N
         }
 
         if (activated != null && activated != activeDocument) {
             if (activeDocument != null) {
                 activeDocument.removeDocumentListener(this);
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("Unregistering active document listener: activeDocument=" + activeDocument); //NOI18N
-                }
+                LOGGER.log(Level.FINE, "Unregistering active document listener: activeDocument={0}", activeDocument); //NOI18N
             }
 
             activeDocument = activated;
             activeDocumentRef = new WeakReference<Document>(activeDocument);
             
             activeDocument.addDocumentListener(this);
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Registering active document listener: activeDocument=" + activeDocument); //NOI18N
-            }
+            LOGGER.log(Level.FINE, "Registering active document listener: activeDocument={0}", activeDocument); //NOI18N
         }
     }
     
-    private void submit (final Work  work) {
-        Task t = getWorker ();
-        assert t != null;
-        LOGGER.log(Level.FINE, "Scheduling {0}", work);
-        t.schedule (work);
-    }
-
     private Task getWorker () {
         Task t = this.worker;
         if (t == null) {
@@ -528,10 +530,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private static abstract class Work {
 
         private final boolean followUpJob;
+        private final CountDownLatch latch;
         private ProgressHandle progressHandle = null;
         
         protected Work(boolean followUpJob) {
             this.followUpJob = followUpJob;
+            this.latch = new CountDownLatch(1);
         }
 
         protected final void updateProgress(String message) {
@@ -565,7 +569,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         protected final void index (final Map<String,Collection<Indexable>> resources, final Collection<Indexable> deleted, final URL root) throws IOException {
-            SupportAccessor.getInstance().beginTrans();
+            LinkedList<Context> transactionContexts = new LinkedList<Context>();
             try {
                 final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                 //First use all custom indexers
@@ -586,6 +590,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                             supportsEmbeddings &= b;
                             final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob);
+                            transactionContexts.add(ctx);
+                            
                             factory.filesDeleted(deleted, ctx);
                             final Collection<? extends Indexable> indexables = resources.get(mimeType);
                             if (indexables != null && indexables.size() > 0) {
@@ -611,18 +617,37 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     toIndex.addAll(data);
                 }
 
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("Using EmbeddingIndexers for " + toIndex); //NOI18N
-                }
+                LOGGER.log(Level.FINE, "Using EmbeddingIndexers for {0}", toIndex); //NOI18N
 
                 final SourceIndexer si = new SourceIndexer(root, cacheRoot, followUpJob);
-                si.index(toIndex, deleted);
+                si.index(toIndex, deleted, transactionContexts);
             } finally {
-                SupportAccessor.getInstance().endTrans();
+                for(Context ctx : transactionContexts) {
+                    IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx);
+                    if (support != null) {
+                        SupportAccessor.getInstance().store(support);
+                    }
+                }
             }
         }
 
-        public abstract void getDone();
+        protected abstract void getDone();
+
+        public final void doTheWork() {
+            try {
+                getDone();
+            } finally {
+                latch.countDown();
+            }
+        }
+
+        public final void waitUntilDone() {
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                LOGGER.log(Level.WARNING, null, e);
+            }
+        }
 
     } // End of Work class
 
@@ -658,7 +683,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             files.add(f);
         }
 
-        public void getDone() {
+        public @Override void getDone() {
             updateProgress(root);
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
@@ -695,7 +720,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
 
-        public void getDone() {
+        public @Override void getDone() {
             updateProgress(root);
             try {
                 final ArrayList<Indexable> indexables = new ArrayList<Indexable>(files.length);
@@ -724,7 +749,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             this.scannedBinaries = scannedBinaries;
         }
 
-        public void getDone() {
+        public @Override void getDone() {
             try {
                 updateProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies")); //NOI18N
                 final DependenciesContext ctx = new DependenciesContext(scannedRoots, scannedBinaries, true);
@@ -850,9 +875,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         private void scanBinary (URL root) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Scanning binary root: " + root); //NOI18N
-            }
+            LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
         }
 
         private void scanSources  (final DependenciesContext ctx) {
@@ -871,9 +894,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         private void scanSource (URL root) throws IOException {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Scanning sources root: " + root); //NOI18N
-            }
+            LOGGER.log(Level.FINE, "Scanning sources root: {0}", root); //NOI18N
 
             //todo: optimize for java.io.Files
             final FileObject rootFo = URLMapper.findFileObject(root);
@@ -892,16 +913,35 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         // Public implementation
         // -------------------------------------------------------------------
 
-        public void schedule (Work work) {
+        public void schedule (Work work, boolean wait) {
+            boolean enforceWork = false;
+            boolean waitForWork = false;
+
             synchronized (todo) {
                 assert work != null;
                 if (!allCancelled) {
-                    todo.add(work);
-                    if (!scheduled) {
-                        scheduled = true;
-                        Utilities.scheduleSpecialTask(this);
+                    if (wait && Utilities.holdsParserLock()) {
+                        enforceWork = true;
+                    } else {
+                        LOGGER.log(Level.FINE, "Scheduling {0}", work);
+                        todo.add(work);
+                        if (!scheduled) {
+                            scheduled = true;
+                            Utilities.scheduleSpecialTask(this);
+                        }
+                        waitForWork = wait;
                     }
                 }
+            }
+
+            if (enforceWork) {
+                // XXX: this will not set the isWorking() flag, which is strictly speaking
+                // wrong, but probably won't harm anything
+                LOGGER.log(Level.FINE, "Enforcing {0}", work); //NOI18N
+                work.doTheWork();
+            } else if (waitForWork) {
+                LOGGER.log(Level.FINE, "Waiting for {0}", work); //NOI18N
+                work.waitUntilDone();
             }
         }
 
@@ -972,7 +1012,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 for(Work work = getWork(); work != null; work = getWork()) {
                     work.progressHandle = progressHandle;
                     try {
-                        work.getDone();
+                        work.doTheWork();
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (Throwable t) {

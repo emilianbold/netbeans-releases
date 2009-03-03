@@ -44,6 +44,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -83,7 +84,7 @@ public class SourceIndexer {
         this.followUpJob = followUpJob;
     }
 
-    protected void index(Iterable<? extends Indexable> files, Collection<? extends Indexable> deleted) throws IOException {
+    protected void index(Iterable<? extends Indexable> files, Collection<? extends Indexable> deleted, final List<Context> transactionContexts) throws IOException {
         //todo: Replace with multi source when done
         deleted (deleted);
         for (final Indexable dirty : files) {
@@ -106,6 +107,8 @@ public class SourceIndexer {
                                 final String indexerName = currentIndexerFactory.getIndexerName();
                                 final int indexerVersion = currentIndexerFactory.getIndexVersion();
                                 final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob);
+                                transactionContexts.add(context);
+                                
                                 final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty,resultIterator.getSnapshot());
                                 if (indexer != null) {
                                     SPIAccessor.getInstance().index(indexer, dirty, resultIterator.getParserResult(), context);

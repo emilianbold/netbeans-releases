@@ -46,6 +46,7 @@ import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
 
 
@@ -173,6 +174,15 @@ public final class Indexable {
             return ctx.factory;
         }
 
+        @Override
+        public void context_attachIndexingSupport(Context context, IndexingSupport support) {
+            context.attachIndexingSupport(support);
+        }
+
+        @Override
+        public IndexingSupport context_getAttachedIndexingSupport(Context context) {
+            return context.getAttachedIndexingSupport();
+        }
     }
 
 }

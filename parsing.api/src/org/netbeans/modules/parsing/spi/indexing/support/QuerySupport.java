@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
@@ -67,8 +68,7 @@ public final class QuerySupport {
     private static final Logger LOG = Logger.getLogger(QuerySupport.class.getName());
     
     /**
-     * Encodes a type of the name kind used by
-     * {@link Index#search}, {@link CodeCompletionContext#getNameKind()} etc.
+     * Encodes a type of the name kind used by {@link QuerySupport#query}.
      *
      */
     public enum Kind {
@@ -152,11 +152,32 @@ public final class QuerySupport {
         this.indexes.put (srcRoot.getURL(),this.spiFactory.getIndex(fo));
     }
 
+    public Collection<? extends IndexResult> query(
+            final String fieldName,
+            final String fieldValue,
+            final Kind kind, 
+            final String... fieldsToLoad
+    ) throws IOException {
+        // check if there are stale indicies
+        for (Map.Entry<URL, IndexImpl> ie : indexes.entrySet()) {
+            final IndexImpl index = ie.getValue();
+            final Collection<? extends String> staleFiles = index.getStaleFiles();
 
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Index: " + index + ", staleFiles: " + staleFiles); //NOI18N
+            }
+            
+            if (staleFiles != null && staleFiles.size() > 0) {
+                final URL root = ie.getKey();
+                LinkedList<URL> list = new LinkedList<URL>();
+                for(String staleFile : staleFiles) {
+                    list.add(new URL(root, staleFile));
+                }
 
-    
-    public Collection<? extends IndexResult> query (final String fieldName, final String fieldValue,
-            final Kind kind, final String... fieldsToLoad) throws IOException {
+                IndexingManager.getDefault().refreshIndexAndWait(root, list);
+            }
+        }
+
         final List<IndexResult> result = new LinkedList<IndexResult>();
         for (Map.Entry<URL,IndexImpl> ie : indexes.entrySet()) {
             final IndexImpl index = ie.getValue();

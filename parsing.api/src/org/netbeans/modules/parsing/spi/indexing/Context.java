@@ -44,6 +44,7 @@ import java.net.URL;
 import java.util.Collection;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -63,6 +64,7 @@ public final class Context {
     private final boolean followUpJob;
     
     private FileObject root;
+    private IndexingSupport indexingSupport;
 
     //unit test
     final IndexFactoryImpl factory;
@@ -93,8 +95,8 @@ public final class Context {
     }
 
     /**
-     * Return the {@link URI} of the processed root
-     * @return the absolute URI
+     * Return the {@link URL} of the processed root
+     * @return the absolute URL
      */
     public URL getRootURI () {
         return this.rootURL;
@@ -132,7 +134,7 @@ public final class Context {
      * @since 1.3
      */
     public void addSupplementaryFiles(URL root, Collection<? extends URL> files) {
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, true);
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, true, false);
     }
 
     /**
@@ -156,7 +158,16 @@ public final class Context {
         return this.indexerVersion;
     }
 
+    void attachIndexingSupport(IndexingSupport support) {
+        assert this.indexingSupport == null;
+        this.indexingSupport = support;
+    }
+
+    IndexingSupport getAttachedIndexingSupport() {
+        return this.indexingSupport;
+    }
+
     static String getIndexerPath (final String indexerName, final int indexerVersion) {
-        return indexerName+"/"+indexerVersion;
+        return indexerName + "/" + indexerVersion; //NOI18N
     }
 }

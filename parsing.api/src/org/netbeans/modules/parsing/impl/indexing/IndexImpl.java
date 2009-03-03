@@ -57,4 +57,8 @@ public interface IndexImpl {
     public void store () throws IOException;
 
     public Collection<? extends IndexDocumentImpl> query (String fieldName, String value, QuerySupport.Kind kind, String... fieldsToLoad) throws IOException;
+
+    public void fileModified(String relativePath);
+
+    public Collection<? extends String> getStaleFiles();
 }
