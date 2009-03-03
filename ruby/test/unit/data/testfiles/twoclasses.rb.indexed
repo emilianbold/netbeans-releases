@@ -7,6 +7,7 @@ Searchable Keys:
   extends : ApplicationController
   fqn : FooController
   method : myfunc
+  require : twoclasses
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -19,6 +20,7 @@ Searchable Keys:
   fqn : MyTest
   method : mymethod
   method : myother
+  require : twoclasses
 
 Not Searchable Keys:
   attrs : |CLASS|
