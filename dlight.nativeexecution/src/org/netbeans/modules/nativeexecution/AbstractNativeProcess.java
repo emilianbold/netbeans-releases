@@ -232,20 +232,17 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         Callable<Integer> pidReaderTask = new Callable<Integer>() {
 
             public Integer call() throws Exception {
-                BufferedReader pidReader =
-                        new BufferedReader(new InputStreamReader(is));
+                int i;
+                StringBuilder sb = new StringBuilder();
 
-                while (!pidReader.ready()) {
-                    Thread.yield();
+                while ((i = is.read()) != (int) '\n') {
+                    sb.append((char) i);
                 }
-
-                String pidLine = "-1"; // NOI18N
-                pidLine = pidReader.readLine();
 
                 Integer result = null;
 
                 try {
-                    result = Integer.parseInt(pidLine);
+                    result = Integer.parseInt(sb.toString());
                 } catch (NumberFormatException e) {
                 }
 
