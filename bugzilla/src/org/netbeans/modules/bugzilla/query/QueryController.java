@@ -116,6 +116,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private final ListParameter resolutionParameter;
     private final ListParameter priorityParameter;
     private final ListParameter changedFieldsParameter;
+    private final ListParameter severityParameter;
 
     private final Map<String, QueryParameter> parameters;
 
@@ -127,7 +128,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private BugzillaQuery query;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss, EEE MMM d yyyy"); // NOI18N
-
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters) {
         this.repository = repository;
         this.query = query;
@@ -136,6 +136,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
+        panel.keywordsButton.addActionListener(this);
         panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
         panel.gotoIssueButton.addActionListener(this);
@@ -154,6 +155,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.versionList.addKeyListener(this);
         panel.statusList.addKeyListener(this);
         panel.resolutionList.addKeyListener(this);
+        panel.severityList.addKeyListener(this);
         panel.priorityList.addKeyListener(this);
         panel.changedList.addKeyListener(this);
 
@@ -178,6 +180,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, "resolution");        // NOI18N
         priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");              // NOI18N
         changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
+        severityParameter = createQueryParameter(ListParameter.class, panel.severityList, "bug_severity");          // NOI18N
         
         createQueryParameter(TextFieldParameter.class, panel.summaryTextField, "short_desc");                       // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.commentTextField, "long_desc");                        // NOI18N
@@ -189,7 +192,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         createQueryParameter(CheckBoxParameter.class, panel.commenterCheckBox, "emaillongdesc1");                   // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.changedFromTextField, "chfieldfrom");                  // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                   // NOI18N
+        createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                    // NOI18N
 
         if(query.isSaved()) {
             setAsSaved();
@@ -294,6 +297,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 panel.productList.setSelectedIndex(0);
                 populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
             }
+            severityParameter.setParameterValues(toParameterValues(bgz.getSeverities(repository)));
             statusParameter.setParameterValues(toParameterValues(bgz.getStatusValues(repository)));
             resolutionParameter.setParameterValues(toParameterValues(bgz.getResolutions(repository)));
             priorityParameter.setParameterValues(toParameterValues(bgz.getPriorities(repository)));
@@ -429,6 +433,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onSearch();
         } else if (e.getSource() == panel.gotoIssueButton) {
             onGotoIssue();
+        } else if (e.getSource() == panel.keywordsButton) {
+            onKeywords();
         } else if (e.getSource() == panel.searchButton) {
             onSearch();
         } else if (e.getSource() == panel.saveChangesButton) {
@@ -503,20 +509,38 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 boolean firstTime = false;
                 if(!query.isSaved()) {
                     firstTime = true;
-                    if(BugzillaUtil.show(panel.savePanel, NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),  NbBundle.getMessage(QueryController.class, "LBL_Save"))) { // NOI18N
-                        // XXX validate name
-                        name = panel.queryNameTextField.getText();
-                        if(name == null || name.trim().equals("")) {
-                            return; // XXX nice error?
-                        }
-                    } else {
+                    name = getName();
+                    if(name == null) {
                         return;
                     }
+                    panel.queryNameTextField.setText("");
                 }
                 assert name != null;
                 save(name, firstTime);
             }
        });
+    }
+
+    private String getName() {
+        String name = null;
+        if(BugzillaUtil.show(panel.savePanel, NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),  NbBundle.getMessage(QueryController.class, "LBL_Save"))) { // NOI18N
+            name = panel.queryNameTextField.getText();
+            if(name == null || name.trim().equals("")) { // NOI18N
+                return null;
+            }
+            Query[] queries = repository.getQueries();
+            for (Query q : queries) {
+                if(q.getDisplayName().equals(name)) {
+                    panel.saveErrorLabel.setVisible(true);
+                    name = getName();                    
+                    panel.saveErrorLabel.setVisible(false);
+                    break;
+                }
+            }
+        } else {
+            return null;
+        }
+        return name;
     }
 
     private void save(String name, boolean firstTime) {
@@ -629,6 +653,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void onDefineAs() {
         panel.switchQueryFields(panel.urlPanel.isVisible());
+    }
+
+    private void onKeywords() {
+        String keywords = BugzillaUtil.getKeywords(NbBundle.getMessage(QueryController.class, "LBL_SelectKeywords"), panel.keywordsTextField.getText(), repository);
+        if(keywords != null) {
+            panel.keywordsTextField.setText(keywords);
+        }
     }
 
     private void onSearch() {

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.bugzilla.util;
 
+import java.util.List;
+import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -48,6 +50,7 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.BugzillaRepository;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -75,5 +78,35 @@ public class BugzillaUtil {
         query.setUrl(queryUrl);
         BugzillaRepositoryConnector rc = Bugzilla.getInstance().getRepositoryConnector();
         rc.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
+    }
+
+    public static String getKeywords(String label, String keywordsString, BugzillaRepository repository) {
+        String[] keywords = keywordsString.split(","); // NOI18N
+        if(keywords == null || keywords.length == 0) {
+            return null;
+        }
+
+        KeywordsPanel kp;
+        try {
+            List<String> knownKeywords = Bugzilla.getInstance().getKeywords(repository);
+            kp = new KeywordsPanel(label, knownKeywords, keywords);
+        } catch (Exception ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+            return null;
+        }       
+
+        if(BugzillaUtil.show(kp, label, NbBundle.getMessage(BugzillaUtil.class, "LBL_Select"))) {
+            Object[] values = kp.keywordsList.getSelectedValues();
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < values.length; i++) {
+                String s = (String) values[i];
+                sb.append(s);
+                if(i < values.length - 1) {
+                    sb.append(", "); // NOI18N
+                }
+            }
+            return sb.toString();
+        }
+        return null;
     }
 }
