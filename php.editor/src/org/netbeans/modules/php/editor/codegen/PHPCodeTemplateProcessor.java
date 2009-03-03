@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -224,7 +225,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    PHPCodeTemplateProcessor.this.info = info;
+                    PHPCodeTemplateProcessor.this.info = (PHPParseResult)resultIterator.getParserResult();;
                 }
             });
         } catch (ParseException ex) {
