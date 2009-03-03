@@ -8,6 +8,7 @@ Searchable Keys:
   fqn : AddTestData
   method : down|DOCUMENTED|STATIC|
   method : up|STATIC|
+  require : 003_add_test_data
 
 Not Searchable Keys:
   attrs : |DOCUMENTED|;10

@@ -48,6 +48,7 @@ Searchable Keys:
   method : test_sorting(coll)
   method : warning(message,crumb_key)
   method : write_mark(mark)
+  require : ape
 
 Not Searchable Keys:
   attrs : |CLASS|
