@@ -405,14 +405,11 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Add item to the dataObject's lookup
         if (isProjectFiles() && notify) {
             DataObject dao = item.getDataObject();
-            if (dao instanceof CndDataObject) {
-                CndDataObject dataObject = (CndDataObject) dao;
-                MyNativeFileItemSet myNativeFileItemSet = dataObject.getCookie(MyNativeFileItemSet.class);
-                if (myNativeFileItemSet == null) {
-                    myNativeFileItemSet = new MyNativeFileItemSet();
-                    dataObject.addCookie(myNativeFileItemSet);
-                }
+            NativeFileItemSet myNativeFileItemSet = dao.getCookie(NativeFileItemSet.class);
+            if (myNativeFileItemSet != null) {
                 myNativeFileItemSet.add(item);
+            } else {
+                log.severe("can not add folder's " + this + " item " + item + " into " + dao);
             }
         }
 
@@ -533,14 +530,10 @@ public class Folder implements FileChangeListener, ChangeListener {
                 // try to use last Data Object (getDataObject() cannot find renamed data object)
                 dataObject = item.getLastDataObject();
             }
-            if (dataObject instanceof CndDataObject) {
-                CndDataObject cndDataObject = (CndDataObject) dataObject;
-                MyNativeFileItemSet myNativeFileItemSet = cndDataObject.getCookie(MyNativeFileItemSet.class);
+            if (dataObject != null) {
+                NativeFileItemSet myNativeFileItemSet = dataObject.getCookie(NativeFileItemSet.class);
                 if (myNativeFileItemSet != null) {
                     myNativeFileItemSet.remove(item);
-                    if (myNativeFileItemSet.isEmpty()) {
-                        cndDataObject.removeCookie(myNativeFileItemSet);
-                    }
                 }
             }
         }
@@ -882,29 +875,6 @@ public class Folder implements FileChangeListener, ChangeListener {
             ((ChangeListener) it.next()).stateChanged(ev);
         }
         configurationDescriptor.setModified();
-    }
-
-    static private class MyNativeFileItemSet implements NativeFileItemSet {
-
-        private List<NativeFileItem> items = new ArrayList<NativeFileItem>(1);
-
-        public synchronized Collection<NativeFileItem> getItems() {
-            return new ArrayList<NativeFileItem>(items);
-        }
-
-        public synchronized void add(NativeFileItem item) {
-            if (!items.contains(item)) {
-                items.add(item);
-            }
-        }
-
-        public synchronized void remove(NativeFileItem item) {
-            items.remove(item);
-        }
-
-        public boolean isEmpty() {
-            return items.isEmpty();
-        }
     }
 
     public void stateChanged(ChangeEvent e) {
