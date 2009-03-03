@@ -85,7 +85,7 @@ public abstract class QueryParameter {
     static final ParameterValue PV_FIELD_KEYWORDS = new ParameterValue("keywords", "keywords"); // NOI18N
     static final ParameterValue PV_FIELD_ESTIMATED_TIME = new ParameterValue("estimated_time", "estimated_time"); // NOI18N
     static final ParameterValue PV_FIELD_OP_SYS = new ParameterValue("op_sys", "op_sys"); // NOI18N
-    static final ParameterValue PV_FIELD_PRIORITY = new ParameterValue("priority", "priority");
+    static final ParameterValue PV_FIELD_PRIORITY = new ParameterValue("priority", "priority"); // NOI18N
     static final ParameterValue PV_FIELD_PRODUCT = new ParameterValue("product", "product"); // NOI18N
     static final ParameterValue PV_FIELD_QA_CONTACT = new ParameterValue("qa_contact", "qa_contact"); // NOI18N
     static final ParameterValue PV_FIELD_REPORTER_ACCESSIBLE = new ParameterValue("reporter_accessible", "reporter_accessible"); // NOI18N
