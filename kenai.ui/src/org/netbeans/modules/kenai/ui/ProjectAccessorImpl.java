@@ -69,7 +69,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     public List<ProjectHandle> getMemberProjects(LoginHandle login) {
         try {
             LinkedList<ProjectHandle> l = new LinkedList<ProjectHandle>();
-            for (KenaiProject prj : kenai.getMyProjects()) {
+            for (KenaiProject prj : kenai.getMyProjects(true)) {
                 l.add(new ProjectHandleImpl(prj));
             }
             return l;

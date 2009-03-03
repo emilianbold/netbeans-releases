@@ -49,6 +49,7 @@ import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import org.codeviation.commons.patterns.Factory;
 import org.codeviation.commons.utils.Iterators;
 import org.netbeans.modules.kenai.FeatureData;
@@ -127,6 +128,7 @@ public final class Kenai {
             synchronized (this) {
                 impl.verify(username, password);
                 auth = new PasswordAuthentication(username, password);
+                myProjects=null;
 //        Authenticator.setDefault(new Authenticator() {
 //            @Override
 //            protected PasswordAuthentication getPasswordAuthentication() {
@@ -149,6 +151,9 @@ public final class Kenai {
     public void logout() {
         PasswordAuthentication old=auth;
         auth = null;
+        synchronized(this) {
+            myProjects=null;
+        }
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
     }
 
@@ -355,16 +360,35 @@ public final class Kenai {
         return auth;
     }
 
+    private Collection<KenaiProject> myProjects = null;
     /**
      * get my projects of logged user
      * @return collection of projects
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public Collection<KenaiProject> getMyProjects() throws KenaiException {
+    public synchronized Collection<KenaiProject> getMyProjects() throws KenaiException {
         assert auth!=null:"you must login to get my projects";
-        Collection<ProjectData> prjs = impl.getMyProjects();
-        return new LazyCollection(prjs);
+        if (myProjects!=null)
+            return myProjects;
+        return getMyProjects(true);
     }
+
+    /**
+     * get my projects of logged user
+     * @param forceServerReload
+     * @return collection of projects
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
+    public synchronized Collection<KenaiProject> getMyProjects(boolean forceServerReload) throws KenaiException {
+        assert auth!=null:"you must login to get my projects";
+        if (forceServerReload==false) {
+            return getMyProjects();
+        }
+        Collection<ProjectData> prjs = impl.getMyProjects();
+        myProjects = new LinkedList<KenaiProject>(new LazyCollection(prjs));
+        return myProjects;
+    }
+
 
     Collection<KenaiProject> loadProjects() {
         return Persistence.getInstance().loadProjects();

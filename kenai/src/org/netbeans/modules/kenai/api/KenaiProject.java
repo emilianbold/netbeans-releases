@@ -39,11 +39,12 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.kenai.FeatureData;
@@ -57,14 +58,14 @@ import org.netbeans.modules.kenai.ProjectData;
  */
 public final class KenaiProject {
 
-//    /**
-//     * getSource() returns project being refreshed
-//     * values are undefined
-//     */
-//    public static final String PROP_PROJECT_CHANGED = "project_change";
-//
-//
-//    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+    /**
+     * getSource() returns project being refreshed
+     * values are undefined
+     */
+    public static final String PROP_PROJECT_CHANGED = "project_change";
+
+
+    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
     private String    name;
 
@@ -86,13 +87,7 @@ public final class KenaiProject {
      * @param p
      */
     private KenaiProject(ProjectData p) {
-        this.name = p.name;
-        try {
-            this.web_url = new URL(p.web_url);
-        } catch (MalformedURLException ex) {
-            throw new IllegalArgumentException(ex);
-        }
-        this.data = p;
+        fillInfo(p);
     }
 
     static KenaiProject get(ProjectData p) {
@@ -103,11 +98,19 @@ public final class KenaiProject {
             if (wr == null || (result = wr.get()) == null) {
                 result = new KenaiProject(p);
                 kenai.projectsCache.put(p.name, new WeakReference<KenaiProject>(result));
+            } else {
+                result = wr.get();
+                result.fillInfo(p);
             }
             return result;
         }
     }
 
+    /**
+     * getProject from cache
+     * @param name
+     * @return returns null if project does not exist in cachce
+     */
     static KenaiProject get(String name) {
         final Kenai kenai = Kenai.getDefault();
         synchronized (kenai.projectsCache) {
@@ -244,7 +247,19 @@ public final class KenaiProject {
     }
 
     void fillInfo(ProjectData prj) {
-        detailsTimestamp = System.currentTimeMillis();
+        synchronized (this) {
+            detailsTimestamp = System.currentTimeMillis();
+            this.data = prj;
+
+            this.name = data.name;
+            try {
+                this.web_url = new URL(data.href);
+            } catch (MalformedURLException ex) {
+                throw new IllegalArgumentException(ex);
+            }
+            features = null;
+        }
+        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_PROJECT_CHANGED, null, null));
     }
 
     synchronized ProjectData getData() {
@@ -267,18 +282,7 @@ public final class KenaiProject {
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
     private void refresh() throws KenaiException {
-        synchronized (this) {
-        this.data = Kenai.getDefault().getDetails(getName());
-
-        this.name = data.name;
-        try {
-            this.web_url = new URL(data.href);
-        } catch (MalformedURLException ex) {
-            throw new IllegalArgumentException(ex);
-        }
-        features=null;
-        }
-        //propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_PROJECT_CHANGED, null, null));
+        fillInfo(Kenai.getDefault().getDetails(getName()));
     }
 
     @Override
@@ -308,37 +312,37 @@ public final class KenaiProject {
         return "KenaiProject " + getName();
     }
 
-//    /**
-//     * Adds listener to Kenai instance
-//     * @param l
-//     */
-//    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
-//        propertyChangeSupport.addPropertyChangeListener(l);
-//    }
-//
-//    /**
-//     * Adds listener to Kenai instance
-//     * @param name
-//     * @param l
-//     */
-//    public synchronized void addPropertyChangeListener(String name, PropertyChangeListener l) {
-//        propertyChangeSupport.addPropertyChangeListener(name,l);
-//    }
-//
-//    /**
-//     * Removes listener from Kenai instance
-//     * @param l
-//     */
-//    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
-//        propertyChangeSupport.removePropertyChangeListener(l);
-//    }
-//
-//    /**
-//     * Removes listener from Kenai instance
-//     * @param name
-//     * @param l
-//     */
-//    public synchronized void removePropertyChangeListener(String name, PropertyChangeListener l) {
-//        propertyChangeSupport.removePropertyChangeListener(name, l);
-//    }
+    /**
+     * Adds listener to Kenai instance
+     * @param l
+     */
+    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener(l);
+    }
+
+    /**
+     * Adds listener to Kenai instance
+     * @param name
+     * @param l
+     */
+    public synchronized void addPropertyChangeListener(String name, PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener(name,l);
+    }
+
+    /**
+     * Removes listener from Kenai instance
+     * @param l
+     */
+    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(l);
+    }
+
+    /**
+     * Removes listener from Kenai instance
+     * @param name
+     * @param l
+     */
+    public synchronized void removePropertyChangeListener(String name, PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(name, l);
+    }
 }

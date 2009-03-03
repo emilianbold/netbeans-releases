@@ -140,7 +140,7 @@ public class KenaiConnection implements PropertyChangeListener {
             initChats();
             PresenceIndicator.getDefault().setStatus(Status.ONLINE);
         } catch (XMPPException ex) {
-            XMPPLOG.log(Level.WARNING, ex.getMessage());
+            XMPPLOG.log(Level.SEVERE, ex.getMessage());
         }
     }
 
@@ -244,7 +244,6 @@ public class KenaiConnection implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent e) {
         final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
         if (pa != null) {
-            myProjects = null;
             USER = pa.getUserName();
             PASSWORD = new String(pa.getPassword());
             tryConnect();
@@ -293,17 +292,12 @@ public class KenaiConnection implements PropertyChangeListener {
     //return prj.getFeatures(KenaiFeature.CHAT)[0].getName();
     }
 
-    private Collection<KenaiProject> myProjects;
-
     //TODO: my projects does not work so far
     public Collection<KenaiProject> getMyProjects() {
-        if (myProjects == null) {
-            try {
-                myProjects = new LinkedList(Kenai.getDefault().getMyProjects());
-            } catch (KenaiException ex) {
-                myProjects = Collections.emptyList();
-            }
+        try {
+            return Kenai.getDefault().getMyProjects();
+        } catch (KenaiException ex) {
+            throw new RuntimeException(ex);
         }
-        return myProjects;
     }
 }
