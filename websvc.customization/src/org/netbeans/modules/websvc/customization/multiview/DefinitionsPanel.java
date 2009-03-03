@@ -59,14 +59,13 @@ import org.netbeans.modules.websvc.api.customization.model.DefinitionsCustomizat
 import org.netbeans.modules.websvc.api.customization.model.EnableAsyncMapping;
 import org.netbeans.modules.websvc.api.customization.model.EnableMIMEContent;
 import org.netbeans.modules.websvc.api.customization.model.EnableWrapperStyle;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
+import org.netbeans.modules.websvc.api.customization.model.JavaPackage;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.nodes.Node;
 import org.netbeans.modules.xml.multiview.Error;
 import org.netbeans.modules.websvc.api.customization.model.CustomizationComponentFactory;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -78,9 +77,7 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
     private Definitions definitions;
     private WSDLModel model;
     private Node node;
-    
     private boolean wsdlDirty;
-    private boolean packageNameDirty;
     private DefinitionsActionListener listener;
     private DefaultItemListener defaultListener;
     
@@ -102,8 +99,6 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
         enableMIMEContentCB.setToolTipText(NbBundle.getMessage(DefinitionsPanel.class, "TOOLTIP_ENABLE_MIME"));
         packageNameText.setToolTipText(NbBundle.getMessage(DefinitionsPanel.class, "TOOLTIP_PACKAGE"));
         wsdlDirty = false;
-        packageNameDirty = false;
-        setInitialPackage();
         sync();
         
         defaultListener = new DefaultItemListener();
@@ -135,7 +130,7 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
     private void sync(){
         List <DefinitionsCustomization> ee =
                 definitions.getExtensibilityElements(DefinitionsCustomization.class);
-        if(ee.size() == 1){
+        if (ee.size() == 1) {
             DefinitionsCustomization dc = ee.get(0);
             EnableAsyncMapping eam = dc.getEnableAsyncMapping();
             if(eam != null){
@@ -151,21 +146,24 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
                 setEnableWrapperStyle(true);
             }
             EnableMIMEContent emc = dc.getEnableMIMEContent();
-            if(emc != null){
+            if (emc != null){
                 setEnableMIMEContent(emc.isEnabled());
             } else{ //default is false
                 setEnableMIMEContent(false);
             }
-        } else{
+            JavaPackage javaPackage = dc.getPackage();
+            if (javaPackage != null){
+                setPackageName(javaPackage.getName());
+            } else{ //default is false
+                setPackageName(null);
+            }
+        } else {
             //no definitions bindings, set to defaults
             setEnableAsyncMapping(false);
             setEnableWrapperStyle(true);
             setEnableMIMEContent(false);
+            setPackageName(null);
         }
-    }
-    
-    private boolean useDefaultPackage(){
-        return defaultPackageCB.isSelected();
     }
     
     public void setEnableAsyncMapping(boolean enable){
@@ -192,12 +190,30 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
         return enableMIMEContentCB.isSelected();
     }
     
-    public void setPackageName(String name){
-        packageNameText.setText(name);
+    public void setPackageName(String name) {
+        if (name == null) {
+            packageNameText.setText("");
+            defaultPackageCB.setSelected(true);
+            packageNameText.setEnabled(false);
+        } else {
+            packageNameText.setEnabled(true);
+            packageNameText.setText(name);
+            defaultPackageCB.setSelected(false);
+
+        }
     }
     
-    public String getPackageName(){
-        return packageNameText.getText();
+    public String getPackageName() {
+        if (defaultPackageCB.isSelected()) {
+            return null;
+        } else {
+            String packageName = packageNameText.getText().trim();
+            if (packageName.length()>0) {
+                return packageName;
+            } else {
+                return null;
+            }
+        }
     }
     
     public JComponent getErrorComponent(String string) {
@@ -222,8 +238,61 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
         List <DefinitionsCustomization> ee =
                 definitions.getExtensibilityElements(DefinitionsCustomization.class);
         CustomizationComponentFactory factory = CustomizationComponentFactory.getDefault();
-        if(jComponent == packageNameText || jComponent == defaultPackageCB){
-            packageNameDirty = true;
+
+        //process default package name
+        if(jComponent == packageNameText || jComponent == defaultPackageCB) {
+            if (getPackageName() == null) {
+                if (ee.size() == 1) { //there is an extensibility element
+                    DefinitionsCustomization dc = ee.get(0);
+                    JavaPackage javaPackage = dc.getPackage();
+                    if(javaPackage != null){ //there is no EnableWrapperStyle, create one
+                        try{
+                            model.startTransaction();
+                            dc.removePackage(javaPackage);
+                            wsdlDirty = true;
+                        } finally{
+                            model.endTransaction();
+                        }
+                    }
+                }
+            } else {
+                if (ee.size() == 1) { //there is an extensibility element
+                    DefinitionsCustomization dc = ee.get(0);
+                    JavaPackage javaPackage = dc.getPackage();
+                    if(javaPackage == null){ //there is no EnableWrapperStyle, create one
+                        try{
+                            model.startTransaction();
+                            javaPackage = factory.createJavaPackage(model);
+                            javaPackage.setName(packageNameText.getText());
+                            dc.setPackage(javaPackage);
+                            wsdlDirty = true;
+                        } finally{
+                            model.endTransaction();
+                        }
+                    } else{ //there is an EnableWrapperStyle, reset it
+                        try{
+                            model.startTransaction();
+                            javaPackage.setName(packageNameText.getText());
+                            wsdlDirty = true;
+                        } finally{
+                            model.endTransaction();
+                        }
+                    }
+                } else {  //there is no extensibility element, add a new one and add a new
+                    //wrapper style element
+                    DefinitionsCustomization dc = factory.createDefinitionsCustomization(model);
+                    JavaPackage javaPackage = factory.createJavaPackage(model);
+                    try{
+                        model.startTransaction();
+                        javaPackage.setName(packageNameText.getText());
+                        dc.setPackage(javaPackage);
+                        definitions.addExtensibilityElement(dc);
+                        wsdlDirty = true;
+                    } finally{
+                        model.endTransaction();
+                    }
+                }
+            }
         }
         //process Wrapper Style
         else if(jComponent == enableWrapperStyleCB){
@@ -341,6 +410,7 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
         }
     }
     
+    @Override
     public void documentChanged(JTextComponent comp, String val) {
         if(comp == packageNameText){
             if(!JavaUtilities.isValidPackageName(val)){
@@ -353,51 +423,6 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
         getSectionView().getErrorPanel().clearError();
     }
     
-    public void rollbackValue(JTextComponent source) {
-        if(source == packageNameText){
-            String pkg = "";
-            Client c = (Client)node.getLookup().lookup(Client.class);
-            if(c != null){
-                pkg = c.getPackageName();
-            } else{
-                Service s = (Service)node.getLookup().lookup(Service.class);
-                if(s != null){
-                    pkg = s.getPackageName();
-                }
-            }
-            packageNameText.setText(pkg);
-        }
-    }
-    
-    private void setInitialPackage(){
-        Client c = (Client)node.getLookup().lookup(Client.class);
-        if(c != null){
-            if(c.isPackageNameForceReplace()){
-                packageNameText.setText(c.getPackageName());
-                defaultPackageCB.setSelected(false);
-            } else{
-                packageNameText.setEnabled(false);
-                defaultPackageCB.setSelected(true);
-            }
-        } else{
-            Service s = (Service)node.getLookup().lookup(Service.class);
-            if(s != null){
-                if(s.isPackageNameForceReplace()){
-                    packageNameText.setText(s.getPackageName());
-                    defaultPackageCB.setSelected(false);
-                } else{
-                    packageNameText.setEnabled(false);
-                    defaultPackageCB.setSelected(true);
-                }
-            }
-        }
-    }
-    
-    @Override
-    public boolean jaxwsIsDirty(){
-        return packageNameDirty;
-    }
-    
     public boolean wsdlIsDirty() {
         return wsdlDirty;
     }
@@ -405,28 +430,6 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
     public void save() {
         if(wsdlDirty){
             this.setModelDirty(model);
-        }
-        
-        if(packageNameDirty){
-            Client client = (Client)node.getLookup().lookup(Client.class);
-            Service service = (Service)node.getLookup().lookup(Service.class);
-            String packageName = getPackageName();
-            if(useDefaultPackage() || packageName == null ||
-                    packageName.trim().equals("")){
-                if(client != null){
-                    client.setPackageNameForceReplace(false);
-                }else{
-                    service.setPackageNameForceReplace(false);
-                }
-            }else{
-                if(client != null){
-                    client.setPackageName(packageName);
-                    client.setPackageNameForceReplace(true);
-                } else{
-                    service.setPackageName(packageName);
-                    service.setPackageNameForceReplace(true);
-                }
-            }
         }
     }
     
