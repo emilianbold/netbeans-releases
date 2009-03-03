@@ -137,20 +137,40 @@ class ArtifactWidget extends Widget implements ActionListener {
     }
 
     private String constructConflictText(ArtifactGraphNode node) {
-        String toRet = "";
+        StringBuilder toRet = new StringBuilder();
+        int conflictCount = 0;
+        DependencyNode firstConflict = null;
         for (DependencyNode nd : node.getDuplicatesOrConflicts()) {
             if (nd.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                if (toRet.length() == 0) {
-                    toRet = "<b>Conflicts with:</b><table><thead><tr><th>Version</th><th>Artifact</th></tr></thead><tbody>";
+                conflictCount++;
+                if (firstConflict == null) {
+                    firstConflict = nd;
                 }
-                toRet = toRet + "<tr><td>" + nd.getArtifact().getVersion() + "</td>";
-                toRet = toRet + "<td>" + nd.getParent().getArtifact().getId() + "</td></tr>";
             }
         }
-        if (toRet.length() > 0) {
-            toRet = toRet + "</tbody></table>";
+
+        if (conflictCount == 1) {
+            toRet.append(NbBundle.getMessage(ArtifactWidget.class, "TIP_SingleConflict",
+                    new String[] { node.getArtifact().getArtifact().getVersion(),
+                    node.getArtifact().getArtifact().getArtifactId(),
+                    firstConflict.getArtifact().getVersion(),
+                    firstConflict.getParent().getArtifact().getArtifactId()}));
+        } else if (conflictCount > 1) {
+            for (DependencyNode nd : node.getDuplicatesOrConflicts()) {
+                if (nd.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+                    toRet.append(NbBundle.getMessage(ArtifactWidget.class, "TIP_MultipleConflict"));
+                    toRet.append("<tr><td><b>");
+                    toRet.append(nd.getArtifact().getVersion());
+                    toRet.append("</b></td>");
+                    toRet.append("<td><b>");
+                    toRet.append(nd.getParent().getArtifact().getArtifactId());
+                    toRet.append("</b></td></tr>");
+                }
+            }
+            toRet.append("</tbody></table>");
         }
-        return toRet;
+
+        return toRet.toString();
     }
 
     private void doHightlightText(String searchTerm) {
@@ -220,7 +240,7 @@ class ArtifactWidget extends Widget implements ActionListener {
         artifactW = new LabelWidget(scene);
         artifactW.setLabel(artifact.getArtifactId() + "  ");
         if (node.isRoot()) {
-            Font defF = getOrigFont();
+            Font defF = scene.getDefaultFont();
             artifactW.setFont(defF.deriveFont(Font.BOLD, defF.getSize() + 3f));
         }
         contentW.addChild(artifactW);
@@ -408,25 +428,32 @@ class ArtifactWidget extends Widget implements ActionListener {
     }
 
     private void updateContent () {
-        artifactW.setPreferredBounds(artifactW.getPreferredBounds());
+        boolean isAnimated = ((DependencyGraphScene)getScene()).isAnimated();
+
+        if (isAnimated) {
+            artifactW.setPreferredBounds(artifactW.getPreferredBounds());
+        }
 
         boolean makeReadable = getState().isSelected() || enlargedFromHover || readable;
 
-        Font f;
         Font origF = getOrigFont();
+        Font newF = origF;
         if (makeReadable) {
             bringToFront();
             // enlarge fonts so that content is readable
             float fSizeRatio = getScene().getDefaultFont().getSize() / (float)origF.getSize();
             float ratio = (float) Math.max (1, fSizeRatio / Math.max(0.0001f, getScene().getZoomFactor()));
-            f = origF.deriveFont(origF.getSize() * ratio);
-        } else {
-            f = origF;
+            if (ratio != 1.0f) {
+                newF = origF.deriveFont(origF.getSize() * ratio);
+            }
         }
-        artifactW.setFont(f);
-        versionW.setFont(f);
 
-        getScene().getSceneAnimator().animatePreferredBounds(artifactW, null);
+        artifactW.setFont(newF);
+        versionW.setFont(newF);
+
+        if (isAnimated) {
+            getScene().getSceneAnimator().animatePreferredBounds(artifactW, null);
+        }
     }
 
     private Font getOrigFont () {

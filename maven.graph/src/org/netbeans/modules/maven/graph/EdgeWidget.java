@@ -40,9 +40,12 @@
 package org.netbeans.modules.maven.graph;
 
 import java.awt.Color;
+import javax.swing.UIManager;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -53,6 +56,8 @@ public class EdgeWidget extends ConnectionWidget {
     public static final int GRAYED = 1;
     public static final int REGULAR = 2;
     public static final int HIGHLIGHTED = 3;
+
+    private static float[] hsbVals = new float[3];
 
     private ArtifactGraphEdge edge;
     private int state = REGULAR;
@@ -69,32 +74,77 @@ public class EdgeWidget extends ConnectionWidget {
     }
 
     private void updateAppearance () {
-        Color c = Color.BLACK;
+        Color inactiveC = UIManager.getColor("textInactiveText");
+        if (inactiveC == null) {
+            inactiveC = Color.LIGHT_GRAY;
+        }
+        Color activeC = UIManager.getColor("textText");
+        if (activeC == null) {
+            activeC = Color.BLACK;
+        }
+        Color conflictC = Color.RED.darker();
+
+        boolean isConflict = edge.getTarget().getState() == DependencyNode.OMITTED_FOR_CONFLICT;
+
+        Color c = activeC;
         switch (state) {
             case REGULAR:
-                if (edge.isPrimary()) {
-                    c = Color.BLACK;
-                } else {
-                    if (edge.getTarget().getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                        c = Color.RED.darker();
-                        setToolTipText("Conflicting version of " + edge.getTarget().getArtifact().getArtifactId() + ": " + edge.getTarget().getArtifact().getVersion() );
-                    } else {
-                        c = Color.LIGHT_GRAY;
-                    }
-                }
+                c = edge.isPrimary() ? middleColor(activeC, inactiveC) : isConflict ? conflictC : inactiveC;
                 break;
             case DISABLED:
-                c = Color.LIGHT_GRAY;
-                setToolTipText("");
+                c = inactiveC;
                 break;
             case GRAYED:
-                c = Color.LIGHT_GRAY;
+                c = isConflict ? deriveColor(conflictC, 0.7f) : inactiveC;
                 break;
             case HIGHLIGHTED:
-                c = Color.BLACK;
+                c = isConflict ? conflictC : activeC;
                 break;
         }
-        setLineColor(c);
+
+        if (state != DISABLED) {
+            Artifact artif = edge.getTarget().getArtifact();
+            StringBuilder sb = new StringBuilder("<html>");
+            if (isConflict) {
+                sb.append(NbBundle.getMessage(EdgeWidget.class,
+                "TIP_VersionConflict", artif.getVersion(), artif.getArtifactId(),
+                        edge.getSource().getArtifact().getArtifactId()));
+                sb.append("<br>");
+            }
+            sb.append("<i>");
+            if (edge.isPrimary()) {
+                sb.append(NbBundle.getMessage(EdgeWidget.class, "TIP_Primary"));
+            } else {
+                sb.append(NbBundle.getMessage(EdgeWidget.class, "TIP_Secondary"));
+            }
+            sb.append("</i>");
+            sb.append("</html>");
+            setToolTipText(sb.toString());
+        } else {
+            setToolTipText(null);
+        }
+
+        DependencyGraphScene grScene = (DependencyGraphScene)getScene();
+        if (grScene.isAnimated()) {
+            grScene.getSceneAnimator().animateForegroundColor(this, c);
+        } else {
+            setForeground(c);
+        }
+    }
+
+    /** Derives color from specified with saturation multiplied by given ratio.
+     */
+    private static Color deriveColor (Color c, float saturationR) {
+        Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), hsbVals);
+        hsbVals[1] = Math.min(1.0f, hsbVals[1] * saturationR);
+        return Color.getHSBColor(hsbVals[0], hsbVals[1], hsbVals[2]);
+    }
+
+    private static Color middleColor (Color c1, Color c2) {
+        return new Color(
+                (c1.getRed() + c2.getRed()) / 2,
+                (c1.getGreen() + c2.getGreen()) / 2,
+                (c1.getBlue() + c2.getBlue()) / 2);
     }
 
 }

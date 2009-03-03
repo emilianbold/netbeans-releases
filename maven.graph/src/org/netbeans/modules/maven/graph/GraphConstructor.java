@@ -154,6 +154,7 @@ class GraphConstructor implements DependencyNodeVisitor {
             return ArtifactGraphNode.UNMANAGED;
         }
 
+        @SuppressWarnings("unchecked")
         List<Dependency> deps = dm.getDependencies();
         if (deps == null) {
             return ArtifactGraphNode.UNMANAGED;

@@ -196,6 +196,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
 
         highlightNodes.add(node);
 
+        @SuppressWarnings("unchecked")
         List<DependencyNode> children = (List<DependencyNode>)node.getArtifact().getChildren();
         for (DependencyNode n : children) {
             highlightNodes.add(getGraphNodeRepresentant(n));

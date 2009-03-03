@@ -196,6 +196,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         pane.setWheelScrollingEnabled(true);
         maxPathSpinner.setEnabled(false);
         maxPathSpinner.setVisible(false);
+        lblPath.setVisible(false);
         txtFind.setEnabled(false);
         btnBigger.setEnabled(false);
         btnSmaller.setEnabled(false);
@@ -409,9 +410,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                             btnSmaller.setEnabled(true);
                             comScopes.setEnabled(true);
                             if (scene.getMaxNodeDepth() > 1) {
-                                /*sldDepth.setMaximum(scene.getMaxNodeDepth());
-                                sldDepth.setEnabled(true);
-                                sldDepth.setVisible(true);*/
+                                lblPath.setVisible(true);
                                 ((SpinnerNumberModel)maxPathSpinner.getModel()).
                                         setMaximum(Integer.valueOf(scene.getMaxNodeDepth()));
                                 maxPathSpinner.setEnabled(true);
