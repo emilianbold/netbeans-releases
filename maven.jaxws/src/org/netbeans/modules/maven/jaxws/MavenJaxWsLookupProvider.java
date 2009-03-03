@@ -76,7 +76,7 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
 
     public Lookup createAdditionalLookup(Lookup baseContext) {
         final Project prj = baseContext.lookup(Project.class);
-        JAXWSLightSupportImpl spiJAXWSSupport = new MavenJAXWSSupportIml(prj);
+        JAXWSLightSupportImpl spiJAXWSSupport = new MavenJAXWSSupportImpl(prj);
         final JAXWSLightSupport jaxWsSupport = JAXWSLightSupportFactory.createJAXWSSupport(spiJAXWSSupport);
 
         JAXWSLightSupportProvider jaxWsSupportProvider = new JAXWSLightSupportProvider() {
