@@ -46,7 +46,7 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-package org.netbeans.modules.websvc.customization.core.ui;
+package org.netbeans.modules.websvc.customization.light;
 
 import java.net.MalformedURLException;
 import java.util.Collection;
@@ -58,15 +58,12 @@ import javax.swing.JComponent;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
+import org.netbeans.modules.websvc.api.support.RefreshCookie;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
-import org.netbeans.modules.websvc.customization.multiview.WSCustomizationTopComponent;
-import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.customization.multiview.SaveableSectionInnerPanel;
-import org.netbeans.modules.websvc.jaxws.api.JaxWsRefreshCookie;
+import org.netbeans.modules.websvc.customization.multiview.WSCustomizationTopComponent;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
+import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Import;
@@ -91,30 +88,28 @@ public class CustomizationWSEditor implements WSEditor {
 
     private WSCustomizationTopComponent wsTopComponent;
     private boolean wsdlIsDirty;
-    private boolean jaxwsDirty;
     private Definitions primaryDefinitions;
     private UndoManager undoManager;
-    private JaxWsModel jaxWsModel;
+    private JAXWSLightSupport jaxWsSupport;
+    private JaxWsService service;
 
     /**
      * Creates a new instance of CustomizationWSEditor
      */
-    public CustomizationWSEditor(JaxWsModel jaxWsModel) {
-        this.jaxWsModel = jaxWsModel;
+    public CustomizationWSEditor(JAXWSLightSupport jaxWsSupport, JaxWsService service) {
+        this.jaxWsSupport = jaxWsSupport;
+        this.service = service;
     }
     
     public CustomizationWSEditor() {
     }
 
-    private void saveAndRefresh(final Node node, JaxWsModel jaxWsModel) {
+    private void saveAndRefresh(final Node node) {
         Collection<SaveableSectionInnerPanel> panels = wsTopComponent.getPanels();
         for (SaveableSectionInnerPanel panel : panels) {
             panel.save();
             if (!wsdlIsDirty) {
                 wsdlIsDirty = panel.wsdlIsDirty();
-            }
-            if (!jaxwsDirty) {
-                jaxwsDirty = panel.jaxwsIsDirty();
             }
         }
 
@@ -131,9 +126,6 @@ public class CustomizationWSEditor implements WSEditor {
                     }
                 }
             }
-            if (jaxwsDirty) {
-                jaxWsModel.write();
-            }
             final ProgressHandle handle = ProgressHandleFactory.createHandle
                     (NbBundle.getMessage(CustomizationWSEditor.class, "TXT_Refreshing")); //NOI18N
             handle.start(100);
@@ -141,9 +133,9 @@ public class CustomizationWSEditor implements WSEditor {
             Runnable r = new Runnable() {
                 public void run() {
                     try {
-                        if (wsdlIsDirty || jaxwsDirty) {
-                            JaxWsRefreshCookie refreshCookie =
-                                    (JaxWsRefreshCookie) node.getCookie(JaxWsRefreshCookie.class);
+                        if (wsdlIsDirty) {
+                            RefreshCookie refreshCookie =
+                                    (RefreshCookie) node.getCookie(RefreshCookie.class);
                             if (refreshCookie != null) { 
                                 refreshCookie.refreshService(false);
                             }
@@ -160,7 +152,7 @@ public class CustomizationWSEditor implements WSEditor {
     }
 
     public void save(final Node node) {
-        saveAndRefresh(node, jaxWsModel);
+        saveAndRefresh(node);
         removeListeners();
     }
 
@@ -172,7 +164,7 @@ public class CustomizationWSEditor implements WSEditor {
             return null;
         }
 
-        wsTopComponent = new WSCustomizationTopComponent(node, getWSDLModels(), primaryDefinitions, false);
+        wsTopComponent = new WSCustomizationTopComponent(node, getWSDLModels(), primaryDefinitions, true);
         wsTopComponent.setName(getTitle());
         return wsTopComponent;
     }
@@ -265,21 +257,11 @@ public class CustomizationWSEditor implements WSEditor {
     private WSDLModel getPrimaryModel(Node node)
             throws MalformedURLException, Exception {
         WSDLModel model = null;
-        //is it a client node?
-        Client client = (Client) node.getLookup().lookup(Client.class);
-        //is it a service node?
-        Service service = (Service) node.getLookup().lookup(Service.class);
-        FileObject srcRoot = (FileObject) node.getLookup().lookup(FileObject.class);
-        assert srcRoot != null;
         FileObject wsdlFO = null;
-        if (client != null) { //its a client
-            JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
+
+        if (jaxWsSupport != null) { //its a client
             wsdlFO =
-                    support.getLocalWsdlFolderForClient(client.getName(), false).getFileObject(client.getLocalWsdlFile());
-        } else if (service != null && service.getWsdlUrl() != null) {  //its a service from wsdl
-            JAXWSSupport support = JAXWSSupport.getJAXWSSupport(srcRoot);
-            wsdlFO =
-                    support.getLocalWsdlFolderForService(service.getName(), false).getFileObject(service.getLocalWsdlFile());
+                    jaxWsSupport.getWsdlFolder(false).getFileObject(service.getLocalWsdl());
         } else { //neither a client nor a service, get out of here
             throw new Exception("Unable to identify node type");
         }

@@ -47,7 +47,6 @@
 
 package org.netbeans.modules.websvc.customization.multiview;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -56,19 +55,17 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.websvc.customization.model.DefinitionsCustomization;
-import org.netbeans.modules.websvc.customization.model.EnableAsyncMapping;
-import org.netbeans.modules.websvc.customization.model.EnableMIMEContent;
-import org.netbeans.modules.websvc.customization.model.EnableWrapperStyle;
-import org.netbeans.modules.websvc.customization.model.JavaPackage;
+import org.netbeans.modules.websvc.api.customization.model.DefinitionsCustomization;
+import org.netbeans.modules.websvc.api.customization.model.EnableAsyncMapping;
+import org.netbeans.modules.websvc.api.customization.model.EnableMIMEContent;
+import org.netbeans.modules.websvc.api.customization.model.EnableWrapperStyle;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.nodes.Node;
 import org.netbeans.modules.xml.multiview.Error;
-import org.netbeans.modules.websvc.customization.model.CustomizationComponentFactory;
+import org.netbeans.modules.websvc.api.customization.model.CustomizationComponentFactory;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -396,6 +393,7 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
         }
     }
     
+    @Override
     public boolean jaxwsIsDirty(){
         return packageNameDirty;
     }

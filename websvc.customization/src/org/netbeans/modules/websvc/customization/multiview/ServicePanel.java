@@ -47,18 +47,16 @@
 
 package org.netbeans.modules.websvc.customization.multiview;
 
-import java.awt.Color;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
-import org.netbeans.modules.websvc.customization.model.CustomizationComponentFactory;
-import org.netbeans.modules.websvc.customization.model.JavaClass;
-import org.netbeans.modules.websvc.customization.model.ServiceCustomization;
+import org.netbeans.modules.websvc.api.customization.model.CustomizationComponentFactory;
+import org.netbeans.modules.websvc.api.customization.model.JavaClass;
+import org.netbeans.modules.websvc.api.customization.model.ServiceCustomization;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.util.WeakListeners;
