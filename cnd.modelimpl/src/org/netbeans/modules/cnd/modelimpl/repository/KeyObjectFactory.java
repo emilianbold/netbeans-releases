@@ -72,6 +72,14 @@ public class KeyObjectFactory extends KeyFactory {
         assert aStream != null;
         SelfPersistent out = super.readSelfPersistent(aStream);
         assert out instanceof Key;
+        // no reasone to cache declaration keys.
+        boolean share = !(out instanceof OffsetableDeclarationKey);
+        if (share) {
+            Key shared = KeyManager.instance().getSharedUID((Key)out);
+            assert shared != null;
+            assert shared instanceof SelfPersistent;
+            out = (SelfPersistent) shared;
+        }
         return (Key)out;
     }
     
@@ -131,6 +139,8 @@ public class KeyObjectFactory extends KeyFactory {
             aHandle = KEY_FILE_CONTAINER_KEY;
         } else if (object instanceof GraphContainerKey) {
             aHandle = KEY_GRAPH_CONTAINER_KEY;
+        } else if (object instanceof ClassifierContainerKey) {
+            aHandle = KEY_CLASSIFIER_CONTAINER_KEY;
         } else {
             throw new IllegalArgumentException("The Key is an instance of the unknown final class " + object.getClass().getName());  // NOI18N
         }
@@ -140,7 +150,7 @@ public class KeyObjectFactory extends KeyFactory {
     
     protected SelfPersistent createObject(int handler, DataInput aStream) throws IOException {
         SelfPersistent aKey;
-        
+        boolean share = true;
         switch (handler) {
             case KEY_PROJECT_KEY:
                 aKey = new ProjectKey(aStream);
@@ -161,27 +171,37 @@ public class KeyObjectFactory extends KeyFactory {
                 aKey = new ParamListKey(aStream);
                 break;
             case KEY_DECLARATION_KEY:
+                share = false;
                 aKey = new OffsetableDeclarationKey(aStream);
                 break;
-	    case KEY_PRJ_VALIDATOR_KEY:
-		aKey = new ProjectSettingsValidatorKey(aStream);
-		break;
-	    case KEY_DECLARATION_CONTAINER_KEY:
-		aKey = new DeclarationContainerKey(aStream);
-		break;
-	    case KEY_FILE_CONTAINER_KEY:
-		aKey = new FileContainerKey(aStream);
-		break;
-	    case KEY_GRAPH_CONTAINER_KEY:
-		aKey = new GraphContainerKey(aStream);
-		break;
-	    case KEY_NS_DECLARATION_CONTAINER_KEY:
-		aKey = new NamespaceDeclararationContainerKey(aStream);
-		break;
-            default:
+            case KEY_PRJ_VALIDATOR_KEY:
+                aKey = new ProjectSettingsValidatorKey(aStream);
+                break;
+            case KEY_DECLARATION_CONTAINER_KEY:
+                aKey = new DeclarationContainerKey(aStream);
+                break;
+            case KEY_FILE_CONTAINER_KEY:
+                aKey = new FileContainerKey(aStream);
+                break;
+            case KEY_GRAPH_CONTAINER_KEY:
+                aKey = new GraphContainerKey(aStream);
+                break;
+            case KEY_NS_DECLARATION_CONTAINER_KEY:
+                aKey = new NamespaceDeclararationContainerKey(aStream);
+                break;
+            case KEY_CLASSIFIER_CONTAINER_KEY:
+                aKey = new ClassifierContainerKey(aStream);
+            break;
+                default:
                 throw new IllegalArgumentException("Unknown hander was provided: " + handler);  // NOI18N
         }
-        
+        if (share) {
+            Key shared = KeyManager.instance().getSharedUID((Key)aKey);
+            assert shared != null;
+            assert shared instanceof SelfPersistent;
+            aKey = (SelfPersistent) shared;
+        }
+
         return aKey;
     }
     
@@ -203,8 +223,9 @@ public class KeyObjectFactory extends KeyFactory {
     public static final int KEY_FILE_CONTAINER_KEY = KEY_DECLARATION_CONTAINER_KEY + 1;
     public static final int KEY_GRAPH_CONTAINER_KEY = KEY_FILE_CONTAINER_KEY    + 1;
     public static final int KEY_NS_DECLARATION_CONTAINER_KEY = KEY_GRAPH_CONTAINER_KEY + 1;
+    public static final int KEY_CLASSIFIER_CONTAINER_KEY = KEY_NS_DECLARATION_CONTAINER_KEY + 1;
     
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX    
-    public static final int LAST_INDEX          = KEY_NS_DECLARATION_CONTAINER_KEY;
+    public static final int LAST_INDEX          = KEY_CLASSIFIER_CONTAINER_KEY;
 }

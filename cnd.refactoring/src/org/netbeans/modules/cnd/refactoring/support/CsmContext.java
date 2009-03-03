@@ -224,14 +224,14 @@ public final class CsmContext {
         return objectUnderOffset;
     }
 
-    private Iterator<? extends CsmObject> getInnerObjectsIterator(CsmSelect select, CsmFilter offsetFilter, CsmScope scope) {
+    private Iterator<? extends CsmObject> getInnerObjectsIterator(CsmFilter offsetFilter, CsmScope scope) {
         Iterator<? extends CsmObject> out = Collections.<CsmObject>emptyList().iterator();
         if (CsmKindUtilities.isFile(scope)) {
-            out = select.getDeclarations((CsmFile)scope, offsetFilter);
+            out = CsmSelect.getDeclarations((CsmFile)scope, offsetFilter);
         } else if (CsmKindUtilities.isNamespaceDefinition(scope)) {
-            out = select.getDeclarations(((CsmNamespaceDefinition)scope), offsetFilter);
+            out = CsmSelect.getDeclarations(((CsmNamespaceDefinition)scope), offsetFilter);
         } else if (CsmKindUtilities.isClass(scope)) {
-            out = select.getClassMembers(((CsmClass)scope), offsetFilter);
+            out = CsmSelect.getClassMembers(((CsmClass)scope), offsetFilter);
         } else {
             out = scope.getScopeElements().iterator();
         }
@@ -244,9 +244,8 @@ public final class CsmContext {
         }
         path = new ArrayList<CsmObject>(5);
         path.add(file);
-        CsmSelect select = CsmSelect.getDefault();
-        CsmFilter offsetFilter = select.getFilterBuilder().createOffsetFilter(startOffset);
-        Iterator<? extends CsmObject> fileElements = getInnerObjectsIterator(select, offsetFilter, file);
+        CsmFilter offsetFilter = CsmSelect.getFilterBuilder().createOffsetFilter(startOffset);
+        Iterator<? extends CsmObject> fileElements = getInnerObjectsIterator(offsetFilter, file);
         CsmObject innerDecl = fileElements.hasNext() ? fileElements.next() : null;
         if (innerDecl != null) {
             path.add(innerDecl);
@@ -256,7 +255,7 @@ public final class CsmContext {
                 boolean cont;
                 do {
                     cont = false;
-                    final Iterator<? extends CsmObject> innerObjects = getInnerObjectsIterator(select, offsetFilter, curScope);
+                    final Iterator<? extends CsmObject> innerObjects = getInnerObjectsIterator(offsetFilter, curScope);
                     while (innerObjects.hasNext()) {
                         CsmObject csmScopeElement = innerObjects.next();
                         if (CsmKindUtilities.isOffsetable(csmScopeElement)) {

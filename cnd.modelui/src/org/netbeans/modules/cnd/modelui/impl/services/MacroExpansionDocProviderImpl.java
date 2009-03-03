@@ -338,6 +338,9 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         StringBuilder sb = new StringBuilder(""); // NOI18N
         int size = tt.intervals.size();
         int startIndex = tt.findInIntervalIndex(startOffset);
+        if (startIndex < 0) {
+            return ""; // NOI18N
+        }
         for(int i = startIndex; i < size; i++) {
             IntervalCorrespondence ic = tt.intervals.get(i);
             if (ic.inInterval.start >= endOffset) {

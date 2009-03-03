@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
@@ -66,6 +67,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -107,7 +109,6 @@ public class StartTask extends BasicTask<OperationState> {
         this.support = support;
         this.recognizers = recognizers;
         this.jdkHome = jdkRoot;
-        this.jdkHome = getJavaPlatformRoot(support);
         this.jvmArgs = (jvmArgs != null) ? Arrays.asList(removeEscapes(jvmArgs)) : null;
     }
     
@@ -150,6 +151,12 @@ public class StartTask extends BasicTask<OperationState> {
         
         Process serverProcess = null;
         try {
+            jdkHome = getJavaPlatformRoot(support);
+            // lookup the javadb start service and use it here.
+            RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
+            if (null != db && "true".equals(ip.get(GlassfishModule.START_DERBY_FLAG))) {
+                db.start();
+            }
             serverProcess = createProcess();
         } catch (IOException ex) {
             fireOperationStateChanged(OperationState.FAILED, 
@@ -236,22 +243,19 @@ public class StartTask extends BasicTask<OperationState> {
         return  envp.toArray(new String[envp.size()]);
     }
 
-    private FileObject getJavaPlatformRoot(CommonServerSupport support) {
+    private FileObject getJavaPlatformRoot(CommonServerSupport support) throws IOException {
         FileObject retVal = null;
         String javaInstall = support.getInstanceProperties().get(GlassfishModule.JAVA_PLATFORM_ATTR);
-        try {
-            if (null == javaInstall) {
-                File dir = new File(getJdkHome());
+        if (null == javaInstall || javaInstall.trim().length() < 1) {
+            File dir = new File(getJdkHome());
+            retVal = FileUtil.createFolder(FileUtil.normalizeFile(dir));
+        } else {
+            File f = new File(javaInstall);
+            if (f.exists()) {
+                //              bin             home
+                File dir = f.getParentFile().getParentFile();
                 retVal = FileUtil.createFolder(FileUtil.normalizeFile(dir));
-            } else {
-                File f = new File(javaInstall);
-                if (f.exists()) {
-                    //              bin             home
-                    File dir = f.getParentFile().getParentFile();
-                    retVal = FileUtil.createFolder(FileUtil.normalizeFile(dir));
-                }
             }
-        } catch (IOException ioe) {
         }
         return retVal;
     }
@@ -270,14 +274,8 @@ public class StartTask extends BasicTask<OperationState> {
     }
     
     private NbProcessDescriptor createProcessDescriptor() throws IOException {
-        String startScript;
-        if (null == jdkHome) {
-           startScript = getJdkHome() + 
+        String startScript = FileUtil.toFile(jdkHome).getAbsolutePath() +
                 File.separatorChar + "bin" + File.separatorChar + "java";
-        } else {
-            startScript = FileUtil.toFile(jdkHome).getAbsolutePath() +
-                File.separatorChar + "bin" + File.separatorChar + "java";
-        }
         File ss = new File(startScript);
         if (support.getInstanceProvider().requiresJdk6OrHigher() && !Util.appearsToBeJdk6OrBetter(ss)) {
             return null;

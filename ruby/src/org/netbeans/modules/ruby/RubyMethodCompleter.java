@@ -38,10 +38,12 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -73,7 +75,6 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
     private static int callLineStart = -1;
     private static IndexedMethod callMethod;
-    
     private final String fqn;
     private final Call call;
 
@@ -247,7 +248,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             methods.addAll(getIndex().getMethods(prefix, kind));
         }
 
-        for (IndexedMethod method : methods) {
+        for (IndexedMethod method : filterAndHandleDynamicMethods(methods)) {
             // Don't include private or protected methods on other objects
             if (skipPrivate && (method.isPrivate() && !"new".equals(method.getName()))) {
                 // TODO - "initialize" removal here should not be necessary since they should
@@ -282,6 +283,57 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         }
 
         return done;
+    }
+
+    /**
+     * Filters out dynamic finder methods from the given <code>methods</code> and
+     * creates completion proposals for them as needed.
+     *
+     * @param methods
+     * @return
+     */
+    private Set<IndexedMethod> filterAndHandleDynamicMethods(Set<IndexedMethod> methods) {
+        
+        Set<IndexedMethod> result = new HashSet<IndexedMethod>(methods);
+        Set<IndexedMethod> finders = new HashSet<IndexedMethod>();
+
+        for (Iterator<IndexedMethod> it = methods.iterator(); it.hasNext();) {
+            IndexedMethod indexedMethod = it.next();
+            if (IndexedMethod.MethodType.DYNAMIC_FINDER == indexedMethod.getMethodType()) {
+                finders.add(indexedMethod);
+                result.remove(indexedMethod);
+            }
+        }
+
+        proposeDynamicMethods(finders);
+        return result;
+    }
+
+    private void proposeDynamicMethods(Set<IndexedMethod> finders) {
+        // handles creating completion items for dynamic methods, including "find_by_something_and..."
+        // kind of items. a bit hacky solution...
+        Map<String, IndexedMethod> virtualMethods = new HashMap<String, IndexedMethod>();
+        for (Iterator<IndexedMethod> it = finders.iterator(); it.hasNext();) {
+            IndexedMethod method = it.next();
+            String name = method.getName();
+            int nextAnd = FindersHelper.nextAttributeLocation(name, request.prefix.length());
+            if (nextAnd != -1) {
+                // store as a key, format "find_by_name_and" (without the trailing underscore)
+                String key = FindersHelper.subToNextAttribute(name, nextAnd);
+                if (virtualMethods.get(key) == null) {
+                    virtualMethods.put(key, method);
+                    MethodItem methodItem = new RubyCompletionItem.VirtualFinderMethodItem(method, anchor, request, key);
+                    methodItem.setSmart(method.isSmart());
+                    propose(methodItem);
+                }
+                it.remove();
+            } else {
+                MethodItem methodItem = new RubyCompletionItem.FinderMethodItem(method, anchor, request);
+                methodItem.setSmart(method.isSmart());
+                propose(methodItem);
+            }
+        }
+
     }
 
     /**

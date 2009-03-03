@@ -40,6 +40,8 @@ package org.netbeans.modules.cnd.gizmo;
 
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -67,6 +69,7 @@ import org.openide.windows.InputOutput;
  */
 public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionNameService {
 
+    private final static Map<CharSequence, CharSequence> demangled_functions = new HashMap<CharSequence, CharSequence>();
     private final ExecutionEnvironment env;
     private final CPPCompiler cppCompiler;
     private final String dem_util_path;
@@ -112,20 +115,28 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         env = new ExecutionEnvironment();
     }
 
-    public Future<String> demangle(final String functionName) {
+    public Future<String> demangle(String functionName) {
         //get current Project
-       final String nameToDemangle ;
-        if (functionName.indexOf("`") != -1 && functionName.indexOf("+") != -1){
-            nameToDemangle = functionName.substring(functionName.indexOf("`") + 1, functionName.indexOf("+")); //NOI18N;
-        }else{
-            nameToDemangle = functionName;
+        int plusPos = functionName.indexOf('+'); // NOI18N
+        if (0 <= plusPos) {
+            functionName = functionName.substring(0, plusPos);
         }
+        int tickPos = functionName.indexOf('`'); // NOI18N
+        if (0 <= tickPos) {
+            functionName = functionName.substring(tickPos + 1);
+        }
+        final String nameToDemangle = functionName;
+        final CharSequence nameToDemangleSeq = nameToDemangle.subSequence(0, nameToDemangle.length());
+
         return DLightExecutorService.service.submit(new Callable<String>() {
 
             public String call() {
+                if (demangled_functions.containsKey(nameToDemangleSeq)) {
+                    return demangled_functions.get(nameToDemangleSeq).toString();
+                }
                 NativeProcessBuilder npb = new NativeProcessBuilder(env, dem_util_path + " " + nameToDemangle); //NOI18N
                 ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                    InputOutput.NULL);
+                    InputOutput.NULL).outLineBased(true);
                 StringWriter result = new StringWriter();
                 descriptor = descriptor.outProcessorFactory(new InputRedirectorFactory(result));
                 ExecutionService execService = ExecutionService.newService(
@@ -133,21 +144,23 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
                 Future<Integer> res = execService.run();
                 try {
                     res.get();
-                    return result.toString();
+                    String demanled = result.toString();
+                    demangled_functions.put(nameToDemangleSeq,
+                        demanled.subSequence(0, demanled.length()));
+                    return demanled;
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (ExecutionException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-
-                //process.
+                demangled_functions.put(nameToDemangleSeq, nameToDemangleSeq);
                 return nameToDemangle;
             }
         });
 
     }
 
-    private class InputRedirectorFactory implements ExecutionDescriptor.InputProcessorFactory {
+    private static class InputRedirectorFactory implements ExecutionDescriptor.InputProcessorFactory {
 
         private final Writer writer;
 

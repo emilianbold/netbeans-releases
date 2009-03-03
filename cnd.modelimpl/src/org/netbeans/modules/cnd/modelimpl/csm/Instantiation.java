@@ -286,7 +286,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
         public Iterator<CsmMember> getMembers(CsmFilter filter) {
             Collection<CsmMember> res = new ArrayList<CsmMember>();
-            Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(declaration, filter);
+            Iterator<CsmMember> it = CsmSelect.getClassMembers(declaration, filter);
             while(it.hasNext()){
                 res.add(createMember(it.next()));
             }

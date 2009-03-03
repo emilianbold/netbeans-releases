@@ -49,6 +49,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
@@ -98,7 +99,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             createMainComboBox.setVisible(true);
             createMainComboBox.addItem("C"); // NOI18N
             createMainComboBox.addItem("C++"); // NOI18N
-            createMainComboBox.setSelectedIndex(0);
+            String prefLanguage = MakeOptions.getInstance().getPrefApplicationLanguage();
+            createMainComboBox.setSelectedItem(prefLanguage);
         } else if (type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
             createMainCheckBox.setVisible(true);
             createMainTextField.setVisible(true);
@@ -439,6 +441,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     d.putProperty("mainFileName", createMainTextField.getText() + "." + ccExtensions.getDefaultExtension()); // NOI18N
                     d.putProperty("mainFileTemplate", "Templates/cppFiles/main.cc"); // NOI18N
                 }
+                MakeOptions.getInstance().setPrefApplicationLanguage((String)createMainComboBox.getSelectedItem());
             } else if (type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
                 d.putProperty("mainFileName", createMainTextField.getText() + "." + ccExtensions.getDefaultExtension()); // NOI18N
                 d.putProperty("mainFileTemplate", "Templates/qtFiles/main.cc"); // NOI18N

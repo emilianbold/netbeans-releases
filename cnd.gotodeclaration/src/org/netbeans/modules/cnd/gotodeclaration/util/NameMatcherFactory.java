@@ -174,7 +174,7 @@ public class NameMatcherFactory {
                     return matcher.accept(name.toString());
                 }
             };
-            return CsmSelect.getDefault().getFilterBuilder().createNameFilter(acceptor);
+            return CsmSelect.getFilterBuilder().createNameFilter(acceptor);
         }
         return null;
     }
