@@ -88,6 +88,8 @@ public class RepositoryUpdater2Test extends NbTestCase {
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests");
         logger.setLevel(Level.FINEST);
         logger.addHandler(ruSync);
+
+        RepositoryUpdaterTest.waitForRepositoryUpdaterInit();
     }
 
     public void testAddIndexingJob() throws Exception {
@@ -127,7 +129,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         Util.allMimeTypes = Collections.singleton("text/plain");
 
         ruSync.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST, 2);
-        RepositoryUpdater.getDefault().addIndexingJob(srcRoot1.getURL(), Collections.singleton(file1.getURL()), false);
+        RepositoryUpdater.getDefault().addIndexingJob(srcRoot1.getURL(), Collections.singleton(file1.getURL()), false, false);
         ruSync.await();
 
         assertEquals("Wrong number of ordinary scans", 1, indexer.cnt);

@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.util.Collection;
+import java.io.IOException;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.util.Exceptions;
 
@@ -68,10 +68,12 @@ public abstract class SupportAccessor {
         return instance;
     }
 
-    public abstract void beginTrans ();
+//    public abstract void beginTrans ();
+//
+//    public abstract void endTrans ();
+//
+//    public abstract Collection<? extends IndexingSupport> getDirtySupports ();
 
-    public abstract void endTrans ();
-
-    public abstract Collection<? extends IndexingSupport> getDirtySupports ();
+    public abstract void store(IndexingSupport support) throws IOException;
 
 }

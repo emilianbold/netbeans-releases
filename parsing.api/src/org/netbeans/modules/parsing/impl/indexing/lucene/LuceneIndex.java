@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -98,7 +99,7 @@ public class LuceneIndex implements IndexImpl {
 
         synchronized (this) {
             assert document instanceof LuceneDocument;
-            
+
             toAdd.add((LuceneDocument) document);
             forceFlush = toAdd.size() > MAX_DOCS || lmListener.isLowMemory();
         }
@@ -139,7 +140,41 @@ public class LuceneIndex implements IndexImpl {
         LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
             public Void run() throws IOException {
                 checkPreconditions();
-                flush();
+
+                final List<LuceneDocument> toAdd;
+                final List<String> toRemove;
+
+                synchronized (LuceneIndex.this) {
+                    toAdd = new LinkedList<LuceneDocument>(LuceneIndex.this.toAdd);
+                    toRemove = new LinkedList<String>(LuceneIndex.this.toRemove);
+
+                    LuceneIndex.this.toAdd.clear();
+                    LuceneIndex.this.toRemove.clear();
+                    for(LuceneDocument ldoc : toAdd) {
+                        LuceneIndex.this.staleFiles.remove(ldoc.getSourceName());
+                    }
+                    LuceneIndex.this.staleFiles.removeAll(toRemove);
+                }
+
+                final IndexReader reader = getReader(true);
+//                try {
+//                    IndexWriter writer = new IndexWriter(
+//                        LuceneIndex.this.directory, // index directory
+//                        false, // auto-commit each flush
+//                        new KeywordAnalyzer(),
+//                        reader == null // open existing or create new index
+//                    );
+//                    try {
+                        flush(indexFolder, toAdd, toRemove, LuceneIndex.this.directory, reader, /*writer,*/ lmListener);
+//                    } finally {
+//                        writer.close();
+//                    }
+//                } finally {
+//                    if (reader != null) {
+//                        reader.close();
+//                    }
+//                }
+                
                 return null;
             }
         });
@@ -159,7 +194,7 @@ public class LuceneIndex implements IndexImpl {
             public List<IndexDocumentImpl> run() throws IOException {
                 checkPreconditions();
                 
-                final IndexReader r = getReader();
+                final IndexReader r = getReader(false);
                 if (r != null) {
                     // index exists
                     return _query(r, fieldName, value, kind, fieldsToLoad);
@@ -170,7 +205,25 @@ public class LuceneIndex implements IndexImpl {
             }
         });        
     }
-    
+
+    public void fileModified(String relativePath) {
+        synchronized (this) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(this + ", adding stale file: " + relativePath); //NOI18N
+            }
+            staleFiles.add(relativePath);
+        }
+    }
+
+    public Collection<? extends String> getStaleFiles() {
+        synchronized (this) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(this + ", stale files: " + staleFiles); //NOI18N
+            }
+            return new LinkedList<String>(staleFiles);
+        }
+    }
+
     // -----------------------------------------------------------------------
     // Public implementation
     // -----------------------------------------------------------------------
@@ -229,6 +282,7 @@ public class LuceneIndex implements IndexImpl {
     //@GuardedBy (this)
     private final List<LuceneDocument> toAdd = new LinkedList<LuceneDocument>();
     private final List<String> toRemove = new LinkedList<String>();
+    private final Set<String> staleFiles = new HashSet<String>();
 
     // called under LuceneIndexManager.writeAccess
     private void _clear() throws IOException {
@@ -450,36 +504,46 @@ public class LuceneIndex implements IndexImpl {
             dindx[dindxLength++] = hits.id(i);
         }
         for (int i=0; i<dindxLength; i++) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Deleting from index: " + toRemoveItem + ", lucene document idx=" + dindx[i]); //NOI18N
+            }
             in.deleteDocument (dindx[i]);
         }
     }
 
-    // called under LuceneIndexManager.writeAccess and synchronized(this)
-    private void flush() throws IOException {
-        LOGGER.fine("Flushing: " + indexFolder); //NOI18N
+    // called under LuceneIndexManager.writeAccess
+    private static void flush(File indexFolder, List<LuceneDocument> toAdd, List<String> toRemove, Directory directory, IndexReader in, /*IndexWriter out,*/ LMListener lmListener) throws IOException {
+        LOGGER.log(Level.FINE, "Flushing: {0}", indexFolder); //NOI18N
         try {
             //assert ClassIndexManager.getDefault().holdsWriteLock();
             //1) delete all documents from to delete and toAdd
-            IndexReader in = getReader();
             if (in != null) {
-                final Searcher searcher = new IndexSearcher (in);
                 try {
-                    for (Iterator<String> it = toRemove.iterator(); it.hasNext();) {
-                        String toRemoveItem = it.next();
-                        it.remove();
-                        deleteFile (in, searcher, toRemoveItem);
-                    }
-                    for (LuceneDocument toRemoveItem : toAdd) {
-                        deleteFile(in, searcher, toRemoveItem.getSourceName());
+                    final Searcher searcher = new IndexSearcher (in);
+                    try {
+                        for (Iterator<String> it = toRemove.iterator(); it.hasNext();) {
+                            String toRemoveItem = it.next();
+                            it.remove();
+                            deleteFile (in, searcher, toRemoveItem);
+                        }
+                        for (LuceneDocument toRemoveItem : toAdd) {
+                            deleteFile(in, searcher, toRemoveItem.getSourceName());
+                        }
+                    } finally {
+                        searcher.close();
                     }
                 } finally {
-                    searcher.close();
+                    in.close();
                 }
             }
             
             //2) add all documents form to add
-            boolean createIndex = in == null; // no reader => index does not exist
-            final IndexWriter out = getWriter(createIndex);
+            IndexWriter out = new IndexWriter(
+                directory, // index directory
+                false, // auto-commit each flush
+                new KeywordAnalyzer(),
+                in == null // open existing or create new index
+            );
             try {
                 if (debugIndexMerging) {
                     out.setInfoStream (System.err);
@@ -504,7 +568,7 @@ public class LuceneIndex implements IndexImpl {
                         memDir = new RAMDirectory ();
                         activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true);
                     }
-                    LOGGER.finest("LuceneDocument merged: " + doc); //NOI18N
+                    LOGGER.log(Level.FINEST, "LuceneDocument merged: {0}", doc); //NOI18N
                 }
                 if (memDir != null) {
                     activeOut.close();
@@ -516,9 +580,7 @@ public class LuceneIndex implements IndexImpl {
                 out.close();
             }
         } finally {
-            toRemove.clear();
-            toAdd.clear();
-            LOGGER.fine("Index flushed: " + indexFolder); //NOI18N
+            LOGGER.log(Level.FINE, "Index flushed: {0}", indexFolder); //NOI18N
         }
     }
 
@@ -529,44 +591,48 @@ public class LuceneIndex implements IndexImpl {
         }
     }
 
-    // called either under LuceneIndexManager.readAccess and synchronized(this) or
-    // under LuceneIndexManager.writeAccess
-    private IndexReader getReader() throws IOException {
-        if (this.reader == null) {
+    // called under LuceneIndexManager.readAccess or LuceneIndexManager.writeAccess
+    private IndexReader getReader(boolean detach) throws IOException {
+        IndexReader r = reader;
+
+        if (r == null) {
             boolean exists = IndexReader.indexExists(this.directory);
             if (exists) {
                 //Issue #149757 - logging
                 try {
                     //It's important that no Query will get access to original IndexReader
                     //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
-                    this.reader = new NoNormsReader(IndexReader.open(this.directory));
+                    r = new NoNormsReader(IndexReader.open(this.directory));
                 } catch (IOException ioe) {
                     throw annotateException(ioe, indexFolder);
+                }
+
+                synchronized (this) {
+                    if (reader == null) {
+                        reader = r;
+                    } else {
+                        try {
+                            r.close();
+                        } catch (IOException ioe) {
+                            LOGGER.log(Level.WARNING, null, ioe);
+                            // log, but carry on
+                        }
+
+                        r = reader;
+                    }
                 }
             } else {
                 LOGGER.fine(String.format("LuceneIndex[%s] does not exist.", this.toString())); //NOI18N
             }
         }
-        return this.reader;
-    }
 
-    // called under LuceneIndexManager.writeAccess
-    private IndexWriter getWriter (final boolean create) throws IOException {
-        if (this.reader != null) {
-            this.reader.close();
-            this.reader = null;
+        if (detach) {
+            synchronized (this) {
+                reader = null;
+            }
         }
-        //Issue #149757 - logging
-        try {
-            return new IndexWriter(
-                this.directory, // index directory
-                false, // auto-commit each flush
-                new KeywordAnalyzer(),
-                create // open existing or create new index
-            );
-        } catch (IOException ioe) {
-            throw annotateException(ioe, indexFolder);
-        }
+
+        return r;
     }
 
     @Override
@@ -603,7 +669,7 @@ public class LuceneIndex implements IndexImpl {
     }
 
     private static void prefixSearch (final Term valueTerm, final IndexReader in, final Set<? super Term> toSearch) throws IOException {
-        final String prefixField = valueTerm.field();
+        final Object prefixField = valueTerm.field(); // It's Object only to silence the stupid hint
         final String name = valueTerm.text();
         final TermEnum en = in.terms(valueTerm);
         try {
@@ -640,7 +706,7 @@ public class LuceneIndex implements IndexImpl {
         else {
             startPrefix=startText;
         }
-        final String camelField = startTerm.field();
+        final Object camelField = startTerm.field(); // It's Object only to silence the stupid hint
         final TermEnum en = in.terms(startTerm);
         try {
             do {

@@ -41,6 +41,7 @@ package org.netbeans.modules.parsing.api.indexing;
 
 import java.net.URL;
 import java.util.Collection;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 
 /**
@@ -67,7 +68,7 @@ public final class IndexingManager {
      * @return <code>true</code> if there are indexing tasks running, otherwise <code>false</code>.
      */
     public boolean isIndexing() {
-        return RepositoryUpdater.getDefault().isScanInProgress();
+        return Utilities.isScanInProgress();
     }
 
     /**
@@ -87,7 +88,26 @@ public final class IndexingManager {
      *   be reindexed.
      */
     public void refreshIndex(URL root, Collection<? extends URL> files) {
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, false);
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false);
+    }
+
+    /**
+     * Schedules new files for indexing and blocks until they are reindexed. This
+     * method does the same thing as {@link #refreshIndex(java.net.URL, java.util.Collection) },
+     * but it will block the caller until the index refreshing is done.
+     *
+     * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
+     * very expensive operation and the more files you ask to reindex the longer the
+     * job will take.
+     *
+     * @param root The common parent folder of the files that should be reindexed.
+     * @param files The files to reindex. Can be <code>null</code> or an empty
+     *   collection in which case <b>all</b> files under the <code>root</code> will
+     *   be reindexed.
+     * @since 1.5
+     */
+    public void refreshIndexAndWait(URL root, Collection<? extends URL> files) {
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, true);
     }
 
     // -----------------------------------------------------------------------

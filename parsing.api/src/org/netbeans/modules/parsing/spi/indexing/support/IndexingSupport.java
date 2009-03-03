@@ -40,11 +40,6 @@
 package org.netbeans.modules.parsing.spi.indexing.support;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
@@ -71,7 +66,7 @@ public final class IndexingSupport {
 
     private final IndexFactoryImpl spiFactory;
     private final IndexImpl spiIndex;
-    private static final Map<String,IndexingSupport> instances = new HashMap<String,IndexingSupport>();
+//    private static final Map<String,IndexingSupport> instances = new HashMap<String,IndexingSupport>();
 
     private IndexingSupport (final Context ctx) throws IOException {
         IndexFactoryImpl factory = SPIAccessor.getInstance().getIndexFactory(ctx);
@@ -83,29 +78,29 @@ public final class IndexingSupport {
         this.spiIndex = this.spiFactory.createIndex(ctx);
     }
 
-    static Collection<? extends IndexingSupport> getDirtySupports () {
-        return instances.values();
-    }
-
-    static void beginTrans () {
-        assert instances.isEmpty();
-    }
-
-    static void endTrans () {
-        try {
-            for (Iterator<IndexingSupport> it = instances.values().iterator(); it.hasNext(); ) {
-                final IndexingSupport is = it.next();
-                it.remove();
-                try {
-                    is.spiIndex.store();
-                } catch (IOException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                }
-            }
-        } finally {
-            instances.clear();
-        }
-    }
+//    static Collection<? extends IndexingSupport> getDirtySupports () {
+//        return instances.values();
+//    }
+//
+//    static void beginTrans () {
+//        assert instances.isEmpty();
+//    }
+//
+//    static void endTrans () {
+//        try {
+//            for (Iterator<IndexingSupport> it = instances.values().iterator(); it.hasNext(); ) {
+//                final IndexingSupport is = it.next();
+//                it.remove();
+//                try {
+//                    is.spiIndex.store();
+//                } catch (IOException ex) {
+//                    LOG.log(Level.WARNING, null, ex);
+//                }
+//            }
+//        } finally {
+//            instances.clear();
+//        }
+//    }
 
     /**
      * Returns an {@link IndexingSupport} for given indexing {@link Context}
@@ -116,12 +111,19 @@ public final class IndexingSupport {
      */
     public static IndexingSupport getInstance (final Context context) throws IOException {
         Parameters.notNull("context", context);
-        final String key = createkey(context);
-        IndexingSupport support = instances.get(key);
+//        final String key = createkey(context);
+//        IndexingSupport support = instances.get(key);
+//        if (support == null) {
+//            support = new IndexingSupport(context);
+//            instances.put(key,support);
+//        }
+//        return support;
+        IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(context);
         if (support == null) {
             support = new IndexingSupport(context);
-            instances.put(key,support);
+            SPIAccessor.getInstance().context_attachIndexingSupport(context, support);
         }
+
         return support;
     }
 
@@ -163,31 +165,34 @@ public final class IndexingSupport {
      */
     public void markDirtyDocuments (final Indexable indexable) {
         LOG.fine("markDirtyDocuments: " + indexable.getURL()); //NOI18N
-        
-        // XXX: todo
+        spiIndex.fileModified(indexable.getRelativePath());
     }
 
-    private static String createkey (final Context ctx) {
-        return ctx.getIndexFolder().getName() + SPIAccessor.getInstance().getIndexerName (ctx);
-    }
-
+//    private static String createkey (final Context ctx) {
+//        return ctx.getIndexFolder().getName() + SPIAccessor.getInstance().getIndexerName (ctx);
+//    }
+//
     private static class MyAccessor extends SupportAccessor {
 
-        @Override
-        public void beginTrans() {
-            IndexingSupport.beginTrans();
-        }
+//        @Override
+//        public void beginTrans() {
+//            IndexingSupport.beginTrans();
+//        }
+//
+//        @Override
+//        public void endTrans() {
+//            IndexingSupport.endTrans();
+//        }
+//
+//        @Override
+//        public Collection<? extends IndexingSupport> getDirtySupports() {
+//            return IndexingSupport.getDirtySupports();
+//        }
 
-        @Override
-        public void endTrans() {
-            IndexingSupport.endTrans();
+        public void store(IndexingSupport support) throws IOException {
+            assert support != null;
+            support.spiIndex.store();
         }
-
-        @Override
-        public Collection<? extends IndexingSupport> getDirtySupports() {
-            return IndexingSupport.getDirtySupports();
-        }
-
     }
    
 }

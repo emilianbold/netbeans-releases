@@ -85,28 +85,24 @@ public class IndexingSupportTest extends NbTestCase {
     }
 
     public void testIndexingSupportInstances () throws Exception {
-        Collection<? extends IndexingSupport> dirty = SupportAccessor.getInstance().getDirtySupports();
-        assertTrue(dirty.isEmpty());
         final Context ctx1 = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null, false);
         assertNotNull(ctx1);
         final Context ctx2 = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "embIndexer", 1, null, false);
         assertNotNull(ctx2);
-        SupportAccessor.getInstance().beginTrans();
+
         final IndexingSupport is1 = IndexingSupport.getInstance(ctx1);
         assertNotNull(is1);
         final IndexingSupport is2 = IndexingSupport.getInstance(ctx2);
         assertNotNull(is2);
-        dirty = SupportAccessor.getInstance().getDirtySupports();
-        assertEquals(2, dirty.size());
-        SupportAccessor.getInstance().endTrans();
-        dirty = SupportAccessor.getInstance().getDirtySupports();
-        assertTrue(dirty.isEmpty());
+
+        assertSame(is1, SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx1));
+        assertSame(is2, SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx2));
     }
 
     public void testIndexingQuerySupport () throws Exception {
+        // index
         final Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null, false);
         assertNotNull(ctx);
-        SupportAccessor.getInstance().beginTrans();
         final Indexable i1 = SPIAccessor.getInstance().create(new FileObjectIndexable(root, f1));
         final IndexingSupport is = IndexingSupport.getInstance(ctx);
         assertNotNull(is);
@@ -121,9 +117,9 @@ public class IndexingSupportTest extends NbTestCase {
         doc2.addPair("class", "Object", true, true);
         doc2.addPair("package", "java.lang", true, true);        
         is.addDocument(doc2);
-        Collection<? extends IndexingSupport> dirty = SupportAccessor.getInstance().getDirtySupports();
-        assertEquals(1, dirty.size());
-        SupportAccessor.getInstance().endTrans();
+        SupportAccessor.getInstance().store(is);
+
+        // query
         Constructor<QuerySupport> c = QuerySupport.class.getDeclaredConstructor(FileObject.class, String.class, Integer.TYPE);
         c.setAccessible(true);
         QuerySupport qs = c.newInstance(root,"fooIndexer",1);
