@@ -65,7 +65,7 @@ public class ArtifactGraphNode {
     private boolean root;
     private HashSet<DependencyNode> dupl;
     private int level;
-    private int managedState;
+    private int managedState = UNMANAGED;
 
     /** Creates a new instance of ArtifactGraphNode */
     public ArtifactGraphNode(DependencyNode art) {
@@ -130,6 +130,10 @@ public class ArtifactGraphNode {
     
     void setWidget(Widget wid) {
         widget = wid;
+    }
+
+    Widget getWidget() {
+        return widget;
     }
 
     public int getManagedState() {
