@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.loaders.CCDataObject;
 import org.netbeans.modules.cnd.loaders.CDataObject;
-import org.netbeans.modules.cnd.loaders.CndDataObject;
 import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.loaders.DataObject;
@@ -141,9 +140,9 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     
     /** Impl of LookupListener, reacts to changes of context */
     public synchronized void resultChanged(LookupEvent ev) {
-        Collection data = ((Lookup.Result)ev.getSource()).allInstances();
+        Collection<?> data = ((Lookup.Result)ev.getSource()).allInstances();
         if (!data.isEmpty()) {
-            CndDataObject cdo = (CndDataObject)data.iterator().next();
+            DataObject cdo = (DataObject) data.iterator().next();
             if (!cdo.equals(curData)) {
 		detachFromModel(curModel);
                 curData = cdo;
