@@ -124,10 +124,4 @@ public class GsfReformatTask implements ReformatTask {
         }        
     }
 
-    @Override
-    public String toString() {
-        return "GsfReformatTask[" + // NOI18N
-                getFormatter().getClass().getName()+
-                "]"; // NOI18N
-    }
 }
