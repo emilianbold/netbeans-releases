@@ -59,7 +59,7 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
  * @author mkuchtiak
  */
 public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
-    private static final String[] METRO_LIBRARIES = 
+    private static final String[] METRO_LIBRARIES =
         new String[] {"webservices", "javax.activation", "jaxb", "jsr109-impl"}; //NOI18N
     private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
     
@@ -96,8 +96,8 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
         if (feature == JaxWs.Feature.WSIT && isMetroInstalled()) {
             return true;
         }
-        if (feature == JaxWs.Feature.JSR109 && isMetroInstalled()) {
-            return true;
+        if (feature == JaxWs.Feature.JSR109) {
+            return false;
         }
         if (feature == JaxWs.Feature.TESTER_PAGE) return true;
         return false;   
@@ -125,7 +125,7 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
         };
     }
     
-    private class JaxWsTool implements WSToolImplementation {
+    protected class JaxWsTool implements WSToolImplementation {
         JaxWs.Tool tool;
         JaxWsTool(JaxWs.Tool tool) {
             this.tool = tool;
@@ -154,12 +154,12 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
       
     }
     
-    private boolean isMetroInstalled() {
+    protected boolean isMetroInstalled() {
         File f = getJarName(gfRootStr, METRO_LIBRARIES[0]);
         return f!=null && f.exists();
     }
     
-    private static class VersionFilter implements FileFilter {
+    protected static class VersionFilter implements FileFilter {
        
         private String nameprefix;
         
@@ -173,7 +173,7 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
         
     }
     
-    private File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
+    protected File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
         File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
         int subindex = jarNamePrefix.lastIndexOf("/");
         if(subindex != -1) {
