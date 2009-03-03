@@ -250,7 +250,7 @@ public final class Kenai {
             return _getProject(name);
         } else {
             KenaiProject result = KenaiProject.get(name);
-            if (result==null) {
+            if (result!=null) {
                 return result;
             }
             return _getProject(name);
