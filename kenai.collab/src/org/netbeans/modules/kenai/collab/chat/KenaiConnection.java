@@ -44,7 +44,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Level;
@@ -75,7 +74,7 @@ import org.openide.util.RequestProcessor;
 public class KenaiConnection implements PropertyChangeListener {
 
     //Map <kenai project name, message listener>
-    private HashMap<String, PacketListener> listeners = new HashMap();
+    private HashMap<String, PacketListener> listeners = new HashMap<String, PacketListener>();
     private XMPPConnection connection;
     //Map <kenai project name, multi user chat>
     private HashMap<String, MultiUserChat> chats = new HashMap<String, MultiUserChat>();
@@ -140,7 +139,7 @@ public class KenaiConnection implements PropertyChangeListener {
             initChats();
             PresenceIndicator.getDefault().setStatus(Status.ONLINE);
         } catch (XMPPException ex) {
-            XMPPLOG.log(Level.WARNING, ex.getMessage());
+            XMPPLOG.log(Level.SEVERE, ex.getMessage());
         }
     }
 
@@ -186,11 +185,7 @@ public class KenaiConnection implements PropertyChangeListener {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     if (listener == null || !ChatTopComponent.isInitedAndVisible(name)) {
-                        RequestProcessor.getDefault().post(new Runnable() {
-                            public void run() {
-                                chatNotifications.addGroupMessage(msg);
-                            }
-                        });
+                        chatNotifications.addGroupMessage(msg);
                     }
                 }
             });
@@ -244,7 +239,6 @@ public class KenaiConnection implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent e) {
         final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
         if (pa != null) {
-            myProjects = null;
             USER = pa.getUserName();
             PASSWORD = new String(pa.getPassword());
             tryConnect();
@@ -293,17 +287,12 @@ public class KenaiConnection implements PropertyChangeListener {
     //return prj.getFeatures(KenaiFeature.CHAT)[0].getName();
     }
 
-    private Collection<KenaiProject> myProjects;
-
     //TODO: my projects does not work so far
     public Collection<KenaiProject> getMyProjects() {
-        if (myProjects == null) {
-            try {
-                myProjects = new LinkedList(Kenai.getDefault().getMyProjects());
-            } catch (KenaiException ex) {
-                myProjects = Collections.emptyList();
-            }
+        try {
+            return Kenai.getDefault().getMyProjects();
+        } catch (KenaiException ex) {
+            throw new RuntimeException(ex);
         }
-        return myProjects;
     }
 }

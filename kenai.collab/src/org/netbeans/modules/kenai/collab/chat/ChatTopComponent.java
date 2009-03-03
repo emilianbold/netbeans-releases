@@ -119,8 +119,10 @@ public class ChatTopComponent extends TopComponent {
         ChangeListener changeListener = new ChangeListener() {
             public void stateChanged(ChangeEvent changeEvent) {
                 int index = chats.getSelectedIndex();
-                if (index>=0)
+                if (index>=0) {
                     chats.setForegroundAt(index, Color.BLACK);
+                    ChatNotifications.getDefault().removeGroup(chats.getTitleAt(index));
+                }
             }
         };
 
@@ -238,7 +240,7 @@ public class ChatTopComponent extends TopComponent {
 
 
     public static boolean isInitedAndVisible(String name) {
-        return instance==null?false:instance.isVisible()&&instance.open.contains(name);
+        return instance==null?false:instance.isVisible()&&instance.isOpened()&&instance.open.contains(name);
     }
 
     private void putChats() {
@@ -290,6 +292,7 @@ public class ChatTopComponent extends TopComponent {
 
         chats.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
 
+        glassPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 4));
         glassPane.setOpaque(false);
 
         addChat.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/collab/resources/plus.gif"))); // NOI18N
@@ -306,14 +309,14 @@ public class ChatTopComponent extends TopComponent {
         glassPaneLayout.setHorizontalGroup(
             glassPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, glassPaneLayout.createSequentialGroup()
-                .addContainerGap(179, Short.MAX_VALUE)
+                .addContainerGap(173, Short.MAX_VALUE)
                 .add(addChat, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         glassPaneLayout.setVerticalGroup(
             glassPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(glassPaneLayout.createSequentialGroup()
                 .add(addChat, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(129, Short.MAX_VALUE))
+                .addContainerGap(125, Short.MAX_VALUE))
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.jLabel1.text")); // NOI18N
