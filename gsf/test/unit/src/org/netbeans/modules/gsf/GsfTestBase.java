@@ -2017,7 +2017,6 @@ public abstract class GsfTestBase extends NbTestCase {
 
     public void format(String source, String reformatted, IndentPrefs preferences) throws Exception {
         final Formatter formatter = getFormatter(preferences);
-        assertNotNull("getFormatter must be implemented", formatter);
 
         String BEGIN = "%<%"; // NOI18N
         int startPos = source.indexOf(BEGIN);
@@ -2059,7 +2058,6 @@ public abstract class GsfTestBase extends NbTestCase {
         //String before = doc.getText(0, doc.getLength());
         
         Formatter formatter = getFormatter(preferences);
-        assertNotNull("getFormatter must be implemented", formatter);
         setupDocumentIndentation(doc, preferences);
 
         format(doc, formatter, getInfo(fo), 0, doc.getLength(), false);
