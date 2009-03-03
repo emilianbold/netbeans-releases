@@ -66,8 +66,8 @@ public class GlassFishV3ee6JaxWsStack extends GlassFishV3JaxWsStack {
         if (feature == JaxWs.Feature.WSIT && isMetroInstalled()) {
             return true;
         }
-        if (feature == JaxWs.Feature.JSR109) {
-            return false;
+        if (feature == JaxWs.Feature.JSR109 && isMetroInstalled()) {
+            return true;
         }
         if (feature == JaxWs.Feature.TESTER_PAGE) return true;
         return false;
