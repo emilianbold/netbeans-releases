@@ -243,7 +243,8 @@ public class IssueFinder {
     }
 
     private static boolean isSpaceOrPunct(int c) {
-        return Character.isSpaceChar(c) || isPunct(c);
+        return (c == '\r') || (c == '\n')
+               || Character.isSpaceChar(c) || isPunct(c);
     }
 
     private static boolean isPunct(int c) {

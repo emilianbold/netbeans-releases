@@ -139,6 +139,8 @@ public class IssueFinderTest {
         checkNoIssueSpansFound("* bug\n *#  123456");
 
         checkNoIssueSpansFound("bug\n ** \n123456");
+
+        checkIssueSpans("bug #123456\n", "bug #123456");
     }
 
     @Test
