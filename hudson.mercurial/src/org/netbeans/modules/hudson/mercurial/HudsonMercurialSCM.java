@@ -40,7 +40,7 @@
 package org.netbeans.modules.hudson.mercurial;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -60,50 +60,16 @@ import org.w3c.dom.Element;
 @ServiceProvider(service=HudsonSCM.class, position=200)
 public class HudsonMercurialSCM implements HudsonSCM {
 
-    private static final Logger LOG = Logger.getLogger(HudsonMercurialSCM.class.getName());
+    static final Logger LOG = Logger.getLogger(HudsonMercurialSCM.class.getName());
 
     public Configuration forFolder(File folder) {
         // XXX could also permit projects as subdirs of Hg repos (lacking SPI currently)
-        File hgrc = new File(folder, ".hg/hgrc"); // NOI18N
-        if (!hgrc.isFile()) {
-            LOG.log(Level.FINE, "{0} is not an Hg repo", folder);
+        final URI source = getDefaultPull(folder.toURI());
+        if (source == null) {
             return null;
         }
-        String defaultPull = null;
-        ClassLoader l = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(HudsonMercurialSCM.class.getClassLoader()); // #141364
-        try {
-            Ini ini = new Ini(new FileInputStream(hgrc));
-            Ini.Section section = ini.get("paths");
-            if (section != null) {
-                defaultPull = section.get("default-pull");
-                if (defaultPull == null) {
-                    defaultPull = section.get("default");
-                }
-            }
-        } catch (Exception x) {
-            LOG.log(Level.WARNING, "Could not parse " + hgrc, x);
-            return null;
-        } finally {
-            Thread.currentThread().setContextClassLoader(l);
-        }
-        if (defaultPull == null) {
-            LOG.log(Level.FINE, "{0} does not specify paths.default or default-pull", hgrc);
-            return null;
-        }
-        if (defaultPull.startsWith("/") || defaultPull.startsWith("\\")) {
-            LOG.log(Level.FINE, "{0} looks like a local file location", defaultPull);
-            return null;
-        }
-        final URI defaultPullU;
-        try {
-            defaultPullU = new URI(defaultPull.replaceFirst("//[^/]+:[^/]+@", "//"));
-        } catch (URISyntaxException x) {
-            LOG.log(Level.FINE, "{0} is not a valid URI", defaultPull);
-            return null;
-        }
-        if (!defaultPullU.isAbsolute() || "file".equals(defaultPullU.getScheme())) {
-            LOG.log(Level.FINE, "{0} is a local file location", defaultPullU);
+        if (!source.isAbsolute() || "file".equals(source.getScheme())) {
+            LOG.log(Level.FINE, "{0} is a local file location", source);
             return null;
         }
         return new Configuration() {
@@ -111,7 +77,7 @@ public class HudsonMercurialSCM implements HudsonSCM {
                 Element root = doc.getDocumentElement();
                 Element configXmlSCM = (Element) root.appendChild(doc.createElement("scm"));
                 configXmlSCM.setAttribute("class", "hudson.plugins.mercurial.MercurialSCM");
-                configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(defaultPullU.toString()));
+                configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(source.toString()));
                 configXmlSCM.appendChild(doc.createElement("modules")).appendChild(doc.createTextNode(""));
                 configXmlSCM.appendChild(doc.createElement("clean")).appendChild(doc.createTextNode("true"));
                 Helper.addTrigger(doc);
@@ -125,6 +91,57 @@ public class HudsonMercurialSCM implements HudsonSCM {
 
     public List<? extends HudsonJobChangeItem> parseChangeSet(Element changeSet) {
         return null; // XXX
+    }
+
+    /**
+     * Try to find the default pull location for a possible Hg repository.
+     * @param repository the repository location (checkout root)
+     * @return its pull location as an absolute URI ending in a slash,
+     *         or null in case it could not be determined
+     */
+    static URI getDefaultPull(URI repository) {
+        assert repository.toString().endsWith("/");
+        URI hgrc = repository.resolve(".hg/hgrc");
+        String defaultPull = null;
+        ClassLoader l = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(HudsonMercurialSCM.class.getClassLoader()); // #141364
+        try {
+            Ini ini = new Ini(hgrc.toURL());
+            Ini.Section section = ini.get("paths");
+            if (section != null) {
+                defaultPull = section.get("default-pull");
+                if (defaultPull == null) {
+                    defaultPull = section.get("default");
+                }
+            }
+        } catch (FileNotFoundException x) {
+            LOG.log(Level.FINE, "{0} is not an Hg repo", repository);
+            return null;
+        } catch (Exception x) {
+            LOG.log(Level.WARNING, "Could not parse " + hgrc, x);
+            return null;
+        } finally {
+            Thread.currentThread().setContextClassLoader(l);
+        }
+        if (defaultPull == null) {
+            LOG.log(Level.FINE, "{0} does not specify paths.default or default-pull", hgrc);
+            return null;
+        }
+        if (!defaultPull.endsWith("/")) {
+            defaultPull += "/";
+        }
+        if (defaultPull.startsWith("/") || defaultPull.startsWith("\\")) {
+            LOG.log(Level.FINE, "{0} looks like a local file location", defaultPull);
+            return new File(defaultPull).toURI();
+        } else {
+            String defaultPullNoPassword = defaultPull.replaceFirst("//[^/]+(:[^/]+)?@", "//");
+            try {
+                return repository.resolve(new URI(defaultPullNoPassword));
+            } catch (URISyntaxException x) {
+                LOG.log(Level.FINE, "{0} is not a valid URI", defaultPullNoPassword);
+                return null;
+            }
+        }
     }
 
 }
