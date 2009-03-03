@@ -45,6 +45,7 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
@@ -59,6 +60,9 @@ import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
 import org.netbeans.modules.web.core.syntax.JSPKit;
 import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 
 /**
@@ -91,6 +95,26 @@ public class HtmlIndenterTest extends TestBase2 {
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HTMLKit("text/x-jsp"));
         Reformatter.Factory factory = new Reformatter.Factory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory);
+    }
+
+    @Override
+    protected BaseDocument getDocument(FileObject fo, String mimeType, Language language) {
+        // for some reason GsfTestBase is not using DataObjects for BaseDocument construction
+        // which means that for example Java formatter which does call EditorCookie to retrieve
+        // document will get difference instance of BaseDocument for indentation
+        try {
+             DataObject dobj = DataObject.find(fo);
+             assertNotNull(dobj);
+
+             EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+             assertNotNull(ec);
+
+             return (BaseDocument)ec.openDocument();
+        }
+        catch (Exception ex){
+            fail(ex.toString());
+            return null;
+        }
     }
 
     @Override

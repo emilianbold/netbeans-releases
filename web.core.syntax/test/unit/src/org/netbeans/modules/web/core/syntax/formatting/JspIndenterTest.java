@@ -95,8 +95,6 @@ public class JspIndenterTest extends TestBase2 {
         NbReaderProvider.setupReaders();
         AbstractIndenter.inUnitTestRun = true;
 
-        
-        
         MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class);
         // init TestLanguageProvider
         Lookup.getDefault().lookup(TestLanguageProvider.class);
@@ -187,13 +185,6 @@ public class JspIndenterTest extends TestBase2 {
     }
 
     public void testFormattingCase004() throws Exception {
-        /*Project p = ProjectManager.getDefault().findProject(getTestFile("FormattingProject"));
-        DataObject dobj = DataObject.find(getTestFile("FormattingProject/web/simple.jsp"));
-        System.err.println("dobj="+dobj);
-        EditorCookie ec = dobj.getCookie(EditorCookie.class);
-        System.err.println("ec="+ec);
-        StyledDocument doc = ec.openDocument();*/
-
         reformatFileContents("FormattingProject/web/case004.jsp",new IndentPrefs(4,4));
     }
 

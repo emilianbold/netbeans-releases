@@ -46,7 +46,6 @@ import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.html.editor.HTMLKit;
-import org.netbeans.modules.html.editor.gsf.HtmlFormatter;
 import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 
 /**
@@ -71,7 +70,7 @@ public class TestBase2 extends GsfTestBase {
 
     @Override
     public Formatter getFormatter(IndentPrefs preferences) {
-        return new HtmlFormatter();
+        return null;
     }
 
     @Override

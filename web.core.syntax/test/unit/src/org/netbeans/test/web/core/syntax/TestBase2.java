@@ -53,7 +53,6 @@ import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.web.core.syntax.JSPKit;
-import org.netbeans.modules.web.core.syntax.gsf.JspFormatter;
 import org.netbeans.modules.web.core.syntax.gsf.JspLanguage;
 import org.netbeans.modules.web.jspparser.JspParserImpl;
 import org.openide.filesystems.FileObject;
@@ -69,15 +68,6 @@ public class TestBase2 extends GsfTestBase {
         super(name);
     }
 
-//    private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
-//
-//    protected BaseDocument createDocument() {
-//        NbEditorDocument doc = new NbEditorDocument(Css.CSS_MIME_TYPE);
-//        doc.putProperty(PROP_MIME_TYPE, Css.CSS_MIME_TYPE);
-//        doc.putProperty(Language.class, CSSTokenId.language());
-//        return doc;
-//    }
-    
     @Override
     protected DefaultLanguageConfig getPreferredLanguage() {
         return new JspLanguage();
@@ -90,17 +80,7 @@ public class TestBase2 extends GsfTestBase {
 
     @Override
     public Formatter getFormatter(IndentPrefs preferences) {
-        if (preferences == null) {
-            preferences = new IndentPrefs(4,4);
-        }
-
-//        Preferences prefs = MimeLookup.getLookup(MimePath.get(Css.CSS_MIME_TYPE)).lookup(Preferences.class);
-//        prefs.putInt(SimpleValueNames.SPACES_PER_TAB, preferences.getIndentation());
-        // TODO: XXXX
-
-        Formatter formatter = new JspFormatter();
-
-        return formatter;
+        return null;
     }
 
     @Override
