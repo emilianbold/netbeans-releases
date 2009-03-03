@@ -43,20 +43,18 @@ import java.util.logging.*;
 import java.util.concurrent.ExecutionException;
 import javax.lang.model.element.Element;
 import org.netbeans.junit.NbPerformanceTest;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 
 import java.io.*;
 import javax.lang.model.element.PackageElement;
-import junit.framework.Assert;
+import junit.framework.Test;
 import org.netbeans.api.java.source.*;
 import org.netbeans.junit.Log;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.ui.WhereUsedQueryUI;
-import static org.netbeans.modules.refactoring.java.test.Utilities.*;
-import org.openide.util.Lookup;
 
 /**
  * Test find usages functionality. Measure the usages time.
@@ -65,12 +63,6 @@ import org.openide.util.Lookup;
  * @author Pavel Flaska
  */
 public class FindUsagesPerfTest extends RefPerfTestCase {
-
-    static {
-        FindUsagesPerfTest.class.getClassLoader().setDefaultAssertionStatus(true);
-        System.setProperty("org.openide.util.Lookup", TestLkp.class.getName());
-        Assert.assertEquals(TestLkp.class, Lookup.getDefault().getClass());
-    }
 
     public FindUsagesPerfTest(String name) {
         super(name);
@@ -155,10 +147,8 @@ public class FindUsagesPerfTest extends RefPerfTestCase {
         Log.assertInstances("Some instances of parser were not GCed");
     }
     
-    public static NbTestSuite suite() throws InterruptedException {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new FindUsagesPerfTest("testFindUsage"));
-        return suite;
+    public static Test suite() throws InterruptedException {
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(FindUsagesPerfTest.class, "testFindUsage").gui(false));
     }
 
 }
