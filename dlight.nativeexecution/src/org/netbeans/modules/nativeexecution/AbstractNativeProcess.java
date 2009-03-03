@@ -78,7 +78,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         setState(State.STARTING);
     }
 
-    public final int getPID() {
+    public final synchronized int getPID() {
         if (pid == null) {
             throw new IllegalStateException("Process was not started"); // NOI18N
         }
@@ -228,7 +228,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         }
     }
 
-    protected final void readPID(final InputStream is) {
+    protected synchronized final void readPID(final InputStream is) {
         Callable<Integer> pidReaderTask = new Callable<Integer>() {
 
             public Integer call() throws Exception {
