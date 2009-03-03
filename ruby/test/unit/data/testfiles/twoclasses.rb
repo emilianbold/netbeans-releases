@@ -10,5 +10,3 @@ class TwoClassesTest
   def myother
   end
 end
-
-

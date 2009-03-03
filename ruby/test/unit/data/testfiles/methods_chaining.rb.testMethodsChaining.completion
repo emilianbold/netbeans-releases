@@ -1,6 +1,6 @@
 Code completion result for source line:
 puts greeting.cap|italize
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+(QueryType=COMPLETION, NameKind=PREFIX)
 METHOD     capitalize                                 String
 METHOD     capitalize!                                String
 CALL       puts(obj)                                  Kernel
