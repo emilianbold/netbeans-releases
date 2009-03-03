@@ -63,6 +63,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.netbeans.modules.parsing.impl.SourceFlags;
+import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -429,7 +430,7 @@ public final class Source {
         public void setFlags (final Source source, final Set<SourceFlags> flags)  {
             assert source != null;
             assert flags != null;
-            synchronized (source) {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
                 source.flags.addAll(flags);
                 source.eventId++;
             }
@@ -439,7 +440,7 @@ public final class Source {
         public boolean testFlag (final Source source, final SourceFlags flag) {
             assert source != null;
             assert flag != null;
-            synchronized (source) {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
                 return source.flags.contains(flag);
             }
         }
@@ -448,7 +449,7 @@ public final class Source {
         public boolean cleanFlag (final Source source, final SourceFlags flag) {
             assert source != null;
             assert flag != null;
-            synchronized (source) {        
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
                 return source.flags.remove(flag);
             }
         }
@@ -458,7 +459,7 @@ public final class Source {
             assert source != null;
             assert test != null;
             assert clean != null;
-            synchronized (source) {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
                 boolean res = source.flags.contains(test);
                 source.flags.removeAll(clean);
                 return res;
@@ -468,7 +469,7 @@ public final class Source {
         @Override
         public void invalidate (final Source source, final boolean force) {
             assert source != null;
-            synchronized (source) {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
                 if (force || source.flags.remove(SourceFlags.INVALID)) {
                     final SourceCache cache = getCache(source);
                     assert cache != null;
@@ -480,7 +481,7 @@ public final class Source {
         @Override
         public boolean invalidate(Source source, long id, Snapshot snapshot) {
             assert source != null;
-            synchronized (source) {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
                 if (snapshot == null) {
                     return !source.flags.contains(SourceFlags.INVALID);
                 }
@@ -509,7 +510,7 @@ public final class Source {
         public void setParser(Source source, Parser parser) throws IllegalStateException {
             assert source != null;
             assert parser != null;
-            synchronized (source) {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
                 if (source.cachedParser != null) {
                     throw new IllegalStateException();
                 }
@@ -543,7 +544,7 @@ public final class Source {
 
         @Override
         public void parsed (Source source) {
-            synchronized (source) {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
                 source.sourceModificationEvent = null;
             }
         }
@@ -562,7 +563,7 @@ public final class Source {
         public void setSchedulerEvents (Source source, Map<Class<? extends Scheduler>,? extends SchedulerEvent> events) {
             assert source != null;
             assert events != null;
-            synchronized (source) {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
                 if (events == null) {
                     throw new IllegalStateException();
                 }
@@ -583,7 +584,7 @@ public final class Source {
         @Override
         public SourceCache getCache (final Source source) {
             assert source != null;
-            synchronized (source) {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
                 if (source.cache == null)
                     source.cache = new SourceCache (source, null);
                 return source.cache;
@@ -594,7 +595,7 @@ public final class Source {
         public int taskAdded(final Source source) {
             assert source != null;
             int ret;
-            synchronized (source) {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
                 ret = source.taskCount++;
             }
             return ret;
@@ -603,7 +604,7 @@ public final class Source {
         @Override
         public int taskRemoved(final Source source) {
             assert source != null;
-            synchronized (source) {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
                 return --source.taskCount;
             }
         }

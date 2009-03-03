@@ -79,10 +79,6 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
@@ -120,9 +116,9 @@ public class TaskProcessor {
     //Deferred task until scan is done
     private final static List<DeferredTask> todo = Collections.synchronizedList(new LinkedList<DeferredTask>());
                     
-    //Internal lock used to synchronize access to TaskProcessor iternal state
+    //Internal lock used to synchronize parsing api iternal state (TaskProcessor, Source, SourceCache)
     private static class InternalLock {};    
-    private static final Object INTERNAL_LOCK = new InternalLock ();
+    public static final Object INTERNAL_LOCK = new InternalLock ();
     
     
     //Parser lock used to prevent other tasks to run in case when there is an active task
@@ -317,34 +313,32 @@ public class TaskProcessor {
     public static void removePhaseCompletionTasks(final Collection<? extends SchedulerTask> tasks, final Source source) {
         Parameters.notNull("task", tasks);
         Parameters.notNull("source", source);
-        synchronized (source) {
-            synchronized (INTERNAL_LOCK) {
-                Collection<Request> rqs = finishedRequests.get(source);
-                boolean found = false;
-                for (SchedulerTask task : tasks) {
-                    final String taskClassName = task.getClass().getName();
-                    if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
-                        if (includedTasks == null || !includedTasks.matcher(taskClassName).matches()) {
-                            continue;
-                        }
+        synchronized (INTERNAL_LOCK) {
+            Collection<Request> rqs = finishedRequests.get(source);
+            boolean found = false;
+            for (SchedulerTask task : tasks) {
+                final String taskClassName = task.getClass().getName();
+                if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
+                    if (includedTasks == null || !includedTasks.matcher(taskClassName).matches()) {
+                        continue;
                     }
-                    if (rqs != null) {
-                        for (Iterator<Request> it = rqs.iterator(); it.hasNext(); ) {
-                            Request rq = it.next();
-                            if (rq.task == task) {
-                                it.remove();
-                                found = true;
-    //todo: Some tasks are duplicated (racecondition?), remove even them.
-    //todo: Prevent duplication of tasks
-    //                      break;
-                            }
-                        }
-                    }
-                    if (!found) {
-                        toRemove.add (task);
-                    }
-                    SourceAccessor.getINSTANCE().taskRemoved(source);
                 }
+                if (rqs != null) {
+                    for (Iterator<Request> it = rqs.iterator(); it.hasNext(); ) {
+                        Request rq = it.next();
+                        if (rq.task == task) {
+                            it.remove();
+                            found = true;
+//todo: Some tasks are duplicated (racecondition?), remove even them.
+//todo: Prevent duplication of tasks
+//                      break;
+                        }
+                    }
+                }
+                if (!found) {
+                    toRemove.add (task);
+                }
+                SourceAccessor.getINSTANCE().taskRemoved(source);
             }
         }
     }
@@ -397,13 +391,10 @@ public class TaskProcessor {
         Parameters.notNull("source", source);
         Parameters.notNull("cache", cache);
        // Parameters.notNull("schedulerType", schedulerType);
-        synchronized (source) {
-            synchronized (INTERNAL_LOCK) {
-                removePhaseCompletionTasks(remove, source);
-                addPhaseCompletionTasks(add, cache, source, false, schedulerType);
-            }
+        synchronized (INTERNAL_LOCK) {
+            removePhaseCompletionTasks(remove, source);
+            addPhaseCompletionTasks(add, cache, source, false, schedulerType);
         }
-
     }
     
     //Changes handling
@@ -438,20 +429,18 @@ public class TaskProcessor {
             r = rst.remove(source);
         }
         currentRequest.cancelCompleted(r);
-        synchronized (source) {
-            synchronized (INTERNAL_LOCK) {
-                final boolean reschedule = SourceAccessor.getINSTANCE().testAndCleanFlags(source,SourceFlags.RESCHEDULE_FINISHED_TASKS,
-                            EnumSet.of(SourceFlags.RESCHEDULE_FINISHED_TASKS, SourceFlags.CHANGE_EXPECTED));
+        synchronized (INTERNAL_LOCK) {
+            final boolean reschedule = SourceAccessor.getINSTANCE().testAndCleanFlags(source,SourceFlags.RESCHEDULE_FINISHED_TASKS,
+                        EnumSet.of(SourceFlags.RESCHEDULE_FINISHED_TASKS, SourceFlags.CHANGE_EXPECTED));
 
-                Collection<Request> cr;
-                if (reschedule) {
-                    if ((cr=finishedRequests.remove(source)) != null && cr.size()>0)  {
-                        requests.addAll(cr);
-                    }
-                }
-                if ((cr=waitingRequests.remove(source)) != null && cr.size()>0)  {
+            Collection<Request> cr;
+            if (reschedule) {
+                if ((cr=finishedRequests.remove(source)) != null && cr.size()>0)  {
                     requests.addAll(cr);
                 }
+            }
+            if ((cr=waitingRequests.remove(source)) != null && cr.size()>0)  {
+                requests.addAll(cr);
             }
         }
     }
@@ -636,28 +625,28 @@ public class TaskProcessor {
                                 else {                                    
                                     final Source source = sourceCache.getSnapshot ().getSource ();
                                     assert source != null;
-                                    synchronized (source) {
-                                        synchronized (INTERNAL_LOCK) {
-                                            //Not only the finishedRequests for the current request.javaSource should be cleaned,
-                                            //it will cause a starvation
-                                            if (toRemove.remove(r.task)) {
-                                                continue;
-                                            }
 
-                                            boolean changeExpected = SourceAccessor.getINSTANCE().testFlag(source,SourceFlags.CHANGE_EXPECTED);
-                                            if (changeExpected) {
-                                                //Skeep the task, another invalidation is comming
-                                                Collection<Request> rc = waitingRequests.get (r.cache.getSnapshot().getSource());
-                                                if (rc == null) {
-                                                    rc = new LinkedList<Request> ();
-                                                    waitingRequests.put (r.cache.getSnapshot ().getSource (), rc);
-                                                }
-                                                rc.add(r);
-                                                continue;
-                                            }
-
+                                    synchronized (INTERNAL_LOCK) {
+                                        //Not only the finishedRequests for the current request.javaSource should be cleaned,
+                                        //it will cause a starvation
+                                        if (toRemove.remove(r.task)) {
+                                            continue;
                                         }
+
+                                        boolean changeExpected = SourceAccessor.getINSTANCE().testFlag(source,SourceFlags.CHANGE_EXPECTED);
+                                        if (changeExpected) {
+                                            //Skeep the task, another invalidation is comming
+                                            Collection<Request> rc = waitingRequests.get (r.cache.getSnapshot().getSource());
+                                            if (rc == null) {
+                                                rc = new LinkedList<Request> ();
+                                                waitingRequests.put (r.cache.getSnapshot ().getSource (), rc);
+                                            }
+                                            rc.add(r);
+                                            continue;
+                                        }
+
                                     }
+
                                     Snapshot snapshot = null;
                                     long[] id = new long[] {-1};
                                     if (SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
@@ -726,21 +715,20 @@ public class TaskProcessor {
                                     //Maybe should be in finally to prevent task lost when parser crashes
                                     if (r.reschedule) {
                                         reschedule|= currentRequest.setCurrentTask(null);
-                                        synchronized (source) {
-                                            synchronized (INTERNAL_LOCK) {                                                                                                
-                                                if (reschedule || SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
-                                                    //The JavaSource was changed or canceled rechedule it now
-                                                    requests.add(r);
+
+                                        synchronized (INTERNAL_LOCK) {
+                                            if (reschedule || SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
+                                                //The JavaSource was changed or canceled rechedule it now
+                                                requests.add(r);
+                                            }
+                                            else if (r.bridge) {
+                                                //Up to date JavaSource add it to the finishedRequests
+                                                Collection<Request> rc = finishedRequests.get (r.cache.getSnapshot ().getSource ());
+                                                if (rc == null) {
+                                                    rc = new LinkedList<Request> ();
+                                                    finishedRequests.put (r.cache.getSnapshot ().getSource (), rc);
                                                 }
-                                                else if (r.bridge) {
-                                                    //Up to date JavaSource add it to the finishedRequests
-                                                    Collection<Request> rc = finishedRequests.get (r.cache.getSnapshot ().getSource ());
-                                                    if (rc == null) {
-                                                        rc = new LinkedList<Request> ();
-                                                        finishedRequests.put (r.cache.getSnapshot ().getSource (), rc);
-                                                    }
-                                                    rc.add(r);
-                                                }
+                                                rc.add(r);
                                             }
                                         }
                                    }
