@@ -145,15 +145,24 @@ public final class SourceCache {
     private Parser          parser;
     
     public Parser getParser () {
-        final Snapshot _snapshot = getSnapshot ();
         synchronized (TaskProcessor.INTERNAL_LOCK) {
-            if (!parserInitialized) {
+            if (parserInitialized) {
+                return parser;
+            }
+        }
+        final Snapshot _snapshot = getSnapshot ();
+        Parser _parser = null;
+        Lookup lookup = MimeLookup.getLookup (mimeType);
+        ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
+        if (parserFactory != null) {
+            final Collection<Snapshot> _tmp = Collections.singleton (_snapshot);
+            _parser = parserFactory.createParser (_tmp);
+        }
+
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
+            if (!parserInitialized) {                                                                                
+                parser = _parser;
                 parserInitialized = true;
-                Lookup lookup = MimeLookup.getLookup (mimeType);
-                ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
-                if (parserFactory == null) return null;
-                final Collection<Snapshot> _tmp = Collections.singleton (_snapshot);
-                parser = parserFactory.createParser (_tmp);
             }
             return parser;
         }
