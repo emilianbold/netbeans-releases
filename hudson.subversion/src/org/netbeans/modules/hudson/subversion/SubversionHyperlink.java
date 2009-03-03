@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.hudson.subversion;
 
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -53,14 +51,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.diff.Diff;
-import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.StreamSource;
+import org.netbeans.modules.hudson.spi.HudsonSCM.Helper;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
-import org.openide.windows.TopComponent;
 
 /**
  * Creates diff hyperlink for one file delta.
@@ -98,21 +94,7 @@ class SubversionHyperlink implements OutputListener {
                 try {
                     final StreamSource before = makeSource(repo, path, startRev);
                     final StreamSource after = makeSource(repo, path, endRev);
-                    EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                            try {
-                                DiffView view = Diff.getDefault().createDiff(before, after);
-                                // XXX reuse the same TC
-                                DiffTopComponent tc = new DiffTopComponent(view);
-                                tc.setName(path);
-                                tc.setDisplayName("Diffing " + path.replaceFirst(".+/", "")); // XXX I18N
-                                tc.open();
-                                tc.requestActive();
-                            } catch (IOException x) {
-                                LOG.log(Level.INFO, null, x);
-                            }
-                        }
-                    });
+                    Helper.showDiff(before, after, path);
                 } catch (IOException x) {
                     LOG.log(Level.INFO, null, x);
                 }
@@ -180,23 +162,6 @@ class SubversionHyperlink implements OutputListener {
         String name = path;
         String title = path.replaceFirst(".+/", "") + " #" + rev;
         return StreamSource.createSource(name, title, mimeType, r);
-    }
-
-    private static class DiffTopComponent extends TopComponent {
-
-        DiffTopComponent(DiffView view) {
-            setLayout(new BorderLayout());
-            add(view.getComponent(), BorderLayout.CENTER);
-        }
-
-        public @Override int getPersistenceType() {
-            return TopComponent.PERSISTENCE_NEVER;
-        }
-
-        protected @Override String preferredID() {
-            return "DiffTopComponent"; // NOI18N
-        }
-
     }
 
 }

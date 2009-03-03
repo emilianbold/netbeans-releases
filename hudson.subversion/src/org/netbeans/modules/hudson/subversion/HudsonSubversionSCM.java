@@ -47,9 +47,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
@@ -143,18 +140,8 @@ public class HudsonSubversionSCM implements HudsonSCM {
         }
     }
 
-    private static final XPath xpath = XPathFactory.newInstance().newXPath();
-    private static String xpath(String expr, Element xml) {
-        try {
-            return xpath.evaluate(expr, xml);
-        } catch (XPathExpressionException x) {
-            LOG.log(Level.FINE, "cannot evaluate '" + expr + "'", x);
-            return null;
-        }
-    }
-
-    public List<? extends HudsonJobChangeItem> parseChangeSet(final Element changeSet) {
-        if (!"svn".equals(xpath("kind", changeSet))) {
+    public List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJob job, final Element changeSet) {
+        if (!"svn".equals(Helper.xpath("kind", changeSet))) {
             // Either a different SCM, or old Hudson.
             if (changeSet.getElementsByTagName("revision").getLength() == 0) {
                 // A different SCM. This clause could be deleted assuming 1.284.
@@ -167,10 +154,10 @@ public class HudsonSubversionSCM implements HudsonSCM {
                 this.itemXML = xml;
             }
             public String getUser() {
-                return xpath("user", itemXML);
+                return Helper.xpath("user", itemXML);
             }
             public String getMessage() {
-                return xpath("msg", itemXML);
+                return Helper.xpath("msg", itemXML);
             }
             public Collection<? extends HudsonJobChangeFile> getFiles() {
                 class SubversionFile implements HudsonJobChangeFile {
@@ -179,14 +166,14 @@ public class HudsonSubversionSCM implements HudsonSCM {
                         this.fileXML = xml;
                     }
                     public String getName() {
-                        return xpath("file", fileXML);
+                        return Helper.xpath("file", fileXML);
                     }
                     public EditType getEditType() {
-                        return EditType.valueOf(xpath("editType", fileXML));
+                        return EditType.valueOf(Helper.xpath("editType", fileXML));
                     }
                     public OutputListener hyperlink() {
-                        String module = xpath("revision/module", changeSet);
-                        String rev = xpath("revision", itemXML);
+                        String module = Helper.xpath("revision/module", changeSet);
+                        String rev = Helper.xpath("revision", itemXML);
                         if (module == null || !module.startsWith("http") || rev == null) {
                             return null;
                         }

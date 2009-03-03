@@ -107,7 +107,7 @@ public class HudsonJobBuild {
                     HudsonXmlApiConstants.XML_API_URL + "?xpath=/*/changeSet");
             if (changeSet != null) {
                 for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
-                    changes = scm.parseChangeSet(changeSet.getDocumentElement());
+                    changes = scm.parseChangeSet(job, changeSet.getDocumentElement());
                     if (changes != null) {
                         break;
                     }

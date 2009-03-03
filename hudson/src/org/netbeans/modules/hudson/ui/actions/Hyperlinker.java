@@ -165,6 +165,7 @@ class Hyperlinker {
                             LOG.fine("Falling back to guess that remote workspace is a project root");
                             localPath = path;
                         }
+                        // XXX permit localPath to include ../ segments; for Hg this is reasonable
                         f = p.getProjectDirectory().getFileObject(localPath);
                         LOG.log(Level.FINE, "Tried to find local file in {0} at {1} using {2}", new Object[] {p, f, localPath});
                         // XXX consider aligning local line number with remote line number somehow

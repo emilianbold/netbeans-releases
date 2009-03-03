@@ -39,9 +39,21 @@
 
 package org.netbeans.modules.hudson.spi;
 
+import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import org.netbeans.api.diff.Diff;
+import org.netbeans.api.diff.DiffView;
+import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -86,19 +98,26 @@ public interface HudsonSCM {
 
     /**
      * Attempts to parse a build's changelog.
+     * @param job the job
      * @param changeSet the {@code <changeSet>} element from a build,
      *        corresponding to some {@code hudson.scm.ChangeLogSet}
      * @return a list of parsed changelog items, or null if the SCM is unrecognized
      */
-    List<? extends HudsonJobChangeItem> parseChangeSet(Element changeSet);
+    List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJob job, Element changeSet);
 
     /**
      * Convenience methods for SCM implementations.
      */
     class Helper {
 
+        private static final Logger LOG = Logger.getLogger(HudsonSCM.class.getName());
+
         private Helper() {}
 
+        /**
+         * Add an SCM polling trigger.
+         * @param configXml a {@code config.xml}
+         */
         public static void addTrigger(Document configXml) {
             Element root = configXml.getDocumentElement();
             root.appendChild(configXml.createElement("triggers")). // XXX reuse existing <triggers> if found
@@ -106,6 +125,58 @@ public interface HudsonSCM {
                     appendChild(configXml.createElement("spec")).
                     // XXX pretty arbitrary but seems like a decent first guess
                     appendChild(configXml.createTextNode("@hourly"));
+        }
+
+        /**
+         * Evaluate an XPath expression.
+         * @param expr an XPath expression
+         * @param xml a DOM context
+         * @return the string value, or null
+         */
+        public static String xpath(String expr, Element xml) {
+            try {
+                return xpath.evaluate(expr, xml);
+            } catch (XPathExpressionException x) {
+                LOG.log(Level.FINE, "cannot evaluate '" + expr + "'", x);
+                return null;
+            }
+        }
+        private static final XPath xpath = XPathFactory.newInstance().newXPath();
+
+        /**
+         * Display a diff window for a file.
+         * @param before the former contents
+         * @param after the new contents
+         * @param path some representation of the file path
+         */
+        public static void showDiff(final StreamSource before, final StreamSource after, final String path) {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        DiffView view = Diff.getDefault().createDiff(before, after);
+                        // XXX reuse the same TC
+                        DiffTopComponent tc = new DiffTopComponent(view);
+                        tc.setName(path);
+                        tc.setDisplayName("Diffing " + path.replaceFirst(".+/", "")); // XXX I18N
+                        tc.open();
+                        tc.requestActive();
+                    } catch (IOException x) {
+                        LOG.log(Level.INFO, null, x);
+                    }
+                }
+            });
+        }
+        private static class DiffTopComponent extends TopComponent {
+            DiffTopComponent(DiffView view) {
+                setLayout(new BorderLayout());
+                add(view.getComponent(), BorderLayout.CENTER);
+            }
+            public @Override int getPersistenceType() {
+                return TopComponent.PERSISTENCE_NEVER;
+            }
+            protected @Override String preferredID() {
+                return "DiffTopComponent"; // NOI18N
+            }
         }
 
     }

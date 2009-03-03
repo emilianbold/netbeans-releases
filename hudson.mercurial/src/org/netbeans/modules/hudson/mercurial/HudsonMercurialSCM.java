@@ -43,16 +43,22 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ini4j.Ini;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
+import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.OutputListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * Permits use of Mercurial to create and view Hudson projects.
@@ -86,11 +92,84 @@ public class HudsonMercurialSCM implements HudsonSCM {
     }
 
     public String translateWorkspacePath(HudsonJob job, String workspacePath, File localRoot) {
+        // XXX find repo at or above localRoot, assume workspacePath is repo-relative
+        // XXX check whether job's repo matches that of repo, by looking at e.g. head of 00changelog.i
         return null; // XXX
     }
 
-    public List<? extends HudsonJobChangeItem> parseChangeSet(Element changeSet) {
-        return null; // XXX
+    public List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJob job, Element changeSet) {
+        if (!"hg".equals(Helper.xpath("kind", changeSet))) {
+            return null;
+        }
+        URI repo = getDefaultPull(URI.create(job.getUrl() + "ws/"));
+        if (repo == null) {
+            LOG.log(Level.FINE, "No known repo location for {0}", job);
+            return null;
+        }
+        if (!"http".equals(repo.getScheme()) && !"https".equals(repo.getScheme())) {
+            LOG.log(Level.FINE, "Need hgweb to show changes from {0}", repo);
+            return null;
+        }
+        class HgItem implements HudsonJobChangeItem {
+            final Element itemXML;
+            HgItem(Element xml) {
+                this.itemXML = xml;
+            }
+            public String getUser() {
+                return Helper.xpath("author/fullName", itemXML);
+            }
+            public String getMessage() {
+                return Helper.xpath("msg", itemXML);
+            }
+            public Collection<? extends HudsonJobChangeFile> getFiles() {
+                if ("true".equals(Helper.xpath("merge", itemXML))) {
+                    return Collections.emptySet();
+                }
+                String node = Helper.xpath("node", itemXML);
+                class HgFile implements HudsonJobChangeFile {
+                    final String path;
+                    final EditType editType;
+                    HgFile(String path, EditType editType) {
+                        this.path = path;
+                        this.editType = editType;
+                    }
+                    public String getName() {
+                        return path;
+                    }
+                    public EditType getEditType() {
+                        return editType;
+                    }
+                    public OutputListener hyperlink() {
+                        /* To find the parent from node:
+                         * http://hg.netbeans.org/cdev/raw-rev/ad9fb3471b63 "# Parent 318da5e3cf4506bcf874a359ecd12cadc9ad31d4"
+                         * To find the contents of a file in some rev:
+                         * http://hg.netbeans.org/cdev/raw-file/ad9fb3471b63/hudson.mercurial/nbproject/project.xml
+                         */
+                        return null; // XXX
+                    }
+                }
+                List<HgFile> files = new ArrayList<HgFile>();
+                NodeList nl = itemXML.getElementsByTagName("addedPath");
+                for (int i = 0; i < nl.getLength(); i++) {
+                    files.add(new HgFile(Helper.xpath("text()", (Element) nl.item(i)), EditType.add));
+                }
+                nl = itemXML.getElementsByTagName("modifiedPath");
+                for (int i = 0; i < nl.getLength(); i++) {
+                    files.add(new HgFile(Helper.xpath("text()", (Element) nl.item(i)), EditType.edit));
+                }
+                nl = itemXML.getElementsByTagName("deletedPath");
+                for (int i = 0; i < nl.getLength(); i++) {
+                    files.add(new HgFile(Helper.xpath("text()", (Element) nl.item(i)), EditType.delete));
+                }
+                return files;
+            }
+        }
+        List<HgItem> items = new ArrayList<HgItem>();
+        NodeList nl = changeSet.getElementsByTagName("item");
+        for (int i = 0; i < nl.getLength(); i++) {
+            items.add(new HgItem((Element) nl.item(i)));
+        }
+        return items;
     }
 
     /**
