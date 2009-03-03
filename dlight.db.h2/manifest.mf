@@ -3,4 +3,4 @@ AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.dlight.db.h2
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/db/h2/resources/Bundle.properties
-
+OpenIDE-Module-Provides: org.netbeans.modules.dlight.spi.storage.DataStorageFactory
