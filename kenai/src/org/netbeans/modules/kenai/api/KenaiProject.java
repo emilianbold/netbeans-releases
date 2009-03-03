@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.kenai.api;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -59,14 +57,14 @@ import org.netbeans.modules.kenai.ProjectData;
  */
 public final class KenaiProject {
 
-    /**
-     * getSource() returns project being refreshed
-     * values are undefined
-     */
-    public static final String PROP_PROJECT_CHANGED = "project_change";
-
-
-    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+//    /**
+//     * getSource() returns project being refreshed
+//     * values are undefined
+//     */
+//    public static final String PROP_PROJECT_CHANGED = "project_change";
+//
+//
+//    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
     private String    name;
 
@@ -97,22 +95,36 @@ public final class KenaiProject {
         this.data = p;
     }
 
-    static synchronized KenaiProject get(ProjectData p) {
-        final HashMap<String, WeakReference<KenaiProject>> projectsCache = Kenai.getDefault().projectsCache;
-        WeakReference<KenaiProject> wr = projectsCache.get(p.name);
-        KenaiProject result = null;
-        if (wr==null || (result = wr.get()) == null) {
-            result = new KenaiProject(p);
-            projectsCache.put(p.name, new WeakReference<KenaiProject>(result));
+    static KenaiProject get(ProjectData p) {
+        final Kenai kenai = Kenai.getDefault();
+        synchronized (kenai.projectsCache) {
+            WeakReference<KenaiProject> wr = kenai.projectsCache.get(p.name);
+            KenaiProject result = null;
+            if (wr == null || (result = wr.get()) == null) {
+                result = new KenaiProject(p);
+                kenai.projectsCache.put(p.name, new WeakReference<KenaiProject>(result));
+            }
+            return result;
         }
-        return result;
     }
+
+    static KenaiProject get(String name) {
+        final Kenai kenai = Kenai.getDefault();
+        synchronized (kenai.projectsCache) {
+            WeakReference<KenaiProject> wr = kenai.projectsCache.get(name);
+            if (wr == null) {
+                return null;
+            }
+            return wr.get();
+        }
+    }
+
 
     /**
      * Unique name of project
      * @return
      */
-    public String getName() {
+    public synchronized String getName() {
         return name;
     }
 
@@ -120,7 +132,7 @@ public final class KenaiProject {
      * web location of this project
      * @return
      */
-    public URL getWebLocation() {
+    public synchronized URL getWebLocation() {
         return web_url;
     }
 
@@ -128,7 +140,7 @@ public final class KenaiProject {
      * Display name of this project
      * @return
      */
-    public String getDisplayName() {
+    public synchronized String getDisplayName() {
         return data.display_name;
     }
 
@@ -136,7 +148,7 @@ public final class KenaiProject {
      * Display name of this project
      * @return
      */
-    public String getDescription() {
+    public synchronized String getDescription() {
         fetchDetailsIfNotAvailable();
         return data.description;
     }
@@ -144,7 +156,7 @@ public final class KenaiProject {
     /**
      * @return comma separated tags
      */
-    public String getTags() {
+    public synchronized String getTags() {
         return data.tags;
     }
 
@@ -235,7 +247,7 @@ public final class KenaiProject {
         detailsTimestamp = System.currentTimeMillis();
     }
 
-    ProjectData getData() {
+    synchronized ProjectData getData() {
         return data;
     }
 
@@ -254,7 +266,8 @@ public final class KenaiProject {
      * Reloads project from kenai.com server
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public synchronized  void refresh() throws KenaiException {
+    private void refresh() throws KenaiException {
+        synchronized (this) {
         this.data = Kenai.getDefault().getDetails(getName());
 
         this.name = data.name;
@@ -264,11 +277,12 @@ public final class KenaiProject {
             throw new IllegalArgumentException(ex);
         }
         features=null;
-        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_PROJECT_CHANGED, null, null));
+        }
+        //propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_PROJECT_CHANGED, null, null));
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public synchronized boolean equals(Object obj) {
         if (obj == null) {
             return false;
         }
@@ -283,48 +297,48 @@ public final class KenaiProject {
     }
 
     @Override
-    public int hashCode() {
+    public synchronized int hashCode() {
         int hash = 5;
         hash = 13 * hash + (this.name != null ? this.name.hashCode() : 0);
         return hash;
     }
 
     @Override
-    public String toString() {
+    public synchronized String toString() {
         return "KenaiProject " + getName();
     }
 
-    /**
-     * Adds listener to Kenai instance
-     * @param l
-     */
-    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
-        propertyChangeSupport.addPropertyChangeListener(l);
-    }
-
-    /**
-     * Adds listener to Kenai instance
-     * @param name
-     * @param l
-     */
-    public synchronized void addPropertyChangeListener(String name, PropertyChangeListener l) {
-        propertyChangeSupport.addPropertyChangeListener(name,l);
-    }
-
-    /**
-     * Removes listener from Kenai instance
-     * @param l
-     */
-    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
-        propertyChangeSupport.removePropertyChangeListener(l);
-    }
-
-    /**
-     * Removes listener from Kenai instance
-     * @param name
-     * @param l
-     */
-    public synchronized void removePropertyChangeListener(String name, PropertyChangeListener l) {
-        propertyChangeSupport.removePropertyChangeListener(name, l);
-    }
+//    /**
+//     * Adds listener to Kenai instance
+//     * @param l
+//     */
+//    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
+//        propertyChangeSupport.addPropertyChangeListener(l);
+//    }
+//
+//    /**
+//     * Adds listener to Kenai instance
+//     * @param name
+//     * @param l
+//     */
+//    public synchronized void addPropertyChangeListener(String name, PropertyChangeListener l) {
+//        propertyChangeSupport.addPropertyChangeListener(name,l);
+//    }
+//
+//    /**
+//     * Removes listener from Kenai instance
+//     * @param l
+//     */
+//    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
+//        propertyChangeSupport.removePropertyChangeListener(l);
+//    }
+//
+//    /**
+//     * Removes listener from Kenai instance
+//     * @param name
+//     * @param l
+//     */
+//    public synchronized void removePropertyChangeListener(String name, PropertyChangeListener l) {
+//        propertyChangeSupport.removePropertyChangeListener(name, l);
+//    }
 }

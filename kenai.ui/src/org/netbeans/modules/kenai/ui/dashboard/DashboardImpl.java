@@ -206,6 +206,7 @@ public final class DashboardImpl extends Dashboard {
                 switchContent();
             }
         }
+        project.firePropertyChange(ProjectHandle.PROP_CLOSE, null, null);
     }
 
     ActionListener createLoginAction() {
