@@ -81,7 +81,8 @@ public class LocalHistoryFileView implements VersioningListener {
     private RequestProcessor rp = new RequestProcessor("LocalHistoryView", 1, true);    
     
     public LocalHistoryFileView() {                       
-        tablePanel = new FileTablePanel();        
+        tablePanel = new FileTablePanel();
+        files = new File[] {};
         LocalHistory.getInstance().getLocalHistoryStore().addVersioningListener(this); 
     }            
 
@@ -91,7 +92,7 @@ public class LocalHistoryFileView implements VersioningListener {
     
     public void refresh(File[] files, long toSelect) {
         this.files = files;                        
-        refreshTablePanel(toSelect);                       
+        refreshTablePanel(toSelect);
     }
 
     public void versioningEvent(VersioningEvent evt) {
