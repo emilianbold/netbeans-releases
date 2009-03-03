@@ -183,6 +183,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -1405,7 +1406,6 @@ public abstract class CslTestBase extends NbTestCase {
                 false
         );
 
-        SupportAccessor.getInstance().beginTrans();
         try {
             ParserManager.parse(Collections.singleton(testSource), new UserTask() {
                 public @Override void run(ResultIterator resultIterator) throws Exception {
@@ -1419,7 +1419,10 @@ public abstract class CslTestBase extends NbTestCase {
                 }
             });
         } finally {
-            SupportAccessor.getInstance().endTrans();
+            IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(context);
+            if (support != null) {
+                SupportAccessor.getInstance().store(support);
+            }
         }
 
         TestIndexImpl tii = ((TestIndexImpl) tifi.getIndex(context.getIndexFolder()));
@@ -4116,6 +4119,14 @@ public abstract class CslTestBase extends NbTestCase {
 
         public Collection<? extends IndexDocumentImpl> query(String fieldName, String value, Kind kind, String... fieldsToLoad) throws IOException {
             return original.query(fieldName, value, kind, fieldsToLoad);
+        }
+
+        public void fileModified(String relativePath) {
+            // no-op
+        }
+
+        public Collection<? extends String> getStaleFiles() {
+            return Collections.<String>emptySet();
         }
 
         // --------------------------------------------------------------------
