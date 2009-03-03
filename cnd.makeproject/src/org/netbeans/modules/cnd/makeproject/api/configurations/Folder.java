@@ -408,7 +408,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (myNativeFileItemSet != null) {
                 myNativeFileItemSet.add(item);
             } else {
-                log.severe("can not add folder's " + this + " item " + item + " into " + dao);
+                log.severe("can not add folder's " + this + " item " + item + " into " + dao); // NOI18N
             }
         }
 
