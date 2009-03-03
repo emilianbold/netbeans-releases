@@ -56,7 +56,7 @@
         <property name="build.release.dir" location="build/release"/>
         <condition property="skip.static.analysis">
             <and>
-                <isfalse value="${static.analysis}"/>
+                <equals arg1="${static.analysis}" arg2="false"/>
                 <available file="${build.release.dir}"/>
             </and>
         </condition>
