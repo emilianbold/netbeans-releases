@@ -229,7 +229,7 @@ public class SyntaxElement {
             StringBuffer ret = new StringBuffer( super.toString() );
             ret.append( " - {" );   // NOI18N
             
-            for( Iterator i = attribs.iterator(); i.hasNext(); ) {
+            for( Iterator i = getAttributes().iterator(); i.hasNext(); ) {
                 ret.append( i.next() );
                 ret.append( ", "  );    // NOI18N
             }

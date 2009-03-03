@@ -76,7 +76,6 @@ import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
-import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
@@ -84,7 +83,6 @@ import org.netbeans.modules.csl.core.SelectCodeElementAction;
 import org.netbeans.modules.csl.editor.InstantRenameAction;
 import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.html.editor.gsf.HtmlCommentHandler;
 import org.openide.util.Exceptions;
 

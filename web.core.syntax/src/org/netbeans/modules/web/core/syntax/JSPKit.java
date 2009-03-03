@@ -55,7 +55,6 @@ import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.html.editor.HTMLAutoCompletion;
-import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 import java.awt.event.ActionEvent;
@@ -307,7 +306,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         LanguagePath jspLP = LanguagePath.get(JspTokenId.language());
         LanguagePath htmlLP = LanguagePath.get(jspLP, HTMLTokenId.language());
 
-        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
+//        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
         //initialize JSP embedding updater
         //just a prototype - better disable it for 6.0
         //JspColoringUpdater.init(doc);
