@@ -47,6 +47,7 @@ import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import org.netbeans.modules.uml.drawingarea.widgets.CompositeNode;
 
 /**
  * @author David Kaspar
@@ -96,6 +97,10 @@ public final class MoveAction extends WidgetAction.LockedAdapter {
             state = true;
         else if(dragSceneLocation!=null && dragSceneLocation.equals(widget.convertLocalToScene(event.getPoint())))
             state = true;
+        else if(widget instanceof CompositeNode && dragSceneLocation!=null && ((dragSceneLocation.x+widget.getBorder().getInsets().left)==widget.convertLocalToScene(event.getPoint()).x && (dragSceneLocation.y+widget.getBorder().getInsets().top)==widget.convertLocalToScene(event.getPoint()).y))
+        {
+            state=true;
+        }
         else
             state = move (widget, event.getPoint ());
         if (state) {
