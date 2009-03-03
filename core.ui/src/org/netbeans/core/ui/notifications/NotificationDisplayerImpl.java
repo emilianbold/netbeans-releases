@@ -226,7 +226,7 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
     }
 
     private JComponent createTitle( String title ) {
-        return new JLabel(title);
+        return new JLabel("<html>" + title); // NOI18N
     }
 
     private JComponent createDetails( String text, ActionListener action ) {
