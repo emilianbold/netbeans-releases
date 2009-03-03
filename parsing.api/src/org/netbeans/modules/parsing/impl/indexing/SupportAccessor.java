@@ -37,49 +37,43 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
+package org.netbeans.modules.parsing.impl.indexing;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import java.io.IOException;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneDocument implements IndexDocumentImpl {
+public abstract class SupportAccessor {
 
-    public final Document doc;    
+    private static volatile SupportAccessor instance;
 
-    LuceneDocument (final Indexable indexable) {
-        assert indexable!=null;
-        this.doc = new Document();
-        this.doc.add(DocumentUtil.sourceNameField(indexable.getRelativePath()));
+    public static void setInstance (final SupportAccessor _instance) {
+        assert _instance != null;
+        instance = _instance;
     }
 
-    public LuceneDocument(final Document doc) {
-        assert doc != null;
-        this.doc = doc;
+    public static synchronized SupportAccessor getInstance () {
+        if (instance == null) {
+            try {
+                Class.forName(IndexingSupport.class.getName(),true, IndexingSupport.class.getClassLoader());
+                assert instance != null;
+            } catch (ClassNotFoundException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return instance;
     }
 
-    public void addPair(final String key, final String value, final boolean searchable, final boolean stored) {
-        final Field field = new Field (key, value,
-                stored ? Field.Store.YES : Field.Store.NO,
-                searchable ? Field.Index.NO_NORMS : Field.Index.NO);
-        doc.add (field);
-    }
+//    public abstract void beginTrans ();
+//
+//    public abstract void endTrans ();
+//
+//    public abstract Collection<? extends IndexingSupport> getDirtySupports ();
 
-    public String getSourceName () {
-        return doc.get(DocumentUtil.FIELD_SOURCE_NAME);
-    }
+    public abstract void store(IndexingSupport support) throws IOException;
 
-    public String getValue(String key) {
-        return doc.get(key);
-    }
-
-    public String[] getValues(String key) {
-        return doc.getValues(key);
-    }
-    
 }

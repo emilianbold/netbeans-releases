@@ -37,49 +37,70 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
+package org.netbeans.modules.parsing.impl.indexing;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneDocument implements IndexDocumentImpl {
+public abstract class Crawler {
 
-    public final Document doc;    
-
-    LuceneDocument (final Indexable indexable) {
-        assert indexable!=null;
-        this.doc = new Document();
-        this.doc.add(DocumentUtil.sourceNameField(indexable.getRelativePath()));
+    protected Crawler (final URL root) throws IOException {
+        this.root = root;
+        this.timeStamps = TimeStamps.forRoot(root);
     }
 
-    public LuceneDocument(final Document doc) {
-        assert doc != null;
-        this.doc = doc;
+//    public final synchronized String getDigest () throws IOException {
+//        init ();
+//        return this.digest;
+//    }
+//
+//    protected final void addToDigest () {
+//    }
+
+    public final synchronized Map<String, Collection<Indexable>> getResources() throws IOException {
+        init ();
+        return cache;
     }
 
-    public void addPair(final String key, final String value, final boolean searchable, final boolean stored) {
-        final Field field = new Field (key, value,
-                stored ? Field.Store.YES : Field.Store.NO,
-                searchable ? Field.Index.NO_NORMS : Field.Index.NO);
-        doc.add (field);
+    public final Collection<Indexable> getDeletedResources () throws IOException {
+        init ();
+        return Collections.unmodifiableCollection(deleted);
     }
 
-    public String getSourceName () {
-        return doc.get(DocumentUtil.FIELD_SOURCE_NAME);
+    protected final TimeStamps getTimeStamps() {
+        return timeStamps;
     }
 
-    public String getValue(String key) {
-        return doc.get(key);
-    }
+    protected abstract Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes);
 
-    public String[] getValues(String key) {
-        return doc.getValues(key);
+    // -----------------------------------------------------------------------
+    // private implementation
+    // -----------------------------------------------------------------------
+
+//    private String digest;
+    private Map<String, Collection<Indexable>> cache;
+    private Collection<Indexable> deleted;
+    private final TimeStamps timeStamps;
+    private final URL root;
+
+    private void init () throws IOException {
+        if (this.cache == null) {
+            this.cache = collectResources(PathRecognizerRegistry.getDefault().getMimeTypes());
+            final Set<String> unseen = timeStamps.store();
+            deleted = new ArrayList<Indexable>(unseen.size());
+            for (String u : unseen) {
+                deleted.add(SPIAccessor.getInstance().create(new DeletedIndexable(root, u)));
+            }
+        }
     }
-    
 }

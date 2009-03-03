@@ -37,49 +37,26 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
+package org.netbeans.modules.parsing.impl.indexing;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneDocument implements IndexDocumentImpl {
+public interface IndexableImpl {
 
-    public final Document doc;    
+    public long getLastModified();
 
-    LuceneDocument (final Indexable indexable) {
-        assert indexable!=null;
-        this.doc = new Document();
-        this.doc.add(DocumentUtil.sourceNameField(indexable.getRelativePath()));
-    }
+    public String getName();
 
-    public LuceneDocument(final Document doc) {
-        assert doc != null;
-        this.doc = doc;
-    }
+    public String getRelativePath();
 
-    public void addPair(final String key, final String value, final boolean searchable, final boolean stored) {
-        final Field field = new Field (key, value,
-                stored ? Field.Store.YES : Field.Store.NO,
-                searchable ? Field.Index.NO_NORMS : Field.Index.NO);
-        doc.add (field);
-    }
+    public URL getURL();
 
-    public String getSourceName () {
-        return doc.get(DocumentUtil.FIELD_SOURCE_NAME);
-    }
+    public InputStream openInputStream() throws IOException;
 
-    public String getValue(String key) {
-        return doc.get(key);
-    }
-
-    public String[] getValues(String key) {
-        return doc.getValues(key);
-    }
-    
 }

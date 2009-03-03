@@ -39,47 +39,74 @@
 
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryType;
+import java.lang.management.MemoryUsage;
+import java.util.List;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneDocument implements IndexDocumentImpl {
+class LMListener {
 
-    public final Document doc;    
+    //@GuardedBy(LMListener.class)
+    private static MemoryPoolMXBean cachedPool;
 
-    LuceneDocument (final Indexable indexable) {
-        assert indexable!=null;
-        this.doc = new Document();
-        this.doc.add(DocumentUtil.sourceNameField(indexable.getRelativePath()));
+    private MemoryPoolMXBean pool;
+
+    private static final float DEFAULT_HEAP_LIMIT = 0.7f;
+
+    private final float heapLimit;
+
+    public LMListener () {
+        this (DEFAULT_HEAP_LIMIT);
     }
 
-    public LuceneDocument(final Document doc) {
-        assert doc != null;
-        this.doc = doc;
+    public LMListener (final float heapLimit) {
+        this.heapLimit = heapLimit;
+        this.pool = findPool();
+        assert pool != null;
     }
 
-    public void addPair(final String key, final String value, final boolean searchable, final boolean stored) {
-        final Field field = new Field (key, value,
-                stored ? Field.Store.YES : Field.Store.NO,
-                searchable ? Field.Index.NO_NORMS : Field.Index.NO);
-        doc.add (field);
-    }
-
-    public String getSourceName () {
-        return doc.get(DocumentUtil.FIELD_SOURCE_NAME);
-    }
-
-    public String getValue(String key) {
-        return doc.get(key);
-    }
-
-    public String[] getValues(String key) {
-        return doc.getValues(key);
+    public float getHeapLimit () {
+        return this.heapLimit;
     }
     
+    public boolean isLowMemory () {
+        if (this.pool != null) {
+            final MemoryUsage usage = this.pool.getUsage();
+            if (usage != null) {
+                long used = usage.getUsed();
+                long max = usage.getMax();
+                return used > max * heapLimit;
+            }
+        }
+        return false;
+    }
+
+    private static synchronized MemoryPoolMXBean findPool () {
+        if (cachedPool == null || !cachedPool.isValid()) {
+            final List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
+            for (MemoryPoolMXBean pool : pools) {
+                if (pool.getType() == MemoryType.HEAP && pool.isUsageThresholdSupported()) {
+                    cachedPool = pool;
+                    break;
+                }
+            }
+            assert cachedPool != null : dumpMemoryPoolMXBean (pools);
+        }
+        return cachedPool;
+    }
+
+    private static String dumpMemoryPoolMXBean (List<MemoryPoolMXBean> pools) {
+        StringBuilder sb = new StringBuilder ();
+        for (MemoryPoolMXBean pool : pools) {
+            sb.append(String.format("Pool: %s Type: %s TresholdSupported: %s\n", pool.getName(), pool.getType(), pool.isUsageThresholdSupported() ? Boolean.TRUE : Boolean.FALSE));
+        }
+        sb.append('\n');
+        return sb.toString();
+    }
+
 }

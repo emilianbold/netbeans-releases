@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  *
@@ -52,10 +54,38 @@ public class LuceneIndexManager {
 
     private static LuceneIndexManager instance;
     private volatile boolean invalid;
+    private final ReadWriteLock lock  = new ReentrantReadWriteLock();
 
     private final Map<URL, LuceneIndex> indexes = new HashMap<URL, LuceneIndex> ();
 
     private LuceneIndexManager() {}
+
+
+    public static interface Action<R> {
+        public R run () throws IOException;
+    }
+
+
+    public <R> R writeAccess (final Action<R> action) throws IOException {
+        assert action != null;
+        lock.writeLock().lock();
+        try {
+            return action.run();
+        }
+        finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public <R> R readAccess (final Action<R> action) throws IOException {
+        assert action != null;
+        lock.readLock().lock();
+        try {
+            return action.run();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
 
 
     public static synchronized LuceneIndexManager getDefault () {
@@ -65,25 +95,17 @@ public class LuceneIndexManager {
         return instance;
     }
 
-    public synchronized LuceneIndex getIndex (final URL root) {
+    public synchronized LuceneIndex getIndex (final URL root, boolean create) throws IOException {
         assert root != null;
         if (invalid) {
             return null;
         }
-        return indexes.get(root);
-    }
-
-    public synchronized LuceneIndex createUsagesQuery (final URL root) throws IOException {
-        assert root != null;
-        if (invalid) {
-            return null;
+        LuceneIndex li = indexes.get(root);
+        if (create && li == null) {
+            li = new LuceneIndex(root);
+            indexes.put(root,li);
         }
-        LuceneIndex qi = indexes.get (root);
-        if (qi == null) {
-            qi = new LuceneIndex(root);
-            indexes.put(root,qi);
-        }
-        return qi;
-    }
+        return li;
+    }   
 
 }

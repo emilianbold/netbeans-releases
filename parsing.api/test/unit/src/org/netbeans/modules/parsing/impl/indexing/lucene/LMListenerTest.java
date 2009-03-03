@@ -39,47 +39,46 @@
 
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneDocument implements IndexDocumentImpl {
+public class LMListenerTest extends NbTestCase {
 
-    public final Document doc;    
+    private static final int _10K = 10 * 1024;
 
-    LuceneDocument (final Indexable indexable) {
-        assert indexable!=null;
-        this.doc = new Document();
-        this.doc.add(DocumentUtil.sourceNameField(indexable.getRelativePath()));
+
+    private List<byte []> refs = new LinkedList<byte []>();
+
+    public LMListenerTest (final String name) {
+        super (name);
     }
 
-    public LuceneDocument(final Document doc) {
-        assert doc != null;
-        this.doc = doc;
+
+    /**
+     * Checks if the LMListener detects low memory
+     * and if it is not expensive to intensively call it.
+     */
+    public void testListnener () {
+        final LMListener l = new LMListener();
+        long ct = 0;
+        for (int i=0; i<100000; i++) {
+            long st = System.currentTimeMillis();
+            boolean isLM = l.isLowMemory();
+            long et = System.currentTimeMillis();
+            ct+=et-st;
+            if (isLM) {
+                refs.clear();
+            }
+            byte[] data = new byte[_10K];
+            refs.add(data);
+        }
+        assertTrue(ct<1000);
+        
     }
 
-    public void addPair(final String key, final String value, final boolean searchable, final boolean stored) {
-        final Field field = new Field (key, value,
-                stored ? Field.Store.YES : Field.Store.NO,
-                searchable ? Field.Index.NO_NORMS : Field.Index.NO);
-        doc.add (field);
-    }
-
-    public String getSourceName () {
-        return doc.get(DocumentUtil.FIELD_SOURCE_NAME);
-    }
-
-    public String getValue(String key) {
-        return doc.get(key);
-    }
-
-    public String[] getValues(String key) {
-        return doc.getValues(key);
-    }
-    
 }

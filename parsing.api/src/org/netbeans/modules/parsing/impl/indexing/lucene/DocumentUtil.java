@@ -39,47 +39,55 @@
 
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
-import org.apache.lucene.document.Document;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.lucene.document.Field;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.apache.lucene.document.FieldSelector;
+import org.apache.lucene.document.FieldSelectorResult;
+import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.document.SetBasedFieldSelector;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneDocument implements IndexDocumentImpl {
+public class DocumentUtil {
 
-    public final Document doc;    
+    static final String FIELD_SOURCE_NAME = "_sn";  //NOI18N
 
-    LuceneDocument (final Indexable indexable) {
-        assert indexable!=null;
-        this.doc = new Document();
-        this.doc.add(DocumentUtil.sourceNameField(indexable.getRelativePath()));
+    static Fieldable sourceNameField(String relativePath) {
+        return new Field(DocumentUtil.FIELD_SOURCE_NAME, relativePath, Field.Store.YES, Field.Index.NO_NORMS);
+    }
+    static Query sourceNameQuery(String relativePath) {
+        return new TermQuery(sourceNameTerm(relativePath));
     }
 
-    public LuceneDocument(final Document doc) {
-        assert doc != null;
-        this.doc = doc;
+    static Term sourceNameTerm (final String relativePath) {
+        assert relativePath != null;
+        return new Term (FIELD_SOURCE_NAME, relativePath);
     }
 
-    public void addPair(final String key, final String value, final boolean searchable, final boolean stored) {
-        final Field field = new Field (key, value,
-                stored ? Field.Store.YES : Field.Store.NO,
-                searchable ? Field.Index.NO_NORMS : Field.Index.NO);
-        doc.add (field);
+    // when fields == null load all fields
+    static FieldSelector selector (String... fieldNames) {
+        if (fieldNames != null && fieldNames.length > 0) {
+            final Set<String> fields = new HashSet<String>(Arrays.asList(fieldNames));
+            fields.add(FIELD_SOURCE_NAME);
+            final FieldSelector selector = new SetBasedFieldSelector(fields,
+                    Collections.<String>emptySet());
+            return selector;
+        } else {
+            return ALL;
+        }
     }
 
-    public String getSourceName () {
-        return doc.get(DocumentUtil.FIELD_SOURCE_NAME);
-    }
-
-    public String getValue(String key) {
-        return doc.get(key);
-    }
-
-    public String[] getValues(String key) {
-        return doc.getValues(key);
-    }
-    
+    private static final FieldSelector ALL = new FieldSelector() {
+        public FieldSelectorResult accept(String arg0) {
+            return FieldSelectorResult.LOAD;
+        }
+    };
 }

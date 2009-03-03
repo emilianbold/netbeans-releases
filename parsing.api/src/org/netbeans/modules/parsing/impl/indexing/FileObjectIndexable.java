@@ -37,49 +37,54 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
+package org.netbeans.modules.parsing.impl.indexing;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneDocument implements IndexDocumentImpl {
+public class FileObjectIndexable implements IndexableImpl {
 
-    public final Document doc;    
+    private final FileObject root;
+    private final FileObject file;
 
-    LuceneDocument (final Indexable indexable) {
-        assert indexable!=null;
-        this.doc = new Document();
-        this.doc.add(DocumentUtil.sourceNameField(indexable.getRelativePath()));
+    public FileObjectIndexable (final FileObject root, final FileObject file) {
+        assert root != null;
+        assert file != null;
+        this.root = root;
+        this.file = file;
     }
 
-    public LuceneDocument(final Document doc) {
-        assert doc != null;
-        this.doc = doc;
+    public long getLastModified() {
+        return this.file.lastModified().getTime();
     }
 
-    public void addPair(final String key, final String value, final boolean searchable, final boolean stored) {
-        final Field field = new Field (key, value,
-                stored ? Field.Store.YES : Field.Store.NO,
-                searchable ? Field.Index.NO_NORMS : Field.Index.NO);
-        doc.add (field);
+    public String getName() {
+        return this.file.getName();
     }
 
-    public String getSourceName () {
-        return doc.get(DocumentUtil.FIELD_SOURCE_NAME);
+    public String getRelativePath() {
+        return FileUtil.getRelativePath(root, file);
     }
 
-    public String getValue(String key) {
-        return doc.get(key);
+    public URL getURL() {
+        try {
+            return this.file.getURL();
+        } catch (FileStateInvalidException ex) {
+            //deleted
+            return null;
+        }
     }
 
-    public String[] getValues(String key) {
-        return doc.getValues(key);
+    public InputStream openInputStream() throws IOException {
+        return this.file.getInputStream();
     }
-    
+
 }

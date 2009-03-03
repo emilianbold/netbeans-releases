@@ -53,5 +53,5 @@ public abstract class EmbeddingIndexer {
      * @param parserResult to be indexed
      * @param context of indexer, contains information about index storage, indexed root
      */
-    protected abstract void index (Parser.Result parserResult, Context context);
+    protected abstract void index (Indexable indexable, Parser.Result parserResult, Context context);   
 }

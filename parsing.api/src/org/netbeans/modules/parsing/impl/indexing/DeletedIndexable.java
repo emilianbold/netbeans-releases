@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,52 +34,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
+package org.netbeans.modules.parsing.impl.indexing;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneDocument implements IndexDocumentImpl {
+public class DeletedIndexable implements IndexableImpl {
 
-    public final Document doc;    
+    private final URL root;
+    private final String relativePath;
 
-    LuceneDocument (final Indexable indexable) {
-        assert indexable!=null;
-        this.doc = new Document();
-        this.doc.add(DocumentUtil.sourceNameField(indexable.getRelativePath()));
+    public DeletedIndexable (final URL root, final String relativePath) {
+        assert root != null;
+        assert relativePath != null;
+        this.root = root;
+        this.relativePath = relativePath;
     }
 
-    public LuceneDocument(final Document doc) {
-        assert doc != null;
-        this.doc = doc;
+    public long getLastModified() {
+        return -1;
     }
 
-    public void addPair(final String key, final String value, final boolean searchable, final boolean stored) {
-        final Field field = new Field (key, value,
-                stored ? Field.Store.YES : Field.Store.NO,
-                searchable ? Field.Index.NO_NORMS : Field.Index.NO);
-        doc.add (field);
+    public String getName() {
+        int index = this.relativePath.lastIndexOf('/');
+        return index == -1 ? relativePath : relativePath.substring(index+1);
     }
 
-    public String getSourceName () {
-        return doc.get(DocumentUtil.FIELD_SOURCE_NAME);
+    public String getRelativePath() {
+        return relativePath;
     }
 
-    public String getValue(String key) {
-        return doc.get(key);
+    public URL getURL() {
+        try {
+            return new URL(root.toString() + relativePath);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
 
-    public String[] getValues(String key) {
-        return doc.getValues(key);
+    public InputStream openInputStream() throws IOException {
+        throw new IOException();
     }
-    
+
 }
