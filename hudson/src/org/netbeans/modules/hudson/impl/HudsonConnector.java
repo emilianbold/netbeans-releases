@@ -46,7 +46,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -58,6 +57,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
+import org.netbeans.modules.hudson.api.HudsonUtils;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import static org.netbeans.modules.hudson.constants.HudsonJobBuildConstants.*;
@@ -143,7 +143,7 @@ public class HudsonConnector {
                 public void run() {
                     try {
                         // Start job
-                        HttpURLConnection conn = followRedirects(url.openConnection());
+                        HttpURLConnection conn = (HttpURLConnection) HudsonUtils.followRedirects(url.openConnection());
                         
                         if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                             LOG.warning("Cannot start build; HTTP error from " + url + ": " + conn.getResponseMessage());
@@ -163,20 +163,6 @@ public class HudsonConnector {
         }
         
         return false;
-    }
-
-    /**
-     * Workaround for JDK bug #6810084.
-     * @see HttpURLConnection#setInstanceFollowRedirects
-     */
-    public static HttpURLConnection followRedirects(URLConnection conn) throws IOException {
-        switch (((HttpURLConnection) conn).getResponseCode()) {
-        case HttpURLConnection.HTTP_MOVED_PERM:
-        case HttpURLConnection.HTTP_MOVED_TEMP:
-            return followRedirects(new URL(conn.getHeaderField("Location")).openConnection());
-        default:
-            return (HttpURLConnection) conn;
-        }
     }
 
     /**
@@ -388,7 +374,7 @@ public class HudsonConnector {
         
         try {
             URL u = new java.net.URL(instance.getUrl());
-            HttpURLConnection conn = followRedirects(u.openConnection());
+            HttpURLConnection conn = (HttpURLConnection) HudsonUtils.followRedirects(u.openConnection());
             String sVersion = conn.getHeaderField("X-Hudson");
             if (sVersion != null) {
                 v = new HudsonVersionImpl(sVersion);
@@ -408,7 +394,7 @@ public class HudsonConnector {
         
         try {
             URL u = new URL(url);
-            HttpURLConnection conn = followRedirects(u.openConnection());
+            HttpURLConnection conn = (HttpURLConnection) HudsonUtils.followRedirects(u.openConnection());
             
             int responseCode = conn.getResponseCode();
             // Connected failed

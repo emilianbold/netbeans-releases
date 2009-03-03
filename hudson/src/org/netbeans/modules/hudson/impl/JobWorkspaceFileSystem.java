@@ -58,6 +58,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonUtils;
 import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -130,7 +131,7 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
         String fSlash = f.length() > 0 ? f + "/" : ""; // NOI18N
         try {
             URL url = new URL(baseURL, fSlash + "*plain*"); // NOI18N
-            URLConnection conn = HudsonConnector.followRedirects(url.openConnection());
+            URLConnection conn = HudsonUtils.followRedirects(url.openConnection());
             String contentType = conn.getContentType();
             if (contentType == null || !contentType.startsWith("text/plain")) { // NOI18N
                 // Missing workspace, or Hudson prior to SVN 13601 (i.e. 1.264).
@@ -172,7 +173,7 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
     private URLConnection connection(String name) throws IOException {
         assert Thread.holdsLock(nonDirs);
         LOG.log(Level.FINE, "metadata in {0}: {1}", new Object[] {job, name});
-        URLConnection conn = HudsonConnector.followRedirects(new URL(baseURL, name).openConnection());
+        URLConnection conn = HudsonUtils.followRedirects(new URL(baseURL, name).openConnection());
         lastModified.put(name, conn.getLastModified());
         int contentLength = conn.getContentLength();
         size.put(name, contentLength);

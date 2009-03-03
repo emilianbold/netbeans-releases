@@ -47,6 +47,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import org.netbeans.modules.hudson.api.HudsonUtils;
 
 /**
  * Utilities for working with Subversion.
@@ -67,7 +68,7 @@ public class SvnUtils {
         URL svnEntries = new URL(dir, ".svn/entries");
         InputStream is;
         try {
-            is = svnEntries.openStream();
+            is = HudsonUtils.followRedirects(svnEntries.openConnection()).getInputStream();
         } catch (FileNotFoundException x) {
             return null;
         }

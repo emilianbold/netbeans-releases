@@ -41,6 +41,7 @@ package org.netbeans.modules.hudson.mercurial;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ import java.util.logging.Logger;
 import org.ini4j.Ini;
 import org.ini4j.InvalidIniFormatException;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonUtils;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
@@ -181,13 +183,18 @@ public class HudsonMercurialSCM implements HudsonSCM {
         ClassLoader l = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(HudsonMercurialSCM.class.getClassLoader()); // #141364
         try {
-            Ini ini = new Ini(hgrc.toURL());
-            Ini.Section section = ini.get("paths");
-            if (section != null) {
-                defaultPull = section.get("default-pull");
-                if (defaultPull == null) {
-                    defaultPull = section.get("default");
+            InputStream is = HudsonUtils.followRedirects(hgrc.toURL().openConnection()).getInputStream();
+            try {
+                Ini ini = new Ini(is);
+                Ini.Section section = ini.get("paths");
+                if (section != null) {
+                    defaultPull = section.get("default-pull");
+                    if (defaultPull == null) {
+                        defaultPull = section.get("default");
+                    }
                 }
+            } finally {
+                is.close();
             }
         } catch (InvalidIniFormatException x) {
             LOG.log(Level.FINE, "{0} was malformed, perhaps no workspace: {1}", new Object[] {hgrc, x});
