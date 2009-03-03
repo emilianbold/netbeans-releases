@@ -83,7 +83,7 @@ public class StorageTest extends NbTestCase {
         final IssueStorage storage = IssueStorage.getInstance();
 
         Map<String, String> attr1 = new HashMap<String, String>();
-        attr1.put("dummy1", "dummy2");
+        attr1.put("dummy1", "dummy3");
         attr1.put("dummy2", "dummy2");
         attr1.put("dummy3", "dummy1");
         Map<String, String> attr2 = new HashMap<String, String>();
@@ -97,24 +97,31 @@ public class StorageTest extends NbTestCase {
         String qName = "SomeQuery";
         Issue i1 = new DummyIssue(id1, attr1);
         Issue i2 = new DummyIssue(id2, attr2);
+
         storage.storeQuery(url, qName, new String[] {id1, id2});
-        storage.storeIssue(url, i1);
-        storage.storeIssue(url, i2);
+
+        IssueCache.IssueEntry ie1 = new IssueCache.IssueEntry(i1, attr1, -1, false);
+        IssueCache.IssueEntry ie2 = new IssueCache.IssueEntry(i2, attr2, -1, false);
+        
+        storage.storeIssue(url, ie1);
+        storage.storeIssue(url, ie2);
 
         List<String> issues = storage.readQuery(url, qName);
-        assertTrue(issues.contains(i1));
-        assertTrue(issues.contains(i2));
+        assertTrue(issues.contains(id1));
+        assertTrue(issues.contains(id2));
 
-        Map<String, String> attr = storage.readIssue(url, i1);
-        if(attr == null) fail("missing issue id [" + id1 + "]");
-        assertAttribute(attr1, "dummy1", "dummy3");
-        assertAttribute(attr1, "dummy2", "dummy2");
-        assertAttribute(attr1, "dummy3", "dummy1");
-        attr = storage.readIssue(url, i2);
-        if(attr == null) fail("missing issue id [" + id2 + "]");
-        assertAttribute(attr2, "dummy5", "dummy7");
-        assertAttribute(attr2, "dummy6", "dummy6");
-        assertAttribute(attr2, "dummy7", "dummy5");
+        ie1 = new IssueCache.IssueEntry(i1, null, -1, false);
+        ie2 = new IssueCache.IssueEntry(i2, null, -1, false);
+        storage.readIssue(url, ie1);
+        if(ie1.getSeenAttributes() == null) fail("missing issue id [" + id1 + "]");
+        assertAttribute(ie1.getSeenAttributes(), "dummy1", "dummy3");
+        assertAttribute(ie1.getSeenAttributes(), "dummy2", "dummy2");
+        assertAttribute(ie1.getSeenAttributes(), "dummy3", "dummy1");
+        storage.readIssue(url, ie2);
+        if(ie2.getSeenAttributes() == null) fail("missing issue id [" + id2 + "]");
+        assertAttribute(ie2.getSeenAttributes(), "dummy5", "dummy7");
+        assertAttribute(ie2.getSeenAttributes(), "dummy6", "dummy6");
+        assertAttribute(ie2.getSeenAttributes(), "dummy7", "dummy5");
 
     }
 
@@ -129,6 +136,7 @@ public class StorageTest extends NbTestCase {
         private String id;
 
         public DummyIssue(String id, Map<String, String> m) {
+            super(null);
             this.m = m;
             this.id = id;
         }
