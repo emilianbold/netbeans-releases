@@ -70,10 +70,8 @@ import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -299,44 +297,44 @@ public class BugzillaIssue extends Issue {
                 for (IssueField changedField : changedFields) {
                     switch(changedField) {
                         case SUMMARY :
-                            ret = changedCount + " changes, incl. summary";
+                            ret = changedCount + " changes, inclusive summary";
                             break;
                         case PRIORITY :
-                            ret = changedCount + " changes, incl. priority";
+                            ret = changedCount + " changes, inclusive priority";
                             break;
                         case SEVERITY :
-                            ret = changedCount + " changes, incl. severity";
+                            ret = changedCount + " changes, inclusive severity";
                             break;
                         case PRODUCT :
-                            ret = changedCount + " changes, incl. product";
+                            ret = changedCount + " changes, inclusive product";
                             break;
                         case COMPONENT :
-                            ret = changedCount + " changes, incl. component";
+                            ret = changedCount + " changes, inclusive component";
                             break;
                         case PLATFORM :
-                            ret = changedCount + " changes, incl. platform";
+                            ret = changedCount + " changes, inclusive platform";
                             break;
                         case VERSION :
-                            ret = changedCount + " changes, incl. version";
+                            ret = changedCount + " changes, inclusive version";
                             break;
                         case MILESTONE :
-                            ret = changedCount + " changes, incl. milestone";
+                            ret = changedCount + " changes, inclusive milestone";
                             break;
                         case KEYWORDS :
-                            ret = changedCount + " changes, incl. keywords";
+                            ret = changedCount + " changes, inclusive keywords";
                             break;
                         case URL :
-                            ret = changedCount + " changes, incl. url";
+                            ret = changedCount + " changes, inclusive url";
                             break;
                         case ASSIGNED_TO :
-                            ret = changedCount + " changes, incl. Assignee";
+                            ret = changedCount + " changes, inclusive Assignee";
                             break;
                         case QA_CONTACT :
-                            ret = changedCount + " changes, incl. qa contact";
+                            ret = changedCount + " changes, inclusive qa contact";
                             break;
                         case DEPENDS_ON :
                         case BLOCKS :
-                            ret = changedCount + " changes, incl. dependence";
+                            ret = changedCount + " changes, inclusive dependence";
                             break;
                         default :
                             ret = changedCount + " changes";
