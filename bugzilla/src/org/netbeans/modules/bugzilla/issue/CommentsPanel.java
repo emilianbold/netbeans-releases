@@ -112,6 +112,7 @@ public class CommentsPanel extends JPanel {
 
     public void setIssue(BugzillaIssue issue) {
         removeAll();
+        setVisible(false);
         this.issue = issue;
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
@@ -129,6 +130,7 @@ public class CommentsPanel extends JPanel {
             addSection(comment.getText(), comment.getWho(), when, horizontalGroup, verticalGroup, false);
         }
         verticalGroup.addContainerGap();
+        setVisible(true);
     }
 
     private void addSection(String text, String author, String dateTimeString,

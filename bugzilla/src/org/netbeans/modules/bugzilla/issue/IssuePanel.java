@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.ComboBoxModel;
@@ -82,6 +83,7 @@ public class IssuePanel extends javax.swing.JPanel {
         initComponents();
         reportedField.setBackground(getBackground());
         modifiedField.setBackground(getBackground());
+        resolutionField.setBackground(getBackground());
         Font font = headerLabel.getFont();
         headerLabel.setFont(font.deriveFont((float)(font.getSize()*1.7)));
 
@@ -122,6 +124,7 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void reloadForm(boolean force) {
+        initStatusCombo();
         String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
         String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
         headerLabel.setText(headerTxt);
@@ -129,6 +132,7 @@ public class IssuePanel extends javax.swing.JPanel {
         reloadField(force, componentCombo, BugzillaIssue.IssueField.COMPONENT);
         reloadField(force, versionCombo, BugzillaIssue.IssueField.VERSION);
         reloadField(force, platformCombo, BugzillaIssue.IssueField.PLATFORM);
+        reloadField(force, resolutionField, BugzillaIssue.IssueField.RESOLUTION); // Must be before statusCombo
         reloadField(force, statusCombo, BugzillaIssue.IssueField.STATUS);
         reloadField(force, resolutionCombo, BugzillaIssue.IssueField.RESOLUTION);
         reloadField(force, priorityCombo, BugzillaIssue.IssueField.PRIORITY);
@@ -182,12 +186,65 @@ public class IssuePanel extends javax.swing.JPanel {
         // componentCombo, versionCombo, targetMilestoneCombo are filled
         // automatically when productCombo is set/changed
         platformCombo.setModel(toComboModel(bugzilla.getPlatforms(repository)));
-        List<String> statuses = bugzilla.getStatusValues(repository);
-        resolvedIndex = statuses.indexOf("RESOLVED"); // NOI18N
-        statusCombo.setModel(toComboModel(bugzilla.getStatusValues(repository)));
         resolutionCombo.setModel(toComboModel(bugzilla.getResolutions(repository)));
         priorityCombo.setModel(toComboModel(bugzilla.getPriorities(repository)));
         severityCombo.setModel(toComboModel(bugzilla.getSeverities(repository)));
+        // stausCombo and resolution fields are filled in reloadForm
+    }
+
+    private void initStatusCombo() {
+        try {
+            // Init statusCombo - allowed transitions (heuristics):
+            // Open -> Open-Unconfirmed-Reopened+Resolved
+            // Resolved -> Reopened+Close
+            // Close-Resolved -> Reopened+Resolved+(Close with higher index)
+            Bugzilla bugzilla = Bugzilla.getInstance();
+            BugzillaRepository repository = issue.getRepository();
+            List<String> allStatuses = bugzilla.getStatusValues(repository);
+            List<String> openStatuses = bugzilla.getOpenStatusValues(repository);
+            List<String> statuses = new LinkedList<String>();
+            String status = issue.getFieldValue(BugzillaIssue.IssueField.STATUS);
+            String unconfirmed = "UNCONFIRMED"; // NOI18N
+            String reopened = "REOPENED"; // NOI18N
+            String resolved = "RESOLVED"; // NOI18N
+            if (openStatuses.contains(status)) {
+                statuses.addAll(openStatuses);
+                if (!unconfirmed.equals(status)) {
+                    statuses.remove(unconfirmed);
+                }
+                if (!reopened.equals(status)) {
+                    statuses.remove(reopened);
+                }
+                statuses.add(resolved);
+            } else {
+                if (allStatuses.contains(reopened)) { // NOI18N
+                    statuses.add(reopened);
+                } else {
+                    // Pure guess
+                    statuses.addAll(openStatuses);
+                    statuses.remove(unconfirmed);
+                }
+                if (resolved.equals(status)) {
+                    List<String> closedStatuses = new LinkedList<String>(allStatuses);
+                    closedStatuses.removeAll(openStatuses);
+                    statuses.addAll(closedStatuses);
+                } else {
+                    statuses.add(resolved);
+                    for (int i=allStatuses.indexOf(status); i<allStatuses.size(); i++) {
+                        String s = allStatuses.get(i);
+                        if (!openStatuses.contains(s)) {
+                            statuses.add(s);
+                        }
+                    }
+                }
+                resolvedIndex = statuses.indexOf(resolved);
+            }
+            statusCombo.setModel(toComboModel(statuses));
+        } catch (CoreException cex) {
+            cex.printStackTrace();
+        } catch (IOException ioex) {
+            ioex.printStackTrace();
+        }
     }
 
     private ComboBoxModel toComboModel(List<String> items) {
@@ -243,6 +300,7 @@ public class IssuePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        resolutionField = new javax.swing.JTextField();
         productLabel = new javax.swing.JLabel();
         componentLabel = new javax.swing.JLabel();
         versionLabel = new javax.swing.JLabel();
@@ -292,6 +350,9 @@ public class IssuePanel extends javax.swing.JPanel {
         jSeparator1 = new javax.swing.JSeparator();
         headerLabel = new javax.swing.JLabel();
         refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+
+        resolutionField.setEditable(false);
+        resolutionField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
@@ -609,8 +670,28 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void statusComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statusComboActionPerformed
         // Hide/show resolution combo
-        boolean shown = (statusCombo.getSelectedIndex() >= resolvedIndex);
-        resolutionCombo.setVisible(shown);
+        String initialStatus = initialValues.get(BugzillaIssue.IssueField.STATUS);
+        boolean resolvedInitial = "RESOLVED".equals(initialStatus); // NOI18N
+        if (!resolvedInitial) {
+            if ("RESOLVED".equals(statusCombo.getSelectedItem())) { // NOI18N
+                if (resolutionCombo.getParent() == null) {
+                    ((GroupLayout)getLayout()).replace(resolutionField, resolutionCombo);
+                }
+                resolutionCombo.setVisible(true);
+            } else {
+                resolutionCombo.setVisible(false);
+            }
+        }
+        if (!resolutionField.getText().trim().equals("")) { // NOI18N
+            if (statusCombo.getSelectedIndex() >= resolvedIndex) {
+                if (resolutionField.getParent() == null) {
+                    ((GroupLayout)getLayout()).replace(resolutionCombo, resolutionField);
+                }
+                resolutionField.setVisible(true);
+            } else {
+                resolutionField.setVisible(false);
+            }
+        }
     }//GEN-LAST:event_statusComboActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
@@ -625,7 +706,7 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(BugzillaIssue.IssueField.STATUS, statusCombo);
         if (resolutionCombo.isVisible()) {
             storeFieldValue(BugzillaIssue.IssueField.RESOLUTION, resolutionCombo);
-        } else {
+        } else if (!resolutionField.isVisible()) {
             storeFieldValue(BugzillaIssue.IssueField.RESOLUTION, ""); // NOI18N
         }
         storeFieldValue(BugzillaIssue.IssueField.PRIORITY, priorityCombo);
@@ -715,6 +796,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JTextField reportedField;
     private javax.swing.JLabel reportedLabel;
     private javax.swing.JComboBox resolutionCombo;
+    private javax.swing.JTextField resolutionField;
     private javax.swing.JLabel resolutionLabel;
     private javax.swing.JScrollPane scrollPane1;
     private javax.swing.JComboBox severityCombo;
