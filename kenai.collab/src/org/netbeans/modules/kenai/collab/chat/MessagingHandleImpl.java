@@ -125,7 +125,7 @@ public class MessagingHandleImpl extends MessagingHandle {
 
     void disposeNotification() {
         if (notification!=null)
-            notification.dispose();
+            notification.clear();
         setMessageCount(0);
     }
 }
