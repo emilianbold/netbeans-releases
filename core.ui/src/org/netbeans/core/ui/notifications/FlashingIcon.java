@@ -39,57 +39,84 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.autoupdate.ui.actions;
+package org.netbeans.core.ui.notifications;
 
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JToolTip;
+import javax.swing.SwingUtilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
-// Copied from org.netbeans.core.FlashingIcon 
 /** 
  *
- * A flashing icon to provide visual feedback for the user when something 
- * not very important happens in the system.
- * The icon is flashed for a few seconds and then remains visible for a while longer. 
+ * An icon representing the last Notification on status bar. Clicking the icon
+ * shows a list of all Notifications. A balloon-like tooltip is shown for this icon
+ * when a new Notification is created.
+ * When balloons are disabled (-Dnb.notification.balloon.disable=true) then this
+ * icon is flashing for a moment when a new Notification is created.
  *
- * @author saubrecht
+ * @author S. Aubrecht
  */
-public abstract class FlashingIcon extends JComponent implements MouseListener {
+class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListener {
     
-    protected int STOP_FLASHING_DELAY = 0;
+    protected int STOP_FLASHING_DELAY = 5 * 1000;
     protected int DISAPPEAR_DELAY_MILLIS = STOP_FLASHING_DELAY + 50 * 1000;
     protected int FLASHING_FREQUENCY = 500;
-    
-    private Icon icon;
     
     private boolean keepRunning = false;
     private boolean isIconVisible = false;
     private boolean keepFlashing = true;
     private long startTime = 0;
     private Task timerTask;
+
+    private NotificationImpl currentNotification;
     
     /** 
      * Creates a new instance of FlashingIcon 
      *
      * @param icon The icon that will be flashing (blinking)
      */
-    protected FlashingIcon( Icon icon ) {
-        this.icon = icon;
-        Dimension d = new Dimension( icon.getIconWidth(), icon.getIconHeight() );
-        setMinimumSize( d );
-        setMaximumSize( d );
-        setPreferredSize( d );
-        setVisible (false);
-        
+    protected FlashingIcon() {
         addMouseListener( this );
+        setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
     }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        NotificationDisplayerImpl displayer = NotificationDisplayerImpl.getInstance();
+        int notificationCount = displayer.size();
+        setText( notificationCount > 1 ? String.valueOf(notificationCount) : null );
+        currentNotification = displayer.getTopNotification();
+        if( null != currentNotification ) {
+            setIcon(currentNotification.getIcon());
+            setToolTipText(currentNotification.getTitle());
+        }
+        setVisible( displayer.size() > 0 );
+        displayer.addPropertyChangeListener(this);
+    }
+
+    @Override
+    public void removeNotify() {
+        NotificationDisplayerImpl displayer = NotificationDisplayerImpl.getInstance();
+        displayer.addPropertyChangeListener(this);
+        currentNotification = null;
+        super.removeNotify();
+    }
+
 
     /**
      * Start flashing of the icon. If the icon is already flashing, the timer
@@ -142,6 +169,7 @@ public abstract class FlashingIcon extends JComponent implements MouseListener {
             }
         }
         keepFlashing = false;
+        isIconVisible = true;
     }
     
     /**
@@ -149,15 +177,19 @@ public abstract class FlashingIcon extends JComponent implements MouseListener {
      */
     protected void flashIcon() {
         isIconVisible = !isIconVisible;
-        
+
+        invalidate();
+        revalidate();
         repaint();
     }
 
     @Override
-    public void paint(java.awt.Graphics g) {
-        if( isIconVisible ) {
-            icon.paintIcon( this, g, 0, 0 );
+    public void setIcon( Icon icon ) {
+        if( null != icon ) {
+            icon = new MyIcon(icon);
+            isIconVisible = true;
         }
+        super.setIcon(icon);
     }
 
     public void mouseReleased(MouseEvent e) {}
@@ -184,12 +216,16 @@ public abstract class FlashingIcon extends JComponent implements MouseListener {
     /**
      * Invoked when the user clicks the icon.
      */
-    protected abstract void onMouseClick();
+    protected void onMouseClick() {
+        PopupList.show(this);
+    }
 
     /**
      * Invoked when the disappear timer expired.
      */
-    protected abstract void timeout();
+    protected void timeout() {
+
+    }
 
     @Override
     public Cursor getCursor() {
@@ -211,7 +247,62 @@ public abstract class FlashingIcon extends JComponent implements MouseListener {
         Point retValue = new Point( getWidth()-d.width, -d.height );
         return retValue;
     }
-    
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if( NotificationDisplayerImpl.PROP_NOTIFICATION_ADDED.equals(evt.getPropertyName()) ) {
+            setNotification( (NotificationImpl)evt.getNewValue(), true );
+            PopupList.dismiss();
+        } else if( NotificationDisplayerImpl.PROP_NOTIFICATION_REMOVED.equals(evt.getPropertyName()) ) {
+            NotificationImpl removed = (NotificationImpl)evt.getNewValue();
+            if( removed.equals(currentNotification) ) {
+                NotificationImpl top = NotificationDisplayerImpl.getInstance().getTopNotification();
+                setNotification( top, false );
+                BalloonManager.dismiss();
+                stopFlashing();
+            } else {
+                int notificationCount = NotificationDisplayerImpl.getInstance().size();
+                setText( notificationCount > 1 ? String.valueOf(notificationCount) : null );
+            }
+        }
+    }
+
+    private boolean canShowBalloon() {
+        return !Boolean.getBoolean("nb.notification.balloon.disable");
+    }
+
+    private void setNotification(final NotificationImpl n, boolean showBalloon ) {
+        NotificationDisplayerImpl displayer = NotificationDisplayerImpl.getInstance();
+        int notificationCount = displayer.size();
+        setText( notificationCount > 1 ? String.valueOf(notificationCount) : null );
+        currentNotification = n;
+        if( null != currentNotification ) {
+            setIcon(currentNotification.getIcon());
+            setToolTipText(currentNotification.getTitle());
+            if( showBalloon ) {
+                if( canShowBalloon() ) {
+                    SwingUtilities.invokeLater( new Runnable() {
+                        public void run() {
+                            BalloonManager.show(FlashingIcon.this,
+                                    currentNotification.getBalloonComp(), 
+                                    null,
+                                    new ActionListener() {
+                                        public void actionPerformed(ActionEvent e) {
+                                            n.clear();
+                                        }
+                                    }, 3*1000);
+                        }
+                    });
+                } else {
+                    startFlashing();
+                }
+            }
+        } else {
+            BalloonManager.dismiss();
+            stopFlashing();
+        }
+        setVisible( displayer.size() > 0 );
+    }
+
     private class Timer implements Runnable {
         public void run() {
             synchronized( FlashingIcon.this ) {
@@ -227,7 +318,7 @@ public abstract class FlashingIcon extends JComponent implements MouseListener {
                     }
                 }
                 if( DISAPPEAR_DELAY_MILLIS > 0 && currentTime - startTime >= DISAPPEAR_DELAY_MILLIS ) {
-                    disappear();
+//                    disappear();
                     timeout();
                 } else {
                     if( null != timerTask )
@@ -235,5 +326,28 @@ public abstract class FlashingIcon extends JComponent implements MouseListener {
                 }
             }
         }
+    }
+
+    private class MyIcon implements Icon {
+
+        private Icon orig;
+
+        public MyIcon( Icon orig ) {
+            this.orig = orig;
+        }
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            if( isIconVisible )
+                orig.paintIcon(c, g, x, y);
+        }
+
+        public int getIconWidth() {
+            return orig.getIconWidth();
+        }
+
+        public int getIconHeight() {
+            return orig.getIconHeight();
+        }
+
     }
 }

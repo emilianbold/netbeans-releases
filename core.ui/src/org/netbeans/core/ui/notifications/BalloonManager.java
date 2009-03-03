@@ -39,11 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.autoupdate.ui.actions;
+package org.netbeans.core.ui.notifications;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Composite;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GradientPaint;
@@ -71,7 +73,6 @@ import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.RoundRectangle2D;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -90,7 +91,7 @@ import org.openide.util.ImageUtilities;
  * 
  * @author S. Aubrecht
  */
-public class BalloonManager {
+class BalloonManager {
 
     private static Balloon currentBalloon;
     private static JLayeredPane currentPane;
@@ -106,14 +107,14 @@ public class BalloonManager {
      * @param defaultAction Action to invoked when the balloon is clicked, can be null.
      * @param timeoutMillies Number of milliseconds before the balloon disappears, 0 to keep it visible forever
      */
-    public static synchronized void show( final JComponent owner, JComponent content, Action defaultAction, int timeoutMillis ) {
+    public static synchronized void show( final JComponent owner, JComponent content, ActionListener defaultAction, ActionListener dismissAction, int timeoutMillis ) {
         assert null != owner;
         assert null != content;
         
         //hide current balloon (if any)
         dismiss();
             
-        currentBalloon = new Balloon( content, defaultAction, timeoutMillis );
+        currentBalloon = new Balloon( content, defaultAction, dismissAction, timeoutMillis );
         currentPane = JLayeredPane.getLayeredPaneAbove( owner );
         
         listener = new ComponentListener() {
@@ -252,7 +253,7 @@ public class BalloonManager {
 
         private JComponent content;
         private MouseListener mouseListener;
-        private Action defaultAction;
+        private ActionListener defaultAction;
         private JButton btnDismiss;
         private int arrowLocation = GridBagConstraints.SOUTHEAST;
         private float currentAlpha = 1.0f;
@@ -260,7 +261,7 @@ public class BalloonManager {
         private int timeoutMillis;
         private boolean isMouseOverEffect = false;
 
-        public Balloon( final JComponent content, final Action defaultAction, final int timeoutMillis ) {
+        public Balloon( final JComponent content, final ActionListener defaultAction, final ActionListener dismissAction, final int timeoutMillis ) {
             super( new GridBagLayout() );
             this.content = content;
             this.defaultAction = defaultAction;
@@ -273,40 +274,42 @@ public class BalloonManager {
                     BalloonManager.dismiss();
                 }
             });
+            if( null != dismissAction )
+                btnDismiss.addActionListener(dismissAction);
 
             add( content, new GridBagConstraints(0,0,1,1,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0)); 
             add( btnDismiss, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.NORTHEAST,GridBagConstraints.NONE,new Insets(7,0,0,7),0,0)); 
 
             setOpaque( false );
 
-            if( null != defaultAction ) {
-                mouseListener = new MouseListener() {
+            mouseListener = new MouseListener() {
 
-                    public void mouseClicked(MouseEvent e) {
-                        BalloonManager.dismiss();
+                public void mouseClicked(MouseEvent e) {
+                    BalloonManager.dismiss();
+                    if( null != defaultAction )
                         defaultAction.actionPerformed( new ActionEvent( Balloon.this, 0, "", e.getWhen(), e.getModifiers() ) );
-                    }
+                }
 
-                    public void mousePressed(MouseEvent e) {
-                    }
+                public void mousePressed(MouseEvent e) {
+                }
 
-                    public void mouseReleased(MouseEvent e) {
-                    }
+                public void mouseReleased(MouseEvent e) {
+                }
 
-                    public void mouseEntered(MouseEvent e) {
+                public void mouseEntered(MouseEvent e) {
+                    if( null != defaultAction )
                         content.setCursor( Cursor.getPredefinedCursor( Cursor.HAND_CURSOR ) );
-                        stopDismissTimer();
-                        repaint();
-                    }
+                    stopDismissTimer();
+                    repaint();
+                }
 
-                    public void mouseExited(MouseEvent e) {
-                        content.setCursor( Cursor.getDefaultCursor() );
-                        if( Balloon.this.timeoutMillis > 0 )
-                            startDismissTimer (ToolTipManager.sharedInstance ().getDismissDelay ());
-                    }
-                };
-                content.addMouseListener(mouseListener);
-            }
+                public void mouseExited(MouseEvent e) {
+                    content.setCursor( Cursor.getDefaultCursor() );
+                    if( Balloon.this.timeoutMillis > 0 )
+                        startDismissTimer (ToolTipManager.sharedInstance ().getDismissDelay ());
+                }
+            };
+            content.addMouseListener(mouseListener);
             
             if( timeoutMillis > 0 ) {
                 SwingUtilities.invokeLater( new Runnable() {
@@ -333,10 +336,21 @@ public class BalloonManager {
             addMouseListener(mouseOverAdapter);
             content.addMouseListener(mouseOverAdapter);
             btnDismiss.addMouseListener(mouseOverAdapter);
+
+            handleMouseOver( content, mouseOverAdapter );
         }
         
         private static final float ALPHA_DECREMENT = 0.03f;
         private static final int DISMISS_REPAINT_REPEAT = 100;
+
+        private void handleMouseOver( Container c, MouseListener ml ) {
+            c.addMouseListener(ml);
+            for( Component child : c.getComponents() ) {
+                child.addMouseListener(ml);
+                if( child instanceof Container )
+                    handleMouseOver((Container)child, ml);
+            }
+        }
         
         synchronized void startDismissTimer (int timeout) {
             stopDismissTimer();
@@ -467,7 +481,7 @@ public class BalloonManager {
         private static final Color defaultGradientFinishColor = new Color(255,255,255);
     }
     
-    private static class DismissButton extends JButton {
+    static class DismissButton extends JButton {
 
         public DismissButton() {
             Image img = ImageUtilities.loadImage( "org/netbeans/modules/autoupdate/ui/resources/dismiss_enabled.png" );
