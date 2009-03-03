@@ -39,12 +39,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -56,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -249,6 +252,22 @@ public final class CsmRefactoringUtils {
         return null;
     }
 
+    public static Collection<CsmFunction> getConstructors(CsmClass cls) {
+        Collection<CsmFunction> out = new ArrayList<CsmFunction>();
+        CsmFilterBuilder filterBuilder = CsmSelect.getFilterBuilder();
+        CsmSelect.CsmFilter filter = filterBuilder.createCompoundFilter(
+                filterBuilder.createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION),
+                filterBuilder.createNameFilter(cls.getName(), true, true, false));
+        Iterator<CsmMember> classMembers = CsmSelect.getClassMembers(cls, filter);
+        while (classMembers.hasNext()) {
+            CsmMember csmMember = classMembers.next();
+            if (CsmKindUtilities.isConstructor(csmMember)) {
+                out.add((CsmConstructor) csmMember);
+            }
+        }
+        return out;
+    }
+
     public static CsmObject getEnclosingElement(CsmObject decl) {
         assert decl != null;
         while (decl instanceof CsmReference) {
@@ -348,8 +367,8 @@ public final class CsmRefactoringUtils {
     public static CsmObject findInnerFileObject(CsmFile file, int offset) {
         assert (file != null) : "can't be null file in findInnerFileObject";
         // check file declarations
-        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(offset);
-        CsmObject lastObject = findInnerDeclaration(CsmSelect.getDefault().getDeclarations(file, filter), offset);
+        CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(offset);
+        CsmObject lastObject = findInnerDeclaration(CsmSelect.getDeclarations(file, filter), offset);
 //        // check macros if needed
 //        lastObject = lastObject != null ? lastObject : findObject(file.getMacros(), context, offset);
         return lastObject;

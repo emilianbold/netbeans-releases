@@ -48,6 +48,10 @@ import java.lang.ref.WeakReference;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.LogRecord;
+import java.util.logging.Level;
 
 import junit.framework.AssertionFailedError;
 
@@ -157,6 +161,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
     private static LoggingRepaintManager rm;
 
+    private Logger Warmup=null;
+
     //private static LoggingEventQueue leq;
 
     static {
@@ -209,18 +215,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      */
     @Override
     public void setUp() {
-        //checkScanFinished();
-// has to be resolved in new test model execution        
-// doesn't work now      
- //       checkWarmup();
- /*           for (int i=20; i>0; i--) {
-                try {
-                    log("checkWarmup - waiting");
-                    Thread.sleep(1000);
-                } catch (InterruptedException ie) {
-                    ie.printStackTrace(System.err);
-                }
-            }        */
+        CommonUtilities.waitProjectTasksFinished();
         data = new java.util.ArrayList<NbPerformanceTest.PerformanceData>();
     }
 
@@ -567,7 +562,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * Shutdown method resets the state of system when all test invocation are done.
      * Default implementation is empty.
      */
-    protected void shutdown() {}
+    protected void shutdown() {
+    }
 
     /**
      * Method for storing and reporting measured performance value
@@ -794,10 +790,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * Ensures that all warm up tasks are already executed so the tests may begin.
      */
     private void checkWarmup() {
-        if (warmupFinished) {
-            return;
-        }
-        try {
+        
+              //return;
+        
+/*        try {
             Class cls = Class.forName("org.netbeans.core.WarmUpSupport"); // NOI18N
             java.lang.reflect.Field fld = cls.getDeclaredField("finished"); // NOI18N
             fld.setAccessible(true);
@@ -818,7 +814,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             fail("checkWarmup - waiting for warmup completion failed");
         } catch (Exception e) {
             fail(e);
-        }
+        }*/
     }
 
     /**
@@ -826,9 +822,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * (just to be sure check it twice after short delay)
      */
     public void checkScanFinished() {
-
       CommonUtilities.waitScanFinished();
-
     }
 
 

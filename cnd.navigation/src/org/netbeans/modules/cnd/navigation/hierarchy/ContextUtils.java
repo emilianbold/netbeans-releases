@@ -152,37 +152,36 @@ public class ContextUtils {
     }
     
     public static CsmDeclaration findInnerFileDeclaration(CsmFile file, int offset) {
-        CsmSelect select = CsmSelect.getDefault();
-        CsmFilter offsetFilter = select.getFilterBuilder().createOffsetFilter(offset);
-        Iterator<? extends CsmObject> fileElements = getInnerObjectsIterator(select, offsetFilter, file);
+        CsmFilter offsetFilter = CsmSelect.getFilterBuilder().createOffsetFilter(offset);
+        Iterator<? extends CsmObject> fileElements = getInnerObjectsIterator(offsetFilter, file);
         CsmDeclaration innermostDecl = (CsmDeclaration)(fileElements.hasNext() ? fileElements.next() : null);
         if (innermostDecl != null && CsmKindUtilities.isScope(innermostDecl)) {
-            CsmDeclaration inner = findInnerDeclaration(select, offsetFilter, (CsmScope)innermostDecl);
+            CsmDeclaration inner = findInnerDeclaration(offsetFilter, (CsmScope)innermostDecl);
             innermostDecl = inner != null ? inner : innermostDecl;
         }
         return innermostDecl;
     }
 
-    private static Iterator<? extends CsmObject> getInnerObjectsIterator(CsmSelect select, CsmFilter offsetFilter, CsmScope scope) {
+    private static Iterator<? extends CsmObject> getInnerObjectsIterator(CsmFilter offsetFilter, CsmScope scope) {
         Iterator<? extends CsmObject> out = Collections.<CsmObject>emptyList().iterator();
         if (CsmKindUtilities.isFile(scope)) {
-            out = select.getDeclarations((CsmFile)scope, offsetFilter);
+            out = CsmSelect.getDeclarations((CsmFile)scope, offsetFilter);
         } else if (CsmKindUtilities.isNamespaceDefinition(scope)) {
-            out = select.getDeclarations(((CsmNamespaceDefinition)scope), offsetFilter);
+            out = CsmSelect.getDeclarations(((CsmNamespaceDefinition)scope), offsetFilter);
         } else if (CsmKindUtilities.isClass(scope)) {
-            out = select.getClassMembers(((CsmClass)scope), offsetFilter);
+            out = CsmSelect.getClassMembers(((CsmClass)scope), offsetFilter);
         } else {
             out = scope.getScopeElements().iterator();
         }
         return out;
     }
 
-    private static CsmDeclaration findInnerDeclaration(CsmSelect select, CsmFilter offsetFilter, CsmScope scope) {
-        Iterator<? extends CsmObject> it = getInnerObjectsIterator(select, offsetFilter, scope);
+    private static CsmDeclaration findInnerDeclaration(CsmFilter offsetFilter, CsmScope scope) {
+        Iterator<? extends CsmObject> it = getInnerObjectsIterator(offsetFilter, scope);
         if (it != null && it.hasNext()) {
             CsmObject decl = it.next();
             if (CsmKindUtilities.isScope(decl)) {
-                CsmObject innerDecl = findInnerDeclaration(select, offsetFilter, (CsmScope)decl);
+                CsmObject innerDecl = findInnerDeclaration(offsetFilter, (CsmScope)decl);
                 if (CsmKindUtilities.isClass(innerDecl)){
                     return (CsmClass)innerDecl;
                 } else if (CsmKindUtilities.isClass(decl)){

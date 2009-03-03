@@ -40,12 +40,13 @@
  */
 package org.netbeans.modules.db.dataview.util;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.util.NbBundle;
 
@@ -57,9 +58,9 @@ import org.openide.util.NbBundle;
  */
 public class DateType {
 
-    public static final DateFormat DEFAULT_FOMAT = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
-    public static final DateFormat[] DATE_PARSING_FORMATS = new DateFormat[]{
-        DEFAULT_FOMAT,
+    public static final String DEFAULT_FOMAT_PATTERN = "yyyy-MM-dd"; // NOI18N
+    private static final DateFormat[] DATE_PARSING_FORMATS = new DateFormat[]{
+        new SimpleDateFormat (DEFAULT_FOMAT_PATTERN),
         DateFormat.getDateInstance(),
         DateFormat.getTimeInstance(DateFormat.SHORT),
         DateFormat.getTimeInstance(DateFormat.SHORT, TimestampType.LOCALE),
@@ -74,7 +75,7 @@ public class DateType {
     }
     
 
-    public static Date convert(Object value) throws DBException {
+    public static java.sql.Date convert(Object value) throws DBException {
         Calendar cal = Calendar.getInstance();
 
         if (null == value) {
@@ -84,14 +85,7 @@ public class DateType {
         } else if (value instanceof java.util.Date) {
             cal.setTimeInMillis(((java.util.Date) value).getTime());
         }else if (value instanceof String) {
-            java.util.Date dVal = null;
-            for (DateFormat fm : DATE_PARSING_FORMATS) {
-                try {
-                    dVal = fm.parse ((String) value);
-                    break;
-                } catch (ParseException ex) {
-                }
-            }
+            java.util.Date dVal = doParse ((String) value);
             if (dVal == null) {
                 throw new DBException(NbBundle.getMessage(DateType.class,
                     "MSG_failure_convert_date", value.getClass().getName(), value.toString())); // NOI18N
@@ -108,6 +102,19 @@ public class DateType {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
 
-        return new Date(cal.getTimeInMillis());
+        return new java.sql.Date(cal.getTimeInMillis());
+    }
+
+    private synchronized static java.util.Date doParse (String sVal) {
+        java.util.Date dVal = null;
+        for (DateFormat format : DATE_PARSING_FORMATS) {
+            try {
+                dVal = format.parse (sVal);
+                break;
+            } catch (ParseException ex) {
+                Logger.getLogger (DateType.class.getName ()).log (Level.FINEST, ex.getLocalizedMessage () , ex);
+            }
+        }
+        return dVal;
     }
 }

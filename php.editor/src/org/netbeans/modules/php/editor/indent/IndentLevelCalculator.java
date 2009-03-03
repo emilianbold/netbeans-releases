@@ -40,19 +40,25 @@ package org.netbeans.modules.php.editor.indent;
 
 import java.util.List;
 import java.util.Map;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -112,9 +118,17 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     }
 
     @Override
+    public void visit(InfixExpression node) {
+        indentContinuationWithinStatement(node);
+        // do not call super.visit()
+        // to avoid reccurency!
+    }
+
+    @Override
     public void visit(ExpressionStatement node) {
         indentContinuationWithinStatement(node);
-        super.visit(node);
+        // do not call super.visit()
+        // to avoid reccurency!
     }
 
     @Override
@@ -124,16 +138,41 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     }
 
     private void indentContinuationWithinStatement(ASTNode node){
+        try {
+            int endOfFirstLine = Utilities.getRowEnd(doc, node.getStartOffset());
 
+            if (endOfFirstLine < node.getEndOffset()){
+                indentLevels.put(endOfFirstLine + 1, continuationIndentSize);
+                indentLevels.put(node.getEndOffset(), -1 * continuationIndentSize);
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private void indentListOfStatements(List<Statement> stmts) {
-        ASTNode firstNode = stmts.get(0);
-        ASTNode lastNode = stmts.get(stmts.size() - 1);
-        int start = firstNode.getStartOffset();
-        int end = lastNode.getEndOffset();
-        indentLevels.put(start, indentSize);
-        indentLevels.put(end, -1 * indentSize);
+        if (stmts.size() > 0){
+            ASTNode firstNode = stmts.get(0);
+            ASTNode lastNode = stmts.get(stmts.size() - 1);
+            int start = firstNode.getStartOffset();
+            int end = lastNode.getEndOffset();
+            indentLevels.put(start, indentSize);
+            indentLevels.put(end, -1 * indentSize);
+        }
+    }
+
+    @Override
+    public void visit(FunctionDeclaration node) {
+        int paramCount = node.getFormalParameters().size();
+
+        if (paramCount > 0){
+            FormalParameter firstParam = node.getFormalParameters().get(0);
+            FormalParameter lastParam = node.getFormalParameters().get(paramCount -1);
+            indentLevels.put(firstParam.getStartOffset(), continuationIndentSize);
+            indentLevels.put(lastParam.getEndOffset(), -1 * continuationIndentSize);
+        }
+
+        super.visit(node);
     }
 
     private void indentNonBlockStatement(ASTNode node) {

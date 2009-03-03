@@ -161,7 +161,7 @@ public class DescriptorListener implements PropertyChangeListener {
     
     public void propertyChange(PropertyChangeEvent evt) {
         synchronized (lastEventMonitor) {
-            Logger.getLogger("glassfish.eecommon").log(Level.FINEST, "RAW EVENT: " + evt.getPropertyName() +
+            Logger.getLogger("glassfish-eecommon").log(Level.FINEST, "RAW EVENT: " + evt.getPropertyName() +
                     ", old = " + evt.getOldValue() + ", new = " + evt.getNewValue() + 
                     ", source = " + evt.getSource());
 
@@ -242,19 +242,19 @@ public class DescriptorListener implements PropertyChangeListener {
             if(!Utils.strEquals(oldName, newName)) {
                 PropertyChangeEvent changeEvent = new PropertyChangeEvent(newBean, createEvent.getPropertyName() + nameVisitor.getNameProperty(), oldName, newName);
 
-                Logger.getLogger("glassfish.eecommon").log(Level.FINE, "processing delete/create sequence as change name event.");
+                Logger.getLogger("glassfish-eecommon").log(Level.FINE, "processing delete/create sequence as change name event.");
                 processEvent(changeEvent);
                 result = true;
             }
         } else {
-            Logger.getLogger("glassfish.eecommon").log(Level.FINE, "No support for delete/create sequence from type " + newBean.getClass().getSimpleName());
+            Logger.getLogger("glassfish-eecommon").log(Level.FINE, "No support for delete/create sequence from type " + newBean.getClass().getSimpleName());
         }
         
         return result;
     }
     
     private void processEvent(PropertyChangeEvent evt) {
-        Logger.getLogger("glassfish.eecommon").log(Level.FINER, "PROCESSED EVENT: " + evt.getPropertyName() +
+        Logger.getLogger("glassfish-eecommon").log(Level.FINER, "PROCESSED EVENT: " + evt.getPropertyName() +
                 ", old = " + evt.getOldValue() + ", new = " + evt.getNewValue() +
                 ", source = " + evt.getSource());
 
@@ -293,7 +293,7 @@ public class DescriptorListener implements PropertyChangeListener {
 //                if(key.length() > minKeyLength && key.startsWith(xpath)) {
 //                    // locate proper child bean(s) and fire correct event.
 //                    String subKeyGroup = key.substring(minKeyLength);
-//                    Logger.getLogger("glassfish.eecommon").log(Level.FINEST, "Child bean: " + subKeyGroup);
+//                    Logger.getLogger("glassfish-eecommon").log(Level.FINEST, "Child bean: " + subKeyGroup);
 //                    
 //                    String [] subKeys = subKeyGroup.split("/");
 //

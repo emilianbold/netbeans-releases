@@ -63,14 +63,14 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     private final FileImpl file;
-//    private final ProjectBase startProject;
+    private final ProjectBase startProject;
     private int mode;
     
     public APTProjectFileBasedWalker(ProjectBase startProject, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler) {
         super(apt, preprocHandler);
         this.mode = ProjectBase.GATHERING_MACROS;
         this.file = file;
-//        this.startProject = startProject;
+        this.startProject = startProject;
         assert startProject != null : "null start project for " + file.getAbsolutePath();
     }
     
@@ -86,9 +86,9 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
                 resolvedPath = new ResolvedPath(resolvedPath.getFolder(), path, resolvedPath.isDefaultSearchPath(), resolvedPath.getIndex());
             }
             if (getIncludeHandler().pushInclude(path, apt.getToken().getLine(), resolvedPath.getIndex())) {
-                ProjectBase startProject = this.getStartProject();
-                if (startProject != null) {
-                    ProjectBase inclFileOwner = LibraryManager.getInstance().resolveFileProjectOnInclude(startProject, getFile(), resolvedPath);
+                ProjectBase aStartProject = this.getStartProject();
+                if (aStartProject != null) {
+                    ProjectBase inclFileOwner = LibraryManager.getInstance().resolveFileProjectOnInclude(aStartProject, getFile(), resolvedPath);
                     try {
                         included = includeAction(inclFileOwner, path, mode, apt);
                     } catch (FileNotFoundException ex) {
@@ -117,7 +117,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     }
 
     protected ProjectBase getStartProject() {
-	return this.file.getProjectImpl(false);
+	return this.startProject;
     }
     
     protected void setMode(int mode) {

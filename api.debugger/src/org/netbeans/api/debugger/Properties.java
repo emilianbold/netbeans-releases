@@ -44,12 +44,15 @@ package org.netbeans.api.debugger;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 
 import java.util.ArrayList;
@@ -62,10 +65,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import java.util.WeakHashMap;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 
@@ -76,7 +81,7 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class Properties {
 
-    
+
     private static Properties defaultProperties;
 
     /**
@@ -89,7 +94,7 @@ public abstract class Properties {
             defaultProperties = new PropertiesImpl ();
         return defaultProperties;
     }
-    
+
     /**
      * Reads String property from storage.
      *
@@ -98,7 +103,7 @@ public abstract class Properties {
      * @return a current value of property
      */
     public abstract String getString (String propertyName, String defaultValue);
-    
+
     /**
      * Sets a new value of property with given propertyName.
      *
@@ -106,7 +111,7 @@ public abstract class Properties {
      * @param value the new value of property
      */
     public abstract void setString (String propertyName, String value);
-    
+
     /**
      * Reads int property from storage.
      *
@@ -115,7 +120,7 @@ public abstract class Properties {
      * @return a current value of property
      */
     public abstract int getInt (String propertyName, int defaultValue);
-    
+
     /**
      * Sets a new value of property with given propertyName.
      *
@@ -123,7 +128,7 @@ public abstract class Properties {
      * @param value the new value of property
      */
     public abstract void setInt (String propertyName, int value);
-    
+
     /**
      * Reads char property from storage.
      *
@@ -132,7 +137,7 @@ public abstract class Properties {
      * @return a current value of property
      */
     public abstract char getChar (String propertyName, char defaultValue);
-    
+
     /**
      * Sets a new value of property with given propertyName.
      *
@@ -140,7 +145,7 @@ public abstract class Properties {
      * @param value the new value of property
      */
     public abstract void setChar (String propertyName, char value);
-    
+
     /**
      * Reads float property from storage.
      *
@@ -149,7 +154,7 @@ public abstract class Properties {
      * @return a current value of property
      */
     public abstract float getFloat (String propertyName, float defaultValue);
-    
+
     /**
      * Sets a new value of property with given propertyName.
      *
@@ -157,7 +162,7 @@ public abstract class Properties {
      * @param value the new value of property
      */
     public abstract void setFloat (String propertyName, float value);
-    
+
     /**
      * Reads long property from storage.
      *
@@ -166,7 +171,7 @@ public abstract class Properties {
      * @return a current value of property
      */
     public abstract long getLong (String propertyName, long defaultValue);
-    
+
     /**
      * Sets a new value of property with given propertyName.
      *
@@ -174,7 +179,7 @@ public abstract class Properties {
      * @param value the new value of property
      */
     public abstract void setLong (String propertyName, long value);
-    
+
     /**
      * Reads double property from storage.
      *
@@ -183,7 +188,7 @@ public abstract class Properties {
      * @return a current value of property
      */
     public abstract double getDouble (String propertyName, double defaultValue);
-    
+
     /**
      * Sets a new value of property with given propertyName.
      *
@@ -191,7 +196,7 @@ public abstract class Properties {
      * @param value the new value of property
      */
     public abstract void setDouble (String propertyName, double value);
-    
+
     /**
      * Reads boolean property from storage.
      *
@@ -200,7 +205,7 @@ public abstract class Properties {
      * @return a current value of property
      */
     public abstract boolean getBoolean (String propertyName, boolean defaultValue);
-    
+
     /**
      * Sets a new value of property with given propertyName.
      *
@@ -208,7 +213,7 @@ public abstract class Properties {
      * @param value the new value of property
      */
     public abstract void setBoolean (String propertyName, boolean value);
-    
+
     /**
      * Reads byte property from storage.
      *
@@ -217,7 +222,7 @@ public abstract class Properties {
      * @return a current value of property
      */
     public abstract byte getByte (String propertyName, byte defaultValue);
-    
+
     /**
      * Sets a new value of property with given propertyName.
      *
@@ -225,7 +230,7 @@ public abstract class Properties {
      * @param value the new value of property
      */
     public abstract void setByte (String propertyName, byte value);
-    
+
     /**
      * Reads short property from storage.
      *
@@ -234,7 +239,7 @@ public abstract class Properties {
      * @return a current value of property
      */
     public abstract short getShort (String propertyName, short defaultValue);
-    
+
     /**
      * Sets a new value of property with given propertyName.
      *
@@ -249,9 +254,9 @@ public abstract class Properties {
      * @param defaultValue a default value to be used if property is not set
      * @return a current value of property
      */
-    
+
     public abstract Object getObject (String propertyName, Object defaultValue);
-    
+
     /**
      * Sets a new value of property with given propertyName.
      *
@@ -259,7 +264,7 @@ public abstract class Properties {
      * @param value the new value of property
      */
     public abstract void setObject (String propertyName, Object value);
-    
+
     /**
      * Reads array property from storage.
      *
@@ -268,7 +273,7 @@ public abstract class Properties {
      * @return a current value of property
      */
     public abstract Object[] getArray (String propertyName, Object[] defaultValue);
-    
+
     /**
      * Sets a new value of property with given propertyName.
      *
@@ -276,7 +281,7 @@ public abstract class Properties {
      * @param value the new value of property
      */
     public abstract void setArray (String propertyName, Object[] value);
-    
+
     /**
      * Reads Collection property from storage.
      *
@@ -285,7 +290,7 @@ public abstract class Properties {
      * @return a current value of property
      */
     public abstract Collection getCollection (String propertyName, Collection defaultValue);
-    
+
     /**
      * Sets a new value of property with given propertyName.
      *
@@ -293,7 +298,7 @@ public abstract class Properties {
      * @param value the new value of property
      */
     public abstract void setCollection (String propertyName, Collection value);
-    
+
     /**
      * Reads Map property from storage.
      *
@@ -302,7 +307,7 @@ public abstract class Properties {
      * @return a current value of property
      */
     public abstract Map getMap (String propertyName, Map defaultValue);
-    
+
     /**
      * Sets a new value of property with given propertyName.
      *
@@ -310,7 +315,7 @@ public abstract class Properties {
      * @param value the new value of property
      */
     public abstract void setMap (String propertyName, Map value);
-    
+
     /**
      * Returns Properties instance for some "subfolder" in properties file.
      *
@@ -319,34 +324,71 @@ public abstract class Properties {
      */
     public abstract Properties getProperties (String propertyName);
 
-    
+    /**
+     * Add a property change listener to this properties instance.
+     * The listener fires a property change event when a new value of some property
+     * is set.
+     * <p>
+     * Please note, that this properties object is not collected from memory
+     * sooner than all it's listeners. Therefore it's not necessray to
+     * keep a strong reference to this object while holding the listener.
+     *
+     * @param l The property change listener
+     * @throws UnsupportedOperationException if not supported. The default
+     * properties implementation retrieved by {@link #getDefault()} supports
+     * adding/removing listeners.
+     */
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        throw new UnsupportedOperationException("Unsupported listening on "+getClass()+" properties.");
+    }
+
+    /**
+     * Remove a property change listener from this properties instance.
+     * <p>
+     * Please note, that this properties object is not collected from memory
+     * sooner than all it's listeners. Therefore it's not necessray to
+     * keep a strong reference to this object while holding the listener.
+     * OTOH it is necessary to remove all listeners or release all strong
+     * references to the listeners to allow collection of this properties
+     * object.
+     *
+     * @param l The property change listener
+     * @throws UnsupportedOperationException if not supported. The default
+     * properties implementation retrieved by {@link #getDefault()} supports
+     * adding/removing listeners.
+     */
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        throw new UnsupportedOperationException("Unsupported listening on "+getClass()+" properties.");
+    }
+
+
     // innerclasses ............................................................
 
     /**
-     * This class helps to store and read custom types using 
+     * This class helps to store and read custom types using
      * {@link Properties#setObject} and {@link Properties#getObject} methods.
      * Implementations of this class should be stored in "META_INF\debugger"
      * folder.
      */
     public interface Reader {
-        
+
         /**
          * Returns array of classNames supported by this reader.
          *
          * @return array of classNames supported by this reader
          */
         public String[] getSupportedClassNames ();
-        
+
         /**
          * Reads object with given className.
          *
          * @param className a name of class to be readed
-         * @param properties a properties subfloder containing properties 
+         * @param properties a properties subfloder containing properties
          *        for this object
          * @return a new instance of className class
          */
         public Object read (String className, Properties properties);
-        
+
         /**
          * Writes given object to given properties subfolder.
          *
@@ -355,9 +397,30 @@ public abstract class Properties {
          */
         public void write (Object object, Properties properties);
     }
-    
+
+    /**
+     * Implementing this interface one can define initial values of properties.
+     */
+    public interface Initializer {
+
+        /**
+         * The list of supported property names.
+         * @return the property names supported by this initializer
+         */
+        String[] getSupportedPropertyNames();
+
+        /**
+         * Get the default value of property.
+         * @param propertyName The name of the property
+         * @return The default value
+         */
+        Object getDefaultPropertyValue(String propertyName);
+
+    }
+
+
     private final static class PrimitiveRegister {
-        
+
         private HashMap properties = new HashMap ();
         private boolean isInitialized = false;
 
@@ -386,7 +449,7 @@ public abstract class Properties {
             }
             save ();
         }
-    
+
         private synchronized void load () {
             BufferedReader br = null;
             try {
@@ -397,7 +460,7 @@ public abstract class Properties {
                 String l = br.readLine ();
                 while (l != null) {
                     int i = l.indexOf (':');
-                    if (i > 0) 
+                    if (i > 0)
                         properties.put (l.substring (0, i), l.substring (i + 1));
                     l = br.readLine ();
                 }
@@ -406,7 +469,7 @@ public abstract class Properties {
                 ErrorManager.getDefault().notify(ex);
             }
         }
-        
+
         // currently waiting / running refresh task
         // there is at most one
         private RequestProcessor.Task task;
@@ -462,16 +525,16 @@ public abstract class Properties {
                 }
             }
         }
-        
+
         private static FileObject findSettings() throws IOException {
             FileObject r = FileUtil.getConfigFile("Services"); // NOI18N
             if (r == null) {
                 r = FileUtil.getConfigRoot().createFolder("Services"); // NOI18N
             }
-            FileObject fo = r.getFileObject 
+            FileObject fo = r.getFileObject
                 ("org-netbeans-modules-debugger-Settings", "properties"); // NOI18N
             if (fo == null) {
-                fo = r.createData 
+                fo = r.createData
                     ("org-netbeans-modules-debugger-Settings", "properties"); // NOI18N
             }
             return fo;
@@ -486,100 +549,176 @@ public abstract class Properties {
         private static final Map BAD_MAP = new HashMap ();
         private static final Collection BAD_COLLECTION = new ArrayList ();
         private static final Object[] BAD_ARRAY = new Object [0];
-        
-        private List<? extends Reader> readersList;
-        private HashMap<String, Reader> register;
-        
-        
-        private PrimitiveRegister impl = new PrimitiveRegister ();
 
-        private void initReaders () {
-            register = new HashMap<String, Reader>();
-            readersList = DebuggerManager.getDebuggerManager().lookup(null, Reader.class);
-            synchronized (readersList) {
-                for (Reader r : readersList) {
-                    registerReader(r);
-                }
+        private final Map<String, Reference<Properties>> childProperties = new HashMap<String, Reference<Properties>>();
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private final Map<PropertyChangeListener, Properties> propertiesHeldByListener = new WeakHashMap<PropertyChangeListener, Properties>();
+
+        ServicesHolder<Reader>      readers      = new ReaderHolder();
+        ServicesHolder<Initializer> initializers = new InitializerHolder();
+
+        private static abstract class ServicesHolder<T> {
+
+            private Class<T> clazz;
+            // Holds the list to prevent from garbage-collect. Do not remove!
+            private List<? extends T> servicesList;
+            protected HashMap<String, T> register;
+
+            public ServicesHolder(Class<T> clazz) {
+                this.clazz = clazz;
             }
-            ((Customizer) readersList).addPropertyChangeListener(
-                    new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            synchronized (PropertiesImpl.this) {
-                                Set<Reader> registeredReaders = new HashSet<Reader>(register.values());
-                                synchronized (readersList) {
-                                    for (Reader r : readersList) {
-                                        if (!registeredReaders.remove(r)) {
-                                            registerReader(r);
+
+            private final void init() {
+                register = new HashMap<String, T>();
+                final List<? extends T> list = DebuggerManager.getDebuggerManager().lookup(null, clazz);
+                servicesList = list;
+                synchronized (list) {
+                    for (T s : list) {
+                        registerService(s);
+                    }
+                }
+                ((Customizer) list).addPropertyChangeListener(
+                        new PropertyChangeListener() {
+                            public void propertyChange(PropertyChangeEvent evt) {
+                                synchronized (ServicesHolder.this) {
+                                    Set<T> registeredServices = new HashSet<T>(register.values());
+                                    synchronized (list) {
+                                        for (T s : list) {
+                                            if (!registeredServices.remove(s)) {
+                                                registerService(s);
+                                            }
                                         }
                                     }
-                                }
-                                for (Reader r : registeredReaders) {
-                                    unregisterReader(r);
+                                    for (T s : registeredServices) {
+                                        unregisterService(s);
+                                    }
                                 }
                             }
-                        }
-                    });
-            ((Customizer) readersList).setObject(Lookup.NOTIFY_LOAD_FIRST);
-            ((Customizer) readersList).setObject(Lookup.NOTIFY_UNLOAD_LAST);
-        }
-        
-        private void registerReader(Reader r) {
-            //System.err.println("registerReader("+r+")");
-            String[] ns = r.getSupportedClassNames ();
-            int j, jj = ns.length;
-            for (j = 0; j < jj; j++) {
-                register.put (ns [j], r);
+                        });
+                ((Customizer) list).setObject(Lookup.NOTIFY_LOAD_FIRST);
+                ((Customizer) list).setObject(Lookup.NOTIFY_UNLOAD_LAST);
             }
-        }
-        
-        private void unregisterReader(Reader r) {
-            //System.err.println("unregisterReader("+r+")");
-            String[] ns = r.getSupportedClassNames ();
-            int j, jj = ns.length;
-            for (j = 0; j < jj; j++) {
-                register.remove (ns [j]);
-            }
-        }
-        
-        // Used from tests
-        synchronized void addReader(Reader r) {
-            if (register == null) {
-                initReaders ();
-            }
-            registerReader(r);
-        }
-        
-        private synchronized Reader findReader (String typeID) {
-            if (register == null) {
-                initReaders ();
-            }
-            
-            Reader r = (Reader) register.get (typeID);
-            if (r != null) return r;
 
-            Class c = null;
-            try {
-                c = getClassLoader ().loadClass (typeID);
-            } catch (ClassNotFoundException e) {
-                ErrorManager.getDefault().notify(e);
+            protected abstract void registerService(T s);
+
+            protected abstract void unregisterService(T s);
+
+            public synchronized T find(String name) {
+                if (register == null) {
+                    init();
+                }
+                return register.get(name);
+            }
+
+        }
+
+        private static final class ReaderHolder extends ServicesHolder<Reader> {
+
+            public ReaderHolder() {
+                super(Reader.class);
+            }
+
+            @Override
+            protected void registerService(Reader r) {
+                //System.err.println("registerReader("+r+")");
+                String[] ns = r.getSupportedClassNames ();
+                int j, jj = ns.length;
+                for (j = 0; j < jj; j++) {
+                    register.put (ns [j], r);
+                }
+            }
+
+            @Override
+            protected void unregisterService(Reader r) {
+                //System.err.println("unregisterReader("+r+")");
+                String[] ns = r.getSupportedClassNames ();
+                int j, jj = ns.length;
+                for (j = 0; j < jj; j++) {
+                    register.remove (ns [j]);
+                }
+            }
+
+            @Override
+            public synchronized Reader find(String typeID) {
+
+                Reader r = super.find(typeID);
+                if (r != null) return r;
+
+                Class c = null;
+                try {
+                    c = getClassLoader ().loadClass (typeID);
+                } catch (ClassNotFoundException e) {
+                    ErrorManager.getDefault().notify(e);
+                    return null;
+                }
+                while ((c != null) && (register.get (c.getName ()) == null)) {
+                    c = c.getSuperclass ();
+                }
+                if (c != null)
+                    r = (Reader) register.get (c.getName ());
+                return r;
+            }
+
+        }
+
+        private static final class InitializerHolder extends ServicesHolder<Initializer> {
+
+            public InitializerHolder() {
+                super(Initializer.class);
+            }
+
+            @Override
+            protected void registerService(Initializer i) {
+                //System.err.println("registerInitializer("+i+")");
+                String[] ns = i.getSupportedPropertyNames();
+                int j, jj = ns.length;
+                for (j = 0; j < jj; j++) {
+                    register.put (ns [j], i);
+                }
+            }
+
+            @Override
+            protected void unregisterService(Initializer i) {
+                //System.err.println("unregisterInitializer("+i+")");
+                String[] ns = i.getSupportedPropertyNames ();
+                int j, jj = ns.length;
+                for (j = 0; j < jj; j++) {
+                    register.remove (ns [j]);
+                }
+            }
+        }
+
+
+        private PrimitiveRegister impl = new PrimitiveRegister ();
+
+
+        private <T> T getInitialValue(String propertyName, Class<T> clazz) {
+            Initializer initializer = initializers.find(propertyName);
+            if (initializer != null) {
+                Object value = initializer.getDefaultPropertyValue(propertyName);
+                if (value != null && !clazz.isAssignableFrom(value.getClass())) {
+                    Exceptions.printStackTrace(new IllegalStateException(
+                            "Value ("+value+") of a bad type ("+value.getClass()+") returned by "+initializer+
+                            " for property '"+propertyName+"'. It can not be cast to "+clazz));
+                    value = null;
+                }
+                return (T) value;
+            } else {
                 return null;
             }
-            while ((c != null) && (register.get (c.getName ()) == null)) {
-                c = c.getSuperclass ();
-            }
-            if (c != null) 
-                r = (Reader) register.get (c.getName ());
-            return r;
         }
-
-
-
 
         // primitive properties ....................................................................................
 
         public String getString (String propertyName, String defaultValue) {
             String value = impl.getProperty (propertyName, null);
-            if (value == null) return defaultValue;
+            if (value == null) {
+                String initialValue = getInitialValue(propertyName, String.class);
+                if (initialValue == null) {
+                    initialValue = defaultValue;
+                }
+                return initialValue;
+            }
             if (!value.startsWith ("\"")) {
                 ErrorManager.getDefault().log("Can not read string " + value + ".");
                 return defaultValue;
@@ -593,11 +732,18 @@ public abstract class Properties {
             } else {
                 impl.setProperty (propertyName, value);
             }
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public int getInt (String propertyName, int defaultValue) {
             String value = impl.getProperty (propertyName, null);
-            if (value == null) return defaultValue;
+            if (value == null) {
+                Integer initialValue = getInitialValue(propertyName, Integer.class);
+                if (initialValue == null) {
+                    initialValue = defaultValue;
+                }
+                return initialValue;
+            }
             try {
                 int val = Integer.parseInt (value);
                 return val;
@@ -608,22 +754,36 @@ public abstract class Properties {
 
         public void setInt (String propertyName, int value) {
             impl.setProperty (propertyName, Integer.toString (value));
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public char getChar (String propertyName, char defaultValue) {
             String value = impl.getProperty (propertyName, null);
-            if (value == null) return defaultValue;
+            if (value == null) {
+                Character initialValue = getInitialValue(propertyName, Character.class);
+                if (initialValue == null) {
+                    initialValue = defaultValue;
+                }
+                return initialValue;
+            }
             char val = value.charAt (0);
             return val;
         }
 
         public void setChar (String propertyName, char value) {
             impl.setProperty (propertyName, Character.toString(value));
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public float getFloat (String propertyName, float defaultValue) {
             String value = impl.getProperty (propertyName, null);
-            if (value == null) return defaultValue;
+            if (value == null) {
+                Float initialValue = getInitialValue(propertyName, Float.class);
+                if (initialValue == null) {
+                    initialValue = defaultValue;
+                }
+                return initialValue;
+            }
             try {
                 float val = Float.parseFloat (value);
                 return val;
@@ -634,11 +794,18 @@ public abstract class Properties {
 
         public void setFloat (String propertyName, float value) {
             impl.setProperty (propertyName, Float.toString (value));
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public long getLong (String propertyName, long defaultValue) {
             String value = impl.getProperty (propertyName, null);
-            if (value == null) return defaultValue;
+            if (value == null) {
+                Long initialValue = getInitialValue(propertyName, Long.class);
+                if (initialValue == null) {
+                    initialValue = defaultValue;
+                }
+                return initialValue;
+            }
             try {
                 long val = Long.parseLong (value);
                 return val;
@@ -649,11 +816,18 @@ public abstract class Properties {
 
         public void setLong (String propertyName, long value) {
             impl.setProperty (propertyName, Long.toString (value));
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public double getDouble (String propertyName, double defaultValue) {
             String value = impl.getProperty (propertyName, null);
-            if (value == null) return defaultValue;
+            if (value == null) {
+                Double initialValue = getInitialValue(propertyName, Double.class);
+                if (initialValue == null) {
+                    initialValue = defaultValue;
+                }
+                return initialValue;
+            }
             try {
                 double val = Double.parseDouble (value);
                 return val;
@@ -664,22 +838,36 @@ public abstract class Properties {
 
         public void setDouble (String propertyName, double value) {
             impl.setProperty (propertyName, Double.toString (value));
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public boolean getBoolean (String propertyName, boolean defaultValue) {
             String value = impl.getProperty (propertyName, null);
-            if (value == null) return defaultValue;
+            if (value == null) {
+                Boolean initialValue = getInitialValue(propertyName, Boolean.class);
+                if (initialValue == null) {
+                    initialValue = defaultValue;
+                }
+                return initialValue;
+            }
             boolean val = value.equals ("true");
             return val;
         }
 
         public void setBoolean (String propertyName, boolean value) {
             impl.setProperty (propertyName, value ? "true" : "false");
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public byte getByte (String propertyName, byte defaultValue) {
             String value = impl.getProperty (propertyName, null);
-            if (value == null) return defaultValue;
+            if (value == null) {
+                Byte initialValue = getInitialValue(propertyName, Byte.class);
+                if (initialValue == null) {
+                    initialValue = defaultValue;
+                }
+                return initialValue;
+            }
             try {
                 byte val = Byte.parseByte (value);
                 return val;
@@ -690,11 +878,18 @@ public abstract class Properties {
 
         public void setByte (String propertyName, byte value) {
             impl.setProperty (propertyName, Byte.toString (value));
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public short getShort (String propertyName, short defaultValue) {
             String value = impl.getProperty (propertyName, null);
-            if (value == null) return defaultValue;
+            if (value == null) {
+                Short initialValue = getInitialValue(propertyName, Short.class);
+                if (initialValue == null) {
+                    initialValue = defaultValue;
+                }
+                return initialValue;
+            }
             try {
                 short val = Short.parseShort (value);
                 return val;
@@ -705,14 +900,21 @@ public abstract class Properties {
 
         public void setShort (String propertyName, short value) {
             impl.setProperty (propertyName, Short.toString (value));
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Object getObject (String propertyName, Object defaultValue) {
             synchronized(impl) {
                 String typeID = impl.getProperty (propertyName, null);
-                if (typeID == null) return defaultValue;
+                if (typeID == null) {
+                    Object initialValue = getInitialValue(propertyName, Object.class);
+                    if (initialValue == null) {
+                        initialValue = defaultValue;
+                    }
+                    return initialValue;
+                }
                 if (typeID.equals ("# null"))
-                    return null; 
+                    return null;
                 if (!typeID.startsWith ("# ")) {
                     if (typeID.startsWith ("\"")) {
                         String s = getString (propertyName, BAD_STRING);
@@ -735,7 +937,7 @@ public abstract class Properties {
                         return m;
                     }
                     if (Object [].class.isAssignableFrom (c)) {
-                        Object[] os = getArray (propertyName, BAD_ARRAY); 
+                        Object[] os = getArray (propertyName, BAD_ARRAY);
                         if (os == BAD_ARRAY) return defaultValue;
                         return os;
                     }
@@ -745,7 +947,7 @@ public abstract class Properties {
                         return co;
                     }
                 }
-                Reader r = findReader (typeID);
+                Reader r = readers.find(typeID);
                 if (r == null) {
                     ErrorManager.getDefault().log("Can not read object. No reader registered for type " + typeID + ".");
                     return defaultValue;
@@ -758,44 +960,41 @@ public abstract class Properties {
             synchronized(impl) {
                 if (value == null) {
                     impl.setProperty (propertyName, "# null");
-                    return;
-                }
-                if (value instanceof String) {
+                } else if (value instanceof String) {
                     setString (propertyName, (String) value);
-                    return; 
-                }
-                if (value instanceof Map) {
+                } else if (value instanceof Map) {
                     setMap (propertyName, (Map) value);
-                    return; 
-                }
-                if (value instanceof Collection) {
+                } else if (value instanceof Collection) {
                     setCollection (propertyName, (Collection) value);
-                    return; 
-                }
-                if (value instanceof Object[]) {
+                } else if (value instanceof Object[]) {
                     setArray (propertyName, (Object[]) value);
-                    return; 
-                }
+                } else {
 
-                // find register
-                Reader r = findReader (value.getClass ().getName ());
-                if (r == null) {
-                    ErrorManager.getDefault().log ("Can not write object " + value);
-                    return;
-                }
+                    // find register
+                    Reader r = readers.find(value.getClass ().getName ());
+                    if (r == null) {
+                        ErrorManager.getDefault().log ("Can not write object " + value);
+                        return;
+                    }
 
-                // write
-                r.write (value, getProperties (propertyName));
-                impl.setProperty (propertyName, "# " + value.getClass ().getName ());
+                    // write
+                    r.write (value, getProperties (propertyName));
+                    impl.setProperty (propertyName, "# " + value.getClass ().getName ());
+
+                }
             }
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Object[] getArray (String propertyName, Object[] defaultValue) {
             synchronized(impl) {
                 String arrayType = impl.getProperty (propertyName + ".array_type", null);
                 if (arrayType == null) {
-                    ErrorManager.getDefault().log("Unknown array type for "+propertyName);
-                    return defaultValue;
+                    Object[] initialValue = getInitialValue(propertyName, Object[].class);
+                    if (initialValue == null) {
+                        initialValue = defaultValue;
+                    }
+                    return initialValue;
                 }
                 Properties p = getProperties (propertyName);
                 int l = p.getInt ("length", -1);
@@ -803,7 +1002,7 @@ public abstract class Properties {
                 Object[] os = null;
                 try {
                     os = (Object[]) Array.newInstance (
-                        getClassLoader ().loadClass (arrayType), 
+                        getClassLoader ().loadClass (arrayType),
                         l
                     );
                 } catch (ClassNotFoundException ex) {
@@ -829,12 +1028,19 @@ public abstract class Properties {
                 for (i = 0; i < k; i++)
                     p.setObject ("" + i, value [i]);
             }
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Collection getCollection (String propertyName, Collection defaultValue) {
             synchronized(impl) {
                 String typeID = impl.getProperty (propertyName, null);
-                if (typeID == null) return defaultValue;
+                if (typeID == null) {
+                    Collection initialValue = getInitialValue(propertyName, Collection.class);
+                    if (initialValue == null) {
+                        initialValue = defaultValue;
+                    }
+                    return initialValue;
+                }
                 if (!typeID.startsWith ("# ")) return defaultValue;
                 Collection c = null;
                 try {
@@ -881,12 +1087,19 @@ public abstract class Properties {
                     i++;
                 }
             }
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Map getMap (String propertyName, Map defaultValue) {
             synchronized(impl) {
                 String typeID = impl.getProperty (propertyName, null);
-                if (typeID == null) return defaultValue;
+                if (typeID == null) {
+                    Map initialValue = getInitialValue(propertyName, Map.class);
+                    if (initialValue == null) {
+                        initialValue = defaultValue;
+                    }
+                    return initialValue;
+                }
                 if (!typeID.startsWith ("# ")) return defaultValue;
                 Map m = null;
                 try {
@@ -931,12 +1144,42 @@ public abstract class Properties {
                     i++;
                 }
             }
+            pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Properties getProperties (String propertyName) {
-            return new DelegatingProperties (this, propertyName);
+            synchronized (childProperties) {
+                Reference<Properties> propRef = childProperties.get(propertyName);
+                if (propRef != null) {
+                    Properties p = propRef.get();
+                    if (p != null) {
+                        return p;
+                    }
+                }
+                Properties p = new DelegatingProperties (this, propertyName);
+                propRef = new WeakReference<Properties>(p);
+                childProperties.put(propertyName, propRef);
+                return p;
+            }
         }
-        
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            pcs.addPropertyChangeListener(l);
+            synchronized (propertiesHeldByListener) {
+                propertiesHeldByListener.put(l, this);
+            }
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            pcs.removePropertyChangeListener(l);
+            synchronized (propertiesHeldByListener) {
+                propertiesHeldByListener.remove(l);
+            }
+        }
+
+
         private static ClassLoader classLoader;
         private static ClassLoader getClassLoader () {
             if (classLoader == null)
@@ -946,11 +1189,15 @@ public abstract class Properties {
             return classLoader;
         }
     }
-    
+
     private static class DelegatingProperties extends Properties {
 
         private Properties delegatingProperties;
         private String root;
+        private final Map<String, Reference<Properties>> childProperties =
+                new HashMap<String, Reference<Properties>>();
+        private final Map<PropertyChangeListener, PropertyChangeListener> delegatingListeners =
+                new WeakHashMap<PropertyChangeListener, PropertyChangeListener>();
 
 
         DelegatingProperties (Properties properties, String root) {
@@ -1063,7 +1310,60 @@ public abstract class Properties {
         }
 
         public Properties getProperties (String propertyName) {
-            return new DelegatingProperties (delegatingProperties, root + '.' + propertyName);
+            synchronized (childProperties) {
+                Reference<Properties> propRef = childProperties.get(propertyName);
+                if (propRef != null) {
+                    Properties p = propRef.get();
+                    if (p != null) {
+                        return p;
+                    }
+                }
+                Properties p = new DelegatingProperties (delegatingProperties, root + '.' + propertyName);
+                propRef = new WeakReference<Properties>(p);
+                childProperties.put(propertyName, propRef);
+                return p;
+            }
         }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            PropertyChangeListener delegate = new DelegatingPropertyChangeListener(l);
+            synchronized (delegatingListeners) {
+                delegatingListeners.put(l, delegate);
+            }
+            delegatingProperties.addPropertyChangeListener(delegate);
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            PropertyChangeListener delegate;
+            synchronized (delegatingListeners) {
+                delegate = delegatingListeners.get(l);
+            }
+            if (delegate != null) {
+                delegatingProperties.removePropertyChangeListener(delegate);
+            }
+        }
+
+        private class DelegatingPropertyChangeListener implements PropertyChangeListener {
+
+            private PropertyChangeListener delegate;
+
+            public DelegatingPropertyChangeListener(PropertyChangeListener delegate) {
+                this.delegate = delegate;
+            }
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                PropertyChangeEvent delegateEvt = new PropertyChangeEvent(
+                        DelegatingProperties.this,
+                        evt.getPropertyName().substring(root.length() + 1),
+                        evt.getOldValue(),
+                        evt.getNewValue());
+                delegateEvt.setPropagationId(evt.getPropagationId());
+                delegate.propertyChange(delegateEvt);
+            }
+            
+        }
+
     }
 }

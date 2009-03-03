@@ -59,7 +59,9 @@ import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.modules.maven.jaxws.MavenWebService;
 import org.netbeans.modules.maven.jaxws.WSUtils;
 import org.netbeans.modules.maven.jaxws.actions.JaxWsRefreshAction;
+import org.netbeans.modules.maven.jaxws.actions.WSEditAttributesAction;
 import org.netbeans.modules.maven.jaxws.wizards.JaxWsClientCreator;
+import org.netbeans.modules.maven.jaxws.wseditor.EditWSAttributesCookieImpl;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -143,7 +145,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
 //            setName(wsdlFileObject.getName());
 //            setDisplayName(wsdlFileObject.getName());
 //        }
-//        content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
+          content.add(new EditWSAttributesCookieImpl(this));
 //        setValue("wsdl-url",client.getWsdlUrl());
     }
     
@@ -258,8 +260,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
             SystemAction.get(OpenAction.class),
             SystemAction.get(JaxWsRefreshAction.class),
 //            null,
-//            SystemAction.get(WSEditAttributesAction.class),
-//            null,
+            SystemAction.get(WSEditAttributesAction.class),
             SystemAction.get(ConfigureHandlerAction.class),
             null,
             SystemAction.get(DeleteAction.class),

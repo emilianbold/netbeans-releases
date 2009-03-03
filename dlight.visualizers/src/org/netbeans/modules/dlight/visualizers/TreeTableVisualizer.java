@@ -39,13 +39,18 @@
 package org.netbeans.modules.dlight.visualizers;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 import javax.swing.BoxLayout;
@@ -75,6 +80,7 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 
@@ -103,7 +109,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
     TreeTableVisualizer(TreeTableVisualizerConfiguration configuration,
         TreeTableDataProvider<T> dataProvider) {
-        timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
+        //timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.configuration = configuration;
         this.dataProvider = dataProvider;
         treeModel = new DefaultTreeModel(TREE_ROOT);
@@ -158,10 +164,10 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         super.addNotify();
         addComponentListener(this);
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
-        
+
         asyncFillModel(configuration.getMetadata().getColumns());
 
-        if (timerHandler.isSessionRunning()) {
+        if (timerHandler != null && timerHandler.isSessionRunning()) {
             timerHandler.startTimer();
             return;
 
@@ -177,7 +183,9 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     @Override
     public void removeNotify() {
         super.removeNotify();
-        timerHandler.stopTimer();
+        if (timerHandler != null){
+            timerHandler.stopTimer();
+        }
         removeComponentListener(this);
         VisualizerTopComponentTopComponent.findInstance().removeComponentListener(this);
     }
@@ -423,6 +431,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
     protected final void asyncFillModel(final List<Column> columns) {
         RequestProcessor.getDefault().post(new Runnable() {
+
             public void run() {
                 syncFillModel(columns);
             }
@@ -623,7 +632,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             if (TreeTableVisualizerConfigurationAccessor.getDefault().isTableView(configuration)) {
                 return true;
             }
-            return timerHandler.isSessionRunning();
+            return timerHandler != null && timerHandler.isSessionRunning();
         }
 
         public int getChildrenCount(Object node) throws UnknownTypeException {
@@ -727,15 +736,50 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
     class NodeModelImpl implements ExtendedNodeModel {
 
+        private final Object nodesMapLock = new Object();
+        private final Object listenersLock = new Object();
+        private Vector<ModelListener> listeners = new Vector<ModelListener>();
+        private Map<String, String> nodes = new HashMap<String, String>();
+
         public String getDisplayName(Object node) {
             if (node == TreeModel.ROOT) {
                 String treeColumnDisplayedName = TreeTableVisualizerConfigurationAccessor.getDefault().getTreeColumn(configuration).getColumnUName();
                 return treeColumnDisplayedName;
             }
+            final Object finalNodeObject = node;
             if (node instanceof DefaultMutableTreeNode) {
                 DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
-                Object nodeObject = treeNode.getUserObject();
-                return (nodeObject instanceof TreeTableNode) ? ((TreeTableNode) nodeObject).getValue() + " " : nodeObject.toString();
+                final Object nodeObject = treeNode.getUserObject();
+                //we should check type here
+                String result = "";
+                if (nodeObject instanceof TreeTableNode) {
+                    final Object value = ((TreeTableNode) nodeObject).getValue();
+                    synchronized (nodesMapLock) {
+                        if (nodes.containsKey(value + "")) {
+                            return nodes.get(value + "");
+                        }
+                    }
+                    if (TreeTableVisualizerConfigurationAccessor.getDefault().getTreeColumn(configuration).getColumnClass() == String.class){
+                        return  value + "";
+                    }
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            PropertyEditor editor = PropertyEditorManager.findEditor(TreeTableVisualizerConfigurationAccessor.getDefault().getTreeColumn(configuration).getColumnClass());
+                            if (editor != null) {
+                                editor.setValue(value);
+                                synchronized (nodesMapLock) {
+                                    nodes.put(value + "", editor.getAsText());
+                                }
+                                fireNodeModelChanged(finalNodeObject);
+                            }
+                        }
+                    });
+                    return "...";
+
+                } else {
+                    result = nodeObject.toString();
+                }
+                return result;
             }
             return "Unknown";
         }
@@ -752,15 +796,50 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
                 DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
                 return ((TreeTableNode) treeNode.getUserObject()).getValue() + "";
             }
+
             return "Unknown";
         }
 
-        public void addModelListener(ModelListener arg0) {
-            //    throw new UnsupportedOperationException("Not supported yet.");
+        void fireNodeModelChanged(final Object node) {
+
+            if (EventQueue.isDispatchThread()) {
+                synchronized (listenersLock) {
+                    for (ModelListener l : listeners) {
+                        l.modelChanged(new ModelEvent.NodeChanged(NodeModelImpl.this, node));
+                    }
+                }
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        synchronized (listenersLock) {
+                            for (ModelListener l : listeners) {
+                                l.modelChanged(new ModelEvent.NodeChanged(NodeModelImpl.this, node));
+                            }
+                        }
+
+                    }
+                });
+            }
+
+
+
         }
 
-        public void removeModelListener(ModelListener arg0) {
-            //  throw new UnsupportedOperationException("Not supported yet.");
+        public void addModelListener(ModelListener l) {
+            //    throw new UnsupportedOperationException("Not supported yet.");
+            synchronized (listenersLock) {
+                if (listeners.contains(l)) {
+                    return;
+                }
+                listeners.add(l);
+            }
+        }
+
+        public void removeModelListener(ModelListener l) {
+            synchronized (listenersLock) {
+                listeners.remove(l);
+            }
         }
 
         public boolean canRename(Object arg0) throws UnknownTypeException {
@@ -787,7 +866,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             return null;
         }
 
-        public void setName(Object arg0, String arg1) throws UnknownTypeException {
+        public void setName(Object node, String name) throws UnknownTypeException {
             //throw new UnsupportedOperationException("Not supported yet.");
         }
 

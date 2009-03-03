@@ -53,8 +53,13 @@ import java.io.File;
 public interface SuiteProvider {
 
     /**
-     * Returnts directory containing a regular suite or <code>null</code> if
+     * Returns directory containing a regular suite or <code>null</code> if
      * a method implementation fails for some reason.
      */
     File getSuiteDirectory();
+
+    /**
+     * Returns directory (cluster) which suite modules are built into.
+     */
+    File getClusterDirectory();
 }

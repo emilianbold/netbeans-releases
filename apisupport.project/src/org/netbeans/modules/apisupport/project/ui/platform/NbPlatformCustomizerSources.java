@@ -52,10 +52,10 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.queries.GlobalSourceForBinaryImpl;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.SourceRootsProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -66,14 +66,14 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Krauskopf
  */
-final class NbPlatformCustomizerSources extends JPanel {
+public final class NbPlatformCustomizerSources extends JPanel {
     
-    private NbPlatform plaf;
-    private PlatformComponentFactory.NbPlatformSourceRootsModel model;
+    private SourceRootsProvider srcRP;
+    private PlatformComponentFactory.SourceRootsModel model;
     private final ListListener listListener;
     
     /** Creates new form NbPlatformCustomizerModules */
-    NbPlatformCustomizerSources() {
+    public NbPlatformCustomizerSources() {
         initComponents();
         initAccessibility();
         this.listListener = new ListListener() {
@@ -96,9 +96,9 @@ final class NbPlatformCustomizerSources extends JPanel {
         super.removeNotify();
     }
     
-    void setPlatform(NbPlatform plaf) {
-        this.plaf = plaf;
-        this.model = new PlatformComponentFactory.NbPlatformSourceRootsModel(plaf);
+    public void setSourceRootsProvider(SourceRootsProvider srp) {
+        this.srcRP = srp;
+        this.model = new PlatformComponentFactory.SourceRootsModel(srp);
         sourceList.setModel(model);
     }
     
@@ -106,8 +106,8 @@ final class NbPlatformCustomizerSources extends JPanel {
         // update buttons enability appropriately
         removeButton.setEnabled(sourceList.getModel().getSize() > 0 && sourceList.getSelectedIndex() != -1);
         moveUpButton.setEnabled(sourceList.getSelectionModel().getMinSelectionIndex() > 0);
-        moveDownButton.setEnabled(plaf != null &&
-                sourceList.getSelectionModel().getMaxSelectionIndex() < plaf.getSourceRoots().length - 1);
+        moveDownButton.setEnabled(srcRP != null &&
+                sourceList.getSelectionModel().getMaxSelectionIndex() < srcRP.getSourceRoots().length - 1);
     }
     
     /** This method is called from within the constructor to

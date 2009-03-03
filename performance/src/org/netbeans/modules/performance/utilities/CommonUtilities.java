@@ -828,7 +828,7 @@ public class CommonUtilities {
         for (int i=0;i<50;i++) {
             tasks=true;
             while(tasks) {
-                if (status.equals("Indexing")||status.equals("Compiling")||status.equals("Collecting")||status.equals("Scanning"))
+                if (status.equals("Indexing")||status.equals("Compiling")||status.equals("Collecting")||status.equals("Scanning")||status.equals("Opening"))
                 {System.err.println("+++>"+status);}
                 else {tasks=false;}
             }

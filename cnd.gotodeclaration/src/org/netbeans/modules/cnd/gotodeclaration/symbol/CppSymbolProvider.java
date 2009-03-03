@@ -213,12 +213,12 @@ public class CppSymbolProvider implements SymbolProvider {
         // process project namespaces
         collectSymbols(csmProject.getGlobalNamespace(), nameAcceptor, symbols);
 
-        CsmSelect.CsmFilter nameFilter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(nameAcceptor);
+        CsmSelect.CsmFilter nameFilter = CsmSelect.getFilterBuilder().createNameFilter(nameAcceptor);
 
         // process project files
         for(CsmFile csmFile : csmProject.getAllFiles()) {
             // macros
-            Iterator<CsmMacro> macros = CsmSelect.getDefault().getMacros(csmFile, nameFilter);
+            Iterator<CsmMacro> macros = CsmSelect.getMacros(csmFile, nameFilter);
             while (macros.hasNext() && !cancelled) {
                 symbols.add(new CppSymbolDescriptor(macros.next()));
             }
@@ -226,7 +226,7 @@ public class CppSymbolProvider implements SymbolProvider {
                 break;
             }
             // static functions
-            Iterator<CsmFunction> funcs = CsmSelect.getDefault().getStaticFunctions(csmFile, nameFilter);
+            Iterator<CsmFunction> funcs = CsmSelect.getStaticFunctions(csmFile, nameFilter);
             while (funcs.hasNext() && !cancelled) {
                 CsmFunction func = funcs.next();
                 if (CsmKindUtilities.isFunctionDefinition(func)) { // which is unlikely, but just in case
@@ -244,7 +244,7 @@ public class CppSymbolProvider implements SymbolProvider {
                 break;
             }
             // static variables
-            Iterator<CsmVariable> vars = CsmSelect.getDefault().getStaticVariables(csmFile, nameFilter);
+            Iterator<CsmVariable> vars = CsmSelect.getStaticVariables(csmFile, nameFilter);
             while (vars.hasNext() && !cancelled) {
                 symbols.add(new CppSymbolDescriptor(vars.next()));
             }
@@ -260,14 +260,14 @@ public class CppSymbolProvider implements SymbolProvider {
         // we can filter out "simple" (non-class) namespace elements via CsmSelect;
         // later we have to instantiate classes and enums to check their *members* as well
 
-        CsmSelect.CsmFilter nameFilter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(nameAcceptor);
+        CsmSelect.CsmFilter nameFilter = CsmSelect.getFilterBuilder().createNameFilter(nameAcceptor);
 
-        CsmSelect.CsmFilter simpleKindFilter = CsmSelect.getDefault().getFilterBuilder().createKindFilter(
+        CsmSelect.CsmFilter simpleKindFilter = CsmSelect.getFilterBuilder().createKindFilter(
                 CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION, CsmDeclaration.Kind.VARIABLE, CsmDeclaration.Kind.TYPEDEF);
 
-        CsmSelect.CsmFilter simpleNameAndKindFilter = CsmSelect.getDefault().getFilterBuilder().createCompoundFilter(nameFilter, simpleKindFilter);
+        CsmSelect.CsmFilter simpleNameAndKindFilter = CsmSelect.getFilterBuilder().createCompoundFilter(nameFilter, simpleKindFilter);
         
-        Iterator<? extends CsmOffsetableDeclaration> declarations = CsmSelect.getDefault().getDeclarations(namespace, simpleNameAndKindFilter);
+        Iterator<? extends CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(namespace, simpleNameAndKindFilter);
         while (declarations.hasNext()) {
             CsmOffsetableDeclaration decl = declarations.next();
             if (CsmKindUtilities.isFunction(decl)) {
@@ -286,10 +286,10 @@ public class CppSymbolProvider implements SymbolProvider {
         }
 
         // instantiate classes and enums to check them and their members as well
-        CsmSelect.CsmFilter compoundKindFilter = CsmSelect.getDefault().getFilterBuilder().createKindFilter(
+        CsmSelect.CsmFilter compoundKindFilter = CsmSelect.getFilterBuilder().createKindFilter(
                 CsmDeclaration.Kind.CLASS, CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.STRUCT);
 
-        declarations = CsmSelect.getDefault().getDeclarations(namespace, compoundKindFilter);
+        declarations = CsmSelect.getDeclarations(namespace, compoundKindFilter);
         while (declarations.hasNext()) {
             addDeclarationIfNeed(declarations.next(), nameAcceptor, symbols);
         }

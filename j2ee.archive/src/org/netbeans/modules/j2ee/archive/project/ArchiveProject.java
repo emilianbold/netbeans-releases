@@ -77,6 +77,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -102,6 +103,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
+@AntBasedProjectRegistration(
+    iconResource="org/netbeans/modules/j2ee/archive/project/resources/packaged_archive_16.png",
+    type=ArchiveProjectType.TYPE,
+    sharedNamespace=ArchiveProjectType.PROJECT_CONFIGURATION_NS,
+    privateNamespace=ArchiveProjectType.PRIVATE_CONFIGURATION_NS
+)
 public class ArchiveProject implements org.netbeans.api.project.Project {
     
     private final AuxiliaryConfiguration aux;
