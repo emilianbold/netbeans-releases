@@ -123,20 +123,20 @@ public class PresenceIndicator {
             task = presenceUpdater.create(new Runnable() {
 
                 public void run() {
-                    HashSet<String> onlineUsers = new HashSet();
+                    HashSet<String> onlineUsers = new HashSet<String>();
                     StringBuffer tipBuffer = new StringBuffer();
                     tipBuffer.append("<html><body>");
 
                     for (MultiUserChat muc : KenaiConnection.getDefault().getChats()) {
                         String displayName = null;
                         displayName = StringUtils.parseName(muc.getRoom());
-                        tipBuffer.append("<b>" + displayName + "</b><br>");
+                        tipBuffer.append("<font color=gray>" + displayName + "</font><br>");
                         Iterator<String> i = muc.getOccupants();
                         ChatNotifications.getDefault().getMessagingHandle(displayName).setOnlineCount(muc.getOccupantsCount());
                         while (i.hasNext()) {
                             String uname = StringUtils.parseResource(i.next());
                             onlineUsers.add(uname);
-                            tipBuffer.append(uname + "<br>");
+                            tipBuffer.append("&nbsp;&nbsp;" + uname + "<br>");
                         }
                     }
                     tipBuffer.append("</body></html>");
