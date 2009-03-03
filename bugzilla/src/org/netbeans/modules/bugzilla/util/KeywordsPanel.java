@@ -68,7 +68,14 @@ public class KeywordsPanel extends javax.swing.JPanel {
         for (int i = 0; i < toSelect.length; i++) {
             String keyword = toSelect[i];
             keyword = keyword.trim();
-            selection[i] = model.indexOf(keyword);
+            int idx = model.indexOf(keyword);
+            if(idx == -1 ) {
+                idx = model.indexOf(keyword.toUpperCase());
+            }
+            if(idx == -1 ) {
+                idx = model.indexOf(keyword.toLowerCase());
+            }
+            selection[i] = idx;
         }
 
         keywordsList.setSelectedIndices(selection);
