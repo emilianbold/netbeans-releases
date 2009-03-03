@@ -47,6 +47,8 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.dnd.DnDConstants;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
@@ -57,6 +59,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EventObject;
 import java.util.Properties;
+import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -65,6 +68,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -146,6 +150,9 @@ public class OutlineView extends JScrollPane {
     transient private int allowedDragActions = DnDConstants.ACTION_COPY_OR_MOVE | DnDConstants.ACTION_REFERENCE;
     transient private int allowedDropActions = DnDConstants.ACTION_COPY_OR_MOVE | DnDConstants.ACTION_REFERENCE;
 
+    /** Listener on keystroke to invoke default action */
+    private ActionListener defaultTreeActionListener;
+
     /** Creates a new instance of TableView */
     public OutlineView() {
         this(null);
@@ -178,6 +185,10 @@ public class OutlineView extends JScrollPane {
         popupFactory = new OutlinePopupFactory();
         // activation of drop target
         setDropTarget( DragDropUtilities.dragAndDropEnabled );
+        defaultTreeActionListener = new DefaultTreeAction (outline);
+        outline.registerKeyboardAction(
+            defaultTreeActionListener, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false), JComponent.WHEN_FOCUSED
+        );
 
         final Color focusSelectionBackground = outline.getSelectionBackground();
         final Color focusSelectionForeground = outline.getSelectionForeground();
@@ -563,6 +574,34 @@ public class OutlineView extends JScrollPane {
                 e.consume();
             }
         }
+
+        @Override
+        public void mouseClicked (MouseEvent e) {
+            int selRow = outline.rowAtPoint (e.getPoint ());
+
+            if ((selRow != -1) && SwingUtilities.isLeftMouseButton (e) && MouseUtils.isDoubleClick (e)) {
+                // Default action.
+                if (outline.getSelectedColumn () == 0) {
+                    TreePath selPath = outline.getClosestPathForLocation (e.getX (), e.getY ());
+                    Node node = Visualizer.findNode (selPath.getLastPathComponent ());
+                    if (node.isLeaf ()) {
+                        Action a = TreeView.takeAction (node.getPreferredAction (), node);
+
+                        if (a != null) {
+                            if (a.isEnabled ()) {
+                                a.actionPerformed (new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                            } else {
+                                Logger.getLogger (OutlineView.class.getName ()).info ("Disbaled action " + a + " on node " + node);
+                            }
+
+                            e.consume ();
+                            return;
+                        }
+                    }
+                }
+            }
+            super.mouseClicked (e);
+        }
     }
 
     /**
@@ -788,6 +827,41 @@ public class OutlineView extends JScrollPane {
             }
         }
         public void run() {
+        }
+    }
+
+
+    /** Invokes default action.
+     */
+    private class DefaultTreeAction implements ActionListener {
+
+        private Outline outline;
+
+        DefaultTreeAction (Outline outline) {
+            this.outline = outline;
+        }
+
+        /**
+         * Invoked when an action occurs.
+         */
+        public void actionPerformed (ActionEvent e) {
+            if (outline.getSelectedColumn () != 0) {
+                return;
+            }
+
+            Node[] nodes = manager.getSelectedNodes ();
+
+            if (nodes.length == 1) {
+                Action a = nodes[0].getPreferredAction ();
+
+                if (a != null) {
+                    if (a.isEnabled ()) {
+                        a.actionPerformed (new ActionEvent (nodes[0], ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                    } else {
+                        Logger.getLogger (OutlineView.class.getName ()).info ("Disbaled action " + a + " on node " + nodes[0]);
+                    }
+                }
+            }
         }
     }
 
@@ -1034,4 +1108,5 @@ public class OutlineView extends JScrollPane {
             return result;
         }
     }
+
 }
