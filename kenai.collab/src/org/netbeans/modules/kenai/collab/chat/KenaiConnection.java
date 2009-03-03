@@ -44,7 +44,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Level;
@@ -75,7 +74,7 @@ import org.openide.util.RequestProcessor;
 public class KenaiConnection implements PropertyChangeListener {
 
     //Map <kenai project name, message listener>
-    private HashMap<String, PacketListener> listeners = new HashMap();
+    private HashMap<String, PacketListener> listeners = new HashMap<String, PacketListener>();
     private XMPPConnection connection;
     //Map <kenai project name, multi user chat>
     private HashMap<String, MultiUserChat> chats = new HashMap<String, MultiUserChat>();
