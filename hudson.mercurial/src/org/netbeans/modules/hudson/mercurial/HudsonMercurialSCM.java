@@ -101,7 +101,7 @@ public class HudsonMercurialSCM implements HudsonSCM {
         if (!"hg".equals(Helper.xpath("kind", changeSet))) {
             return null;
         }
-        URI repo = getDefaultPull(URI.create(job.getUrl() + "ws/"));
+        final URI repo = getDefaultPull(URI.create(job.getUrl() + "ws/"));
         if (repo == null) {
             LOG.log(Level.FINE, "No known repo location for {0}", job);
             return null;
@@ -125,7 +125,7 @@ public class HudsonMercurialSCM implements HudsonSCM {
                 if ("true".equals(Helper.xpath("merge", itemXML))) {
                     return Collections.emptySet();
                 }
-                String node = Helper.xpath("node", itemXML);
+                final String node = Helper.xpath("node", itemXML);
                 class HgFile implements HudsonJobChangeFile {
                     final String path;
                     final EditType editType;
@@ -140,12 +140,7 @@ public class HudsonMercurialSCM implements HudsonSCM {
                         return editType;
                     }
                     public OutputListener hyperlink() {
-                        /* To find the parent from node:
-                         * http://hg.netbeans.org/cdev/raw-rev/ad9fb3471b63 "# Parent 318da5e3cf4506bcf874a359ecd12cadc9ad31d4"
-                         * To find the contents of a file in some rev:
-                         * http://hg.netbeans.org/cdev/raw-file/ad9fb3471b63/hudson.mercurial/nbproject/project.xml
-                         */
-                        return null; // XXX
+                        return new MercurialHyperlink(repo, node, this);
                     }
                 }
                 List<HgFile> files = new ArrayList<HgFile>();
