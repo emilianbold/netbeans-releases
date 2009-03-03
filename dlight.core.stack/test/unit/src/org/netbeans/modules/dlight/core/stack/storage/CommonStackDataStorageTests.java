@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,10 +34,10 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.db.h2;
+package org.netbeans.modules.dlight.core.stack.storage;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,13 +53,18 @@ import static org.junit.Assert.*;
 /**
  * @author Alexey Vladykin
  */
-public class H2DataStorageTest {
+public abstract class CommonStackDataStorageTests {
 
-    private H2DataStorage db;
+    private StackDataStorage db;
+
+    protected abstract StackDataStorage createStorage();
+
+    protected abstract void flush(StackDataStorage db);
 
     @Before
     public void setUp() {
-        db = new H2DataStorage();
+        db = createStorage();
+        assertNotNull(db);
     }
 
     @Test
@@ -68,7 +73,7 @@ public class H2DataStorageTest {
         db.putStack(Arrays.<CharSequence>asList("func1", "func2"), 10l);
         db.putStack(Arrays.<CharSequence>asList("func1", "func2", "func3"), 10l);
         db.putStack(Arrays.<CharSequence>asList("func1", "func2", "func3", "func4"), 10l);
-        db.flush();
+        flush(db);
 
         List<FunctionCall> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
         assertEquals(4, hotSpots.size());
@@ -104,7 +109,7 @@ public class H2DataStorageTest {
         db.putStack(Arrays.<CharSequence>asList("func2", "func1"), 10l);
         db.putStack(Arrays.<CharSequence>asList("func1", "func2", "func3"), 10l);
         db.putStack(Arrays.<CharSequence>asList("func3", "func2", "func1"), 10l);
-        db.flush();
+        flush(db);
 
         List<FunctionCall> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
         assertEquals(3, hotSpots.size());
@@ -153,7 +158,7 @@ public class H2DataStorageTest {
         db.putStack(Arrays.<CharSequence>asList("a", "b", "c"), 10l);
         db.putStack(Arrays.<CharSequence>asList("x", "x", "a", "b", "c"), 10l);
         db.putStack(Arrays.<CharSequence>asList("x", "b", "c"), 10l);
-        db.flush();
+        flush(db);
 
         List<FunctionCall> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
         assertEquals(4, hotSpots.size());
@@ -189,7 +194,7 @@ public class H2DataStorageTest {
         db.putStack(Arrays.<CharSequence>asList("b", "c", "d", "f"), 10l);
         db.putStack(Arrays.<CharSequence>asList("c", "d", "e"), 10l);
         db.putStack(Arrays.<CharSequence>asList("c", "d", "f"), 10l);
-        db.flush();
+        flush(db);
 
         List<FunctionCall> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
         assertEquals(6, hotSpots.size());
