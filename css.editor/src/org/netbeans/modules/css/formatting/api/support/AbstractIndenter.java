@@ -40,12 +40,11 @@
 package org.netbeans.modules.css.formatting.api.support;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
@@ -58,7 +57,6 @@ import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence.TokenSequenceWrapper;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.util.Exceptions;
 
@@ -88,7 +86,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         return formattingContext;
     }
 
-    public final void beforeReindent(List<IndenterFormattingContext> contexts) {
+    public final void beforeReindent(Collection<? extends IndenterFormattingContext> contexts) {
+        assert contexts.size() > 0 : "your IndentTask must implement Lookup.Provider " + // NOI18N
+                "and return an instance of IndenterFormattingContext in it"; // NOI18N
         IndenterFormattingContext first = null;
         IndenterFormattingContext last = null;
         for (IndenterFormattingContext ifc : contexts) {
@@ -288,6 +288,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 //    }
 
     public final void reindent() {
+        beforeReindent(context.getLookup().lookupAll(IndenterFormattingContext.class));
         formattingContext.disableListener();
         try {
             if (!formattingContext.isFirstIndenter()) {
