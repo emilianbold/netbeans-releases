@@ -128,6 +128,13 @@ public class ChatTopComponent extends TopComponent {
 
         if (KenaiConnection.getDefault().isConnected()) {
             putChatsScreen();
+            if (open.isEmpty()) {
+                SwingUtilities.invokeLater(new Runnable(){
+                    public void run() {
+                        showPopup();
+                    }
+                });
+            }
         } else {
             putLoginScreen();
         }
@@ -260,13 +267,6 @@ public class ChatTopComponent extends TopComponent {
                 } else {
                     Logger.getLogger(ChatTopComponent.class.getName()).warning("Cannot find chat " + chat);
                 }
-            }
-            if (open.isEmpty()) {
-                SwingUtilities.invokeLater(new Runnable(){
-                    public void run() {
-                        showPopup();
-                    }
-                });
             }
         }
         validate();
