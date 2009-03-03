@@ -509,20 +509,38 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 boolean firstTime = false;
                 if(!query.isSaved()) {
                     firstTime = true;
-                    if(BugzillaUtil.show(panel.savePanel, NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),  NbBundle.getMessage(QueryController.class, "LBL_Save"))) { // NOI18N
-                        // XXX validate name
-                        name = panel.queryNameTextField.getText();
-                        if(name == null || name.trim().equals("")) {
-                            return; // XXX nice error?
-                        }
-                    } else {
+                    name = getName();
+                    if(name == null) {
                         return;
                     }
+                    panel.queryNameTextField.setText("");
                 }
                 assert name != null;
                 save(name, firstTime);
             }
        });
+    }
+
+    private String getName() {
+        String name = null;
+        if(BugzillaUtil.show(panel.savePanel, NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),  NbBundle.getMessage(QueryController.class, "LBL_Save"))) { // NOI18N
+            name = panel.queryNameTextField.getText();
+            if(name == null || name.trim().equals("")) { // NOI18N
+                return null;
+            }
+            Query[] queries = repository.getQueries();
+            for (Query q : queries) {
+                if(q.getDisplayName().equals(name)) {
+                    panel.saveErrorLabel.setVisible(true);
+                    name = getName();                    
+                    panel.saveErrorLabel.setVisible(false);
+                    break;
+                }
+            }
+        } else {
+            return null;
+        }
+        return name;
     }
 
     private void save(String name, boolean firstTime) {
