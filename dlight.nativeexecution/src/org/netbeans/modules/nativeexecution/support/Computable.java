@@ -36,45 +36,9 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.util;
+package org.netbeans.modules.nativeexecution.support;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+public interface Computable<P, R> {
 
-/**
- *
- * @author ak119685
- */
-public class SolarisPrivilegesSupportTest {
-
-    public SolarisPrivilegesSupportTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        String dirs = System.getProperty("netbeans.dirs", "");
-        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/dlight.suite/build/cluster:" + dirs);
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    /**
-     * Test of getInstance method, of class SolarisPrivilegesSupportImpl.
-     */
-    @Test
-    public void test() {
-    }
+    R compute(P taskArguments) throws InterruptedException;
 }

@@ -36,45 +36,45 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.util;
+package org.netbeans.modules.nativeexecution.api.util;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import java.security.SignatureException;
+import java.util.MissingResourceException;
+import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.sps.impl.SPSLocalImpl;
+import org.netbeans.modules.nativeexecution.sps.impl.SPSRemoteImpl;
+import org.openide.util.Exceptions;
 
-/**
- *
- * @author ak119685
- */
-public class SolarisPrivilegesSupportTest {
+public final class SolarisPrivilegesSupportProvider {
 
-    public SolarisPrivilegesSupportTest() {
+    private static final ConcurrentHashMap<ExecutionEnvironment, SolarisPrivilegesSupport> instances =
+            new ConcurrentHashMap<ExecutionEnvironment, SolarisPrivilegesSupport>();
+
+    private SolarisPrivilegesSupportProvider() {
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        String dirs = System.getProperty("netbeans.dirs", "");
-        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/dlight.suite/build/cluster:" + dirs);
-    }
+    public static SolarisPrivilegesSupport getSupportFor(ExecutionEnvironment execEnv) {
+        SolarisPrivilegesSupport result = instances.get(execEnv);
+        if (result == null) {
+            if (execEnv.isLocal()) {
+                try {
+                    result = SPSLocalImpl.getNewInstance(execEnv);
+                } catch (SignatureException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (MissingResourceException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else {
+                result = SPSRemoteImpl.getNewInstance(execEnv);
+            }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
+            SolarisPrivilegesSupport oldRef = instances.putIfAbsent(execEnv, result);
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    /**
-     * Test of getInstance method, of class SolarisPrivilegesSupportImpl.
-     */
-    @Test
-    public void test() {
+            if (oldRef != null) {
+                result = oldRef;
+            }
+        }
+        return result;
     }
 }
