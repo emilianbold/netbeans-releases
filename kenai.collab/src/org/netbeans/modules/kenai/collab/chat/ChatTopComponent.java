@@ -62,14 +62,17 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -86,6 +89,7 @@ public class ChatTopComponent extends TopComponent {
     static final String ICON_PATH = "org/netbeans/modules/kenai/collab/resources/online.gif";
 
     private static final String PREFERRED_ID = "ChatTopComponent";
+    private final KenaiConnection kec = KenaiConnection.getDefault();
 
     //open chats
     private HashSet<String> open = new HashSet<String>();
@@ -126,7 +130,7 @@ public class ChatTopComponent extends TopComponent {
             }
         };
 
-        if (KenaiConnection.getDefault().isConnected()) {
+        if (kec.isConnected()) {
             putChatsScreen();
             if (open.isEmpty()) {
                 SwingUtilities.invokeLater(new Runnable(){
@@ -136,9 +140,13 @@ public class ChatTopComponent extends TopComponent {
                 });
             }
         } else {
-            putLoginScreen();
+            if (kec.getXMPPException()!=null) {
+                putErrorScreen();
+            } else {
+                putLoginScreen();
+            }
         }
-        Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN, new KenaiL());
+        Kenai.getDefault().addPropertyChangeListener(new KenaiL());
         chats.addChangeListener(changeListener);
         chats.addPropertyChangeListener(TabbedPaneFactory.PROP_CLOSE, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -185,15 +193,48 @@ public class ChatTopComponent extends TopComponent {
         } else {
             SwingUtilities.invokeLater(r);
         }
-
     }
 
+    private void putErrorScreen() {
+        Runnable r = new Runnable() {
+            public void run() {
+                removeAll();
+                chats.removeAll();
+                open.clear();
+                add(errorScreen, BorderLayout.CENTER);
+                validate();
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
+    }
+
+
+    private void putConnectingScreen() {
+        Runnable r = new Runnable() {
+            public void run() {
+                removeAll();
+                chats.removeAll();
+                open.clear();
+                add(initPanel, BorderLayout.CENTER);
+                validate();
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
+    }
 
     public void setActive(String name) {
         ChatNotifications.getDefault().removeGroup(name);
         final int indexOfTab = chats.indexOfTab(name);
         if (indexOfTab < 0) {
-            MultiUserChat muc = KenaiConnection.getDefault().getChat(name);
+            MultiUserChat muc = kec.getChat(name);
             if (muc != null) {
                 ChatPanel chatPanel = new ChatPanel(muc);
                 addChat(chatPanel);
@@ -208,6 +249,7 @@ public class ChatTopComponent extends TopComponent {
         ChatNotifications.getDefault().removeGroup(chatPanel.getName());
         chats.addTab(chatPanel.getName(),chatPanel);
         open.add(chatPanel.getName());
+        chats.setSelectedComponent(chatPanel);
         validate();
         StringBuffer b= new StringBuffer();
         Iterator<String> it = open.iterator();
@@ -232,7 +274,7 @@ public class ChatTopComponent extends TopComponent {
 
     void showPopup() {
         JPopupMenu menu = new JPopupMenu();
-        for (KenaiProject prj : KenaiConnection.getDefault().getMyProjects()) {
+        for (KenaiProject prj : kec.getMyProjects()) {
             if (!open.contains(prj.getName())) {
                 menu.add(new OpenChatAction(prj));
             }
@@ -251,7 +293,7 @@ public class ChatTopComponent extends TopComponent {
     }
 
     private void putChats() {
-        final KenaiConnection cc = KenaiConnection.getDefault();
+        final KenaiConnection cc = kec;
         final Collection<MultiUserChat> chs = cc.getChats();
         if (chs.size()==1) {
             final MultiUserChat next = chs.iterator().next();
@@ -284,8 +326,11 @@ public class ChatTopComponent extends TopComponent {
         glassPane = new javax.swing.JPanel();
         addChat = new javax.swing.JButton();
         loginScreen = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        lblNotLoggedIn = new javax.swing.JLabel();
         loginLink = new javax.swing.JLabel();
+        errorScreen = new javax.swing.JPanel();
+        lblXmppError = new javax.swing.JLabel();
+        retryLink = new javax.swing.JLabel();
         initPanel = new javax.swing.JPanel();
         initLabel = new javax.swing.JLabel();
         jProgressBar1 = new javax.swing.JProgressBar();
@@ -319,7 +364,7 @@ public class ChatTopComponent extends TopComponent {
                 .addContainerGap(125, Short.MAX_VALUE))
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblNotLoggedIn, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.lblNotLoggedIn.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(loginLink, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.loginLink.text")); // NOI18N
         loginLink.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -340,7 +385,7 @@ public class ChatTopComponent extends TopComponent {
             loginScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(loginScreenLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
+                .add(lblNotLoggedIn)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(loginLink)
                 .addContainerGap(61, Short.MAX_VALUE))
@@ -350,8 +395,44 @@ public class ChatTopComponent extends TopComponent {
             .add(loginScreenLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(loginScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
+                    .add(lblNotLoggedIn)
                     .add(loginLink))
+                .addContainerGap(406, Short.MAX_VALUE))
+        );
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblXmppError, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.lblXmppError.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(retryLink, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.retryLink.text")); // NOI18N
+        retryLink.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                retryLinkMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                retryLinkMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                retryLinkMouseExited(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout errorScreenLayout = new org.jdesktop.layout.GroupLayout(errorScreen);
+        errorScreen.setLayout(errorScreenLayout);
+        errorScreenLayout.setHorizontalGroup(
+            errorScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(errorScreenLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(lblXmppError)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(retryLink)
+                .addContainerGap(23, Short.MAX_VALUE))
+        );
+        errorScreenLayout.setVerticalGroup(
+            errorScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(errorScreenLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(errorScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblXmppError)
+                    .add(retryLink))
                 .addContainerGap(406, Short.MAX_VALUE))
         );
 
@@ -401,16 +482,44 @@ public class ChatTopComponent extends TopComponent {
          loginLink.setCursor(Cursor.getDefaultCursor());
 }//GEN-LAST:event_loginLinkMouseExited
 
+    private void retryLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_retryLinkMouseClicked
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                kec.tryConnect();
+                if (kec.isConnected()) {
+                    putChatsScreen();
+                } else {
+                    if (kec.getXMPPException()!=null) {
+                        putErrorScreen();
+                    } else {
+                        putLoginScreen();
+                    }
+                }
+            }
+        });
+}//GEN-LAST:event_retryLinkMouseClicked
+
+    private void retryLinkMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_retryLinkMouseEntered
+        retryLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+}//GEN-LAST:event_retryLinkMouseEntered
+
+    private void retryLinkMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_retryLinkMouseExited
+        loginLink.setCursor(Cursor.getDefaultCursor());
+}//GEN-LAST:event_retryLinkMouseExited
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addChat;
     private javax.swing.JTabbedPane chats;
+    private javax.swing.JPanel errorScreen;
     private javax.swing.JPanel glassPane;
     private javax.swing.JLabel initLabel;
     private javax.swing.JPanel initPanel;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JProgressBar jProgressBar1;
+    private javax.swing.JLabel lblNotLoggedIn;
+    private javax.swing.JLabel lblXmppError;
     private javax.swing.JLabel loginLink;
     private javax.swing.JPanel loginScreen;
+    private javax.swing.JLabel retryLink;
     // End of variables declaration//GEN-END:variables
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
@@ -482,11 +591,17 @@ public class ChatTopComponent extends TopComponent {
     final class KenaiL implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent e) {
-            if (e.getNewValue() == null) {
+            if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
+                if (e.getNewValue() == null) {
+                    putLoginScreen();
+                } else {
+                    kec.getMyProjects();
+                    putChatsScreen();
+                }
+            } else if (Kenai.PROP_LOGIN_STARTED.equals(e.getPropertyName())) {
+                putConnectingScreen();
+            } else if (Kenai.PROP_LOGIN_FAILED.equals(e.getPropertyName())) {
                 putLoginScreen();
-            } else {
-                KenaiConnection.getDefault().getMyProjects();
-                putChatsScreen();
             }
         }
     }
@@ -501,7 +616,7 @@ public class ChatTopComponent extends TopComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            addChat(new ChatPanel(KenaiConnection.getDefault().getChat(prj)));
+            addChat(new ChatPanel(kec.getChat(prj)));
         }
     }
 }

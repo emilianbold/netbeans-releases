@@ -133,16 +133,25 @@ public class KenaiConnection implements PropertyChangeListener {
         assert put == null;
     }
 
-    private void tryConnect() {
+    private XMPPException xmppEx;
+
+    /**
+     * 
+     */
+    public synchronized void tryConnect() {
         try {
             connect();
             initChats();
+            xmppEx = null;
             PresenceIndicator.getDefault().setStatus(Status.ONLINE);
         } catch (XMPPException ex) {
-            XMPPLOG.log(Level.SEVERE, ex.getMessage());
+            xmppEx = ex;
         }
     }
 
+    public XMPPException getXMPPException() {
+        return xmppEx;
+    }
 
     /**
      * is connection to kenai xmpp up and living?
@@ -239,9 +248,9 @@ public class KenaiConnection implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent e) {
         final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
         if (pa != null) {
-            USER = pa.getUserName();
-            PASSWORD = new String(pa.getPassword());
-            tryConnect();
+                USER = pa.getUserName();
+                PASSWORD = new String(pa.getPassword());
+                tryConnect();
         } else {
             for (MultiUserChat muc : getChats()) {
                 muc.leave();
