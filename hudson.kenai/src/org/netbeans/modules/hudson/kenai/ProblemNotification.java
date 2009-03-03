@@ -116,7 +116,7 @@ class ProblemNotification implements ActionListener {
 
     void remove() {
         if (thisN!=null) {
-            thisN.dispose();
+            thisN.clear();
         }
     }
 }
