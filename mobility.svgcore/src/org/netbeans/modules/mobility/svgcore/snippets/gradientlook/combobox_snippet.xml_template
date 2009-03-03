@@ -39,7 +39,7 @@
                     <text display="none">editable=false</text>
                     <text display="none">enabled=true</text>
                     <g>
-                        <text id="%%COMPONENT_ID%%_editor_text" x="10.0" y="16.0" font-size="16" >Item 1		    </text>                    <!-- Metadata information. Please don't edit. -->
+                        <text id="%%COMPONENT_ID%%_editor_text" x="10.0" y="16.0" font-size="16" font-family="">Item 1		    </text>                    <!-- Metadata information. Please don't edit. -->
                         <text display="none">type=text</text>
                     </g>
                 </g>
@@ -48,7 +48,7 @@
                 <text display="none">ref=%%COMPONENT_ID%%</text>
                 <text display="none">type=list</text>
                 <g>
-                    <text id="%%COMPONENT_ID%%_list_hidden_text" visibility="hidden" x="10" y="13" font-size="16">HIDDEN TEXT</text>                       <!-- Metadata information. Please don't edit. -->
+                    <text id="%%COMPONENT_ID%%_list_hidden_text" visibility="hidden" x="10" y="13" font-size="16" font-family="">HIDDEN TEXT</text>                       <!-- Metadata information. Please don't edit. -->
                     <text display="none">type=hidden_text</text>
                 </g>
                 <g>			<!-- Metadata information. Please don't edit. -->
