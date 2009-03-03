@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.extexecution;
+package org.netbeans.modules.groovy.grails;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
@@ -47,6 +47,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * FIXME this is copied from extexecution API to be used in KillableProcess.
+ * Anyway we should remove the KillableProcess with a native solution.
  *
  * @author Petr Hejl
  */
@@ -175,7 +177,6 @@ public final class ProcessInputStream extends FilterInputStream {
                     }
                 } else {
                     int read;
-                    // FIXME this occasionaly block forever on Vista :(
                     while ((read = super.read()) >= 0) {
                         os.write(read);
                     }
