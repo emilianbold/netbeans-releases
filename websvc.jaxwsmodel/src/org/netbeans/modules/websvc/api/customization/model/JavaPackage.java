@@ -49,8 +49,6 @@
 
 package org.netbeans.modules.websvc.api.customization.model;
 
-import org.netbeans.modules.xml.xam.Nameable;
-
 /**
  *
  * @author Roderico Cruz

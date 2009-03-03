@@ -73,6 +73,7 @@ public class WSCustomizationTopComponent extends TopComponent {
         this.primaryDefinitions = primaryDefinitions;
     }
     
+    @Override
     protected String preferredID(){
         return "CustomizationComponent";    //NOI18N
     }
