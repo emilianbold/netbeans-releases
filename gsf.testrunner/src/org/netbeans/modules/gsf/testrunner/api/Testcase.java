@@ -2,13 +2,12 @@ package org.netbeans.modules.gsf.testrunner.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.gsf.testrunner.output.OutputLine;
 import org.openide.util.Parameters;
 
 /**
  * Represents a single test case.
  */
-public final class Testcase {
+public class Testcase {
 
     /**
      * The type of this test case.
