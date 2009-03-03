@@ -7,6 +7,7 @@ package org.netbeans.modules.kenai.ui.spi;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.kenai.api.Kenai;
 
 /**
  * Abstraction of a single Kenai project.
@@ -35,6 +36,17 @@ public abstract class ProjectHandle {
      * The property value should ideally be the new list of QueryHandles.
      */
     public static final String PROP_QUERY_LIST = "queryList";
+
+    /**
+     * The name of property which is fired when the nonmember project is removed
+     * from dashboard.
+     * This event is not fired, when user logs out.
+     * Value is undefined (null)
+     * @see Kenai#PROP_LOGIN
+     */
+    public static final String PROP_CLOSE = "close";
+
+
     
     private final String id;
 
