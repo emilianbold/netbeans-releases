@@ -67,7 +67,14 @@ class TextRenderer {
     }
     
     String truncateToShownText( String text , float boundWidth ) {
+        if ( boundWidth ==0 ){
+            return "";
+        }
+        if ( myLetterWidth ==0 ){
+            return text;
+        }
         int count = Math.max( 0, (int)(boundWidth/myLetterWidth));
+        
         String result = text;
         result = text.substring( 0 , Math.min( text.length(), count + 1));
 

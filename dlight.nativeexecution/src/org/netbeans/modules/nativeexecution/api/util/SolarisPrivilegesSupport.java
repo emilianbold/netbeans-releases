@@ -359,7 +359,7 @@ public final class SolarisPrivilegesSupport {
 
 
         static {
-            csums.put("SunOS-x86", 2381709310L); // NOI18N
+            csums.put("SunOS-x86", 2839716019L); // NOI18N
         }
 
         private static void doRequest(

@@ -39,17 +39,22 @@
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric.FunctionMetricConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
+import org.openide.util.NbBundle;
 
 public final class TimeMetric {
 
-  static public final String ID_UserFuncTimeInclusive = "i.user"; //NOI18N
-  static public final String ID_UserFuncTimeExclusive = "e.user"; //NOI18N
-  static public final String ID_SyncWaitTimeInclusive = "i.sync"; //NOI18N
-  static public final String ID_SyncWaitCallInclusive = "i.syncn"; //NOI18N
-  static public final FunctionMetric UserFuncTimeInclusive = FunctionMetricsFactory.getInstance().getFunctionMetric(new FunctionMetric.FunctionMetricConfiguration(ID_UserFuncTimeInclusive, "Inclusive Function User Time", Double.class));
-  static public final FunctionMetric UserFuncTimeExclusive = FunctionMetricsFactory.getInstance().getFunctionMetric(new FunctionMetric.FunctionMetricConfiguration(ID_UserFuncTimeExclusive, "Exclusive Function User Time", Double.class));
-  static public final FunctionMetric SyncWaitTimeInclusive = FunctionMetricsFactory.getInstance().getFunctionMetric(new FunctionMetric.FunctionMetricConfiguration(ID_SyncWaitCallInclusive, "Inclusive Sync. Wait Time", Double.class));
-  static public final FunctionMetric SyncWaitCallInclusive = FunctionMetricsFactory.getInstance().getFunctionMetric(new FunctionMetric.FunctionMetricConfiguration(ID_SyncWaitCallInclusive, "Incl. Sync. Wait Count", Integer.class));
+    static public final FunctionMetric UserFuncTimeInclusive = fm("i.user", Double.class); // NOI18N
+    static public final FunctionMetric UserFuncTimeExclusive = fm("e.user", Double.class); // NOI18N
+    static public final FunctionMetric SyncWaitTimeInclusive = fm("i.sync", Double.class); // NOI18N
+    static public final FunctionMetric SyncWaitCallInclusive = fm("i.syncn", Integer.class); // NOI18N
+
+    static private FunctionMetric fm(String id, Class clazz) {
+        return FunctionMetricsFactory.getInstance().getFunctionMetric(
+                new FunctionMetricConfiguration(id,
+                NbBundle.getMessage(TimeMetric.class,
+                "TimeMetric." + id + ".uname"), clazz)); // NOI18N
+    }
 }
 

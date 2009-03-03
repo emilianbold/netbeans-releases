@@ -43,6 +43,7 @@ package org.netbeans.modules.db.dataview.table;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.text.SimpleDateFormat;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -66,7 +67,7 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
         @Override
         public String getString(Object value) {
             if (format == null) {
-                format = TimestampType.DEFAULT_FORMAT;
+                format = new SimpleDateFormat (TimestampType.DEFAULT_FORMAT_PATTERN);
             }
             return super.getString(value);
         }
@@ -76,7 +77,7 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
         @Override
         public String getString(Object value) {
             if (format == null) {
-                format = TimeType.DEFAULT_FOMAT;
+                format = new SimpleDateFormat (TimeType.DEFAULT_FOMAT_PATTERN);
             }
             return super.getString(value);
         }
