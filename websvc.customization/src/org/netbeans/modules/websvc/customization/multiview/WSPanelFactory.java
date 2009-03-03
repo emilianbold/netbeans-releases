@@ -53,8 +53,8 @@ package org.netbeans.modules.websvc.customization.multiview;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.customization.multiview.WSCustomizationView.BindingKey;
+import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.xml.multiview.ui.InnerPanelFactory;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
@@ -67,7 +67,6 @@ import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.Service;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.nodes.Node;
 
 /**
@@ -77,7 +76,6 @@ import org.openide.nodes.Node;
 public class WSPanelFactory implements InnerPanelFactory {
     private ToolBarDesignEditor editor;
     private Node node;
-    private JaxWsModel jmodel;
     
     private Map<Object, SaveableSectionInnerPanel> panels;
     
@@ -96,11 +94,10 @@ public class WSPanelFactory implements InnerPanelFactory {
      * Creates a new instance of WSPanelFactory
      */
     public WSPanelFactory(ToolBarDesignEditor editor,
-            Node node, Definitions primaryDefinitions, JaxWsModel jmodel) {
+            Node node, Definitions primaryDefinitions) {
         this.editor = editor;
         this.node = node;
         this.primaryDefinitions = primaryDefinitions;
-        this.jmodel = jmodel;
         
         panels = new HashMap<Object, SaveableSectionInnerPanel>();
     }
@@ -183,12 +180,12 @@ public class WSPanelFactory implements InnerPanelFactory {
                 panels.put(port, portPanel);
             }
             return portPanel;
-        } else if(key instanceof BindingKey){
+        } else if (node.getLookup().lookup(JaxWsService.class) == null && 
+                   key instanceof BindingKey ) {
             BindingKey bindingKey = (BindingKey)key;
             externalBindingPanel = (ExternalBindingPanel)panels.get(bindingKey);
             if(externalBindingPanel == null){
-                externalBindingPanel =  new ExternalBindingPanel((SectionView) editor.getContentView(),
-                        node, jmodel);
+                externalBindingPanel =  new ExternalBindingPanel((SectionView) editor.getContentView(), node);
                 panels.put(bindingKey,externalBindingPanel);
             }
             return externalBindingPanel;
