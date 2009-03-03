@@ -116,6 +116,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private final ListParameter resolutionParameter;
     private final ListParameter priorityParameter;
     private final ListParameter changedFieldsParameter;
+    private final ListParameter severityParameter;
 
     private final Map<String, QueryParameter> parameters;
 
@@ -127,7 +128,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private BugzillaQuery query;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss, EEE MMM d yyyy"); // NOI18N
-
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters) {
         this.repository = repository;
         this.query = query;
@@ -154,6 +154,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.versionList.addKeyListener(this);
         panel.statusList.addKeyListener(this);
         panel.resolutionList.addKeyListener(this);
+        panel.severityList.addKeyListener(this);
         panel.priorityList.addKeyListener(this);
         panel.changedList.addKeyListener(this);
 
@@ -178,6 +179,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, "resolution");        // NOI18N
         priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");              // NOI18N
         changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
+        severityParameter = createQueryParameter(ListParameter.class, panel.severityList, "bug_severity");          // NOI18N
         
         createQueryParameter(TextFieldParameter.class, panel.summaryTextField, "short_desc");                       // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.commentTextField, "long_desc");                        // NOI18N
@@ -189,7 +191,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         createQueryParameter(CheckBoxParameter.class, panel.commenterCheckBox, "emaillongdesc1");                   // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.changedFromTextField, "chfieldfrom");                  // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                   // NOI18N
+        createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                    // NOI18N
 
         if(query.isSaved()) {
             setAsSaved();
@@ -294,6 +296,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 panel.productList.setSelectedIndex(0);
                 populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
             }
+            severityParameter.setParameterValues(toParameterValues(bgz.getSeverities(repository)));
             statusParameter.setParameterValues(toParameterValues(bgz.getStatusValues(repository)));
             resolutionParameter.setParameterValues(toParameterValues(bgz.getResolutions(repository)));
             priorityParameter.setParameterValues(toParameterValues(bgz.getPriorities(repository)));

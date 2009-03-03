@@ -127,6 +127,7 @@ public class QueryPanel extends javax.swing.JPanel {
         commentComboBox.setRenderer(new ParameterValueCellRenderer());
         keywordsComboBox.setRenderer(new ParameterValueCellRenderer());
         peopleComboBox.setRenderer(new ParameterValueCellRenderer());
+        severityList.setCellRenderer(new ParameterValueCellRenderer());
         productList.setCellRenderer(new ParameterValueCellRenderer());
         componentList.setCellRenderer(new ParameterValueCellRenderer());
         versionList.setCellRenderer(new ParameterValueCellRenderer());
@@ -313,7 +314,7 @@ public class QueryPanel extends javax.swing.JPanel {
         productLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         productLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.productLabel.text")); // NOI18N
 
-        versionLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
+        versionLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         versionLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.versionLabel.text")); // NOI18N
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -394,6 +395,20 @@ public class QueryPanel extends javax.swing.JPanel {
         productList.setMaximumSize(new java.awt.Dimension(100, 2));
         jScrollPane7.setViewportView(productList);
 
+        versionLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        versionLabel1.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.versionLabel1.text")); // NOI18N
+
+        jScrollPane8.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane8.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+        severityList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        severityList.setMinimumSize(new java.awt.Dimension(100, 2));
+        jScrollPane8.setViewportView(severityList);
+
         org.jdesktop.layout.GroupLayout byDetailsPanelLayout = new org.jdesktop.layout.GroupLayout(byDetailsPanel);
         byDetailsPanel.setLayout(byDetailsPanelLayout);
         byDetailsPanelLayout.setHorizontalGroup(
@@ -414,7 +429,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(versionLabel)
                     .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(43, 43, 43)
+                .add(34, 34, 34)
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(statusLabel)
                     .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -426,35 +441,46 @@ public class QueryPanel extends javax.swing.JPanel {
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(priorityLabel)
                     .add(jScrollPane4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(versionLabel1)
+                    .add(jScrollPane8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(37, 37, 37))
         );
         byDetailsPanelLayout.setVerticalGroup(
             byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(byDetailsPanelLayout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, byDetailsPanelLayout.createSequentialGroup()
+                .addContainerGap()
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(byDetailsPanelLayout.createSequentialGroup()
-                        .add(20, 20, 20)
-                        .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(versionLabel)
-                            .add(priorityLabel)
-                            .add(resolutionLabel)
-                            .add(statusLabel)))
-                    .add(byDetailsPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(componentLabel))
-                    .add(byDetailsPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(productLabel)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane4, 0, 103, Short.MAX_VALUE)
-                    .add(jScrollPane5, 0, 103, Short.MAX_VALUE)
-                    .add(jScrollPane3, 0, 103, Short.MAX_VALUE)
+                    .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, byDetailsPanelLayout.createSequentialGroup()
+                            .add(versionLabel1)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(jScrollPane8))
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, byDetailsPanelLayout.createSequentialGroup()
+                            .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                .add(priorityLabel)
+                                .add(resolutionLabel)
+                                .add(statusLabel))
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(jScrollPane4)
+                                .add(jScrollPane5)
+                                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))))
                     .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                        .add(jScrollPane2, 0, 0, Short.MAX_VALUE)
-                        .add(jScrollPane6, 0, 0, Short.MAX_VALUE)
-                        .add(jScrollPane7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 103, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .add(byDetailsPanelLayout.createSequentialGroup()
+                            .add(componentLabel)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(jScrollPane6))
+                        .add(org.jdesktop.layout.GroupLayout.TRAILING, byDetailsPanelLayout.createSequentialGroup()
+                            .add(versionLabel)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(jScrollPane2))
+                        .add(byDetailsPanelLayout.createSequentialGroup()
+                            .add(productLabel)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(jScrollPane7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         byTextPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
@@ -999,6 +1025,7 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JScrollPane jScrollPane5 = new javax.swing.JScrollPane();
     final javax.swing.JScrollPane jScrollPane6 = new javax.swing.JScrollPane();
     final javax.swing.JScrollPane jScrollPane7 = new javax.swing.JScrollPane();
+    final javax.swing.JScrollPane jScrollPane8 = new javax.swing.JScrollPane();
     final javax.swing.JComboBox keywordsComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel keywordsLabel = new javax.swing.JLabel();
     final javax.swing.JTextField keywordsTextField = new javax.swing.JTextField();
@@ -1028,6 +1055,7 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JButton searchButton = new javax.swing.JButton();
     final javax.swing.JPanel searchPanel = new javax.swing.JPanel();
     final org.netbeans.modules.bugtracking.util.LinkButton seenButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final javax.swing.JList severityList = new javax.swing.JList();
     final javax.swing.JLabel statusLabel = new javax.swing.JLabel();
     final javax.swing.JList statusList = new javax.swing.JList();
     final javax.swing.JComboBox summaryComboBox = new javax.swing.JComboBox();
@@ -1041,6 +1069,7 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JTextField urlTextField = new javax.swing.JTextField();
     final org.netbeans.modules.bugtracking.util.LinkButton urlToggleButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JLabel versionLabel = new javax.swing.JLabel();
+    final javax.swing.JLabel versionLabel1 = new javax.swing.JLabel();
     final javax.swing.JList versionList = new javax.swing.JList();
     final org.netbeans.modules.bugtracking.util.LinkButton webButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     // End of variables declaration//GEN-END:variables
