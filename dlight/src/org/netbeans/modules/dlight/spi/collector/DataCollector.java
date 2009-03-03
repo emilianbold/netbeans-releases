@@ -100,4 +100,13 @@ public interface DataCollector<G extends DataCollectorConfiguration> extends DLi
      * @return aguments for running this data collector
      */
     String[] getArgs();
+
+
+    /**
+     * Returns user visible name of DataCollector,
+     * for example for collector based on DTrace we will
+     * have here DTrace name
+     * @return user visible name
+     */
+    String getName();
 }

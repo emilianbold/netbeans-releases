@@ -50,6 +50,7 @@
 
 package org.netbeans.modules.websvc.core.wseditor.support;
 
+import org.netbeans.modules.websvc.api.support.EditWSAttributesCookie;
 import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.event.WindowAdapter;
@@ -62,9 +63,9 @@ import java.util.WeakHashMap;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProviderRegistry;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
+import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
+import org.netbeans.modules.websvc.api.wseditor.WSEditorProviderRegistry;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -85,10 +86,11 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
         this.jaxWsModel = jaxWsModel;
     }
 
+    @Override
     public void openWSAttributesEditor() {
-        if(SwingUtilities.isEventDispatchThread()){  //Ensure it is in AWT thread
+        if (SwingUtilities.isEventDispatchThread()) {  //Ensure it is in AWT thread
             openEditor();
-        }else{
+        } else {
             SwingUtilities.invokeLater(new Runnable(){
                 public void run(){
                     openEditor();
@@ -113,7 +115,7 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
             cachedTopComponents.put(this, tc);
         }
         populatePanels();
-        tc.addTabs(editors, node, jaxWsModel);
+        tc.addTabs(editors, node);
         DialogDescriptor dialogDesc = new DialogDescriptor(tc, node.getName());
         dialogDesc.setHelpCtx(new HelpCtx(EditWSAttributesCookieImpl.class));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
@@ -126,11 +128,11 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
 
         if (dialogDesc.getValue() == NotifyDescriptor.OK_OPTION) {
             for (WSEditor editor : editors) {
-                editor.save(node, jaxWsModel);
+                editor.save(node);
             }
         } else {
             for (WSEditor editor : editors) {
-                editor.cancel(node, jaxWsModel);
+                editor.cancel(node);
             }
         }
     }
@@ -143,14 +145,15 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
             this.editors = editors;
         }
 
+        @Override
         public void windowClosing(WindowEvent e) {
             for (WSEditor editor : editors) {
-                editor.cancel(node, jaxWsModel);
+                editor.cancel(node);
             }
         }
     }
 
-    public Set getWSEditorProviders() {
+    private Set getWSEditorProviders() {
         return providers;
     }
 
@@ -159,8 +162,10 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
         for (WSEditorProvider provider : providers) {
             if (provider.enable(node)) {
                 //for each provider, create a WSAttributesEditor
-                WSEditor editor = provider.createWSEditor();
-                editors.add(editor);
+                WSEditor editor = provider.createWSEditor(node.getLookup());
+                if (editor != null) {
+                    editors.add(editor);
+                }
             }
         }
     }

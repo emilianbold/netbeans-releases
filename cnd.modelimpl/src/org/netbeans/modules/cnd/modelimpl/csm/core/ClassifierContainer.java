@@ -44,12 +44,15 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.repository.ClassifierContainerKey;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -61,25 +64,56 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * Storage for project classifiers. Class was extracted from ProjectBase.
  * @author Alexander Simon
  */
-/*package-local*/ class ClassifierContainer implements Persistent, SelfPersistent {
+/*package-local*/ class ClassifierContainer extends ProjectComponent implements Persistent, SelfPersistent {
 
-    private Map<CharSequence, CsmUID<CsmClassifier>> classifiers = new ConcurrentHashMap<CharSequence, CsmUID<CsmClassifier>>();
-    private Map<CharSequence, CsmUID<CsmClassifier>> typedefs = new ConcurrentHashMap<CharSequence, CsmUID<CsmClassifier>>();
+    private Map<CharSequence, CsmUID<CsmClassifier>> classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
+    private Map<CharSequence, CsmUID<CsmClassifier>> typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
+    private ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
+
+    // empty stub
+    private static final ClassifierContainer EMPTY = new ClassifierContainer() {
+        @Override
+        public boolean putClassifier(CsmClassifier decl) {
+            return false;
+        }
+
+        @Override
+        public void put() {
+        }
+    };
+
+    public static ClassifierContainer empty() {
+        return EMPTY;
+    }
     
     /** Creates a new instance of ClassifierContainer */
-    public ClassifierContainer() {
+    public ClassifierContainer(ProjectBase project) {
+        super(new ClassifierContainerKey(project.getUniqueName().toString()));
+        put();
     }
 
     public ClassifierContainer(DataInput input) throws IOException {
-	read(input);
+        super(input);
+        read(input);
+    }
+
+    // only for EMPTY static field
+    private ClassifierContainer() {
+        super((org.netbeans.modules.cnd.repository.spi.Key) null);
     }
     
     public CsmClassifier getClassifier(CharSequence qualifiedName) {
         CsmClassifier result;
+        CsmUID<CsmClassifier> uid;
         qualifiedName = CharSequenceKey.create(qualifiedName);
-        CsmUID<CsmClassifier> uid = classifiers.get(qualifiedName);
-        if (uid == null) {
-            uid = typedefs.get(qualifiedName);
+        try {
+            declarationsLock.readLock().lock();
+            uid = classifiers.get(qualifiedName);
+            if (uid == null) {
+                uid = typedefs.get(qualifiedName);
+            }
+        } finally {
+            declarationsLock.readLock().unlock();
         }
         result = UIDCsmConverter.UIDtoDeclaration(uid);
         return result;
@@ -88,29 +122,40 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
     public boolean putClassifier(CsmClassifier decl) {
         CharSequence qn = decl.getQualifiedName();
         Map<CharSequence, CsmUID<CsmClassifier>> map;
-        if (isTypedef(decl)) {
-            map = typedefs;
-        } else {
-            map = classifiers;
-        }
-        if (!map.containsKey(qn)) {
-            CsmUID<CsmClassifier> uid = UIDCsmConverter.declarationToUID(decl);
-            assert uid != null;
-            map.put(qn, uid);
-            assert (UIDCsmConverter.UIDtoDeclaration(uid) != null);
-            return true;
+        try {
+            declarationsLock.writeLock().lock();
+            if (isTypedef(decl)) {
+                map = typedefs;
+            } else {
+                map = classifiers;
+            }
+            if (!map.containsKey(qn)) {
+                CsmUID<CsmClassifier> uid = UIDCsmConverter.declarationToUID(decl);
+                assert uid != null;
+                map.put(qn, uid);
+                assert (UIDCsmConverter.UIDtoDeclaration(uid) != null);
+                return true;
+            }
+        } finally {
+            declarationsLock.writeLock().unlock();
         }
         return false;
     }
 
     public void removeClassifier(CsmDeclaration decl) {
         Map<CharSequence, CsmUID<CsmClassifier>> map;
-        if (isTypedef(decl)) {
-            map = typedefs;
-        } else {
-            map = classifiers;
+        CsmUID<CsmClassifier> uid;
+        try {
+            declarationsLock.writeLock().lock();
+            if (isTypedef(decl)) {
+                map = typedefs;
+            } else {
+                map = classifiers;
+            }
+            uid = map.remove(decl.getQualifiedName());
+        } finally {
+            declarationsLock.writeLock().unlock();
         }
-        CsmUID<CsmClassifier> uid = map.remove(decl.getQualifiedName());
         assert (uid == null) || (UIDCsmConverter.UIDtoCsmObject(uid) != null) : " no object for UID " + uid;
     }
 
@@ -123,9 +168,16 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
         return CsmKindUtilities.isTypedef(decl);
     }
     
+    @Override
     public void write(DataOutput output) throws IOException {
-        UIDObjectFactory.getDefaultFactory().writeStringToUIDMap(this.classifiers, output, false);
-        UIDObjectFactory.getDefaultFactory().writeStringToUIDMap(this.typedefs, output, false);
+        super.write(output);
+        try {
+            declarationsLock.readLock().lock();
+            UIDObjectFactory.getDefaultFactory().writeStringToUIDMap(this.classifiers, output, false);
+            UIDObjectFactory.getDefaultFactory().writeStringToUIDMap(this.typedefs, output, false);
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
     }
     
     private void read(DataInput input) throws IOException {

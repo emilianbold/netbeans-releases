@@ -6,6 +6,7 @@
     <target name="-release.dir" depends="-disable-kits,projectized-common.-release.dir"/>
     <target name="basic-init" depends="-compile-ant,projectized-common.basic-init"/>
     <target name="jar-prep" depends="-generate-proxies,projectized-common.jar-prep"/>
+    <target name="clean" depends="-clean-release,projectized-common.clean"/>
 
     <!--
     -
@@ -47,9 +48,26 @@
         </dirset>
     </target>
 
-
-    <target name="-disable-kits" depends="-init-clusters">
+    <target name="-clean-release">
         <property name="build.release.dir" location="build/release"/>
+        <delete dir="${build.release.dir}"/>
+    </target>
+    <target name="-init-static-analysis">
+        <property name="build.release.dir" location="build/release"/>
+        <condition property="skip.static.analysis">
+            <and>
+                <isfalse value="${static.analysis}"/>
+                <available file="${build.release.dir}"/>
+            </and>
+        </condition>
+    </target>
+
+
+    <target 
+        name="-disable-kits"
+        depends="-init-clusters,-init-static-analysis"
+        unless="skip.static.analysis"
+    >
         <mkdir dir="${build.release.dir}/config/Modules"/>
         <subant genericantfile="build.xml" target="-disable-one-cluster">
             <property name="xmldir" value="${build.release.dir}/config/Modules"/>
@@ -74,7 +92,11 @@
         </copy>
     </target>
 
-    <target name="-generate-proxies" depends="-init-clusters">
+    <target 
+        name="-generate-proxies"
+        depends="-init-clusters,-init-static-analysis"
+        unless="skip.static.analysis"
+    >
         <subant genericantfile="build.xml" target="-proxy-one-cluster">
             <property name="ergonomicsdir" location="${basedir}"/>
             <dirset refid="ergonomic.clusters"/>

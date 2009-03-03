@@ -49,20 +49,19 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 /**
  * Factory for simple Make projects.
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public final class MakeProjectType implements AntBasedProjectType {
 
     public static final String TYPE = "org.netbeans.modules.cnd.makeproject"; // NOI18N
     private static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project/1"; // NOI18N
     private static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
-    private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project-private/1"; // NOI18N
+    static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project-private/1"; // NOI18N
     public static final String MAKE_DEP_PROJECTS = "make-dep-projects"; // NOI18N
     public static final String MAKE_DEP_PROJECT = "make-dep-project"; // NOI18N
     public static final String SOURCE_ENCODING_TAG = "sourceEncoding"; // NOI18N
     
     /** Do nothing, just a service. */
-    public MakeProjectType() {}
+    MakeProjectType() {}
     
     public String getType() {
         return TYPE;

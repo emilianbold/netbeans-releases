@@ -250,6 +250,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = FRIEND_CLASS_IMPL;
         } else if (object instanceof DeclarationContainer) {
             aHandler = DECLARATION_CONTAINER;
+        } else if (object instanceof ClassifierContainer) {
+            aHandler = CLASSIFIER_CONTAINER;
         } else if (object instanceof TemplateParameterImpl) {
             aHandler = TEMPLATE_PARAMETER_IMPL;
         } else {
@@ -458,6 +460,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new DeclarationContainer(stream);
                 break;
 
+            case CLASSIFIER_CONTAINER:
+                obj = new ClassifierContainer(stream);
+                break;
+
             case TEMPLATE_PARAMETER_IMPL:
                 obj = new TemplateParameterImpl(stream);
                 break;
@@ -488,9 +494,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int PROJECT_IMPL                   = FIRST_INDEX;
     private static final int LIB_PROJECT_IMPL               = PROJECT_IMPL + 1;    
     private static final int FILES_CONTAINER                = LIB_PROJECT_IMPL + 1;
-    private static final int GRAPH_CONTAINER               = FILES_CONTAINER + 1;
-    private static final int DECLARATION_CONTAINER	    = GRAPH_CONTAINER + 1;
-    private static final int FILE_IMPL                      = DECLARATION_CONTAINER + 1;
+    private static final int GRAPH_CONTAINER                = FILES_CONTAINER + 1;
+    private static final int DECLARATION_CONTAINER	        = GRAPH_CONTAINER + 1;
+    private static final int CLASSIFIER_CONTAINER           = DECLARATION_CONTAINER + 1;
+    private static final int FILE_IMPL                      = CLASSIFIER_CONTAINER + 1;
     private static final int ENUM_IMPL                      = FILE_IMPL + 1;
     private static final int CLASS_IMPL_SPECIALIZATION      = ENUM_IMPL + 1;
     private static final int FORWARD_CLASS                  = CLASS_IMPL_SPECIALIZATION + 1;

@@ -242,7 +242,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         files = new ArrayList<MyFile>(myFiles.values());
         for (MyFile file : files){
             synchronized (file.getLock()) {
-                file.clearState();
+                file.debugClearState();
             }
         }
 	put();
@@ -549,7 +549,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
          */
         //boolean setPCState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
         
-        int size();
+//        int size();
 
         /**
          * Gets mod count; mod count allows to understand whether the entry was changed:
@@ -576,7 +576,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
         private final CsmUID<CsmFile> fileNew;
         private final CharSequence canonical;
-        private Object data; // either StatePair or List<StatePair>
+        private volatile Object data; // either StatePair or List<StatePair>
         private volatile int modCount;
         private volatile boolean pendingReparse = false; // "transient"
 
@@ -617,14 +617,15 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             UIDObjectFactory.getDefaultFactory().writeUID(fileNew, output);
             output.writeUTF(canonical.toString());
             output.writeInt(modCount);
-            output.writeBoolean(data != null);
-            if (data != null) {
-                if(data instanceof StatePair) {
+            Object aData = data;
+            output.writeBoolean(aData != null);
+            if (aData != null) {
+                if(aData instanceof StatePair) {
                     output.writeInt(1);
-                    writeStatePair(output, (StatePair) data);
+                    writeStatePair(output, (StatePair) aData);
                 } else {
                     @SuppressWarnings("unchecked")
-                    Collection<StatePair> pairs = (Collection<StatePair>)data;
+                    Collection<StatePair> pairs = (Collection<StatePair>)aData;
                     output.writeInt(pairs.size());
                     for (StatePair pair : pairs) {
                         writeStatePair(output, pair);
@@ -676,16 +677,16 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             return this;
         }
         
-        public synchronized int size() {
-            return (data instanceof Collection) ? ((Collection) data).size() : 1;
-        }
+//        public synchronized int size() {
+//            return (data instanceof Collection) ? ((Collection) data).size() : 1;
+//        }
 
         //@Deprecated
         private final synchronized APTPreprocHandler.State getState() {
             return getStates().iterator().next().state;
         }
 
-        private synchronized void clearState() {
+        private synchronized void debugClearState() {
             data = null;
         }
 

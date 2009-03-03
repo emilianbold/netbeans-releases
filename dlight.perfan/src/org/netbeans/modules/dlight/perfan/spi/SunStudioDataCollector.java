@@ -177,6 +177,11 @@ public class SunStudioDataCollector
         });
     }
 
+    public String getName() {
+        return "SunStudio";//NOI18N
+    }
+
+
     public void invalidate() {
         validationStatus = ValidationStatus.initialStatus();
     }

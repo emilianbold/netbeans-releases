@@ -207,9 +207,9 @@ public abstract class CsmErrorProvider implements NamedEntity {
                 int offset = directive.getStartOffset();
                 CsmFile containingFile = directive.getContainingFile();
                 if (containingFile != null) {
-                    if (CsmSelect.getDefault().hasDeclarations(containingFile)) {
-                        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(offset);
-                        Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDefault().getDeclarations(containingFile, filter);
+                    if (CsmSelect.hasDeclarations(containingFile)) {
+                        CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(offset);
+                        Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(containingFile, filter);
                         if (declarations.hasNext()) {
                             return true;
                         }

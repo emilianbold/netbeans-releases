@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
@@ -67,7 +66,7 @@ public class KeyUtilities {
     ////////////////////////////////////////////////////////////////////////////
     // key generators
     public static Key createFileKey(FileImpl file) {
-        return new FileKey(file);
+        return KeyManager.instance().getSharedUID(new FileKey(file));
     }
 
     public static Key createNamespaceKey(CsmNamespace ns) {
@@ -79,8 +78,7 @@ public class KeyUtilities {
     }
 
     public static Key createProjectKey(String projectQualifiedName) {
-        Key out = new ProjectKey(projectQualifiedName);
-        return out;
+        return new ProjectKey(projectQualifiedName);
     }
 
     public static Key createProjectKey(NativeProject nativeProject) {
@@ -104,7 +102,7 @@ public class KeyUtilities {
 
     public static Key createIncludeKey(CsmInclude incl) {
         assert incl != null;
-        return new IncludeKey(incl);
+        return KeyManager.instance().getSharedUID(new IncludeKey(incl));
     }
 
     public static <T extends CsmParameterList, K extends CsmNamedElement> Key createParamListKey(CsmParameterList<T, K> paramList) {
