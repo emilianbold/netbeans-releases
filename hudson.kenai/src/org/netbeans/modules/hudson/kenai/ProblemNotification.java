@@ -62,7 +62,7 @@ class ProblemNotification implements ActionListener {
     private final HudsonJob job;
     private final boolean failed;
     private final boolean running;
-    private Notification thisN;
+    private Notification notification;
 
     ProblemNotification(HudsonJob job, boolean failed, boolean running) {
         this.job = job;
@@ -70,7 +70,7 @@ class ProblemNotification implements ActionListener {
         this.running = running;
     }
 
-    public String getTitle() {
+    private String getTitle() {
         try {
             return XMLUtil.toElementContent(job.getDisplayName()) + (failed ? " <em>failed</em>" : " is <em>unstable</em>"); // XXX I18N
         } catch (CharConversionException ex) {
@@ -79,16 +79,12 @@ class ProblemNotification implements ActionListener {
         }
     }
 
-    public String getDescription() {
+    private String getDescription() {
         // XXX should perhaps summarize last lines of failed build, or list some failed tests...
         return failed ? "The build failed." : "Some tests failed."; // XXX I18N
     }
 
-    public String getLinkTitle() {
-        return "Show Job"; // XXX I18N
-    }
-
-    public void showDetails() {
+    public void actionPerformed(ActionEvent e) {
         // XXX could also show console, show test failures, etc.
         try {
             URLDisplayer.getDefault().showURL(new URL(job.getUrl()));
@@ -97,26 +93,22 @@ class ProblemNotification implements ActionListener {
         }
     }
 
-    public Priority getPriority() {
+    private Priority getPriority() {
         return failed ? Priority.HIGH : Priority.NORMAL;
     }
 
-    public Icon getIcon() {
+    private Icon getIcon() {
         return ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/" + // NOI18N
                 (failed ? "red" : "yellow") + (running ? "_run" : "") + ".png", true); // NOI18N
     }
 
-    public void actionPerformed(ActionEvent e) {
-        showDetails();
-    }
-
     void add() {
-        thisN = NotificationDisplayer.getDefault().notify(getTitle(), getIcon(), getDescription(), this, getPriority());
+        notification = NotificationDisplayer.getDefault().notify(getTitle(), getIcon(), getDescription(), this, getPriority());
     }
 
     void remove() {
-        if (thisN!=null) {
-            thisN.clear();
+        if (notification != null) {
+            notification.clear();
         }
     }
 }
