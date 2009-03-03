@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author mkuchtiak
  */
-public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
+public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
     private Project prj;
     private List<JaxWsService> services = new LinkedList<JaxWsService>();
     /** Path for catalog file. */
@@ -81,7 +81,7 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
      *
      * @param prj project
      */
-    MavenJAXWSSupportIml(Project prj) {
+    MavenJAXWSSupportImpl(Project prj) {
         this.prj = prj;
     }
 
@@ -104,14 +104,14 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
                 try {
                     WSUtils.addServiceEntriesToDD(prj, service);
                 } catch (IOException ex) {
-                    Logger.getLogger(MavenJAXWSSupportIml.class.getName()).log(Level.WARNING,
+                    Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.WARNING,
                             "Cannot add service elements to web.xml file", ex); //NOI18N
                 }
                 // modify sun-jaxws.xml file
                 try {
                     addSunJaxWsEntries(service);
                 } catch (IOException ex) {
-                    Logger.getLogger(MavenJAXWSSupportIml.class.getName()).log(Level.WARNING,
+                    Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.WARNING,
                             "Cannot modify sun-jaxws.xml file", ex); //NOI18N
                 }
             }
@@ -125,7 +125,7 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
         if (ddFolder != null) {
             WSUtils.addSunJaxWsEntries(ddFolder, service);
         } else{
-            String mes = NbBundle.getMessage(MavenJAXWSSupportIml.class, "MSG_CannotFindWEB-INF"); // NOI18N
+            String mes = NbBundle.getMessage(MavenJAXWSSupportImpl.class, "MSG_CannotFindWEB-INF"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
         }
@@ -157,7 +157,7 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
             try {
                 WSUtils.removeServiceEntriesFromDD(prj, service);
             } catch (IOException ex) {
-                Logger.getLogger(MavenJAXWSSupportIml.class.getName()).log(Level.WARNING,
+                Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.WARNING,
                         "Cannot remove services from web.xml", ex); //NOI18N
             }
 
@@ -165,7 +165,7 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
             try {
                 removeSunJaxWsEntries(service);
             } catch (IOException ex) {
-                Logger.getLogger(MavenJAXWSSupportIml.class.getName()).log(Level.WARNING,
+                Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.WARNING,
                         "Cannot modify sun-jaxws.xml file", ex); //NOI18N
                 }
         }
@@ -177,7 +177,7 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
         if (ddFolder != null) {
             WSUtils.removeSunJaxWsEntries(ddFolder, service);
         } else{
-            String mes = NbBundle.getMessage(MavenJAXWSSupportIml.class, "MSG_CannotFindWEB-INF"); // NOI18N
+            String mes = NbBundle.getMessage(MavenJAXWSSupportImpl.class, "MSG_CannotFindWEB-INF"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
         }
