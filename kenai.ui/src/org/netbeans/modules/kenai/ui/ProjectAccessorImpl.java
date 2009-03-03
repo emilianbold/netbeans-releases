@@ -49,7 +49,6 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiProjectFeature;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.LoginHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
