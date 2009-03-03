@@ -176,6 +176,17 @@ public class Bugzilla {
     }
 
     /**
+     * Returns all open statuses defined in the given repository.
+     * @param repository
+     * @return all open statuses defined in the given repository.
+     * @throws java.io.IOException
+     * @throws org.eclipse.core.runtime.CoreException
+     */
+    public List<String> getOpenStatusValues(BugzillaRepository repository) throws IOException, CoreException {
+        return getRepositoryConfiguration(repository).getOpenStatusValues();
+    }
+
+    /**
      * Returns all priorities defined in the given repository
      * @param repository
      * @return
