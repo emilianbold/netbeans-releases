@@ -60,19 +60,22 @@ import org.openide.xml.XMLUtil;
 class ProblemNotification implements ActionListener {
 
     private final HudsonJob job;
+    private final int build;
     private final boolean failed;
     private final boolean running;
     private Notification notification;
 
-    ProblemNotification(HudsonJob job, boolean failed, boolean running) {
+    ProblemNotification(HudsonJob job, int build, boolean failed, boolean running) {
         this.job = job;
+        this.build = build;
         this.failed = failed;
         this.running = running;
     }
 
     private String getTitle() {
         try {
-            return XMLUtil.toElementContent(job.getDisplayName()) + (failed ? " <em>failed</em>" : " is <em>unstable</em>"); // XXX I18N
+            return XMLUtil.toElementContent(job.getDisplayName()) + " #" + build +
+                    (failed ? " <em>failed</em>" : " is <em>unstable</em>"); // XXX I18N
         } catch (CharConversionException ex) {
             Exceptions.printStackTrace(ex);
             return "";
@@ -109,6 +112,24 @@ class ProblemNotification implements ActionListener {
     void remove() {
         if (notification != null) {
             notification.clear();
+            notification = null;
         }
     }
+
+    public @Override boolean equals(Object obj) {
+        if (!(obj instanceof ProblemNotification)) {
+            return false;
+        }
+        ProblemNotification other = (ProblemNotification) obj;
+        return job.getName().equals(other.job.getName()) && build == other.build;
+    }
+
+    public @Override int hashCode() {
+        return job.getName().hashCode() ^ build;
+    }
+
+    public @Override String toString() {
+        return "ProblemNotification[" + job.getName() + "#" + build + "]";
+    }
+
 }

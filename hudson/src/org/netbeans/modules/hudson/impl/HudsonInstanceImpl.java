@@ -404,6 +404,10 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         return getUrl() == null ? 445 : getUrl().hashCode();
     }
 
+    public @Override String toString() {
+        return "HudsonInstanceImpl[" + getUrl() + "]"; // NOI18N
+    }
+
     public int compareTo(HudsonInstance o) {
         return getName().compareTo(o.getName());
     }

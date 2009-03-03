@@ -211,7 +211,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         return instance.getRemoteWorkspace(this);
     }
     
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (!(o instanceof HudsonJobImpl))
             return false;
         
@@ -236,8 +236,15 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         if (this.getViews() != j.getViews() &&
                 (this.getViews() == null || !this.getViews().equals(j.getViews())))
             return false;
+        if (getLastCompletedBuild() != j.getLastCompletedBuild()) {
+            return false;
+        }
         
         return true;
+    }
+
+    public @Override int hashCode() {
+        return getName().hashCode();
     }
     
     public int compareTo(HudsonJob o) {

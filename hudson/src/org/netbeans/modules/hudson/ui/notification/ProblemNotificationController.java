@@ -39,56 +39,57 @@
 package org.netbeans.modules.hudson.ui.notification;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJob.Color;
 
 public class ProblemNotificationController {
 
+    private static final Logger LOG = Logger.getLogger(ProblemNotificationController.class.getName());
+
     private final HudsonInstance instance;
-    private final Collection<ProblemNotification> notifications = new LinkedList<ProblemNotification>();
+    private final Set<ProblemNotification> notifications = new HashSet<ProblemNotification>();
 
     public ProblemNotificationController(HudsonInstance instance) {
         this.instance = instance;
     }
 
     public synchronized void updateNotifications() {
-        // XXX should keep track of which build a notification is for.
-        // Otherwise when the user clears a notification we might readd it.
-        clear();
+        LOG.log(Level.FINE, "Updating notifications for {0}", instance);
         Collection<HudsonJob> jobs = instance.getPreferredJobs();
         if (jobs.isEmpty()) {
             jobs = instance.getJobs();
         }
         for (HudsonJob job : jobs) {
             ProblemNotification n;
-            switch (job.getColor()) {
+            int build = job.getLastCompletedBuild();
+            Color color = job.getColor();
+            LOG.log(Level.FINER, "{0} has status {1}", new Object[] {job, color});
+            switch (color) {
             case red:
                 // XXX should check if the user is among the culprits (need API)
-                n = new ProblemNotification(job, true, false);
+                n = new ProblemNotification(job, build, true, false);
                 break;
             case red_anime:
-                n = new ProblemNotification(job, true, true);
+                n = new ProblemNotification(job, build, true, true);
                 break;
             case yellow:
-                n = new ProblemNotification(job, false, false);
+                n = new ProblemNotification(job, build, false, false);
                 break;
             case yellow_anime:
-                n = new ProblemNotification(job, false, true);
+                n = new ProblemNotification(job, build, false, true);
                 break;
             default:
                 n = null;
             }
-            if (n != null) {
-                notifications.add(n);
+            if (n != null && notifications.add(n)) {
+                LOG.log(Level.FINE, "Adding {0}", n);
                 n.add();
             }
-        }
-    }
-
-    private void clear() {
-        for (ProblemNotification n : notifications) {
-            n.remove();
         }
     }
 
