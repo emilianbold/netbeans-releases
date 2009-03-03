@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyManager;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -649,6 +650,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         ProjectNameCache.getManager().dispose();
         APTDriver.getInstance().close();
         UIDManager.instance().dispose();
+        KeyManager.instance().dispose();
         APTIncludeUtils.clearFileExistenceCache();
         APTSystemStorage.getDefault().dispose();
     }

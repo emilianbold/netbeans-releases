@@ -138,7 +138,7 @@ public final class Utils {
                 fo = module.getContentDirectory();
                 moduleID = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fo)).getName();
             } catch (IOException ex) {
-                Logger.getLogger("glassfish.eecommon").log(Level.FINER, null, ex);
+                Logger.getLogger("glassfish-eecommon").log(Level.FINER, null, ex);
             }
         }
         if (null == moduleID || moduleID.trim().length() < 1) {

@@ -83,6 +83,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
   private final List<Indicator> indicators;
   private ValidationStatus validationStatus = ValidationStatus.initialStatus();
   private final List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
+  private boolean collectorsTurnedOn = true;
   //register accessor which will be used ne friend packages of API/SPI accessor packages
   //to get access to tool creation, etc.
   
@@ -168,6 +169,14 @@ public final class DLightTool implements Validateable<DLightTarget> {
    */
   public final void disable() {
     enabled = false;
+  }
+
+  public void turnCollectorsState(boolean turnedOn){
+      collectorsTurnedOn = turnedOn;
+  }
+
+  public boolean collectorsTurnedOn(){
+    return collectorsTurnedOn;
   }
 
   public ValidationStatus getValidationStatus() {

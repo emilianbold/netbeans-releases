@@ -149,7 +149,7 @@ public abstract class GlassfishConfiguration implements
                     try {
                         createDefaultSunDD(primarySunDD);
                     } catch (IOException ex) {
-                        Logger.getLogger("glassfish.eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
                         String defaultMessage = " trying to create " + primarySunDD.getPath(); // Requires I18N
                         displayError(ex, defaultMessage);
                     }
@@ -174,7 +174,7 @@ public abstract class GlassfishConfiguration implements
                 addDescriptorListener(getWebServicesRootDD());
             }
         } catch (RuntimeException ex) {
-            Logger.getLogger("glassfish.eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+            Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
         }
 
     }
@@ -214,7 +214,7 @@ public abstract class GlassfishConfiguration implements
         ASDDVersion result = getTargetAppServerVersion();
         if (result == null) {
             result = ASDDVersion.SUN_APPSERVER_9_0;
-            Logger.getLogger("glassfish.eecommon").log(Level.WARNING, NbBundle.getMessage(
+            Logger.getLogger("glassfish-eecommon").log(Level.WARNING, NbBundle.getMessage(
                     GlassfishConfiguration.class, "ERR_UnidentifiedTargetServer", result.toString())); // NOI18N
         }
         return result;
@@ -317,10 +317,10 @@ public abstract class GlassfishConfiguration implements
                     }
                 } catch (IndexOutOfBoundsException ex) {
                     // Can't identify server install folder.
-                    Logger.getLogger("glassfish.eecommon").log(Level.WARNING, NbBundle.getMessage(
+                    Logger.getLogger("glassfish-eecommon").log(Level.WARNING, NbBundle.getMessage(
                             GlassfishConfiguration.class, "ERR_NoServerInstallLocation", instance)); // NOI18N
                 } catch (NullPointerException ex) {
-                    Logger.getLogger("glassfish.eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                    Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
             }
         } else if ("SUNWebserver7".equals(serverType)) {
@@ -1352,7 +1352,7 @@ public abstract class GlassfishConfiguration implements
         // writing the changed descriptor to disk.
         // !PW FIXME notify user
         // RR = could do handleEventRelatedException(ex) instead
-        Logger.getLogger("glassfish.eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+        Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
     }
 
     protected void handleEventRelatedException(Exception ex) {
@@ -1360,7 +1360,7 @@ public abstract class GlassfishConfiguration implements
         // must trap it here so it doesn't cause trouble upstream.
         // We handle it the same as above for now.
         // !PW FIXME should we notify here, or just log?
-        Logger.getLogger("glassfish.eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+        Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
     }
 
     // ------------------------------------------------------------------------

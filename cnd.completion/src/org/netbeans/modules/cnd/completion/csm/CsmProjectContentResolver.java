@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -529,7 +530,7 @@ public final class CsmProjectContentResolver {
         }
         CsmFilter filter = CsmContextUtilities.createFilter(kinds,
                 strPrefix, match, caseSensitive, fromUnnamedNamespace || needDeclFromUnnamedNS);
-        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(file, filter);
+        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(file, filter);
         while (it.hasNext()) {
             CsmOffsetableDeclaration decl = it.next();
             if (CsmKindUtilities.isFunction(decl)) {
@@ -564,7 +565,7 @@ public final class CsmProjectContentResolver {
         }
         CsmFilter filter = CsmContextUtilities.createFilter(kinds,
                 strPrefix, match, caseSensitive, fromUnnamedNamespace || needDeclFromUnnamedNS);
-        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(ns, filter);
+        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(ns, filter);
         while (it.hasNext()) {
             CsmOffsetableDeclaration decl = it.next();
             if (CsmKindUtilities.isFunction(decl)) {
@@ -599,14 +600,14 @@ public final class CsmProjectContentResolver {
         }
         CsmFilter filter = CsmContextUtilities.createFilter(kinds,
                 strPrefix, match, caseSensitive, true);
-        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(file, filter);
+        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(file, filter);
         fillFileLocalVariables(strPrefix, match, it, needDeclFromUnnamedNS, fromUnnamedNamespace, out);
     }
 
     @SuppressWarnings("unchecked")
     private void fillUnionVariables(String strPrefix, boolean match, CsmClass union, Collection<CsmVariable> out) {
-        Iterator<CsmMember> i = CsmSelect.getDefault().getClassMembers(union,
-                CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix,
+        Iterator<CsmMember> i = CsmSelect.getClassMembers(union,
+                CsmSelect.getFilterBuilder().createNameFilter(strPrefix,
                 match, caseSensitive, true));
         Collection filtered = CsmSortUtilities.filterList(i, strPrefix, match, caseSensitive);
         out.addAll(filtered);
@@ -628,7 +629,7 @@ public final class CsmProjectContentResolver {
         }
         CsmFilter filter = CsmContextUtilities.createFilter(kinds,
                 strPrefix, match, caseSensitive, true);
-        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(ns, filter);
+        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(ns, filter);
         fillFileLocalVariables(strPrefix, match, it, needDeclFromUnnamedNS, fromUnnamedNamespace, out);
     }
 
@@ -688,7 +689,7 @@ public final class CsmProjectContentResolver {
             }
         }
         if (!first) {
-            Iterator<CsmVariable> it = CsmSelect.getDefault().getStaticVariables(file, filter);
+            Iterator<CsmVariable> it = CsmSelect.getStaticVariables(file, filter);
             while (it.hasNext()) {
                 CsmOffsetableDeclaration decl = it.next();
                 if (CsmKindUtilities.isFileLocalVariable(decl)) {
@@ -729,9 +730,9 @@ public final class CsmProjectContentResolver {
 
     private void getFileLocalIncludeNamespaceMembers(CsmNamespace ns, CsmFile file,
             Collection<CsmScopeElement> out) {
-        CsmFilterBuilder builder = CsmSelect.getDefault().getFilterBuilder();
+        CsmFilterBuilder builder = CsmSelect.getFilterBuilder();
         CsmFilter filter = builder.createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION);
-        for (Iterator<CsmOffsetableDeclaration> itFile = CsmSelect.getDefault().getDeclarations(file, filter); itFile.hasNext();) {
+        for (Iterator<CsmOffsetableDeclaration> itFile = CsmSelect.getDeclarations(file, filter); itFile.hasNext();) {
             CsmOffsetableDeclaration decl = itFile.next();
             if (CsmKindUtilities.isNamespaceDefinition(decl)) {
                 CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) decl;
@@ -1053,7 +1054,7 @@ public final class CsmProjectContentResolver {
         minVisibility = visibilityInfo.visibility;
         inheritanceLevel = visibilityInfo.inheritanceLevel;
         boolean friend = visibilityInfo.friend;
-        Map<CharSequence, CsmMember> res = new HashMap<CharSequence, CsmMember>();
+        Map<CharSequence, CsmMember> res = new LinkedHashMap<CharSequence, CsmMember>(); // order is important
         CsmFilter memberFilter = CsmContextUtilities.createFilter(kinds,
                 strPrefix, match, caseSensitive, returnUnnamedMembers);
         Collection<CsmClass> classesAskedForMembers = new ArrayList(1);
@@ -1067,7 +1068,7 @@ public final class CsmProjectContentResolver {
         }
         for (CsmClass csmClass : classesAskedForMembers) {
             handledClasses.add(csmClass);
-            Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(csmClass, memberFilter);
+            Iterator<CsmMember> it = CsmSelect.getClassMembers(csmClass, memberFilter);
             int unnamedEnumCount = 0;
             while (it.hasNext()) {
                 CsmMember member = it.next();
@@ -1101,7 +1102,7 @@ public final class CsmProjectContentResolver {
                 CsmDeclaration.Kind.STRUCT,
                 CsmDeclaration.Kind.CLASS,};
             CsmFilter nestedClassifierFilter = CsmContextUtilities.createFilter(memberKinds, "*", true, false, true); // NOI18N
-            it = CsmSelect.getDefault().getClassMembers(csmClass, nestedClassifierFilter);
+            it = CsmSelect.getClassMembers(csmClass, nestedClassifierFilter);
             while (it.hasNext()) {
                 CsmMember member = it.next();
                 if (isKindOf(member.getKind(), memberKinds) &&
@@ -1131,10 +1132,13 @@ public final class CsmProjectContentResolver {
 
                         Map<CharSequence, CsmMember> baseRes = getClassMembers(baseClass, contextDeclaration, kinds, strPrefix, staticOnly, match,
                                 handledClasses, nextMinVisibility, nextInheritanceLevel, inspectParentClasses, returnUnnamedMembers);
-                        // replace by own elements in inherited set
-                        if (baseRes != null && baseRes.size() > 0) {
-                            baseRes.putAll(res);
-                            res = baseRes;
+                        if (baseRes != null && !baseRes.isEmpty()) {
+                            // add parent members at the end
+                            for (Map.Entry<CharSequence, CsmMember> entry : baseRes.entrySet()) {
+                                if (!res.containsKey(entry.getKey())) {
+                                    res.put(entry.getKey(), entry.getValue());
+                                }
+                            }
                         }
                     }
                 }
@@ -1206,7 +1210,7 @@ public final class CsmProjectContentResolver {
         //it = ns.getDeclarations().iterator();
         //filterDeclarations(it, res, kinds, strPrefix, match, returnUnnamedMembers);
         filterDeclarations(ns, res, kinds, strPrefix, match, returnUnnamedMembers);
-        if (!ns.getProject().isArtificial() && !ns.isGlobal()) {
+        if (!ns.isGlobal()) {
             for (CsmProject lib : ns.getProject().getLibraries()) {
                 CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
                 if (n != null && !handledNS.contains(n)) {
@@ -1235,7 +1239,7 @@ public final class CsmProjectContentResolver {
     @SuppressWarnings("unchecked")
     /*package*/ void filterDeclarations(final CsmNamespace ns, final Collection out, final CsmDeclaration.Kind[] kinds, final String strPrefix, final boolean match, final boolean returnUnnamedMembers) {
         CsmFilter filter = CsmContextUtilities.createFilter(kinds, strPrefix, match, caseSensitive, returnUnnamedMembers);
-        Iterator it = CsmSelect.getDefault().getDeclarations(ns, filter);
+        Iterator it = CsmSelect.getDeclarations(ns, filter);
         while (it.hasNext()) {
             CsmDeclaration decl = (CsmDeclaration) it.next();
             if (isKindOf(decl.getKind(), kinds)) {

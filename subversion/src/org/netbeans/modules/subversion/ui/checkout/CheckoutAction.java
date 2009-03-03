@@ -120,7 +120,7 @@ public final class CheckoutAction extends CallableSystemAction {
                             }
                         }
                     }                    
-                    CheckoutCompleted cc = new CheckoutCompleted(file, folders, true);
+                    CheckoutCompleted cc = new CheckoutCompleted(file, folders);
                     if(isCanceled()) {
                         return;
                     }

@@ -239,7 +239,7 @@ public final class FileReferencesContext {
             }
         }
         if (!first) {
-            Iterator<CsmVariable> it = CsmSelect.getDefault().getStaticVariables(file, filter);
+            Iterator<CsmVariable> it = CsmSelect.getStaticVariables(file, filter);
             while(it.hasNext()) {
                 CsmOffsetableDeclaration decl = it.next();
                  if (CsmKindUtilities.isFileLocalVariable(decl)) {

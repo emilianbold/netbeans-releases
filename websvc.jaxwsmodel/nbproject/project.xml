@@ -261,6 +261,8 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.websvc.api.jaxws.project</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.project.config</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.wsdlmodel</package>
+                <package>org.netbeans.modules.websvc.api.wseditor</package>
+                <package>org.netbeans.modules.websvc.spi.wseditor</package>
             </friend-packages>
         </data>
     </configuration>

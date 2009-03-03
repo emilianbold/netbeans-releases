@@ -168,7 +168,7 @@ public final class DataTableMetadata {
     /**
      * Column description 
      */
-    public static class Column {
+    public static final class Column {
 
         String name;
         Class columnClass;

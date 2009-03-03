@@ -692,7 +692,7 @@ public class LayerUtils {
         }
         return platform;
     }
-    
+    // TODO C.P +cluster.path
     public static Set<File> getPlatformJarsForSuiteComponentProject(Project project, SuiteProject suite) {
         NbPlatform platform = suite.getPlatform(true);
         PropertyEvaluator eval = suite.getEvaluator();

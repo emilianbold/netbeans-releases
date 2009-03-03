@@ -157,7 +157,10 @@ public class IgnoreAction extends ContextAction {
                             // #108369 - added files cannot be ignored
                             FileInformation s = cache.getStatus(file);
                             if (s.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
-                                client.revert(file, true); // revert the tree to NEWLOCALLY
+                                ISVNInfo info = client.getInfo(file);
+                                if (info == null || !info.isCopied()) { // do not revert copied files
+                                    client.revert(file, true); // revert the tree to NEWLOCALLY
+                                }
                             }
                         }
                     } catch (SVNClientException ex) {

@@ -81,11 +81,7 @@ public class UpdateContextRoot implements ProgressListener {
                     Future<OperationState> result = 
                             ((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
                     try {
-                        //result.get()
                         if (result.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {
-                            long end = System.nanoTime();
-                            //String installRoot = getGlassfishRoot();
-                            //String targetInstallRoot = gpc.propertyValue();
                             Map<String, String> retVal = gpc.getData();
                             if (retVal.size() == 1) {
                                 returnProgress.operationStateChanged(OperationState.COMPLETED, "updated the moduleid");

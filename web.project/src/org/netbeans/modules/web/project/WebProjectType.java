@@ -43,16 +43,13 @@ package org.netbeans.modules.web.project;
 
 import java.io.IOException;
 import java.util.Collection;
-import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.project.spi.WebProjectImplementationFactory;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType2;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
-public final class WebProjectType implements AntBasedProjectType2 {
+public final class WebProjectType {
 
     public static final String TYPE = "org.netbeans.modules.web.project";
     private static final String PROJECT_CONFIGURATION_NAME = "data";
@@ -66,13 +63,17 @@ public final class WebProjectType implements AntBasedProjectType2 {
             "http://www.netbeans.org/ns/web-project/3"};
 
     /** Do nothing, just a service. */
-    public WebProjectType() {}
+    private WebProjectType() {}
     
-    public String getType() {
-        return TYPE;
-    }
-    
-    public Project createProject(AntProjectHelper helper) throws IOException {
+    @AntBasedProjectRegistration(
+        iconResource="org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif", // NOI18N
+        type=TYPE,
+        sharedName=PROJECT_CONFIGURATION_NAME,
+        sharedNamespace=PROJECT_CONFIGURATION_NAMESPACE,
+        privateName=PRIVATE_CONFIGURATION_NAME,
+        privateNamespace=PRIVATE_CONFIGURATION_NAMESPACE
+    )
+    public static Project createProject(AntProjectHelper helper) throws IOException {
         for(WebProjectImplementationFactory factory : getProjectFactories()) {
             if (factory.acceptProject(helper)) {
                 //delegate project completely to another implementation
@@ -82,19 +83,7 @@ public final class WebProjectType implements AntBasedProjectType2 {
         return new WebProject(helper);
     }
 
-    public String getPrimaryConfigurationDataElementName(boolean shared) {
-        return shared ? PROJECT_CONFIGURATION_NAME : PRIVATE_CONFIGURATION_NAME;
-    }
-    
-    public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
-        return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
-    }
-
-    private Collection<? extends WebProjectImplementationFactory> getProjectFactories() {
+    private static Collection<? extends WebProjectImplementationFactory> getProjectFactories() {
         return Lookup.getDefault().lookupAll(WebProjectImplementationFactory.class);
-    }
-
-    public Icon getIcon() {
-        return ImageUtilities.loadImageIcon("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif", true);
     }
 }

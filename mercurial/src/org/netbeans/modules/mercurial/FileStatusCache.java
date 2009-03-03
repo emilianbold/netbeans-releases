@@ -377,7 +377,6 @@ public class FileStatusCache {
         } else {
             newFiles.put(file, fi);
         }
-        assert newFiles.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
         
         if (file.isDirectory() && needRecursiveRefresh(fi, current)) {

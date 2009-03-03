@@ -44,6 +44,7 @@ import javax.swing.JFileChooser;
 import org.netbeans.modules.glassfish.common.Util;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.JrePicker;
+import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -54,7 +55,8 @@ public class VmCustomizer extends javax.swing.JPanel  {
     public VmCustomizer(GlassfishModule commonSupport) {
         gm = commonSupport;
         initComponents();
-        picker = Lookup.getDefault().lookup(JrePicker.class);
+        // hook for future customization
+        //picker = org.openide.util.Lookup.getDefault().lookup(JrePicker.class);
         // put the picker component into the pickerPanel
         // left as an exercise for the reader at this point...
     }
@@ -62,6 +64,10 @@ public class VmCustomizer extends javax.swing.JPanel  {
     private void initFields() {
         if (null == picker) {
             javaExecutableField.setText(gm.getInstanceProperties().get(GlassfishModule.JAVA_PLATFORM_ATTR));
+        } else {
+            throw new UnsupportedOperationException("not implemented yet");
+            // if there is a picker
+            // picker.initFromJava(gm.getInstanceProperties().get(GlassfishModule.JAVA_PLATFORM_ATTR));
         }
         if (!"/".equals(File.separator)) {
             useSharedMemRB.setSelected("true".equals(gm.getInstanceProperties().get(GlassfishModule.USE_SHARED_MEM_ATTR)));
@@ -77,6 +83,21 @@ public class VmCustomizer extends javax.swing.JPanel  {
     private void persistFields() {
         if (null == picker) {
             gm.setEnvironmentProperty(GlassfishModule.JAVA_PLATFORM_ATTR, javaExecutableField.getText().toLowerCase(), true);
+            RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
+            if (null != db) {
+                File f = new File(javaExecutableField.getText().trim());
+                if (f.exists() && f.canRead()) {
+                    File dir = f.getParentFile().getParentFile();
+                    File dbdir = new File(dir,"db"); // NOI18N
+                    if (dbdir.exists() && dbdir.isDirectory() && dbdir.canRead()) {
+                        db.initialize(dbdir.getAbsolutePath());
+                    }
+                }
+            }
+        } else {
+            throw new UnsupportedOperationException("not implemented yet");
+            // get data out of the picker
+            //gm.setEnvironmentProperty(GlassfishModule.JAVA_PLATFORM_ATTR, picker.getJava(), true);
         }
         gm.setEnvironmentProperty(GlassfishModule.USE_SHARED_MEM_ATTR, Boolean.toString(useSharedMemRB.isSelected()),true);
     }
@@ -202,17 +223,6 @@ public class VmCustomizer extends javax.swing.JPanel  {
         f.setFileSelectionMode(JFileChooser.FILES_ONLY);
         f.setMultiSelectionEnabled(false);
         final String TESTNAME = File.separatorChar == '/' ? "java" : "java.exe";
-//        final String TESTNAME2 = File.separatorChar == '/' ? "jrunscript" : "jrunscript.exe";
-//        final FilenameFilter jdk6Files = new FilenameFilter() {
-//
-//            public boolean accept(File arg0, String arg1) {
-//                if (arg1.equalsIgnoreCase(TESTNAME2)) {
-//                    return true;
-//                }
-//                return false;
-//            }
-//
-//        };
         f.setFileFilter(new javax.swing.filechooser.FileFilter() {
 
             public boolean accept(File arg0) {

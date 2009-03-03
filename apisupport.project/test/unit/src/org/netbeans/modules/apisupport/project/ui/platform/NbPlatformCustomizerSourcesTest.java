@@ -70,7 +70,7 @@ public class NbPlatformCustomizerSourcesTest extends TestBase {
             public void run() {
                 sourcesPane = new NbPlatformCustomizerSources();
                 sourcesPaneWR = new WeakReference<Object>(sourcesPane);
-                sourcesPane.setPlatform(NbPlatform.getDefaultPlatform());
+                sourcesPane.setSourceRootsProvider(NbPlatform.getDefaultPlatform());
                 
                 // workaround for inability to GC JFrame/JDialog itself
                 outerPane = new JPanel();

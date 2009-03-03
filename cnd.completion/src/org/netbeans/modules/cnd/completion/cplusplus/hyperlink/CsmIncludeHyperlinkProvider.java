@@ -203,8 +203,8 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             target = ReferencesSupport.findInclude(csmFile, offset);
         }
         CharSequence tooltip = target == null ? null : CsmDisplayUtilities.getTooltipText(target);
-        if (tooltip != null) {
-            StringBuilder buf = new StringBuilder(tooltip);
+        if (tooltip != null || TRACE_INCLUDES) {
+            StringBuilder buf = new StringBuilder(tooltip == null ? "" : tooltip);
             CsmFile includeFile = target.getIncludeFile();
             List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(csmFile);
             if (includeFile == null || TRACE_INCLUDES) {

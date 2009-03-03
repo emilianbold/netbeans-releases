@@ -807,6 +807,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                                         final ModuleList ml) {
         Set<String> unprocessed = new HashSet<String>();
 
+        final String codeNameBase = project.getCodeNameBase();
         unprocessed.add(td.getModule().getCodeNameBase()); 
         while (!unprocessed.isEmpty()) { // crude breadth-first search
             Iterator<String> it = unprocessed.iterator();
@@ -818,7 +819,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + FileUtil.getFileDisplayName(project.getProjectDirectory()));
                 continue;
             }
-            if (!cnb.equals(project.getCodeNameBase())) { // build/classes for this is special
+            if (!cnb.equals(codeNameBase)) { // build/classes for this is special
                 clb.callback(td, cnb);
             }
             String[] newDeps = module.getRunDependencies();

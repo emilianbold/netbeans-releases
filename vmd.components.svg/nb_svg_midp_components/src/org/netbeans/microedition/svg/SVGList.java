@@ -302,7 +302,7 @@ public class SVGList extends SVGComponent implements DataListener {
                 topIndex = 0;
             }
             if ( topIndex >= getModel().getSize() - myCount ){
-                topIndex = getModel().getSize() - myCount -1;
+                topIndex = getModel().getSize() - myCount ;
             }
             if ( topIndex == myTopIndex ){
                 return;
@@ -643,7 +643,14 @@ public class SVGList extends SVGComponent implements DataListener {
                     
                     if ( rect.contains(event.getX(), event.getY())){
                         myPressedIndex  = i;
-                        myPressedY = event.getY();
+                        if ( selection.getHeight() == 0 ){
+                            // horizontal layout
+                            myPressedY = event.getY();
+                        }
+                        else {
+                            // vertical layout
+                            myPressedY = event.getX();
+                        }
                         myPressedComponent = component;
                         break;
                     }
@@ -680,7 +687,14 @@ public class SVGList extends SVGComponent implements DataListener {
                         renderList();
                     }
                     else {
-                        int count = (int)(( event.getY()-myPressedY)/rect.getHeight());
+                        int count;
+                        if ( mySelection.getScreenBBox().getHeight() == 0 ){
+                            count = (int)(( event.getY()-myPressedY)/rect.getHeight());
+                        }
+                        else {
+                            // vertical layout
+                            count = (int)(( event.getX()-myPressedY)/rect.getWidth());
+                        }
                         renderList( count);
                     }
                 }

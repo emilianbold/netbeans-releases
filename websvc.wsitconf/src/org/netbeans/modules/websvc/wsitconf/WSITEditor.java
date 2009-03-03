@@ -75,7 +75,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
 import org.netbeans.modules.websvc.wsitconf.ui.service.BindingPanel;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -91,20 +91,22 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class WSITEditor implements WSEditor, UndoManagerHolder {
 
     private static final Logger logger = Logger.getLogger(WSITEditor.class.getName());
-    
+    private JaxWsModel jaxWsModel;
     private UndoManager undoManager;
     private Collection<FileObject> createdFiles = new LinkedList<FileObject>();
             
     /**
      * Creates a new instance of WSITEditor
      */
-    public WSITEditor() { }
+    public WSITEditor(JaxWsModel jaxWsModel) {
+        this.jaxWsModel = jaxWsModel;
+    }
 
     public String getTitle() {
         return NbBundle.getMessage(WSITEditor.class, "EDITOR_TITLE"); //NOI18N
     }
 
-    public JComponent createWSEditorComponent(Node node, JaxWsModel jaxWsModel) {
+    public JComponent createWSEditorComponent(Node node) {
 
         WSDLModel clientWsdlModel;
         WSDLModel wsdlModel;
@@ -198,7 +200,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         return new ErrorTopComponent(NbBundle.getMessage(WSITEditor.class, "TXT_WSIT_NotSupported"));
     }
 
-    public void save(Node node, JaxWsModel jaxWsModel) {
+    public void save(Node node) {
         if (node == null) return;
         try {
             WSDLModel model = WSITModelSupport.getModel(node, jaxWsModel, this, false, createdFiles);
@@ -210,7 +212,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         }
     }
 
-    public void cancel(Node node, JaxWsModel jaxWsModel) {
+    public void cancel(Node node) {
         if (node == null) return;
         WSDLModel model = null;
         
