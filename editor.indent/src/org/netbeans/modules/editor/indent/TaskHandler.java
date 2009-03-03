@@ -67,6 +67,7 @@ import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Indentation and code reformatting services for a swing text document.
@@ -97,11 +98,17 @@ public final class TaskHandler {
     private Position caretPos;
     
     private final Set<Object> existingFactories = new HashSet<Object>();
+
+    private Lookup lookup = null;
     
 
     TaskHandler(boolean indent, Document doc) {
         this.indent = indent;
         this.doc = doc;
+    }
+
+    public Lookup getLookup() {
+        return lookup;
     }
 
     public boolean isIndent() {
@@ -209,6 +216,23 @@ public final class TaskHandler {
             }
 
             items = newItems;
+        }
+
+        if (items != null) {
+            List<Lookup> lookups = new ArrayList<Lookup>();
+            for (MimeItem mi : items) {
+                Lookup l = mi.getLookup();
+                if (l != null) {
+                    lookups.add(l);
+                }
+            }
+            if (lookups.size() > 0) {
+                lookup = new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
+            }
+        }
+
+        if (lookup == null) {
+            lookup = Lookup.EMPTY;
         }
 
         if (LOG.isLoggable(Level.FINE)) {
@@ -513,6 +537,16 @@ public final class TaskHandler {
         
         public @Override String toString() {
             return mimePath + ": " + ((indentTask != null) ? "IT: " + indentTask : "RT: " + reformatTask); //NOI18N
+        }
+
+        private Lookup getLookup() {
+            if (indentTask != null && indentTask instanceof Lookup.Provider) {
+                return ((Lookup.Provider)indentTask).getLookup();
+            } else if (reformatTask != null && reformatTask instanceof Lookup.Provider) {
+                return ((Lookup.Provider)reformatTask).getLookup();
+            } else {
+                return null;
+            }
         }
     }
     
