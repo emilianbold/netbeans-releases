@@ -59,14 +59,14 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Krauskopf
  */
-final class NbPlatformCustomizerJavadoc extends JPanel {
+public final class NbPlatformCustomizerJavadoc extends JPanel {
     
     private NbPlatform plaf;
     private PlatformComponentFactory.NbPlatformJavadocRootsModel model;
     private final ListListener listListener;
     
     /** Creates new form NbPlatformCustomizerModules */
-    NbPlatformCustomizerJavadoc() {
+    public NbPlatformCustomizerJavadoc() {
         initComponents();
         initAccessibility();
         this.listListener = new ListListener() {

@@ -585,7 +585,6 @@ public class JbiProjectProperties {
     private HashMap<String, PropertyInfo> properties;
     private AntProjectHelper antProjectHelper;
     private ReferenceHelper refHelper;
-    private AntBasedProjectType abpt;
     private List<VisualClassPathItem> bindingList = new Vector();
     private List<AntArtifact> sunresourceProjs;
     javax.swing.text.Document DIST_JAR_MODEL;
@@ -604,7 +603,6 @@ public class JbiProjectProperties {
         this.properties = new HashMap<String, PropertyInfo>();
         this.antProjectHelper = antProjectHelper;
         this.refHelper = refHelper;
-        this.abpt = project.getAntBasedProjectType();
         read();
         
         PropertyEvaluator evaluator = antProjectHelper.getStandardPropertyEvaluator();

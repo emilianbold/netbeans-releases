@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathExpression;
+import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.ModuleInfo;
@@ -122,6 +123,13 @@ public final class FeatureInfo {
                     e.initCause(ex);
                     throw e;
                 }
+            }
+        }
+        FileObject fo = info.getXMLFileSystem().findResource("Ergonomics/AntBasedProjectTypes"); // NOI18N
+        if (fo != null) {
+            for (FileObject o : fo.getChildren()) {
+                String type = (String)o.getAttribute("type"); // NOI18N
+                info.nbproject(type, "org.netbeans.modules.project.ant.AntBasedGenericType"); // NOI18N
             }
         }
         return info;
