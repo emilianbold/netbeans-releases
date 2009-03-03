@@ -149,14 +149,6 @@ public abstract class CndDataObject extends MultiDataObject {
         getCookieSet().remove(save);
     }
 
-    public void addCookie(Cookie nc) {
-        getCookieSet().add(nc);
-    }
-    
-    public void removeCookie(Cookie nc) {
-        getCookieSet().remove(nc);
-    }
-
     @Override
     protected abstract Node createNodeDelegate();
 
