@@ -136,6 +136,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
+        panel.keywordsButton.addActionListener(this);
         panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
         panel.gotoIssueButton.addActionListener(this);
@@ -432,6 +433,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onSearch();
         } else if (e.getSource() == panel.gotoIssueButton) {
             onGotoIssue();
+        } else if (e.getSource() == panel.keywordsButton) {
+            onKeywords();
         } else if (e.getSource() == panel.searchButton) {
             onSearch();
         } else if (e.getSource() == panel.saveChangesButton) {
@@ -632,6 +635,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void onDefineAs() {
         panel.switchQueryFields(panel.urlPanel.isVisible());
+    }
+
+    private void onKeywords() {
+        String keywords = BugzillaUtil.getKeywords(NbBundle.getMessage(QueryController.class, "LBL_SelectKeywords"), panel.keywordsTextField.getText(), repository);
+        if(keywords != null) {
+            panel.keywordsTextField.setText(keywords);
+        }
     }
 
     private void onSearch() {

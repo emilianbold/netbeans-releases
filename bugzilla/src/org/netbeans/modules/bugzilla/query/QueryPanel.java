@@ -503,6 +503,13 @@ public class QueryPanel extends javax.swing.JPanel {
 
         keywordsTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.keywordsTextField.text")); // NOI18N
 
+        keywordsButton.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.keywordsButton.text")); // NOI18N
+        keywordsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                keywordsButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout byTextPanelLayout = new org.jdesktop.layout.GroupLayout(byTextPanel);
         byTextPanel.setLayout(byTextPanelLayout);
         byTextPanelLayout.setHorizontalGroup(
@@ -523,7 +530,9 @@ public class QueryPanel extends javax.swing.JPanel {
                     .add(keywordsTextField)
                     .add(commentTextField)
                     .add(summaryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE))
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(keywordsButton)
+                .addContainerGap(38, Short.MAX_VALUE))
         );
         byTextPanelLayout.setVerticalGroup(
             byTextPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -542,7 +551,8 @@ public class QueryPanel extends javax.swing.JPanel {
                 .add(byTextPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(keywordsLabel)
                     .add(keywordsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(keywordsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(keywordsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(keywordsButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -973,6 +983,10 @@ public class QueryPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
 }//GEN-LAST:event_urlToggleButtonActionPerformed
 
+    private void keywordsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keywordsButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_keywordsButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JCheckBox bugAssigneeCheckBox = new javax.swing.JCheckBox();
@@ -1026,6 +1040,7 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JScrollPane jScrollPane6 = new javax.swing.JScrollPane();
     final javax.swing.JScrollPane jScrollPane7 = new javax.swing.JScrollPane();
     final javax.swing.JScrollPane jScrollPane8 = new javax.swing.JScrollPane();
+    final javax.swing.JButton keywordsButton = new javax.swing.JButton();
     final javax.swing.JComboBox keywordsComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel keywordsLabel = new javax.swing.JLabel();
     final javax.swing.JTextField keywordsTextField = new javax.swing.JTextField();
