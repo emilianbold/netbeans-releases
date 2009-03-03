@@ -12,8 +12,11 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.project.Project;
 import org.netbeans.mobility.antext.preprocessor.PPBlockInfo;
 import org.netbeans.mobility.antext.preprocessor.PPLine;
+import org.netbeans.modules.mobility.project.J2MEProject;
+import org.netbeans.modules.mobility.project.J2MEProjectUtils;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
@@ -80,7 +83,11 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
         }
 
         public void updateBags() {
-            if (!(document instanceof J2MEEditorDocument)) return;
+            final Project p = J2MEProjectUtils.getProjectForDocument(document);
+            //TODO J2MEProject?
+            if (p == null || !(p instanceof J2MEProject)) 
+                return;
+
             document.render(new Runnable() {
                 public void run() {
                     StyledDocument doc = (StyledDocument)document;
@@ -90,8 +97,6 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
                     for(int i = 0; i < count; i++){
                         try {
                             Element elm = root.getElement(i);
-                            //String text = doc.getText(elm.getStartOffset(), elm.getEndOffset() - elm.getStartOffset()).trim();
-                            //System.out.println("For text \"" + text + "\" the match is " + BLOCK_HEADER_PATTERN.matcher(text).find());
                             if (BLOCK_HEADER_PATTERN.matcher(doc.getText(elm.getStartOffset(), elm.getEndOffset() - elm.getStartOffset()).trim()).find()){
                                 bag.addHighlight( elm.getStartOffset(), elm.getEndOffset(), getAttributes("pp-command", false, false)); //NOI18N
                             }
@@ -122,11 +127,15 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
         }    
 
         public void updateBags() {
-            if (!(document instanceof J2MEEditorDocument)) return;
+            final Project p = J2MEProjectUtils.getProjectForDocument(document);
+            //TODO J2MEProject?
+            if (p == null || !(p instanceof J2MEProject))
+                return;
+
             document.render(new Runnable() {
                 public void run() {
                     OffsetsBag bag = new OffsetsBag(document, true);
-                    ArrayList<PPLine> lineList = (ArrayList<PPLine>)document.getProperty(J2MEEditorDocument.PREPROCESSOR_LINE_LIST);
+                    ArrayList<PPLine> lineList = (ArrayList<PPLine>)document.getProperty(DocumentPreprocessor.PREPROCESSOR_LINE_LIST);
                     if (lineList == null) return;
                     for (PPLine line : lineList ) {
                         PPBlockInfo b = line.getBlock();
