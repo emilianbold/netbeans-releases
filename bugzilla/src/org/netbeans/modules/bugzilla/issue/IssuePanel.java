@@ -42,6 +42,8 @@ package org.netbeans.modules.bugzilla.issue;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -50,6 +52,7 @@ import java.util.Map;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -57,12 +60,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
+ * Panel showing (and allowing to edit) details of an issue.
  *
  * @author Jan Stola
  */
@@ -87,49 +92,87 @@ public class IssuePanel extends javax.swing.JPanel {
         ((GroupLayout)getLayout()).replace(dummyCommentsPanel, scrollPane);
     }
 
-    void setIssueInAWT(final BugzillaIssue issue) {
+    void reloadFormInAWT(final boolean force) {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-                setIssue(issue);
+                reloadForm(force);
             }
         });
     }
 
     public void setIssue(BugzillaIssue issue) {
+        if (this.issue == null) {
+            issue.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
+                        reloadForm(false);
+                    }
+                }
+            });
+        }
         this.issue = issue;
         try {
             initCombos();
-            String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
-            String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
-            headerLabel.setText(headerTxt);
-            productCombo.setSelectedItem(issue.getFieldValue(BugzillaIssue.IssueField.PRODUCT));
-            componentCombo.setSelectedItem(issue.getFieldValue(BugzillaIssue.IssueField.COMPONENT));
-            versionCombo.setSelectedItem(issue.getFieldValue(BugzillaIssue.IssueField.VERSION));
-            platformCombo.setSelectedItem(issue.getFieldValue(BugzillaIssue.IssueField.PLATFORM));
-            statusCombo.setSelectedItem(issue.getFieldValue(BugzillaIssue.IssueField.STATUS));
-            resolutionCombo.setSelectedItem(issue.getFieldValue(BugzillaIssue.IssueField.RESOLUTION));
-            priorityCombo.setSelectedItem(issue.getFieldValue(BugzillaIssue.IssueField.PRIORITY));
-            severityCombo.setSelectedItem(issue.getFieldValue(BugzillaIssue.IssueField.SEVERITY));
-            targetMilestoneCombo.setSelectedItem(issue.getFieldValue(BugzillaIssue.IssueField.MILESTONE));
-            urlField.setText(issue.getFieldValue(BugzillaIssue.IssueField.URL));
-            keywordsField.setText(issue.getFieldValue(BugzillaIssue.IssueField.KEYWORDS));
-            format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
-            String reportedTxt = MessageFormat.format(format, issue.getFieldValue(BugzillaIssue.IssueField.CREATION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER));
-            reportedField.setText(reportedTxt);
-            modifiedField.setText(issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION));
-            assignedField.setText(issue.getFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO));
-            qaContactField.setText(issue.getFieldValue(BugzillaIssue.IssueField.QA_CONTACT));
-            ccField.setText(issue.getFieldValue(BugzillaIssue.IssueField.CC));
-            dependsField.setText(issue.getFieldValue(BugzillaIssue.IssueField.DEPENDS_ON));
-            blocksField.setText(issue.getFieldValue(BugzillaIssue.IssueField.BLOCKS));
-            addCommentArea.setText(""); // NOI18N
-            commentsPanel.setIssue(issue);
-            updateFieldStatuses();
+            reloadForm(true);
         } catch (CoreException cex) {
             cex.printStackTrace();
         } catch (IOException ioex) {
             ioex.printStackTrace();
         }
+    }
+
+    private void reloadForm(boolean force) {
+        String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
+        String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
+        headerLabel.setText(headerTxt);
+        reloadField(force, productCombo, BugzillaIssue.IssueField.PRODUCT);
+        reloadField(force, componentCombo, BugzillaIssue.IssueField.COMPONENT);
+        reloadField(force, versionCombo, BugzillaIssue.IssueField.VERSION);
+        reloadField(force, platformCombo, BugzillaIssue.IssueField.PLATFORM);
+        reloadField(force, statusCombo, BugzillaIssue.IssueField.STATUS);
+        reloadField(force, resolutionCombo, BugzillaIssue.IssueField.RESOLUTION);
+        reloadField(force, priorityCombo, BugzillaIssue.IssueField.PRIORITY);
+        reloadField(force, severityCombo, BugzillaIssue.IssueField.SEVERITY);
+        reloadField(force, targetMilestoneCombo, BugzillaIssue.IssueField.MILESTONE);
+        reloadField(force, urlField, BugzillaIssue.IssueField.URL);
+        reloadField(force, keywordsField, BugzillaIssue.IssueField.KEYWORDS);
+        format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
+        String reportedTxt = MessageFormat.format(format, issue.getFieldValue(BugzillaIssue.IssueField.CREATION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER));
+        reportedField.setText(reportedTxt);
+        modifiedField.setText(issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION));
+        reloadField(force, assignedField, BugzillaIssue.IssueField.ASSIGNED_TO);
+        reloadField(force, qaContactField, BugzillaIssue.IssueField.QA_CONTACT);
+        reloadField(force, ccField, BugzillaIssue.IssueField.CC);
+        reloadField(force, dependsField, BugzillaIssue.IssueField.DEPENDS_ON);
+        reloadField(force, blocksField, BugzillaIssue.IssueField.BLOCKS);
+        commentsPanel.setIssue(issue);
+        if (force) {
+            addCommentArea.setText(""); // NOI18N
+        }
+        updateFieldStatuses();
+    }
+
+    private void reloadField(boolean force, JComponent component, BugzillaIssue.IssueField field) {
+        String currentValue = null;
+        if (!force) {
+            if (component instanceof JComboBox) {
+                currentValue = ((JComboBox)component).getSelectedItem().toString();
+            } else if (component instanceof JTextField) {
+                currentValue = ((JTextField)component).getText();
+            }
+        }
+        String initialValue = initialValues.get(field);
+        String newValue = issue.getFieldValue(field);
+        if (force || currentValue.equals(initialValue)) {
+            if (component instanceof JComboBox) {
+                ((JComboBox)component).setSelectedItem(newValue);
+            } else if (component instanceof JTextField) {
+                ((JTextField)component).setText(newValue);
+            }
+        } else {
+            // PENDING conflict during refresh
+        }
+        initialValues.put(field, newValue);
     }
 
     private void initCombos() throws CoreException, IOException {
@@ -171,7 +214,6 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void updateFieldStatus(BugzillaIssue.IssueField field, JLabel label) {
-        initialValues.put(field, issue.getFieldValue(field));
         boolean highlight = (issue.getFieldStatus(field) != BugzillaIssue.FIELD_STATUS_UPTODATE);
         label.setOpaque(highlight);
         if (highlight) {
@@ -572,8 +614,7 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_statusComboActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        setIssue(issue);
-        addCommentArea.setText(""); // NOI18N
+        reloadForm(true);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
@@ -598,28 +639,28 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(BugzillaIssue.IssueField.DEPENDS_ON, dependsField);
         storeFieldValue(BugzillaIssue.IssueField.BLOCKS, blocksField);
         // PENDING attachment modifications
-            if (!"".equals(addCommentArea.getText().trim())) { // NOI18N
-                issue.addComment(addCommentArea.getText());
-            }
-            String submitMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitMessage"); // NOI18N
-            String submitMessage = MessageFormat.format(submitMessageFormat, issue.getID());
-            final ProgressHandle handle = ProgressHandleFactory.createHandle(submitMessage);
-            handle.start();
-            handle.switchToIndeterminate();
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        issue.submit();
-                        issue.refresh();
-                    } catch (CoreException cex) {
-                        System.out.println(cex.getStatus().getMessage());
-                        cex.printStackTrace();
-                    } finally {
-                        handle.finish();
-                        setIssueInAWT(issue);
-                    }
+        if (!"".equals(addCommentArea.getText().trim())) { // NOI18N
+            issue.addComment(addCommentArea.getText());
+        }
+        String submitMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitMessage"); // NOI18N
+        String submitMessage = MessageFormat.format(submitMessageFormat, issue.getID());
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(submitMessage);
+        handle.start();
+        handle.switchToIndeterminate();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    issue.submit();
+                    issue.refresh();
+                } catch (CoreException cex) {
+                    System.out.println(cex.getStatus().getMessage());
+                    cex.printStackTrace();
+                } finally {
+                    handle.finish();
+                    reloadFormInAWT(true);
                 }
-            });
+            }
+        });
     }//GEN-LAST:event_submitButtonActionPerformed
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
@@ -632,7 +673,7 @@ public class IssuePanel extends javax.swing.JPanel {
             public void run() {
                 issue.refresh();
                 handle.finish();
-                setIssueInAWT(issue);
+                reloadFormInAWT(true);
             }
         });
     }//GEN-LAST:event_refreshButtonActionPerformed
