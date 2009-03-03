@@ -39,12 +39,6 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import static java.util.regex.Pattern.CASE_INSENSITIVE;
-
 /**
  *
  * @author Tomas Stupka
@@ -52,78 +46,219 @@ import static java.util.regex.Pattern.CASE_INSENSITIVE;
  */
 public class IssueFinder {
 
+    private static final String[] BUGWORDS = new String[] {"bug", "issue"}; //NOI18N
+
     private static final int[] EMPTY_INT_ARR = new int[0];
 
-    private static final String NUM_RE = "\\#?[ \\t]*(\\d++)";          //NOI18N
+    private static final String PUNCT_CHARS = ",:;()[]{}";          //NOI18N
 
-    private static final String BUGWORDS = "bug,issue";                 //NOI18N
+    private static final int INIT       = 0;
+    private static final int CHARS      = 1;
+    private static final int HASH       = 2;
+    private static final int HASH_SPC   = 3;
+    private static final int NUM        = 4;
+    private static final int BUGWORD    = 5;
+    private static final int BUGWORD_NL = 6;
+    private static final int STAR       = 7;
+    private static final int GARBAGE    = 8;
 
-    private static final String BUGWORDS_RE = "(?:"                     //NOI18N
-                                              + BUGWORDS.replace(',', '|') //NOI18N
-                                              + ')'; //NOI18N
+    private final String str;
+    private int pos;
+    private int state;
 
-    private static final String BUG_RE = BUGWORDS_RE
-                                         + "[ \\t]*(?:[\\r\\n]+[ \\t]*\\*?[ \\t]*)*" //NOI18N
-                                         + NUM_RE;
+    int start = -1;
+    int end = -1;
+    int[] result;
 
-    private static final String BUG_LINK_RE = "\\b" + BUG_RE;           //NOI18N
-
-    private static final Pattern bugPattern = Pattern.compile(BUG_LINK_RE, CASE_INSENSITIVE);
-
-    //private static final String COMMENTWORD_RE = "comment";
-    //private static final String COMMENT_RE = COMMENTWORD_RE + "\\s*" + NUM_RE; //NOI18N
-    //private static final String BUG_OR_COMMENT_LINK_RE
-    //                            = "\\b"                                 //NOI18N
-    //                                  + BUG_RE + "(?:\\s*,?\\s*" + COMMENT_RE + ")?" //NOI18N
-    //                                  + "|"                             //NOI18N
-    //                                  + COMMENT_RE;
-    //private static final Pattern advancedPattern = Pattern.compile(BUG_OR_COMMENT_LINK_RE, CASE_INSENSITIVE);
+    //--------------------------------------------------------------------------
 
     public static int[] getIssueSpans(String text) {
-        Matcher matcher = bugPattern.matcher(text);
-
-        if (!matcher.find()) {
-            return EMPTY_INT_ARR;
-        }
-
-        int start = matcher.start();
-        int end = matcher.end();
-        if (!matcher.find()) {
-            return new int[] {start, end};
-        }
-
-        List<Integer> bounds = new ArrayList<Integer>(6);
-        do {
-            start = matcher.start();
-            end = matcher.end();
-            bounds.add(Integer.valueOf(start));
-            bounds.add(Integer.valueOf(end));
-        } while (matcher.find());
-
-        return toIntArray(bounds);
+        int[] result = findBoundaries(text);
+        return (result != null) ? result : EMPTY_INT_ARR;
     }
 
     public static String getIssueNumber(String issueHyperlinkText) {
-        Matcher matcher = bugPattern.matcher(issueHyperlinkText);
-
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException();
+        int pos = issueHyperlinkText.length() - 1;
+        while (isHexaDigit(issueHyperlinkText.charAt(pos))) {
+            pos--;
         }
-
-        return matcher.group(1);
+        return issueHyperlinkText.substring(pos + 1);
     }
 
-    private static int[] toIntArray(List<Integer> list) {
-        if (list.isEmpty()) {
-            return EMPTY_INT_ARR;
-        }
+    //--------------------------------------------------------------------------
 
-        final int size = list.size();
-        int[] result = new int[size];
-        for (int i = 0; i < size; i++) {
-            result[i] = list.get(i);        //auto-unboxing
+    private IssueFinder(String str) {
+        this.str = str;
+
+        pos = 0;
+        state = INIT;
+    }
+
+    private static int[] findBoundaries(String str) {
+        return new IssueFinder(str).findBoundaries();
+    }
+
+    private int[] findBoundaries() {
+        for (pos = 0; pos < str.length(); pos++) {
+            handleChar(str.charAt(pos));
+        }
+        if (state == NUM) {
+            storeResult(start, pos);
         }
         return result;
+    }
+
+    private void handleChar(int c) {
+        int newState;
+        switch (state) {
+            case INIT:
+                if (c == '#') {
+                    rememberIsStart();
+                    newState = HASH;
+                } else if (Character.isLetter(c)) {
+                    rememberIsStart();
+                    newState = CHARS;
+                } else {
+                    newState = getInitialState(c);
+                }
+                break;
+            case CHARS:
+                if (Character.isLetter(c)) {
+                    newState = CHARS;
+                } else if ((c == ' ') || (c == '\t') || (c == '\r') || (c == '\n')) {
+                    if (isBugword()) {
+                        newState = ((c == ' ') || (c == '\t')) ? BUGWORD
+                                                               : BUGWORD_NL;
+                    } else {
+                        newState = getInitialState(c);
+                    }
+                } else {
+                    newState = getInitialState(c);
+                }
+                break;
+            case HASH:
+                if ((c == ' ') || (c == '\t')) {
+                    newState = HASH_SPC;
+                } else if (isHexaDigit(c)) {
+                    newState = NUM;
+                } else {
+                    newState = getInitialState(c);
+                }
+                break;
+            case HASH_SPC:
+                if ((c == ' ') || (c == '\t')) {
+                    newState = HASH_SPC;
+                } else if (isHexaDigit(c)) {
+                    newState = NUM;
+                } else {
+                    newState = getInitialState(c);
+                }
+                break;
+            case NUM:
+                if (isHexaDigit(c)) {
+                    newState = NUM;
+                } else {
+                    newState = getInitialState(c);
+                }
+                break;
+            case BUGWORD:
+                if ((c == ' ') || (c == '\t')) {
+                    newState = BUGWORD;
+                } else if ((c == '\r') || (c == '\n')) {
+                    newState = BUGWORD_NL;
+                } else if (c == '#') {
+                    newState = HASH;
+                } else if (isHexaDigit(c)) {
+                    newState = NUM;
+                } else {
+                    newState = getInitialState(c);
+                }
+                break;
+            case BUGWORD_NL:
+                if ((c == '\r') || (c == '\n') || (c == ' ') || (c == '\t')) {
+                    newState = BUGWORD_NL;
+                } else if (c == '*') {
+                    newState = STAR;
+                } else if (c == '#') {
+                    newState = HASH;
+                } else if (isHexaDigit(c)) {
+                    newState = NUM;
+                } else {
+                    newState = getInitialState(c);
+                }
+                break;
+            case STAR:
+                if ((c == ' ') || (c == '\t')) {
+                    newState = BUGWORD;
+                } else if ((c == '\r') || (c == '\n')) {
+                    newState = BUGWORD_NL;
+                } else {
+                    newState = getInitialState(c);
+                }
+                break;
+            case GARBAGE:
+                newState = getInitialState(c);
+                break;
+            default:
+                assert false;
+                newState = getInitialState(c);
+                break;
+        }
+        if ((state == NUM) && (newState != NUM)) {
+            if (isSpaceOrPunct(c)) {
+                storeResult(start, pos);
+            }
+        }
+        if ((newState == INIT) || (newState == GARBAGE)) {
+            start = -1;
+        }
+        state = newState;
+    }
+
+    private int getInitialState(int c) {
+        return isSpaceOrPunct(c) ? INIT : GARBAGE;
+    }
+
+    private void rememberIsStart() {
+        assert start == -1;
+        start = pos;
+    }
+
+    private void storeResult(int start, int end) {
+        assert (start != -1);
+        if (result == null) {
+            result = new int[] {start, end};
+        } else {
+            int[] newResult = new int[result.length + 2];
+            System.arraycopy(result, 0, newResult, 0, result.length);
+            newResult[result.length    ] = start;
+            newResult[result.length + 1] = end;
+            result = newResult;
+        }
+    }
+
+    private static boolean isHexaDigit(int c) {
+        return ((c >= '0') && (c <= '9'))
+               || ((c >= 'A') && ((c & ~0x20) <= 'F'));
+    }
+
+    private static boolean isSpaceOrPunct(int c) {
+        return (c == '\r') || (c == '\n')
+               || Character.isSpaceChar(c) || isPunct(c);
+    }
+
+    private static boolean isPunct(int c) {
+        return PUNCT_CHARS.indexOf(c) != -1;
+    }
+
+    private boolean isBugword() {
+        String word = str.substring(start, pos);
+        for (int i = 0; i < BUGWORDS.length; i++) {
+            if (word.equals(BUGWORDS[i])) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
