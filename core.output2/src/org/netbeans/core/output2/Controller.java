@@ -353,7 +353,6 @@ public class Controller {
                 }
                 if (tab != null) {
                     tab.setInputVisible(value);
-                    ioContainer.select(tab);
                 }
                 break;
             case IOEvent.CMD_SELECT :
