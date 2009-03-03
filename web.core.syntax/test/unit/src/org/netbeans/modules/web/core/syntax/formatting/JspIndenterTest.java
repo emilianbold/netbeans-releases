@@ -77,10 +77,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 
-/**
- *
- * @author david
- */
 public class JspIndenterTest extends TestBase2 {
 
     public JspIndenterTest(String name) {

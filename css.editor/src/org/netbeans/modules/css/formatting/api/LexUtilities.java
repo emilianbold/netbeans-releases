@@ -57,7 +57,6 @@ import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence.TokenSequenceWrapper;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -211,7 +210,7 @@ public class LexUtilities {
         return TokenHierarchy.create(source, language).tokenSequence(language);
     }
 
-    private static EmbeddingModel getEmbedding(@NonNull String targetMimeType, @NonNull String sourceMimeType) {
+    private static EmbeddingModel getEmbedding(String targetMimeType, String sourceMimeType) {
         Collection<? extends EmbeddingModel> models = getEmbeddingModels();
 
         for (EmbeddingModel model : models) {

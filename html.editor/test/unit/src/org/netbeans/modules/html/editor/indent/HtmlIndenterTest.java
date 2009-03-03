@@ -65,9 +65,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 
-/**
- *
- */
 public class HtmlIndenterTest extends TestBase2 {
 
     public HtmlIndenterTest(String name) {

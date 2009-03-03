@@ -54,10 +54,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
-import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence.TokenSequenceWrapper;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.util.Exceptions;
 
 /**
@@ -151,130 +149,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
      */
     abstract protected boolean isWhiteSpaceToken(Token<T1> token);
 
-
-    private static final class OffsetRange {
-        private int start;
-        private int end;
-
-        public OffsetRange(int start, int end) {
-            this.start = start;
-            this.end = end;
-        }
-
-        public int getEnd() {
-            return end;
-        }
-
-        public int getStart() {
-            return start;
-        }
-
-        @Override
-        public String toString() {
-            return "OffsetRange["+start+"-"+end+"]";
-        }
-
-    }
-
-    /**
-     * Descriptor of range wihtin documente defined by (inclusive) document offsets.
-     */
-    public static final class OffsetRanges {
-        List<OffsetRange> ranges;
-
-        public OffsetRanges() {
-            this.ranges = new ArrayList<OffsetRange>();
-        }
-
-        /**
-         * Add new range. Bordering ranges are automatically merged.
-         */
-        public void add(int start, int end) {
-            for (OffsetRange range : ranges) {
-                if (range.end == start) {
-                    range.end = end;
-                    return;
-                } else if (range.start == end) {
-                    range.start = start;
-                    return;
-                }
-            }
-            ranges.add(new OffsetRange(start, end));
-        }
-
-        /**
-         * Is area given by start and end offset within this range?
-         */
-        private boolean contains(int start, int end) {
-            for (OffsetRange or : ranges) {
-                if (start >= or.getStart() && end <= or.getEnd()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /**
-         * Adjusts given start and end offset to describe area not covered
-         * by a range. Exceptions are: #1) if given start-end region lies within
-         * a range then -1 values will be returned; and #2) if there is a range
-         * which lies within start-end region it will be ignored.
-         * @param result array of two integers which will be populated by this 
-         *  method; first one will be new start and second one will be new end
-         * @return true if something was calculated
-         */
-        private boolean calculateUncoveredArea(int start, int end, int[] result) {
-            boolean changed = false;
-            for (OffsetRange or : ranges) {
-                if (start < or.getStart() && end > or.getEnd()) {
-                    // ignore-area lies within the line -> just process whole line
-                    continue;
-                }
-                if (start >= or.getStart() && end <= or.getEnd()) {
-                    // skip this line
-                    result[0] = -1;
-                    result[1] = -1;
-                    return true;
-                }
-                if (start >= or.getStart() && start <= or.getEnd()) {
-                    start = or.getEnd()+1;
-                    changed = true;
-                    assert start < end;
-                }
-                if (end >= or.getStart() && end <= or.getEnd()) {
-                    end = or.getStart()-1;
-                    changed = true;
-                    assert start < end;
-                }
-            }
-            if (changed) {
-                result[0] = start;
-                result[1] = end;
-            }
-            return changed;
-        }
-
-        public boolean isEmpty() {
-            return ranges.size() == 0;
-        }
-
-        public String dump() {
-            StringBuilder sb = new StringBuilder();
-            for (OffsetRange or : ranges) {
-                if (sb.length() > 0) {
-                    sb.append(',');
-                }
-                sb.append("["+or.start+"-"+or.end+"]");
-            }
-            return sb.toString();
-        }
-
-        @Override
-        public String toString() {
-            return "OffsetRanges["+dump()+"]";
-        }
-
-    }
 
 //    private boolean isWithinLanguage(int startOffset, int endOffset) {
 //        for (Context.Region r : context.indentRegions()) {
@@ -444,23 +318,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
 
         applyIndents(indentedLines, lineStart, lineEnd, false);
-    }
-
-    private static class LineCommandsPair {
-        private int line;
-        private List<IndentCommand> commands;
-
-        public LineCommandsPair(int line, List<IndentCommand> commands) {
-            this.line = line;
-            this.commands = commands;
-        }
-
-        @Override
-        public String toString() {
-            return "LineCommandsPair["+line+":"+commands+"]";
-        }
-
-
     }
 
     private List<Line> mergeIndentedLines(List<List<Line>> indentationData) throws BadLocationException {
@@ -874,7 +731,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         int startLine = Utilities.getLineOffset(getDocument(), startOffset);
         int endLine = Utilities.getLineOffset(getDocument(), endOffset);
         for (JoinedTokenSequence.CodeBlock<T1> block : blocks) {
-            for (TokenSequenceWrapper<T1> tsw : block.tss) {
+            for (JoinedTokenSequence.TokenSequenceWrapper<T1> tsw : block.tss) {
                 if (tsw.isVirtual()) {
                     continue;
                 }
@@ -903,24 +760,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
         }
         return lps;
-    }
-
-    private final class LinePair {
-        private int startingLine;
-        private int endingLine;
-
-        public int getEndingLine() {
-            return endingLine;
-        }
-
-        public int getStartingLine() {
-            return startingLine;
-        }
-
-        @Override
-        public String toString() {
-            return "LP[" +startingLine+":"+endingLine+"]";
-        }
     }
 
 //    protected int getBlockIndent(int offset, int indentSize) throws BadLocationException {
@@ -1334,7 +1173,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
 
             // store existing line indent:
-            line.existingLineIndent = GsfUtilities.getLineIndent(getDocument(), line.offset);
+            line.existingLineIndent = IndentUtils.lineIndent(getDocument(), line.offset);
 
             // set calculated indentation:
             line.indentation = indentation + thisLineIndent;
@@ -1434,7 +1273,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
 
         // physically modify document's indentation
-        applyIndentations(indentedLines, lineStart, lineEnd);
+        modifyDocument(indentedLines, lineStart, lineEnd);
     }
 
     private List<Line> generateBlockIndentsForForeignLanguage(List<Line> indentedLines) throws BadLocationException {
@@ -1460,11 +1299,8 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                         "start="+lastStart+" end="+end+" indents="+indents+" indentedLines="+indentedLines;
                     for (int i = lastStart+1; i < end; i++) {
                         Line line2 = generateBasicLine(i);//new Line();
-                        //line2.index = i;
                         line2.indentThisLine = true;
                         line2.preserveThisLineIndent = true;
-                        //line2.offset = Utilities.getRowStartFromLineOffset(getDocument(), i);
-                        //line2.existingLineIndent = GsfUtilities.getLineIndent(getDocument(), line2.offset);
                         if (!line2.emptyLine) {
                             indents.add(line2);
                         }
@@ -1481,7 +1317,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         Line line = new Line();
         line.index = index;
         line.offset = Utilities.getRowStartFromLineOffset(getDocument(), index);
-        line.existingLineIndent = GsfUtilities.getLineIndent(getDocument(), line.offset);
+        line.existingLineIndent = IndentUtils.lineIndent(getDocument(), line.offset);
         line.emptyLine = Utilities.getRowFirstNonWhite(getDocument(), line.offset) == -1;
         line.lineStartOffset = line.offset;
         line.lineEndOffset = Utilities.getRowEnd(getDocument(), line.offset);
@@ -1489,7 +1325,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         return line;
     }
 
-    private void updateIndentationForPreservedLines(List<Line> indentedLines) {
+    private void updateIndentationForPreservedLines(List<Line> indentedLines) throws BadLocationException {
         // iterate through lines and ignore all lines with line.indentThisLine == false
         // search for line.preserveThisLineIndent and apply indent calculated using
         // last non-preserveThisLineIndent's line indent
@@ -1500,8 +1336,8 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
             if (line.preserveThisLineIndent) {
                 if (lineBeforePreserveIndent != null) {
-                    int originalFirstLineIndent = GsfUtilities.getLineIndent(getDocument(), lineBeforePreserveIndent.offset);
-                    int originalCurrentLineIndent = GsfUtilities.getLineIndent(getDocument(), line.offset);
+                    int originalFirstLineIndent = IndentUtils.lineIndent(getDocument(), lineBeforePreserveIndent.offset);
+                    int originalCurrentLineIndent = IndentUtils.lineIndent(getDocument(), line.offset);
                     line.indentation = lineBeforePreserveIndent.indentation + (originalCurrentLineIndent-originalFirstLineIndent);
                 } else {
                     assert false : "lineBeforePreserveIndent was not found: "+indentedLines;
@@ -1512,7 +1348,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
     }
 
-    private void applyIndentations(List<Line> indentedLines, int lineStart, int lineEnd) throws BadLocationException {
+    private void modifyDocument(List<Line> indentedLines, int lineStart, int lineEnd) throws BadLocationException {
         // iterate through lines backwards and ignore all lines with line.indentThisLine == false
         // modify line's indent using calculated indentation
         for (int i=indentedLines.size()-1; i>=0; i--) {
@@ -1520,7 +1356,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             if (!line.indentThisLine || line.index < lineStart || line.index > lineEnd) {
                 continue;
             }
-            //int currentIndent = GsfUtilities.getLineIndent(getDocument(), line.offset);
             int newIndent = line.indentation;
             if (newIndent < 0) {
                 newIndent = 0;
@@ -1633,6 +1468,165 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     ",lineIndent=" +lineIndent+
                     "]";
         }
+
+    }
+
+    private static final class OffsetRange {
+        private int start;
+        private int end;
+
+        public OffsetRange(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        public int getEnd() {
+            return end;
+        }
+
+        public int getStart() {
+            return start;
+        }
+
+        @Override
+        public String toString() {
+            return "OffsetRange["+start+"-"+end+"]";
+        }
+
+    }
+
+    /**
+     * Descriptor of range wihtin documente defined by (inclusive) document offsets.
+     */
+    public static final class OffsetRanges {
+        List<OffsetRange> ranges;
+
+        public OffsetRanges() {
+            this.ranges = new ArrayList<OffsetRange>();
+        }
+
+        /**
+         * Add new range. Bordering ranges are automatically merged.
+         */
+        public void add(int start, int end) {
+            for (OffsetRange range : ranges) {
+                if (range.end == start) {
+                    range.end = end;
+                    return;
+                } else if (range.start == end) {
+                    range.start = start;
+                    return;
+                }
+            }
+            ranges.add(new OffsetRange(start, end));
+        }
+
+        /**
+         * Is area given by start and end offset within this range?
+         */
+        private boolean contains(int start, int end) {
+            for (OffsetRange or : ranges) {
+                if (start >= or.getStart() && end <= or.getEnd()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Adjusts given start and end offset to describe area not covered
+         * by a range. Exceptions are: #1) if given start-end region lies within
+         * a range then -1 values will be returned; and #2) if there is a range
+         * which lies within start-end region it will be ignored.
+         * @param result array of two integers which will be populated by this
+         *  method; first one will be new start and second one will be new end
+         * @return true if something was calculated
+         */
+        private boolean calculateUncoveredArea(int start, int end, int[] result) {
+            boolean changed = false;
+            for (OffsetRange or : ranges) {
+                if (start < or.getStart() && end > or.getEnd()) {
+                    // ignore-area lies within the line -> just process whole line
+                    continue;
+                }
+                if (start >= or.getStart() && end <= or.getEnd()) {
+                    // skip this line
+                    result[0] = -1;
+                    result[1] = -1;
+                    return true;
+                }
+                if (start >= or.getStart() && start <= or.getEnd()) {
+                    start = or.getEnd()+1;
+                    changed = true;
+                    assert start < end;
+                }
+                if (end >= or.getStart() && end <= or.getEnd()) {
+                    end = or.getStart()-1;
+                    changed = true;
+                    assert start < end;
+                }
+            }
+            if (changed) {
+                result[0] = start;
+                result[1] = end;
+            }
+            return changed;
+        }
+
+        public boolean isEmpty() {
+            return ranges.size() == 0;
+        }
+
+        public String dump() {
+            StringBuilder sb = new StringBuilder();
+            for (OffsetRange or : ranges) {
+                if (sb.length() > 0) {
+                    sb.append(',');
+                }
+                sb.append("["+or.start+"-"+or.end+"]");
+            }
+            return sb.toString();
+        }
+
+        @Override
+        public String toString() {
+            return "OffsetRanges["+dump()+"]";
+        }
+
+    }
+
+    private final class LinePair {
+        private int startingLine;
+        private int endingLine;
+
+        public int getEndingLine() {
+            return endingLine;
+        }
+
+        public int getStartingLine() {
+            return startingLine;
+        }
+
+        @Override
+        public String toString() {
+            return "LP[" +startingLine+":"+endingLine+"]";
+        }
+    }
+
+    private static class LineCommandsPair {
+        private int line;
+        private List<IndentCommand> commands;
+
+        public LineCommandsPair(int line, List<IndentCommand> commands) {
+            this.line = line;
+            this.commands = commands;
+        }
+
+        @Override
+        public String toString() {
+            return "LineCommandsPair["+line+":"+commands+"]";
+        }
+
 
     }
 
