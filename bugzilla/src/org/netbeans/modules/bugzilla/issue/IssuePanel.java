@@ -220,7 +220,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
                 statuses.add(resolved);
             } else {
-                if (allStatuses.contains(reopened)) { // NOI18N
+                if (allStatuses.contains(reopened)) {
                     statuses.add(reopened);
                 } else {
                     // Pure guess
