@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,6 +59,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerLibraries.Enabled;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.explorer.ExplorerManager;
@@ -83,12 +85,13 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
     
     private NbPlatform platform;
     private SuiteProject suite;
+    private File install;
 
     protected void setUp() throws Exception {
         noDataDir = true;   // self-contained test; prevents name clash with 'custom' platform in data dir
         super.setUp();
         // PLATFORM SETUP
-        File install = new File(getWorkDir(), "install");
+        install = new File(getWorkDir(), "install");
         TestBase.makePlatform(install);
         // MODULE foo
         Manifest mani = new Manifest();
@@ -156,7 +159,8 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
     
     public void testUniverseModules() throws Exception { // #65924
         Map<String,SuiteCustomizerLibraries.UniverseModule> modulesByName = new HashMap<String,SuiteCustomizerLibraries.UniverseModule>();
-        Set<SuiteCustomizerLibraries.UniverseModule> modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getModules(), SuiteUtils.getSubProjects(suite));
+        Set<SuiteCustomizerLibraries.UniverseModule> modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getModules(), 
+                SuiteUtils.getSubProjects(suite), Collections.<ModuleEntry>emptySet());
         for (SuiteCustomizerLibraries.UniverseModule m : modules) {
             modulesByName.put(m.getCodeNameBase(), m);
         }
@@ -166,7 +170,7 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         // core.jar is just a dummy JAR, nothing interesting to test
         m = modulesByName.get("foo");
         assertNotNull(m);
-        assertEquals("somecluster", m.getCluster());
+        assertEquals(new File(install, "somecluster"), m.getCluster());
         assertEquals("Foo Module", m.getDisplayName());
         assertEquals(1, m.getReleaseVersion());
         assertEquals(new SpecificationVersion("1.0"), m.getSpecificationVersion());
@@ -183,7 +187,7 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         assertEquals(Dependency.create(Dependency.TYPE_MODULE, "foo/1 > 1.0"), m.getModuleDependencies());
         m = modulesByName.get("org.example.module1");
         assertNotNull(m);
-        assertNull(m.getCluster());
+        assertEquals(m.getCluster(), ClusterUtils.getClusterDirectory(suite));
         assertEquals("Module One", m.getDisplayName());
         assertEquals(2, m.getReleaseVersion());
         assertEquals(new SpecificationVersion("2.0"), m.getSpecificationVersion());
@@ -204,18 +208,23 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
     }
     
     public void testDependencyWarnings() throws Exception { // #65924
-        Set<SuiteCustomizerLibraries.UniverseModule> modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getModules(), SuiteUtils.getSubProjects(suite));
-        Set<String> bothClusters = new HashSet<String>(Arrays.asList("somecluster", "anothercluster"));
-        assertEquals(null, join(SuiteCustomizerLibraries.findWarning(modules, bothClusters, Collections.<String>emptySet())));
-        assertEquals("[ERR_platform_excluded_dep, baz, anothercluster, Foo Module, somecluster]",
-                join(SuiteCustomizerLibraries.findWarning(modules, Collections.singleton("anothercluster"), Collections.<String>emptySet())));
-        assertNull(join(SuiteCustomizerLibraries.findWarning(modules, Collections.singleton("somecluster"), Collections.<String>emptySet())));
-        assertEquals("[ERR_suite_excluded_dep, Module Three, bar, somecluster]",
-                join(SuiteCustomizerLibraries.findWarning(modules, Collections.<String>emptySet(), Collections.<String>emptySet())));
-        assertEquals("[ERR_platform_only_excluded_providers, tok1, bar, somecluster, Foo Module, somecluster]",
-                join(SuiteCustomizerLibraries.findWarning(modules, bothClusters, Collections.singleton("foo"))));
-        assertEquals("[ERR_platform_only_excluded_providers, tok1b, bar2, somecluster, foo2, somecluster]",
-                join(SuiteCustomizerLibraries.findWarning(modules, bothClusters, Collections.singleton("foo2"))));
+        SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(), suite.getEvaluator(), Collections.<NbModuleProject>emptySet());
+        Category cat = Category.create("dummy", "dummy", null);
+        SuiteCustomizerLibraries scl = new SuiteCustomizerLibraries(suiteProps, cat);
+
+        Set<SuiteCustomizerLibraries.UniverseModule> modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getModules(), SuiteUtils.getSubProjects(suite), Collections.<ModuleEntry>emptySet());
+        Set<File> allClusters = new HashSet<File>(Arrays.asList(
+                new File(install, "somecluster"), new File(install, "anothercluster"), ClusterUtils.getClusterDirectory(suite)));
+        assertEquals(null, join(scl.findWarning(modules, allClusters, Collections.<String>emptySet())));
+        assertEquals("[ERR_excluded_dep, baz, anothercluster, Foo Module, somecluster]",
+                join(scl.findWarning(modules, Collections.singleton(new File(install, "anothercluster")), Collections.<String>emptySet())));
+        assertNull(join(scl.findWarning(modules, Collections.singleton(new File(install, "somecluster")), Collections.<String>emptySet())));
+        assertEquals("[ERR_excluded_dep, Module Three, suite, bar, somecluster]",
+                join(scl.findWarning(modules, Collections.singleton(ClusterUtils.getClusterDirectory(suite)), Collections.<String>emptySet())));
+        assertEquals("[ERR_only_excluded_providers, tok1, bar, somecluster, Foo Module, somecluster]",
+                join(scl.findWarning(modules, allClusters, Collections.singleton("foo"))));
+        assertEquals("[ERR_only_excluded_providers, tok1b, bar2, somecluster, foo2, somecluster]",
+                join(scl.findWarning(modules, allClusters, Collections.singleton("foo2"))));
         // XXX much more could be tested; check coverage results
     }
     

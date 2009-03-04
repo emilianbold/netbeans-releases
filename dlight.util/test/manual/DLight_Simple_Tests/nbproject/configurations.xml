@@ -122,5 +122,19 @@
         </linkerTool>
       </compileType>
     </conf>
+    <conf name="GNU-Linux" type="1">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>2</platform>
+      </toolsSet>
+      <compileType>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+          <commandLine>-lpthread -ldl</commandLine>
+        </linkerTool>
+      </compileType>
+    </conf>
   </confs>
 </configurationDescriptor>

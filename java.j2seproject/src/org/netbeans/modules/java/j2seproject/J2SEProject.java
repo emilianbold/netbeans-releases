@@ -61,7 +61,6 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
@@ -97,6 +96,7 @@ import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -138,6 +138,14 @@ import org.w3c.dom.NodeList;
  * Represents one plain J2SE project.
  * @author Jesse Glick, et al.
  */
+@AntBasedProjectRegistration(
+    type=J2SEProjectType.TYPE,
+    iconResource="org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", // NOI18N
+    sharedName=J2SEProjectType.PROJECT_CONFIGURATION_NAME,
+    sharedNamespace= J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+    privateName=J2SEProjectType.PRIVATE_CONFIGURATION_NAME,
+    privateNamespace= J2SEProjectType.PRIVATE_CONFIGURATION_NAMESPACE
+)
 public final class J2SEProject implements Project, AntProjectListener {
     
     private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
@@ -158,7 +166,7 @@ public final class J2SEProject implements Project, AntProjectListener {
 
     private AntBuildExtender buildExtender;
 
-    J2SEProject(AntProjectHelper helper) throws IOException {
+    public J2SEProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();

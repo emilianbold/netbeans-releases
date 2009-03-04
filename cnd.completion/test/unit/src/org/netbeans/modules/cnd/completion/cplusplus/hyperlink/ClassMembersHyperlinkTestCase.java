@@ -760,6 +760,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz154781.cc", 15, 20, "iz154781.cc", 5, 5);
     }
 
+    public void testIZ151592() throws Exception {
+        //IZ#151592: wrong hyperlink on derived class member
+        performTest("iz151592.cc", 9, 14, "iz151592.cc", 9, 5);
+        performTest("iz151592.cc", 10, 14, "iz151592.cc", 10, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

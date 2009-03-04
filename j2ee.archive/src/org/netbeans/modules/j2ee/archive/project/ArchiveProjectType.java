@@ -41,37 +41,8 @@
 
 package org.netbeans.modules.j2ee.archive.project;
 
-import java.io.IOException;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
-
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
-public class ArchiveProjectType implements AntBasedProjectType {
-    
-    private static final String CONFIGURATION_NAME ="data";            //NOI18N
+public class ArchiveProjectType {
     public static final String PROJECT_CONFIGURATION_NS ="http://www.netbeans.org/ns/archive-project/1";                     //NOI18N
-    private static final String PRIVATE_CONFIGURATION_NS = "http://www.netbeans.org/ns/archive-project-private/1";             //NOI18N
-
+    static final String PRIVATE_CONFIGURATION_NS = "http://www.netbeans.org/ns/archive-project-private/1";             //NOI18N
     public static final String TYPE = "org.netbeans.modules.j2ee.archive.project";                        //NOI18N
-
-    /** Creates a new instance of DeployableArchive */
-    public ArchiveProjectType() {
-    }
-
-    public String getType() {
-        return TYPE;
-    }
-
-    public Project createProject(AntProjectHelper helper) throws IOException {
-        return new ArchiveProject(helper);
-    }
-
-    public String getPrimaryConfigurationDataElementName(boolean shared) {
-        return CONFIGURATION_NAME;
-    }
-    
-    public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
-        return shared ? PROJECT_CONFIGURATION_NS : PRIVATE_CONFIGURATION_NS;
-    }
 }

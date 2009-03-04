@@ -23,7 +23,6 @@
  */
 package org.netbeans.modules.cnd.gizmo.addr2line;
 
-// import gnu.classpath.Configuration;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
@@ -40,7 +39,7 @@ import java.util.logging.Logger;
 public class Dwarf2NameFinder {
 
     private static final Logger logger = Logger.getLogger(Dwarf2NameFinder.class.getName());
-    private static final String DEBUG_LINE = ".debug_line";
+    private static final String DEBUG_LINE = ".debug_line"; // NOI18N
     private String binaryFile;
     private String sourceFile = null;
     private int lineNumber = -1;
@@ -73,7 +72,7 @@ public class Dwarf2NameFinder {
     private static final class debug extends Level {
 
         private debug() {
-            super("DWARF-2", Level.INFO.intValue());
+            super("DWARF-2", Level.INFO.intValue()); // NOI18N
         }
     }
 
@@ -104,24 +103,24 @@ public class Dwarf2NameFinder {
         @Override
         public String toString() {
             java.lang.StringBuffer str = new java.lang.StringBuffer(super.toString());
-            str.append(" [ total_length: ").append(total_length);
-            str.append("; version: ").append(version);
-            str.append("; prologue_length: ").append(prologue_length);
-            str.append("; minimum_instruction_length: ").append(minimum_instruction_length);
-            str.append("; default_is_stmt: ").append(default_is_stmt);
-            str.append("; line_base: ").append(line_base);
-            str.append("; line_range: ").append(line_range);
-            str.append("; opcode_base: ").append(opcode_base);
-            str.append("; standard_opcode_lengths: { ");
-            str.append(standard_opcode_lengths[0]).append(", ");
-            str.append(standard_opcode_lengths[1]).append(", ");
-            str.append(standard_opcode_lengths[2]).append(", ");
-            str.append(standard_opcode_lengths[3]).append(", ");
-            str.append(standard_opcode_lengths[4]).append(", ");
-            str.append(standard_opcode_lengths[5]).append(", ");
-            str.append(standard_opcode_lengths[6]).append(", ");
-            str.append(standard_opcode_lengths[7]).append(", ");
-            str.append(standard_opcode_lengths[8]).append(" } ]");
+            str.append(" [ total_length: ").append(total_length); // NOI18N
+            str.append("; version: ").append(version); // NOI18N
+            str.append("; prologue_length: ").append(prologue_length); // NOI18N
+            str.append("; minimum_instruction_length: ").append(minimum_instruction_length); // NOI18N
+            str.append("; default_is_stmt: ").append(default_is_stmt); // NOI18N
+            str.append("; line_base: ").append(line_base); // NOI18N
+            str.append("; line_range: ").append(line_range); // NOI18N
+            str.append("; opcode_base: ").append(opcode_base); // NOI18N
+            str.append("; standard_opcode_lengths: { "); // NOI18N
+            str.append(standard_opcode_lengths[0]).append(", "); // NOI18N
+            str.append(standard_opcode_lengths[1]).append(", "); // NOI18N
+            str.append(standard_opcode_lengths[2]).append(", "); // NOI18N
+            str.append(standard_opcode_lengths[3]).append(", "); // NOI18N
+            str.append(standard_opcode_lengths[4]).append(", "); // NOI18N
+            str.append(standard_opcode_lengths[5]).append(", "); // NOI18N
+            str.append(standard_opcode_lengths[6]).append(", "); // NOI18N
+            str.append(standard_opcode_lengths[7]).append(", "); // NOI18N
+            str.append(standard_opcode_lengths[8]).append(" } ]"); // NOI18N
             return str.toString();
         }
     }
@@ -132,17 +131,23 @@ public class Dwarf2NameFinder {
             dw2 = SectionFinder.mapSection(binaryFile, DEBUG_LINE);
             this.binaryFile = binaryFile;
 
-            Runtime r = Runtime.getRuntime();
-            System.out.println("mem free = " + r.freeMemory() + " total = " + r.totalMemory());
-            System.out.print("Scanning " + binaryFile + "...");
-            long now = -System.currentTimeMillis();
+            long now;
+            if (Configuration.DEBUG) {
+                Runtime r = Runtime.getRuntime();
+                System.out.println("mem free = " + r.freeMemory() + " total = " + r.totalMemory()); // NOI18N
+                System.out.print("Scanning " + binaryFile + "..."); // NOI18N
+                now = -System.currentTimeMillis();
+            }
             scan();
-            now += System.currentTimeMillis();
-            System.out.println("done");
-            System.out.println("scanned " + cache.size() + " compilation units in " + now + " nss");
-            System.gc();
-            System.out.println("mem free = " + r.freeMemory() + " total = " + r.totalMemory());
-            System.err.println(cache);
+            if (Configuration.DEBUG) {
+                now += System.currentTimeMillis();
+                Runtime r = Runtime.getRuntime();
+                System.out.println("done"); // NOI18N
+                System.out.println("scanned " + cache.size() + " compilation units in " + now + " nss"); // NOI18N
+                System.gc();
+                System.out.println("mem free = " + r.freeMemory() + " total = " + r.totalMemory()); // NOI18N
+                System.err.println(cache);
+            }
         } catch (IOException ioe) {
             if (Configuration.DEBUG) {
                 logger.log(DEBUG, "can''t map .debug_line in {0}: {1}", new Object[]{binaryFile, ioe.getMessage()});
@@ -163,7 +168,7 @@ public class Dwarf2NameFinder {
 
     private void lookup(final long target, boolean scan_only) {
         if (Configuration.DEBUG) {
-            logger.log(DEBUG, "Dwarf2NameFinder.lookup: {0} 0x{1}",
+            logger.log(DEBUG, "Dwarf2NameFinder.lookup: {0} 0x{1}", // NOI18N
                     new Object[]{binaryFile, Long.toHexString(target)});
         }
 
@@ -176,7 +181,9 @@ public class Dwarf2NameFinder {
 
         CacheEntry e = (CacheEntry) cache.get(target);
         if (e != null) {
-            System.out.println("got cache entry " + e);
+            if (Configuration.DEBUG) {
+                System.out.println("got cache entry " + e); // NOI18N
+            }
             if (interpret(target, e.section, e.fileNames, e.header, false)) {
                 return;
             }
@@ -186,7 +193,7 @@ public class Dwarf2NameFinder {
         dw2.limit(dw2.capacity());
 
         if (Configuration.DEBUG) {
-            logger.log(DEBUG, "Mapped .debug_line section is {0} bytes", new Integer(dw2.capacity()));
+            logger.log(DEBUG, "Mapped .debug_line section is {0} bytes", Integer.valueOf(dw2.capacity())); // NOI18N
         }
 
         while (dw2.hasRemaining()) {
@@ -194,22 +201,22 @@ public class Dwarf2NameFinder {
             dw2_debug_line header = new dw2_debug_line();
             header.get(dw2);
             if (Configuration.DEBUG) {
-                logger.log(DEBUG, "read debug_line header: {0}", header);
+                logger.log(DEBUG, "read debug_line header: {0}", header); // NOI18N
             }
             final int end = (int) (begin + header.total_length + 4);
             final int prologue_end = (int) (begin + header.prologue_length + 9);
 
             if (Configuration.DEBUG) {
-                logger.log(DEBUG, "this section starts at {0}, ends at {1}, and the prologue ends at {2}",
-                        new Object[]{new Integer(begin), new Integer(end),
-                            new Integer(prologue_end)});
+                logger.log(DEBUG, "this section starts at {0}, ends at {1}, and the prologue ends at {2}", // NOI18N
+                        new Object[]{Integer.valueOf(begin), Integer.valueOf(end),
+                            Integer.valueOf(prologue_end)});
             }
 
             if (header.version != 2 || header.opcode_base != 10) {
                 if (Configuration.DEBUG) {
-                    logger.log(DEBUG, "skipping this section; not DWARF-2 (version={0}, opcode_base={1})",
-                            new Object[]{new Integer(header.version),
-                                new Integer(header.opcode_base)});
+                    logger.log(DEBUG, "skipping this section; not DWARF-2 (version={0}, opcode_base={1})", // NOI18N
+                            new Object[]{Integer.valueOf(header.version),
+                                Integer.valueOf(header.opcode_base)});
                 }
                 dw2.position(end);
                 continue;
@@ -222,16 +229,16 @@ public class Dwarf2NameFinder {
             String s;
             while ((s = getString(prologue)).length() > 0) {
                 if (Configuration.DEBUG) {
-                    logger.log(DEBUG, "Skipped directory: {0}", s);
+                    logger.log(DEBUG, "Skipped directory: {0}", s); // NOI18N
                 }
             }
 
             // Read the file names.
-            LinkedList fnames = new LinkedList();
+            LinkedList<String> fnames = new LinkedList<String>();
             while (prologue.hasRemaining()) {
                 String fname = getString(prologue);
                 if (Configuration.DEBUG) {
-                    logger.log(DEBUG, "File name: {0}", fname);
+                    logger.log(DEBUG, "File name: {0}", fname); // NOI18N
                 }
                 fnames.add(fname);
 
@@ -239,7 +246,7 @@ public class Dwarf2NameFinder {
                 long u2 = getUleb128(prologue);
                 long u3 = getUleb128(prologue);
                 if (Configuration.DEBUG) {
-                    logger.log(DEBUG, "dir: {0}, time: {1}, len: {2}", new Object[]{new Long(u1), new Long(u2), new Long(u3)});
+                    logger.log(DEBUG, "dir: {0}, time: {1}, len: {2}", new Object[]{Long.valueOf(u1), Long.valueOf(u2), Long.valueOf(u3)}); // NOI18N
                 }
             }
             prologue = null;
@@ -256,6 +263,7 @@ public class Dwarf2NameFinder {
         }
     }
 
+    @SuppressWarnings("fallthrough")
     private boolean interpret(long target, ByteBuffer section, LinkedList fnames,
             dw2_debug_line header, boolean scan_only) {
         long address = 0;
@@ -283,20 +291,20 @@ public class Dwarf2NameFinder {
                         long insn_len = getUleb128(section);
                         opcode = section.get();
                         if (Configuration.DEBUG) {
-                            logger.log(DEBUG, "special opcode {0}, insn_len={1}",
-                                    new Object[]{new Integer(opcode), new Long(insn_len)});
+                            logger.log(DEBUG, "special opcode {0}, insn_len={1}", // NOI18N
+                                    new Object[]{Integer.valueOf(opcode), Long.valueOf(insn_len)});
                         }
 
                         switch (opcode) {
                             case DW_LNE_end_sequence:
                                 if (Configuration.DEBUG) {
-                                    logger.log(DEBUG, "End of sequence");
+                                    logger.log(DEBUG, "End of sequence"); // NOI18N
                                 }
                                 if (!scan_only && (base_address <= target && address > target)) {
                                     lineNumber = prev_lineno;
                                     sourceFile = (String) ((prev_fileno >= 0 && prev_fileno < fnames.size())
                                             ? fnames.get(prev_fileno) : define_file);
-                                    logger.log(DEBUG, "found {0}:{1} for {2}", new Object[]{sourceFile, new Integer(lineNumber), Long.toHexString(target)});
+                                    logger.log(DEBUG, "found {0}:{1} for {2}", new Object[]{sourceFile, Integer.valueOf(lineNumber), Long.toHexString(target)}); // NOI18N
 
                                     cache.put(base_address, address,
                                             new CacheEntry(fnames, section, header));
@@ -323,7 +331,7 @@ public class Dwarf2NameFinder {
                                 base_address |= (section.get() & 0xFFL) << 24;
                                 address = base_address;
                                 if (Configuration.DEBUG) {
-                                    logger.log(DEBUG, "Set address to 0x{0}", Long.toHexString(address));
+                                    logger.log(DEBUG, "Set address to 0x{0}", Long.toHexString(address)); // NOI18N
                                 }
 
                                 // XXX this might not be correct, as there can be more
@@ -331,7 +339,7 @@ public class Dwarf2NameFinder {
                                 // unit.
                                 if (!scan_only && address > target) {
                                     if (Configuration.DEBUG) {
-                                        logger.log(DEBUG, "not in this unit base=0x{0}, target=0x{1}",
+                                        logger.log(DEBUG, "not in this unit base=0x{0}, target=0x{1}", // NOI18N
                                                 new Object[]{Long.toHexString(address),
                                                     Long.toHexString(target)});
                                     }
@@ -342,7 +350,7 @@ public class Dwarf2NameFinder {
                             case DW_LNE_define_file:
                                 define_file = getString(section);
                                 if (Configuration.DEBUG) {
-                                    logger.log(DEBUG, "Define file: {0}", define_file);
+                                    logger.log(DEBUG, "Define file: {0}", define_file); // NOI18N
                                 }
                                 getUleb128(section);
                                 getUleb128(section);
@@ -351,23 +359,23 @@ public class Dwarf2NameFinder {
 
                             default:
                                 if (Configuration.DEBUG) {
-                                    logger.log(DEBUG, "Unsupported extended opcode {0}",
-                                            new Integer(opcode));
+                                    logger.log(DEBUG, "Unsupported extended opcode {0}", // NOI18N
+                                            Integer.valueOf(opcode));
                                 }
                                 section.position(section.position() + (int) insn_len);
                                 break;
                         }
-
+                        // fallthrough is legitimate (program author said)
                     }
                     case DW_LNS_copy:
                         if (Configuration.DEBUG) {
-                            logger.log(DEBUG, "Copy");
+                            logger.log(DEBUG, "Copy"); // NOI18N
                         }
                         if (!scan_only && (base_address <= target && address > target)) {
                             lineNumber = prev_lineno;
                             sourceFile = (String) ((prev_fileno >= 0 && prev_fileno < fnames.size())
                                     ? fnames.get(prev_fileno) : define_file);
-                            logger.log(DEBUG, "found {0}:{1} for {2}", new Object[]{sourceFile, new Integer(lineNumber), Long.toHexString(target)});
+                            logger.log(DEBUG, "found {0}:{1} for {2}", new Object[]{sourceFile, Integer.valueOf(lineNumber), Long.toHexString(target)}); // NOI18N
 
                             cache.put(base_address, address,
                                     new CacheEntry(fnames, section, header));
@@ -391,8 +399,8 @@ public class Dwarf2NameFinder {
                                 }
                             }
                             if (Configuration.DEBUG) {
-                                logger.log(DEBUG, "Advance PC by {0} to 0x{1}",
-                                        new Object[]{new Long(amt),
+                                logger.log(DEBUG, "Advance PC by {0} to 0x{1}", // NOI18N
+                                        new Object[]{Long.valueOf(amt),
                                             Long.toHexString(address)});
                             }
                         }
@@ -404,7 +412,7 @@ public class Dwarf2NameFinder {
                             prev_lineno = lineno;
                             lineno += (int) amt;
                             if (Configuration.DEBUG) {
-                                logger.log(DEBUG, "Advance line by {0} to {1}", new Object[]{new Long(amt), new Integer(lineno)});
+                                logger.log(DEBUG, "Advance line by {0} to {1}", new Object[]{Long.valueOf(amt), Integer.valueOf(lineno)}); // NOI18N
                             }
                         }
                         break;
@@ -413,26 +421,26 @@ public class Dwarf2NameFinder {
                         prev_fileno = fileno;
                         fileno = (int) getUleb128(section) - 1;
                         if (Configuration.DEBUG) {
-                            logger.log(DEBUG, "Set file to {0}", new Integer(fileno));
+                            logger.log(DEBUG, "Set file to {0}", Integer.valueOf(fileno)); // NOI18N
                         }
                         break;
 
                     case DW_LNS_set_column:
                         getUleb128(section);
                         if (Configuration.DEBUG) {
-                            logger.log(DEBUG, "Set column (ignored)");
+                            logger.log(DEBUG, "Set column (ignored)"); // NOI18N
                         }
                         break;
 
                     case DW_LNS_negate_stmt:
                         if (Configuration.DEBUG) {
-                            logger.log(DEBUG, "Negate statement (ignored)");
+                            logger.log(DEBUG, "Negate statement (ignored)"); // NOI18N
                         }
                         break;
 
                     case DW_LNS_set_basic_block:
                         if (Configuration.DEBUG) {
-                            logger.log(DEBUG, "Set basic block (ignored)");
+                            logger.log(DEBUG, "Set basic block (ignored)"); // NOI18N
                         }
                         break;
 
@@ -447,8 +455,8 @@ public class Dwarf2NameFinder {
                             }
                         }
                         if (Configuration.DEBUG) {
-                            logger.log(DEBUG, "Advance PC by (constant) {0} to 0x{1}",
-                                    new Object[]{new Integer(const_pc_add),
+                            logger.log(DEBUG, "Advance PC by (constant) {0} to 0x{1}", // NOI18N
+                                    new Object[]{Integer.valueOf(const_pc_add),
                                         Long.toHexString(address)});
                         }
                         break;
@@ -458,8 +466,8 @@ public class Dwarf2NameFinder {
                             int amt = section.getShort() & 0xFFFF;
                             address += amt;
                             if (Configuration.DEBUG) {
-                                logger.log(DEBUG, "Advance PC by (fixed) {0} to 0x{1}",
-                                        new Object[]{new Integer(amt),
+                                logger.log(DEBUG, "Advance PC by (fixed) {0} to 0x{1}", // NOI18N
+                                        new Object[]{Integer.valueOf(amt),
                                             Long.toHexString(address)});
                             }
                         }
@@ -473,18 +481,18 @@ public class Dwarf2NameFinder {
                 int new_line = lineno + line_adv;
                 if (Configuration.DEBUG) {
                     logger.log(DEBUG,
-                            "Special opcode {0} advance line by {1} to {2} and address by {3} to 0x{4}",
-                            new Object[]{new Integer(opcode & 0xFF),
-                                new Integer(line_adv),
-                                new Integer(new_line),
-                                new Integer(addr_adv),
+                            "Special opcode {0} advance line by {1} to {2} and address by {3} to 0x{4}", // NOI18N
+                            new Object[]{Integer.valueOf(opcode & 0xFF),
+                                Integer.valueOf(line_adv),
+                                Integer.valueOf(new_line),
+                                Integer.valueOf(addr_adv),
                                 Long.toHexString(new_addr)});
                 }
                 if (!scan_only && base_address <= target && new_addr >= target) {
                     lineNumber = new_addr == target ? new_line : lineno;
                     sourceFile = (String) ((fileno >= 0 && fileno < fnames.size())
                             ? fnames.get(fileno) : define_file);
-                    logger.log(DEBUG, "found {0}:{1} for {2}", new Object[]{sourceFile, new Integer(lineNumber), Long.toHexString(target)});
+                    logger.log(DEBUG, "found {0}:{1} for {2}", new Object[]{sourceFile, Integer.valueOf(lineNumber), Long.toHexString(target)}); // NOI18N
 
                     cache.put(base_address, new_addr,
                             new CacheEntry(fnames, section, header));
@@ -516,7 +524,7 @@ public class Dwarf2NameFinder {
         return false;
     }
 
-    private class CacheEntry {
+    private static class CacheEntry {
 
         final dw2_debug_line header;
         final LinkedList fileNames;

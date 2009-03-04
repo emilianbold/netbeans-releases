@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "test_dl.h"
 
 #include <stdio.h>
@@ -12,7 +13,6 @@
 #else
 #include <malloc.h>
 #endif
-
 
 void test_dl(int step) {
     Dl_info di;

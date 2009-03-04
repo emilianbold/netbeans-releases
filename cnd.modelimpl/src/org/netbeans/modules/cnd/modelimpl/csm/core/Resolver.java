@@ -53,6 +53,8 @@ public interface Resolver {
     public static final int CLASS = 1 << 2;
     public static final int ALL = NAMESPACE | CLASSIFIER | CLASS;
 
+    public Collection<CsmProject> getLibraries();
+
     public CsmFile getStartFile();
 
     /**

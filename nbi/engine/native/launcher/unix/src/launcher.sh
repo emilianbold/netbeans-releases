@@ -140,7 +140,7 @@ entryPoint() {
 }
 
 initSymlinkArgument() {
-        testSymlinkErr=`test -L / > /dev/null`
+        testSymlinkErr=`test -L / 2>&1 > /dev/null`
         if [ -z "$testSymlinkErr" ] ; then
             isSymlink=-L
         else

@@ -54,7 +54,6 @@ import javax.swing.JComponent;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
@@ -73,18 +72,15 @@ import org.openide.nodes.Node;
 public class ExternalBindingPanel extends SaveableSectionInnerPanel {
     private ExternalBindingTablePanel panel;
     private Node node;
-    private JaxWsModel jmodel;
     private boolean jaxwsIsDirty;
     
     /** Creates new form ExternalBindingPanel */
-    public ExternalBindingPanel(SectionView sectionView,
-            Node node, JaxWsModel jmodel) {
+    public ExternalBindingPanel(SectionView sectionView, Node node) {
         super(sectionView);
         this.node = node;
-        this.jmodel = jmodel;
         
         ExternalBindingTablePanel.EBTableModel model = new ExternalBindingTablePanel.EBTableModel();
-        panel = new ExternalBindingTablePanel(model, node, jmodel);
+        panel = new ExternalBindingTablePanel(model, node);
         panel.populateModel();
         initComponents2();
     }

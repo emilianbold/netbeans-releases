@@ -359,6 +359,7 @@ made subject to such option by the copyright holder.
                 <folder name="Factories">
                     <file name="org-netbeans-modules-mobility-svgcore-SVGDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
                 </folder>
                 <folder name="Actions">
@@ -424,6 +425,7 @@ made subject to such option by the copyright holder.
                 <folder name="Factories">
                     <file name="org-netbeans-modules-mobility-svgcore-palette-SVGPaletteItemDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
                 </folder>
                 <folder name="Actions">

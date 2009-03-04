@@ -168,8 +168,8 @@ public class FileElementsCollector {
     public synchronized Collection<CsmNamespace> _getVisibleNamespaces() {
         Collection<CsmNamespace> res = visibleNamespaces;
         if (res == null) {
-            res = CsmUsingResolver.extractNamespaces(globalUsingNamespaces);
-            res.addAll(CsmUsingResolver.extractNamespaces(localUsingNamespaces));
+            res = UsingResolverImpl.extractNamespaces(globalUsingNamespaces, destFile.getProject());
+            res.addAll(UsingResolverImpl.extractNamespaces(localUsingNamespaces, destFile.getProject()));
             // add scope's and unnamed visible namespaces
             res.addAll(globalDirectVisibleNamespaces);
             res.addAll(localDirectVisibleNamespaces);

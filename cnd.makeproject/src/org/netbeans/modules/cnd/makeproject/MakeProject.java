@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -108,6 +109,12 @@ import org.w3c.dom.Text;
 /**
  * Represents one plain Make project.
  */
+@AntBasedProjectRegistration(
+    iconResource=MakeConfigurationDescriptor.ICON,
+    type=MakeProjectType.TYPE,
+    sharedNamespace=MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+    privateNamespace=MakeProjectType.PRIVATE_CONFIGURATION_NAMESPACE
+)
 public final class MakeProject implements Project, AntProjectListener {
 
 //    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
@@ -129,7 +136,7 @@ public final class MakeProject implements Project, AntProjectListener {
     private Set<String> cppExtensions = MakeProject.createExtensionSet();
     private String sourceEncoding = null;
 
-    MakeProject(AntProjectHelper helper) throws IOException {
+    public MakeProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();

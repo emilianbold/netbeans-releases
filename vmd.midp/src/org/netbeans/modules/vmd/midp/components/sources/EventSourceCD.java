@@ -91,7 +91,7 @@ public final class EventSourceCD extends ComponentDescriptor {
         );
     }
 
-    public DefaultPropertiesPresenter createPropertiesPresenter () {
+    public Presenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_ACTION_PROPERTIES)
                 .addProperty(NbBundle.getMessage(EventSourceCD.class, "DISP_EventSource_Action"), PropertyEditorEventHandler.createInstance(), PROP_EVENT_HANDLER) // NOI18N

@@ -67,6 +67,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.LookupProviderSupport;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -93,6 +94,14 @@ import org.w3c.dom.Element;
  * Represents one module suite project.
  * @author Jesse Glick
  */
+@AntBasedProjectRegistration(
+    type=SuiteProjectType.TYPE,
+    iconResource="org/netbeans/modules/apisupport/project/suite/resources/suite.png", // NOI18N
+    sharedName=SuiteProjectType.NAME_SHARED,
+    sharedNamespace= SuiteProjectType.NAMESPACE_SHARED,
+    privateName=SuiteProjectType.NAME_PRIVATE,
+    privateNamespace= SuiteProjectType.NAMESPACE_PRIVATE
+)
 public final class SuiteProject implements Project {
     
     public static final String SUITE_ICON_PATH =
@@ -298,18 +307,26 @@ public final class SuiteProject implements Project {
         });
         // refresh build.xml and build-impl.xml
         try {
-            genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    SuiteProject.class.getResource("resources/build-impl.xsl"),
-                    true);
-            genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_XML_PATH,
-                    SuiteProject.class.getResource("resources/build.xsl"),
-                    true);
+            refreshBuildScripts(true);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
     }
+
+    public void refreshBuildScripts(boolean checkForProjectXmlModified) throws IOException {
+        String buildImplPath =
+                getPlatform(true).getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65 && eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
+                ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
+        genFilesHelper.refreshBuildScript(
+                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                SuiteProject.class.getResource("resources/" + buildImplPath),// NOI18N
+                checkForProjectXmlModified);
+        genFilesHelper.refreshBuildScript(
+                GeneratedFilesHelper.BUILD_XML_PATH,
+                SuiteProject.class.getResource("resources/build.xsl"),// NOI18N
+                checkForProjectXmlModified);
+    }
+
     private final class OpenedHook extends ProjectOpenedHook {
         OpenedHook() {}
         public void projectOpened() {
@@ -330,9 +347,13 @@ public final class SuiteProject implements Project {
         
         protected void projectXmlSaved() throws IOException {
             // refresh build.xml and build-impl.xml
+            String buildImplPath =
+                    getPlatform(true).getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
+                    && eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
+                    ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
             genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    SuiteProject.class.getResource("resources/build-impl.xsl"),
+                    SuiteProject.class.getResource("resources/" + buildImplPath),
                     false);
             genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_XML_PATH,
@@ -347,7 +368,15 @@ public final class SuiteProject implements Project {
         public File getSuiteDirectory() {
             return getProjectDirectoryFile();
         }
-        
+
+        private static final String CLUSTER_PROP = "${cluster}";
+        public File getClusterDirectory() {
+            String clusterName = getEvaluator().evaluate(CLUSTER_PROP);
+            if (CLUSTER_PROP.equals(clusterName))
+                // not overriden, use default
+                clusterName = SuiteProperties.CLUSTER_DIR;
+            return getHelper().resolveFile(clusterName).getAbsoluteFile();
+        }
     }
     
     private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates, RecommendedTemplates {

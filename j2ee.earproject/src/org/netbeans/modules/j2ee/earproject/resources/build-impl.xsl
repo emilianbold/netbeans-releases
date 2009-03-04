@@ -177,6 +177,26 @@ is divided into following sections:
                     </and>
                 </condition>
                 <available property="has.custom.manifest" file="${{meta.inf}}/MANIFEST.MF"/>
+                
+                <xsl:comment>
+                    Variables needed to support directory deployment.
+                </xsl:comment>
+                <condition property="do.package.with.custom.manifest.not.directory.deploy">
+                    <and>
+                        <isset property="has.custom.manifest"/>
+                        <isfalse value="${{directory.deployment.supported}}"/>
+                    </and>
+                </condition>
+                <condition property="do.package.without.custom.manifest.not.directory.deploy">
+                    <and>
+                        <not>
+                            <isset property="has.custom.manifest"/>
+                        </not>
+                        <isfalse value="${{directory.deployment.supported}}"/>
+                    </and>
+                </condition>
+                <xsl:comment>End Variables needed to support directory deployment.</xsl:comment>
+
                 <condition property="j2ee.appclient.mainclass.tool.param" value="-mainclass ${{main.class}}" else="">
                     <and>
                         <isset property="main.class"/>
@@ -316,8 +336,8 @@ exists or setup the property manually. For example like this:
             </target>
 
             <xsl:comment>
-    DIST BUILDING SECTION
-    </xsl:comment>
+                DIST BUILDING SECTION
+            </xsl:comment>
 
             <target name="pre-dist">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
@@ -343,6 +363,39 @@ exists or setup the property manually. For example like this:
                     <fileset dir="${{build.dir}}"/>
                 </jar>
             </target>
+
+            <xsl:comment>
+                TARGETS NEEDED TO SUPPORT DIRECTORY DEPLOYMENT
+            </xsl:comment>
+
+            <target name="-do-tmp-dist-without-manifest">
+                <xsl:attribute name="depends">init,compile,pre-dist</xsl:attribute>
+                <xsl:attribute name="if">do.package.without.custom.manifest.not.directory.deploy</xsl:attribute>
+                <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
+                <mkdir dir="${{dist.jar.dir}}"/>
+                <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
+                    <fileset dir="${{build.dir}}"/>
+                </jar>
+            </target>
+
+            <target name="-do-tmp-dist-with-manifest">
+                <xsl:attribute name="depends">init,compile,pre-dist</xsl:attribute>
+                <xsl:attribute name="if">do.package.with.custom.manifest.not.directory.deploy</xsl:attribute>
+                <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
+                <mkdir dir="${{dist.jar.dir}}"/>
+                <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}" manifest="${{meta.inf}}/MANIFEST.MF">
+                    <fileset dir="${{build.dir}}"/>
+                </jar>
+            </target>
+
+            <target name="-do-dist-directory-deploy" depends="init,compile,pre-dist,-do-tmp-dist-without-manifest,-do-tmp-dist-with-manifest"/>
+            <target name="dist-directory-deploy">
+                <xsl:attribute name="depends">init,compile,pre-dist,-do-dist-directory-deploy,post-dist</xsl:attribute>
+                <xsl:attribute name="description">Build distribution (JAR) - if directory deployment is not supported.</xsl:attribute>
+            </target>
+            <xsl:comment>
+                END TARGETS NEEDED TO SUPPORT DIRECTORY DEPLOYMENT
+            </xsl:comment>
             
             <target name="post-dist">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
@@ -390,7 +443,7 @@ exists or setup the property manually. For example like this:
     </target>
             
     <target name="run-deploy">
-        <xsl:attribute name="depends">-init-cos,dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
+        <xsl:attribute name="depends">-init-cos,dist-directory-deploy,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
     </target>
 
     <target name="-run-deploy-nb" if="netbeans.home">

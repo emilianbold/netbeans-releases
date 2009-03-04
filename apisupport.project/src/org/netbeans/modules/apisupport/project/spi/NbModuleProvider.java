@@ -116,7 +116,13 @@ public interface NbModuleProvider {
     
     /**
      * add/updates the given dependency to the project
-     */ 
+     * @param codeNameBase 
+     * @param releaseVersion 
+     * @param version 
+     * @param useInCompiler 
+     * @return
+     * @throws IOException
+     */
     boolean addDependency(
             final String codeNameBase, final String releaseVersion,
             final SpecificationVersion version, final boolean useInCompiler) throws IOException;
@@ -124,7 +130,8 @@ public interface NbModuleProvider {
     /**
      * checks the declared version of the given dependency
      * @param codenamebase 
-     * @return 
+     * @return
+     * @throws IOException
      */ 
     SpecificationVersion getDependencyVersion(String codenamebase) throws IOException;
     
@@ -133,6 +140,13 @@ public interface NbModuleProvider {
      * @return location of the root directory of NetBeans platform installation
      */ 
     File getActivePlatformLocation();
-    
-    
+
+    /**
+     * Returns location of built module JAR (file need not to exist).
+     *
+     * Currently (6.7) used only for suite-chaining. May return <tt>null</tt>,
+     * module project cannot be chained into another suite in such case.
+     * @return location of built module JAR
+     */
+    File getModuleJarLocation();
 }

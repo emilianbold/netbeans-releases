@@ -114,6 +114,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert ns != null;
         this.globalNamespaceUID = UIDCsmConverter.namespaceToUID(ns);
         declarationsSorageKey = new DeclarationContainer(this).getKey();
+        classifierStorageKey = new ClassifierContainer(this).getKey();
         fileContainerKey = new FileContainer(this).getKey();
         graphStorageKey = new GraphContainer(this).getKey();
         FAKE_GLOBAL_NAMESPACE = new NamespaceImpl(this, true);
@@ -316,12 +317,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public final CsmClassifier findClassifier(CharSequence qualifiedName) {
-        CsmClassifier result = classifierContainer.getClassifier(qualifiedName);
+        CsmClassifier result = getClassifierSorage().getClassifier(qualifiedName);
         return result;
     }
 
     public final Collection<CsmClassifier> findClassifiers(CharSequence qualifiedName) {
-        CsmClassifier result = classifierContainer.getClassifier(qualifiedName);
+        CsmClassifier result = getClassifierSorage().getClassifier(qualifiedName);
         Collection<CsmClassifier> out = UIDCsmConverter.UIDsToDeclarations(new ArrayList<CsmUID<CsmClassifier>>());
         //Collection<CsmClassifier> out = new LazyCsmCollection<CsmClassifier, CsmClassifier>(new ArrayList<CsmUID<CsmClassifier>>(), TraceFlags.SAFE_UID_ACCESS);
         if (result != null) {
@@ -394,7 +395,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             CharSequence qname = cls.getQualifiedName();
 
             synchronized (classifierReplaceLock) {
-                CsmClassifier old = classifierContainer.getClassifier(qname);
+                CsmClassifier old = getClassifierSorage().getClassifier(qname);
                 if (old != null) {
                     // don't register if the new one is weaker
                     if (cls.shouldBeReplaced(old)) {
@@ -412,12 +413,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     }
                 }
                 getDeclarationsSorage().putDeclaration(decl);
-                classifierContainer.putClassifier((CsmClassifier) decl);
+                getClassifierSorage().putClassifier((CsmClassifier) decl);
             }
 
         } else if (CsmKindUtilities.isTypedef(decl)) { // isClassifier(decl) or isTypedef(decl) ??
             getDeclarationsSorage().putDeclaration(decl);
-            classifierContainer.putClassifier((CsmClassifier) decl);
+            getClassifierSorage().putClassifier((CsmClassifier) decl);
         } else {
             // only classes, enums and typedefs are registered as classifiers;
             // even if you implement CsmClassifier, this doesn't mean you atomatically get there ;)
@@ -435,7 +436,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             traceRegistration("unregistered " + decl + " UID " + UIDs.get(decl)); //NOI18N
         }
         if (decl instanceof CsmClassifier) {
-            classifierContainer.removeClassifier(decl);
+            getClassifierSorage().removeClassifier(decl);
         }
         getDeclarationsSorage().removeDeclaration(decl);
     }
@@ -1959,6 +1960,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             ProjectComponent.setStable(declarationsSorageKey);
             ProjectComponent.setStable(fileContainerKey);
             ProjectComponent.setStable(graphStorageKey);
+            ProjectComponent.setStable(classifierStorageKey);
 
             if (!libsAlreadyParsed) {
                 ParseFinishNotificator.onParseFinish(this);
@@ -2463,7 +2465,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     private CharSequence uniqueName = null; // lazy initialized
     private Map<CharSequence, CsmUID<CsmNamespace>> namespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
-    private ClassifierContainer classifierContainer = new ClassifierContainer();
+    //private ClassifierContainer classifierContainer = new ClassifierContainer();
+    private final Key classifierStorageKey;
 
     // collection of sharable system macros and system includes
     private APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
@@ -2504,11 +2507,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         aStream.writeUTF(RepositoryUtils.getUnitName(getUID()).toString());
         aFactory.writeUID(this.globalNamespaceUID, aStream);
         aFactory.writeStringToUIDMap(this.namespaces, aStream, false);
-        classifierContainer.write(aStream);
 
         ProjectComponent.writeKey(fileContainerKey, aStream);
         ProjectComponent.writeKey(declarationsSorageKey, aStream);
         ProjectComponent.writeKey(graphStorageKey, aStream);
+        ProjectComponent.writeKey(classifierStorageKey, aStream);
 
         PersistentUtils.writeUTF(this.uniqueName, aStream);
     }
@@ -2530,7 +2533,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert globalNamespaceUID != null : "globalNamespaceUID can not be null";
 
         aFactory.readStringToUIDMap(this.namespaces, aStream, QualifiedNameCache.getManager());
-        this.classifierContainer = new ClassifierContainer(aStream);
 
         fileContainerKey = ProjectComponent.readKey(aStream);
         assert fileContainerKey != null : "fileContainerKey can not be null";
@@ -2540,6 +2542,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         graphStorageKey = ProjectComponent.readKey(aStream);
         assert graphStorageKey != null : "graphStorageKey can not be null";
+
+        classifierStorageKey = ProjectComponent.readKey(aStream);
+        assert classifierStorageKey != null : "classifierStorageKey can not be null";
 
         this.uniqueName = PersistentUtils.readUTF(aStream);
         assert uniqueName != null : "uniqueName can not be null";
@@ -2573,4 +2578,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         return gc != null ? gc : GraphContainer.empty();
     }
+
+    final ClassifierContainer getClassifierSorage() {
+        ClassifierContainer cc = (ClassifierContainer) RepositoryUtils.get(classifierStorageKey);
+        if (cc == null) {
+            DiagnosticExceptoins.register(new IllegalStateException("Failed to get ClassifierSorage by key " + classifierStorageKey)); // NOI18N
+        }
+        return cc != null ? cc : ClassifierContainer.empty();
+    }
+
 }
