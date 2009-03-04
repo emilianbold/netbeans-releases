@@ -342,6 +342,7 @@ public final class TargetExecutor implements Runnable {
                 stopActions.put(io, sa);
                 rerunActions.put(io, ra);
             }
+            io.select();
             task = ExecutionEngine.getDefault().execute(null, this, InputOutput.NULL);
         }
         WrapperExecutorTask wrapper = new WrapperExecutorTask(task, io);
