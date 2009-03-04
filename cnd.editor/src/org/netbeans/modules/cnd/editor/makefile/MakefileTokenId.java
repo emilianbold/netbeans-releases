@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,35 +37,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.gsf.testrunner.output;
+package org.netbeans.modules.cnd.editor.makefile;
+
+import org.netbeans.api.lexer.TokenId;
+
 
 /**
- * Represents an output line in the test results window.
  *
- * @author Erno Mononen
+ * @author Jan Jancura
  */
-public final class OutputLine {
+public enum MakefileTokenId implements TokenId {
 
-    private final String line;
-    private final boolean error;
+    WHITESPACE ("whitespace"),
+    NEW_LINE ("newline"),
+    TAB ("tab"),
+    LINE_COMMENT ("line_comment"),
+    MACRO ("macro"),
+    MACRO_OPERATOR ("macro_operator"),
+    RULE_OPERATOR ("rule_operator"),
+    SEPARATOR ("separator"),
+    KEYWORD ("keyword"),
+    SPECIAL_TARGET ("special_target"),
+    STRING_LITERAL ("string_literal"),
+    IDENTIFIER ("identifier"),
+    ERROR ("error");
 
-    public OutputLine(String line, boolean error) {
-        this.line = line;
-        this.error = error;
+    private String  name;
+    
+    MakefileTokenId (
+        String  name
+    ) {
+        this.name = name;
     }
 
-    public boolean isError() {
-        return error;
+    public String primaryCategory () {
+        return name;
     }
-
-    public String getLine() {
-        return line;
-    }
-
 }

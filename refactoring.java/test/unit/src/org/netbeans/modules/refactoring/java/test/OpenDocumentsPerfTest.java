@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.refactoring.java.test;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.concurrent.ExecutionException;
@@ -45,17 +46,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import junit.framework.Assert;
+import junit.framework.Test;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.junit.Log;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
+import org.netbeans.junit.NbModuleSuite;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import static org.netbeans.modules.refactoring.java.test.Utilities.*;
 
@@ -66,14 +67,25 @@ import static org.netbeans.modules.refactoring.java.test.Utilities.*;
  */
 public class OpenDocumentsPerfTest extends RefPerfTestCase {
 
-    static {
-        OpenDocumentsPerfTest.class.getClassLoader().setDefaultAssertionStatus(true);
-        System.setProperty("org.openide.util.Lookup", TestLkp.class.getName());
-        Assert.assertEquals(TestLkp.class, Lookup.getDefault().getClass());
-    }
-
     public OpenDocumentsPerfTest(String name) {
         super(name);
+    }
+
+    /**
+     * Set-up the services and project
+     */
+    @Override
+    protected void setUp() throws IOException, InterruptedException {
+        clearWorkDir();
+        String work = getWorkDirPath();
+        System.setProperty("netbeans.user", work);
+        projectDir = openProject("SimpleJ2SEApp", getDataDir());
+        File projectSourceRoot = new File(getWorkDirPath(), "SimpleJ2SEApp.src".replace('.', File.separatorChar));
+        FileObject fo = FileUtil.toFileObject(projectSourceRoot);
+
+        boot = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+        source = createSourcePath(projectDir);
+        compile = createEmptyPath();
     }
 
     public void testOpenDocuments()
@@ -106,10 +118,12 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
 
         }
 
-
         System.gc(); System.gc();
         src = null;
         Log.assertInstances("Some instances of parser were not GCed");
     }
 
+    public static Test suite() throws InterruptedException {
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(OpenDocumentsPerfTest.class, "testOpenDocuments").gui(false));
+    }
 }
