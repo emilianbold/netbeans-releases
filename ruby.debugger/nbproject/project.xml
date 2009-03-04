@@ -106,7 +106,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.13</specification-version>
+                        <specification-version>2.14.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

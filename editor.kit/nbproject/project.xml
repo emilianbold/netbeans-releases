@@ -158,7 +158,7 @@
                     <code-name-base>org.netbeans.modules.javascript.editing</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.86.2</specification-version>
+                        <specification-version>0.86.3</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
