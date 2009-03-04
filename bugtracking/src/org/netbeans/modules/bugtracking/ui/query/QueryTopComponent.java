@@ -61,7 +61,6 @@ import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JSeparator;
@@ -454,7 +453,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     private void setNameAndTooltip() throws MissingResourceException {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if(query != null) {
+                if(query != null && query.getDisplayName() != null) {
                     setName(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getDisplayName()}));
                     setToolTipText(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getTooltip()}));
                 } else {

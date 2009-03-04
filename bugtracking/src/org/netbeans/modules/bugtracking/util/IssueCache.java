@@ -207,7 +207,15 @@ public abstract class IssueCache {
         private Map<String, String> seenAttributes;
         private int status;
         private boolean seen;
-        public IssueEntry() { }
+        IssueEntry() { }
+
+        IssueEntry(Issue issue, Map<String, String> seenAttributes, int status, boolean seen) {
+            this.issue = issue;
+            this.seenAttributes = seenAttributes;
+            this.status = status;
+            this.seen = seen;
+        }
+        
         public boolean wasSeen() {
             return seen;
         }
