@@ -186,7 +186,10 @@ public class IssuePanel extends javax.swing.JPanel {
         // componentCombo, versionCombo, targetMilestoneCombo are filled
         // automatically when productCombo is set/changed
         platformCombo.setModel(toComboModel(bugzilla.getPlatforms(repository)));
-        resolutionCombo.setModel(toComboModel(bugzilla.getResolutions(repository)));
+        // Do not support MOVED resolution (yet?)
+        List<String> resolutions = new LinkedList<String>(bugzilla.getResolutions(repository));
+        resolutions.remove("MOVED"); // NOI18N
+        resolutionCombo.setModel(toComboModel(resolutions));
         priorityCombo.setModel(toComboModel(bugzilla.getPriorities(repository)));
         severityCombo.setModel(toComboModel(bugzilla.getSeverities(repository)));
         // stausCombo and resolution fields are filled in reloadForm
