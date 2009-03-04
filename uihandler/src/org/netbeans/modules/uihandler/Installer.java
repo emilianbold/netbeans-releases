@@ -1033,12 +1033,8 @@ public class Installer extends ModuleInstall implements Runnable {
         NodeList forms = doc.getElementsByTagName("form");
         for (int i = 0; i < forms.getLength(); i++) {
             String action = forms.item(i).getAttributes().getNamedItem("action").getNodeValue();
-            if ((action == null) || ("".equals(action))){// logging for issue #145167
-                Logger logger = Logger.getLogger("org.netbeans.ui.logger.Installer");
-                LogRecord rec = new LogRecord(Level.WARNING, "invalid action from doc:");
-                String[] params = new String[]{forms.item(i).toString(), doc.getTextContent(), doc.getDocumentURI()};
-                rec.setParameters(params);
-                logger.log(rec);
+            if ((action == null) || ("".equals(action))) {
+                throw new IllegalStateException("Action should not be empty");
             }
             Form f = new Form(action);
             NodeList inputs = doc.getElementsByTagName("input");
@@ -1131,7 +1127,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 try {
                     url[0] = new URL((String) post);
                 } catch (MalformedURLException ex) {
-                    LOG.log(Level.WARNING, "Cannot decode URL: " + post, ex); // NOI18N
+                    LOG.log(Level.INFO, "Cannot decode URL: " + post, ex); // NOI18N
                     url[0] = null;
                     return null;
                 }
@@ -1444,6 +1440,9 @@ public class Installer extends ModuleInstall implements Runnable {
                     LOG.log(Level.WARNING, null, ex);
                 } catch (SAXException ex) {
                     LOG.log(Level.WARNING, url.toExternalForm(), ex);
+                } catch (IllegalStateException ex){
+                    catchConnectionProblem(ex);
+                    continue;
                 } catch (java.net.SocketTimeoutException ex) {
                     catchConnectionProblem(ex);
                     continue;
