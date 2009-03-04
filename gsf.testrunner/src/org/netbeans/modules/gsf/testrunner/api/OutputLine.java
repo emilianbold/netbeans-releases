@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.gsf.testrunner.output;
+package org.netbeans.modules.gsf.testrunner.api;
 
 /**
  * Represents an output line in the test results window.

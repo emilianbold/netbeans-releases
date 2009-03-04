@@ -443,7 +443,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (file.endsWith("tests.jar")) {
             return false;
         }
-        if (file.startsWith(System.getProperty("java.home").replaceAll("/[^/]*$", ""))) {
+        if (file.startsWith(System.getProperty("java.home").replaceAll("[/\\\\][^/\\\\]*$", ""))) {
             return false;
         }
         if (!acceptFileInDir(file, System.getProperty("netbeans.home"))) {
@@ -457,6 +457,17 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
                 }
             }
         }
+        
+        // mac osx
+        dirs = System.getProperty("java.ext.dirs");
+        if (dirs != null) {
+            for (String dir : dirs.split(File.pathSeparator)) {
+                if (file.startsWith(dir)) {
+                    return false;
+                }
+            }
+        }
+
         return true;
     }
 

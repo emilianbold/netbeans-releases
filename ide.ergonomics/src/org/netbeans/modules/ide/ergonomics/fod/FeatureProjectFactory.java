@@ -161,7 +161,9 @@ public class FeatureProjectFactory implements ProjectFactory {
             try {
                 is = prj.getInputStream();
                 len = is.read(arr);
-                content = new String(arr, 0, len, "UTF-8");
+                if (len >= 0) {
+                    content = new String(arr, 0, len, "UTF-8");
+                }
             } catch (IOException ex) {
                 FoDFileSystem.LOG.log(Level.FINEST, "exception while reading " + prj, ex); // NOI18N
                 len = -1;
