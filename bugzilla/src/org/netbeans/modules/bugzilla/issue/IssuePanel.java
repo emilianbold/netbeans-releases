@@ -63,6 +63,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -373,6 +374,8 @@ public class IssuePanel extends javax.swing.JPanel {
         duplicateField = new javax.swing.JTextField();
         duplicateLabel = new javax.swing.JLabel();
         keywordsButton = new javax.swing.JButton();
+        blocksButton = new javax.swing.JButton();
+        dependsOnButton = new javax.swing.JButton();
 
         resolutionField.setEditable(false);
         resolutionField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -504,12 +507,30 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
 
+        blocksButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.text")); // NOI18N
+        blocksButton.setFocusPainted(false);
+        blocksButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        blocksButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                blocksButtonActionPerformed(evt);
+            }
+        });
+
+        dependsOnButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.text")); // NOI18N
+        dependsOnButton.setFocusPainted(false);
+        dependsOnButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        dependsOnButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dependsOnButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
-            .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
+            .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -564,22 +585,28 @@ public class IssuePanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(reportedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                .add(blocksField)
-                                .add(dependsField)
+                                .add(layout.createSequentialGroup()
+                                    .add(blocksField)
+                                    .add(0, 0, 0)
+                                    .add(blocksButton))
+                                .add(layout.createSequentialGroup()
+                                    .add(dependsField)
+                                    .add(0, 0, 0)
+                                    .add(dependsOnButton))
                                 .add(ccField)
                                 .add(assignedField)
                                 .add(modifiedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .add(qaContactField)
                                 .add(duplicateField))))
-                    .add(scrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+                    .add(scrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
                     .add(attachmentsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(headerLabel)
-                .addContainerGap(470, Short.MAX_VALUE))
+                .addContainerGap(488, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(430, Short.MAX_VALUE)
+                .addContainerGap(448, Short.MAX_VALUE)
                 .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -635,13 +662,15 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(dependsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(dependsLabel))
+                    .add(dependsLabel)
+                    .add(dependsOnButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(blocksLabel)
                     .add(priorityCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(priorityLabel)
-                    .add(blocksField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(blocksField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(blocksButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(severityLabel)
@@ -824,6 +853,30 @@ public class IssuePanel extends javax.swing.JPanel {
         keywordsField.setText(keywords);
     }//GEN-LAST:event_keywordsButtonActionPerformed
 
+    private void blocksButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blocksButtonActionPerformed
+        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.message"), issue.getRepository(), this); // NOI18N
+        if (newIssue != null) {
+            StringBuilder sb = new StringBuilder();
+            if (!blocksField.getText().trim().equals("")) { // NOI18N
+                sb.append(blocksField.getText()).append(',').append(' ');
+            }
+            sb.append(newIssue.getID());
+            blocksField.setText(sb.toString());
+        }
+    }//GEN-LAST:event_blocksButtonActionPerformed
+
+    private void dependsOnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependsOnButtonActionPerformed
+        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.message"), issue.getRepository(), this); // NOI18N
+        if (newIssue != null) {
+            StringBuilder sb = new StringBuilder();
+            if (!dependsField.getText().trim().equals("")) { // NOI18N
+                sb.append(dependsField.getText()).append(',').append(' ');
+            }
+            sb.append(newIssue.getID());
+            dependsField.setText(sb.toString());
+        }
+    }//GEN-LAST:event_dependsOnButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea addCommentArea;
     private javax.swing.JLabel addCommentLabel;
@@ -831,6 +884,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel assignedLabel;
     private javax.swing.JLabel attachmentsLabel;
     private javax.swing.JPanel attachmentsPanel;
+    private javax.swing.JButton blocksButton;
     private javax.swing.JTextField blocksField;
     private javax.swing.JLabel blocksLabel;
     private javax.swing.JButton cancelButton;
@@ -840,6 +894,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel componentLabel;
     private javax.swing.JTextField dependsField;
     private javax.swing.JLabel dependsLabel;
+    private javax.swing.JButton dependsOnButton;
     private javax.swing.JPanel dummyCommentsPanel;
     private javax.swing.JLabel dummyLabel1;
     private javax.swing.JLabel dummyLabel2;
