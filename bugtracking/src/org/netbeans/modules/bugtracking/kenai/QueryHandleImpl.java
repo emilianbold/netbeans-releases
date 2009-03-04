@@ -60,6 +60,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
     private final Query query;
     private final PropertyChangeSupport changeSupport;
     private Issue[] issues = new Issue[0];
+    private boolean firstTime = true;
 
     public QueryHandleImpl(Query query) {
         this.query = query;
@@ -111,6 +112,13 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
             ret.add(qh);
         }
         return ret;
+    }
+
+    public void refreshIfFirstTime() {
+        if(firstTime) {
+            firstTime = false;
+            query.refresh();
+        }
     }
 
     private void registerIssues() {

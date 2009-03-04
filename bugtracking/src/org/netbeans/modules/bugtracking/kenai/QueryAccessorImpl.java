@@ -90,7 +90,9 @@ public class QueryAccessorImpl extends QueryAccessor {
     @Override
     public List<QueryResultHandle> getQueryResults(QueryHandle query) {
         if(query instanceof QueryHandleImpl) {
-            return Collections.unmodifiableList(((QueryHandleImpl) query).getQueryResults());
+            QueryHandleImpl qh = (QueryHandleImpl) query;
+            qh.refreshIfFirstTime();
+            return Collections.unmodifiableList(qh.getQueryResults());
         } else {
             return EMPTY_QRH_LIST;
         }
