@@ -38,54 +38,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
-import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * Key for FileContainer data
  * @author Vladimir Kvashin
  */
 public class FileContainerKey extends ProjectNameBasedKey {
-    
+
     public FileContainerKey(String project) {
-	super(project);
-	//System.err.printf(">>>>> new FileContainerKey %s \n", project);
+        super(project);
+        //System.err.printf(">>>>> new FileContainerKey %s \n", project);
     }
-    
+
     public FileContainerKey(DataInput in) throws IOException {
-	super(in);
+        super(in);
     }
-    
+
     public int getSecondaryDepth() {
-	return 1;
+        return 1;
     }
-    
+
+    @Override
+    public int hashCode() {
+        return 37*KeyObjectFactory.KEY_FILE_CONTAINER_KEY + super.hashCode();
+    }
+
     @Override
     public String toString() {
-	return "FileContainerKey " + getProjectName(); // NOI18N
+        return "FileContainerKey " + getProjectName(); // NOI18N
     }
-    
+
     public int getSecondaryAt(int level) {
-	assert (level == 0);
-	return KeyObjectFactory.KEY_FILE_CONTAINER_KEY;
+        assert (level == 0);
+        return KeyObjectFactory.KEY_FILE_CONTAINER_KEY;
     }
-    
+
     public PersistentFactory getPersistentFactory() {
-	return CsmObjectFactory.instance();
+        return CsmObjectFactory.instance();
     }
 
     @Override
     public Key.Behavior getBehavior() {
-	return Key.Behavior.LargeAndMutable;
+        return Key.Behavior.LargeAndMutable;
     }
-    
 }

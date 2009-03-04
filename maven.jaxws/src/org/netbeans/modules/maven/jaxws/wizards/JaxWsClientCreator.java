@@ -55,7 +55,7 @@ import java.io.IOException;
 import java.util.Collections;
 import org.netbeans.api.project.Project;
 
-import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportIml;
+import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportImpl;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -108,7 +108,7 @@ public class JaxWsClientCreator implements ClientCreator {
             try {
                 wsdlFo = WSUtils.retrieveResource(
                         localWsdlFolder,
-                        (hasSrcFolder ? new URI(MavenJAXWSSupportIml.CATALOG_PATH) : new URI("jax-ws-catalog.xml")), //NOI18N
+                        (hasSrcFolder ? new URI(MavenJAXWSSupportImpl.CATALOG_PATH) : new URI("jax-ws-catalog.xml")), //NOI18N
                         new URI(wsdlUrl));
             } catch (URISyntaxException ex) {
                 //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

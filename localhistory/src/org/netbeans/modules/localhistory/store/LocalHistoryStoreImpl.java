@@ -474,7 +474,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         List<File> lostFiles = getLostFiles();
         for(File lostFile : lostFiles) {
             if(!deleted.containsKey(lostFile.getAbsolutePath())) {
-                if(lostFile.getParentFile().equals(root)) {                    
+                // careful about lostFile being the root folder - it has no parent
+                if(root.equals(lostFile.getParentFile())) {
                     StoreEntry[] storeEntries = getStoreEntriesImpl(lostFile);
                     if(storeEntries == null || storeEntries.length == 0) {
                         continue;

@@ -43,6 +43,11 @@ package org.netbeans.modules.cnd.api.project;
 import java.util.Collection;
 import org.openide.nodes.Node;
 
+/**
+ * this interface is not for extending by clients, only for Lookup queries
+ * C/C++ data objects provides this as cookie
+ * @author Vladimir Voskresensky
+ */
 public interface NativeFileItemSet extends Node.Cookie {
     Collection<NativeFileItem> getItems();
     void add(NativeFileItem item);
