@@ -275,7 +275,7 @@
             <fileset dir="${data.directory}">
 		<include name="addons/**"/>
                 <exclude name="addons"/>
-                <include name="lib/addons/*.*"/>
+                <include name="lib/addons/*.*"/>                
                 <include name="Sun_GlassFish_Enterprise_Server_install.*"/>
 		<include name="Install_Application_Server*"/>
                 <include name="appserv_uninstall.class"/>
