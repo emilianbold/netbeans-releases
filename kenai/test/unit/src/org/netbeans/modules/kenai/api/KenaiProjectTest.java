@@ -43,7 +43,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.net.MalformedURLException;
-import java.net.URL;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
