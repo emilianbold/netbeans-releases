@@ -530,7 +530,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         });
         jToolBar1.add(showMergesChkBox);
 
-        org.openide.awt.Mnemonics.setLocalizedText(fileInfoCheckBox, "Show All Change Paths");
+        org.openide.awt.Mnemonics.setLocalizedText(fileInfoCheckBox, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistoryPanel_AllInfo")); // NOI18N
+        fileInfoCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "LBL_TT_SearchHistoryPanel_AllInfo")); // NOI18N
         fileInfoCheckBox.setFocusable(false);
         fileInfoCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         fileInfoCheckBox.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
