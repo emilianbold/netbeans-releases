@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.core.syntax.gsf;
 
 import java.util.ArrayList;
@@ -60,20 +59,30 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  */
 public class JspEmbeddingProvider extends EmbeddingProvider {
 
+    public static final String GENERATED_CODE = "@@@"; //NOI18N
+
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), JspTokenId.language());
         TokenSequence<JspTokenId> sequence = th.tokenSequence(JspTokenId.language());
         sequence.moveStart();
         List<Embedding> embeddings = new ArrayList<Embedding>();
-        while(sequence.moveNext()) {
+        boolean lastEmbeddingIsVirtual = false;
+        while (sequence.moveNext()) {
             Token t = sequence.token();
-            if(t.id() == JspTokenId.TEXT) {
+            if (t.id() == JspTokenId.TEXT) {
                 //lets suppose the text is always html :-(
                 embeddings.add(snapshot.create(sequence.offset(), t.length(), "text/html")); //NOI18N
+                lastEmbeddingIsVirtual = false;
+            } else {
+                //replace templating tokens by generated code marker
+                if (!lastEmbeddingIsVirtual) {
+                    embeddings.add(snapshot.create(GENERATED_CODE, "text/html"));
+                    lastEmbeddingIsVirtual = true;
+                }
             }
         }
-        if(embeddings.isEmpty()) {
+        if (embeddings.isEmpty()) {
             return Collections.emptyList();
         } else {
             return Collections.singletonList(Embedding.create(embeddings));
@@ -89,14 +98,12 @@ public class JspEmbeddingProvider extends EmbeddingProvider {
     public void cancel() {
         //do nothing
     }
-    
+
     public static final class Factory extends TaskFactory {
 
         @Override
         public Collection<SchedulerTask> create(final Snapshot snapshot) {
             return Collections.<SchedulerTask>singletonList(new JspEmbeddingProvider());
         }
-        
     }
-
 }

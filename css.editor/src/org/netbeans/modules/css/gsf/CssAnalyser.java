@@ -41,7 +41,6 @@ package org.netbeans.modules.css.gsf;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
-import org.netbeans.modules.css.gsf.api.CssEmbeddingModelUtils;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.css.editor.CssPropertyValue;
@@ -81,7 +80,7 @@ public class CssAnalyser {
                         String propertyName = propertyNode.image().trim();
                         //check for vendor specific properies - ignore them
                         Property property = model.getProperty(propertyName);
-                        if (!CssEmbeddingModelUtils.containsGeneratedCode(propertyName) && !isVendorSpecificProperty(propertyName) && property == null) {
+                        if (!CSSGSFParser.containsGeneratedCode(propertyName) && !isVendorSpecificProperty(propertyName) && property == null) {
                             //unknown property - report
                             Error error =
                                     new DefaultError(UNKNOWN_PROPERTY,
@@ -97,7 +96,7 @@ public class CssAnalyser {
                             
                             //do not check values which contains generated code
                             //we are no able to identify the templating semantic
-                            if (!CssEmbeddingModelUtils.containsGeneratedCode(valueImage)) {
+                            if (!CSSGSFParser.containsGeneratedCode(valueImage)) {
                                 CssPropertyValue pv = new CssPropertyValue(property, valueImage);
                                 if (!pv.success()) {
                                     String errorMsg = null;
