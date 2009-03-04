@@ -489,6 +489,16 @@ public final class Utils {
     }
 
     /**
+     * Get a platform independent path (uses '/' as a file separator, similarly to file objects).
+     * @param path path to unify
+     * @return a platform independent path
+     */
+    public static String unifyPath(String path) {
+        assert path != null;
+        return path.replace(File.separatorChar, '/'); // NOI18N
+    }
+
+    /**
      * Browse for a file from the given directory and update the content of the text field.
      * @param folder folder to browse files from.
      * @param textField textfield to update.
@@ -581,7 +591,7 @@ public final class Utils {
         }
         String secure = null;
         if (preselected.length() > 0) {
-            secure = preselected.replace(File.separatorChar, '/'); // NOI18N
+            secure = unifyPath(preselected);
             if (removeExtension) {
                 // e.g. searching in nodes => no file extension can be there
                 int idx = secure.lastIndexOf("."); // NOI18N
