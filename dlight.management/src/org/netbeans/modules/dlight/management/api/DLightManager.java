@@ -383,7 +383,11 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     }
 
     public void mouseClickedOnIndicator(Indicator source) {
-        openVisualizer(IndicatorAccessor.getDefault().getToolName(source),
-                IndicatorAccessor.getDefault().getVisualizerConfiguration(source));
+        VisualizerConfiguration visualizerConfiguration  =
+                IndicatorAccessor.getDefault().getVisualizerConfiguration(source);
+        if (visualizerConfiguration != null) {
+            openVisualizer(IndicatorAccessor.getDefault().getToolName(source),
+                    visualizerConfiguration);
+        }
     }
 }
