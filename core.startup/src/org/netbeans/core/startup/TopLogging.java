@@ -258,8 +258,11 @@ public final class TopLogging {
         if (nbdirs != null) { // noted in #67862: should show all clusters here.
             StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
             while (tok.hasMoreTokens()) {
-                ps.print(FileUtil.normalizeFile(new File(tok.nextToken())));
-                ps.print("\n                            "); //NOI18N
+                File dir = FileUtil.normalizeFile(new File(tok.nextToken()));
+                if (dir.isDirectory()) {
+                    ps.print(dir);
+                    ps.print("\n                            "); //NOI18N
+                }
             }
         }
         ps.println(CLIOptions.getHomeDir());
