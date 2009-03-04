@@ -591,7 +591,7 @@ public class OutlineView extends JScrollPane {
                             if (a.isEnabled ()) {
                                 a.actionPerformed (new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
                             } else {
-                                Logger.getLogger (OutlineView.class.getName ()).info ("Disbaled action " + a + " on node " + node);
+                                Logger.getLogger (OutlineView.class.getName ()).info ("Action " + a + " on node " + node + " is disabled");
                             }
 
                             e.consume ();
@@ -858,7 +858,7 @@ public class OutlineView extends JScrollPane {
                     if (a.isEnabled ()) {
                         a.actionPerformed (new ActionEvent (nodes[0], ActionEvent.ACTION_PERFORMED, "")); // NOI18N
                     } else {
-                        Logger.getLogger (OutlineView.class.getName ()).info ("Disbaled action " + a + " on node " + nodes[0]);
+                        Logger.getLogger (OutlineView.class.getName ()).info ("Action " + a + " on node " + nodes [0] + " is disabled");
                     }
                 }
             }

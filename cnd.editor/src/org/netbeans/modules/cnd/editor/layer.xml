@@ -438,7 +438,6 @@
             <folder name="x-make">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.makefile.Bundle"/>
 
-                <file name="language.nbs" url="resources/makefile/Makefile.nbs"/>
                 <file name="MakefileIndentTaskFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.makefile.MakefileIndentTaskFactory"/>
