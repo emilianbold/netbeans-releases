@@ -57,14 +57,15 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbPerformanceTest;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
-import org.netbeans.modules.refactoring.java.ui.WhereUsedQueryUI;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import static org.netbeans.modules.refactoring.java.test.Utilities.*;
 
 /**
@@ -108,10 +109,10 @@ public class FindSubclassesTest extends RefPerfTestCase {
 
         Log.enableInstances(Logger.getLogger("TIMER"), "JavacParser", Level.FINEST);
 
-        ClasspathInfo cpi = ClasspathInfo.create(getBoot(), getCompile(), getSource());
-        
         FileObject testFile = getProjectDir().getFileObject("/src/simplej2seapp/Main.java");
-        JavaSource src = JavaSource.create(cpi, testFile);
+        JavaSource src = JavaSource.forFileObject(testFile);
+
+        final WhereUsedQuery wuq = new WhereUsedQuery(Lookup.EMPTY);
 
         src.runUserActionTask(new Task<CompilationController>() {
 
@@ -119,41 +120,35 @@ public class FindSubclassesTest extends RefPerfTestCase {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement klass = controller.getElements().getTypeElement("simplej2seapp.Main");
                 TypeMirror mirror = klass.getSuperclass();
-                Element object = klass; //controller.getTypes().asElement(mirror);
-                System.err.println(object);
-                TreePathHandle element = TreePathHandle.create(object, controller);
-                final WhereUsedQueryUI ui = new WhereUsedQueryUI(element, controller);
-                ui.getPanel(null);
-                try {
-                    ui.setParameters();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                final AbstractRefactoring wuq = ui.getRefactoring();
-                ((WhereUsedQuery) wuq).putValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES, true);
-                RefactoringSession rs = RefactoringSession.create("Session");
-                wuq.prepare(rs);
-                rs.doRefactoring(false);
-                Collection<RefactoringElement> elems = rs.getRefactoringElements();
-                StringBuilder sb = new StringBuilder();
-                sb.append("Symbol: '").append(element.resolveElement(controller).getSimpleName()).append("'");
-                sb.append('\n').append("Number of usages: ").append(elems.size()).append('\n');
-                try {
-                    long prepare = handler.get("refactoring.prepare");
-                    NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
-                    d.name = "refactoring.prepare"+" ("+element.resolveElement(controller).getSimpleName()+", usages:"+elems.size()+")";
-                    d.value = prepare;
-                    d.unit = "ms";
-                    d.runOrder = 0;
-                    sb.append("Prepare phase: ").append(prepare).append(" ms.\n");
-                    Utilities.processUnitTestsResults(FindUsagesPerfTest.class.getCanonicalName(), d);
-                } catch (Exception ex) {
-                    sb.append("Cannot collect usages: ").append(ex.getCause());
-                }
-                getLog().append(sb);
-                System.err.println(sb);
+                Element object = controller.getTypes().asElement(mirror);
+                wuq.setRefactoringSource(Lookups.singleton(TreePathHandle.create(object, controller)));
+                ClasspathInfo cpi = RetoucheUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
+                wuq.getContext().add(cpi);
             }
         }, false);
+
+        wuq.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
+        RefactoringSession rs = RefactoringSession.create("Session");
+        wuq.prepare(rs);
+        rs.doRefactoring(false);
+        Collection<RefactoringElement> elems = rs.getRefactoringElements();
+        StringBuilder sb = new StringBuilder();
+                sb.append("Symbol: '").append("java.lang.Object").append("'");
+        sb.append('\n').append("Number of usages: ").append(elems.size()).append('\n');
+        try {
+            long prepare = handler.get("refactoring.prepare");
+            NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
+            d.name = "refactoring.prepare"+" (" + "java.lang.Object" + ", usages:" + elems.size() + ")";
+            d.value = prepare;
+            d.unit = "ms";
+            d.runOrder = 0;
+            sb.append("Prepare phase: ").append(prepare).append(" ms.\n");
+            Utilities.processUnitTestsResults(FindUsagesPerfTest.class.getCanonicalName(), d);
+        } catch (Exception ex) {
+            sb.append("Cannot collect usages: ").append(ex.getCause());
+        }
+        getLog().append(sb);
+        System.err.println(sb);
 
         src = null;
         Log.assertInstances("Some instances of parser were not GCed");
