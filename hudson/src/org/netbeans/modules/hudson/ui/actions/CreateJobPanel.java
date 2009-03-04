@@ -94,7 +94,7 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
         this.notifications = descriptor.createNotificationLineSupport();
         initComponents();
         updateProjectModel();
-        project.setSelectedItem(null);
+        project.setSelectedItem(project.getItemCount() > 0 ? project.getItemAt(0) : null);
         project.setRenderer(new ProjectRenderer());
         name.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
