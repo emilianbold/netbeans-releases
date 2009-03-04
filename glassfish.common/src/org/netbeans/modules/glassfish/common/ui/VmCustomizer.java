@@ -78,6 +78,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
             useSharedMemRB.setSelected(false);
             useSocketRB.setSelected(true);
         }
+        useIDEProxyInfo.setSelected("true".equals(gm.getInstanceProperties().get(GlassfishModule.USE_IDE_PROXY_FLAG)));
     }
 
     private void persistFields() {
@@ -100,6 +101,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
             //gm.setEnvironmentProperty(GlassfishModule.JAVA_PLATFORM_ATTR, picker.getJava(), true);
         }
         gm.setEnvironmentProperty(GlassfishModule.USE_SHARED_MEM_ATTR, Boolean.toString(useSharedMemRB.isSelected()),true);
+        gm.setEnvironmentProperty(GlassfishModule.USE_IDE_PROXY_FLAG, Boolean.toString(useIDEProxyInfo.isSelected()),true);
     }
 
     @Override
@@ -131,6 +133,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
         javaInstallLabel = new javax.swing.JLabel();
         openDirectoryBrowser = new javax.swing.JButton();
         javaExecutableField = new javax.swing.JTextField();
+        useIDEProxyInfo = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.name")); // NOI18N
 
@@ -198,6 +201,8 @@ public class VmCustomizer extends javax.swing.JPanel  {
                 .addContainerGap())
         );
 
+        useIDEProxyInfo.setText(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.useIDEProxyInfo.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -205,7 +210,10 @@ public class VmCustomizer extends javax.swing.JPanel  {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(pickerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(debugSettingsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(debugSettingsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(useIDEProxyInfo)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -213,7 +221,9 @@ public class VmCustomizer extends javax.swing.JPanel  {
             .add(layout.createSequentialGroup()
                 .add(pickerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(9, 9, 9)
-                .add(debugSettingsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 73, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(debugSettingsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 73, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(useIDEProxyInfo))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -256,6 +266,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
     private javax.swing.JLabel javaInstallLabel;
     private javax.swing.JButton openDirectoryBrowser;
     private javax.swing.JPanel pickerPanel;
+    private javax.swing.JCheckBox useIDEProxyInfo;
     private javax.swing.JRadioButton useSharedMemRB;
     private javax.swing.JRadioButton useSocketRB;
     // End of variables declaration//GEN-END:variables
