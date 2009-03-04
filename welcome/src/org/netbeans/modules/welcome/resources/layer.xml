@@ -178,4 +178,14 @@ made subject to such option by the copyright holder.
 
 
     </folder>
+
+    <folder name="OptionsExport">
+        <folder name="General">
+            <file name="Welcome">
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/welcome.properties"/>
+                <attr name="exclude" stringvalue="config/Preferences/org/netbeans/modules/welcome.properties!feedback.*"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.welcome.Bundle#Welcome.Options.Export.displayName"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
