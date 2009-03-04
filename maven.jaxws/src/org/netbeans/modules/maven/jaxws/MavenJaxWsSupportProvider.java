@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,56 +34,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.jaxws;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
-import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportFactory;
-import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportProvider;
-import org.netbeans.modules.websvc.project.spi.LookupMergerSupport;
-import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
-import org.netbeans.spi.project.LookupMerger;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.WeakListeners;
 
 /**
- * Lookup Provider for WS Support in JavaEE project types
  *
  * @author mkuchtiak
  */
+class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider {
 
-@LookupProvider.Registration(projectType="org-netbeans-modules-maven")
-public class MavenJaxWsLookupProvider implements LookupProvider {
+    private JAXWSLightSupport jaxWsSupport;
+    private PropertyChangeListener wsdlFolderListener;
+    private NbMavenProject mp;
 
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        final Project prj = baseContext.lookup(Project.class);
-        JAXWSLightSupportImpl spiJAXWSSupport = new MavenJAXWSSupportImpl(prj);
-        final JAXWSLightSupport jaxWsSupport = JAXWSLightSupportFactory.createJAXWSSupport(spiJAXWSSupport);
-
-        JAXWSLightSupportProvider jaxWsSupportProvider = new MavenJaxWsSupportProvider(prj, jaxWsSupport);
-        
-        WebServiceDataProvider jaxWsServiceDataProvider = new MavenJaxWsServicesProvider(prj, jaxWsSupport);
-        LookupMerger<WebServiceDataProvider> wsDataProviderMerger =
-                LookupMergerSupport.createWebServiceDataProviderMerger();
-
-        final FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
-        if (wsdlFolder != null) {
-            RequestProcessor.getDefault().post(new Runnable() {
-
-                public void run() {                    
-                    WSUtils.detectWsdlClients(prj, jaxWsSupport, wsdlFolder);
-                }
-
-            });
-            
+    MavenJaxWsSupportProvider(Project prj, JAXWSLightSupport jaxWsSupport) {
+        this.jaxWsSupport = jaxWsSupport;
+        mp = prj.getLookup().lookup(NbMavenProject.class);
+        if (mp != null) {
+            registerWsdlListener(prj, mp);
         }
-
-        return Lookups.fixed(jaxWsSupportProvider, jaxWsServiceDataProvider, wsDataProviderMerger);
     }
+
+    public JAXWSLightSupport findJAXWSSupport() {
+        return jaxWsSupport;
+    }
+
+    void registerWsdlListener(final Project prj, NbMavenProject mp) {
+        if (wsdlFolderListener != null) {
+            this.mp.removePropertyChangeListener(wsdlFolderListener);
+        }
+        this.mp = mp;
+        wsdlFolderListener = new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                    WSUtils.updateClients(prj, jaxWsSupport);
+                }
+            }
+        };
+        mp.addPropertyChangeListener(wsdlFolderListener);
+    }
+
+    void unregisterWsdlListener(NbMavenProject mp) {
+        mp.removePropertyChangeListener(wsdlFolderListener);
+    }
+
 }

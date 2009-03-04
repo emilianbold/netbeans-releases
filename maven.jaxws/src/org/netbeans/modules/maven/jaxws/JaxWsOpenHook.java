@@ -53,6 +53,7 @@ import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -67,6 +68,7 @@ public class JaxWsOpenHook extends ProjectOpenedHook {
 
     private final Project prj;
     private PropertyChangeListener pcl;
+    private NbMavenProject mavenProject;
     
     public JaxWsOpenHook(Project prj) {
         this.prj = prj;
@@ -91,6 +93,13 @@ public class JaxWsOpenHook extends ProjectOpenedHook {
                     ex.printStackTrace();
                 }
             }
+            mavenProject = prj.getLookup().lookup(NbMavenProject.class);
+            if (mavenProject != null) {
+                MavenJaxWsSupportProvider jaxWsSupportProvider = prj.getLookup().lookup(MavenJaxWsSupportProvider.class);
+                if (jaxWsSupportProvider != null) {
+                    jaxWsSupportProvider.registerWsdlListener(prj, mavenProject);
+                }
+            }
         }
     }
 
@@ -110,6 +119,12 @@ public class JaxWsOpenHook extends ProjectOpenedHook {
                     });
                 } catch (java.io.IOException ex) {
                     ex.printStackTrace();
+                }
+            }
+            if (mavenProject != null) {
+                MavenJaxWsSupportProvider jaxWsSupportProvider = prj.getLookup().lookup(MavenJaxWsSupportProvider.class);
+                if (jaxWsSupportProvider != null) {
+                    jaxWsSupportProvider.unregisterWsdlListener(mavenProject);
                 }
             }
         }
