@@ -153,12 +153,12 @@ public final class ProjectPropertiesSupport {
     }
 
     public static FileObject getSourceSubdirectory(PhpProject project, String subdirectoryPath) {
-        FileObject subdirectory = project.getSourcesDirectory();
+        FileObject sources = project.getSourcesDirectory();
         if (subdirectoryPath != null && subdirectoryPath.trim().length() > 0) {
-            File resolved = PropertyUtils.resolveFile(FileUtil.toFile(subdirectory), subdirectoryPath);
+            File resolved = PropertyUtils.resolveFile(FileUtil.toFile(sources), subdirectoryPath);
             return FileUtil.toFileObject(resolved);
         }
-        return subdirectory;
+        return sources;
     }
 
     public static PhpInterpreter getPhpInterpreter(PhpProject project) {
