@@ -435,7 +435,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     public String getID() {
         return id;
     }
-    
+
     /**
      * Check if this is the default platform.
      * @return true for the one default platform
@@ -620,20 +620,32 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * Returns (naturally sorted) array of all module entries pertaining to
      * <code>this</code> NetBeans platform. This is just a convenient delegate
      * to the {@link ModuleList#findOrCreateModuleListFromBinaries}.
+     *
+     * This may be a time-consuming method, consider using much faster
+     * ModuleList#getModules instead, which doesn't sort the modules. Do not call
+     * from AWT thread (not checked so that it may be used in tests).
      */
-    public ModuleEntry[] getModules() {
+    public ModuleEntry[] getSortedModules() {
+        SortedSet<ModuleEntry> set = new TreeSet<ModuleEntry>(getModules());
+        ModuleEntry[] entries = new ModuleEntry[set.size()];
+        set.toArray(entries);
+        return entries;
+    }
+
+    /**
+     * Returns a set of all module entries pertaining to
+     * <code>this</code> NetBeans platform. This is just a convenient delegate
+     * to the {@link ModuleList#findOrCreateModuleListFromBinaries}.
+     */
+    public Set<ModuleEntry> getModules() {
         try {
-            SortedSet<ModuleEntry> set = new TreeSet<ModuleEntry>(
-                    ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getAllEntriesSoft());
-            ModuleEntry[] entries = new ModuleEntry[set.size()];
-            set.toArray(entries);
-            return entries;
+            return ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getAllEntriesSoft();
         } catch (IOException e) {
             Util.err.notify(e);
-            return new ModuleEntry[0];
+            return Collections.emptySet();
         }
     }
-    
+
     /**
      * Gets a module from the platform by name.
      */

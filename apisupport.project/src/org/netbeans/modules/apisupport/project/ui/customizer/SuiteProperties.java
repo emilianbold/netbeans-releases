@@ -256,9 +256,9 @@ public final class SuiteProperties extends ModuleProperties {
                 if (plaf == null || plaf.getHarnessVersion() < NbPlatform.HARNESS_VERSION_50u1) {
                     // Compatibility.
                     SortedSet<String> disabledClusters = new TreeSet<String>();
-                    ModuleEntry[] modules = activePlatform.getModules();
-                    for (int i = 0; i < modules.length; i++) {
-                        disabledClusters.add(modules[i].getClusterDirectory().getName());
+                    Set<ModuleEntry> modules = activePlatform.getModules();
+                    for (ModuleEntry entry : modules) {
+                        disabledClusters.add(entry.getClusterDirectory().getName());
                     }
                     disabledClusters.removeAll(Arrays.asList(enabledClusters));
                     separated = disabledClusters.toArray(new String[disabledClusters.size()]);

@@ -343,7 +343,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private void refreshModules() {
-        platformModules = getProperties().getActivePlatform().getModules();
+        platformModules = getProperties().getActivePlatform().getSortedModules();
         createPlatformModulesChildren();
 //       XXX  synchronized (this) {
 //            universe = null;
