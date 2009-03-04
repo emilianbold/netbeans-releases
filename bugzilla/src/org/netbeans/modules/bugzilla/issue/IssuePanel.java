@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -135,6 +136,18 @@ public class IssuePanel extends javax.swing.JPanel {
         reloadField(force, resolutionField, BugzillaIssue.IssueField.RESOLUTION); // Must be before statusCombo
         reloadField(force, statusCombo, BugzillaIssue.IssueField.STATUS);
         reloadField(force, resolutionCombo, BugzillaIssue.IssueField.RESOLUTION);
+        String initialResolution = initialValues.get(BugzillaIssue.IssueField.RESOLUTION);
+        if ("DUPLICATE".equals(initialResolution)) { // NOI18N
+            duplicateField.setEditable(false);
+            duplicateField.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
+            duplicateField.setBackground(getBackground());
+        } else {
+            JTextField field = new JTextField();
+            duplicateField.setEditable(true);
+            duplicateField.setBorder(field.getBorder());
+            duplicateField.setBackground(field.getBackground());
+        }
+// PENDING: reloadField(force, duplicateField, BugzillaIssue.IssueField.DUPLICATE);
         reloadField(force, priorityCombo, BugzillaIssue.IssueField.PRIORITY);
         reloadField(force, severityCombo, BugzillaIssue.IssueField.SEVERITY);
         reloadField(force, targetMilestoneCombo, BugzillaIssue.IssueField.MILESTONE);
@@ -353,6 +366,8 @@ public class IssuePanel extends javax.swing.JPanel {
         jSeparator1 = new javax.swing.JSeparator();
         headerLabel = new javax.swing.JLabel();
         refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        duplicateField = new javax.swing.JTextField();
+        duplicateLabel = new javax.swing.JLabel();
 
         resolutionField.setEditable(false);
         resolutionField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -382,6 +397,12 @@ public class IssuePanel extends javax.swing.JPanel {
         });
 
         resolutionLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolutionLabel.text")); // NOI18N
+
+        resolutionCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resolutionComboActionPerformed(evt);
+            }
+        });
 
         priorityLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.priorityLabel.text")); // NOI18N
 
@@ -467,12 +488,14 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
 
+        duplicateLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)
-            .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
+            .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -510,39 +533,36 @@ public class IssuePanel extends javax.swing.JPanel {
                             .add(componentCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(versionCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(platformCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(18, 18, 18)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(reportedLabel)
-                                    .add(modifiedLabel)
-                                    .add(assignedLabel)
-                                    .add(qaContactLabel)
-                                    .add(ccLabel)))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(45, 45, 45)
-                                .add(blocksLabel))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(dependsLabel)))
+                        .add(18, 18, 18)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(reportedLabel)
+                            .add(modifiedLabel)
+                            .add(assignedLabel)
+                            .add(qaContactLabel)
+                            .add(ccLabel)
+                            .add(dependsLabel)
+                            .add(blocksLabel)
+                            .add(duplicateLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(blocksField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(dependsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(ccField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(assignedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(modifiedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(reportedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(qaContactField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(scrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                .add(blocksField)
+                                .add(dependsField)
+                                .add(ccField)
+                                .add(assignedField)
+                                .add(modifiedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(qaContactField)
+                                .add(duplicateField))))
+                    .add(scrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
                     .add(attachmentsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(headerLabel)
-                .addContainerGap(452, Short.MAX_VALUE))
+                .addContainerGap(457, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(412, Short.MAX_VALUE)
+                .addContainerGap(417, Short.MAX_VALUE)
                 .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -592,11 +612,13 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(resolutionLabel)
-                    .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(duplicateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(duplicateLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(dependsLabel)
-                    .add(dependsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(dependsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(dependsLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(blocksLabel)
@@ -680,9 +702,26 @@ public class IssuePanel extends javax.swing.JPanel {
                 if (resolutionCombo.getParent() == null) {
                     ((GroupLayout)getLayout()).replace(resolutionField, resolutionCombo);
                 }
+                resolutionCombo.setSelectedItem("FIXED"); // NOI18N
                 resolutionCombo.setVisible(true);
             } else {
                 resolutionCombo.setVisible(false);
+                duplicateLabel.setVisible(false);
+                duplicateField.setVisible(false);
+            }
+        }
+        if ("DUPLICATE".equals(resolutionField.getText())) { // NOI18N
+            String status = statusCombo.getSelectedItem().toString();
+            Bugzilla bugzilla = Bugzilla.getInstance();
+            BugzillaRepository repository = issue.getRepository();
+            try {
+                boolean open = bugzilla.getOpenStatusValues(repository).contains(status);
+                duplicateLabel.setVisible(!open);
+                duplicateField.setVisible(!open);
+            } catch (CoreException cex) {
+                cex.printStackTrace();
+            } catch (IOException ioex) {
+                ioex.printStackTrace();
             }
         }
         if (!resolutionField.getText().trim().equals("")) { // NOI18N
@@ -693,6 +732,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 resolutionField.setVisible(true);
             } else {
                 resolutionField.setVisible(false);
+                duplicateLabel.setVisible(false);
+                duplicateField.setVisible(false);
             }
         }
     }//GEN-LAST:event_statusComboActionPerformed
@@ -711,6 +752,9 @@ public class IssuePanel extends javax.swing.JPanel {
             storeFieldValue(BugzillaIssue.IssueField.RESOLUTION, resolutionCombo);
         } else if (!resolutionField.isVisible()) {
             storeFieldValue(BugzillaIssue.IssueField.RESOLUTION, ""); // NOI18N
+        }
+        if (duplicateField.isVisible() && duplicateField.isEditable()) {
+            issue.duplicate(duplicateField.getText());
         }
         storeFieldValue(BugzillaIssue.IssueField.PRIORITY, priorityCombo);
         storeFieldValue(BugzillaIssue.IssueField.SEVERITY, severityCombo);
@@ -762,6 +806,12 @@ public class IssuePanel extends javax.swing.JPanel {
         });
     }//GEN-LAST:event_refreshButtonActionPerformed
 
+    private void resolutionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolutionComboActionPerformed
+        boolean shown = "DUPLICATE".equals(resolutionCombo.getSelectedItem()); // NOI18N
+        duplicateLabel.setVisible(shown);
+        duplicateField.setVisible(shown);
+    }//GEN-LAST:event_resolutionComboActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea addCommentArea;
     private javax.swing.JLabel addCommentLabel;
@@ -781,6 +831,8 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JPanel dummyCommentsPanel;
     private javax.swing.JLabel dummyLabel1;
     private javax.swing.JLabel dummyLabel2;
+    private javax.swing.JTextField duplicateField;
+    private javax.swing.JLabel duplicateLabel;
     private javax.swing.JLabel headerLabel;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextField keywordsField;

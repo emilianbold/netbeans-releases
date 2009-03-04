@@ -33,8 +33,8 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jSeparator1" alignment="1" pref="462" max="32767" attributes="0"/>
-          <Component id="dummyCommentsPanel" alignment="0" pref="462" max="32767" attributes="0"/>
+          <Component id="jSeparator1" alignment="1" pref="467" max="32767" attributes="0"/>
+          <Component id="dummyCommentsPanel" alignment="0" pref="467" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
@@ -75,38 +75,32 @@
                           <Component id="versionCombo" alignment="0" max="32767" attributes="1"/>
                           <Component id="platformCombo" alignment="0" max="32767" attributes="1"/>
                       </Group>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="reportedLabel" min="-2" max="-2" attributes="0"/>
-                                  <Component id="modifiedLabel" min="-2" max="-2" attributes="0"/>
-                                  <Component id="assignedLabel" min="-2" max="-2" attributes="0"/>
-                                  <Component id="qaContactLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="ccLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace min="-2" pref="45" max="-2" attributes="0"/>
-                              <Component id="blocksLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="dependsLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="reportedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="modifiedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="assignedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="qaContactLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="ccLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="dependsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="blocksLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="duplicateLabel" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="blocksField" min="-2" max="-2" attributes="0"/>
-                          <Component id="dependsField" min="-2" max="-2" attributes="0"/>
-                          <Component id="ccField" min="-2" max="-2" attributes="0"/>
-                          <Component id="assignedField" min="-2" max="-2" attributes="0"/>
-                          <Component id="modifiedField" min="-2" max="-2" attributes="0"/>
-                          <Component id="reportedField" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="qaContactField" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="reportedField" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="blocksField" alignment="0" max="32767" attributes="1"/>
+                              <Component id="dependsField" alignment="0" max="32767" attributes="1"/>
+                              <Component id="ccField" alignment="0" max="32767" attributes="1"/>
+                              <Component id="assignedField" alignment="0" max="32767" attributes="1"/>
+                              <Component id="modifiedField" min="-2" max="-2" attributes="0"/>
+                              <Component id="qaContactField" alignment="0" max="32767" attributes="1"/>
+                              <Component id="duplicateField" alignment="0" max="32767" attributes="1"/>
+                          </Group>
                       </Group>
                   </Group>
-                  <Component id="scrollPane1" pref="344" max="32767" attributes="0"/>
+                  <Component id="scrollPane1" pref="349" max="32767" attributes="0"/>
                   <Component id="attachmentsPanel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -114,10 +108,10 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="headerLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="452" max="32767" attributes="0"/>
+              <EmptySpace pref="457" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace pref="412" max="32767" attributes="0"/>
+              <EmptySpace pref="417" max="32767" attributes="0"/>
               <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -175,13 +169,15 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="resolutionLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="resolutionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="duplicateField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="duplicateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="dependsLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="dependsField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="dependsLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="blocksLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="priorityCombo" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -297,6 +293,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="resolutionCombo">
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resolutionComboActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="priorityLabel">
       <Properties>
@@ -528,6 +527,15 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshButtonActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="duplicateField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="duplicateLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.duplicateLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>
