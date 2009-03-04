@@ -105,6 +105,7 @@ public class ImportConfirmationPanel extends javax.swing.JPanel {
         jScrollPane1.setOpaque(false);
 
         txtMessage.setBorder(null);
+        txtMessage.setEditable(false);
         txtMessage.setText(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.txtMessage.text")); // NOI18N
         txtMessage.setOpaque(false);
         jScrollPane1.setViewportView(txtMessage);
