@@ -48,6 +48,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.Helper;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
@@ -73,10 +74,12 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
 
     private final Project project;
     private final J2SEPropertyEvaluator eval;
+    private final HudsonSCM.Configuration scm;
 
     public JobCreator(Project project, J2SEPropertyEvaluator eval) {
         this.project = project;
         this.eval = eval;
+        scm = Helper.prepareSCM(FileUtil.toFile(project.getProjectDirectory()));
         initComponents();
     }
 
@@ -89,6 +92,9 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
     }
 
     public String error() {
+        if (scm == null) {
+            return Helper.noSCMError();
+        }
         // XXX check uiProperties.getProject().getAntProjectHelper().isSharableProject()
         // (if false, try something like CustomizerLibraries.librariesBrowseActionPerformed)
         return null;
@@ -98,7 +104,6 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
     public void removeChangeListener(ChangeListener listener) {}
 
     public Document configure() throws IOException {
-        File basedir = FileUtil.toFile(project.getProjectDirectory());
         Document doc = XMLUtil.createDocument("project", null, null, null);
         Element projectE = doc.getDocumentElement();
         List<String> targets = new ArrayList<String>();
@@ -149,7 +154,7 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
         for (String dummy : new String[] {"actions", "buildWrappers"}) {
             projectE.appendChild(doc.createElement(dummy));
         }
-        Helper.addSCM(basedir, doc);
+        scm.configure(doc);
         Helper.addLogRotator(doc);
         return doc;
     }

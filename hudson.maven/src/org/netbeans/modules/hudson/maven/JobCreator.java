@@ -44,6 +44,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.openide.util.lookup.ServiceProvider;
@@ -59,6 +60,7 @@ public class JobCreator implements ProjectHudsonJobCreatorFactory {
             return null;
         }
         return new ProjectHudsonJobCreator() {
+            final HudsonSCM.Configuration scm = Helper.prepareSCM(prj.getMavenProject().getBasedir());
             
             public String jobName() {
                 return prj.getMavenProject().getArtifactId();
@@ -69,6 +71,9 @@ public class JobCreator implements ProjectHudsonJobCreatorFactory {
             }
 
             public String error() {
+                if (scm == null) {
+                    return Helper.noSCMError();
+                }
                 return null;
             }
 
@@ -77,7 +82,7 @@ public class JobCreator implements ProjectHudsonJobCreatorFactory {
 
             public Document configure() throws IOException {
                 Document doc = XMLUtil.createDocument("maven2-moduleset", null, null, null);
-                Helper.addSCM(prj.getMavenProject().getBasedir(), doc);
+                scm.configure(doc);
                 Helper.addLogRotator(doc);
                 return doc;
             }

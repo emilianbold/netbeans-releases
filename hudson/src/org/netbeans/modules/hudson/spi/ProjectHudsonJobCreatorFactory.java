@@ -117,20 +117,25 @@ public interface ProjectHudsonJobCreatorFactory {
     class Helper {
 
         /**
-         * Adds version control information appropriate to the project's basedir.
+         * Prepares to add version control information appropriate to the project's basedir.
          * @param basedir the root directory of the source project
-         * @param configXml a {@code config.xml} to which {@code <scm>} will be appended
+         * @return an SCM configuration, or null if there is no known associated SCM
          */
-        public static void addSCM(File basedir, Document configXml) {
+        public static HudsonSCM.Configuration prepareSCM(File basedir) {
             for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
                 HudsonSCM.Configuration cfg = scm.forFolder(basedir);
                 if (cfg != null) {
-                    cfg.configure(configXml);
-                    return;
+                    return cfg;
                 }
             }
-            ((Element) configXml.getDocumentElement().appendChild(configXml.createElement("scm"))).
-                    setAttribute("class", "hudson.scm.NullSCM");
+            return null;
+        }
+
+        /**
+         * @return error message for {@link ProjectHudsonJobCreator#error} in case {@link #prepareSCM} is null
+         */
+        public static String noSCMError() {
+            return "The project does not use any supported version control system."; // XXX I18N
         }
 
         /**
