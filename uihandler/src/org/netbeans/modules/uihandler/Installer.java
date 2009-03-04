@@ -494,11 +494,13 @@ public class Installer extends ModuleInstall implements Runnable {
         try {
             synchronized (METRICS_LOG_LOCK) {
                 LogRecords.write(logStreamMetrics(), r);
-                logsSizeMetrics++;
-                if (preferencesWritable) {
-                    prefs.putInt("countMetrics", logsSizeMetrics);
-                }
-                if (logsSizeMetrics >= MetricsHandler.MAX_LOGS) {
+            }
+            logsSizeMetrics++;
+            if (preferencesWritable) {
+                prefs.putInt("countMetrics", logsSizeMetrics);
+            }
+            if (logsSizeMetrics >= MetricsHandler.MAX_LOGS) {
+                synchronized (METRICS_LOG_LOCK) {
                     MetricsHandler.waitFlushed();
                     closeLogStreamMetrics();
                     File f = logFileMetrics(0);
@@ -532,15 +534,15 @@ public class Installer extends ModuleInstall implements Runnable {
                         prefs.putInt("countMetrics", logsSizeMetrics);
                     }
                 }
-            }
-            //Task to upload metrics data
-            class Auto implements Runnable {
-                public void run() {
-                    displaySummary("METRICS_URL", true, true, true, DataType.DATA_METRICS);
+                //Task to upload metrics data
+                class Auto implements Runnable {
+                    public void run() {
+                        displaySummary("METRICS_URL", true, true, true, DataType.DATA_METRICS);
+                    }
                 }
+                //Must be performed out of lock because it calls getLogsMetrics
+                RP.post(new Auto()).waitFinished();
             }
-            //Must be performed out of lock because it calls getLogsMetrics
-            RP.post(new Auto()).waitFinished();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
