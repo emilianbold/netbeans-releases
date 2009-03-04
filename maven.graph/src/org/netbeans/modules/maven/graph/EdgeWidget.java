@@ -39,12 +39,18 @@
 
 package org.netbeans.modules.maven.graph;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.Stroke;
 import javax.swing.UIManager;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.visual.anchor.AnchorShape;
+import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.LabelWidget;
+import org.netbeans.api.visual.widget.LevelOfDetailsWidget;
+import org.netbeans.api.visual.widget.Widget;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,16 +62,40 @@ public class EdgeWidget extends ConnectionWidget {
     public static final int GRAYED = 1;
     public static final int REGULAR = 2;
     public static final int HIGHLIGHTED = 3;
+    public static final int HIGHLIGHTED_PRIMARY = 4;
 
     private static float[] hsbVals = new float[3];
 
     private ArtifactGraphEdge edge;
     private int state = REGULAR;
+    private boolean isConflict;
+    private int edgeConflictType;
+
+    private LabelWidget conflictVersion;
+    private Stroke origStroke;
 
     public EdgeWidget(DependencyGraphScene scene, ArtifactGraphEdge edge) {
         super(scene);
         this.edge = edge;
+        origStroke = getStroke();
         setTargetAnchorShape(AnchorShape.TRIANGLE_FILLED);
+        isConflict = edge.getTarget().getState() == DependencyNode.OMITTED_FOR_CONFLICT;
+        edgeConflictType = getConflictType();
+        int includedConflictType = scene.getGraphNodeRepresentant(edge.getTarget()).getConflictType();
+
+        if (isConflict || includedConflictType != ArtifactGraphNode.NO_CONFLICT) {
+            Widget versionW = new LevelOfDetailsWidget(scene, 0.5, 0.7, Double.MAX_VALUE, Double.MAX_VALUE);
+            conflictVersion = new LabelWidget(scene, edge.getTarget().getArtifact().getVersion());
+            if (isConflict) {
+                Color c = getConflictColor(edgeConflictType);
+                if (c != null) {
+                    conflictVersion.setForeground(c);
+                }
+            }
+            versionW.addChild(conflictVersion);
+            addChild(versionW);
+            setConstraint(versionW, LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_RIGHT, 0.5f);
+        }
     }
 
     public void setState (int state) {
@@ -82,33 +112,39 @@ public class EdgeWidget extends ConnectionWidget {
         if (activeC == null) {
             activeC = Color.BLACK;
         }
-        Color conflictC = Color.RED.darker();
+        Color conflictC = getConflictColor(edgeConflictType);
+        if (conflictC == null) {
+            conflictC = activeC;
+        }
 
-        boolean isConflict = edge.getTarget().getState() == DependencyNode.OMITTED_FOR_CONFLICT;
-
+        Stroke stroke = origStroke;
         Color c = activeC;
         switch (state) {
             case REGULAR:
                 c = edge.isPrimary() ? middleColor(activeC, inactiveC) : isConflict ? conflictC : inactiveC;
                 break;
-            case DISABLED:
-                c = inactiveC;
-                break;
             case GRAYED:
                 c = isConflict ? deriveColor(conflictC, 0.7f) : inactiveC;
                 break;
+            case HIGHLIGHTED_PRIMARY:
+                stroke = new BasicStroke(3);
+                // without break!
             case HIGHLIGHTED:
                 c = isConflict ? conflictC : activeC;
                 break;
         }
 
         if (state != DISABLED) {
-            Artifact artif = edge.getTarget().getArtifact();
             StringBuilder sb = new StringBuilder("<html>");
             if (isConflict) {
-                sb.append(NbBundle.getMessage(EdgeWidget.class,
-                "TIP_VersionConflict", artif.getVersion(), artif.getArtifactId(),
-                        edge.getSource().getArtifact().getArtifactId()));
+                DependencyGraphScene grScene = (DependencyGraphScene)getScene();
+                DependencyNode includedDepN = grScene.getGraphNodeRepresentant(
+                        edge.getTarget()).getArtifact();
+                String confText = NbBundle.getMessage(EdgeWidget.class,
+                        "TIP_VersionConflict", includedDepN.getArtifact().getVersion(),
+                        includedDepN.getParent().getArtifact().getArtifactId());
+                conflictVersion.setToolTipText(confText);
+                sb.append(confText);
                 sb.append("<br>");
             }
             sb.append("<i>");
@@ -124,6 +160,17 @@ public class EdgeWidget extends ConnectionWidget {
             setToolTipText(null);
         }
 
+        if (conflictVersion != null) {
+            conflictVersion.setForeground(c);
+            Font origF = getScene().getDefaultFont();
+            conflictVersion.setFont(state == HIGHLIGHTED || state == HIGHLIGHTED_PRIMARY
+                    ? ArtifactWidget.getReadable(getScene(), origF) : origF);
+        }
+
+        setVisible(state != DISABLED);
+
+        setStroke(stroke);
+
         DependencyGraphScene grScene = (DependencyGraphScene)getScene();
         if (grScene.isAnimated()) {
             grScene.getSceneAnimator().animateForegroundColor(this, c);
@@ -132,9 +179,24 @@ public class EdgeWidget extends ConnectionWidget {
         }
     }
 
+    private int getConflictType () {
+        ArtifactGraphNode included = ((DependencyGraphScene)getScene()).getGraphNodeRepresentant(edge.getTarget());
+        int ret = ArtifactGraphNode.compareVersions(
+                edge.getTarget().getArtifact().getVersion(),
+                included.getArtifact().getArtifact().getVersion());
+        return ret > 0 ? ArtifactGraphNode.CONFLICT : ret < 0 ?
+            ArtifactGraphNode.POTENTIAL_CONFLICT : ArtifactGraphNode.NO_CONFLICT;
+    }
+
+    private static Color getConflictColor (int conflictType) {
+        return conflictType == ArtifactGraphNode.CONFLICT ? ArtifactWidget.CONFLICT
+                : conflictType == ArtifactGraphNode.POTENTIAL_CONFLICT
+                ? ArtifactWidget.WARNING : null;
+    }
+
     /** Derives color from specified with saturation multiplied by given ratio.
      */
-    private static Color deriveColor (Color c, float saturationR) {
+    static Color deriveColor (Color c, float saturationR) {
         Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), hsbVals);
         hsbVals[1] = Math.min(1.0f, hsbVals[1] * saturationR);
         return Color.getHSBColor(hsbVals[0], hsbVals[1], hsbVals[2]);

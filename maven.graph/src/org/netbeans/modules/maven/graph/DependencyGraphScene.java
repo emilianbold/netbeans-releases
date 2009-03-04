@@ -42,6 +42,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
@@ -92,6 +93,8 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private final Project nbProject;
     private final DependencyGraphTopComponent tc;
     private SceneLayout fitViewL;
+
+    private static Set<ArtifactGraphNode> EMPTY_SELECTION = new HashSet<ArtifactGraphNode>();
     
     /** Creates a new instance ofla DependencyGraphScene */
     DependencyGraphScene(MavenProject prj, Project nbProj, DependencyGraphTopComponent tc) {
@@ -191,48 +194,71 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     }
 
     void highlightRelated (ArtifactGraphNode node) {
-        List<ArtifactGraphNode> highlightNodes = new ArrayList<ArtifactGraphNode>();
-        List<ArtifactGraphEdge> highlightEdges = new ArrayList<ArtifactGraphEdge>();
+        List<ArtifactGraphNode> importantNodes = new ArrayList<ArtifactGraphNode>();
+        List<ArtifactGraphEdge> otherPathsEdges = new ArrayList<ArtifactGraphEdge>();
+        List<ArtifactGraphEdge> primaryPathEdges = new ArrayList<ArtifactGraphEdge>();
+        List<ArtifactGraphNode> childrenNodes = new ArrayList<ArtifactGraphNode>();
+        List<ArtifactGraphEdge> childrenEdges = new ArrayList<ArtifactGraphEdge>();
 
-        highlightNodes.add(node);
+        importantNodes.add(node);
 
         @SuppressWarnings("unchecked")
         List<DependencyNode> children = (List<DependencyNode>)node.getArtifact().getChildren();
         for (DependencyNode n : children) {
-            highlightNodes.add(getGraphNodeRepresentant(n));
+            childrenNodes.add(getGraphNodeRepresentant(n));
         }
 
-        highlightEdges.addAll(findNodeEdges(node, true, false));
+        childrenEdges.addAll(findNodeEdges(node, true, false));
 
-        DependencyNode curDepN = node.getArtifact();
-        DependencyNode parentDepN;
-        ArtifactGraphNode grNode;
-        while ((parentDepN = curDepN.getParent()) != null) {
-            grNode = getGraphNodeRepresentant(parentDepN);
-            highlightEdges.addAll(findEdgesBetween(grNode, getGraphNodeRepresentant(curDepN)));
-            highlightNodes.add(grNode);
-            curDepN = parentDepN;
+        // primary path
+        addPathToRoot(node.getArtifact(), primaryPathEdges, importantNodes);
+
+        // other important paths
+        List<DependencyNode> representants = new ArrayList<DependencyNode>(node.getDuplicatesOrConflicts());
+        for (DependencyNode curRep : representants) {
+            addPathToRoot(curRep, otherPathsEdges, importantNodes);
         }
 
         EdgeWidget ew;
         for (ArtifactGraphEdge curE : getEdges()) {
             ew = (EdgeWidget) findWidget(curE);
-            if (highlightEdges.contains(curE)) {
+            if (primaryPathEdges.contains(curE)) {
+                ew.setState(EdgeWidget.HIGHLIGHTED_PRIMARY);
+            } else if (otherPathsEdges.contains(curE)) {
                 ew.setState(EdgeWidget.HIGHLIGHTED);
+            } else if (childrenEdges.contains(curE)) {
+                ew.setState(EdgeWidget.GRAYED);
             } else {
                 ew.setState(EdgeWidget.DISABLED);
             }
         }
 
         ArtifactWidget aw;
-        boolean isHighlight;
         for (ArtifactGraphNode curN : getNodes()) {
             aw = (ArtifactWidget) findWidget(curN);
-            isHighlight = highlightNodes.contains(curN);
-            aw.setGrayed(!isHighlight);
-            aw.setReadable(isHighlight);
+            if (importantNodes.contains(curN)) {
+                aw.setGrayed(false);
+                aw.setReadable(true);
+            } else if (childrenNodes.contains(curN)) {
+                aw.setGrayed(true);
+                aw.setReadable(true);
+            } else {
+                aw.setGrayed(true);
+                aw.setReadable(false);
+            }
         }
 
+    }
+
+    private void addPathToRoot(DependencyNode depN, List<ArtifactGraphEdge> edges, List<ArtifactGraphNode> nodes) {
+        DependencyNode parentDepN;
+        ArtifactGraphNode grNode;
+        while ((parentDepN = depN.getParent()) != null) {
+            grNode = getGraphNodeRepresentant(parentDepN);
+            edges.addAll(findEdgesBetween(grNode, getGraphNodeRepresentant(depN)));
+            nodes.add(grNode);
+            depN = parentDepN;
+        }
     }
 
     private class AllActionsProvider implements PopupMenuProvider, 
@@ -283,7 +309,6 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         /*** EditProvider ***/
 
         public void edit(Widget widget) {
-            System.out.println("Edit called...");
             ArtifactGraphNode grN = (ArtifactGraphNode) findObject(widget);
             if (grN != null) {
                 highlightRelated(grN);
@@ -302,6 +327,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         }
 
         public void select(Widget widget, Point localLocation, boolean invertSelection) {
+            setSelectedObjects(EMPTY_SELECTION);
             DependencyGraphScene.this.tc.depthHighlight();
         }
     }

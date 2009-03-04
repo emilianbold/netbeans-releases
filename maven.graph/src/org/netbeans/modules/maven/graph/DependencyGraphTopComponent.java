@@ -416,6 +416,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                                 maxPathSpinner.setEnabled(true);
                                 maxPathSpinner.setVisible(true);
                             }
+                            depthHighlight();
                         }
                     });
                 }

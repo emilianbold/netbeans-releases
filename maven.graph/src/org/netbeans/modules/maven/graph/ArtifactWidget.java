@@ -58,6 +58,7 @@ import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LevelOfDetailsWidget;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -68,20 +69,21 @@ import org.openide.util.NbBundle;
  */
 class ArtifactWidget extends Widget implements ActionListener {
 
-    final Color ROOT = new Color(178, 228, 255);
-    final Color DIRECTS = new Color(178, 228, 255);
-    final Color DIRECTS_CONFLICT = new Color(235, 88, 194);
-    final Color DISABLE_HIGHTLIGHT = new Color(255, 255, 194);
-    final Color HIGHTLIGHT = new Color(255, 255, 129);
-    final Color DISABLE_CONFLICT = new Color(219, 155, 153);
-    final Color CONFLICT = new Color(219, 11, 5);
-    final Color MANAGED = new Color(30, 255, 150);
-    final Color OVERRIDES_MANAGED = new Color(255, 150, 20);
+    static final Color ROOT = new Color(178, 228, 255);
+    static final Color DIRECTS = new Color(178, 228, 255);
+    static final Color DIRECTS_CONFLICT = new Color(235, 88, 194);
+    static final Color DISABLE_HIGHTLIGHT = new Color(255, 255, 194);
+    static final Color HIGHTLIGHT = new Color(255, 255, 129);
+    static final Color DISABLE_CONFLICT = new Color(219, 155, 153);
+    static final Color CONFLICT = new Color(219, 11, 5);
+    static final Color MANAGED = new Color(30, 255, 150);
+    static final Color WARNING = new Color(255, 150, 20);
+    static final Color DISABLE_WARNING = EdgeWidget.deriveColor(WARNING, 0.7f);
 
-    final Color PROVIDED = new Color(191, 255, 255);
-    final Color COMPILE = new Color(191, 191, 255);
-    final Color RUNTIME = new Color(191, 255, 191);
-    final Color TEST = new Color(202, 151, 151);
+    static final Color PROVIDED = new Color(191, 255, 255);
+    static final Color COMPILE = new Color(191, 191, 255);
+    static final Color RUNTIME = new Color(191, 255, 191);
+    static final Color TEST = new Color(202, 151, 151);
 
     private static final int LEFT_TOP = 1;
     private static final int LEFT_BOTTOM = 2;
@@ -151,20 +153,18 @@ class ArtifactWidget extends Widget implements ActionListener {
 
         if (conflictCount == 1) {
             toRet.append(NbBundle.getMessage(ArtifactWidget.class, "TIP_SingleConflict",
-                    new String[] { node.getArtifact().getArtifact().getVersion(),
-                    node.getArtifact().getArtifact().getArtifactId(),
                     firstConflict.getArtifact().getVersion(),
-                    firstConflict.getParent().getArtifact().getArtifactId()}));
+                    firstConflict.getParent().getArtifact().getArtifactId()));
         } else if (conflictCount > 1) {
+            toRet.append(NbBundle.getMessage(ArtifactWidget.class, "TIP_MultipleConflict"));
             for (DependencyNode nd : node.getDuplicatesOrConflicts()) {
                 if (nd.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                    toRet.append(NbBundle.getMessage(ArtifactWidget.class, "TIP_MultipleConflict"));
-                    toRet.append("<tr><td><b>");
+                    toRet.append("<tr><td>");
                     toRet.append(nd.getArtifact().getVersion());
-                    toRet.append("</b></td>");
-                    toRet.append("<td><b>");
+                    toRet.append("</td>");
+                    toRet.append("<td>");
                     toRet.append(nd.getParent().getArtifact().getArtifactId());
-                    toRet.append("</b></td></tr>");
+                    toRet.append("</td></tr>");
                 }
             }
             toRet.append("</tbody></table>");
@@ -274,22 +274,21 @@ class ArtifactWidget extends Widget implements ActionListener {
                 Color scopeC = colorForScope(node.getArtifact().getArtifact().getScope());
                 paintCorner(RIGHT_BOTTOM, g, bounds, scopeC, Color.WHITE, bounds.width / 2, bounds.height / 2);
             }
-            boolean conflict = false;
-            for (DependencyNode src : node.getDuplicatesOrConflicts()) {
-                if (src.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                    conflict = true;
-                }
-            }
-            Color leftTopC = Color.WHITE;
-            if (conflict) {
-                leftTopC = grayed ? DISABLE_CONFLICT : CONFLICT;
+            int conflictType = node.getConflictType();
+            Color leftTopC = null;
+            if (conflictType != ArtifactGraphNode.NO_CONFLICT) {
+                leftTopC = conflictType == ArtifactGraphNode.CONFLICT
+                        ? (grayed ? DISABLE_CONFLICT : CONFLICT)
+                        : (grayed ? DISABLE_WARNING : WARNING);
             } else {
                 int state = node.getManagedState();
                 if (ArtifactGraphNode.OVERRIDES_MANAGED == state) {
-                    leftTopC = OVERRIDES_MANAGED;
+                    leftTopC = WARNING;
                 }
             }
-            paintCorner(LEFT_TOP, g, bounds, leftTopC, Color.WHITE, bounds.width, bounds.height / 2);
+            if (leftTopC != null) {
+                paintCorner(LEFT_TOP, g, bounds, leftTopC, Color.WHITE, bounds.width, bounds.height / 2);
+            }
 
             if (node.getPrimaryLevel() == 1) {
                 paintBottom(g, bounds, DIRECTS, Color.WHITE, bounds.height / 6);
@@ -441,11 +440,7 @@ class ArtifactWidget extends Widget implements ActionListener {
         if (makeReadable) {
             bringToFront();
             // enlarge fonts so that content is readable
-            float fSizeRatio = getScene().getDefaultFont().getSize() / (float)origF.getSize();
-            float ratio = (float) Math.max (1, fSizeRatio / Math.max(0.0001f, getScene().getZoomFactor()));
-            if (ratio != 1.0f) {
-                newF = origF.deriveFont(origF.getSize() * ratio);
-            }
+            newF = getReadable(getScene(), origF);
         }
 
         artifactW.setFont(newF);
@@ -464,6 +459,15 @@ class ArtifactWidget extends Widget implements ActionListener {
             }
         }
         return origFont;
+    }
+
+    public static Font getReadable (Scene scene, Font original) {
+        float fSizeRatio = scene.getDefaultFont().getSize() / (float)original.getSize();
+        float ratio = (float) Math.max (1, fSizeRatio / Math.max(0.0001f, scene.getZoomFactor()));
+        if (ratio != 1.0f) {
+            return original.deriveFont(original.getSize() * ratio);
+        }
+        return original;
     }
 
 }
