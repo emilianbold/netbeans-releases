@@ -47,6 +47,11 @@ public class LicensesListData extends ListData {
 
     public LicensesListItem licenses[];
 
+    @Override
+    public int size() {
+        return licenses.length;
+    }
+
     public static class LicensesListItem {
 
         public String href;
