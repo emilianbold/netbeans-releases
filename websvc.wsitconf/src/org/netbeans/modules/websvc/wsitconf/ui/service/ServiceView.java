@@ -60,6 +60,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import java.util.Collection;
 import java.util.Set;
+import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingContainerServiceNode;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingInputNode;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingOutputNode;
@@ -72,23 +73,28 @@ import org.openide.filesystems.FileObject;
 public class ServiceView extends SectionView {
 
     ServiceView(InnerPanelFactory factory, WSDLModel model, Node node, Service s) {
-        this(factory,  model, node,  null, s, null, false);
+        this(factory,  model, node,  null, s, null, null, false);
     }
-  
-    ServiceView(InnerPanelFactory factory, WSDLModel model, Node node, FileObject implClass, Service s, Collection<Binding> bs, boolean serviceOnly) {
+
+    ServiceView(InnerPanelFactory factory, WSDLModel model, Node node, FileObject implClass, Service s, JaxWsService jaxService, Collection<Binding> bs, boolean serviceOnly) {
         super(factory);
 
         if ((implClass == null) && (node == null)) {
             return;
         }
         
-        if ((implClass == null) && (s != null)) {
-            String wsdlUrl = s.getWsdlUrl();
+        if (implClass == null) {
+            String wsdlUrl = null;
+            if (s != null) {
+                wsdlUrl = s.getWsdlUrl();
+            } else if (jaxService != null) {
+                wsdlUrl = jaxService.getWsdlUrl();
+            }
             if (wsdlUrl == null) { // WS from Java
                 implClass = node.getLookup().lookup(FileObject.class);
             }
         }
-        
+
         Collection<Binding> bindings = bs;
         if (bindings == null) {
             bindings = new HashSet<Binding>();
