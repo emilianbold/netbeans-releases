@@ -38,18 +38,8 @@
  */
 package org.netbeans.modules.maven.jaxws;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
-import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportFactory;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportProvider;
@@ -60,7 +50,6 @@ import org.netbeans.spi.project.LookupProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -72,34 +61,12 @@ import org.openide.util.lookup.Lookups;
 @LookupProvider.Registration(projectType="org-netbeans-modules-maven")
 public class MavenJaxWsLookupProvider implements LookupProvider {
 
-    PropertyChangeListener wsdlFolderListener;
-
     public Lookup createAdditionalLookup(Lookup baseContext) {
         final Project prj = baseContext.lookup(Project.class);
         JAXWSLightSupportImpl spiJAXWSSupport = new MavenJAXWSSupportImpl(prj);
         final JAXWSLightSupport jaxWsSupport = JAXWSLightSupportFactory.createJAXWSSupport(spiJAXWSSupport);
 
-        JAXWSLightSupportProvider jaxWsSupportProvider = new JAXWSLightSupportProvider() {
-
-            public JAXWSLightSupport findJAXWSSupport() {
-                return jaxWsSupport;
-            }
-
-        };
-
-        NbMavenProject mp = prj.getLookup().lookup(NbMavenProject.class);
-        if (mp != null) {
-            wsdlFolderListener = new PropertyChangeListener() {
-
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
-                        updateClients(prj, jaxWsSupport);
-                    }
-                }
-            };
-            mp.addPropertyChangeListener(
-                    WeakListeners.propertyChange(wsdlFolderListener, mp));
-        }
+        JAXWSLightSupportProvider jaxWsSupportProvider = new MavenJaxWsSupportProvider(prj, jaxWsSupport);
         
         WebServiceDataProvider jaxWsServiceDataProvider = new MavenJaxWsServicesProvider(prj, jaxWsSupport);
         LookupMerger<WebServiceDataProvider> wsDataProviderMerger =
@@ -109,9 +76,8 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
         if (wsdlFolder != null) {
             RequestProcessor.getDefault().post(new Runnable() {
 
-                public void run() {
-                    
-                    detectWsdlClients(prj, jaxWsSupport, wsdlFolder);
+                public void run() {                    
+                    WSUtils.detectWsdlClients(prj, jaxWsSupport, wsdlFolder);
                 }
 
             });
@@ -119,112 +85,5 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
         }
 
         return Lookups.fixed(jaxWsSupportProvider, jaxWsServiceDataProvider, wsDataProviderMerger);
-    }
-
-
-    private void updateClients(Project prj, JAXWSLightSupport jaxWsSupport) {
-        // get old clients
-        List<JaxWsService> oldClients = new ArrayList<JaxWsService>();
-        Set<String> oldNames = new HashSet<String>();
-        for (JaxWsService s : jaxWsSupport.getServices()) {
-            if (!s.isServiceProvider()) {
-                oldClients.add(s);
-                oldNames.add(s.getLocalWsdl());
-            }
-        }
-        FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
-        if (wsdlFolder != null) {
-            List<JaxWsService> newClients = getJaxWsClients(prj, jaxWsSupport, wsdlFolder);
-            Set<String> commonNames = new HashSet<String>();
-            for (JaxWsService client : newClients) {
-                String localWsdl = client.getLocalWsdl();
-                if (oldNames.contains(localWsdl)) {
-                    commonNames.add(localWsdl);
-                }
-            }
-            // removing old clients
-            for (JaxWsService oldClient : oldClients) {
-                if (!commonNames.contains(oldClient.getLocalWsdl())) {
-                    jaxWsSupport.removeService(oldClient);
-                }
-            }
-            // add new clients
-            for (JaxWsService newClient : newClients) {
-                if (!commonNames.contains(newClient.getLocalWsdl())) {
-                    jaxWsSupport.addService(newClient);
-                }
-            }
-        } else {
-            // removing all clients
-            for (JaxWsService client : oldClients) {
-                jaxWsSupport.removeService(client);
-            }
-        }
-
-    }
-    public void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder)  {
-        List<WsimportPomInfo> candidates = MavenModelUtils.getWsdlFiles(prj);
-        if (candidates.size() > 0) {
-            for (WsimportPomInfo candidate : candidates) {
-                String wsdlPath = candidate.getWsdlPath();
-                if (isClient(prj, jaxWsSupport, wsdlPath)) {
-                    JaxWsService client = new JaxWsService(wsdlPath, false);
-                    if (candidate.getHandlerFile() != null) {
-                        client.setHandlerBindingFile(candidate.getHandlerFile());
-                    }
-                    jaxWsSupport.addService(client);
-                }
-            }
-        } else {
-            // look for wsdl in wsdl folder
-//            FileObject[] wsdlCandidates = wsdlFolder.getChildren();
-//            for (FileObject wsdlCandidate:wsdlCandidates) {
-//                if (wsdlCandidate.isData() && "wsdl".equalsIgnoreCase(wsdlCandidate.getExt())) { //NOI18N
-//                    JaxWsService client = new JaxWsService(wsdlCandidate.getNameExt(), false);
-//                    jaxWsSupport.addService(client);
-//                }
-//            }
-        }
-    }
-
-    private List<JaxWsService> getJaxWsClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder) {
-        List<WsimportPomInfo> canditates = MavenModelUtils.getWsdlFiles(prj);
-        List<JaxWsService> clients = new ArrayList<JaxWsService>();
-        for (WsimportPomInfo candidate : canditates) {
-            String wsdlPath = candidate.getWsdlPath();
-            if (isClient(prj, jaxWsSupport, wsdlPath)) {
-                JaxWsService client = new JaxWsService(wsdlPath, false);
-                if (candidate.getHandlerFile() != null) {
-                    client.setHandlerBindingFile(candidate.getHandlerFile());
-                }
-                clients.add(client);
-            }
-        }
-        return clients;
-    }
-
-    private boolean isClient(Project prj, JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
-        Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class,true);
-        if (prefs != null) {
-            FileObject wsdlFo = getLocalWsdl(jaxWsSupport, localWsdlPath);
-            if (wsdlFo != null) {
-                // if client exists return true
-                if (prefs.get(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), null) != null) {
-                    return true;
-                // if service doesn't exist return true
-                } else if (prefs.get(MavenWebService.SERVICE_PREFIX+wsdlFo.getName(), null) == null) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private FileObject getLocalWsdl(JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
-        FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
-        if (wsdlFolder!=null) {
-            return wsdlFolder.getFileObject(localWsdlPath);
-        }
-        return null;
     }
 }
