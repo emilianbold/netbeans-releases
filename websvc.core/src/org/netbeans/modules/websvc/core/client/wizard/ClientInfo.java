@@ -107,6 +107,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.modules.websvc.core.WsWsdlCookie;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -675,15 +676,18 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         boolean jsr109OldSupported = utils.isJsr109OldSupported();
         //boolean jwsdpSupported = isJwsdpSupported(project);
         boolean jaxWsInJ2ee14Supported = ServerType.JBOSS == WSStackUtils.getServerType(project);
+        boolean isJaxWsClientSupport = JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory()) != null;
+        System.out.println("isJaxWsClientSupport = "+isJaxWsClientSupport);
         if (projectType > 0) {
             //jLabelJaxVersion.setEnabled(false);
             //jComboBoxJaxVersion.setEnabled(false);
-            if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)){ //NOI18N
-                jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);                
+            if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) {
+                jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
             }
             else{
-                if ((!jsr109OldSupported && !jsr109Supported) || jaxWsInJ2ee14Supported ||
-                        (!jsr109Supported && jsr109OldSupported /* && jwsdpSupported*/ )){
+                if ( (!jsr109OldSupported && !jsr109Supported) ||
+                     jaxWsInJ2ee14Supported ||
+                     (!jsr109Supported && jsr109OldSupported /* && jwsdpSupported*/ )) {
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                     jLabelJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setEnabled(false);
@@ -725,6 +729,10 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                 //jComboBoxJaxVersion.setEnabled(false);
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
             }
+        }
+        if (!isJaxWsClientSupport) { //e.g. for Maven projects
+            jLabelJaxVersion.setEnabled(false);
+            jComboBoxJaxVersion.setEnabled(false);
         }
         if(jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)){
             jCbxPackageName.setEditable(false);
