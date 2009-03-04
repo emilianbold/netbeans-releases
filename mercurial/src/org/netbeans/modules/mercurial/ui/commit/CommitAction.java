@@ -411,7 +411,10 @@ public class CommitAction extends ContextAction {
             for (HgHook hook : hooks) {
                 try {
                     // XXX handle returned context
-                    hook.beforeCommit(context);
+                    context = hook.beforeCommit(context);
+                    if(context != null) {
+                        message = context.getMessage();
+                    }
                 } catch (IOException ex) {
                     // XXX handle veto
                 }
