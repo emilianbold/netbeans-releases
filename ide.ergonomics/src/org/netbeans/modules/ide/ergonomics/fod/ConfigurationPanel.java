@@ -92,9 +92,14 @@ public class ConfigurationPanel extends JPanel {
             btnMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_Download");
         }
 
-        infoLabel.setText(lblMsg);
-        downloadButton.setText(btnMsg);
-        downloadButton.setMnemonic(btnMsg.charAt(0));
+        if (Boolean.getBoolean("noActivateButton") == true) {
+            infoLabel.setVisible(false);
+            downloadButton.setVisible(false);
+            downloadButtonActionPerformed(null);
+        } else {
+            org.openide.awt.Mnemonics.setLocalizedText(infoLabel, lblMsg);
+            org.openide.awt.Mnemonics.setLocalizedText(downloadButton, btnMsg);
+        }
         setError(" "); // NOI18N
     }
 

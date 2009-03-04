@@ -105,6 +105,7 @@ import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.spi.project.support.LookupProviderSupport;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -147,6 +148,12 @@ import org.w3c.dom.Text;
  * Represents one plain Application Client project.
  * @author Jesse Glick, et al.
  */
+@AntBasedProjectRegistration(
+    iconResource="org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif",
+    type=AppClientProjectType.TYPE,
+    sharedNamespace=AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+    privateNamespace=AppClientProjectType.PRIVATE_CONFIGURATION_NAMESPACE
+)
 public final class AppClientProject implements Project, AntProjectListener, FileChangeListener {
     
     private static final Icon CAR_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif", false); // NOI18N
@@ -181,7 +188,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
     // use AntBuildExtender to enable Ant Extensibility
     private AntBuildExtender buildExtender;
     
-    AppClientProject(AntProjectHelper helper) throws IOException {
+    public AppClientProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();

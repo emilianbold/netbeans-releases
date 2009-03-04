@@ -40,37 +40,13 @@
  */
 
 package org.netbeans.modules.mobility.project;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-
 /**
  * Factory for simple J2ME projects.
  * @author Jesse Glick, Adam Sotona
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class, position=100)
-public final class J2MEProjectType implements AntBasedProjectType {
+public final class J2MEProjectType {
     
     public static final String TYPE = "org.netbeans.modules.kjava.j2meproject";  //NOI18N
-    private static final String PROJECT_CONFIGURATION_NAME = "data";  //NOI18N
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2me-project";  //NOI18N
-    private static final String PRIVATE_CONFIGURATION_NAME = "data";  //NOI18N
-    private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2me-project-private";  //NOI18N
-    
-    public String getType() {
-        return TYPE;
-    }
-    
-    public Project createProject(final AntProjectHelper helper) {
-        return new J2MEProject(helper);
-    }
-    
-    public String getPrimaryConfigurationDataElementName(final boolean shared) {
-        return shared ? PROJECT_CONFIGURATION_NAME : PRIVATE_CONFIGURATION_NAME;
-    }
-    
-    public String getPrimaryConfigurationDataElementNamespace(final boolean shared) {
-        return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
-    }
-    
+    static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2me-project-private";  //NOI18N
 }

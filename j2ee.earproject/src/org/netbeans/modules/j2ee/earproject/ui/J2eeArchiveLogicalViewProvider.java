@@ -81,7 +81,6 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -123,12 +122,10 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
     protected final ReferenceHelper resolver;
     private final List<? extends Action> specialActions =
             Collections.singletonList(SystemAction.get(AddModuleAction.class));
-    private final AntBasedProjectType abpt;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     public J2eeArchiveLogicalViewProvider(EarProject project, UpdateHelper helper,
-            PropertyEvaluator evaluator, ReferenceHelper resolver,
-            AntBasedProjectType abpt) {
+            PropertyEvaluator evaluator, ReferenceHelper resolver) {
         this.project = project;
         assert project != null;
         this.helper = helper;
@@ -136,7 +133,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         this.evaluator = evaluator;
         assert evaluator != null;
         this.resolver = resolver;
-        this.abpt = abpt;
     }
     
     public Node createLogicalView() {

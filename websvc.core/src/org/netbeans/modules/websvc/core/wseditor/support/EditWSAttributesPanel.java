@@ -45,7 +45,6 @@ import java.awt.Component;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeMap;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -68,7 +67,7 @@ public class EditWSAttributesPanel extends javax.swing.JPanel {
         description = new StringBuffer("");
     }
     
-    public void addTabs(Set<WSEditor> editors, Node node, JaxWsModel jaxWsModel){
+    public void addTabs(Set<WSEditor> editors, Node node){
         jTabbedPane1.removeAll();
         treeMap.clear();
         
@@ -80,7 +79,7 @@ public class EditWSAttributesPanel extends javax.swing.JPanel {
         Set<String> titles = treeMap.keySet();
         for(String title : titles){
             WSEditor editor = treeMap.get(title);
-            Component c = editor.createWSEditorComponent(node, jaxWsModel);
+            Component c = editor.createWSEditorComponent(node);
             if (c != null) {
                 jTabbedPane1.addTab(title, c);
                 String desc = editor.getDescription();

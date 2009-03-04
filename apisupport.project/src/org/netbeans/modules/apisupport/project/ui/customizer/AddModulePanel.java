@@ -138,11 +138,7 @@ public final class AddModulePanel extends JPanel {
                 ModuleDependency[] deps = getSelectedDependencies();
                 if (deps.length == 1) {
                     NbPlatform platform = props.getActivePlatform();
-                    if (platform == null) { // NetBeans.org module
-                        currectJavadoc = Util.findJavadocForNetBeansOrgModules(deps[0]);
-                    } else {
-                        currectJavadoc = Util.findJavadoc(deps[0], platform);
-                    }
+                    currectJavadoc = deps[0].getModuleEntry().getJavadoc(platform);
                 }
                 showJavadocButton.setEnabled(currectJavadoc != null);
             }

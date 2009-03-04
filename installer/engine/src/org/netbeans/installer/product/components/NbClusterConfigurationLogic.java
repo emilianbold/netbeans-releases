@@ -260,6 +260,23 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
                         e);
             }
         }
+        // remove cluster/update files /////////////////////////////////////////
+        try {
+            progress.setDetail(ResourceUtils.getString(
+                    NbClusterConfigurationLogic.class,
+                    "NCCL.uninstall.update.files")); // NOI18N
+            for(String cluster : clusterNames) {
+               File updateDir = new File(installLocation, cluster + File.separator + "update");
+               if ( updateDir.exists()) {
+                    FileUtils.deleteFile(updateDir, true);
+               }
+            }
+        } catch (IOException e) {
+            LogManager.log(ResourceUtils.getString(
+                    NbClusterConfigurationLogic.class,
+                    "NCCL.uninstall.error.update.files"), // NOI18N
+                    e);
+        }
     }
     
     public List<WizardComponent> getWizardComponents() {

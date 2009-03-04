@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
@@ -66,7 +67,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -150,6 +153,11 @@ public class StartTask extends BasicTask<OperationState> {
         Process serverProcess = null;
         try {
             jdkHome = getJavaPlatformRoot(support);
+            // lookup the javadb start service and use it here.
+            RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
+            if (null != db && "true".equals(ip.get(GlassfishModule.START_DERBY_FLAG))) {
+                db.start();
+            }
             serverProcess = createProcess();
         } catch (IOException ex) {
             fireOperationStateChanged(OperationState.FAILED, 
@@ -351,6 +359,29 @@ public class StartTask extends BasicTask<OperationState> {
     private StringBuilder appendSystemVars(Map<String, String> argMap, StringBuilder argumentBuf) {
         appendSystemVar(argumentBuf, GlassfishModule.JRUBY_HOME, ip.get(GlassfishModule.JRUBY_HOME));
         appendSystemVar(argumentBuf, GlassfishModule.COMET_FLAG, ip.get(GlassfishModule.COMET_FLAG));
+
+        // override the values that are found in the domain.xml file.
+        // this is totally a copy/paste from StartTomcat...
+        if ("true".equals(ip.get(GlassfishModule.USE_IDE_PROXY_FLAG))) {
+            final String[] PROXY_PROPS = {
+                "http.proxyHost",       // NOI18N
+                "http.proxyPort",       // NOI18N
+                "http.nonProxyHosts",   // NOI18N
+                "https.proxyHost",      // NOI18N
+                "https.proxyPort",      // NOI18N
+            };
+            boolean isWindows = Utilities.isWindows();
+            for (String prop : PROXY_PROPS) {
+                String value = System.getProperty(prop);
+                if (value != null && value.trim().length() > 0) {
+                    if (isWindows && "http.nonProxyHosts".equals(prop)) { // NOI18N
+                        // enclose in double quotes to escape the pipes separating the hosts on windows
+                        value = "\"" + value + "\""; // NOI18N
+                    }
+                    argMap.put(prop, value);
+                }
+            }
+        }
 
         argMap.remove(GlassfishModule.JRUBY_HOME);
         argMap.remove(GlassfishModule.COMET_FLAG);

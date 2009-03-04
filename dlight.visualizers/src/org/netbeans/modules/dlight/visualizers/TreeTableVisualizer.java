@@ -109,7 +109,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
     TreeTableVisualizer(TreeTableVisualizerConfiguration configuration,
         TreeTableDataProvider<T> dataProvider) {
-        timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
+        //timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.configuration = configuration;
         this.dataProvider = dataProvider;
         treeModel = new DefaultTreeModel(TREE_ROOT);
@@ -167,7 +167,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
         asyncFillModel(configuration.getMetadata().getColumns());
 
-        if (timerHandler.isSessionRunning()) {
+        if (timerHandler != null && timerHandler.isSessionRunning()) {
             timerHandler.startTimer();
             return;
 
@@ -183,7 +183,9 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     @Override
     public void removeNotify() {
         super.removeNotify();
-        timerHandler.stopTimer();
+        if (timerHandler != null){
+            timerHandler.stopTimer();
+        }
         removeComponentListener(this);
         VisualizerTopComponentTopComponent.findInstance().removeComponentListener(this);
     }
@@ -630,7 +632,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             if (TreeTableVisualizerConfigurationAccessor.getDefault().isTableView(configuration)) {
                 return true;
             }
-            return timerHandler.isSessionRunning();
+            return timerHandler != null && timerHandler.isSessionRunning();
         }
 
         public int getChildrenCount(Object node) throws UnknownTypeException {

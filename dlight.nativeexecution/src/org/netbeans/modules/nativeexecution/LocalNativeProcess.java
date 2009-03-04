@@ -44,12 +44,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 
-/**
- *
- */
 public final class LocalNativeProcess extends AbstractNativeProcess {
 
-    private static final Runtime rt = Runtime.getRuntime();
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -57,29 +53,26 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     public LocalNativeProcess(NativeProcessInfo info) throws IOException {
         super(info);
-        
+
         final String commandLine = info.getCommandLine(true);
         final String workingDirectory = info.getWorkingDirectory(true);
         final File wdir =
                 workingDirectory == null ? null : new File(workingDirectory);
 
-        synchronized (rt) {
-            ProcessBuilder pb = new ProcessBuilder(Arrays.asList(
-                    "/bin/sh", "-c", // NOI18N
-                    "/bin/echo $$ && exec " + commandLine)); // NOI18N
+        ProcessBuilder pb = new ProcessBuilder(Arrays.asList(
+                "/bin/sh", "-c", // NOI18N
+                "/bin/echo $$ && exec " + commandLine)); // NOI18N
 
-            pb.environment().putAll(info.getEnvVariables(true));
-            pb.directory(wdir);
+        pb.environment().putAll(info.getEnvVariables(true));
+        pb.directory(wdir);
 
-            process = pb.start();
+        process = pb.start();
 
-            processOutput = process.getInputStream();
-            processError = process.getErrorStream();
-            processInput = process.getOutputStream();
+        processOutput = process.getInputStream();
+        processError = process.getErrorStream();
+        processInput = process.getOutputStream();
 
-
-            readPID(processOutput);
-        }
+        readPID(processOutput);
     }
 
     @Override
@@ -99,10 +92,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     public final int waitResult() throws InterruptedException {
-        int result = process.waitFor();
-//        // TODO: How to wait for all buffers?
-        Thread.yield();
-        return result;
+        return process.waitFor();
     }
 
     @Override

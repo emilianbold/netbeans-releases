@@ -46,6 +46,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JLabel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
+import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -70,8 +71,12 @@ public abstract class SaveableSectionInnerPanel extends SectionInnerPanel {
     }
 
     protected boolean isClient(Node node) {
-        Client client = (Client) node.getLookup().lookup(Client.class);
+        Client client = node.getLookup().lookup(Client.class);
         if (client != null) {
+            return true;
+        }
+        JaxWsService service = node.getLookup().lookup(JaxWsService.class);
+        if (service != null && !service.isServiceProvider()) {
             return true;
         }
         return false;

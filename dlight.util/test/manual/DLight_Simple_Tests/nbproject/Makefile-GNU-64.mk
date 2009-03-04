@@ -16,7 +16,7 @@ CC=gcc
 CCC=g++
 CXX=g++
 FC=
-AS=gas
+AS=as
 
 # Macros
 CND_PLATFORM=GNU-Solaris-x86

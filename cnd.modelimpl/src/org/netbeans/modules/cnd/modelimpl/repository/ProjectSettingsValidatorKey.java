@@ -38,46 +38,47 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectSettingsValidator;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
-import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * Key for ProjectSettingsValidator data
  * @author Vladimir Kvashin
  */
 public class ProjectSettingsValidatorKey extends ProjectNameBasedKey {
-    
+
     public ProjectSettingsValidatorKey(String project) {
-	 super(project);
+        super(project);
     }
-    
+
     public ProjectSettingsValidatorKey(DataInput in) throws IOException {
-	super(in);
+        super(in);
     }
-    
+
     public int getSecondaryDepth() {
-	return 1;
+        return 1;
     }
-    
+
+    @Override
     public String toString() {
-	return "ProjectSettingsValidatorKey " + getProjectName(); // NOI18N
+        return "ProjectSettingsValidatorKey " + getProjectName(); // NOI18N
     }
-    
+
+    @Override
+    public int hashCode() {
+        return 37*KeyObjectFactory.KEY_PRJ_VALIDATOR_KEY + super.hashCode();
+    }
+
     public int getSecondaryAt(int level) {
-	assert (level == 0);
-	return KeyObjectFactory.KEY_PRJ_VALIDATOR_KEY;
+        assert (level == 0);
+        return KeyObjectFactory.KEY_PRJ_VALIDATOR_KEY;
     }
-    
+
     public PersistentFactory getPersistentFactory() {
-	return ProjectSettingsValidator.getPersistentFactory();
+        return ProjectSettingsValidator.getPersistentFactory();
     }
-    
 }

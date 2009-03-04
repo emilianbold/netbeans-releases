@@ -161,5 +161,5 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
         }
         return null;
     }
-    
+
 }

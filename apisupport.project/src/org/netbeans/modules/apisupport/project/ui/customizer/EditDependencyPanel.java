@@ -49,7 +49,6 @@ import java.util.TreeSet;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -76,11 +75,7 @@ public final class EditDependencyPanel extends JPanel {
         this.pp = origDep.getModuleEntry().getPublicPackages();
         initComponents();
         initDependency();
-        if (platform == null) { // NetBeans.org module
-            javadoc = Util.findJavadocForNetBeansOrgModules(origDep);
-        } else {
-            javadoc = Util.findJavadoc(origDep, platform);
-        }
+        javadoc = origDep.getModuleEntry().getJavadoc(platform);
         showJavadocButton.setEnabled(javadoc != null);
         getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel.title.AccessibleContext.accessibleName"));

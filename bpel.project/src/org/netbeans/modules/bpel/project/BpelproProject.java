@@ -87,6 +87,7 @@ import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -96,6 +97,14 @@ import org.w3c.dom.Text;
 /**
  * @author Chris Webster
  */
+@AntBasedProjectRegistration(
+    type=BpelproProjectType.TYPE,
+    iconResource="org/netbeans/modules/bpel/project/resources/bpelProject.png",
+    sharedNamespace=BpelproProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+    sharedName=BpelproProjectType.PROJECT_CONFIGURATION_NAME,
+    privateNamespace=BpelproProjectType.PRIVATE_CONFIGURATION_NAMESPACE,
+    privateName=BpelproProjectType.PRIVATE_CONFIGURATION_NAME
+)
 public final class BpelproProject implements Project, AntProjectListener, ProjectPropertyProvider {
     private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bpel/project/resources/bpelProject.png", false); // NOI18N
 

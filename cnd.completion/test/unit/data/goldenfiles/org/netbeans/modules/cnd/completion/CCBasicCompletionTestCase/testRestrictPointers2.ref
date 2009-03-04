@@ -2,10 +2,12 @@ p2 int*
 A
 B
 C
+In_Macro
 p1 int*
 p3 int*
 restrictTestFoo1(int* a) void
 restrictTestFoo2() void
 globInt int
+checkZero() void
 globFoo() void
 main(int argc, char** argv) int

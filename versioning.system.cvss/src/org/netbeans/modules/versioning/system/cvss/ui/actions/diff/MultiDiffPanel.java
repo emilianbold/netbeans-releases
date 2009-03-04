@@ -205,7 +205,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
 
     public synchronized void setGroup(ExecutorGroup group) {
         this.group = group;
-        if (executed) {
+        if (executed && group != null) {
             group.executed();
         }
     }
