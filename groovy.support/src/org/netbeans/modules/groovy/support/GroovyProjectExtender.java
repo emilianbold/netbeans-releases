@@ -41,12 +41,10 @@
 
 package org.netbeans.modules.groovy.support;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
+import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -64,9 +62,8 @@ import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.filesystems.FileLock;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -84,7 +81,7 @@ public class GroovyProjectExtender implements GroovyFeature {
 
     private static final String EXTENSIBLE_TARGET_NAME = "-pre-pre-compile"; // NOI18N
     private static final String GROOVY_EXTENSION_ID = "groovy"; // NOI18N
-    private static final String GROOVY_BUILD_XML = "org/netbeans/modules/groovy/support/resources/groovy-build.xml"; // NOI18N
+    private static final String GROOVY_BUILD_XSL = "org/netbeans/modules/groovy/support/resources/groovy-build.xsl"; // NOI18N
     private static final String J2SE_PROJECT_PROPERTIES_PATH = "nbproject/project.properties"; // NOI18N
     private static final String J2SE_EXCLUDE_PROPERTY = "build.classes.excludes"; // NOI18N
     private static final String J2SE_DISABLE_COMPILE_ON_SAVE = "compile.on.save.unsupported.groovy"; // NOI18N
@@ -263,8 +260,10 @@ public class GroovyProjectExtender implements GroovyFeature {
             if (extension == null) {
                 FileObject destDirFO = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
                 try {
-                    FileObject destFileFO = destDirFO.createData("groovy-build", "xml"); // NOI18N
-                    copyResource(GROOVY_BUILD_XML, destFileFO);
+                    GeneratedFilesHelper helper = new GeneratedFilesHelper(project.getProjectDirectory());
+                    URL stylesheet = this.getClass().getClassLoader().getResource(GROOVY_BUILD_XSL);
+                    helper.generateBuildScriptFromStylesheet("nbproject/groovy-build.xml", stylesheet);
+                    FileObject destFileFO = destDirFO.getFileObject("groovy-build", "xml"); // NOI18N
                     extension = extender.addExtension(GROOVY_EXTENSION_ID, destFileFO);
                     extension.addDependency(EXTENSIBLE_TARGET_NAME, "-groovy-init-macrodef-javac"); // NOI18N
                     ProjectManager.getDefault().saveProject(project);
@@ -336,25 +335,6 @@ public class GroovyProjectExtender implements GroovyFeature {
             Exceptions.printStackTrace(ex);
         }
         return false;
-    }
-    
-    private void copyResource(final String res, final FileObject to) throws IOException {
-        InputStream inputStream = new BufferedInputStream(this.getClass().getClassLoader().getResourceAsStream(res));
-        try {
-            FileLock lock = to.lock();
-            try {
-                OutputStream outputStream = new BufferedOutputStream(to.getOutputStream(lock));
-                try {
-                    FileUtil.copy(inputStream, outputStream);
-                } finally {
-                    outputStream.close();
-                }
-            } finally {
-                lock.releaseLock();
-            }
-        } finally {
-            inputStream.close();
-        }
     }
     
     private static EditableProperties getEditableProperties(final Project prj,final  String propertiesPath) 
