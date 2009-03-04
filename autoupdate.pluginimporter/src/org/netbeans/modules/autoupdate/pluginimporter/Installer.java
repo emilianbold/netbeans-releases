@@ -210,7 +210,7 @@ public class Installer extends ModuleInstall {
 
     private int getImportDelay () {
         int delay = 50000; // the defalut value
-        String delay_prop = System.getProperty ("plugin.managet.import.delay");
+        String delay_prop = System.getProperty ("plugin.manager.import.delay");
         try {
             delay = Integer.parseInt (delay_prop);
         } catch (NumberFormatException x) {

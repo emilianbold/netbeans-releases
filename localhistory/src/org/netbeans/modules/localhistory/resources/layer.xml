@@ -81,5 +81,13 @@ made subject to such option by the copyright holder.
             </folder>                                
         </folder>                                
     </folder>
-        
+
+    <folder name="OptionsExport">
+        <folder name="Advanced">
+            <file name="LocalHistory">
+                <attr name="include" stringvalue="var/filehistory/.*|config/Preferences/org/netbeans/modules/localhistory.properties"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.localhistory.resources.Bundle#LocalHistory.Options.Export.displayName"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
