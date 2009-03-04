@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,32 +37,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.profiler.oql.language.parser;
+package org.netbeans.modules.profiler.oql.language;
 
 import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
+
+import java.util.EnumSet;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
+
 
 /**
  *
- * @author Jaroslav Bachorik
+ * @author Jan Jancura
  */
-public class OQLParserTaskFactory extends TaskFactory {
+public class OQLLanguageHierarchy extends LanguageHierarchy<OQLTokenId> {
 
-    @Override
-    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        if (snapshot.getMimeType().equals("text/x-oql")) {
-            return Collections.singletonList(new OQLParserTask(snapshot.getSource().getDocument(false)));
-        }
-        return Collections.EMPTY_LIST;
+    protected synchronized Collection<OQLTokenId> createTokenIds () {
+        return EnumSet.allOf (OQLTokenId.class);
     }
 
+    protected Lexer<OQLTokenId> createLexer (LexerRestartInfo<OQLTokenId> info) {
+        return new OQLLexer (info);
+    }
+
+    protected String mimeType () {
+        return "text/x-oql";
+    }
 }
+
+
+
