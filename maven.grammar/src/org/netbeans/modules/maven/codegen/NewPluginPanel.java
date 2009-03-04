@@ -200,13 +200,13 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
                     f.setOccur(QueryField.OCCUR_MUST);
                     f.setValue(curText);
                     fields.add(f);
-                    // search only in plugins
-                    f = new QueryField();
-                    f.setField(QueryField.FIELD_PACKAGING);
-                    f.setValue("maven-plugin"); //NOI118N
-                    f.setOccur(QueryField.OCCUR_MUST);
-                    fields.add(f);
                 }
+                // search only in plugins
+                QueryField f = new QueryField();
+                f.setField(QueryField.FIELD_PACKAGING);
+                f.setValue("maven-plugin"); //NOI118N
+                f.setOccur(QueryField.OCCUR_MUST);
+                fields.add(f);
 
                 final List<NBVersionInfo> infos = RepositoryQueries.find(fields);
 
