@@ -110,7 +110,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     
     public static Hk2OptionalFactory createEe6() {
         ServerUtilities t = ServerUtilities.getEe6Utilities();
-        return null == t ? null : new Hk2OptionalFactory(Hk2DeploymentFactory.createEe6(),
+        return null == t ? createPrelude() : new Hk2OptionalFactory(Hk2DeploymentFactory.createEe6(),
                 t);
     }
     

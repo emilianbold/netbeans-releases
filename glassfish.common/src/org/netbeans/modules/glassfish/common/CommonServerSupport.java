@@ -110,6 +110,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         updateString(ip,GlassfishModule.DOMAIN_NAME_ATTR, GlassfishInstance.DEFAULT_DOMAIN_NAME);
         updateString(ip,GlassfishModule.SESSION_PRESERVATION_FLAG,"true");
         updateString(ip,GlassfishModule.START_DERBY_FLAG,"true");
+        updateString(ip,GlassfishModule.USE_IDE_PROXY_FLAG,"true");
 
         if(ip.get(GlassfishModule.URL_ATTR) == null) {
             String deployerUrl = instanceProvider.formatUri(glassfishRoot, hostName, httpPort);
