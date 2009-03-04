@@ -38,16 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.editor.makefile;
 
 import java.util.Collection;
 
 import java.util.EnumSet;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
-
 
 /**
  *
@@ -55,16 +54,16 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public class MakefileLanguageHierarchy extends LanguageHierarchy<MakefileTokenId> {
 
-    protected synchronized Collection<MakefileTokenId> createTokenIds () {
-        return EnumSet.allOf (MakefileTokenId.class);
+    protected synchronized Collection<MakefileTokenId> createTokenIds() {
+        return EnumSet.allOf(MakefileTokenId.class);
     }
 
-    protected Lexer<MakefileTokenId> createLexer (LexerRestartInfo<MakefileTokenId> info) {
-        return new MakefileLexer (info);
+    protected Lexer<MakefileTokenId> createLexer(LexerRestartInfo<MakefileTokenId> info) {
+        return new MakefileLexer(info);
     }
 
-    protected String mimeType () {
-        return "text/x-make";
+    protected String mimeType() {
+        return MIMENames.MAKEFILE_MIME_TYPE;
     }
 }
 

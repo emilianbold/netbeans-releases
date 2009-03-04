@@ -1117,8 +1117,17 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }
         
         private void documentModified() {
-            ((PropertiesTableModel)table.getModel()).getFileEntry(table.getEditingColumn()).getDataObject().setModified(true);
+            int column = table.getEditingColumn();
+            if (column != 0) {
+                ((PropertiesTableModel)table.getModel()).getFileEntry(column).getDataObject().setModified(true);
 //            obj.setModified(true);
+            } else {
+                //Modified Key column need setModified all files in bundle
+                for (int i = 0; i<structure.getEntryCount();i++) {
+                    PropertiesDataObject dataObject = (PropertiesDataObject) structure.getNthEntry(i).getDataObject();
+                    dataObject.setModified(true);
+                }
+            }
         }
         
     }

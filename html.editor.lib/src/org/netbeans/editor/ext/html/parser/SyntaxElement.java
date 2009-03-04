@@ -214,10 +214,7 @@ public class SyntaxElement {
         }
         
         public TagAttribute getAttribute(String name, boolean ignoreCase) {
-            if(attribs == null) {
-                return null;
-            }
-            for(TagAttribute ta : attribs) {
+            for(TagAttribute ta : getAttributes()) {
                 if(ta.getName().equals(name)) {
                     return ta;
                 }
@@ -225,11 +222,12 @@ public class SyntaxElement {
             return null;
         }
         
+        @Override
         public String toString() {
             StringBuffer ret = new StringBuffer( super.toString() );
             ret.append( " - {" );   // NOI18N
             
-            for( Iterator i = attribs.iterator(); i.hasNext(); ) {
+            for( Iterator i = getAttributes().iterator(); i.hasNext(); ) {
                 ret.append( i.next() );
                 ret.append( ", "  );    // NOI18N
             }

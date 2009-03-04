@@ -249,7 +249,7 @@ public class SyntaxElement {
         }
         
         public List<TagAttribute> getAttributes() {
-            return attribs;
+            return attribs == null ? Collections.EMPTY_LIST : attribs;
         }
         
         public TagAttribute getAttribute(String name) {
@@ -257,7 +257,7 @@ public class SyntaxElement {
         }
         
         public TagAttribute getAttribute(String name, boolean ignoreCase) {
-            for(TagAttribute ta : attribs) {
+            for(TagAttribute ta : getAttributes()) {
                 if(ta.getName().equals(name)) {
                     return ta;
                 }
@@ -269,7 +269,7 @@ public class SyntaxElement {
             StringBuffer ret = new StringBuffer( super.toString() );
             ret.append( " - {" );   // NOI18N
             
-            for( Iterator i = attribs.iterator(); i.hasNext(); ) {
+            for( Iterator i = getAttributes().iterator(); i.hasNext(); ) {
                 ret.append( i.next() );
                 ret.append( ", "  );    // NOI18N
             }

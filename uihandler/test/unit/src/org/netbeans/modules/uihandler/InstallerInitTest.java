@@ -48,7 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
-import junit.framework.*;
 import java.util.Locale;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -95,6 +94,7 @@ public class InstallerInitTest extends NbTestCase {
         installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);
 
+        Installer.dontWaitForUserInputInTests();
         DD.d = null;
         MockServices.setServices(DD.class);
 

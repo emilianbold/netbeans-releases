@@ -64,8 +64,6 @@ import org.openide.util.WeakListeners;
 @NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=85)
 public class JaxWsNodeFactory implements NodeFactory {
 
-    private JAXWSLightSupport jaxwsSupport;
-
     /** Creates a new instance of WebServicesNodeFactory */
     public JaxWsNodeFactory() {
     }
@@ -82,7 +80,7 @@ public class JaxWsNodeFactory implements NodeFactory {
         private static final String KEY_SERVICE_REFS = "serviceRefs"; // NOI18N
         
         private Project project;
-           
+        private JAXWSLightSupport jaxwsSupport;
         private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         
         public WsNodeList(Project proj) {
