@@ -241,6 +241,9 @@ made subject to such option by the copyright holder.
                     <file name="DivisionByZero.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createDivisionByZero"/>
                     </file>
+                    <file name="RawTypes.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createRawTypes"/>
+                    </file>
                 </folder>
 
                 <folder name="apisupport">
