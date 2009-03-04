@@ -84,13 +84,7 @@ public class ServiceView extends SectionView {
         }
         
         if (implClass == null) {
-            String wsdlUrl = null;
-            if (s != null) {
-                wsdlUrl = s.getWsdlUrl();
-            } else if (jaxService != null) {
-                wsdlUrl = jaxService.getWsdlUrl();
-            }
-            if (wsdlUrl == null) { // WS from Java
+            if (!(WSITModelSupport.isServiceFromWsdl(node))) {
                 implClass = node.getLookup().lookup(FileObject.class);
             }
         }

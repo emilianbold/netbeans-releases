@@ -162,7 +162,7 @@ public class WSITModelSupport {
 
     public static WSDLModel getModelForService(Service service, FileObject implClass, Project p, boolean create, Collection<FileObject> createdFiles) {
         try {
-            String wsdlUrl = service.getWsdlUrl();
+            String wsdlUrl = service.getLocalWsdlFile();
             if (wsdlUrl == null) { // WS from Java
                 if ((implClass == null) || (!implClass.isValid() || implClass.isVirtual())) {
                     logger.log(Level.INFO, "Implementation class is null or not valid, or just virtual: " + implClass + ", service: " + service);
@@ -283,7 +283,7 @@ public class WSITModelSupport {
         return model;
     }
     
-    private static void copyImports(final WSDLModel model, final FileObject srcFolder, Collection<FileObject> createdFiles) throws CatalogModelException {
+    static void copyImports(final WSDLModel model, final FileObject srcFolder, Collection<FileObject> createdFiles) throws CatalogModelException {
         
         FileObject modelFO = Utilities.getFileObject(model.getModelSource());
         
@@ -321,7 +321,7 @@ public class WSITModelSupport {
     /** Creates new empty main client configuration file
      *
      */
-    private static FileObject createMainConfig(FileObject folder, Collection<FileObject> createdFiles) {
+    static FileObject createMainConfig(FileObject folder, Collection<FileObject> createdFiles) {
         FileObject mainConfig = null;
         try {
             mainConfig = FileUtil.createData(folder, CONFIG_WSDL_CLIENT_PREFIX + "." + MAIN_CONFIG_EXTENSION); //NOI18N
@@ -598,7 +598,7 @@ public class WSITModelSupport {
 
     public static boolean isServiceFromWsdl(JaxWsService service) {
         if (service != null) { //it is a service
-            String wsdlUrl = service.getWsdlUrl();
+            String wsdlUrl = service.getLocalWsdl();
             if (wsdlUrl != null) { // it is a web service from wsdl
                 return true;
             }
@@ -608,7 +608,7 @@ public class WSITModelSupport {
 
     public static boolean isServiceFromWsdl(Service service) {
         if (service != null) { //it is a service
-            String wsdlUrl = service.getWsdlUrl();
+            String wsdlUrl = service.getLocalWsdlFile();
             if (wsdlUrl != null) { // it is a web service from wsdl
                 return true;
             }

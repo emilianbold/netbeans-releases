@@ -41,56 +41,34 @@
 
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
-import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.undo.UndoManager;
-import javax.xml.namespace.QName;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
-import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.websvc.wsitconf.util.UndoManagerHolder;
 import org.netbeans.modules.websvc.wsitconf.WSITEditor;
 import org.netbeans.modules.websvc.wsitconf.api.DesignerListenerProvider;
-import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
-import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfileRegistry;
-import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
-import org.netbeans.modules.websvc.wsitconf.ui.security.listmodels.ServiceProviderElement;
+import org.netbeans.modules.websvc.wsitconf.projects.MavenWsitProvider;
+import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
 import org.netbeans.modules.websvc.wsitconf.util.AbstractTask;
 import org.netbeans.modules.websvc.wsitconf.util.SourceUtils;
-import org.netbeans.modules.websvc.wsitconf.util.Util;
-import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
-import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.STSConfiguration;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ServiceProvider;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
-import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.BindingFault;
-import org.netbeans.modules.xml.wsdl.model.BindingInput;
-import org.netbeans.modules.xml.wsdl.model.BindingOperation;
-import org.netbeans.modules.xml.wsdl.model.BindingOutput;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Import;
-import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.model.Port;
-import org.netbeans.modules.xml.wsdl.model.Types;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -123,7 +101,7 @@ public class MavenWSITModelSupport {
         } else {  //it is a service
             FileObject implClass = node.getLookup().lookup(FileObject.class);
             try {
-                String wsdlUrl = jaxService.getWsdlUrl();
+                String wsdlUrl = jaxService.getLocalWsdl();
                 if (wsdlUrl == null) { // WS from Java
                     if ((implClass == null) || (!implClass.isValid() || implClass.isVirtual())) {
                         logger.log(Level.INFO, "Implementation class is null or not valid, or just virtual: " + implClass + ", service: " + jaxService);
@@ -156,94 +134,94 @@ public class MavenWSITModelSupport {
         FileObject catalogfo = Utilities.getProjectCatalogFileObject(p);
         ModelSource catalogms = Utilities.getModelSource(catalogfo, true);
         
-//        try {
-//            CatalogModel cm = Utilities.getCatalogModel(catalogms);
-//            ModelSource originalms = cm.getModelSource(URI.create(jaxWsService.getWsdlUrl()));
-//            FileObject originalWsdlFO = Utilities.getFileObject(originalms);
-//            WSDLModel originalwsdlmodel = getModelFromFO(originalWsdlFO, true);
-//
-//            // check whether config file already exists
-//            FileObject configFO = srcFolder.getFileObject(originalWsdlFO.getName(), CONFIG_WSDL_EXTENSION);
-//            if ((configFO != null) && (configFO.isValid())) {
-//                return getModelFromFO(configFO, true);
-//            }
-//
-//            if (create) {
-//                // check whether main config file exists
-//                FileObject mainConfigFO = srcFolder.getFileObject(CONFIG_WSDL_CLIENT_PREFIX, MAIN_CONFIG_EXTENSION);
-//                if (mainConfigFO == null) {
-//                    mainConfigFO = createMainConfig(srcFolder, createdFiles);
-//                }
-//
-//                copyImports(originalwsdlmodel, srcFolder, createdFiles);
-//
-//                // import the model from client model
-//                WSDLModel mainModel = getModelFromFO(mainConfigFO, true);
-//                mainModel.startTransaction();
-//                try {
-//                    WSDLComponentFactory wcf = mainModel.getFactory();
-//
-//                    FileObject configName = Utilities.getFileObject(originalwsdlmodel.getModelSource());
-//                    configFO = srcFolder.getFileObject(configName.getName(), CONFIG_WSDL_EXTENSION);
-//
-//                    boolean importFound = false;
-//                    Collection<Import> imports = mainModel.getDefinitions().getImports();
-//                    for (Import i : imports) {
-//                        if (i.getLocation().equals(configFO.getNameExt())) {
-//                            importFound = true;
-//                            break;
-//                        }
-//                    }
-//                    model = getModelFromFO(configFO, true);
-//                    if (!importFound) {
-//                        org.netbeans.modules.xml.wsdl.model.Import imp = wcf.createImport();
-//                        imp.setLocation((configFO).getNameExt());
-//                        imp.setNamespace(model.getDefinitions().getTargetNamespace());
-//                        Definitions def = mainModel.getDefinitions();
-//                        def.setName("mainclientconfig"); //NOI18N
-//                        def.addImport(imp);
-//                    }
-//                } finally {
-//                    mainModel.endTransaction();
-//                }
-//
-//                DataObject mainConfigDO = DataObject.find(mainConfigFO);
-//                if ((mainConfigDO != null) && (mainConfigDO.isModified())) {
-//                    SaveCookie wsdlSaveCookie = mainConfigDO.getCookie(SaveCookie.class);
-//                    if(wsdlSaveCookie != null){
-//                        wsdlSaveCookie.save();
-//                    }
-//                    mainConfigDO.setModified(false);
-//                }
-//
-//                DataObject configDO = DataObject.find(configFO);
-//                if ((configDO != null) && (configDO.isModified())) {
-//                    SaveCookie wsdlSaveCookie = configDO.getCookie(SaveCookie.class);
-//                    if(wsdlSaveCookie != null){
-//                        wsdlSaveCookie.save();
-//                    }
-//                    configDO.setModified(false);
-//                }
-//            }
-//
-//        } catch (CatalogModelException ex) {
-//            logger.log(Level.INFO, null, ex);
-//        }
+        try {
+            CatalogModel cm = Utilities.getCatalogModel(catalogms);
+            ModelSource originalms = cm.getModelSource(URI.create(jaxWsService.getWsdlUrl()));
+            FileObject originalWsdlFO = Utilities.getFileObject(originalms);
+            WSDLModel originalwsdlmodel = WSITModelSupport.getModelFromFO(originalWsdlFO, true);
+
+            // check whether config file already exists
+            FileObject configFO = srcFolder.getFileObject(originalWsdlFO.getName(), WSITModelSupport.CONFIG_WSDL_EXTENSION);
+            if ((configFO != null) && (configFO.isValid())) {
+                return WSITModelSupport.getModelFromFO(configFO, true);
+            }
+
+            if (create) {
+                // check whether main config file exists
+                FileObject mainConfigFO = srcFolder.getFileObject(WSITModelSupport.CONFIG_WSDL_CLIENT_PREFIX, WSITModelSupport.MAIN_CONFIG_EXTENSION);
+                if (mainConfigFO == null) {
+                    mainConfigFO = WSITModelSupport.createMainConfig(srcFolder, createdFiles);
+                }
+
+                WSITModelSupport.copyImports(originalwsdlmodel, srcFolder, createdFiles);
+
+                // import the model from client model
+                WSDLModel mainModel = WSITModelSupport.getModelFromFO(mainConfigFO, true);
+                mainModel.startTransaction();
+                try {
+                    WSDLComponentFactory wcf = mainModel.getFactory();
+
+                    FileObject configName = Utilities.getFileObject(originalwsdlmodel.getModelSource());
+                    configFO = srcFolder.getFileObject(configName.getName(), WSITModelSupport.CONFIG_WSDL_EXTENSION);
+
+                    boolean importFound = false;
+                    Collection<Import> imports = mainModel.getDefinitions().getImports();
+                    for (Import i : imports) {
+                        if (i.getLocation().equals(configFO.getNameExt())) {
+                            importFound = true;
+                            break;
+                        }
+                    }
+                    model = WSITModelSupport.getModelFromFO(configFO, true);
+                    if (!importFound) {
+                        org.netbeans.modules.xml.wsdl.model.Import imp = wcf.createImport();
+                        imp.setLocation((configFO).getNameExt());
+                        imp.setNamespace(model.getDefinitions().getTargetNamespace());
+                        Definitions def = mainModel.getDefinitions();
+                        def.setName("mainclientconfig"); //NOI18N
+                        def.addImport(imp);
+                    }
+                } finally {
+                    mainModel.endTransaction();
+                }
+
+                DataObject mainConfigDO = DataObject.find(mainConfigFO);
+                if ((mainConfigDO != null) && (mainConfigDO.isModified())) {
+                    SaveCookie wsdlSaveCookie = mainConfigDO.getCookie(SaveCookie.class);
+                    if(wsdlSaveCookie != null){
+                        wsdlSaveCookie.save();
+                    }
+                    mainConfigDO.setModified(false);
+                }
+
+                DataObject configDO = DataObject.find(configFO);
+                if ((configDO != null) && (configDO.isModified())) {
+                    SaveCookie wsdlSaveCookie = configDO.getCookie(SaveCookie.class);
+                    if(wsdlSaveCookie != null){
+                        wsdlSaveCookie.save();
+                    }
+                    configDO.setModified(false);
+                }
+            }
+
+        } catch (CatalogModelException ex) {
+            logger.log(Level.INFO, null, ex);
+        }
         
         return model;
     }
     
-//    /* Retrieves WSDL model for a WS from Java - if config file exists, reuses that one, otherwise generates new one
-//     */
-//    public static WSDLModel getServiceModelForClient(JAXWSClientSupport supp, Client client) throws IOException, Exception {
-//        FileObject originalWsdlFolder = supp.getLocalWsdlFolderForClient(client.getName(), false);
-//        FileObject originalWsdlFO = originalWsdlFolder.getFileObject(client.getLocalWsdlFile());
-//
-//        if ((originalWsdlFO != null) && (originalWsdlFO.isValid())) {   //NOI18N
-//            return getModelFromFO(originalWsdlFO, true);
-//        }
-//        return null;
-//    }
+    /* Retrieves WSDL model for a WS from Java - if config file exists, reuses that one, otherwise generates new one
+     */
+    public static WSDLModel getServiceModelForClient(JAXWSLightSupport supp, JaxWsService client) throws IOException, Exception {
+        FileObject originalWsdlFolder = supp.getWsdlFolder(false);
+        FileObject originalWsdlFO = originalWsdlFolder.getFileObject(client.getLocalWsdl());
+
+        if ((originalWsdlFO != null) && (originalWsdlFO.isValid())) {
+            return WSITModelSupport.getModelFromFO(originalWsdlFO, true);
+        }
+        return null;
+    }
     
     private static WSDLModel getModelForServiceFromWsdl(JAXWSLightSupport supp, JaxWsService service) throws IOException, Exception {
         String wsdlLocation = service.getLocalWsdl();
@@ -280,9 +258,9 @@ public class MavenWSITModelSupport {
         }
         
         // check whether config file already exists
-        FileObject wsdlFolder = supp.getWsdlFolder(create);
-        if ((wsdlFolder != null) && (wsdlFolder.isValid())) {
-            FileObject wsdlFO = wsdlFolder.getParent().getFileObject(configWsdlName, WSITModelSupport.CONFIG_WSDL_EXTENSION);  //NOI18N
+        FileObject cfgFileFolder = getWsitConfigFolder(FileOwnerQuery.getOwner(jc));
+        if ((cfgFileFolder != null) && (cfgFileFolder.isValid())) {
+            FileObject wsdlFO = cfgFileFolder.getFileObject(configWsdlName, WSITModelSupport.CONFIG_WSDL_EXTENSION);  //NOI18N
             if ((wsdlFO != null) && (wsdlFO.isValid())) {   //NOI18N
                 return WSITModelSupport.getModelFromFO(wsdlFO, true);
             }
@@ -290,9 +268,9 @@ public class MavenWSITModelSupport {
         
         if (create) {
             // config file doesn't exist - generate empty file
-            FileObject wsdlFO = wsdlFolder.getParent().getFileObject(configWsdlName, WSITModelSupport.CONFIG_WSDL_EXTENSION);   //NOI18N
+            FileObject wsdlFO = cfgFileFolder.getFileObject(configWsdlName, WSITModelSupport.CONFIG_WSDL_EXTENSION);   //NOI18N
             if ((wsdlFO == null) || !(FileUtil.toFile(wsdlFO).exists())) {
-                wsdlFO = wsdlFolder.getParent().createData(configWsdlName, WSITModelSupport.CONFIG_WSDL_EXTENSION);  //NOI18N
+                wsdlFO = cfgFileFolder.createData(configWsdlName, WSITModelSupport.CONFIG_WSDL_EXTENSION);  //NOI18N
                 if (createdFiles != null) {
                     createdFiles.add(wsdlFO);
                 }
@@ -311,46 +289,24 @@ public class MavenWSITModelSupport {
         
         return model;
     }
-    
-    public static Binding getBinding(JaxWsService service, FileObject implClass, Project project, boolean create, Collection<FileObject> createdFiles) {
-        String portName = service.getPortName();
-        String serviceName = service.getServiceName();
-        if (serviceName == null) {
-            QName serviceQ = JavaWsdlMapper.getServiceName(implClass);
-            if (serviceQ != null) {
-                serviceName = serviceQ.getLocalPart();
+
+    public static FileObject getWsitConfigFolder(Project prj) {
+        J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml");
+            if (dd != null && dd.exists()) {
+                return FileUtil.toFileObject(dd.getParentFile());
             }
         }
-        if (serviceName == null) return null;
-//        WSDLModel model = getModelForService(service, implClass, project, create, createdFiles);
-//        if (model == null) return null;
-//        Definitions definitions = model.getDefinitions();
-//        if (definitions == null) return null;
-//        Collection<Binding> bindings = definitions.getBindings();
-//        if ((bindings == null) || (bindings.isEmpty())) return null;
-//        if (bindings.size() == 1) return bindings.iterator().next();
-//        Collection<org.netbeans.modules.xml.wsdl.model.Service> services = definitions.getServices();
-//        for (org.netbeans.modules.xml.wsdl.model.Service s : services) {
-//            if (s == null) continue;
-//            if (serviceName.equals(s.getName())) {
-//                Collection<Port> ports = s.getPorts();
-//                if (portName == null) {
-//                    if ((ports != null) && (!ports.isEmpty())) {
-//                        Port p = ports.iterator().next();
-//                        QName b = p.getBinding().getQName();
-//                        return model.findComponentByName(b, Binding.class);
-//                    }
-//                } else {
-//                    for (Port p : ports) {
-//                        if (portName.equals(p.getName())) {
-//                            QName b = p.getBinding().getQName();
-//                            return model.findComponentByName(b, Binding.class);
-//                        }
-//                    }
-//                }
-//            }
-//        }
         return null;
     }
 
+    public static boolean isMavenProject(Project p) {
+        WsitProvider provider = p.getLookup().lookup(WsitProvider.class);
+        if (provider instanceof MavenWsitProvider) {
+            return true;
+        }
+        return false;
+    }
+    
 }

@@ -48,7 +48,6 @@ import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.websvc.wsitconf.spi.ProjectSpecificTransport;
 import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
@@ -78,26 +77,23 @@ public class WebProjectSpecificTransport extends ProjectSpecificTransport {
     }
 
     @Override
-    public void setTCPUrl(Service s, boolean tomcat) {
+    public void setTCPUrl(String name, String serviceName, String implClass, boolean tomcat) {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             try {
                 WebApp wApp = DDProvider.getDefault ().getDDRoot(wm.getDeploymentDescriptor());
                 if (wsitProvider.isJsr109Project()) {
-                    String servletClassName = s.getImplementationClass();       //NOI18N
-                    Servlet servlet = Util.getServlet(wApp, servletClassName);
+                    Servlet servlet = Util.getServlet(wApp, implClass);
                     if (servlet == null) {      //NOI18N
                         try {
-                            String servletName = s.getName();
                             servlet = (Servlet)wApp.addBean("Servlet", new String[]{WebWsitProvider.SERVLET_NAME,"ServletClass"},    //NOI18N
-                                    new Object[]{servletName,servletClassName}, WebWsitProvider.SERVLET_NAME);
+                                    new Object[]{name,implClass}, WebWsitProvider.SERVLET_NAME);
                             servlet.setLoadOnStartup(new java.math.BigInteger("1"));                            //NOI18N
-                            String serviceName = s.getServiceName();
                             if (serviceName == null) {
-                                serviceName = servletClassName.substring(servletClassName.lastIndexOf('.')+1) + JavaWsdlMapper.SERVICE;
+                                serviceName = implClass.substring(implClass.lastIndexOf('.')+1) + JavaWsdlMapper.SERVICE;
                             }
                             wApp.addBean("ServletMapping", new String[]{WebWsitProvider.SERVLET_NAME,"UrlPattern"}, //NOI18N
-                                    new Object[]{servletName, "/" + serviceName}, WebWsitProvider.SERVLET_NAME);
+                                    new Object[]{name, "/" + serviceName}, WebWsitProvider.SERVLET_NAME);
                             wApp.write(wm.getDeploymentDescriptor());
                         } catch (NameAlreadyUsedException ex) {
                             ex.printStackTrace();
