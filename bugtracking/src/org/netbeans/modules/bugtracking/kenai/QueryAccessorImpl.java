@@ -132,4 +132,10 @@ public class QueryAccessorImpl extends QueryAccessor {
     void fireQueriesChanged(ProjectHandle project, List<QueryHandle> newQueryList) {
         fireQueryListChanged(project, newQueryList);
     }
+
+    @Override
+    public ActionListener getCreateIssueAction(ProjectHandle project) {
+        //TODO: implement me
+        return null;
+    }
 }

@@ -48,6 +48,13 @@ public abstract class QueryAccessor {
 
     /**
      *
+     * @param project
+     * @return Action to invoke when user clicks 'Create Issue...' button.
+     */
+    public abstract ActionListener getCreateIssueAction( ProjectHandle project );
+
+    /**
+     *
      * @param result
      * @return Action to invoke when user clicks given query result link.
      */
