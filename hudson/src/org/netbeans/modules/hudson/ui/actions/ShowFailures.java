@@ -45,8 +45,8 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonUtils;
-import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -64,10 +64,10 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class ShowFailures extends AbstractAction implements Runnable {
 
-    private final HudsonJobImpl job;
+    private final HudsonJob job;
     private final int buildNumber;
 
-    public ShowFailures(HudsonJobImpl job, int buildNumber) {
+    public ShowFailures(HudsonJob job, int buildNumber) {
         this.job = job;
         this.buildNumber = buildNumber;
         putValue(NAME, "Show Test Failures"); // XXX I18N

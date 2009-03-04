@@ -42,11 +42,11 @@ package org.netbeans.modules.hudson.ui.notification;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.CharConversionException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.modules.hudson.api.HudsonJob;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
+import org.netbeans.modules.hudson.ui.actions.ShowFailures;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
@@ -83,17 +83,12 @@ class ProblemNotification implements ActionListener {
     }
 
     private String getDescription() {
-        // XXX should perhaps summarize last lines of failed build, or list some failed tests...
         return failed ? "The build failed." : "Some tests failed."; // XXX I18N
     }
 
     public void actionPerformed(ActionEvent e) {
-        // XXX could also show console, show test failures, etc.
-        try {
-            URLDisplayer.getDefault().showURL(new URL(job.getUrl()));
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        Action delegate = failed ? new ShowBuildConsole(job, build) : new ShowFailures(job, build);
+        delegate.actionPerformed(e);
     }
 
     private Priority getPriority() {

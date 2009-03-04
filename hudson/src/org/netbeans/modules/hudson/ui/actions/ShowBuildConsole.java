@@ -51,8 +51,8 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonUtils;
-import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -65,10 +65,10 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(ShowBuildConsole.class.getName());
 
-    private final HudsonJobImpl job;
+    private final HudsonJob job;
     private final int buildNumber;
 
-    public ShowBuildConsole(HudsonJobImpl job, int buildNumber) {
+    public ShowBuildConsole(HudsonJob job, int buildNumber) {
         this.job = job;
         this.buildNumber = buildNumber;
         putValue(NAME, "Show Console"); // XXX I18N
