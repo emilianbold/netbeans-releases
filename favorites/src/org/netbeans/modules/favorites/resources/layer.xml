@@ -146,5 +146,22 @@ made subject to such option by the copyright holder.
             </file>
 	</folder>
     </folder>
- 
+
+    <folder name="OptionsExport">
+        <folder name="Templates">
+            <attr name="displayName" bundlevalue="org.netbeans.modules.favorites.Bundle#Templates.Options.Export.Category.displayName"/>
+            <attr name="position" intvalue="750"/>
+            <file name="Templates">
+                <attr name="include" stringvalue="config/Templates/.*"/>
+                <attr name="exclude" stringvalue="config/Templates/Beans/(Bean.java|BeanInfo.java|NoIconBeanInfo.java|Customizer.java|Customizer.form|PropertyEditor.java)"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.favorites.Bundle#Templates.Options.Export.displayName"/>
+            </file>
+        </folder>
+        <folder name="Advanced">
+            <file name="Favorites">
+                <attr name="include" stringvalue="config/Favorites/.*"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.favorites.Bundle#Favorites.Options.Export.displayName"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

@@ -246,6 +246,34 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
+    <folder name="OptionsExport">
+        <folder name="Editor">
+            <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#Editor.Options.Export.Category.displayName"/>
+            <attr name="position" intvalue="200"/>
+            <file name="Macros">
+                <attr name="include" stringvalue="config/Editors/Macros/.*"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#Editor.Options.Export.Macros.displayName"/>
+            </file>
+            <file name="CodeTemplates">
+                <attr name="include" stringvalue="config/Editors.*/CodeTemplates/.*"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#Editor.Options.Export.CodeTemplates.displayName"/>
+            </file>
+            <file name="Other">
+                <attr name="include" stringvalue="config/Editors/(?!.*(Macros|CodeTemplates|FontsColors)).+"/>
+                <attr name="exclude" stringvalue="config/Editors/.*/(macros.xml|Popup.*|Settings\.settings|.*\.instance)"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#Editor.Options.Export.Other.displayName"/>
+            </file>
+        </folder>
+        <folder name="FontsAndColors">
+            <attr name="displayName" bundlevalue="org.netbeans.modules.options.colors.Bundle#FontsAndColors.Options.Export.Category.displayName"/>
+            <attr name="position" intvalue="300"/>
+            <file name="FontsAndColors">
+                <attr name="include" stringvalue="config/Editors.*/FontsColors/([^/]*)/.*"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.options.colors.Bundle#FontsAndColors.Options.Export.displayName"/>
+            </file>
+        </folder>
+    </folder>
+
     <folder name="org-netbeans-modules-options-editor">
         <folder name="OptionsDialogCategories">
             <folder name="FontsColors">
