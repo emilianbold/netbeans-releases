@@ -44,7 +44,10 @@ package org.netbeans.modules.refactoring.java.plugins;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.ElementHandle;
@@ -54,6 +57,7 @@ import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,6 +73,7 @@ public class PullUpTransformer extends RefactoringVisitor {
         this.members = refactoring.getMembers();
     }
     
+    @Override
     public void setWorkingCopy(WorkingCopy copy) throws ToPhaseException {
         super.setWorkingCopy(copy);
         this.targetType = refactoring.getTargetType().resolve(copy);
@@ -83,8 +88,11 @@ public class PullUpTransformer extends RefactoringVisitor {
         if (el.equals(targetType)) {
             //target type
             //add members
+            List<String> imports = new ArrayList<String>();
             for (int i = 0; i<members.length; i++) {
                 if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS) {
+                    Element member = members[i].getElementHandle().resolve(workingCopy);
+                    imports.add(member.asType().toString()); //add may-be necessary import
                     njuClass = make.addClassImplementsClause(njuClass, make.Identifier(members[i].getElementHandle().resolve(workingCopy)));
                     rewrite(tree, njuClass);
                 } else {
@@ -134,6 +142,14 @@ public class PullUpTransformer extends RefactoringVisitor {
                         rewrite(tree, njuClass);
                     }
                 }
+            }
+            try {
+                if (imports.size() > 0) {
+                    CompilationUnitTree newCut = RetoucheUtils.addImports(workingCopy.getCompilationUnit(), imports, make);
+                    rewrite(workingCopy.getCompilationUnit(), newCut);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         } else {
             for (int i=0; i<members.length; i++) {
