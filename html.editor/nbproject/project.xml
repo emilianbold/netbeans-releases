@@ -257,22 +257,19 @@ made subject to such option by the copyright holder.
                     <name>unit</name>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.bracesmatching</code-name-base>
-                        <test/>
                         <compile-dependency/>
+			<test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.html.editor</code-name-base>
-                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.html.lexer</code-name-base>
-                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.css.editor</code-name-base>
-                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -315,7 +312,7 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
-                        <recursive/>
+			<test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer.nbbridge</code-name-base>
