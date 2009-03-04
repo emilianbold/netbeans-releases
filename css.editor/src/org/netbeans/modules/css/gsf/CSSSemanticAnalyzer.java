@@ -111,7 +111,7 @@ public class CSSSemanticAnalyzer extends  SemanticAnalyzer {
                     int deo =snapshot.getOriginalOffset(node.endOffset());
                     //filter out generated and inlined style definitions - they have just virtual selector which
                     //is mapped to empty string
-                    if(dso >= 0 || deo >= 0) {
+                    if(dso >= 0 && deo >= 0) {
                         OffsetRange range = new OffsetRange(dso, deo);
                         highlights.put(range, ColoringAttributes.METHOD_SET);
                     }
