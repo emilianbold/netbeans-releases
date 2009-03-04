@@ -53,6 +53,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -88,6 +89,7 @@ public class LookupMergerImplTest extends NbTestCase {
         super.setUp();
         targetsRun.clear();
         clearWorkDir();
+        Lookup.getDefault().lookup(ModuleInfo.class);
     }
 
     /**
