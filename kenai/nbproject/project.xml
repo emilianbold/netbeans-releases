@@ -5,9 +5,15 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.kenai</code-name-base>
             <module-dependencies/>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.bugtracking</friend>
+                <friend>org.netbeans.modules.bugtracking.bridge</friend>
+                <friend>org.netbeans.modules.bugzilla</friend>
+                <friend>org.netbeans.modules.hudson.kenai</friend>
+                <friend>org.netbeans.modules.kenai.collab</friend>
+                <friend>org.netbeans.modules.kenai.ui</friend>
                 <package>org.netbeans.modules.kenai.api</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

@@ -47,6 +47,11 @@ public class ProjectsListData extends ListData {
 
     public ProjectListItem projects[];
 
+    @Override
+    public int size() {
+        return projects.length;
+    }
+
     public static class ProjectListItem {
 
         public String href;

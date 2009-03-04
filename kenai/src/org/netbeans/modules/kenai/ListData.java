@@ -43,8 +43,9 @@ package org.netbeans.modules.kenai;
  *
  * @author beci
  */
-public class ListData {
+public abstract class ListData {
     public String prev;
     public String next;
     public int total;
+    public abstract int size();
 }

@@ -42,6 +42,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -79,6 +81,8 @@ public class KenaiTest extends junit.framework.TestCase {
     @Override
     public void setUp() {
         try {
+            final Logger logger = Logger.getLogger("TIMER.kenai");
+            logger.setLevel(Level.FINE);
             System.setProperty("kenai.com.url", "http://testkenai.com");
             instance = Kenai.getDefault();
             BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
@@ -147,10 +151,15 @@ public class KenaiTest extends junit.framework.TestCase {
     @Test
     public void testIsAuthorized2() throws Exception {
         String name = UNITTESTUNIQUENAME;
-        KenaiProject prj = instance.getProject(name);
+        try {
+            KenaiProject prj = instance.getProject(name);
 
-        boolean authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_ADMIN);
-        System.out.println("PROJECTS_ADMIN? " + authorized);
+            boolean authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_ADMIN);
+            System.out.println("PROJECTS_ADMIN? " + authorized);
+        } catch (KenaiErrorMessage mes) {
+            System.out.println(mes.getAsString());
+            throw mes;
+        }
     }
 
     /**
@@ -194,10 +203,15 @@ public class KenaiTest extends junit.framework.TestCase {
 
     @Test
     public void testGetFeatures() throws KenaiException {
-        System.out.println("getFeature");
-        KenaiProject project = instance.getProject(UNITTESTUNIQUENAME);
-        for (KenaiProjectFeature feature : project.getFeatures()) {
-            System.out.println(feature.getName());
+        try {
+            System.out.println("getFeature");
+            KenaiProject project = instance.getProject(UNITTESTUNIQUENAME);
+            for (KenaiProjectFeature feature : project.getFeatures()) {
+                System.out.println(feature.getName());
+            }
+        } catch (KenaiErrorMessage mes) {
+            System.out.println(mes.getAsString());
+            throw mes;
         }
     }
 

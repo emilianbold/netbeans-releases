@@ -105,9 +105,12 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.bugtracking</friend>
+                <friend>org.netbeans.modules.hudson.kenai</friend>
+                <friend>org.netbeans.modules.kenai.collab</friend>
                 <package>org.netbeans.modules.kenai.ui.spi</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

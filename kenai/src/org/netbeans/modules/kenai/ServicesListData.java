@@ -47,6 +47,11 @@ public class ServicesListData extends ListData {
 
     public ServicesListItem services[];
 
+    @Override
+    public int size() {
+        return services.length;
+    }
+
     public static class ServicesListItem {
         public String name;
         public String description;

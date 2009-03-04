@@ -44,6 +44,8 @@ import java.net.URL;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.codeviation.pojson.*;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -59,6 +61,8 @@ public class KenaiREST extends KenaiImpl {
 
     private URL baseURL;
 
+    private static final Logger TIMER = Logger.getLogger("TIMER.kenai");
+
     public KenaiREST(URL baseURL) {
         this.baseURL = baseURL;
     }
@@ -72,12 +76,21 @@ public class KenaiREST extends KenaiImpl {
             new String [] { "project_id", projectName }
         };
         RestConnection conn = new RestConnection(baseURL.toString() + "/api/login/authorize", params);
+        long start = 0;
+        if (TIMER.isLoggable(Level.FINE)) {
+            start = System.currentTimeMillis();
+            System.err.println("Loading page " + baseURL.toString() + "/api/login/authorize");
+        }
         RestResponse resp = null;
         try {
             resp = conn.get(null);
         } catch (IOException iOException) {
             throw new KenaiException(iOException);
         }
+        if (TIMER.isLoggable(Level.FINE)) {
+            System.err.println("Page " + baseURL.toString() + "/api/login/authorize loaded in " + (System.currentTimeMillis()-start) + " ms");
+        }
+
         return resp.getResponseCode() == 200;
     }
 
@@ -85,10 +98,18 @@ public class KenaiREST extends KenaiImpl {
     public ProjectData getProject(String name) throws KenaiException {
         RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects/" + name + ".json");
         RestResponse resp = null;
+        long start = 0;
+        if (TIMER.isLoggable(Level.FINE)) {
+            start = System.currentTimeMillis();
+            System.err.println("Loading project " + name);
+        }
         try {
             resp = conn.get(null);
         } catch (IOException iOException) {
             throw new KenaiException(iOException);
+        }
+        if (TIMER.isLoggable(Level.FINE)) {
+            System.err.println("Project " +name +" loaded in " + (System.currentTimeMillis()-start) + " ms");
         }
 
         if (resp.getResponseCode() != 200)
@@ -115,12 +136,20 @@ public class KenaiREST extends KenaiImpl {
 
     private static <T> T loadPage(String url, Class<T> clazz) throws KenaiException {
 
+        long start = 0;
+        if (TIMER.isLoggable(Level.FINE)) {
+            start = System.currentTimeMillis();
+            System.err.println("Loading page " + url);
+        }
         RestConnection conn = new RestConnection(url);
         RestResponse resp = null;
         try {
             resp = conn.get(null);
         } catch (IOException iOException) {
             throw new KenaiException(iOException);
+        }
+        if (TIMER.isLoggable(Level.FINE)) {
+            System.err.println("Page " + url + " loaded in " + (System.currentTimeMillis()-start) + " ms");
         }
         if (resp.getResponseCode() != 200)
             throw new KenaiErrorMessage(resp.getResponseMessage(),resp.getDataAsString());
@@ -172,8 +201,6 @@ public class KenaiREST extends KenaiImpl {
         }
 
     }
-    private static int PAGE_SIZE = 10;
-
     private class LazyIterator<COLLECTION extends ListData, ITEM> implements Iterator<ITEM> {
 
         private COLLECTION col;
@@ -190,13 +217,15 @@ public class KenaiREST extends KenaiImpl {
             if (col.total>currentIndex) {
                 return true;
             }
+            if (col.size()==col.total) 
+                return false;
             return col.next!=null;
         }
 
         public ITEM next() {
             try {
-                if (currentIndex==PAGE_SIZE) {
-                    currentIndex-=PAGE_SIZE;
+                if (currentIndex==col.size()) {
+                    currentIndex-=col.size();
                     col = loadPage(col.next, clazz);
                 }
                 return colToItem(currentIndex++);
@@ -241,10 +270,18 @@ public class KenaiREST extends KenaiImpl {
         prdata.project.licenses = licenses;
         prdata.project.tags = tags;
 
+        long start = 0;
+        if (TIMER.isLoggable(Level.FINE)) {
+            start = System.currentTimeMillis();
+            System.err.println("Create project " + name);
+        }
         try {
             resp = conn.post(null, save.asString(prdata));
         } catch (IOException iOException) {
             throw new KenaiException(iOException);
+        }
+        if (TIMER.isLoggable(Level.FINE)) {
+            System.err.println("Project " + name + " created in " + (System.currentTimeMillis()-start) + " ms");
         }
 
         if (resp.getResponseCode() != 201)
@@ -279,10 +316,18 @@ public class KenaiREST extends KenaiImpl {
         fdata.feature.url = url;
         fdata.feature.repository_url = repository_url;
         fdata.feature.browse_url = browse_url;
+        long start = 0;
+        if (TIMER.isLoggable(Level.FINE)) {
+            start = System.currentTimeMillis();
+            System.err.println("Creating feature " + name);
+        }
         try {
             resp = conn.post(null, save.asString(fdata));
         } catch (IOException iOException) {
             throw new KenaiException(iOException);
+        }
+        if (TIMER.isLoggable(Level.FINE)) {
+            System.err.println("Feature " + name+ " created in " + (System.currentTimeMillis()-start) + " ms");
         }
 
         if (resp.getResponseCode() != 201)
@@ -307,11 +352,20 @@ public class KenaiREST extends KenaiImpl {
         };
         RestConnection conn = new RestConnection(baseURL.toString() + "/api/login/authenticate", params);
         RestResponse resp = null;
+        long start = 0;
+        if (TIMER.isLoggable(Level.FINE)) {
+            start = System.currentTimeMillis();
+            System.err.println("Loading page "+ baseURL.toString() + "/api/login/authenticate");
+        }
         try {
             resp = conn.get(null);
         } catch (IOException iOException) {
             throw new KenaiException(iOException);
         }
+        if (TIMER.isLoggable(Level.FINE)) {
+            System.err.println("Page " + baseURL.toString() + "/api/login/authenticate loaded in" + (System.currentTimeMillis()-start) + " ms");
+        }
+
         if (resp.getResponseCode() != 200) {
             throw new KenaiException("Authentication failed");
         }
