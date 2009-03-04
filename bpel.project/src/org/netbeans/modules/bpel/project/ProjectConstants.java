@@ -25,4 +25,12 @@ public interface ProjectConstants {
 
     String VALIDATION_FLAG = "allow.build.with.error"; //NOI18N
     String WS_CONTENT_ADDITIONAL="ws.content.additional";
+    String WIZARD_BUNDLE="org/netbeans/modules/bpel/project/wizards/Bundle";
+    String SOURCES_TYPE_PROJECT = "BIZPRO";
+    String COMMAND_REDEPLOY = "redeploy";
+    String COMMAND_DEPLOY = "deploy";
+    String ARTIFACT_TYPE_JAR = "jar";
+    String SOURCES_TYPE_JAVA = "java";
+    String ARTIFACT_TYPE_EJB_WS="j2ee_archive";
+    String POPULATE_CATALOG="populate_catalog";
 }
