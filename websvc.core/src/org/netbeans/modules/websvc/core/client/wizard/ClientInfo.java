@@ -677,7 +677,6 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         //boolean jwsdpSupported = isJwsdpSupported(project);
         boolean jaxWsInJ2ee14Supported = ServerType.JBOSS == WSStackUtils.getServerType(project);
         boolean isJaxWsClientSupport = JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory()) != null;
-        System.out.println("isJaxWsClientSupport = "+isJaxWsClientSupport);
         if (projectType > 0) {
             //jLabelJaxVersion.setEnabled(false);
             //jComboBoxJaxVersion.setEnabled(false);
