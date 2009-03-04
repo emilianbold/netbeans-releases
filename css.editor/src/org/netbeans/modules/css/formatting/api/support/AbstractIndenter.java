@@ -54,9 +54,11 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
+import org.netbeans.modules.css.formatting.api.embedding.VirtualSource;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -149,7 +151,6 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
      */
     abstract protected boolean isWhiteSpaceToken(Token<T1> token);
 
-
 //    private boolean isWithinLanguage(int startOffset, int endOffset) {
 //        for (Context.Region r : context.indentRegions()) {
 //            if ( (startOffset >= r.getStartOffset() && startOffset <= r.getEndOffset()) ||
@@ -241,7 +242,8 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
 
         // create chunks of our language from the document:
-        List<JoinedTokenSequence.CodeBlock<T1>> blocks = LexUtilities.createCodeBlocks(doc, language);
+        VirtualSource virtualSource = createVirtualSource();
+        List<JoinedTokenSequence.CodeBlock<T1>> blocks = LexUtilities.createCodeBlocks(doc, language, virtualSource);
         if (blocks == null) {
             // nothing to do:
             return;
@@ -318,6 +320,24 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
 
         applyIndents(indentedLines, lineStart, lineEnd, false);
+    }
+
+    private VirtualSource createVirtualSource() {
+        String mimeType = (String)getDocument().getProperty("mimeType"); // NOI18N
+        boolean isEmbedded = !getLanguage().mimeType().equals(mimeType);
+        if (!isEmbedded) {
+            return null;
+        }
+        for (VirtualSource.Factory factory : Lookup.getDefault().lookupAll(VirtualSource.Factory.class)) {
+            VirtualSource vs = factory.createVirtualSource(getDocument(), language.mimeType());
+            if (vs != null) {
+                if (DEBUG) {
+                    System.err.println("Virtual Source found:"+vs.toString());
+                }
+                return vs;
+            }
+        }
+        return null;
     }
 
     private List<Line> mergeIndentedLines(List<List<Line>> indentationData) throws BadLocationException {

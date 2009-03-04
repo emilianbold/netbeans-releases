@@ -151,6 +151,17 @@ public class CSSIndenterTest extends TestBase {
 
     }
 
+    private void forceHTMLParsingAndWait(String file, String mimeType, Language language) throws Exception {
+        FileObject fo = getTestFile(file);
+        BaseDocument doc = getDocument(fo, mimeType, language);
+        LanguagePath htmlLP = LanguagePath.get(language);
+        Semaphore s = new Semaphore(1);
+        Listener l = new Listener(doc, s);
+        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(l);
+        s.acquire();
+        s.release();
+    }
+
     public void testFormatting() throws Exception {
         format("a{\nbackground: red,\nblue;\n  }\n",
                "a{\n    background: red,\n        blue;\n}\n", null);
@@ -171,17 +182,6 @@ public class CSSIndenterTest extends TestBase {
                "a{\n    background: red,", null);
         format("a{\nbackground: red,\n",
                "a{\n    background: red,\n", null);
-    }
-
-    private void forceHTMLParsingAndWait(String file, String mimeType, Language language) throws Exception {
-        FileObject fo = getTestFile(file);
-        BaseDocument doc = getDocument(fo, mimeType, language);
-        LanguagePath htmlLP = LanguagePath.get(language);
-        Semaphore s = new Semaphore(1);
-        Listener l = new Listener(doc, s);
-        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(l);
-        s.acquire();
-        s.release();
     }
 
     public void testNativeEmbeddingFormattingCase1() throws Exception {

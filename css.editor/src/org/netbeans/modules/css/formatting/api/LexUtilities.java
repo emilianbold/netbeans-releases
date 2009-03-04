@@ -40,7 +40,6 @@
 package org.netbeans.modules.css.formatting.api;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -55,12 +54,10 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence.TokenSequenceWrapper;
-import org.netbeans.modules.gsf.api.EmbeddingModel;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.css.formatting.api.embedding.VirtualSource;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -183,55 +180,17 @@ public class LexUtilities {
     }
 
     private static <T extends TokenId> TokenSequence<T> getVirtualTokens(
-            Collection<? extends TranslatedSource> translatedSources,
+            VirtualSource virtualSource,
             int startOffset, int endOffset, Language<T> language) {
-        for (TranslatedSource ts : translatedSources) {
-            TokenSequence<T> ts2 = getVirtualTokens(ts, startOffset, endOffset, language);
-            if (ts2 != null) {
-                return ts2;
-            }
-        }
-        return null;
-    }
-
-    private static <T extends TokenId> TokenSequence<T> getVirtualTokens(
-            TranslatedSource translatedSource,
-            int startOffset, int endOffset, Language<T> language) {
-        String source = translatedSource.getSource();
-        int start = translatedSource.getAstOffset(startOffset);
-        int end = translatedSource.getAstOffset(endOffset);
-        if (start == -1 || end == -1) {
+        if (virtualSource == null) {
             return null;
         }
-        source = source.substring(start, end);
-        if (source.length() == 0) {
+        String source = virtualSource.getSource(startOffset, endOffset);
+        if (source == null || source.length() == 0) {
             return null;
         }
         return TokenHierarchy.create(source, language).tokenSequence(language);
     }
-
-    private static EmbeddingModel getEmbedding(String targetMimeType, String sourceMimeType) {
-        Collection<? extends EmbeddingModel> models = getEmbeddingModels();
-
-        for (EmbeddingModel model : models) {
-            if (model.getTargetMimeType().equals(targetMimeType) &&
-                model.getSourceMimeTypes().contains(sourceMimeType)) {
-                return model;
-            }
-        }
-
-        return null;
-    }
-
-    private static Collection<? extends EmbeddingModel> getEmbeddingModels() {
-        if (embeddingModels == null) {
-            embeddingModels = Lookup.getDefault().lookupAll(EmbeddingModel.class);
-        }
-
-        return embeddingModels;
-    }
-
-    private static Collection<? extends EmbeddingModel> embeddingModels;
 
     public static int getTokenSequenceEndOffset(TokenSequence<? extends TokenId> ts) {
         int currentIndex = ts.index();
@@ -305,7 +264,7 @@ public class LexUtilities {
     }
 
     private static <T1 extends TokenId> List<JoinedTokenSequence.CodeBlock<T1>> calculateCodeBlock(List<TokenSequence<T1>> tss,
-            Collection<? extends TranslatedSource> translatedSources
+            VirtualSource virtualSource
         ) throws BadLocationException {
 
         List<JoinedTokenSequence.CodeBlock<T1>> blocks = new ArrayList<JoinedTokenSequence.CodeBlock<T1>>();
@@ -325,7 +284,7 @@ public class LexUtilities {
                 next.moveStart();
                 next.moveNext();
                 // check whether current token sequence is continuation of previous one:
-                TokenSequence<T1> tsVirtual = LexUtilities.getVirtualTokens(translatedSources, prev.offset()+prev.token().length(), next.offset(), ts.language());
+                TokenSequence<T1> tsVirtual = LexUtilities.getVirtualTokens(virtualSource, prev.offset()+prev.token().length(), next.offset(), ts.language());
                 if (tsVirtual != null) {
                     tss2.add(new TokenSequenceWrapper(tsVirtual, true));
                     tss2.add(new TokenSequenceWrapper(next, false));
@@ -343,29 +302,12 @@ public class LexUtilities {
     }
 
     public static <T1 extends TokenId> List<JoinedTokenSequence.CodeBlock<T1>> createCodeBlocks(
-            BaseDocument doc, Language<T1> language) throws BadLocationException {
-        String mimeType = (String)doc.getProperty("mimeType"); // NOI18N
-        boolean isEmbedded = !language.mimeType().equals(mimeType);
-        return createCodeBlocks(doc, language, isEmbedded);
-    }
-
-    public static <T1 extends TokenId> List<JoinedTokenSequence.CodeBlock<T1>> createCodeBlocks(
-            BaseDocument doc, Language<T1> language, boolean isEmbedded) throws BadLocationException {
-        Collection<? extends TranslatedSource> translatedSources = null;
+            BaseDocument doc, Language<T1> language, VirtualSource virtualSource) throws BadLocationException {
         List<TokenSequence<T1>> tss = LexUtilities.getEmbeddedTokenSequences(doc, language, 0, doc.getLength());
         if (tss.size() == 0) {
             return null;
         }
-        if (isEmbedded) {
-            EmbeddingModel model = LexUtilities.getEmbedding(language.mimeType(), (String)doc.getProperty("mimeType"));
-            if (model != null) {
-                translatedSources = model.translate(doc);
-            }
-//        } else {
-//            tss = new ArrayList<TokenSequence<T1>>();
-//            tss.add(TokenHierarchy.get(doc).tokenSequence(language));
-        }
-        return LexUtilities.calculateCodeBlock(tss, translatedSources);
+        return LexUtilities.calculateCodeBlock(tss, virtualSource);
     }
 
 }
