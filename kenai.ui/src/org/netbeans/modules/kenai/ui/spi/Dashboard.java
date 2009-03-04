@@ -34,4 +34,10 @@ public abstract class Dashboard {
     public abstract void addNonMemberProject( ProjectHandle project );
 
     public abstract void removeProject( ProjectHandle project );
+
+    /**
+     * getter for all open projects in Kenai Dashboard
+     * @return array of ProjectHandles
+     */
+    public abstract ProjectHandle[] getOpenProjects();
 }

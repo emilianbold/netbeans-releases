@@ -140,6 +140,18 @@ public final class DashboardImpl extends Dashboard {
         return Holder.theInstance;
     }
 
+    @Override
+    public ProjectHandle[] getOpenProjects() {
+        ProjectHandle[] open = new ProjectHandle[model.getSize()];
+        int i=0;
+        for (TreeListNode n:model.getRootNodes()) {
+            if (n instanceof ProjectNode) {
+                open[i++]=(((ProjectNode) n).getProject());
+            }
+        }
+        return open;
+    }
+
     private static class Holder {
         private static final DashboardImpl theInstance = new DashboardImpl();
     }
