@@ -183,13 +183,13 @@ public class NbServiceTagSupport {
                         if (arrGF.length >= 2) {
                             if (arrGF[1].toUpperCase(Locale.ENGLISH).contains("GLASSFISH")) { // NOI18N
                                 if (!isGFAdded) {
-                                    names.add("GlassFish V2 UR2"); // NOI18N
+                                    names.add("GlassFish V2.1"); // NOI18N
                                     isGFAdded = true;
                                 }
                             } else if (arrGF[1].toUpperCase(Locale.ENGLISH).contains("APPSERVER") || // NOI18N
                                        arrGF[1].toUpperCase(Locale.ENGLISH).contains("SDK")) { // NOI18N
                                 if (!isASAdded) {
-                                    names.add("Sun Java System Application Server 9.1 Update 2"); // NOI18N
+                                    names.add("Sun GlassFish Enterprise Server v2.1"); // NOI18N
                                     isASAdded = true;
                                 }
                             }
@@ -199,12 +199,12 @@ public class NbServiceTagSupport {
                 }
             } else if (st.getProductName().contains("Sun Java System Application Server")) { // NOI18N
                 if (!isASAdded) {
-                    names.add("Sun Java System Application Server 9.1 Update 2"); // NOI18N
+                    names.add("GlassFish V2.1"); // NOI18N
                     isASAdded = true;
                 }
             } else if (st.getProductName().contains("Sun GlassFish Enterprise Server")) { // NOI18N
                 if (!isGFAdded) {
-                    names.add("GlassFish V2 UR2"); // NOI18N
+                    names.add("Sun GlassFish Enterprise Server v2.1"); // NOI18N
                     isGFAdded = true;
                 }
             } else if (st.getProductName().contains("J2SE 5.0 Development Kit")) { // NOI18N
