@@ -36,13 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-/*
- * KeywordsPanel.java
- *
- * Created on Mar 3, 2009, 5:33:26 PM
- */
-
 package org.netbeans.modules.bugzilla.util;
 
 import java.util.List;
@@ -50,14 +43,13 @@ import javax.swing.DefaultListModel;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public class KeywordsPanel extends javax.swing.JPanel {
 
-    /** Creates new form KeywordsPanel */
     public KeywordsPanel(String label, List<String> knownKeywords, String[] toSelect) {
         initComponents();
-        this.label.setText(label);
+        this.messageLabel.setText(label);
         
         DefaultListModel model = new DefaultListModel();
         for (String keyword : knownKeywords) {
@@ -92,48 +84,54 @@ public class KeywordsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        label = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        scrollPane = new javax.swing.JScrollPane();
+        keywordsList = new javax.swing.JList();
+        messageLabel = new javax.swing.JLabel();
+        keywordsLabel = new javax.swing.JLabel();
 
-        jScrollPane1.setViewportView(keywordsList);
+        scrollPane.setViewportView(keywordsList);
 
-        label.setText("jLabel");
-
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(KeywordsPanel.class, "KeywordsPanel.jLabel2.text")); // NOI18N
+        keywordsLabel.setText(org.openide.util.NbBundle.getMessage(KeywordsPanel.class, "KeywordsPanel.keywordsLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE))
-                    .add(label))
-                .addContainerGap())
+                .add(keywordsLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(messageLabel)
+                .add(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(label)
+                .add(messageLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel2)
-                .addContainerGap(112, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .addContainerGap(20, Short.MAX_VALUE)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(keywordsLabel)
+                        .add(0, 0, 0))))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    public String[] getSelectedKeywords() {
+        Object[] values = keywordsList.getSelectedValues();
+        String[] keywords = new String[values.length];
+        for (int i=0; i<values.length; i++) {
+            keywords[i] = values[i].toString();
+        }
+        return keywords;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    final javax.swing.JList keywordsList = new javax.swing.JList();
-    private javax.swing.JLabel label;
+    private javax.swing.JLabel keywordsLabel;
+    private javax.swing.JList keywordsList;
+    private javax.swing.JLabel messageLabel;
+    private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
 }

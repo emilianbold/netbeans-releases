@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugzilla.util;
 
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -57,7 +58,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public class BugzillaUtil {
     public static boolean show(JPanel panel, String title, String okName) {
@@ -92,11 +93,12 @@ public class BugzillaUtil {
             kp = new KeywordsPanel(label, knownKeywords, keywords);
         } catch (Exception ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
-            return null;
+            return keywordsString;
         }       
 
-        if(BugzillaUtil.show(kp, label, NbBundle.getMessage(BugzillaUtil.class, "LBL_Select"))) {
-            Object[] values = kp.keywordsList.getSelectedValues();
+        ResourceBundle bundle = NbBundle.getBundle(BugzillaUtil.class);
+        if (BugzillaUtil.show(kp, bundle.getString("LBL_Keywords"), bundle.getString("LBL_Select"))) { // NOI18N
+            String[] values = kp.getSelectedKeywords();
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i < values.length; i++) {
                 String s = (String) values[i];
@@ -107,6 +109,6 @@ public class BugzillaUtil {
             }
             return sb.toString();
         }
-        return null;
+        return keywordsString;
     }
 }
