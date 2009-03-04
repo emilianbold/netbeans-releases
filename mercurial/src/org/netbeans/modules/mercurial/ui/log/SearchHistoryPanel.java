@@ -520,7 +520,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         showMergesChkBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(showMergesChkBox, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "CTL_ShowMerge")); // NOI18N
         showMergesChkBox.setToolTipText(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "TT_ShowMerges")); // NOI18N
-        showMergesChkBox.setFocusable(false);
         showMergesChkBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         showMergesChkBox.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         showMergesChkBox.addChangeListener(new javax.swing.event.ChangeListener() {
@@ -532,7 +531,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         org.openide.awt.Mnemonics.setLocalizedText(fileInfoCheckBox, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistoryPanel_AllInfo")); // NOI18N
         fileInfoCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "LBL_TT_SearchHistoryPanel_AllInfo")); // NOI18N
-        fileInfoCheckBox.setFocusable(false);
         fileInfoCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         fileInfoCheckBox.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         fileInfoCheckBox.addActionListener(new java.awt.event.ActionListener() {
