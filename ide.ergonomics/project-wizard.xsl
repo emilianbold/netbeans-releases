@@ -27,6 +27,16 @@
         </xsl:element>
     </xsl:template>
 
+    <xsl:template match="filesystem/folder[@name='Services']/folder[@name='AntBasedProjectTypes']">
+        <xsl:element name="folder">
+            <xsl:attribute name="name">Ergonomics</xsl:attribute>
+            <xsl:element name="folder">
+                <xsl:attribute name="name">AntBasedProjectTypes</xsl:attribute>
+                <xsl:apply-templates mode="project-types"/>
+            </xsl:element>
+        </xsl:element>
+    </xsl:template>
+
     <xsl:template match="filesystem/folder[@name='Loaders']/folder/folder/folder[@name='Factories']">
         <xsl:element name="folder">
             <xsl:attribute name="name">Loaders</xsl:attribute>
@@ -115,6 +125,35 @@
     </xsl:template>
 
     <xsl:template match="attr" mode="attach-types">
+        <xsl:copy-of select="."/>
+    </xsl:template>
+
+    <!-- project type -->
+    <xsl:template match="file" mode="project-types">
+        <xsl:element name="file">
+            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+            <xsl:if test="@url">
+                <xsl:attribute name="url"><xsl:value-of select="@url"/></xsl:attribute>
+            </xsl:if>
+            <xsl:apply-templates mode="project-types"/>
+        </xsl:element>
+    </xsl:template>
+
+    <xsl:template match="attr[@name='instanceCreate']" mode="project-types">
+        <xsl:element name="attr">
+            <xsl:attribute name="name">instanceCreate</xsl:attribute>
+            <xsl:attribute name="methodvalue">org.netbeans.modules.ide.ergonomics.fod.FeatureProjectFactory.create</xsl:attribute>
+        </xsl:element>
+    </xsl:template>
+
+    <xsl:template match="attr[@name='instanceClass']" mode="project-types">
+        <xsl:element name="attr">
+            <xsl:attribute name="name">instanceClass</xsl:attribute>
+            <xsl:attribute name="methodvalue">org.netbeans.spi.project.ProjectFactory</xsl:attribute>
+        </xsl:element>
+    </xsl:template>
+
+    <xsl:template match="attr" mode="project-types">
         <xsl:copy-of select="."/>
     </xsl:template>
 </xsl:stylesheet>

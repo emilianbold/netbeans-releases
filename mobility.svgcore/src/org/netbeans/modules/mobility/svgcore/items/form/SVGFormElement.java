@@ -135,11 +135,11 @@ public abstract class SVGFormElement extends SVGComponentDrop{
         Collection<? extends SVGSnippetsProvider> snippetCollection = Lookup.getDefault().lookupAll(SVGSnippetsProvider.class);
 
         for (SVGSnippetsProvider provider : snippetCollection) {
-            if (providerName.equals(provider.getName())) {
+            if (providerName.equals(provider.getDisplayName())) {
                 return provider.getClass();
             }
         }
 
-        throw new IllegalArgumentException();
+        return SVGSnipetsProviderClassic.class;
     }
 }

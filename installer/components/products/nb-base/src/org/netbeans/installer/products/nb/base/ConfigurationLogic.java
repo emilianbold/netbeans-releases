@@ -537,7 +537,30 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             }
         }
         
-        product.setProperty("uninstallation.timestamp", new Long(System.currentTimeMillis()).toString());
+        product.setProperty("uninstallation.timestamp",
+                new Long(System.currentTimeMillis()).toString());
+
+        /////////////////////////////////////////////////////////////////////////////
+        //remove cluster/update files
+        try {
+            progress.setDetail(getString("CL.uninstall.update.files")); // NOI18N
+            String[] clusterNames = new String[]{
+               PLATFORM_CLUSTER,
+               IDE_CLUSTER,
+               GSF_CLUSTER,
+               NB_CLUSTER
+            };          
+            for(String cluster : clusterNames) {
+               File updateDir = new File(installLocation, cluster + File.separator + "update");
+               if ( updateDir.exists()) {
+                    FileUtils.deleteFile(updateDir, true);
+               }
+            }
+        } catch (IOException e) {
+            LogManager.log(
+                    getString("CL.uninstall.error.update.files"), // NOI18N
+                    e);
+        }
 
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);

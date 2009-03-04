@@ -8,7 +8,7 @@
                     <animate attributeName="stroke" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" dur="0.25s"                        fill="freeze" to="black"/>
                 </rect>
                 <g>
-                    <text  id="%%COMPONENT_ID%%_text" x="10" y="23" font-size="16" >Some Text</text>             <!-- Metadata information. Please don't edit. -->
+                    <text  id="%%COMPONENT_ID%%_text" x="10" y="23" font-size="16" font-family="">Some Text</text>             <!-- Metadata information. Please don't edit. -->
                     <text display="none">type=text</text>
                 </g>
                 <g>           <!-- Metadata information. Please don't edit. -->

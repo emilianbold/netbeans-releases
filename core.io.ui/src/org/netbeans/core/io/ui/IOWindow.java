@@ -276,11 +276,18 @@ public final class IOWindow implements IOContainer.Provider {
         @Override
         public void requestActive() {
             super.requestActive();
+            JComponent tab = getSelectedTab();
+            if (tab != null) {
+                tab.requestFocus();
+            }
         }
 
         @Override
         public void requestVisible() {
             super.requestVisible();
+            if (Boolean.TRUE.equals(getClientProperty("isSliding"))) { //NOI18N
+                requestActive();
+            }
         }
 
         boolean activated;
@@ -335,6 +342,7 @@ public final class IOWindow implements IOContainer.Provider {
                 checkTabSelChange();
                 setFocusable(true);
                 revalidate();
+                repaint();
             } else if (pane.getParent() == this) {
                 assert pane.getTabCount() > 1;
                 pane.remove(comp);
@@ -364,6 +372,7 @@ public final class IOWindow implements IOContainer.Provider {
             if (singleTab == null) {
                 pane.setSelectedComponent(comp);
             }
+            checkTabSelChange();
         }
 
         public JComponent getSelectedTab() {

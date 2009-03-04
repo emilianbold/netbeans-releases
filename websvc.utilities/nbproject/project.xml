@@ -206,6 +206,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
+                <friend>org.netbeans.modules.websvc.customization</friend>
                 <friend>org.netbeans.modules.websvc.design</friend>
                 <friend>org.netbeans.modules.websvc.editor.hints</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>

@@ -158,6 +158,14 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     return stackStorage.putStack(stack, sampleDuration);
   }
 
+  public void flush() {
+    try {
+      stackStorage.flush();
+    } catch (InterruptedException ex) {
+      logger.log(Level.SEVERE, null, ex);
+    }
+  }
+
   public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) {
     try {
       return stackStorage.getPeriodicStacks(startTime, endTime, interval);

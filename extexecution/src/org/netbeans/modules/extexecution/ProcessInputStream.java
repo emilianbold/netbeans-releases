@@ -175,6 +175,7 @@ public final class ProcessInputStream extends FilterInputStream {
                     }
                 } else {
                     int read;
+                    // FIXME this occasionaly block forever on Vista :(
                     while ((read = super.read()) >= 0) {
                         os.write(read);
                     }

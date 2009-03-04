@@ -44,14 +44,13 @@ import java.io.File;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.loaders.ExeObject;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.loaders.CoreElfObject;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -85,7 +84,8 @@ public class RunDialogAction extends NodeAction {
         String path = null;
         if (activatedNodes != null && activatedNodes.length == 1) {
             DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
-            if (dataObject != null  && dataObject.isValid() && (dataObject instanceof ExeObject)) {
+            String mime = getMime(dataObject);
+            if (dataObject != null  && dataObject.isValid() && MIMENames.isExe(mime)) {
                 FileObject fo = dataObject.getPrimaryFile();
                 if (fo != null) {
                     File file = FileUtil.toFile(fo);
@@ -98,13 +98,20 @@ public class RunDialogAction extends NodeAction {
         perform(path);
     }
 
+    private String getMime(DataObject dob) {
+        FileObject primaryFile = dob == null ? null : dob.getPrimaryFile();
+        String mime = primaryFile == null ? "" : primaryFile.getMIMEType();
+        return mime;
+    }
+
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes == null || activatedNodes.length != 1) {
             return false;
         }
         DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
+        String mime = getMime(dataObject);
         // disabled for core files, see issue 136696
-        if (!(dataObject instanceof ExeObject) || dataObject instanceof CoreElfObject) {
+        if (!MIMENames.isExe(mime) || MIMENames.ELF_CORE_MIME_TYPE.equals(mime)) {
             return false;
         }
         return true;
