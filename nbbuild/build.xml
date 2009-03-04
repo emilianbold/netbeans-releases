@@ -196,6 +196,7 @@ made subject to such option by the copyright holder.
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
     <taskdef name="getdependsclusters" classname="org.netbeans.nbbuild.GetDependsClusters" classpath="nbantext.jar"/>
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
+    <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="nbantext.jar"/>
 
     <!-- Overridable. Note: need not necessarily be a number at all): -->
     <property name="buildnum" value="dev-${buildnumber}"/>
@@ -257,7 +258,6 @@ made subject to such option by the copyright holder.
       <mkdir dir="${jnlp.dest.dir}" />
       <makeurl property="jnlp.codebase" file="${jnlp.dest.dir}"/> <!-- fallback value unless otherwise configured -->
       <property name="jnlp.fail.on.error" value="true"/>
-      <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="nbantext.jar"/>
       <subant-junit target="jnlp" failonerror="${jnlp.fail.on.error}" report="build/build-all-jnlp.xml">
           <buildpath>
               <dirset dir=".." includes="${config.modules.jnlp}"/>
@@ -280,19 +280,15 @@ made subject to such option by the copyright holder.
       
       <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted"/>
       
-      <pathconvert property="modules.foreach" dirsep="/" pathsep=",">
-          <path path="${modules.sorted}" />
-          <mapper>
-              <globmapper handledirsep="true" from="${nb_all}/*" to="*" />
-          </mapper>
-      </pathconvert>
-      
       <property name="export.interfaces" location="${netbeans.javadoc.dir}/../ModulesExportedInterfaces" />
       <property name="export.apichanges" location="${netbeans.javadoc.dir}/../APIChanges" />
       <mkdir dir="${export.interfaces}" />
       <mkdir dir="${export.apichanges}" />
       
-      <for-each startdir=".." target="netbeans-javadoc" locations="${modules.foreach}"/>
+      <property name="javadoc.fail.on.error" value="true"/>
+      <subant-junit target="netbeans-javadoc" failonerror="${javadoc.fail.on.error}" report="build/build-all-javadoc.xml">
+          <buildpath path="${modules.sorted}"/>
+      </subant-junit>
 
       <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-xml" />
       <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-html" />
@@ -1881,7 +1877,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <incrspecvers nbroot=".." modules="${allmodules}" branch="${branch}"/>
   </target>
 
-  <target name="build-test-dist" depends="bootstrap,init-module-list,init-tasks" description="Built test distribution">
+  <target name="build-test-dist" depends="init" description="Built test distribution">
       <!-- if is 'false' it will ignore compilation error in subant  -->
      <property name= "test.fail.on.error" value="true"/>
      <pathconvert property="modules.fullpath" >
@@ -1892,7 +1888,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       </pathconvert>
       <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted" sorttests="true"/>
       <mkdir dir="build"/>
-      <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="nbantext.jar"/>
       <subant-junit buildpath="${modules.sorted}" target="test-build" failonerror="${test.fail.on.error}" report="build/build-all-tests.xml"/>
       <!-- copy templates -->
       <copy todir="${test.dist.dir}">
