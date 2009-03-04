@@ -38,11 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.editor.makefile;
 
 import org.netbeans.api.lexer.TokenId;
-
 
 /**
  *
@@ -50,29 +48,27 @@ import org.netbeans.api.lexer.TokenId;
  */
 public enum MakefileTokenId implements TokenId {
 
-    WHITESPACE ("whitespace"),
-    NEW_LINE ("newline"),
-    TAB ("tab"),
-    LINE_COMMENT ("line_comment"),
-    MACRO ("macro"),
-    MACRO_OPERATOR ("macro_operator"),
-    RULE_OPERATOR ("rule_operator"),
-    SEPARATOR ("separator"),
-    KEYWORD ("keyword"),
-    SPECIAL_TARGET ("special_target"),
-    STRING_LITERAL ("string_literal"),
-    IDENTIFIER ("identifier"),
-    ERROR ("error");
+    WHITESPACE("whitespace"),// NOI18N
+    NEW_LINE("newline"),// NOI18N
+    TAB("tab"),// NOI18N
+    LINE_COMMENT("line_comment"),// NOI18N
+    MACRO("macro"),// NOI18N
+    MACRO_OPERATOR("macro_operator"),// NOI18N
+    RULE_OPERATOR("rule_operator"),// NOI18N
+    SEPARATOR("separator"),// NOI18N
+    KEYWORD("keyword"),// NOI18N
+    SPECIAL_TARGET("special_target"),// NOI18N
+    STRING_LITERAL("string_literal"),// NOI18N
+    IDENTIFIER("identifier"),// NOI18N
+    ERROR("error");// NOI18N
+    private String name;
 
-    private String  name;
-    
-    MakefileTokenId (
-        String  name
-    ) {
+    MakefileTokenId(
+            String name) {
         this.name = name;
     }
 
-    public String primaryCategory () {
+    public String primaryCategory() {
         return name;
     }
 }
