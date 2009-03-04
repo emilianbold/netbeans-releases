@@ -1048,7 +1048,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else if (msg.startsWith("^done,value=")) { // NOI18N (-data-evaluate-expression)
             cb = gdb.getCommandBuffer(itok);
             if (cb != null) {
-                cb.append(msg.substring(13, msg.length() - 1));
+                cb.append(msg.substring(6));
                 cb.done();
             }
         } else if (msg.startsWith("^done,thread-id=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
@@ -1090,6 +1090,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else if (msg.startsWith(Disassembly.REGISTER_MODIFIED_HEADER)) {
             disassembly.updateRegModified(msg);
             GdbContext.getInstance().setProperty(GdbContext.PROP_REGISTERS, disassembly.getRegisterValues());
+        } else if (msg.startsWith("^done,version=")) { // NOI18N
+            cb = gdb.getCommandBuffer(itok);
+            if (cb != null) {
+                cb.append(msg.substring(15));
+                cb.done();
+            }
         } else if (msg.equals("^done")) { // NOI18N
             cb = gdb.getCommandBuffer(itok);
             if (cb != null) {
