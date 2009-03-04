@@ -94,6 +94,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         jPanel1 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         setLayout(new java.awt.BorderLayout());
 
         jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -103,6 +104,8 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         jScrollPane1.setViewportView(dataDisplayer);
 
         add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+        jPanel1.setPreferredSize(new java.awt.Dimension(320, 35));
 
         org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(ReporterResultTopComponent.class, "ReporterResultTopComponent.jButton1.text")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -117,7 +120,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .add(jButton1)
-                .addContainerGap(218, Short.MAX_VALUE))
+                .addContainerGap(208, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

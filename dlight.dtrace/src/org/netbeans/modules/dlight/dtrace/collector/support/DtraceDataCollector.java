@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
 import java.io.File;
 import java.io.OutputStreamWriter;
 import java.net.ConnectException;
+import java.security.acl.NotOwnerException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -82,6 +83,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
+import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupportProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -342,22 +344,28 @@ public final class DtraceDataCollector
 
         // /usr/sbin/dtrace exists...
         // check for permissions ...
-        SolarisPrivilegesSupport sps =
-                SolarisPrivilegesSupport.getInstance();
-
-        boolean status = sps.hasPrivileges(execEnv, requiredPrivilegesList);
-
-        Runnable onPrivilegesGranted = new Runnable() {
-
-            public void run() {
-                DLightManager.getDefault().revalidateSessions();
-            }
-        };
-
-        AsynchronousAction requestPrivilegesAction = sps.requestPrivilegesAction(
-                execEnv, requiredPrivilegesList, onPrivilegesGranted);
+        SolarisPrivilegesSupport sps = SolarisPrivilegesSupportProvider.getSupportFor(execEnv);
+        boolean status = sps.hasPrivileges(requiredPrivilegesList);
 
         if (!status) {
+            try {
+                sps.requestPrivileges(requiredPrivilegesList, false);
+                status = true;
+            } catch (NotOwnerException ex) {
+            }
+        }
+
+        if (!status) {
+            Runnable onPrivilegesGranted = new Runnable() {
+
+                public void run() {
+                    DLightManager.getDefault().revalidateSessions();
+                }
+            };
+
+        AsynchronousAction requestPrivilegesAction = sps.getRequestPrivilegesAction(
+                requiredPrivilegesList, onPrivilegesGranted);
+
             result = result.merge(ValidationStatus.unknownStatus(
                     loc("DTraceDataCollector_Status_NotEnoughPrivileges"), // NOI18N
                     requestPrivilegesAction));

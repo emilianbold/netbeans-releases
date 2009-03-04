@@ -52,9 +52,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.loaders.CCDataObject;
-import org.netbeans.modules.cnd.loaders.CDataObject;
-import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -149,9 +146,12 @@ public final class CppSwitchAction extends BaseAction {
 
     private static NodeKind getTargetNodeKind(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
-            if (activatedNodes[0].getLookup().lookup(HDataObject.class) != null) {
+            DataObject dobj = activatedNodes[0].getLookup().lookup(DataObject.class);
+            FileObject fo = (dobj == null) ? null : dobj.getPrimaryFile();
+            String mime = (fo == null) ? "" : fo.getMIMEType();
+            if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
                 return NodeKind.SOURCE;
-            } else if (activatedNodes[0].getLookup().lookup(CCDataObject.class) != null || activatedNodes[0].getLookup().lookup(CDataObject.class) != null) {
+            } else if (MIMENames.isCppOrC(mime)) {
                 return NodeKind.HEADER;
             }
         }

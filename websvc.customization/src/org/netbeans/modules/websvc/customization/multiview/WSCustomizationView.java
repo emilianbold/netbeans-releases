@@ -93,7 +93,7 @@ public class WSCustomizationView extends SectionView{
     
     /** Creates a new instance of WSCustomizationView */
     public WSCustomizationView(InnerPanelFactory factory, Set<WSDLModel> models ,
-            Definitions primaryDefinitions) {
+            Definitions primaryDefinitions, boolean isLight) {
         super(factory);
         this.models = models;
         this.primaryDefinitions = primaryDefinitions;
@@ -295,19 +295,25 @@ public class WSCustomizationView extends SectionView{
             i++;
         }
         addSection(portCont, false);
-        
-        ExternalBindingNode externalBindingNode = new ExternalBindingNode(Children.LEAF);
-        externalBindingNode.setDisplayName(NbBundle.getMessage(WSCustomizationView.class,
-                "TITLE_EXTERNAL_BINDING_FILES"));
-        SectionPanel externalBindingPanel = new SectionPanel(this, externalBindingNode, new BindingKey());
-        externalBindingPanel.setTitle(NbBundle.getMessage(WSCustomizationView.class,
-                "TITLE_EXTERNAL_BINDING_FILES_MNEM"));
-        addSection(externalBindingPanel, false);
-        rootChildren.add(new Node[] {definitionsNode, portTypeNodeContainer,
-        operationNodeContainer, faultNodeContainer,
-        bindingNodeContainer, bindingOpNodeContainer,
-        serviceNodeContainer, portNodeContainer,
-        externalBindingNode});
+        if (!isLight) {
+            ExternalBindingNode externalBindingNode = new ExternalBindingNode(Children.LEAF);
+            externalBindingNode.setDisplayName(NbBundle.getMessage(WSCustomizationView.class,
+                    "TITLE_EXTERNAL_BINDING_FILES"));
+            SectionPanel externalBindingPanel = new SectionPanel(this, externalBindingNode, new BindingKey());
+            externalBindingPanel.setTitle(NbBundle.getMessage(WSCustomizationView.class,
+                    "TITLE_EXTERNAL_BINDING_FILES_MNEM"));
+            addSection(externalBindingPanel, false);
+            rootChildren.add(new Node[] {definitionsNode, portTypeNodeContainer,
+            operationNodeContainer, faultNodeContainer,
+            bindingNodeContainer, bindingOpNodeContainer,
+            serviceNodeContainer, portNodeContainer,
+            externalBindingNode});
+        } else {
+            rootChildren.add(new Node[] {definitionsNode, portTypeNodeContainer,
+            operationNodeContainer, faultNodeContainer,
+            bindingNodeContainer, bindingOpNodeContainer,
+            serviceNodeContainer, portNodeContainer});
+        }
         setRoot(root);
     }
     

@@ -162,7 +162,7 @@ public final class MavenModelUtils {
         config.setSimpleParameter("xnocompile", "true"); //NOI18N
         config.setSimpleParameter("verbose", "true"); //NOI18N
         config.setSimpleParameter("extension", "true"); //NOI18N
-        config.setSimpleParameter("catalog", "${basedir}/" + MavenJAXWSSupportIml.CATALOG_PATH);
+        config.setSimpleParameter("catalog", "${basedir}/" + MavenJAXWSSupportImpl.CATALOG_PATH);
         if (jaxWsVersion != null) {
             config.setSimpleParameter("target", jaxWsVersion); //NOI18N
         }
