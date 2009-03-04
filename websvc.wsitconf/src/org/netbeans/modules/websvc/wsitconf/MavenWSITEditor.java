@@ -41,17 +41,10 @@
 
 package org.netbeans.modules.websvc.wsitconf;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.wsitconf.ui.ErrorTopComponent;
 import org.netbeans.modules.websvc.wsitconf.ui.service.ServiceTopComponent;
 import org.netbeans.modules.websvc.wsitconf.ui.client.ClientTopComponent;
@@ -66,7 +59,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,31 +68,39 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
+import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.MavenWSITModelSupport;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
  * @author Martin Grebac
  */
-public class WSITEditor implements WSEditor, UndoManagerHolder {
+public class MavenWSITEditor implements WSEditor, UndoManagerHolder {
 
-    private static final Logger logger = Logger.getLogger(WSITEditor.class.getName());
-    private JaxWsModel jaxWsModel;
+    private static final Logger logger = Logger.getLogger(MavenWSITEditor.class.getName());
+
+    private JAXWSLightSupport jaxWsSupport;
+    private JaxWsService jaxWsService;
+    private Project project;
+
     private UndoManager undoManager;
     private Collection<FileObject> createdFiles = new LinkedList<FileObject>();
             
     /**
-     * Creates a new instance of WSITEditor
+     * Creates a new instance of MavenWSITEditor
      */
-    public WSITEditor(JaxWsModel jaxWsModel) {
-        this.jaxWsModel = jaxWsModel;
+    public MavenWSITEditor(JAXWSLightSupport jaxWsSupport, JaxWsService jaxService, Project project) {
+        this.jaxWsSupport = jaxWsSupport;
+        this.jaxWsService = jaxService;
+        this.project = project;
     }
 
     public String getTitle() {
-        return NbBundle.getMessage(WSITEditor.class, "EDITOR_TITLE"); //NOI18N
+        return NbBundle.getMessage(MavenWSITEditor.class, "EDITOR_TITLE"); //NOI18N
     }
 
     public JComponent createWSEditorComponent(Node node) {
@@ -108,99 +108,28 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         WSDLModel clientWsdlModel;
         WSDLModel wsdlModel;
 
-        //is it a client node?
-        Client client = node.getLookup().lookup(Client.class);
-        //is it a service node?
-        Service service = node.getLookup().lookup(Service.class);
-        
-        final Project p;
-        if (jaxWsModel != null) {
-            p = FileOwnerQuery.getOwner(jaxWsModel.getJaxWsFile());
-        } else {
-            p = null;
-        }
-        
-        if (client != null){ //its a client
-            if (p != null) {
-                final JAXWSClientSupport wscs = JAXWSClientSupport.getJaxWsClientSupport(p.getProjectDirectory());
-                if (wscs != null) {
-                    PropertyChangeListener jaxWsClientListener = new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            if (evt != null) {
-                                Object newV = evt.getNewValue();
-                                Object oldV = evt.getOldValue();
-                                if ((oldV != null) && (newV == null)) {  //being removed
-                                    if (oldV instanceof Client) {
-                                        Client c = (Client)oldV;
-                                        
-                                    }
-                                }
-                            }
-                        }
-                    };
-                    jaxWsModel.addPropertyChangeListener(jaxWsClientListener);
-                    try {
-                        clientWsdlModel = WSITModelSupport.getModel(node, jaxWsModel, this, true, createdFiles);
-                        wsdlModel = WSITModelSupport.getServiceModelForClient(wscs, client);
-                        return new ClientTopComponent(client, jaxWsModel, clientWsdlModel, wsdlModel, node);
-                    } catch (Exception e) {
-                        logger.log(Level.SEVERE, null, e);
-                    }
+        boolean isClient = jaxWsService.isServiceProvider();
+        if (project != null) {
+            try {
+                wsdlModel = MavenWSITModelSupport.getModel(node, project, jaxWsSupport, jaxWsService, this, true, createdFiles);
+                if (isClient) {
+                    clientWsdlModel = MavenWSITModelSupport.getModel(node, project, jaxWsSupport, jaxWsService, this, true, createdFiles);
+//                    wsdlModel = WSITModelSupport.getServiceModelForClient(wscs, client);
+//                    return new ClientTopComponent(client, jaxWsModel, clientWsdlModel, wsdlModel, node);
+                } else {
+                    return new ServiceTopComponent(node, jaxWsService, wsdlModel, getUndoManager());
                 }
-            }
-        } else {
-            if (p != null) {
-                final JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(p.getProjectDirectory());
-                if (wss != null) {
-                    JaxWsModel.ServiceListener jaxWsServiceListener = new JaxWsModel.ServiceListener() {
-                        public void serviceAdded(String name, String implementationClass) {}
-                        public void serviceRemoved(String name) {
-                            if (!wss.isFromWSDL(name)) {
-                                JaxWsModel jaxWsModel = p.getLookup().lookup(JaxWsModel.class);
-                                Service s = jaxWsModel.findServiceByName(name);
-                                String implClass = s.getImplementationClass();
-                                String configWsdlName = WSITModelSupport.CONFIG_WSDL_SERVICE_PREFIX + implClass;
-                                if ((implClass != null) && (implClass.length() > 0)) {
-                                    try {
-                                        if (wss.getWsdlFolder(true) != null) {
-                                            FileObject wsdlFO = wss.getWsdlFolder(
-                                                    true).getParent().getFileObject(configWsdlName, WSITModelSupport.CONFIG_WSDL_EXTENSION);
-                                            if ((wsdlFO != null) && (wsdlFO.isValid())) {   //NOI18N
-                                                FileLock lock = null;
-                                                try {
-                                                    lock = wsdlFO.lock();
-                                                    wsdlFO.delete(lock);
-                                                } finally {
-                                                    if (lock != null) {
-                                                        lock.releaseLock();
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } catch (IOException e) {
-                                        // burn
-                                    }
-                                }
-                            }
-                        }
-                    };
-                    jaxWsModel.addServiceListener(jaxWsServiceListener);                    
-                    try {
-                        wsdlModel = WSITModelSupport.getModel(node, jaxWsModel, this, true, createdFiles);
-                        return new ServiceTopComponent(service, jaxWsModel, wsdlModel, node, getUndoManager());
-                    } catch(Exception e){
-                        logger.log(Level.SEVERE, null, e);
-                    }
-                }
+            } catch(Exception e){
+                logger.log(Level.SEVERE, null, e);
             }
         }
-        return new ErrorTopComponent(NbBundle.getMessage(WSITEditor.class, "TXT_WSIT_NotSupported"));
+        return new ErrorTopComponent(NbBundle.getMessage(MavenWSITEditor.class, "TXT_WSIT_NotSupported"));
     }
 
     public void save(Node node) {
         if (node == null) return;
         try {
-            WSDLModel model = WSITModelSupport.getModel(node, jaxWsModel, this, false, createdFiles);
+            WSDLModel model = MavenWSITModelSupport.getModel(node, project, jaxWsSupport, jaxWsService, this, false, createdFiles);
             if (model != null) {
                 WSITModelSupport.save(model);
             }
@@ -258,9 +187,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         
         // now first undo all edits in the files
         try {
-            model = WSITModelSupport.getModel(node, jaxWsModel, this, false, createdFiles);
-        } catch (MalformedURLException ex) {
-            ex.printStackTrace();
+            model = MavenWSITModelSupport.getModel(node, project, jaxWsSupport, jaxWsService, this, false, createdFiles);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -345,6 +272,6 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(WSITEditor.class, "WSIT_CONFIG_DESC");
+        return NbBundle.getMessage(MavenWSITEditor.class, "WSIT_CONFIG_DESC");
     }
 }
