@@ -119,8 +119,10 @@ public class CompletionResolverImpl implements CompletionResolver {
         this.contextOffset = offset;
     }
 
-    public void setResolveScope(QueryScope queryScope) {
+    public QueryScope setResolveScope(QueryScope queryScope) {
+        QueryScope oldScope = this.queryScope;
         this.queryScope = queryScope;
+        return oldScope;
     }
 
     public void setInIncludeDirective(boolean inIncludeDirective) {

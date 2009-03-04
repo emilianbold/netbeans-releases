@@ -743,7 +743,7 @@ abstract public class CsmCompletionQuery {
             this.sort = sort;
         }
 
-        public void setFindType(boolean findType) {
+        private void setFindType(boolean findType) {
             this.findType = findType;
         }
 
@@ -830,9 +830,16 @@ abstract public class CsmCompletionQuery {
         private CsmType resolveType(CsmCompletionExpression exp) {
             Context ctx = (Context) clone();
             ctx.setFindType(true);
+            // when resolve type use full scope of search
+            QueryScope old = ctx.compResolver.setResolveScope(QueryScope.GLOBAL_QUERY);
             CsmType typ = null;
-            if (ctx.resolveExp(exp)) {
-                typ = ctx.lastType;
+            try {
+                if (ctx.resolveExp(exp)) {
+                    typ = ctx.lastType;
+                }
+            } finally {
+                // restore old
+                ctx.compResolver.setResolveScope(old);
             }
             return typ;
         }
