@@ -115,8 +115,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         this.properties.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(INSTANCE_SYNC))
-                    if (!synchronization.isRunning())
-                        synchronization.start();
+                    synchronization.start();
             }
         });
         
@@ -427,51 +426,29 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         }
     }
 
-    
     private class Synchronization implements Runnable {
         
-        private Task task;
-        private Semaphore lock = new Semaphore(1);
-        private RequestProcessor processor = new RequestProcessor(getUrl(), 1, true);
+        private final RequestProcessor processor = new RequestProcessor(getUrl(), 1, true);
+        private final Task task = processor.create(this);
         
         public synchronized void start() {
-            if (lock.tryAcquire())
-                task = processor.post(this);
+            task.schedule(0);
         }
         
         public synchronized void stop() {
             task.cancel();
         }
         
-        public synchronized void terminate() {
-            processor.stop();
-        }
-        
-        public synchronized boolean isRunning() {
-            return lock.availablePermits() == 0;
-        }
-        
         public void run() {
-            long pause;
-            
-            try {
-                do {
-                    // Synchronize
-                    synchronize();
-                    
-                    // Refresh wait time
-                    String s = getProperties().get(INSTANCE_SYNC);
-                    pause = Integer.parseInt(s) * 60 * 1000;
-                    
-                    // Wait for the specified amount of time
-                    Thread.sleep(pause);
-                } while (pause > 0);
-            } catch (InterruptedException e) {
-                // Synchronization is stopped or terminated
-            } finally {
-                // release lock
-                lock.release();
+            synchronize();
+            // Refresh wait time
+            String s = getProperties().get(INSTANCE_SYNC);
+            int pause = Integer.parseInt(s) * 60 * 1000;
+            if (pause > 0) {
+                task.schedule(pause);
             }
         }
+
     }
+
 }
