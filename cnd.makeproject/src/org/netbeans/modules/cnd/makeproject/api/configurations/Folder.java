@@ -404,11 +404,11 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Add item to the dataObject's lookup
         if (isProjectFiles() && notify) {
             DataObject dao = item.getDataObject();
-            NativeFileItemSet myNativeFileItemSet = dao.getCookie(NativeFileItemSet.class);
+            NativeFileItemSet myNativeFileItemSet = (dao == null) ? null : dao.getCookie(NativeFileItemSet.class);
             if (myNativeFileItemSet != null) {
                 myNativeFileItemSet.add(item);
             } else {
-                log.severe("can not add folder's " + this + " item " + item + " into " + dao); // NOI18N
+                log.severe("can not add folder's " + this + " item " + item + " using " + dao); // NOI18N
             }
         }
 
