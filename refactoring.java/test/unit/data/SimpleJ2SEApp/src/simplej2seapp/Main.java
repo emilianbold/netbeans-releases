@@ -9,7 +9,7 @@ package simplej2seapp;
  *
  * @author pflaska
  */
-public class Main {
+public class Main extends Object {
 
     /**
      * @param args the command line arguments
