@@ -40,14 +40,11 @@ package org.netbeans.modules.refactoring.java.test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import junit.framework.Test;
@@ -63,6 +60,8 @@ import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.java.ui.WhereUsedQueryUI;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -120,7 +119,7 @@ public class FindSubclassesTest extends RefPerfTestCase {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement klass = controller.getElements().getTypeElement("simplej2seapp.Main");
                 TypeMirror mirror = klass.getSuperclass();
-                Element object = controller.getTypes().asElement(mirror);
+                Element object = klass; //controller.getTypes().asElement(mirror);
                 System.err.println(object);
                 TreePathHandle element = TreePathHandle.create(object, controller);
                 final WhereUsedQueryUI ui = new WhereUsedQueryUI(element, controller);
@@ -131,6 +130,7 @@ public class FindSubclassesTest extends RefPerfTestCase {
                     e.printStackTrace();
                 }
                 final AbstractRefactoring wuq = ui.getRefactoring();
+                ((WhereUsedQuery) wuq).putValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES, true);
                 RefactoringSession rs = RefactoringSession.create("Session");
                 wuq.prepare(rs);
                 rs.doRefactoring(false);

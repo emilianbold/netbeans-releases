@@ -18,4 +18,12 @@ public class Main extends Object {
         // TODO code application logic here
     }
 
+    static class A extends Main {
+    }
+
+    static class B extends Main {
+    }
+
+    static class Aa extends A {
+    }
 }
