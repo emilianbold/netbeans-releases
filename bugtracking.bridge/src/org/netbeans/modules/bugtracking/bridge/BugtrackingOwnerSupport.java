@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -60,14 +61,18 @@ import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Tomas Stupka
+ * @author Marian Petras
  */
 public class BugtrackingOwnerSupport {
 
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport");   // NOI18N
+
+    private static final String REPOSITORY_FOR_FILE_PREFIX = "repository for "; //NOI18N
 
     private Map<File, Repository> fileToRepo = new HashMap<File, Repository>(10);
     private static BugtrackingOwnerSupport instance;
@@ -86,19 +91,12 @@ public class BugtrackingOwnerSupport {
     }
 
     public Repository getRepository(File file, String issueId) {
-        // check cached values firts
-        // XXX - todo
-        // 1.) cache repository for a VCS topmostanagedParent
-        // 2.) persist cache
+        //TODO - synchronization/threading
         Repository repo = fileToRepo.get(file);
         if(repo != null) {
             LOG.log(Level.FINER, " found cached repository [" + repo + "] for file " + file); // NOI18N
         }
 
-        // XXX todo
-        // 1.) check if file belongs to a kenai project and create repository from
-        // its metadata eventually
-        // 2.) store in cache
         if(repo == null) {
             repo = getBugtrackingOwner(file, issueId);
             LOG.log(Level.FINER, " caching repository [" + repo + "] for file " + file); // NOI18N
@@ -120,7 +118,7 @@ public class BugtrackingOwnerSupport {
             Repository repository = getKenaiBugtrackingRepository((String) attValue);
             if (repository != null) {
                 return repository;
-        }
+            }
         }
 
         VersioningSystem owner = VersioningSupport.getOwner(file);
@@ -142,9 +140,18 @@ public class BugtrackingOwnerSupport {
             return repo;
         }
 
+        repo = getRepositoryFromPrefs(topmostManagedAncestor);
+        if (repo != null) {
+            LOG.log(Level.FINER, " found stored repository [" + repo    //NOI18N
+                                 + "] for directory " + topmostManagedAncestor); //NOI18N
+            fileToRepo.put(topmostManagedAncestor, repo);
+            return repo;
+        }
+
         repo = askUserToSpecifyRepository(fileObject, issueId);
         if (repo != null) {
             fileToRepo.put(topmostManagedAncestor, repo);
+            storeRepositoryMappingToPrefs(topmostManagedAncestor, repo);
             return repo;
         }
 
@@ -167,6 +174,48 @@ public class BugtrackingOwnerSupport {
 
     private Repository getKenaiBugtrackingRepository(KenaiProject project) {
         return BugtrackingUtil.getKenaiBugtrackingRepository(project);
+    }
+
+    private Repository getRepositoryFromPrefs(File file) {
+        String filePath;
+        try {
+            filePath = file.getCanonicalPath();
+        } catch (IOException ex) {
+            LOG.throwing(getClass().getCanonicalName(),
+                         "getRepositoryForFile",                        //NOI18N
+                         ex);
+            filePath = file.getAbsolutePath();
+        }
+
+        String preferencesKey = REPOSITORY_FOR_FILE_PREFIX + filePath;
+        String requestedUrl = getPreferences().get(preferencesKey, null);
+        if ((requestedUrl == null) || (requestedUrl.length() == 0)) {
+            return null;
+        }
+
+        Repository[] repositories = BugtrackingUtil.getKnownRepositories();
+        for (Repository repository : repositories) {
+            if (repository.getUrl().equals(requestedUrl)) {
+                return repository;
+            }
+        }
+
+        return null;
+    }
+
+    private void storeRepositoryMappingToPrefs(File root, Repository repository) {
+        String key, value;
+
+        try {
+            key = root.getCanonicalPath();
+        } catch (IOException ex) {
+            LOG.throwing(getClass().getCanonicalName(), "storeMapping", //NOI18N
+                         ex);
+            return;
+        }
+        value = repository.getUrl();
+
+        getPreferences().put(REPOSITORY_FOR_FILE_PREFIX + key, value);
     }
 
     private Repository askUserToSpecifyRepository(FileObject file, String issueId) {
@@ -223,6 +272,10 @@ public class BugtrackingOwnerSupport {
         } else {
             return null;
         }
+    }
+
+    public Preferences getPreferences() {
+        return NbPreferences.forModule(BugtrackingOwnerSupport.class);
     }
 
     private String getMessage(String msgKey) {
