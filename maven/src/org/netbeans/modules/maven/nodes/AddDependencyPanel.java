@@ -51,8 +51,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -678,13 +680,23 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         MavenProject localProj = project;
         DependencyManagement curDM;
         List<Dependency> result = new ArrayList<Dependency>();
+        //mkleint: without the managementKey checks I got some entries multiple times.
+        // do we actually need to traverse the parent poms, are they completely resolved anyway?
+        //XXX
+        Set<String> knownKeys = new HashSet<String>();
 
         while (localProj != null) {
             curDM = localProj.getDependencyManagement();
             if (curDM != null) {
                 @SuppressWarnings("unchecked")
                 List<Dependency> ds = curDM.getDependencies();
-                result.addAll(ds);
+                for (Dependency d : ds) {
+                    if (knownKeys.contains(d.getManagementKey())) {
+                        continue;
+                    }
+                    result.add(d);
+                    knownKeys.add(d.getManagementKey());
+                }
             }
             localProj = localProj.getParent();
         }
