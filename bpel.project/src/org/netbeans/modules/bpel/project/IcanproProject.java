@@ -73,12 +73,14 @@ import org.w3c.dom.Text;
  * Represents one ejb module project
  * @author Chris Webster
  */
+/*
 @AntBasedProjectRegistration(
     type=IcanproProjectType.TYPE,
     iconResource="org/netbeans/modules/bpel/project/ui/resources/icanproProjectIcon.gif",
     sharedNamespace=IcanproProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=IcanproProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
+*/
 public final class IcanproProject implements Project, AntProjectListener {
 
     private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bpel/project/ui/resources/icanproProjectIcon.gif", false); // NOI18N
