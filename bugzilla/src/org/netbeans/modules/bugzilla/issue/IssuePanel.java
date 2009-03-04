@@ -87,6 +87,8 @@ public class IssuePanel extends javax.swing.JPanel {
         resolutionField.setBackground(getBackground());
         Font font = headerLabel.getFont();
         headerLabel.setFont(font.deriveFont((float)(font.getSize()*1.7)));
+        duplicateLabel.setVisible(false);
+        duplicateField.setVisible(false);
 
         // Comments panel
         commentsPanel = new CommentsPanel();
@@ -125,7 +127,6 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void reloadForm(boolean force) {
-        initStatusCombo();
         String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
         String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
         headerLabel.setText(headerTxt);
@@ -134,7 +135,8 @@ public class IssuePanel extends javax.swing.JPanel {
         reloadField(force, versionCombo, BugzillaIssue.IssueField.VERSION);
         reloadField(force, platformCombo, BugzillaIssue.IssueField.PLATFORM);
         reloadField(force, resolutionField, BugzillaIssue.IssueField.RESOLUTION); // Must be before statusCombo
-        reloadField(force, statusCombo, BugzillaIssue.IssueField.STATUS);
+        String status = reloadField(force, statusCombo, BugzillaIssue.IssueField.STATUS);
+        initStatusCombo(status);
         reloadField(force, resolutionCombo, BugzillaIssue.IssueField.RESOLUTION);
         String initialResolution = initialValues.get(BugzillaIssue.IssueField.RESOLUTION);
         if ("DUPLICATE".equals(initialResolution)) { // NOI18N
@@ -147,7 +149,6 @@ public class IssuePanel extends javax.swing.JPanel {
             duplicateField.setBorder(field.getBorder());
             duplicateField.setBackground(field.getBackground());
         }
-// PENDING: reloadField(force, duplicateField, BugzillaIssue.IssueField.DUPLICATE);
         reloadField(force, priorityCombo, BugzillaIssue.IssueField.PRIORITY);
         reloadField(force, severityCombo, BugzillaIssue.IssueField.SEVERITY);
         reloadField(force, targetMilestoneCombo, BugzillaIssue.IssueField.MILESTONE);
@@ -169,7 +170,7 @@ public class IssuePanel extends javax.swing.JPanel {
         updateFieldStatuses();
     }
 
-    private void reloadField(boolean force, JComponent component, BugzillaIssue.IssueField field) {
+    private String reloadField(boolean force, JComponent component, BugzillaIssue.IssueField field) {
         String currentValue = null;
         if (!force) {
             if (component instanceof JComboBox) {
@@ -186,10 +187,12 @@ public class IssuePanel extends javax.swing.JPanel {
             } else if (component instanceof JTextField) {
                 ((JTextField)component).setText(newValue);
             }
+            currentValue = newValue;
         } else {
             // PENDING conflict during refresh
         }
         initialValues.put(field, newValue);
+        return currentValue;
     }
 
     private void initCombos() throws CoreException, IOException {
@@ -208,7 +211,7 @@ public class IssuePanel extends javax.swing.JPanel {
         // stausCombo and resolution fields are filled in reloadForm
     }
 
-    private void initStatusCombo() {
+    private void initStatusCombo(String status) {
         try {
             // Init statusCombo - allowed transitions (heuristics):
             // Open -> Open-Unconfirmed-Reopened+Resolved
@@ -219,7 +222,6 @@ public class IssuePanel extends javax.swing.JPanel {
             List<String> allStatuses = bugzilla.getStatusValues(repository);
             List<String> openStatuses = bugzilla.getOpenStatusValues(repository);
             List<String> statuses = new LinkedList<String>();
-            String status = issue.getFieldValue(BugzillaIssue.IssueField.STATUS);
             String unconfirmed = "UNCONFIRMED"; // NOI18N
             String reopened = "REOPENED"; // NOI18N
             String resolved = "RESOLVED"; // NOI18N
@@ -256,6 +258,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 resolvedIndex = statuses.indexOf(resolved);
             }
             statusCombo.setModel(toComboModel(statuses));
+            statusCombo.setSelectedItem(status);
         } catch (CoreException cex) {
             cex.printStackTrace();
         } catch (IOException ioex) {
@@ -710,20 +713,6 @@ public class IssuePanel extends javax.swing.JPanel {
                 duplicateField.setVisible(false);
             }
         }
-        if ("DUPLICATE".equals(resolutionField.getText())) { // NOI18N
-            String status = statusCombo.getSelectedItem().toString();
-            Bugzilla bugzilla = Bugzilla.getInstance();
-            BugzillaRepository repository = issue.getRepository();
-            try {
-                boolean open = bugzilla.getOpenStatusValues(repository).contains(status);
-                duplicateLabel.setVisible(!open);
-                duplicateField.setVisible(!open);
-            } catch (CoreException cex) {
-                cex.printStackTrace();
-            } catch (IOException ioex) {
-                ioex.printStackTrace();
-            }
-        }
         if (!resolutionField.getText().trim().equals("")) { // NOI18N
             if (statusCombo.getSelectedIndex() >= resolvedIndex) {
                 if (resolutionField.getParent() == null) {
@@ -732,9 +721,9 @@ public class IssuePanel extends javax.swing.JPanel {
                 resolutionField.setVisible(true);
             } else {
                 resolutionField.setVisible(false);
-                duplicateLabel.setVisible(false);
-                duplicateField.setVisible(false);
             }
+            duplicateLabel.setVisible(false);
+            duplicateField.setVisible(false);
         }
     }//GEN-LAST:event_statusComboActionPerformed
 
@@ -807,6 +796,9 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void resolutionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolutionComboActionPerformed
+        if (resolutionCombo.getParent() == null) {
+            return;
+        }
         boolean shown = "DUPLICATE".equals(resolutionCombo.getSelectedItem()); // NOI18N
         duplicateLabel.setVisible(shown);
         duplicateField.setVisible(shown);
