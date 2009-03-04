@@ -76,7 +76,8 @@ public class HudsonViewNode extends AbstractNode {
         super(new ViewNodeChildren(view), Lookups.singleton(view));
         
         this.view = view;
-        
+
+        setName(view.getName());
         setDisplayName(view.getName() + " " +
                 NbBundle.getMessage(HudsonViewNode.class, "LBL_ViewNode"));
         setIconBaseWithExtension(ICON_BASE);

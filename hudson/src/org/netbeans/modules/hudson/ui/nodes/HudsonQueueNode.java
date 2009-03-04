@@ -71,7 +71,7 @@ public class HudsonQueueNode extends AbstractNode {
     
     public HudsonQueueNode(HudsonInstanceImpl instance) {
         super(new QueueNodeChildren(instance));
-        
+        setName("queue"); // NOI18N
         setDisplayName(NbBundle.getMessage(HudsonQueueNode.class, "LBL_QueueNode"));
         setIconBaseWithExtension(ICON_BASE);
     }

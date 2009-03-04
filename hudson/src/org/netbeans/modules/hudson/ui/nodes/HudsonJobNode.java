@@ -87,6 +87,7 @@ public class HudsonJobNode extends AbstractNode {
     
     public HudsonJobNode(HudsonJobImpl job) {
         super(makeChildren(job), Lookups.singleton(job));
+        setName(job.getName());
         setHudsonJob(job);
     }
 

@@ -76,7 +76,7 @@ public class HudsonRootNode extends AbstractNode {
      */
     private HudsonRootNode() {
         super(new RootNodeChildren());
-        
+        setName("hudson"); // NOI18N
         setDisplayName(NbBundle.getMessage(HudsonRootNode.class, "LBL_HudsonNode"));
         setIconBaseWithExtension(ICON_BASE);
     }

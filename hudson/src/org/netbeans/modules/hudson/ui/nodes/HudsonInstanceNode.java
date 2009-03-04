@@ -95,7 +95,8 @@ public class HudsonInstanceNode extends AbstractNode {
         super(new Children.Array(), Lookups.singleton(instance));
         
         children = new InstanceNodeChildren(instance);
-        
+
+        setName(instance.getUrl());
         setDisplayName(instance.getName());
         setShortDescription(instance.getUrl());
         setIconBaseWithExtension(ICON_BASE);

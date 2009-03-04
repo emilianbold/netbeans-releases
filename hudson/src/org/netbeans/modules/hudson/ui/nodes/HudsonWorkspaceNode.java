@@ -52,6 +52,7 @@ class HudsonWorkspaceNode extends AbstractNode {
 
     HudsonWorkspaceNode(HudsonJobImpl job) {
         super(DataFolder.findFolder(job.getRemoteWorkspace().getRoot()).createNodeChildren(DataFilter.ALL));
+        setName("ws"); // NOI18N
         setIconBaseWithExtension("org/netbeans/modules/hudson/ui/resources/document_edit.gif"); // XXX pick a better icon
     }
 
