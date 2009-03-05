@@ -40,13 +40,14 @@
 package org.netbeans.modules.dlight.api.storage;
 
 import java.util.List;
+import org.netbeans.modules.dlight.util.DLightLogger;
 
 /**
  * Represents one row of data along with column names
  */
 public final class DataRow {
   private List<String> colnames;
-  private List data;
+  private List<Object> data;
 
   /**
    * Created new DataRow instance with the <code>colnames</code> column names
@@ -54,8 +55,9 @@ public final class DataRow {
    * @param colnames column names
    * @param data data 
    */
-  public DataRow(List<String> colnames, List data) {
+  public DataRow(List<String> colnames, List<Object> data) {
     this.colnames = colnames;
+    DLightLogger.assertTrue(data != null, "data parameter should not be null"); //NOI18N
     this.data = data;
   }
 
