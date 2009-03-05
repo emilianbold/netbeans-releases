@@ -6,7 +6,7 @@ class blog_Application implements Application {
 
   public function process($path) {
     switch ($path) {
-      case self::^
+      /*marker*/case self::
       break;
       case self::VARNAME_ADD :
       break;

@@ -111,7 +111,7 @@ public class SanitizeSourceTest extends ParserTestBase {
     
     public void testMissingEndCurly6() throws Exception {
         // non finished class and method and blog 2
-        performTest("sanitize/curly06");
+        performTest("sanitize/curly06", "if ($a) {^");
     }
     
     public void testMissingEndCurly7() throws Exception {
@@ -151,19 +151,19 @@ public class SanitizeSourceTest extends ParserTestBase {
         performTest("sanitize/sanitize011");
     }
     public void testCDInCD06() throws Exception {
-        performTest("sanitize/sanitize012");
+        performTest("sanitize/sanitize012", "/*marker*/public functio^");
     }
     public void testCDInCD07() throws Exception {
-        performTest("sanitize/sanitize013");
+        performTest("sanitize/sanitize013","/*marker*/public function^");
     }
     public void testCDInCD08() throws Exception {
-        performTest("sanitize/sanitize014");
+        performTest("sanitize/sanitize014", "/*marker*/public function ^");
     }
     public void testCDInCD09() throws Exception {
-        performTest("sanitize/sanitize015");
+        performTest("sanitize/sanitize015", "/*marker*/public function name(^");
     }
     public void testCDInCD10() throws Exception {
-        performTest("sanitize/sanitize016");
+        performTest("sanitize/sanitize016", "/*marker*/public function name(){^");
     }
 
     // disabling the test, unitl I find out what is wrong
@@ -176,7 +176,7 @@ public class SanitizeSourceTest extends ParserTestBase {
     }
 
     public void testCase01() throws Exception {
-        performTest("sanitize/case01");
+        performTest("sanitize/case01", "/*marker*/case self::^");
     }
 
     public void test149424() throws Exception {
@@ -184,10 +184,13 @@ public class SanitizeSourceTest extends ParserTestBase {
     }
 
     protected String getTestResult(String filename) throws Exception {
+        return getTestResult(filename, null);
+    }
+
+    protected String getTestResult(String filename, String caretLine) throws Exception {
         FileObject testFile = getTestFile("testfiles/" + filename + ".php");
 
         Source testSource = getTestSource(testFile);
-        String caretLine="^";
         final int caretOffset;
         if (caretLine != null) {
             caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
@@ -215,6 +218,7 @@ public class SanitizeSourceTest extends ParserTestBase {
 
         return textresult.toString();
     }
+
 
     /*protected String getTestResult(String filename) throws Exception {
         return null;
