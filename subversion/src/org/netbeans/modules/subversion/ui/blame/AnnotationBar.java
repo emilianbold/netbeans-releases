@@ -175,11 +175,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private RequestProcessor.Task latestAnnotationTask = null;
 
     /**
-     * Holds false if Rollback Changes action is NOT valid for current revision, true otherwise. 
-     */ 
-    private boolean recentRevisionCanBeRolledBack;
-
-    /**
      * Rendering hints for annotations sidebar inherited from editor settings.
      */
     private final Map renderingHints;
@@ -377,7 +372,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             private void maybeShowPopup(MouseEvent e) {
                 if (e.isPopupTrigger()) {
                     e.consume();
-                    createPopup().show(e.getComponent(),
+                    createPopup(e).show(e.getComponent(),
                                e.getX(), e.getY());
                 }
             }
@@ -388,18 +383,28 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     }
 
-    private JPopupMenu createPopup() {
+    private JPopupMenu createPopup(MouseEvent e) {
         final ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
         final JPopupMenu popupMenu = new JPopupMenu();
 
-        final File file = getCurrentFile();
-        
         final JMenuItem diffMenu = new JMenuItem(loc.getString("CTL_MenuItem_DiffToRevision"));
+
+        // annotation for target line
+        AnnotateLine al = null;
+        if (elementAnnotations != null) {
+            al = getAnnotateLine(getLineFromMouseEvent(e));
+        }
+        // revision previous to target line's revision
+        final String revisionPerLine = al == null ? null : al.getRevision();
+        // used in menu Revert
+        final File file = getCurrentFile();
+        final boolean revisionCanBeRolledBack = al == null ? false : al.canBeRolledBack();
+        
         diffMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (recentRevision != null) {
-                    if (getPreviousRevision(recentRevision) != null) {
-                        DiffAction.diff(file, getPreviousRevision(recentRevision), recentRevision);
+                if (revisionPerLine != null) {
+                    if (getPreviousRevision(revisionPerLine) != null) {
+                        DiffAction.diff(file, getPreviousRevision(revisionPerLine), revisionPerLine);
                     }
                 }
             }
@@ -409,11 +414,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         JMenuItem rollbackMenu = new JMenuItem(loc.getString("CTL_MenuItem_Revert"));
         rollbackMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                revert(file, recentRevision);
+                revert(file, revisionPerLine);
             }
         });
         popupMenu.add(rollbackMenu);
-        rollbackMenu.setEnabled(recentRevisionCanBeRolledBack);
+        rollbackMenu.setEnabled(revisionCanBeRolledBack);
 
         JMenuItem menu;
         menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations"));
@@ -427,10 +432,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         diffMenu.setVisible(false);
         rollbackMenu.setVisible(false);
-        if (recentRevision != null) {
-            if (getPreviousRevision(recentRevision) != null) {
+        if (revisionPerLine != null) {
+            if (getPreviousRevision(revisionPerLine) != null) {
                 String format = loc.getString("CTL_MenuItem_DiffToRevision");
-                diffMenu.setText(MessageFormat.format(format, new Object [] { recentRevision, getPreviousRevision(recentRevision) }));
+                diffMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine, getPreviousRevision(revisionPerLine) }));
                 diffMenu.setVisible(true);
             }
             rollbackMenu.setVisible(true);
@@ -511,7 +516,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         recentStatusMessage = loc.getString("CTL_StatusBar_WaitFetchAnnotation");
         statusBar.setText(StatusBar.CELL_MAIN, recentStatusMessage);
         
-        recentRevisionCanBeRolledBack = false;
         // determine current line
         int line = -1;
         int offset = caret.getDot();
@@ -538,8 +542,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             return;
         }
 
-        recentRevisionCanBeRolledBack = al.canBeRolledBack();
-        
         // handle unchanged lines
         String revision = al.getRevision();
         if (revision.equals(recentRevision) == false) {
