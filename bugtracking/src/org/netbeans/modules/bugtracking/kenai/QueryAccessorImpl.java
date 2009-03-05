@@ -179,5 +179,4 @@ public class QueryAccessorImpl extends QueryAccessor {
             }
         }
     }
-    }
 }
