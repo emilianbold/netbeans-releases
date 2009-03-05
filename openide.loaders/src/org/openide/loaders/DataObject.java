@@ -88,8 +88,6 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     public static final String PROP_PRIMARY_FILE = "primaryFile"; // NOI18N
     /** Name of files property. Allows listening to set of files handled by this object. */
     public static final String PROP_FILES = "files"; // NOI18N
-    /** Name of extension property. Allows to change extension. */
-    public static final String PROP_EXTENSION = "extension"; // NOI18N
 
     /** Extended attribute for holding the class of the loader that should
     * be used to recognize a file object before the normal processing takes
