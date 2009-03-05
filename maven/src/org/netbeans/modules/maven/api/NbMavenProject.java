@@ -100,6 +100,7 @@ public final class NbMavenProject {
         impl.assign();
     }
     private RequestProcessor.Task task;
+    private static RequestProcessor BINARYRP = new RequestProcessor("Maven projects Binary Downloads", 1);
     
     
     static class AccessorImpl extends NbMavenProjectImpl.WatcherAccessor {
@@ -118,12 +119,9 @@ public final class NbMavenProject {
         public void doFireReload(NbMavenProject watcher) {
             watcher.doFireReload();
         }
-        
+
     }
 
-    public URI getEarAppDirectory() {
-        return project.getEarAppDirectory();
-    }
 
     
     private class FCHSL implements FileChangeListener {
@@ -160,7 +158,11 @@ public final class NbMavenProject {
         project = proj;
         //TODO oh well, the sources is the actual project instance not the watcher.. a problem?
         support = new PropertyChangeSupport(proj);
-        task = RequestProcessor.getDefault().create(new Runnable() {
+        task = createBinaryDownloadTask(BINARYRP);
+    }
+
+    private RequestProcessor.Task createBinaryDownloadTask(RequestProcessor rp) {
+        return rp.create(new Runnable() {
             public void run() {
                     //#146171 try the hardest to avoid NPE for files/directories that
                     // seemed to have been deleted while the task was scheduled.
@@ -177,12 +179,12 @@ public final class NbMavenProject {
                         return;
                     }
                     MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-                    AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"), 
+                    AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
                             new ProgressContributor[] {
                                 AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
                             null, null);
-                    
-                    boolean ok = true; 
+
+                    boolean ok = true;
                     try {
                         ProgressTransferListener.setAggregateHandle(hndl);
                         hndl.start();
@@ -260,6 +262,9 @@ public final class NbMavenProject {
         return project.getGeneratedSourceRoots();
     }
     
+    public URI getEarAppDirectory() {
+        return project.getEarAppDirectory();
+    }
     
     public static final String TYPE_JAR = "jar"; //NOI18N
     public static final String TYPE_WAR = "war"; //NOI18N
