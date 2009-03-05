@@ -31,7 +31,7 @@ public abstract class Dashboard {
      * @param project
      * @see ActionsFactory.getOpenNonMemberProjectAction
      */
-    public abstract void addNonMemberProject( ProjectHandle project );
+    public abstract void addProject( ProjectHandle project );
 
     public abstract void removeProject( ProjectHandle project );
 

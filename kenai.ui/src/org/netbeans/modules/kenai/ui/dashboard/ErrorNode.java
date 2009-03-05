@@ -43,30 +43,33 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionListener;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.kenai.ui.treelist.LeafNode;
-import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
- * The very first node in dashboard window when the user isn't logged in.
- * 
+ * Error message visualization in TreeList
+ *
  * @author S. Aubrecht
  */
-public class LoginNode extends LeafNode {
-
-    private final DashboardImpl dashboard;
+public class ErrorNode extends LeafNode {
 
     private JPanel panel;
-    private LinkButton btnLogin;
-    private JLabel lblStatus;
-    private LinkButton btnOpenProject;
+    private final JLabel lblMessage;
+    private final LinkButton btnRefresh;
+    private final ActionListener defaultAction;
 
-    public LoginNode( DashboardImpl dashboard ) {
+    public ErrorNode( String text, ActionListener refreshAction ) {
         super( null );
-        this.dashboard = dashboard;
+        this.defaultAction = refreshAction;
+        btnRefresh = new LinkButton(NbBundle.getMessage(ErrorNode.class, "LBL_Retry"), refreshAction); //NOI18N
+        lblMessage = new JLabel(text);
+        lblMessage.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/error.png"))); //NOI18N
     }
 
     @Override
@@ -75,25 +78,21 @@ public class LoginNode extends LeafNode {
             panel = new JPanel( new GridBagLayout() );
             panel.setOpaque(false);
 
-            btnLogin = new LinkButton(NbBundle.getMessage(LoginNode.class, "LBL_LoginToKenai"), //NOI18N
-                    dashboard.createLoginAction());
-            lblStatus = new JLabel();
-            lblStatus.setHorizontalAlignment(JLabel.CENTER);
-            btnOpenProject = new LinkButton(NbBundle.getMessage(LoginNode.class, "LBL_OpenProject"),  //NOI18N
-                    ProjectAccessor.getDefault().getOpenNonMemberProjectAction());
-
-            panel.add( btnLogin, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
-            panel.add( lblStatus, new GridBagConstraints(1,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( btnOpenProject, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+            panel.add( lblMessage, new GridBagConstraints(0,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
+            panel.add( btnRefresh, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
         }
 
         if( isSelected ) {
-            lblStatus.setForeground(foreground);
+            lblMessage.setForeground(foreground);
         } else {
-            lblStatus.setForeground(ColorManager.errorColor);
+            lblMessage.setForeground(ColorManager.errorColor);
         }
-        btnOpenProject.setForeground(foreground, isSelected);
-        btnLogin.setForeground(foreground, isSelected);
+        btnRefresh.setForeground(foreground, isSelected);
         return panel;
+    }
+
+    @Override
+    protected ActionListener getDefaultAction() {
+        return defaultAction;
     }
 }

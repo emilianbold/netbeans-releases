@@ -40,6 +40,7 @@
 package org.netbeans.modules.kenai.ui.dashboard;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -73,12 +74,19 @@ public class ProjectNode extends TreeListNode {
     private JLabel lbl = null;
     private LinkButton btnDetails = null;
 
+    private boolean isMemberProject = false;
+
+    private final Font regFont;
+    private final Font boldFont;
+
     private final Object LOCK = new Object();
 
     public ProjectNode( ProjectHandle project ) {
         super( true, null );
         this.project = project;
         this.accessor = ProjectAccessor.getDefault();
+        regFont = new JLabel().getFont();
+        boldFont = regFont.deriveFont(Font.BOLD);
     }
 
     ProjectHandle getProject() {
@@ -116,6 +124,7 @@ public class ProjectNode extends TreeListNode {
                 component.add( btnDetails, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
             }
             lbl.setForeground(foreground);
+            lbl.setFont( isMemberProject ? boldFont : regFont );
             btnDetails.setForeground(foreground, isSelected);
             return component;
         }
@@ -129,5 +138,13 @@ public class ProjectNode extends TreeListNode {
     @Override
     public Action[] getPopupActions() {
         return accessor.getPopupActions(project);
+    }
+
+    void setMemberProject(boolean isMemberProject) {
+        if( isMemberProject == this.isMemberProject )
+            return;
+        this.isMemberProject = isMemberProject;
+        fireContentChanged();
+        refreshChildren();
     }
 }

@@ -104,25 +104,30 @@ public class MessagingNode extends AsynchronousLeafNode implements PropertyChang
         synchronized( LOCK ) {
             labels.clear();
             buttons.clear();
-            JLabel lbl = new JLabel(NbBundle.getMessage(MessagingNode.class, "LBL_OnlineCount", messaging.getOnlineCount())); //NOI18N
-            labels.add(lbl);
-            panel.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+            JLabel lbl = null;
+            LinkButton btn = null;
+            int onlineCount = messaging.getOnlineCount();
+            if( onlineCount >= 0 ) {
+                lbl = new JLabel(NbBundle.getMessage(MessagingNode.class, "LBL_OnlineCount", messaging.getOnlineCount())); //NOI18N
+                labels.add(lbl);
+                panel.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
-            lbl = new JLabel("("); //NOI18N
-            labels.add(lbl);
-            panel.add( lbl, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+                lbl = new JLabel("("); //NOI18N
+                labels.add(lbl);
+                panel.add( lbl, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
 
-            LinkButton btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_MessageCount", messaging.getMessageCount()), accessor.getOpenMessagesAction(project)); //NOI18N
-            buttons.add( btn );
-            panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+                btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_MessageCount", messaging.getMessageCount()), accessor.getOpenMessagesAction(project)); //NOI18N
+                buttons.add( btn );
+                panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
-            lbl = new JLabel(")"); //NOI18N
-            labels.add(lbl);
-            panel.add( lbl, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+                lbl = new JLabel(")"); //NOI18N
+                labels.add(lbl);
+                panel.add( lbl, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
-            lbl = new JLabel("|"); //NOI18N
-            labels.add(lbl);
-            panel.add( lbl, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+                lbl = new JLabel("|"); //NOI18N
+                labels.add(lbl);
+                panel.add( lbl, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+            }
 
             btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_OpenWiki"), ProjectAccessor.getDefault().getOpenWikiAction(project)); //NOI18N
             buttons.add( btn );
