@@ -122,6 +122,16 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz158831.cpp");
     }
 
+    public void testIZ158873() throws Exception {
+        // IZ#158873 : recursion in Instantiation.Type.isInstantiation()
+        performStaticTest("iz158873.cpp");
+    }
+
+    public void testIZ159615() throws Exception {
+        // IZ#159615 : recursion in CsmCompletionQuery.getClassifier()
+        performStaticTest("iz159615.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
