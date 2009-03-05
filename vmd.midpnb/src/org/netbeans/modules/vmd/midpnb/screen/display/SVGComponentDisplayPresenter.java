@@ -168,6 +168,8 @@ public class SVGComponentDisplayPresenter extends ScreenDisplayPresenter {
     private Rectangle doCalculateRectangle() {
         float scaleX = 1.0f;
         float scaleY = 1.0f;
+        int correctionX = 0;
+        int correctionY = 0;
         SVGImage svgImage = null;
 
         DesignComponent svgComponent = getSvgComponent();
@@ -189,6 +191,8 @@ public class SVGComponentDisplayPresenter extends ScreenDisplayPresenter {
         if (presenter != null) {
             scaleX = presenter.getScaleX();
             scaleY = presenter.getScaleY();
+            correctionX = presenter.getCorrectionX();
+            correctionY = presenter.getCorrectionY();
             svgImage = presenter.getSVGImage();
 
         }
@@ -201,8 +205,10 @@ public class SVGComponentDisplayPresenter extends ScreenDisplayPresenter {
             Rectangle rect = Util.getElementRectangle(svgImage, id);
             if (rect != null) {
                 return new Rectangle(
-                        (int) Math.round(rect.getX() * scaleX), (int) Math.round(rect.getY() * scaleY),
-                        (int) Math.round(rect.getWidth() * scaleX), (int) Math.round(rect.getHeight() * scaleY));
+                        (int) Math.round(rect.getX() * scaleX) + correctionX,
+                        (int) Math.round(rect.getY() * scaleY) + correctionY,
+                        (int) Math.round(rect.getWidth() * scaleX),
+                        (int) Math.round(rect.getHeight() * scaleY));
             }
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
