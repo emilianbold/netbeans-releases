@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.api;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,21 +50,19 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Maros Sandor
  * @author Jan Becicka
  */
-public class KenaiTest extends junit.framework.TestCase {
+public class KenaiTest extends NbTestCase {
 
-    static String UNITTESTUNIQUENAME_BASE = "testuniquename";
-    static String UNITTESTUNIQUENAME = "testuniquename00"; // initial value, will be changed in setUpClass method
+    static String UNITTESTUNIQUENAME_BASE = "test";
+    static String UNITTESTUNIQUENAME = "java-inline"; // initial value, will be changed in setUpClass method
     private static Kenai instance;
     private static boolean firstRun = true;
-
-    public KenaiTest() {
-    }
 
     public KenaiTest(String S) {
         super(S);
@@ -91,7 +90,7 @@ public class KenaiTest extends junit.framework.TestCase {
             br.close();
             instance.login(username, password.toCharArray());
             if (firstRun) {
-                UNITTESTUNIQUENAME = UNITTESTUNIQUENAME_BASE + instance.getMyProjects().size();
+                UNITTESTUNIQUENAME = UNITTESTUNIQUENAME_BASE + System.currentTimeMillis();
                 System.out.println("== Name: " + UNITTESTUNIQUENAME);
                 firstRun = false;
             }
@@ -110,6 +109,7 @@ public class KenaiTest extends junit.framework.TestCase {
      */
     @Test
     public void testSearchProjects() throws Exception {
+        System.out.println("testSearchProjects");
         String pattern = "jav";
         Collection<KenaiProject> result = instance.searchProjects(pattern);
 
@@ -120,10 +120,57 @@ public class KenaiTest extends junit.framework.TestCase {
 
     @Test
     public void testGetProject() throws Exception {
+        System.out.println("testGetProject");
+        String name = "java-inline";
+        KenaiProject prj = instance.getProject(name);
+        System.out.println("Project: " + prj.getName());
+        if (!prj.getName().equals("java-inline")) {
+            fail("Call to getProject failed.");
+        }
+    }
+
+    @Test
+    public void testGetDisplayName() throws Exception {
+        System.out.println("testGetDisplayName");
         String name = "java-inline";
         KenaiProject prj = instance.getProject(name);
         System.out.println("Project: " + prj.getDisplayName());
+        if (!prj.getDisplayName().equals("JavaInline for JRuby")) {
+            fail("Display Name of the project has changed.");
+        }
+    }
+
+    @Test
+    public void testGetDescription() throws Exception {
+        System.out.println("testGetDescription");
+        String name = "java-inline";
+        KenaiProject prj = instance.getProject(name);
+        System.out.println(prj.getDescription());
+        if (!prj.getDescription().equals("JavaInline provides a way to embed Java code into Ruby code under JRuby and have it compiled and available at runtime. Depends on Java 6 compiler API.")) {
+            fail("Description of the project has changed.");
+        }
+    }
+
+    @Test
+    public void testGetWebLocation() throws Exception {
+        System.out.println("testGetWebLocation");
+        String name = "java-inline";
+        KenaiProject prj = instance.getProject(name);
         System.out.println(prj.getWebLocation());
+        if (!prj.getWebLocation().toString().equals("http://testkenai.com/api/projects/java-inline.json")) {
+            fail("Web Location of the project has changed.");
+        }
+    }
+
+    @Test
+    public void testGetTags() throws Exception {
+        System.out.println("testGetTags");
+        String name = "java-inline";
+        KenaiProject prj = instance.getProject(name);
+        System.out.println(prj.getTags());
+        if (prj.getTags() == null || !prj.getTags().equals("java, javac, jruby, ruby")) {
+            fail("Tags of the project have changed.");
+        }
     }
 
     @Test
@@ -203,25 +250,83 @@ public class KenaiTest extends junit.framework.TestCase {
 
     @Test
     public void testGetFeatures() throws KenaiException {
+        BufferedReader br = null;
         try {
+            System.out.println("testGetFeatures");
+            String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "features-java-inline.data";
+            br = new BufferedReader(new FileReader(_fileName));
+            String line = null;
             System.out.println("getFeature");
-            KenaiProject project = instance.getProject(UNITTESTUNIQUENAME);
+            KenaiProject project = instance.getProject("java-inline");
             for (KenaiProjectFeature feature : project.getFeatures()) {
+                System.out.println("===");
+                // Check feature's name
+                line = br.readLine().trim();
+                assertEquals(line, feature.getName());
                 System.out.println(feature.getName());
+                // Check feature's type
+                line = br.readLine().trim();
+                assertEquals(line, feature.getType().toString());
+                System.out.println(feature.getType().toString());
+                // Check feature's display name
+                line = br.readLine().trim();
+                assertEquals(line, feature.getDisplayName());
+                System.out.println(feature.getDisplayName());
+                // Check feature's location
+                line = br.readLine().trim();
+                if (line.equals("null")) { // feature is not present 
+                    assertEquals(null, feature.getLocation());
+                } else {
+                    assertEquals(line, feature.getLocation().toString());
+                }
+                System.out.println(feature.getLocation());
+                // Check feature's service
+                line = br.readLine().trim();
+                assertEquals(line, feature.getService());
+                System.out.println(feature.getService());
+                // Check feature's web location
+                line = br.readLine().trim();
+                assertEquals(line, feature.getWebLocation().toString());
+                System.out.println(feature.getWebLocation().toString());
             }
+        } catch (IOException ex) {
+            fail("Failure while reading the features-java-inline.data golden file.");
         } catch (KenaiErrorMessage mes) {
             System.out.println(mes.getAsString());
             throw mes;
         }
     }
-
+    
     @Test
     public void testGetLicenses() throws KenaiException {
-        System.out.println("testGetLicenses");
-        for (KenaiLicense lic : Kenai.getDefault().getLicenses()) {
-            System.out.println(lic.getName());
-            System.out.println(lic.getDisplayName());
-            System.out.println(lic.getUri());
+        BufferedReader br = null;
+        try {
+            System.out.println("testGetLicenses");
+            String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "licences.data";
+            br = new BufferedReader(new FileReader(_fileName));
+            String line = null;
+            for (KenaiLicense lic : Kenai.getDefault().getLicenses()) {
+                // Check the licence name
+                line = br.readLine().trim();
+                assertEquals(line, lic.getName());
+                System.out.println(lic.getName());
+                // Check the licence display name
+                line = br.readLine().trim();
+                assertEquals(line, lic.getDisplayName());
+                System.out.println(lic.getDisplayName());
+                // Check the licence uri
+                line = br.readLine().trim();
+                assertEquals(line, lic.getUri().toString());
+                System.out.println(lic.getUri().toString());
+            }
+        } catch (IOException ex) {
+            fail("Failure while reading the licences.data golden file.");
+        } finally {
+            try {
+                br.close();
+            } catch (IOException ex) {
+                //
+            }
         }
     }
 
@@ -238,6 +343,7 @@ public class KenaiTest extends junit.framework.TestCase {
 
     @Test
     public void testGetMyProjects() throws Exception {
+        System.out.println("testGetMyProjects (takes quite long - please wait...)");
         Collection<KenaiProject> result = instance.getMyProjects();
         System.out.println("size: " + result.size());
 
@@ -250,6 +356,10 @@ public class KenaiTest extends junit.framework.TestCase {
         junit.framework.TestSuite _suite = new junit.framework.TestSuite();
         _suite.addTest(new KenaiTest("testSearchProjects"));
         _suite.addTest(new KenaiTest("testGetProject"));
+        _suite.addTest(new KenaiTest("testGetDescription"));
+        _suite.addTest(new KenaiTest("testGetDisplayName"));
+        _suite.addTest(new KenaiTest("testGetWebLocation"));
+        _suite.addTest(new KenaiTest("testGetTags"));
         _suite.addTest(new KenaiTest("testLogin"));
         _suite.addTest(new KenaiTest("testCreateProject"));
         _suite.addTest(new KenaiTest("testCreateFeature"));
