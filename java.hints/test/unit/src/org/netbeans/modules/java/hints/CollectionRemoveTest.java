@@ -155,6 +155,29 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "0:166-0:186:verifier:SC: java.util.Collection.remove, Object, String");
     }
 
+    public void testBoxing1() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private void test () {" +
+                            "        java.util.List<Integer> l = null;" +
+                            "        l.con|tains(1);" +
+                            "    }" +
+                            "}");
+    }
+
+    public void testBoxing2() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private void test () {" +
+                            "        java.util.List<String> l = null;" +
+                            "        l.con|tains(1);" +
+                            "    }" +
+                            "}",
+                            "0:106-0:119:verifier:SCIT: java.util.Collection.contains, int, String");
+    }
+
     @Override
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath tp) {
         while (tp != null) {
