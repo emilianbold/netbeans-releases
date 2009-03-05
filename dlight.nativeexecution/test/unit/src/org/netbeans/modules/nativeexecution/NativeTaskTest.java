@@ -124,7 +124,7 @@ public class NativeTaskTest {
     public void testDemangle() {
 
         System.out.println("STart-TestDEmangle");
-        int threadsNum = 256;
+        int threadsNum = 100;
         CountDownLatch latch = new CountDownLatch(threadsNum);
         CountDownLatch start = new CountDownLatch(1);
 

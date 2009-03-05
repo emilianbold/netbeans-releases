@@ -55,7 +55,6 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.multiview.ui.*;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Port;
-import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -86,7 +85,7 @@ public class ClientView extends SectionView {
     static final String TRANSPORT_NODE_ID = "transpotr";                        //NOI18N
     static final String ADVANCEDCONFIG_NODE_ID = "advancedconfig";              //NOI18N
 
-    ClientView(InnerPanelFactory factory, WSDLModel clientModel, WSDLModel serviceModel, Service s) {
+    ClientView(InnerPanelFactory factory, WSDLModel clientModel, WSDLModel serviceModel, Collection<Port> ports) {
     
         super(factory);
 
@@ -96,12 +95,13 @@ public class ClientView extends SectionView {
 
         Collection<Binding> bindings = new HashSet<Binding>();
         WSITModelSupport.fillImportedBindings(clientModel, bindings, new HashSet());
-        
-        Collection<Port> ports = s.getPorts();
-        for (Port p : ports) {
-            QName bqname = p.getBinding().getQName();
-            Binding b = clientModel.findComponentByName(bqname, Binding.class);
-            bindings.add(b);
+
+        if (ports != null) {
+            for (Port p : ports) {
+                QName bqname = p.getBinding().getQName();
+                Binding b = clientModel.findComponentByName(bqname, Binding.class);
+                bindings.add(b);
+            }
         }
 
         ArrayList<Node> bindingNodes = new ArrayList<Node>();

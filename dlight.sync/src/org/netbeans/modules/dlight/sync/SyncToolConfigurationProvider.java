@@ -74,7 +74,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
     private static final boolean USE_SUNSTUDIO = Boolean.getBoolean("gizmo.cpu.sunstudio"); // NOI18N
     private static final boolean USE_PRSTAT = Util.getBoolean("gizmo.sync.prstat", true); // NOI18N
-    private static final boolean redirectStdErr = Util.getBoolean("dlight.memory.log.stderr", false); // NOI18N
+    private static final boolean redirectStdErr = Util.getBoolean("dlight.sync.log.stderr", false); // NOI18N
     
     private static final Column timestampColumn = 
         new Column("timestamp", Long.class, loc("SyncTool.ColumnName.timestamp"), null); // NOI18N

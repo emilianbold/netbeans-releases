@@ -237,7 +237,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 }
 
                 if (!hasValidContext) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("No tool passed validation... ")); // NOI18N
+//                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("No tool passed validation... ")); // NOI18N
                     return;
                 }
 

@@ -83,7 +83,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
         ExternalTerminal terminal = t;
 
-        final String commandLine = info.getCommandLine(true);
+        final String commandLine = info.getCommandLine();
         final String workingDirectory = info.getWorkingDirectory(true);
         final File wdir =
                 workingDirectory == null ? null : new File(workingDirectory);
@@ -107,7 +107,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 commandLine);
 
         ProcessBuilder pb = new ProcessBuilder(command);
-        pb.environment().putAll(info.getEnvVariables(true));
+        pb.environment().putAll(info.getEnvVariables());
         pb.directory(wdir);
 
         termProcess = pb.start();

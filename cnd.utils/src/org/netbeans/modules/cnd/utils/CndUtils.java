@@ -93,7 +93,7 @@ public class CndUtils {
     }
 
     public static void assertFalse(boolean value) {
-       if ( isReleaseMode()) {
+       if ( isDebugMode()) {
            assertTrue(!value, "Assertion error"); //NOI18N
        }
    }
