@@ -23,7 +23,7 @@
           <Group type="102" alignment="1" attributes="0">
               <Component id="repositoryLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-              <Component id="repositoryComboBox" max="32767" attributes="2"/>
+              <Component id="repositoryComboBox" pref="379" max="32767" attributes="2"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jButton2" min="-2" pref="85" max="-2" attributes="1"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -51,11 +51,18 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="addRevisionCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="changeFormatButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="187" max="-2" attributes="0"/>
+                      <Component id="changeRevisionFormatButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="109" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace min="-2" pref="125" max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="addIssueCheckBox1" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="changeIssueFormatButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="203" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -81,7 +88,7 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="addRevisionCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="changeFormatButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="changeRevisionFormatButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -89,6 +96,11 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="pushRadioButton" min="-2" max="-2" attributes="0"/>
                   </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="addIssueCheckBox1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="changeIssueFormatButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -212,10 +224,10 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="changeFormatButton">
+    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="changeRevisionFormatButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugtracking/vcshooks/Bundle.properties" key="HookPanel.changeFormatButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/bugtracking/vcshooks/Bundle.properties" key="HookPanel.changeRevisionFormatButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AuxValues>
@@ -230,7 +242,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Group type="103" groupAlignment="1" attributes="0">
                       <Component id="jLabel2" alignment="1" min="-2" max="-2" attributes="0"/>
-                      <Component id="issuePanel" alignment="0" max="32767" attributes="2"/>
+                      <Component id="issuePanel" alignment="0" pref="336" max="32767" attributes="2"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
@@ -263,5 +275,31 @@
         </Container>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JCheckBox" name="addIssueCheckBox1">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugtracking/vcshooks/Bundle.properties" key="HookPanel.addIssueCheckBox1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="commitRadioButton"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addIssueCheckBox1ActionPerformed"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+      </AuxValues>
+    </Component>
+    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="changeIssueFormatButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugtracking/vcshooks/Bundle.properties" key="HookPanel.changeIssueFormatButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+      </AuxValues>
+    </Component>
   </SubComponents>
 </Form>

@@ -103,7 +103,7 @@ import org.openide.util.RequestProcessor.Task;
  * @author Tomas Stupka
  */
 public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
-    private QueryPanel panel;
+    protected QueryPanel panel;
 
     private final ComboParameter summaryParameter;
     private final ComboParameter commentsParameter;
@@ -249,6 +249,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    protected void disableModify() {
+        panel.modifyButton.setEnabled(false);
+    }
+
     public String getUrlParameters() {
         StringBuffer sb = new StringBuffer();
         for (QueryParameter p : parameters.values()) {
@@ -257,7 +261,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         return sb.toString();
     }
 
-    void postPopulate(final String urlParameters) {
+    private void postPopulate(final String urlParameters) {
         enableFields(false);
 
         final Task[] t = new Task[1];
@@ -270,7 +274,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         };
 
-        final String msgPopulating = NbBundle.getMessage(this.getClass(), "MSG_Populating");    // NOI18N
+        final String msgPopulating = NbBundle.getMessage(QueryController.class, "MSG_Populating");    // NOI18N
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msgPopulating, c);
         final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
         panel.showRetrievingProgress(true, progressBar, msgPopulating, !query.isSaved());
@@ -328,57 +332,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    // XXX ugly
-    public void populateKenai(String urlParameters, String product) {
-        Bugzilla.LOG.fine("Starting populate query controller"); // NOI18N
-        try {
-            Bugzilla bgz = Bugzilla.getInstance();
-
-            List<String> products = bgz.getProducts(repository);
-            Iterator<String> i = products.iterator();
-            while(i.hasNext()) {
-                String p = i.next();
-                if(!p.equals(product)) {
-                    i.remove();
-                }
-            }
-            productParameter.setParameterValues(toParameterValues(products));
-            productParameter.setAlwaysDisabled(true);
-
-            if (panel.productList.getModel().getSize() > 0) {
-                panel.productList.setSelectedIndex(0);
-                populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
-            }
-            statusParameter.setParameterValues(toParameterValues(bgz.getStatusValues(repository)));
-            resolutionParameter.setParameterValues(toParameterValues(bgz.getResolutions(repository)));
-            priorityParameter.setParameterValues(toParameterValues(bgz.getPriorities(repository)));
-            changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
-            summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-            commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-            keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
-            peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
-            panel.changedToTextField.setText("Now"); // XXX
-            if (urlParameters != null) {
-                setParameters(urlParameters);
-            }
-            panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
-            panel.jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            panel.jScrollPane3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            panel.jScrollPane4.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            panel.jScrollPane5.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            panel.jScrollPane6.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            panel.jScrollPane7.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        } catch (MalformedURLException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } finally {
-            Bugzilla.LOG.fine("Finnished populate query controller"); // NOI18N
-        }
-    }
-
     void enableFields(boolean bl) {
         // set all non parameter fields
         panel.enableFields(bl);
@@ -386,6 +339,30 @@ public class QueryController extends BugtrackingController implements DocumentLi
         for (Map.Entry<String, QueryParameter> e : parameters.entrySet()) {
             QueryParameter pv = parameters.get(e.getKey());
             pv.setEnabled(bl);
+        }
+    }
+
+    protected void disableProduct(String product) { // XXX whatever field
+        try {
+            Bugzilla bgz = Bugzilla.getInstance();
+            List<String> products = bgz.getProducts(repository);
+            Iterator<String> i = products.iterator();
+            while (i.hasNext()) {
+                String p = i.next();
+                if (!p.equals(product)) {
+                    i.remove();
+                }
+            }
+            productParameter.setParameterValues(toParameterValues(products));
+            productParameter.setAlwaysDisabled(true);
+            if (panel.productList.getModel().getSize() > 0) {
+                panel.productList.setSelectedIndex(0);
+                populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
+            }
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -760,9 +737,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         };
 
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(this.getClass(), "MSG_SearchingQuery", new Object[] {query.getDisplayName()}), c);// NOI18N
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_SearchingQuery", new Object[] {query.getDisplayName()}), c);// NOI18N
         final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
-        panel.showSearchingProgress(true, progressBar, NbBundle.getMessage(this.getClass(), "MSG_Searching")); // NOI18N
+        panel.showSearchingProgress(true, progressBar, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
         handle.start();
 
         // XXX !!! remove !!!

@@ -40,7 +40,6 @@
 package org.netbeans.modules.bugtracking.vcshooks;
 
 import java.util.prefs.Preferences;
-import org.netbeans.modules.bugtracking.vcshooks.HgHookImpl.PushAction;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -51,10 +50,12 @@ import org.openide.util.NbPreferences;
 public class VCSHooksConfig {
     private static VCSHooksConfig instance = null;
 
-    private static final String HG_HOOK_COMMENT_FORMAT  = "vcshook.hg_comment_format";
-    private static final String SVN_HOOK_COMMENT_FORMAT = "vcshook.svn_comment_format";
-    private static final String HG_HOOK_PUSH_           = "vcshook.hg_push_hook_";
-    private static final String DELIMITER               = "<=>";
+    private static final String HG_HOOK_COMMENT_FORMAT  = "vcshook.hg_comment_format";  // NOI18N
+    private static final String HG_HOOK_ISSUE_FORMAT    = "vcshook.hg_issue_format";    // NOI18N
+    private static final String SVN_HOOK_COMMENT_FORMAT = "vcshook.svn_comment_format"; // NOI18N
+    private static final String SVN_HOOK_ISSUE_FORMAT   = "vcshook.svn_issue_format";   // NOI18N
+    private static final String HG_HOOK_PUSH_           = "vcshook.hg_push_hook_";      // NOI18N
+    private static final String DELIMITER               = "<=>";                        // NOI18N
     
     private VCSHooksConfig() { }
 
@@ -69,30 +70,40 @@ public class VCSHooksConfig {
         return NbPreferences.forModule(VCSHooksConfig.class);
     }
 
-    void setHgCommentFormat(String value) {
-        getPreferences().put(HG_HOOK_COMMENT_FORMAT, value);
+    void setHgCommentFormat(Format format) {
+        getPreferences().put(HG_HOOK_COMMENT_FORMAT, format.toString());
     }
 
-    void setSvnCommentFormat(String value) {
-        getPreferences().put(SVN_HOOK_COMMENT_FORMAT, value);
+    void setHgIssueFormat(Format format) {
+        getPreferences().put(HG_HOOK_ISSUE_FORMAT, format.toString());
     }
 
-    String getHgCommentFormat() {
-        return getPreferences().get(HG_HOOK_COMMENT_FORMAT, getDefaultHgFormat());
+    void setSvnCommentFormat(Format format) {
+        getPreferences().put(SVN_HOOK_COMMENT_FORMAT, format.toString());
     }
 
-    String getSvnCommentFormat() {
-        return getPreferences().get(SVN_HOOK_COMMENT_FORMAT, getDefaultSvnFormat());
+    void setSvnIssueFormat(Format format) {
+        getPreferences().put(SVN_HOOK_ISSUE_FORMAT, format.toString());
+    }
+
+    Format getHgCommentFormat() {
+        return getFormat(getPreferences().get(HG_HOOK_COMMENT_FORMAT, null), getDefaultHgFormat());
+    }
+
+    Format getHgIssueFormat() {
+        return getFormat(getPreferences().get(HG_HOOK_ISSUE_FORMAT, null), getDefaultIssueFormat());
+    }
+
+    Format getSvnCommentFormat() {
+        return getFormat(getPreferences().get(SVN_HOOK_COMMENT_FORMAT, null), getDefaultSvnFormat());
+    }
+
+    Format getSvnIssueFormat() {
+        return getFormat(getPreferences().get(SVN_HOOK_ISSUE_FORMAT, null), getDefaultIssueFormat());
     }
 
     void setHgPushAction(String changeset, PushAction pushAction) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(pushAction.getIssueID());
-        sb.append(DELIMITER);
-        sb.append(pushAction.getMsg());
-        sb.append(DELIMITER);
-        sb.append((pushAction.isClose() ? "1" : "0"));
-        getPreferences().put(HG_HOOK_PUSH_ + changeset,  sb.toString());
+        getPreferences().put(HG_HOOK_PUSH_ + changeset,  pushAction.toString());
     }
 
     PushAction popHGPushAction(String changeset) {
@@ -103,8 +114,8 @@ public class VCSHooksConfig {
         return new PushAction(values[0], values[1], values[2].equals("1") ? true : false);
     }
 
-    private String getDefaultHgFormat() {
-        return normalizeFormat(new String[] {
+    private Format getDefaultHgFormat() {
+        return new Format(false, normalizeFormat(new String[] {
             NbBundle.getMessage(VCSHooksConfig.class, "LBL_Changeset"),
             "{changeset}\n",
             NbBundle.getMessage(VCSHooksConfig.class, "LBL_Author"),
@@ -113,11 +124,15 @@ public class VCSHooksConfig {
             "{date}\n",
             NbBundle.getMessage(VCSHooksConfig.class, "LBL_Message"),
             "{message}"
-        });
+        }));
     }
 
-    private String getDefaultSvnFormat() {
-        return normalizeFormat(new String[] {
+    private Format getDefaultIssueFormat() {
+        return new Format(false, NbBundle.getMessage(VCSHooksConfig.class, "LBL_Issue") + "{id} - {summary}");
+    }
+
+    private Format getDefaultSvnFormat() {
+        return new Format(false, normalizeFormat(new String[] {
             NbBundle.getMessage(VCSHooksConfig.class, "LBL_Revision"),
             "{revision}\n",
             NbBundle.getMessage(VCSHooksConfig.class, "LBL_Author"),
@@ -126,7 +141,18 @@ public class VCSHooksConfig {
             "{date}\n",
             NbBundle.getMessage(VCSHooksConfig.class, "LBL_Message"),
             "{message}"
-        });
+        }));
+    }
+
+    private Format getFormat(String value, Format defaultFormat) {
+        Format format;
+        if (value == null) {
+            format = defaultFormat;
+        } else {
+            String[] values = value.split(DELIMITER);
+            format = new Format(values[0].equals("1"), values[1]);
+        }
+        return format;
     }
 
     private String normalizeFormat(String [] params) {
@@ -143,5 +169,60 @@ public class VCSHooksConfig {
             ret.append(params[++i]);
         }
         return ret.toString();
+    }
+
+    static class PushAction {
+        private final String issueID;
+        private final String msg;
+        private final boolean close;
+        public PushAction(String issueID, String msg, boolean close) {
+            this.issueID = issueID;
+            this.msg = msg;
+            this.close = close;
+        }
+        public String getIssueID() {
+            return issueID;
+        }
+        public boolean isClose() {
+            return close;
+        }
+        public String getMsg() {
+            return msg;
+        }
+        @Override
+        public String toString() {
+            StringBuffer sb = new StringBuffer();
+            sb.append(getIssueID());
+            sb.append(DELIMITER);
+            sb.append(getMsg());
+            sb.append(DELIMITER);
+            sb.append(isClose() ? "1" : "0");
+            return sb.toString();
+        }
+    }
+
+    static class Format {
+        private boolean above;
+        private String format;
+        public Format(boolean above, String format) {
+            this.above = above;
+            this.format = format;
+        }
+        public boolean isAbove() {
+            return above;
+        }
+        public String getFormat() {
+            return format;
+        }
+
+        @Override
+        public String toString() {
+            StringBuffer sb = new StringBuffer();
+            sb.append(above ? "1" : "0");
+            sb.append(DELIMITER);
+            sb.append(format);
+            return sb.toString();
+        }
+
     }
 }
