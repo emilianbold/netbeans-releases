@@ -41,10 +41,14 @@
 
 package org.netbeans.modules.groovy.support;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -70,9 +74,9 @@ import org.openide.util.MutexException;
 
 /**
  * Support for extending project with Groovy support
- * 
+ *
  * @todo now supports only Java SE projects
- * 
+ *
  * @author Martin Adamek
  */
 @ProjectServiceProvider(service={GroovyFeature.class, GroovyProjectExtender.class},
@@ -82,15 +86,16 @@ public class GroovyProjectExtender implements GroovyFeature {
     private static final String EXTENSIBLE_TARGET_NAME = "-pre-pre-compile"; // NOI18N
     private static final String GROOVY_EXTENSION_ID = "groovy"; // NOI18N
     private static final String GROOVY_BUILD_XSL = "org/netbeans/modules/groovy/support/resources/groovy-build.xsl"; // NOI18N
+    private static final String GROOVY_BUILD_65_XML = "org/netbeans/modules/groovy/support/resources/groovy-build-65.xml"; // NOI18N
     private static final String J2SE_PROJECT_PROPERTIES_PATH = "nbproject/project.properties"; // NOI18N
     private static final String J2SE_EXCLUDE_PROPERTY = "build.classes.excludes"; // NOI18N
     private static final String J2SE_DISABLE_COMPILE_ON_SAVE = "compile.on.save.unsupported.groovy"; // NOI18N
     private static final String EXCLUSION_PATTERN = "**/*.groovy"; // NOI18N
-    
+
     private final Project project;
     private org.netbeans.modules.gsfpath.api.classpath.ClassPath gsfClassPath;
     private GroovyCustomizerPanel panel;
-    
+
     public GroovyProjectExtender(Project project) {
         this.project = project;
     }
@@ -107,7 +112,7 @@ public class GroovyProjectExtender implements GroovyFeature {
     /**
      * Adds groovy-all to poroject classpath, adds groovy files to excludes,
      * and modifies build script to invoke groovyc
-     * 
+     *
      * @return true if all mentioned operations were succesfull
      */
     public boolean enableGroovy() {
@@ -126,8 +131,37 @@ public class GroovyProjectExtender implements GroovyFeature {
         return result;
     }
 
+    public void refreshBuildScript() {
+        if (isGroovyEnabled()) {
+            GeneratedFilesHelper helper = new GeneratedFilesHelper(project.getProjectDirectory());
+            URL stylesheet = this.getClass().getClassLoader().getResource(GROOVY_BUILD_XSL);
+            try {
+                int flags = helper.getBuildScriptState("nbproject/groovy-build.xml", stylesheet);
+                // old 65 script looks like modified
+                if ((GeneratedFilesHelper.FLAG_MODIFIED & flags) != 0
+                        && (GeneratedFilesHelper.FLAG_OLD_PROJECT_XML & flags) != 0
+                        && (GeneratedFilesHelper.FLAG_OLD_STYLESHEET & flags) != 0
+                        && hasBuildScriptFrom65(project)) {
+                    FileObject buildScript = project.getProjectDirectory().getFileObject("nbproject/groovy-build.xml");
+                    if (buildScript != null) {
+                        buildScript.delete();
+
+                        helper.generateBuildScriptFromStylesheet("nbproject/groovy-build.xml", stylesheet);
+                        return;
+                    }
+                }
+
+                helper.refreshBuildScript("nbproject/groovy-build.xml", stylesheet, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalStateException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
     /**
-     * Checking if groovy has been enabled for the project, checks only 
+     * Checking if groovy has been enabled for the project, checks only
      * build script extension, not classpath, not excludes
      * @return true if build script is modified with groovy extendion
      */
@@ -336,17 +370,17 @@ public class GroovyProjectExtender implements GroovyFeature {
         }
         return false;
     }
-    
-    private static EditableProperties getEditableProperties(final Project prj,final  String propertiesPath) 
-        throws IOException {        
+
+    private static EditableProperties getEditableProperties(final Project prj,final  String propertiesPath)
+        throws IOException {
         try {
             return
             ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<EditableProperties>() {
-                public EditableProperties run() throws IOException {                                             
+                public EditableProperties run() throws IOException {
                     FileObject propertiesFo = prj.getProjectDirectory().getFileObject(propertiesPath);
                     EditableProperties ep = null;
                     if (propertiesFo!=null) {
-                        InputStream is = null; 
+                        InputStream is = null;
                         ep = new EditableProperties();
                         try {
                             is = propertiesFo.getInputStream();
@@ -362,12 +396,12 @@ public class GroovyProjectExtender implements GroovyFeature {
             return null;
         }
     }
-    
-    private static void storeEditableProperties(final Project prj, final  String propertiesPath, final EditableProperties ep) 
-        throws IOException {        
+
+    private static void storeEditableProperties(final Project prj, final  String propertiesPath, final EditableProperties ep)
+        throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                public Void run() throws IOException {                                             
+                public Void run() throws IOException {
                     FileObject propertiesFo = prj.getProjectDirectory().getFileObject(propertiesPath);
                     if (propertiesFo!=null) {
                         OutputStream os = null;
@@ -382,6 +416,32 @@ public class GroovyProjectExtender implements GroovyFeature {
                 }
             });
         } catch (MutexException ex) {
+        }
+    }
+
+    private static boolean hasBuildScriptFrom65(Project project) throws IOException {
+        FileObject fo = project.getProjectDirectory().getFileObject("nbproject/groovy-build.xml");
+        if (fo == null) {
+            return false;
+        }
+
+        // FIXME is ther any better way ?
+        URL xml65 = GroovyProjectExtender.class.getClassLoader().getResource(GROOVY_BUILD_65_XML);
+        URLConnection connection = xml65.openConnection();
+        connection.setUseCaches(false);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8")); // NOI18N
+        try {
+            List<String> lines65 = fo.asLines("UTF-8"); // NOI18N
+            for (String line65 : lines65) {
+                String line = reader.readLine();
+                if (line == null || !line.equals(line65)) {
+                    return false;
+                }
+            }
+
+            return reader.readLine() == null;
+        } finally {
+            reader.close();
         }
     }
 
