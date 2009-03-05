@@ -121,6 +121,7 @@ public class ImportProject implements PropertyChangeListener {
     private String configurePath;
     private String configureArguments;
     private boolean runConfigure = false;
+    private boolean manualCA = false;
     private boolean setAsMain;
     private String workingDir;
     private String buildCommand = "$(MAKE) -f Makefile";  // NOI18N
@@ -209,6 +210,7 @@ public class ImportProject implements PropertyChangeListener {
         } else {
             runMake = "true".equals(wizard.getProperty("makeProject")); // NOI18N
         }
+        manualCA = "true".equals(wizard.getProperty("manualCA")); // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty("setAsMain"));  // NOI18N
     }
 
@@ -251,7 +253,7 @@ public class ImportProject implements PropertyChangeListener {
                 includeDirectoriesVector.add(includeDirectory);
             }
             extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includeDirectoriesVector);
-            extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includeDirectoriesVector);
+            extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(new ArrayList<String>(includeDirectoriesVector));
         }
         // Macros
         if (macros != null && macros.length() > 0) {
@@ -512,68 +514,70 @@ public class ImportProject implements PropertyChangeListener {
     private void discovery(int rc, File makeLog) {
         waitConfigurationDescriptor();
         boolean done = false;
-        final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-        if (rc == 0) {
-            if (extension != null) {
-                final Map<String, Object> map = new HashMap<String, Object>();
-                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
-                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
-                if (extension.canApply(map, makeProject)) {
-                    DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
-                    if (provider != null && "make-log".equals(provider.getID())){ // NOI18N
-                        if (TRACE) {logger.log(Level.INFO, "#start discovery by log file "+ provider.getProperty("make-log-file").getValue());} // NOI18N
-                    } else {
-                        if (TRACE) {logger.log(Level.INFO, "#start discovery by object files");} // NOI18N
-                    }
-                    try {
-                        done = true;
-                        extension.apply(map, makeProject);
+        if (!manualCA) {
+            final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+            if (rc == 0) {
+                if (extension != null) {
+                    final Map<String, Object> map = new HashMap<String, Object>();
+                    map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
+                    map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
+                    if (extension.canApply(map, makeProject)) {
+                        DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
                         if (provider != null && "make-log".equals(provider.getID())){ // NOI18N
-                            importResult.put(Step.DiscoveryLog, State.Successful);
+                            if (TRACE) {logger.log(Level.INFO, "#start discovery by log file "+ provider.getProperty("make-log-file").getValue());} // NOI18N
                         } else {
-                            importResult.put(Step.DiscoveryDwarf, State.Successful);
+                            if (TRACE) {logger.log(Level.INFO, "#start discovery by object files");} // NOI18N
                         }
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+                        try {
+                            done = true;
+                            extension.apply(map, makeProject);
+                            if (provider != null && "make-log".equals(provider.getID())){ // NOI18N
+                                importResult.put(Step.DiscoveryLog, State.Successful);
+                            } else {
+                                importResult.put(Step.DiscoveryDwarf, State.Successful);
+                            }
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    } else {
+                        if (TRACE) {logger.log(Level.INFO, "#no dwarf information found in object files");} // NOI18N
                     }
-                } else {
-                    if (TRACE) {logger.log(Level.INFO, "#no dwarf information found in object files");} // NOI18N
                 }
             }
-        }
-        if (!done && makeLog != null){
-            if (extension != null) {
-                final Map<String, Object> map = new HashMap<String, Object>();
-                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
-                map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
-                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
-                if (extension.canApply(map, makeProject)) {
-                    if (TRACE) {logger.log(Level.INFO, "#start discovery by log file "+makeLog.getAbsolutePath());} // NOI18N
-                    try {
-                        done = true;
-                        extension.apply(map, makeProject);
-                        importResult.put(Step.DiscoveryLog, State.Successful);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+            if (!done && makeLog != null){
+                if (extension != null) {
+                    final Map<String, Object> map = new HashMap<String, Object>();
+                    map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
+                    map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
+                    map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
+                    if (extension.canApply(map, makeProject)) {
+                        if (TRACE) {logger.log(Level.INFO, "#start discovery by log file "+makeLog.getAbsolutePath());} // NOI18N
+                        try {
+                            done = true;
+                            extension.apply(map, makeProject);
+                            importResult.put(Step.DiscoveryLog, State.Successful);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    } else {
+                        if (TRACE) {logger.log(Level.INFO, "#discovery cannot be done by log file "+makeLog.getAbsolutePath());} // NOI18N
                     }
-                } else {
-                    if (TRACE) {logger.log(Level.INFO, "#discovery cannot be done by log file "+makeLog.getAbsolutePath());} // NOI18N
                 }
-            }
-        } else if (done && makeLog != null){
-            if (extension != null) {
-                final Map<String, Object> map = new HashMap<String, Object>();
-                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
-                map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
-                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
-                if (extension.canApply(map, makeProject)) {
-                    if (TRACE) {logger.log(Level.INFO, "#start fix macros by log file "+makeLog.getAbsolutePath());} // NOI18N
-                    @SuppressWarnings("unchecked")
-                    List<ProjectConfiguration> confs = (List) map.get(DiscoveryWizardDescriptor.CONFIGURATIONS);
-                    fixMacros(confs);
-                    importResult.put(Step.FixMacros, State.Successful);
-                } else {
-                    if (TRACE) {logger.log(Level.INFO, "#fix macros cannot be done by log file "+makeLog.getAbsolutePath());} // NOI18N
+            } else if (done && makeLog != null){
+                if (extension != null) {
+                    final Map<String, Object> map = new HashMap<String, Object>();
+                    map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
+                    map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
+                    map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
+                    if (extension.canApply(map, makeProject)) {
+                        if (TRACE) {logger.log(Level.INFO, "#start fix macros by log file "+makeLog.getAbsolutePath());} // NOI18N
+                        @SuppressWarnings("unchecked")
+                        List<ProjectConfiguration> confs = (List) map.get(DiscoveryWizardDescriptor.CONFIGURATIONS);
+                        fixMacros(confs);
+                        importResult.put(Step.FixMacros, State.Successful);
+                    } else {
+                        if (TRACE) {logger.log(Level.INFO, "#fix macros cannot be done by log file "+makeLog.getAbsolutePath());} // NOI18N
+                    }
                 }
             }
         }
@@ -692,19 +696,21 @@ public class ImportProject implements PropertyChangeListener {
         map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
         map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
         boolean does = false;
-        IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-        if (extension != null) {
-            if (extension.canApply(map, makeProject)) {
-                if (TRACE) {logger.log(Level.INFO, "#start discovery by object files");} // NOI18N
-                try {
-                    extension.apply(map, makeProject);
-                    importResult.put(Step.DiscoveryDwarf, State.Successful);
-                    does = true;
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+        if (!manualCA) {
+            IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+            if (extension != null) {
+                if (extension.canApply(map, makeProject)) {
+                    if (TRACE) {logger.log(Level.INFO, "#start discovery by object files");} // NOI18N
+                    try {
+                        extension.apply(map, makeProject);
+                        importResult.put(Step.DiscoveryDwarf, State.Successful);
+                        does = true;
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    if (TRACE) {logger.log(Level.INFO, "#no dwarf information found in object files");} // NOI18N
                 }
-            } else {
-                if (TRACE) {logger.log(Level.INFO, "#no dwarf information found in object files");} // NOI18N
             }
         }
         if (!does) {
