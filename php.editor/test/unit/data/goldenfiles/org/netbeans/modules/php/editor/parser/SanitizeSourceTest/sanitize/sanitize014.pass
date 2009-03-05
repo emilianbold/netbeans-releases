@@ -1,4 +1,4 @@
-<Program start='0' end='237'>
+<Program start='0' end='247'>
     <Comments>
     </Comments>
     <Statements>
@@ -23,7 +23,7 @@
                 </MethodDeclaration>
             </Block>
         </ClassDeclaration>
-        <ClassDeclaration start='67' end='186' modifier='NONE'>
+        <ClassDeclaration start='67' end='196' modifier='NONE'>
             <ClassName>
                 <Identifier start='73' end='77' name='test'/>
             </ClassName>
@@ -31,7 +31,7 @@
             </SuperClassName>
             <Interfaces>
             </Interfaces>
-            <Block start='78' end='186' isCurly='true'>
+            <Block start='78' end='196' isCurly='true'>
                 <FieldsDeclaration start='84' end='98' modifier='private'>
                     <VariableNames>
                         <Variable start='92' end='97' isDollared='true'>
@@ -64,21 +64,21 @@
                 </MethodDeclaration>
             </Block>
         </ClassDeclaration>
-        <ClassDeclaration start='186' end='237' modifier='NONE'>
+        <ClassDeclaration start='196' end='247' modifier='NONE'>
             <ClassName>
-                <Identifier start='192' end='197' name='hello'/>
+                <Identifier start='202' end='207' name='hello'/>
             </ClassName>
             <SuperClassName>
             </SuperClassName>
             <Interfaces>
             </Interfaces>
-            <Block start='198' end='237' isCurly='true'>
-                <MethodDeclaration start='204' end='235' modifiers='public'>
-                    <FunctionDeclaration start='204' end='235' isReference='false'>
-                        <Identifier start='213' end='224' name='__construct'/>
+            <Block start='208' end='247' isCurly='true'>
+                <MethodDeclaration start='214' end='245' modifiers='public'>
+                    <FunctionDeclaration start='214' end='245' isReference='false'>
+                        <Identifier start='223' end='234' name='__construct'/>
                         <FormalParameters>
                         </FormalParameters>
-                        <Block start='227' end='235' isCurly='true'>
+                        <Block start='237' end='245' isCurly='true'>
                         </Block>
                     </FunctionDeclaration>
                 </MethodDeclaration>

@@ -68,10 +68,15 @@ public abstract class ParserTestBase extends CslTestBase {
     }
 
     protected abstract String getTestResult(String filename) throws Exception;
-
+    protected String getTestResult(String filename, String caretLine) throws Exception {
+        return getTestResult(filename);
+    }
     protected void performTest(String filename) throws Exception {
+        performTest(filename, null);
+    }
+    protected void performTest(String filename, String caretLine) throws Exception {
         // parse the file
-        String result = getTestResult(filename);
+        String result = getTestResult(filename, caretLine);
         
         String fullClassName = this.getClass().getName();
         String goldenFileDir = fullClassName.replace('.', '/');
