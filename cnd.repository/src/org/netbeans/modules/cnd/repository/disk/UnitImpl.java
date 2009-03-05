@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.repository.sfs.FileStorage;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.util.Pair;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Implements a repository unit
@@ -166,9 +167,11 @@ public final class UnitImpl implements Unit {
     }
 
     private static void traceKey(String msg, Key key) {
-        if (key.getDepth() == 3 && "argc".contentEquals(key.getAt(2))) {
-            System.err.println(msg + " at @" + System.identityHashCode(key) + " " + key);
+        if (key.getDepth() == 3 && 
+                ("argc".contentEquals(key.getAt(2)) || // NOI18N
+                "main".contentEquals(key.getAt(2)))) { // NOI18N
+            System.err.println(msg + " at @" + System.identityHashCode(key) + " " + key); // NOI18N
         }
     }
-    private static final boolean TRACE = false;
+    private static final boolean TRACE_ARGS = CndUtils.getBoolean("cnd.repository.trace.args", false); //NOI18N;
 }
