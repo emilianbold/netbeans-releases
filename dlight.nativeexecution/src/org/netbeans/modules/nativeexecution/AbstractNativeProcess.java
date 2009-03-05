@@ -71,7 +71,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private Integer pid = null;
 
     public AbstractNativeProcess(NativeProcessInfo info) {
-        this.id = info.getCommandLine(true);
+        this.id = info.getCommandLine();
         this.listeners = info.getListeners() == null
                 ? Collections.synchronizedList(new ArrayList<ChangeListener>())
                 : info.getListeners();

@@ -42,7 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
+import org.netbeans.modules.nativeexecution.support.Logger;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
 
@@ -54,19 +54,29 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     public LocalNativeProcess(NativeProcessInfo info) throws IOException {
         super(info);
 
-        final String commandLine = info.getCommandLine(true);
+        final String commandLine = info.getCommandLine();
         final String workingDirectory = info.getWorkingDirectory(true);
         final File wdir =
                 workingDirectory == null ? null : new File(workingDirectory);
 
-        ProcessBuilder pb = new ProcessBuilder(Arrays.asList(
-                "/bin/sh", "-c", // NOI18N
-                "/bin/echo $$ && exec " + commandLine)); // NOI18N
+        ProcessBuilder pb = new ProcessBuilder(
+                "/usr/bin/sh", "-c", // NOI18N
+                "/bin/echo $$ && exec " + commandLine); // NOI18N
 
-        pb.environment().putAll(info.getEnvVariables(true));
+        pb.environment().putAll(info.getEnvVariables(pb.environment()));
         pb.directory(wdir);
 
-        process = pb.start();
+        Process pr = null;
+
+        try {
+            pr = pb.start();
+        } catch (IOException ex) {
+            Logger.getInstance().warning("Unable to start process [" + // NOI18N
+                    commandLine + "]! " + ex.getMessage()); // NOI18N
+            throw ex;
+        }
+
+        process = pr;
 
         processOutput = process.getInputStream();
         processError = process.getErrorStream();
