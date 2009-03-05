@@ -84,6 +84,10 @@ import org.openide.util.RequestProcessor;
  */
 public final class DashboardImpl extends Dashboard {
 
+    private static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
+    private static final String PREF_COUNT = "count"; //NOI18N
+    private static final String PREF_ID = "id"; //NOI18N
+
     private LoginHandle login;
     private final TreeListModel model = new TreeListModel();
     private static final ListModel EMPTY_MODEL = new AbstractListModel() {
@@ -105,7 +109,7 @@ public final class DashboardImpl extends Dashboard {
     private boolean otherProjectsLoaded = false;
     private boolean ignoredProjectsLoaded = false;
 
-    private static final long TIMEOUT_INTERVAL_MILLIS = 5*60*1000;
+    private static final long TIMEOUT_INTERVAL_MILLIS = TreeListNode.TIMEOUT_INTERVAL_MILLIS;
 
     private OtherProjectsLoader otherProjectsLoader;
     private MemberProjectsLoader memberProjectsLoader;
@@ -133,14 +137,14 @@ public final class DashboardImpl extends Dashboard {
         userNode.set(login, false);
         model.addRoot(-1, userNode);
 
-        memberProjectsError = new ErrorNode("Cannot open member projects", new ActionListener() {
+        memberProjectsError = new ErrorNode(NbBundle.getMessage(DashboardImpl.class, "ERR_OpenMemberProjects"), new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 clearError(memberProjectsError);
                 refreshMemberProjects();
             }
         });
 
-        otherProjectsError = new ErrorNode("Cannot open projects", new ActionListener() {
+        otherProjectsError = new ErrorNode(NbBundle.getMessage(DashboardImpl.class, "ERR_OpenProjects"), new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 clearError(otherProjectsError);
                 refreshProjects();
@@ -390,13 +394,13 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void startLoadingAllProjects() {
-        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node("allProjects");
-        int count = prefs.getInt("count", 0); //NOI18N
+        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS); //NOI18N
+        int count = prefs.getInt(PREF_COUNT, 0); //NOI18N
         if( 0 == count )
             return; //nothing to load
         ArrayList<String> ids = new ArrayList<String>(count);
         for( int i=0; i<count; i++ ) {
-            String id = prefs.get("id"+i, null); //NOI18N
+            String id = prefs.get(PREF_ID+i, null); //NOI18N
             if( null != id && id.trim().length() > 0 ) {
                 ids.add( id.trim() );
             }
@@ -412,12 +416,12 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void loadIgnoredProjects() {
-        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node("ignoredProjects");
+        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node("ignoredProjects"); //NOI18N
         ignoredProjectIds.clear();
-        int count = prefs.getInt("count", 0); //NOI18N
+        int count = prefs.getInt(PREF_COUNT, 0); //NOI18N
 
         for( int i=0; i<count; i++ ) {
-            String id = prefs.get("id"+i, null); //NOI18N
+            String id = prefs.get(PREF_ID+i, null); //NOI18N
             if( null != id && id.trim().length() > 0 ) {
                 ignoredProjectIds.add( id.trim() );
             }
@@ -426,20 +430,20 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void storeIgnoredProjects() {
-        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node("ignoredProjects");
-        prefs.putInt("count", ignoredProjectIds.size()); //NOI18N
+        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node("ignoredProjects"); //NOI18N
+        prefs.putInt(PREF_COUNT, ignoredProjectIds.size()); //NOI18N
         int index = 0;
         for( String id : ignoredProjectIds ) {
-            prefs.put("id"+index++, id); //NOI18N
+            prefs.put(PREF_ID+index++, id); //NOI18N
         }
     }
 
     private void storeAllProjects() {
-        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node("allProjects");
-        prefs.putInt("count", allProjects.size()); //NOI18N
+        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS); //NOI18N
+        prefs.putInt(PREF_COUNT, allProjects.size()); //NOI18N
         int index = 0;
         for( ProjectHandle project : allProjects ) {
-            prefs.put("id"+index++, project.getId()); //NOI18N
+            prefs.put(PREF_ID+index++, project.getId()); //NOI18N
         }
     }
 

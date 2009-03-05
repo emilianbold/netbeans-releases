@@ -72,7 +72,7 @@ public abstract class TreeListNode {
      * Time in milliseconds to wait for children creation to finish. When the interval
      * elapses then node's renderer shows an error message.
      */
-    static final long TIMEOUT_INTERVAL_MILLIS = 
+    public static final long TIMEOUT_INTERVAL_MILLIS =
             NbPreferences.forModule(TreeListNode.class).getInt("node.expand.timeoutmillis", 5 * 60 * 1000); //NOI18N
 
     private final boolean expandable;
