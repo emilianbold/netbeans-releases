@@ -46,7 +46,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
@@ -61,6 +65,7 @@ import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.nodes.DependenciesNode;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileAttributeEvent;
@@ -101,6 +106,7 @@ public final class NbMavenProject {
     }
     private RequestProcessor.Task task;
     private static RequestProcessor BINARYRP = new RequestProcessor("Maven projects Binary Downloads", 1);
+    private static RequestProcessor NONBINARYRP = new RequestProcessor("Maven projects Source/Javadoc Downloads", 1);
     
     
     static class AccessorImpl extends NbMavenProjectImpl.WatcherAccessor {
@@ -323,6 +329,79 @@ public final class NbMavenProject {
         task.schedule(0);
         task.waitFinished();
     }
+
+
+    public void triggerSourceJavadocDownload(final boolean javadoc) {
+        NONBINARYRP.post(new Runnable() {
+            public void run() {
+                MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+                @SuppressWarnings("unchecked")
+                Set<Artifact> arts = project.getOriginalMavenProject().getArtifacts();
+                ProgressContributor[] contribs = new ProgressContributor[arts.size()];
+                for (int i = 0; i < arts.size(); i++) {
+                    contribs[i] = AggregateProgressFactory.createProgressContributor("multi-" + i); //NOI18N
+                }
+                String label = javadoc ? NbBundle.getMessage(DependenciesNode.class, "Progress_Javadoc") : NbBundle.getMessage(DependenciesNode.class, "Progress_Source");
+                AggregateProgressHandle handle = AggregateProgressFactory.createHandle(label,
+                        contribs, null, null);
+                handle.start();
+                try {
+                    ProgressTransferListener.setAggregateHandle(handle);
+                    int index = 0;
+                    for (Artifact a : arts) {
+                        downloadOneJavadocSources(online, contribs[index], project, a, javadoc);
+                        index++;
+                    }
+                } finally {
+                    handle.finish();
+                    ProgressTransferListener.clearAggregateHandle();
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            fireProjectReload();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+
+    private static void downloadOneJavadocSources(MavenEmbedder online, ProgressContributor progress,
+                                               NbMavenProjectImpl project, Artifact art, boolean isjavadoc) {
+        progress.start(2);
+        if ( Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
+            progress.finish();
+            return;
+        }
+        try {
+            if (isjavadoc) {
+                Artifact javadoc = project.getEmbedder().createArtifactWithClassifier(
+                    art.getGroupId(),
+                    art.getArtifactId(),
+                    art.getVersion(),
+                    art.getType(),
+                    "javadoc"); //NOI18N
+                progress.progress(NbBundle.getMessage(DependencyNode.class, "MSG_Checking_Javadoc", art.getId()), 1);
+                online.resolve(javadoc, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+            } else {
+                Artifact sources = project.getEmbedder().createArtifactWithClassifier(
+                    art.getGroupId(),
+                    art.getArtifactId(),
+                    art.getVersion(),
+                    art.getType(),
+                    "sources"); //NOI18N
+                progress.progress(NbBundle.getMessage(DependencyNode.class, "MSG_Checking_Sources",art.getId()), 1);
+                online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+            }
+        } catch (ArtifactNotFoundException ex) {
+            // just ignore..ex.printStackTrace();
+        } catch (ArtifactResolutionException ex) {
+            // just ignore..ex.printStackTrace();
+        } finally {
+            progress.finish();
+        }
+    }
+
     
     public synchronized void removeWatchedPath(String relPath) {
         removeWatchedPath(FileUtilities.getDirURI(project.getProjectDirectory(), relPath));

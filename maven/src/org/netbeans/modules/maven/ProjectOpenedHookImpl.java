@@ -75,6 +75,8 @@ import org.openide.util.RequestProcessor;
  */
 class ProjectOpenedHookImpl extends ProjectOpenedHook {
     private static final String PROP_BINARIES_CHECKED = "binariesChecked";
+    private static final String PROP_JAVADOC_CHECKED = "javadocChecked";
+    private static final String PROP_SOURCE_CHECKED = "sourceChecked";
    
     private NbMavenProjectImpl project;
     private List<URI> uriReferences = new ArrayList<URI>();
@@ -86,7 +88,6 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
     static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.maven"; //NOI18N
     static final Logger USG_LOGGER = Logger.getLogger(USG_LOGGER_NAME);
 
-    private static RequestProcessor NONBINARYRP = new RequestProcessor("Maven projects Source/Javadoc Downloads", 1);
 
     
     ProjectOpenedHookImpl(NbMavenProjectImpl proj) {
@@ -95,6 +96,8 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
     
     protected void projectOpened() {
         checkBinaryDownloads();
+        checkSourceDownloads();
+        checkJavadocDownloads();
         attachUpdater();
         MavenFileOwnerQueryImpl q = MavenFileOwnerQueryImpl.getInstance();
         if (q != null) {
@@ -198,5 +201,66 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
            }
        }
    }
+
+   private void checkJavadocDownloads() {
+       MavenSettings.DownloadStrategy ds = MavenSettings.getDefault().getJavadocDownloadStrategy();
+       if (ds.equals(MavenSettings.DownloadStrategy.NEVER)) {
+           return;
+       }
+
+       NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
+       Preferences prefs = ProjectUtils.getPreferences(project, NbMavenProject.class, false);
+       if (ds.equals(MavenSettings.DownloadStrategy.EVERY_OPEN)) {
+            watcher.triggerSourceJavadocDownload(true);
+            prefs.putBoolean(PROP_JAVADOC_CHECKED, true);
+            try {
+                prefs.sync();
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+       } else if (ds.equals(MavenSettings.DownloadStrategy.FIRST_OPEN)) {
+           boolean alreadyChecked = prefs.getBoolean(PROP_JAVADOC_CHECKED, false);
+           if (!alreadyChecked) {
+                watcher.triggerSourceJavadocDownload(true);
+                prefs.putBoolean(PROP_JAVADOC_CHECKED, true);
+                try {
+                    prefs.sync();
+                } catch (BackingStoreException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+           }
+       }
+   }
+
+   private void checkSourceDownloads() {
+       MavenSettings.DownloadStrategy ds = MavenSettings.getDefault().getSourceDownloadStrategy();
+       if (ds.equals(MavenSettings.DownloadStrategy.NEVER)) {
+           return;
+       }
+
+       NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
+       Preferences prefs = ProjectUtils.getPreferences(project, NbMavenProject.class, false);
+       if (ds.equals(MavenSettings.DownloadStrategy.EVERY_OPEN)) {
+            watcher.triggerSourceJavadocDownload(false);
+            prefs.putBoolean(PROP_SOURCE_CHECKED, true);
+            try {
+                prefs.sync();
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+       } else if (ds.equals(MavenSettings.DownloadStrategy.FIRST_OPEN)) {
+           boolean alreadyChecked = prefs.getBoolean(PROP_SOURCE_CHECKED, false);
+           if (!alreadyChecked) {
+                watcher.triggerSourceJavadocDownload(false);
+                prefs.putBoolean(PROP_SOURCE_CHECKED, true);
+                try {
+                    prefs.sync();
+                } catch (BackingStoreException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+           }
+       }
+   }
+
 
 }
