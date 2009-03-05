@@ -48,8 +48,6 @@ import org.openide.util.Lookup;
 /**
  * Creates and shows clickable notifications in the main status line.
  *
- * TODO API review
- *
  * @since 7.6
  *
  * @author S. Aubrecht
@@ -90,7 +88,7 @@ public abstract class NotificationDisplayer {
     }
 
     /**
-     * Create and show new notification with the default priority.
+     * Create and show new notification.
      * @param title Notification title
      * @param icon Notification icon
      * @param detailsText Detailed description of the notification. If detailsAction
