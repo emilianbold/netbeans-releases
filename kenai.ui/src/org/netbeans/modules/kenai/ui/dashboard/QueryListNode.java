@@ -76,6 +76,7 @@ public class QueryListNode extends SectionNode {
             res.add( new QueryNode( q, this ) );
         }
         res.add( new FindIssueNode(this) );
+        res.add( new NewIssueNode(this) );
         return res;
     }
 
@@ -94,7 +95,7 @@ public class QueryListNode extends SectionNode {
             if( null == panel ) {
                 panel = new JPanel(new GridBagLayout());
                 panel.setOpaque(false);
-                btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_FindIssue"), QueryAccessor.getDefault().getFindIssueAction(project)); //NOI18N
+                btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_FindIssue"), getDefaultAction()); //NOI18N
                 panel.add( btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
                 panel.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
             }
@@ -105,6 +106,34 @@ public class QueryListNode extends SectionNode {
         @Override
         public ActionListener getDefaultAction() {
             return QueryAccessor.getDefault().getFindIssueAction(project);
+        }
+    }
+
+    private class NewIssueNode extends LeafNode {
+
+        private JPanel panel;
+        private LinkButton btn;
+
+        public NewIssueNode( QueryListNode parent ) {
+            super( parent );
+        }
+
+        @Override
+        protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+            if( null == panel ) {
+                panel = new JPanel(new GridBagLayout());
+                panel.setOpaque(false);
+                btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_NewIssue"), getDefaultAction()); //NOI18N
+                panel.add( btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
+                panel.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
+            }
+            btn.setForeground(foreground, isSelected);
+            return panel;
+        }
+
+        @Override
+        public ActionListener getDefaultAction() {
+            return QueryAccessor.getDefault().getCreateIssueAction(project);
         }
     }
 }
