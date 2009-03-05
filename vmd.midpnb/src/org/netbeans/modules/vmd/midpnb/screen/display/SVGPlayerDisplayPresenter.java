@@ -186,6 +186,14 @@ public class SVGPlayerDisplayPresenter extends DisplayableDisplayPresenter {
         return imageView.getScaleY();
     }
 
+    protected int getCorrectionX(){
+        return imageView.getCorrectionX();
+    }
+
+    protected int getCorrectionY(){
+        return imageView.getCorrectionY();
+    }
+
     protected SVGImage getSVGImage(){
         return imageView.getImage();
     }

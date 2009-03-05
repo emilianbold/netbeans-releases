@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,46 +37,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.memory;
 
-import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
+package org.netbeans.modules.websvc.wsitconf.projects;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.LookupProvider;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
-/**
- * Mmory usage indicator
- * @author Vladimir Kvashin
+/** Lookup Provider for WSIT
+ *
+ * @author Martin Grebac
  */
-public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
+@LookupProvider.Registration(projectType="org-netbeans-modules-maven")
+public class MavenLookupProvider implements LookupProvider {
 
-    private final MemoryIndicatorPanel panel;
-    private final String colName;
-
-    public MemoryIndicator(MemoryIndicatorConfiguration configuration) {
-        super(configuration);
-        this.panel = new MemoryIndicatorPanel();
-        this.colName = configuration.getColName();
+    /** Creates a new instance of MavenLookupProvider */
+    public MavenLookupProvider() {
     }
 
-    @Override
-    public JComponent getComponent() {
-        return panel;
-    }
+    public Lookup createAdditionalLookup(Lookup baseContext) {
+        final Project project = baseContext.lookup(Project.class);
+        MavenWsitProvider wsitProvider = new MavenWsitProvider(project);
 
-    public void reset() {
-    }
-
-    public void updated(List<DataRow> data) {
-        for (DataRow lastRow : data) {
-            String value = lastRow.getStringValue(colName); //TODO: change to Long
-            panel.setValue(Long.parseLong(value));
-        }
+        return Lookups.fixed(new Object[] {
+            wsitProvider,
+            });
     }
 }

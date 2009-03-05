@@ -86,6 +86,7 @@ import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AddressingModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMSequenceBinding;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.openide.NotifyDescriptor;
@@ -142,12 +143,7 @@ public class BindingPanel extends SectionInnerPanel {
 
         if (node != null) {
             service = node.getLookup().lookup(Service.class);
-            if (service != null) {
-                String wsdlUrl = service.getWsdlUrl();
-                if (wsdlUrl != null) { // WS from WSDL
-                    isFromJava = false;
-                }
-            }
+            isFromJava = !WSITModelSupport.isServiceFromWsdl(node);
         } else {
             isFromJava = false;
         }
@@ -382,7 +378,15 @@ public class BindingPanel extends SectionInnerPanel {
         if (source.equals(tcpChBox)) {
             boolean tcp = TransportModelHelper.isTCPEnabled(binding);
             if (tcpChBox.isSelected() != tcp) {
-                TransportModelHelper.enableTCP(service, isFromJava, binding, project, tcpChBox.isSelected());
+                String name = null;
+                String serviceName = null;
+                String implClass = null;
+                if (service != null) {
+                    name = service.getName();
+                    serviceName = service.getServiceName();
+                    implClass = service.getImplementationClass();
+                }
+                TransportModelHelper.enableTCP(name, serviceName, implClass, isFromJava, binding, project, tcpChBox.isSelected());
             }
         }
 

@@ -79,7 +79,7 @@ public final class SPSLocalImpl extends SPSCommonImpl {
         MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
         String path = "$osname-$platform";
         try {
-            path = macroExpander.expandMacros(path); // NOI18N
+            path = macroExpander.expandPredefinedMacros(path); // NOI18N
         } catch (ParseException ex) {
         }
 

@@ -493,11 +493,11 @@ public final class DtraceDataCollector
                             tableMetaData.getName(), Arrays.asList(dataRow));
                 }
                 synchronized (indicatorDataBuffer) {
+                    indicatorDataBuffer.add(dataRow);
                     if (indicatorDataBuffer.size() >= indicatorFiringFactor) {
                         notifyIndicators(indicatorDataBuffer);
                         indicatorDataBuffer.clear();
                     }
-                    indicatorDataBuffer.add(dataRow);
                 }
             }
         }

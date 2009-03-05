@@ -122,9 +122,6 @@ public class LLDataCollector
 
     public void init(DataStorage storage, DLightTarget target) {
         this.target = target;
-        ldPreload = NativeToolsUtil.getLdPreloadEnvVarName();
-        agentLibrary = NativeToolsUtil.getSharedLibrary("prof_agent"); // NOI18N
-        monitorExecutable = NativeToolsUtil.getExecutable("prof_monitor"); // NOI18N
     }
 
     public boolean isAttachable() {
@@ -238,10 +235,14 @@ public class LLDataCollector
     private ValidationStatus doValidation(final DLightTarget target) {
         DLightLogger.assertNonUiThread();
 
+        ldPreload = NativeToolsUtil.getLdPreloadEnvVarName();
+        agentLibrary = NativeToolsUtil.getSharedLibrary("prof_agent"); // NOI18N
+        monitorExecutable = NativeToolsUtil.getExecutable("prof_monitor"); // NOI18N
+
         // TODO: handle remote
-        if (!new File(agentLibrary).exists()) {
+        if (agentLibrary == null || !new File(agentLibrary).exists()) {
             return ValidationStatus.invalidStatus(agentLibrary);
-        } else if (!new File(monitorExecutable).exists()) {
+        } else if (monitorExecutable == null || !new File(monitorExecutable).exists()) {
             return ValidationStatus.invalidStatus(monitorExecutable);
         } else {
             return ValidationStatus.validStatus();
