@@ -136,7 +136,7 @@ public class LayerOptionsImport extends Task {
                 Map<String, String> name2value = attributesMap.get(path);
                 if (name2value != null) {
                     String cnb = files.get(path);
-                    String origin = String.format("#%s %s", shortenCNB(cnb), shortenPath(path));
+                    String origin = String.format("#%s %s", cnb, path);
                     if (pw != null) {
                         pw.println(origin);
                     } else {
@@ -166,18 +166,6 @@ public class LayerOptionsImport extends Task {
         if (output != null) {
             log(output + ": NetBeans import written");
         }
-    }
-
-    private String shortenCNB(String cnb) {
-        if (cnb != null) {
-            return cnb.replaceFirst("^org\\.netbeans\\.", "o.n.").replaceFirst("^org\\.openide\\.", "o.o.").replaceFirst("\\.modules\\.", ".m.");
-        } else {
-            return "";
-        }
-    }
-
-    private String shortenPath(String path) {
-        return path.replaceAll("(^|/)org-netbeans-", "$1o-n-").replaceAll("(^|/)org-openide-", "$1o-o-").replaceAll("-modules-", "-m-").replaceAll("(^|/)org\\.netbeans\\.", "$1o.n.").replaceAll("(^|/)org\\.openide\\.", "$1o.o.").replaceAll("\\.modules\\.", ".m.");
     }
 
     private void parse(InputStream is, final Map<String, String> files,

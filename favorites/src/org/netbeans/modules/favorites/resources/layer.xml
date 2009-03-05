@@ -153,7 +153,7 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="750"/>
             <file name="Templates">
                 <attr name="include" stringvalue="config/Templates/.*"/>
-                <attr name="exclude" stringvalue="config/Templates/Beans/(Bean.java|BeanInfo.java|NoIconBeanInfo.java|Customizer.java|Customizer.form|PropertyEditor.java)"/>
+                <attr name="exclude" stringvalue="config/Templates/Beans/(Bean[.]java|BeanInfo[.]java|NoIconBeanInfo[.]java|Customizer[.]java|Customizer[.]form|PropertyEditor[.]java)"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.favorites.Bundle#Templates.Options.Export.displayName"/>
             </file>
         </folder>
