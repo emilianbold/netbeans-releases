@@ -92,7 +92,7 @@ public class SourceNode extends LeafNode {
             panel.add( new JLabel(), new GridBagConstraints(5,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
         }
         if( !isSelected && !source.isSupported() )
-            lbl.setForeground(ColorManager.disabledColor);
+            lbl.setForeground(ColorManager.getDefault().getDisabledColor());
         else
             lbl.setForeground(foreground);
         if( null != btn ) {

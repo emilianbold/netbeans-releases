@@ -85,7 +85,7 @@ public class ErrorNode extends LeafNode {
         if( isSelected ) {
             lblMessage.setForeground(foreground);
         } else {
-            lblMessage.setForeground(ColorManager.errorColor);
+            lblMessage.setForeground(ColorManager.getDefault().getErrorColor());
         }
         btnRefresh.setForeground(foreground, isSelected);
         return panel;

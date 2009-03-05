@@ -83,9 +83,9 @@ public abstract class AsynchronousLeafNode extends LeafNode {
         panel.setOpaque(false);
         lblTitle = new JLabel(title);
         lblLoading = createProgressLabel(NbBundle.getMessage(AsynchronousLeafNode.class, "LBL_LoadingInProgress")); //NOI18N
-        lblLoading.setForeground(ColorManager.disabledColor);
+        lblLoading.setForeground(ColorManager.getDefault().getDisabledColor());
         lblError = new JLabel(NbBundle.getMessage(AsynchronousLeafNode.class, "LBL_NotResponding")); //NOI18N
-        lblError.setForeground(ColorManager.errorColor);
+        lblError.setForeground(ColorManager.getDefault().getErrorColor());
         Image img = ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/error.png"); //NOI18N
         lblError.setIcon( new ImageIcon(img) );
 
@@ -110,8 +110,8 @@ public abstract class AsynchronousLeafNode extends LeafNode {
                         lblLoading.setForeground(foreground);
                         lblError.setForeground(foreground);
                     } else {
-                        lblLoading.setForeground(ColorManager.disabledColor);
-                        lblError.setForeground(ColorManager.errorColor);
+                        lblLoading.setForeground(ColorManager.getDefault().getDisabledColor());
+                        lblError.setForeground(ColorManager.getDefault().getErrorColor());
                     }
                     lblTitle.setForeground(foreground);
                 }

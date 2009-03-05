@@ -122,7 +122,7 @@ public final class DashboardImpl extends Dashboard {
 
     private DashboardImpl() {
         dashboardComponent = new JPanel(new BorderLayout());
-        dashboardComponent.setBackground(ColorManager.defaultBackground);
+        dashboardComponent.setBackground(ColorManager.getDefault().getDefaultBackground());
         userListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if( LoginHandle.PROP_MEMBER_PROJECT_LIST.equals(evt.getPropertyName()) ) {
@@ -380,12 +380,12 @@ public final class DashboardImpl extends Dashboard {
         res.setOpaque(false);
 
         JLabel lbl = new JLabel(NbBundle.getMessage(DashboardImpl.class, "LBL_No_Kenai_Project_Open")); //NOI18N
-        lbl.setForeground(ColorManager.disabledColor);
+        lbl.setForeground(ColorManager.getDefault().getDisabledColor());
         lbl.setHorizontalAlignment(JLabel.CENTER);
         LinkButton btnWhatIs = new LinkButton(NbBundle.getMessage(DashboardImpl.class, "LBL_WhatIsKenai"), createWhatIsKenaiAction() ); //NOI18N
 
         userNode.set(null, false);
-        res.add( userNode.getComponent(UIManager.getColor("List.foreground"), ColorManager.defaultBackground, false, false), new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(3, 4, 3, 4), 0, 0) ); //NOI18N
+        res.add( userNode.getComponent(UIManager.getColor("List.foreground"), ColorManager.getDefault().getDefaultBackground(), false, false), new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(3, 4, 3, 4), 0, 0) ); //NOI18N
         res.add( new JLabel(), new GridBagConstraints(0, 1, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
         res.add( lbl, new GridBagConstraints(0, 2, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 4, 0), 0, 0) );
         res.add( btnWhatIs, new GridBagConstraints(0, 3, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 0, 0, 0), 0, 0) );

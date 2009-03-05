@@ -72,7 +72,7 @@ final class RendererPanel extends JPanel {
     static final boolean isGtk = "GTK".equals(UIManager.getLookAndFeel().getID()); //NOI18N
 
     private static final Border NO_FOCUS_BORDER = BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0,0, 1, 0, ColorManager.defaultBackground),
+            BorderFactory.createMatteBorder(0,0, 1, 0, ColorManager.getDefault().getDefaultBackground()),
             BorderFactory.createEmptyBorder(1, 1, 0, 1) );
     private static Border INNER_BORDER;
 

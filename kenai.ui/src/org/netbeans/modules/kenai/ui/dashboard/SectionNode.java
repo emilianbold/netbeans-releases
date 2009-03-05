@@ -109,11 +109,11 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
         if( isSelected )
             lblStatus.setForeground(foreground);
         else
-            lblStatus.setForeground(ColorManager.disabledColor);
+            lblStatus.setForeground(ColorManager.getDefault().getDisabledColor());
         if( isSelected )
             lblError.setForeground(foreground);
         else
-            lblError.setForeground(ColorManager.errorColor);
+            lblError.setForeground(ColorManager.getDefault().getErrorColor());
         return panel;
     }
 
