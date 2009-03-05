@@ -48,11 +48,9 @@ public final class Pair<P, K> {
         this.second = second;
     }
 
-
     public static <P, K> Pair<P, K> of(P first, K second) {
         return new Pair<P, K>(first, second);
     }
-
 
     @Override
     public int hashCode() {
