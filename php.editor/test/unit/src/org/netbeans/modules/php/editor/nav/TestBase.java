@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -143,7 +144,8 @@ public abstract class TestBase extends CslTestBase {
         final FileObject test = folder.getFileObject("test.php");
 
         Source testSource = getTestSource(test);
-        ParserManager.parse(Collections.singleton(testSource), task);
+        Future<Void> parseWhenScanFinished = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
+        parseWhenScanFinished.get();
     }
 
     private static Document openDocument(FileObject fileObject) throws Exception {

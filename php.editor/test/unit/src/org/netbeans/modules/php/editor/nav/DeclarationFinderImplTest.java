@@ -2171,28 +2171,30 @@ public class DeclarationFinderImplTest extends TestBase {
     }
 
     private void performTestSimpleFindDeclaration(String[] code, final int caretOffset, final Set<Golden> golden) throws Exception {
+        final DeclarationLocation[] found = new DeclarationLocation[1];
         performTest(code, new UserTask() {
+
             public void cancel() {}
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
 
                 ParserResult parameter = (ParserResult) resultIterator.getParserResult();
+                found[0] = DeclarationFinderImpl.findDeclarationImpl(parameter, caretOffset);
 
-                DeclarationLocation found = DeclarationFinderImpl.findDeclarationImpl(parameter, caretOffset);
-
-                assertNotNull(found.getFileObject());
-                Set<Golden> result = new HashSet<Golden>();
-
-                result.add(new Golden(found.getFileObject().getNameExt(), found.getOffset()));
-
-                for (AlternativeLocation l : found.getAlternativeLocations()) {
-                    result.add(new Golden(l.getLocation().getFileObject().getNameExt(), l.getLocation().getOffset()));
-                }
-
-                assertEquals(golden, result);
             }
         });
+        assertNotNull(found[0]);
+        assertNotNull(found[0].getFileObject());
+        Set<Golden> result = new HashSet<Golden>();
+
+        result.add(new Golden(found[0].getFileObject().getNameExt(), found[0].getOffset()));
+
+        for (AlternativeLocation l : found[0].getAlternativeLocations()) {
+            result.add(new Golden(l.getLocation().getFileObject().getNameExt(), l.getLocation().getOffset()));
+        }
+
+        assertEquals(golden, result);
     }
 
     @Override
