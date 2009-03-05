@@ -64,15 +64,15 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
     public Tool createCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         if (flavor.isSunStudioCompiler()) {
             if (kind == Tool.CCompiler) {
-                return new SunCCompiler(hkey, flavor, kind, name, displayName, path);
+                return SunCCompiler.create(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.CCCompiler) {
-                return new SunCCCompiler(hkey, flavor, kind, name, displayName, path);
+                return SunCCCompiler.create(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.FortranCompiler) {
                 return new SunFortranCompiler(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.MakeTool) {
-                return new SunMaketool(hkey, flavor, name, displayName, path);
+                return SunMaketool.create(hkey, flavor, name, displayName, path);
             } else if (kind == Tool.DebuggerTool) {
-                return new SunDebuggerTool(hkey, flavor, name, displayName, path);
+                return SunDebuggerTool.create(hkey, flavor, name, displayName, path);
             } else if (kind == Tool.Assembler) {
                 return new Assembler(hkey, flavor, kind, name, displayName, path);
             }
@@ -92,9 +92,9 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
             } else if (kind == Tool.FortranCompiler) {
                 return new GNUFortranCompiler(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.MakeTool) {
-                return new GNUMaketool(hkey, flavor, name, displayName, path);
+                return GNUMaketool.create(hkey, flavor, name, displayName, path);
             } else if (kind == Tool.DebuggerTool) {
-                return new GNUDebuggerTool(hkey, flavor, name, displayName, path);
+                return GNUDebuggerTool.create(hkey, flavor, name, displayName, path);
             } else if (kind == Tool.Assembler) {
                 return new Assembler(hkey, flavor, kind, name, displayName, path);
             }

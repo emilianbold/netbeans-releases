@@ -52,6 +52,6 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 public class DefaultCompilerProvider extends CompilerProvider {
     
     public Tool createCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        return new Tool(hkey, flavor, kind, name, displayName, path);
+        return Tool.createTool(hkey, flavor, kind, name, displayName, path);
     }
 }

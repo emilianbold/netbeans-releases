@@ -46,7 +46,7 @@ import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.openide.util.NbBundle;
 
-public class CustomTool extends Tool {
+public final class CustomTool extends Tool {
     public CustomTool(String hkey) {
         super(hkey, CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), CustomTool, "", NbBundle.getMessage(CustomTool.class, "LBL_CustomTool"), null); // NOI18N
     }

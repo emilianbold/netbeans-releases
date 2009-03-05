@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.compilers.ToolchainManager.DebuggerDescripto
 
 public class GNUDebuggerTool extends Tool {
 
-    public GNUDebuggerTool(String hkey, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
+    private GNUDebuggerTool(String hkey, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
         super(hkey, flavor, DebuggerTool, name, displayName, path); // NOI18N
     }
 
@@ -56,6 +56,10 @@ public class GNUDebuggerTool extends Tool {
         GNUDebuggerTool copy = new GNUDebuggerTool(getHostKey(), getFlavor(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
+    }
+
+    public static GNUDebuggerTool create(String hkey, CompilerFlavor flavor, String name, String displayName, String path) {
+        return new GNUDebuggerTool(hkey, flavor, name, displayName, path);
     }
 
     @Override

@@ -50,8 +50,11 @@ import org.openide.ErrorManager;
 public class SunCCompiler extends SunCCCCompiler {
     private static final String compilerStderrCommand = " -xdryrun -E"; // NOI18N
     
-    /** Creates a new instance of SunCCompiler */
-    public SunCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    /**
+     * Creates a new instance of SunCCompiler
+     * private: use factory methods instead
+     */
+    private SunCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
     }
     
@@ -60,6 +63,10 @@ public class SunCCompiler extends SunCCCCompiler {
         SunCCompiler copy = new SunCCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
+    }
+
+    public static SunCCompiler create(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return new SunCCompiler(hkey, flavor, kind, name, displayName, path);
     }
 
     @Override

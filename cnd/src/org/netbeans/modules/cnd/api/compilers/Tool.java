@@ -84,7 +84,7 @@ public class Tool {
     private CompilerSet compilerSet = null;
 
     /** Creates a new instance of GenericCompiler */
-    public Tool(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    protected Tool(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         this.hkey = hkey;
         this.flavor = flavor;
         this.kind = kind;
@@ -102,6 +102,10 @@ public class Tool {
         Tool copy = new Tool(hkey, flavor, kind, "", displayName, path);
         copy.setName(getName());
         return copy;
+    }
+
+    public static Tool createTool(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return new Tool(hkey, flavor, kind, name, displayName, path);
     }
 
     public String getHostKey() {

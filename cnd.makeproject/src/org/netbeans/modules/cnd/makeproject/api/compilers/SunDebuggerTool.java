@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.compilers.ToolchainManager.DebuggerDescripto
 
 public class SunDebuggerTool extends Tool {
     
-    public SunDebuggerTool(String hkey, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
+    private SunDebuggerTool(String hkey, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
         super(hkey, flavor, DebuggerTool, name, displayName, path); // NOI18N
     }
     
@@ -56,6 +56,10 @@ public class SunDebuggerTool extends Tool {
         SunDebuggerTool copy = new SunDebuggerTool(getHostKey(), getFlavor(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
+    }
+
+    public static SunDebuggerTool create(String hkey, CompilerFlavor flavor, String name, String displayName, String path) {
+        return new SunDebuggerTool(hkey, flavor, name, displayName, path);
     }
 
     @Override

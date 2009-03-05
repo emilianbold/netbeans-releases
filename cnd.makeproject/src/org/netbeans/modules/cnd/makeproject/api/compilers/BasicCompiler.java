@@ -52,7 +52,7 @@ import org.openide.filesystems.FileUtil;
 public abstract class BasicCompiler extends Tool {
 
     /** Creates a new instance of GenericCompiler */
-    public BasicCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    protected BasicCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
         if (!RemoteUtils.isLocalhost(hkey)) {
             includeFilePrefix = System.getProperty("netbeans.user") + "/var/cache/cnd2/includes-cache/" + RemoteUtils.getHostName(getHostKey()) + "/"; //NOI18N
