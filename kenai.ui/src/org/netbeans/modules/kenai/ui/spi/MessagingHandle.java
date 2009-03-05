@@ -26,14 +26,15 @@ public abstract class MessagingHandle {
     public static final String PROP_MESSAGE_COUNT = "messageCount";
 
     /**
-     *
-     * @return Number of online project members.
+     * @return Number of online project members or -1 if the user isn't logged in
+     * or the user isn't a member of project this handle is associated with.
      */
     public abstract int getOnlineCount();
 
     /**
      *
-     * @return Number of available messages.
+     * @return Number of available messages or -1 if the user isn't logged in
+     * or the user isn't a member of project this handle is associated with.
      */
     public abstract int getMessageCount();
 
