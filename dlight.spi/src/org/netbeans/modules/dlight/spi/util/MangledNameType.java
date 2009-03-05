@@ -127,6 +127,13 @@ public final class MangledNameType implements Comparable<MangledNameType> {
         }
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 17 * hash + (this.demanled_name != null ? this.demanled_name.hashCode() : 0);
+        return hash;
+    }
+
     public int compareTo(MangledNameType that) {
         String nameWithoutOffset = mangled_name.indexOf("+") == -1 ? mangled_name : mangled_name.substring(0, mangled_name.indexOf("+"));
         String thatNameWithoutOffset = that.mangled_name.indexOf("+") == -1 ? that.mangled_name : that.mangled_name.substring(0, mangled_name.indexOf("+"));

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="51">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>prof_monitor.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>2</platform>
+      </toolsSet>
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>5</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <includeDirectories>
+            <directoryPath>../ProfilerAgent</directoryPath>
+          </includeDirectories>
+        </cCompilerTool>
+        <linkerTool>
+          <output>prof_monitor</output>
+          <stripSymbols>true</stripSymbols>
+          <linkerLibItems>
+            <linkerOptionItem>-lrt</linkerOptionItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="prof_monitor.c">
+        <itemTool>0</itemTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

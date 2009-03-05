@@ -64,6 +64,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 
 /**
  *
@@ -140,6 +141,15 @@ public class SVGPlayerDisplayPresenter extends DisplayableDisplayPresenter {
             stringLabel.setText(NbBundle.getMessage(SVGPlayerDisplayPresenter.class, "DISP_svg_image_is_usercode")); // NOI18N
             contentPanel.add(stringLabel, BorderLayout.CENTER);
         }
+
+        for (DesignComponent item : getChildren()) {
+            ScreenDisplayPresenter presenter = item.getPresenter(ScreenDisplayPresenter.class);
+            if (presenter == null) {
+                continue;
+            }
+            presenter.reload(deviceInfo);
+            contentPanel.add(presenter.getView(), BorderLayout.PAGE_END);
+        }
     }
 
     @Override
@@ -155,11 +165,28 @@ public class SVGPlayerDisplayPresenter extends DisplayableDisplayPresenter {
     }
 
     @Override
+    public Collection<DesignComponent> getChildren() {
+        return getComponent().getComponents();
+    }
+
+    @Override
     protected void notifyDetached(DesignComponent component) {
         if (svgFileObject != null && imageFileListener != null) {
             svgFileObject.removeFileChangeListener(imageFileListener);
         }
         svgFileObject = null;
         imageFileListener = null;
+    }
+
+    protected float getScaleX(){
+        return imageView.getScaleX();
+    }
+
+    protected float getScaleY(){
+        return imageView.getScaleY();
+    }
+
+    protected SVGImage getSVGImage(){
+        return imageView.getImage();
     }
 }

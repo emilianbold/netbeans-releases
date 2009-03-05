@@ -22,8 +22,9 @@ package org.netbeans.modules.bpel.project.ui.customizer;
 
 import org.openide.util.NbBundle;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.bpel.project.ui.ProjectLogicalViewProvider;
 
-public class CustomizerCompile extends javax.swing.JPanel implements IcanproCustomizer.Panel {
+public class CustomizerCompile extends javax.swing.JPanel implements Customizer.Panel {
 
     private VisualPropertySupport vps;
     private VisualClasspathSupport vcs;

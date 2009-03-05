@@ -108,6 +108,12 @@ public class CndUtils {
         }
     }
 
+    public static void assertTrue(boolean value, String message, Level level) {
+        if (isDebugMode() && !value) {
+            LOG.log(level, message, new Exception(message));
+        }
+    }
+
     public static final void assertNonUiThread() {
         assertFalse(SwingUtilities.isEventDispatchThread(), "Should not be called from UI thread"); //NOI18N
     }
