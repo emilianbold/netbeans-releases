@@ -55,34 +55,36 @@ public class SVGImageComponent extends JPanel {
     private int originalVieportHeight;
     private float scaleX = 1.0f;
     private float scaleY = 1.0f;
+    private int correctionX = 0;
+    private int correctionY = 0;
 
-    public SVGImageComponent () {
-        setOpaque (false);
+    public SVGImageComponent() {
+        setOpaque(false);
     }
 
-
-    public SVGImage getImage () {
+    public SVGImage getImage() {
         return image;
     }
 
-    public void setImage (SVGImage image) {
+    public void setImage(SVGImage image) {
         SVGImage old = this.image;
-        if (old == image)
+        if (old == image) {
             return;
+        }
         this.image = image;
         if (image != null) {
             this.originalVieportWidth = image.getViewportWidth();
             this.originalVieportHeight = image.getViewportHeight();
         }
-        firePropertyChange ("svg-image", old, image); // NOI18N
-        repaint ();
+        firePropertyChange("svg-image", old, image); // NOI18N
+        repaint();
     }
 
     @Override
-    public void paint (Graphics g) {
-        super.paint (g);
+    public void paint(Graphics g) {
+        super.paint(g);
         if (image != null) {
-            
+
             updateScale();
             if (getHeight() < originalVieportHeight || getWidth() < originalVieportWidth) {
                 image.setViewportHeight(getHeight());
@@ -91,35 +93,55 @@ public class SVGImageComponent extends JPanel {
                 image.setViewportHeight(originalVieportHeight);
                 image.setViewportWidth(originalVieportWidth);
             }
-            ScalableGraphics gr = ScalableGraphics.createInstance ();
-            gr.bindTarget (g);
-            gr.render (0, 0 , image);
-            gr.releaseTarget ();
+            ScalableGraphics gr = ScalableGraphics.createInstance();
+            gr.bindTarget(g);
+            gr.render(0, 0, image);
+            gr.releaseTarget();
         }
     }
 
-    public float getScaleX(){
+    protected float getScaleX() {
         return scaleX;
     }
 
-    public float getScaleY(){
+    protected float getScaleY() {
         return scaleY;
+    }
+
+    protected int getCorrectionX() {
+        return correctionX;
+    }
+
+    protected int getCorrectionY() {
+        return correctionY;
     }
 
     private void updateScale() {
         assert image != null;
         if (getHeight() < originalVieportHeight || getWidth() < originalVieportWidth) {
-            scaleX =(float) getWidth() / (float) originalVieportWidth;
-            scaleY = (float) getHeight() / (float) originalVieportHeight;
-            /*
-            float sx =(float) getWidth() / (float) originalVieportWidth;
+
+            // update scales
+            float sx = (float) getWidth() / (float) originalVieportWidth;
             float sy = (float) getHeight() / (float) originalVieportHeight;
             scaleX = Math.min(sx, sy);
             scaleY = scaleX;
-             */
+
+            // update corrections
+            if (sy < sx) {
+                int realViewWidth = (int) ((float) originalVieportWidth * scaleY);
+                correctionX = (getWidth() - realViewWidth) / 2;
+                correctionY = 0;
+            } else {
+                correctionX = 0;
+                int realViewHeight = (int) ((float) originalVieportHeight * scaleX);
+                correctionY = (getHeight() - realViewHeight) / 2;
+            }
         } else {
             scaleX = 1.0f;
             scaleY = 1.0f;
+            correctionX = 0;
+            correctionY = 0;
         }
     }
+
 }
