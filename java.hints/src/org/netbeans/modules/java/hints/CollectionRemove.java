@@ -167,7 +167,7 @@ public class CollectionRemove extends AbstractHint {
                 TypeMirror actualParam = info.getTrees().getTypeMirror(new TreePath(tp, mit.getArguments().get(e.getKey())));
                 TypeMirror designedType = againstType.getParameterTypes().get(e.getValue());
 
-                if (!info.getTypes().isSubtype(actualParam,designedType)) {
+                if (!info.getTypes().isAssignable(actualParam,designedType)) {
                     String warningKey;
 
                     if (compatibleTypes(info, actualParam,designedType)) {
