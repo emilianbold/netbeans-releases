@@ -197,6 +197,12 @@ public final class HostInfoUtils {
         return result;
     }
 
+    public static String getShell(ExecutionEnvironment execEnv)
+            throws ConnectException {
+        HostInfo info = getHostInfo(execEnv);
+        return info.shell;
+    }
+
     static synchronized void updateHostInfo(ExecutionEnvironment execEnv) {
         if (execEnv.isLocal()) {
             hostInfo.put(execEnv, getLocalHostInfo());
@@ -223,9 +229,19 @@ public final class HostInfoUtils {
 
     private static HostInfo getLocalHostInfo() {
         HostInfo info = new HostInfo();
-        info.os = System.getProperty("os.name");
-        info.platform = System.getProperty("os.arch");
-        info.instructionSet = System.getProperty("sun.cpu.isalist").contains("amd64") ? "64" : "32";
+        info.os = System.getProperty("os.name"); // NOI18N
+        info.platform = System.getProperty("os.arch"); // NOI18N
+        info.instructionSet = System.getProperty("sun.cpu.isalist").contains("amd64") ? "64" : "32"; // NOI18N
+        info.shell = "/bin/sh"; // NOI18N
+        
+        try {
+            ProcessBuilder pb = new ProcessBuilder("/bin/ls /bin/sh || /bin/ls /usr/bin/sh"); // NOI18N
+            Process p = pb.start();
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            info.shell = br.readLine().trim();
+        } catch (IOException ex) {
+        }
+        
         return info;
     }
 
@@ -236,7 +252,8 @@ public final class HostInfoUtils {
         command.append("U=/bin/uname &&"); // NOI18N
         command.append("O=`$U -s` && /bin/echo $O &&"); // NOI18N
         command.append("P=`$U -p` && test 'unknown' = $P && $U -m || echo $P &&"); // NOI18N
-        command.append("test 'SunOS' = $O && /bin/isainfo -b || $U -a | grep x86_64 || echo 32"); // NOI18N
+        command.append("test 'SunOS' = $O && /bin/isainfo -b || $U -a | grep x86_64 || echo 32 &&"); // NOI18N
+        command.append("/bin/ls /bin/sh 2>/dev/null || /bin/ls /usr/bin/sh 2>/dev/null"); // NOI18N
 
         try {
             echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
@@ -271,6 +288,8 @@ public final class HostInfoUtils {
                     case 2:
                         info.instructionSet = str.trim().toLowerCase();
                         break;
+                    case 3:
+                        info.shell = str.trim().toLowerCase();
                 }
                 lineno++;
             }
@@ -286,6 +305,7 @@ public final class HostInfoUtils {
         String os;
         String platform;
         String instructionSet;
+        String shell;
 
         @Override
         public String toString() {

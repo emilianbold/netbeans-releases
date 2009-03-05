@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.Logger;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
@@ -60,7 +61,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                 workingDirectory == null ? null : new File(workingDirectory);
 
         ProcessBuilder pb = new ProcessBuilder(
-                "/usr/bin/sh", "-c", // NOI18N
+                HostInfoUtils.getShell(info.getExecutionEnvironment()), "-c", // NOI18N
                 "/bin/echo $$ && exec " + commandLine); // NOI18N
 
         pb.environment().putAll(info.getEnvVariables(pb.environment()));
