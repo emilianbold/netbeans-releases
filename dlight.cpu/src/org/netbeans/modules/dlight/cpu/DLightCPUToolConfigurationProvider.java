@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.cpu;
 
 import java.util.ArrayList;
@@ -62,16 +61,19 @@ import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author mt154047
  */
 public final class DLightCPUToolConfigurationProvider
-        implements DLightToolConfigurationProvider {
+    implements DLightToolConfigurationProvider {
 
-    private static final boolean USE_SUNSTUDIO =
-            Boolean.getBoolean("gizmo.cpu.sunstudio"); // NOI18N
+    private static boolean USE_SUNSTUDIO =
+        NbPreferences.forModule(DLightToolConfigurationProvider.class).getBoolean(DLightToolConfigurationProvider.SUNSTUDIO_COLLECTORS, Boolean.getBoolean("gizmo.cpu.sunstudio"));
+//    private static final boolean USE_SUNSTUDIO =
+//            Boolean.getBoolean("gizmo.cpu.sunstudio"); // NOI18N
     private static final String toolName = loc("CPUMonitorTool.ToolName"); // NOI18N
     private static final List<Column> indicatorColumns;
 
@@ -86,28 +88,28 @@ public final class DLightCPUToolConfigurationProvider
 
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration =
-                new DLightToolConfiguration(toolName);
+            new DLightToolConfiguration(toolName);
 
         // Configure Indicator Data Provider ...
         // Use /bin/prstat.
 
         final DataTableMetadata indicatorTableMetadata =
-                new DataTableMetadata("prstat", indicatorColumns); // NOI18N
+            new DataTableMetadata("prstat", indicatorColumns); // NOI18N
 
         CLIODCConfiguration indicatorCollectorConfig =
-                new CLIODCConfiguration("/bin/prstat", "-mv -p @PID -c 1", // NOI18N
-                new PrstatParser(), Arrays.asList(indicatorTableMetadata));
+            new CLIODCConfiguration("/bin/prstat", "-mv -p @PID -c 1", // NOI18N
+            new PrstatParser(), Arrays.asList(indicatorTableMetadata));
 
         // Register indicator data provider ...
         toolConfiguration.addIndicatorDataProviderConfiguration(
-                indicatorCollectorConfig);
+            indicatorCollectorConfig);
 
         // Configure Indicator
         IndicatorMetadata indicatorMetadata =
-                new IndicatorMetadata(indicatorColumns);
+            new IndicatorMetadata(indicatorColumns);
 
         CpuIndicatorConfiguration indicatorConfiguration =
-                new CpuIndicatorConfiguration(indicatorMetadata);
+            new CpuIndicatorConfiguration(indicatorMetadata);
 
         // Configure detailed view
         DataTableMetadata detailedViewTableMetadata = null;
@@ -119,7 +121,7 @@ public final class DLightCPUToolConfigurationProvider
             final CollectedInfo info = CollectedInfo.FUNCTIONS_LIST;
 
             SunStudioDCConfiguration ssCollectorConfig =
-                    new SunStudioDCConfiguration(info);
+                new SunStudioDCConfiguration(info);
 
             // This tool will use DataCollector with this configuration...
             toolConfiguration.addDataCollectorConfiguration(ssCollectorConfig);
@@ -130,37 +132,37 @@ public final class DLightCPUToolConfigurationProvider
             // with CollectedInfo.FUNCTIONS_LIST
 
             detailedViewTableMetadata =
-                    SunStudioDCConfiguration.getCPUTableMetadata(
-                    SunStudioDCConfiguration.c_name,
-                    SunStudioDCConfiguration.c_iUser,
-                    SunStudioDCConfiguration.c_eUser);
+                SunStudioDCConfiguration.getCPUTableMetadata(
+                SunStudioDCConfiguration.c_name,
+                SunStudioDCConfiguration.c_iUser,
+                SunStudioDCConfiguration.c_eUser);
         } else {
             // Use D-Trace as a provider of data for detailed view
             String scriptFile = Util.copyResource(getClass(),
-                    Util.getBasePath(getClass()) + "/resources/calls.d"); // NOI18N
+                Util.getBasePath(getClass()) + "/resources/calls.d"); // NOI18N
 
             DataTableMetadata profilerTableMetadata = createProfilerTableMetadata();
 
             DTDCConfiguration dtraceDataCollectorConfiguration =
-                    new DTDCConfiguration(scriptFile,
-                    Arrays.asList(profilerTableMetadata));
+                new DTDCConfiguration(scriptFile,
+                Arrays.asList(profilerTableMetadata));
 
             dtraceDataCollectorConfiguration.setStackSupportEnabled(true);
 
             toolConfiguration.addDataCollectorConfiguration(
-                    new MultipleDTDCConfiguration(
-                    dtraceDataCollectorConfiguration, "cpu:")); // NOI18N
+                new MultipleDTDCConfiguration(
+                dtraceDataCollectorConfiguration, "cpu:")); // NOI18N
 
             detailedViewTableMetadata =
-                    createFunctionsListMetadata(profilerTableMetadata);
+                createFunctionsListMetadata(profilerTableMetadata);
         }
 
         // Register configured detailed view to be opened on indicator click...
         VisualizerConfiguration detailsVisualizerConfig =
-                new CallersCalleesVisualizerConfiguration(
-                detailedViewTableMetadata,
-                "name", // NOI18N
-                true);
+            new CallersCalleesVisualizerConfiguration(
+            detailedViewTableMetadata,
+            "name", // NOI18N
+            true);
 
         indicatorConfiguration.setVisualizerConfiguration(detailsVisualizerConfig);
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
@@ -169,17 +171,17 @@ public final class DLightCPUToolConfigurationProvider
     }
 
     private DataTableMetadata createProfilerTableMetadata() {
-        Column cpuId = new Column("cpu_id", Integer.class,  loc("CPUMonitorTool.ColumnName.cpu_id"), null); // NOI18N
+        Column cpuId = new Column("cpu_id", Integer.class, loc("CPUMonitorTool.ColumnName.cpu_id"), null); // NOI18N
         Column threadId = new Column("thread_id", Integer.class, loc("CPUMonitorTool.ColumnName.thread_id"), null); // NOI18N
-        Column timestamp = new Column("time_stamp",  Long.class, loc("CPUMonitorTool.ColumnName.time_stamp"), null); // NOI18N
+        Column timestamp = new Column("time_stamp", Long.class, loc("CPUMonitorTool.ColumnName.time_stamp"), null); // NOI18N
         Column stackId = new Column("leaf_id", Integer.class, loc("CPUMonitorTool.ColumnName.leaf_id"), null); // NOI18N
 
         return new DataTableMetadata("CallStack", // NOI18N
-                Arrays.asList(cpuId, threadId, timestamp, stackId));
+            Arrays.asList(cpuId, threadId, timestamp, stackId));
     }
 
     private DataTableMetadata createFunctionsListMetadata(
-            DataTableMetadata profilerTableMetadata) {
+        DataTableMetadata profilerTableMetadata) {
 
         List<Column> columns = new ArrayList<Column>();
         columns.add(new Column("name", String.class, loc("CPUMonitorTool.ColumnName.name"), null)); // NOI18N
@@ -189,14 +191,14 @@ public final class DLightCPUToolConfigurationProvider
 
         for (FunctionMetric metric : metricsList) {
             columns.add(new Column(
-                    metric.getMetricID(),
-                    metric.getMetricValueClass(),
-                    metric.getMetricDisplayedName(), null));
+                metric.getMetricID(),
+                metric.getMetricValueClass(),
+                metric.getMetricDisplayedName(), null));
         }
 
         DataTableMetadata result = new DataTableMetadata(
-                StackDataStorage.STACK_METADATA_VIEW_NAME,
-                columns, null, Arrays.asList(profilerTableMetadata));
+            StackDataStorage.STACK_METADATA_VIEW_NAME,
+            columns, null, Arrays.asList(profilerTableMetadata));
 
         return result;
     }
@@ -204,10 +206,10 @@ public final class DLightCPUToolConfigurationProvider
     private static class PrstatParser implements CLIOParser {
 
         private final List<String> colnames = Arrays.asList(new String[]{
-                    "utime", // NOI18N
-                    "stime", // NOI18N
-                    "wtime" // NOI18N
-                });
+                "utime", // NOI18N
+                "stime", // NOI18N
+                "wtime" // NOI18N
+            });
         Float utime, stime, wtime;
 
         public DataRow process(String line) {
@@ -231,12 +233,12 @@ public final class DLightCPUToolConfigurationProvider
             }
 
             return new DataRow(colnames, Arrays.asList(
-                    new Float[]{utime, stime, wtime}));
+                new Float[]{utime, stime, wtime}));
         }
     }
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(
-                DLightCPUToolConfigurationProvider.class, key, params);
+            DLightCPUToolConfigurationProvider.class, key, params);
     }
 }

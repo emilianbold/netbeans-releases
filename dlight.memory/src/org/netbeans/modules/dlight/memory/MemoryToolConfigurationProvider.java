@@ -62,7 +62,6 @@ import org.netbeans.modules.dlight.spi.util.MangledNameType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
-import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -78,8 +77,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             Util.getBoolean("dlight.memory.log.stderr", false); // NOI18N
 //    private static final boolean USE_SUNSTUDIO =
 //            Boolean.getBoolean("gizmo.mem.sunstudio"); // NOI18N
-    public static final String USE_SUNSTUDIO_COLLECTORS = "SunStudioDataCollectors"; // NOI18N
-    private static boolean USE_SUNSTUDIO = NbPreferences.forModule(DLightToolConfigurationProvider.class).getBoolean(USE_SUNSTUDIO_COLLECTORS,  Boolean.getBoolean("gizmo.mem.sunstudio"));
+    private static boolean USE_SUNSTUDIO = NbPreferences.forModule(DLightToolConfigurationProvider.class).getBoolean(SUNSTUDIO_COLLECTORS,  Boolean.getBoolean("gizmo.mem.sunstudio"));
     private static final String TOOL_NAME = loc("MemoryTool.ToolName"); // NOI18N
     private static final Column totalColumn;
     private static final DataTableMetadata rawTableMetadata;
@@ -197,7 +195,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                         SunStudioDCConfiguration.c_leakCount);
 
                 indicatorConfiguration.setVisualizerConfiguration(
-                        new TableVisualizerConfiguration(detailedViewTableMetadata));
+                        new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata, SunStudioDCConfiguration.c_name.getColumnName()));
             } else {
                 indicatorConfiguration.setVisualizerConfiguration(getDetails(rawTableMetadata));
             }
@@ -225,16 +223,16 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         DataTableMetadata viewTableMetadata = new DataTableMetadata(
                 "mem", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N
 
-//        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration =
-//                new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name"); // NOI18N
-        TableVisualizerConfiguration tableVisualizerConfiguration = new TableVisualizerConfiguration(viewTableMetadata);
+        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration =
+                new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name"); // NOI18N
+//        TableVisualizerConfiguration tableVisualizerConfiguration = new TableVisualizerConfiguration(viewTableMetadata);
         tableVisualizerConfiguration.setEmptyAnalyzeMessage(
                 loc("DetailedView.EmptyAnalyzeMessage")); // NOI18N
 
         tableVisualizerConfiguration.setEmptyRunningMessage(
                 loc("DetailedView.EmptyRunningMessage")); // NOI18N
 
-        //tableVisualizerConfiguration.setDefaultActionProvider();
+        tableVisualizerConfiguration.setDefaultActionProvider();
 
         return tableVisualizerConfiguration;
     }

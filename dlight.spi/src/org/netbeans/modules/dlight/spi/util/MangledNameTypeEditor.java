@@ -39,11 +39,6 @@
 package org.netbeans.modules.dlight.spi.util;
 
 import java.beans.PropertyEditorSupport;
-import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
-import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -65,11 +60,11 @@ public class MangledNameTypeEditor extends PropertyEditorSupport {
 
     @Override
     public void setValue(Object value) {
-        if (value instanceof String) {
-            super.setValue(new MangledNameType(value + ""));
+        if (value instanceof MangledNameType) {
+            super.setValue(value);
             return;
         }
-        super.setValue(value);
+        super.setValue(new MangledNameType(value + ""));
     }
 
     @Override
