@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/sh
 PROG=`basename $0`
 USAGE="usage: ${PROG} -p pidfile [-x prompt] ..."
 PROMPT=NO
@@ -27,7 +27,7 @@ shift `expr $OPTIND - 1`
 
 trap "rmPidFile; exit" 1 2 15 EXIT
 
-cat << EOF | /bin/sh
+cat << EOF | /usr/bin/sh
 echo \$\$>${PIDFILE} && exec $@
 EOF
 
