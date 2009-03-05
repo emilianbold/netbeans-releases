@@ -682,7 +682,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
     }
 
     private String getSeenValue(BugzillaIssue issue, IssueField f) {
-        Map<String, String> m = getRepository().getIssueCache().getSeenAttributes(issue.getID());
+        Map<String, String> m = issue.getRepository().getIssueCache().getSeenAttributes(issue.getID());
         if(m == null) {
             return "";
         }
