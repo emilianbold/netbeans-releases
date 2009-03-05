@@ -151,7 +151,7 @@ public final class MemoryCache {
                 prevPersistent = (Persistent) ((SoftReference) old).get();
             } else if (old instanceof Persistent) {
                 prevPersistent = (Persistent) old;
-            } else {
+            } else if (old != null) {
                 System.err.println("unexpected value " + old + " for key " + key);
             }
             if (prevPersistent == null) {
