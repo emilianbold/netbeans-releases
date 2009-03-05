@@ -154,9 +154,10 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
             tabbedPane.addTab(toolName, viewComponent);
 //      visualizerComponents.put(tool, view);
         } else {
-            //we should remove the tabs and
+            //we should remove the tabs and add
             closePerformanceMonitor(visualizerComponents.get(toolName));
             tabbedPane.addTab(toolName, viewComponent);
+            tabbedPane.setSelectedComponent(viewComponent);
         }
 
         visualizerComponents.put(toolName, view);
