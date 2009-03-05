@@ -14,7 +14,7 @@ import org.netbeans.modules.kenai.api.Kenai;
  *
  * @author S. Aubrecht
  */
-public abstract class ProjectHandle {
+public abstract class ProjectHandle implements Comparable<ProjectHandle> {
 
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
@@ -78,6 +78,10 @@ public abstract class ProjectHandle {
 
     public final void firePropertyChange( String propName, Object oldValue, Object newValue ) {
         changeSupport.firePropertyChange(propName, oldValue, newValue);
+    }
+
+    public int compareTo( ProjectHandle other ) {
+        return getDisplayName().compareTo(other.getDisplayName());
     }
 
     @Override

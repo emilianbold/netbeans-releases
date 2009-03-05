@@ -352,7 +352,7 @@ public abstract class TreeListNode {
                 public void actionPerformed(ActionEvent e) {
                     frame = (frame+1)%painter.getPoints();
                     painter.setFrame(frame);
-//                    ProgressLabel.this.repaint();
+                    ProgressLabel.this.repaint();
                     fireContentChanged();
                 }
             });

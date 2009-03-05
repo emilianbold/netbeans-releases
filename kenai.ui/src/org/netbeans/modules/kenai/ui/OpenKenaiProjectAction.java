@@ -61,7 +61,7 @@ public final class OpenKenaiProjectAction implements ActionListener {
         if (NotifyDescriptor.OK_OPTION.equals(option)) {
             KenaiProject selProject = searchPanel.getSelectedProject();
             if (null != selProject) {
-                Dashboard.getDefault().addNonMemberProject(new ProjectHandleImpl(selProject));
+                Dashboard.getDefault().addProject(new ProjectHandleImpl(selProject));
             }
         }
 

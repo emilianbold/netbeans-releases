@@ -49,7 +49,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.kenai.ui.treelist.LeafNode;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.LoginHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.openide.util.NbBundle;
@@ -61,21 +60,23 @@ import org.openide.util.NbBundle;
  */
 public class UserNode extends LeafNode {
 
-    private final LoginHandle login;
-    private final Dashboard dashboard;
+    private final DashboardImpl dashboard;
 
     private JPanel panel;
     private JLabel lblUser;
-    private JLabel lblStatus;
+    private JLabel lblProgress;
     private LinkButton btnOpenProject;
     private LinkButton btnRefresh;
+    private LinkButton btnLogin;
 
-    private String statusText;
-    private String errorText;
+    private LoginHandle login;
+    private boolean projectsAvailable = false;
 
-    public UserNode( LoginHandle login, Dashboard dashboard ) {
+    private final Object LOCK = new Object();
+    private int loadingCounter = 0;
+
+    public UserNode( DashboardImpl dashboard ) {
         super( null );
-        this.login = login;
         this.dashboard = dashboard;
     }
 
@@ -85,9 +86,10 @@ public class UserNode extends LeafNode {
             panel = new JPanel( new GridBagLayout() );
             panel.setOpaque(false);
 
-            lblUser = new JLabel(login.getUserName());
-            lblStatus = new JLabel();
-            lblStatus.setHorizontalAlignment(JLabel.CENTER);
+            btnLogin = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_LoginToKenai"), //NOI18N
+                    dashboard.createLoginAction());
+            lblUser = new JLabel();
+            lblProgress = createProgressLabel(NbBundle.getMessage(UserNode.class, "LBL_OpeningProjects")); //NOI18N
             btnOpenProject = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_OpenProject"), ProjectAccessor.getDefault().getOpenNonMemberProjectAction()); //NOI18N
             btnRefresh = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_Refresh"), new ActionListener() { //NOI18N
                 public void actionPerformed(ActionEvent e) {
@@ -95,53 +97,53 @@ public class UserNode extends LeafNode {
                 }
             });
 
-            panel.add( lblUser, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
-            panel.add( new JLabel(), new GridBagConstraints(1,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( btnRefresh, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( lblStatus, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( new JLabel(), new GridBagConstraints(4,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( btnOpenProject, new GridBagConstraints(5,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+            panel.add( btnLogin, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
+            panel.add( lblUser, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
+            panel.add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+            panel.add( btnRefresh, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+            panel.add( lblProgress, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+            panel.add( new JLabel(), new GridBagConstraints(5,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+            panel.add( btnOpenProject, new GridBagConstraints(6,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
         }
 
-        if( null != errorText )
-            lblStatus.setText(errorText);
-        else if( null != statusText )
-            lblStatus.setText(statusText);
-        btnRefresh.setVisible(null == statusText && null == errorText);
+        lblProgress.setForeground(foreground);
         if( isSelected ) {
             lblUser.setForeground(foreground);
-            lblStatus.setForeground(foreground);
         } else {
             lblUser.setForeground(ColorManager.disabledColor);
-            if( null != errorText )
-                lblStatus.setForeground(ColorManager.errorColor);
-            else if( null != statusText )
-                lblStatus.setForeground(ColorManager.disabledColor);
         }
         btnOpenProject.setForeground(foreground, isSelected);
         btnRefresh.setForeground(foreground, isSelected);
+        btnLogin.setForeground(foreground, isSelected);
+        synchronized( LOCK ) {
+            lblProgress.setVisible(loadingCounter > 0);
+            btnRefresh.setVisible(loadingCounter <= 0 && projectsAvailable);
+        }
+        btnLogin.setVisible( null == login );
+        lblUser.setVisible( null != login );
         return panel;
     }
 
-    void setStatus( String text ) {
-        if( null != lblStatus )
-            lblStatus.setText(text);
-        statusText = text;
-        fireContentChanged();
+    void loadingStarted() {
+        synchronized( LOCK ) {
+            loadingCounter++;
+            fireContentChanged();
+        }
     }
 
-    void setError( String text ) {
-        if( null != lblStatus )
-        lblStatus.setText(text);
-        errorText = text;
-        fireContentChanged();
+    void loadingFinished() {
+        synchronized( LOCK ) {
+            loadingCounter--;
+            if( loadingCounter < 0 )
+                loadingCounter = 0;
+            fireContentChanged();
+        }
     }
 
-    void clearMessage() {
-        if( null != lblStatus )
-            lblStatus.setText(null);
-        statusText = null;
-        errorText = null;
-        fireContentChanged();
+    void set( LoginHandle login, boolean projectsAvailable ) {
+        this.projectsAvailable = projectsAvailable;
+        this.login = login;
+        if( null != login )
+            lblUser.setText( login.getUserName() );
     }
 }
