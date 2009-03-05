@@ -63,16 +63,20 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.util.IssueFinder;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Jan Stola
  */
 public class CommentsPanel extends JPanel {
-    private final static String HL_ATTRIBUTE = "linkact"; // NOI18N
+    private final static String STACKTRACE_ATTRIBUTE = "stacktrace"; // NOI18N
+    private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
     private BugzillaIssue issue;
     private MouseInputListener listener;
 
@@ -86,9 +90,13 @@ public class CommentsPanel extends JPanel {
                     StyledDocument doc = pane.getStyledDocument();
                     Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
                     AttributeSet as = elem.getAttributes();
-                    StackTraceAction a = (StackTraceAction) as.getAttribute(HL_ATTRIBUTE);
-                    if (a != null) {
-                        a.openStackTrace(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()));
+                    StackTraceAction stacktraceAction = (StackTraceAction) as.getAttribute(STACKTRACE_ATTRIBUTE);
+                    if (stacktraceAction != null) {
+                        stacktraceAction.openStackTrace(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()));
+                    }
+                    IssueAction issueAction = (IssueAction)as.getAttribute(ISSUE_ATTRIBUTE);
+                    if (issueAction != null) {
+                        issueAction.openIssue(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()));
                     }
                 } catch(Exception ex) {
                     Bugzilla.LOG.log(Level.SEVERE, null, ex);
@@ -170,13 +178,16 @@ public class CommentsPanel extends JPanel {
     }
 
     private void setupTextPane(JTextPane textPane, String comment) {
+        StyledDocument doc = textPane.getStyledDocument();
+
+        // Stack traces
         List<StackTraceSupport.StackTracePosition> stacktraces = StackTraceSupport.find(comment);
         if(stacktraces.isEmpty()) {
             textPane.setText(comment);
         } else {
-            StyledDocument doc = textPane.getStyledDocument();
             Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
             Style hlStyle = doc.addStyle("regularBlue", defStyle); // NOI18N
+            hlStyle.addAttribute(STACKTRACE_ATTRIBUTE, new StackTraceAction());
             StyleConstants.setForeground(hlStyle, Color.BLUE);
             StyleConstants.setUnderline(hlStyle, true);
 
@@ -187,7 +198,6 @@ public class CommentsPanel extends JPanel {
                 int end = stp.getEndOffset();
 
                 String st = comment.substring(start, end);
-                hlStyle.addAttribute(HL_ATTRIBUTE, new StackTraceAction());
                 try {
                     doc.insertString(doc.getLength(), comment.substring(last, start), defStyle);
                     doc.insertString(doc.getLength(), st, hlStyle);
@@ -202,6 +212,28 @@ public class CommentsPanel extends JPanel {
                 Bugzilla.LOG.log(Level.SEVERE, null, ex);
             }
         }
+
+        // Issues/bugs
+        int[] pos = IssueFinder.getIssueSpans(comment);
+        if (pos.length > 0) {
+            Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+            Style hlStyle = doc.addStyle("bugBlue", defStyle); // NOI18N
+            hlStyle.addAttribute(ISSUE_ATTRIBUTE, new IssueAction());
+            StyleConstants.setForeground(hlStyle, Color.BLUE);
+            StyleConstants.setUnderline(hlStyle, true);
+
+            for (int i=0; i<pos.length; i+=2) {
+                int off = pos[i];
+                int length = pos[i+1]-pos[i];
+                try {
+                    doc.remove(off, length);
+                    doc.insertString(off, comment.substring(pos[i], pos[i+1]), hlStyle);
+                } catch (BadLocationException blex) {
+                        blex.printStackTrace();
+                }
+            }
+        }
+
         textPane.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")), // NOI18N
                 BorderFactory.createEmptyBorder(3,3,3,3)));
@@ -213,6 +245,20 @@ public class CommentsPanel extends JPanel {
     private static class StackTraceAction {
         void openStackTrace(String text) {
             StackTraceSupport.findAndOpen(text);
+        }
+    }
+
+    private class IssueAction {
+        void openIssue(String text) {
+            final String issueNo = IssueFinder.getIssueNumber(text);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    Issue is = issue.getRepository().getIssue(issueNo);
+                    if (is != null) {
+                        is.open();
+                    }
+                }
+            });
         }
     }
 
