@@ -57,11 +57,13 @@ import org.netbeans.modules.websvc.wsitconf.util.DefaultSettings;
 import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.MavenWSITModelSupport;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
@@ -150,7 +152,7 @@ public class UsernameAuthenticationProfile extends ProfileBase
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, DefaultSettings.getDefaultPassword(p), false, false);
 //        }
-        if (ServerUtils.isGlassfish(p)) {
+        if (ServerUtils.isGlassfish(p) && !MavenWSITModelSupport.isMavenProject(p)) {
             try {
                 p.getProjectDirectory().getFileObject("nbproject").createData("wsit.createuser");
             } catch (IOException ex) {
@@ -159,7 +161,7 @@ public class UsernameAuthenticationProfile extends ProfileBase
         }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, false);
     }
-    
+
     public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);

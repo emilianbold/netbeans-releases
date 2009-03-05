@@ -46,6 +46,8 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
+import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -61,8 +63,7 @@ public class WSITEditorProvider implements WSEditorProvider {
     /**
      * Creates a new instance of WSITEditorProvider
      */
-    public WSITEditorProvider () {
-    }
+    public WSITEditorProvider () {}
 
     public WSEditor createWSEditor(Lookup nodeLookup) {
         FileObject srcRoot = nodeLookup.lookup(FileObject.class);
@@ -71,6 +72,26 @@ public class WSITEditorProvider implements WSEditorProvider {
             JaxWsModel jaxWsModel = prj.getLookup().lookup(JaxWsModel.class);
             if (jaxWsModel != null) {
                 return new WSITEditor(jaxWsModel);
+            } else {
+                JaxWsService service = nodeLookup.lookup(JaxWsService.class);
+                if (service != null) {
+                    JAXWSLightSupport jaxWsSupport = nodeLookup.lookup(JAXWSLightSupport.class);
+                    if (jaxWsSupport != null) {
+                        return new MavenWSITEditor(jaxWsSupport, service, prj);
+                    } else {
+                        jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(srcRoot);
+                        if (jaxWsSupport != null) {
+                            return new MavenWSITEditor(jaxWsSupport, service, prj);
+                        }
+                    }
+                }
+            }
+        } else {
+            JaxWsService service = nodeLookup.lookup(JaxWsService.class);
+            JAXWSLightSupport jaxWsSupport = nodeLookup.lookup(JAXWSLightSupport.class);
+            if ((service != null) && (jaxWsSupport != null)) {
+                Project prj = FileOwnerQuery.getOwner(jaxWsSupport.getDeploymentDescriptorFolder());
+                return new MavenWSITEditor(jaxWsSupport, service, prj);
             }
         }
         return null;
@@ -78,15 +99,17 @@ public class WSITEditorProvider implements WSEditorProvider {
 
     public boolean enable(Node node) {
         Client client = node.getLookup().lookup(Client.class);
-        boolean doEnable = false;
         if (client != null) {
-            doEnable = true;
-        } else {
-            Service service = node.getLookup().lookup(Service.class);
-            if (service != null) {
-                doEnable = true;
-            }
+            return true;
         }
-        return doEnable;
+        Service service = node.getLookup().lookup(Service.class);
+        if (service != null) {
+            return true;
+        }
+        JaxWsService jaxService = node.getLookup().lookup(JaxWsService.class);
+        if (jaxService != null) {
+            return true;
+        }
+        return false;
     }
 }
