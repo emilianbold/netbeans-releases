@@ -139,7 +139,7 @@ final class RendererPanel extends JPanel {
         if( null == border )
             border = NO_FOCUS_BORDER;
         border = BorderFactory.createCompoundBorder(border,
-                BorderFactory.createEmptyBorder(TreeList.INSETS_TOP, TreeList.INSETS_LEFT+nestingDepth*rowHeight,
+                BorderFactory.createEmptyBorder(TreeList.INSETS_TOP, TreeList.INSETS_LEFT+nestingDepth*rowHeight/2,
                 TreeList.INSETS_BOTTOM, TreeList.INSETS_RIGHT));
 
         setBorder(border);
