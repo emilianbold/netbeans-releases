@@ -42,8 +42,15 @@
 package org.netbeans.modules.debugger.ui.models;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
 import org.netbeans.api.debugger.Breakpoint;
@@ -56,8 +63,11 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.Presenter;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -281,9 +291,11 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
-    
+
     
     //private Vector listeners = new Vector ();
+
+    private Action moveIntoGroupAction = new MoveIntoGroupAction();
     
     
     public Action[] getActions (Object node) throws UnknownTypeException {
@@ -310,7 +322,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
                 return new Action [] {
                     DISABLE_ACTION,
                     DELETE_ACTION,
-                    SET_GROUP_NAME_ACTION,
+                    moveIntoGroupAction,
                     null,
                     NEW_BREEAKPOINT_ACTION,
                     null,
@@ -323,7 +335,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
                 return new Action [] {
                     ENABLE_ACTION,
                     DELETE_ACTION,
-                    SET_GROUP_NAME_ACTION,
+                    moveIntoGroupAction,
                     null,
                     NEW_BREEAKPOINT_ACTION,
                     null,
@@ -379,14 +391,100 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
                         getBreakpoints ();
                     int j, jj = bs.length;
                     for (j = 0; j < jj; j++)
-                        if ( ((Breakpoint) bs [j]).getGroupName ().
-                             equals (oldName)
-                        )
-                            ((Breakpoint) bs [j]).setGroupName ( newName );
+                        if (bs[j].getGroupName().equals(oldName)) {
+                            bs[j].setGroupName(newName);
+                        }
                 } else if (nodes [i] instanceof Breakpoint) {
                     ((Breakpoint) nodes [i]).setGroupName ( newName );
                 }
             }
+        }
+    }
+
+    private static class MoveIntoGroupAction extends AbstractAction implements Presenter.Popup {
+
+        public MoveIntoGroupAction() {
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // Just displays popup menu
+        }
+
+        private Breakpoint[] getCurrentBreakpoints() {
+            Node[] ns = TopComponent.getRegistry ().getActivatedNodes ();
+            int i, k = ns.length;
+            List<Breakpoint> bps = new ArrayList<Breakpoint>();
+            for (i = 0; i < k; i++) {
+                Object node = ns[i].getLookup().lookup(Object.class);
+                if (node instanceof Breakpoint) {
+                    bps.add((Breakpoint) node);
+                }
+            }
+            return bps.toArray(new Breakpoint[] {});
+        }
+
+        private String findCommonBpGroup(Breakpoint[] bps) {
+            String g = null;
+            for (Breakpoint bp : bps) {
+                String gn = bp.getGroupName();
+                if (g == null) {
+                    g = gn;
+                } else {
+                    if (!g.equals(gn)) {
+                        return null;
+                    }
+                }
+            }
+            return g;
+        }
+
+        public JMenuItem getPopupPresenter() {
+            final Breakpoint[] bps = getCurrentBreakpoints();
+            String bpGroup = findCommonBpGroup(bps);
+
+            JMenu moveIntoGroupMenu = new JMenu
+                (NbBundle.getMessage(BreakpointsActionsProvider.class, "CTL_BreakpointAction_MoveIntoGroup"));
+
+            Set<String> groupNames = new TreeSet<String>();
+            Breakpoint[] bs = DebuggerManager.getDebuggerManager ().getBreakpoints ();
+            for (int i = 0; i < bs.length; i++) {
+                String gn = bs[i].getGroupName();
+                groupNames.add(gn);
+            }
+            groupNames.add(""); // Assure that the "default" group is there.
+            if (bpGroup != null) {
+                groupNames.remove(bpGroup);
+            }
+
+            for (final String gn : groupNames) {
+                JMenuItem group;
+                if (gn.length() > 0) {
+                    group = new JMenuItem(gn);
+                } else {
+                    group = new JMenuItem(
+                            NbBundle.getMessage(BreakpointsActionsProvider.class,
+                                                "CTL_BreakpointAction_MoveIntoDefaultGroup_Label"));
+                }
+                moveIntoGroupMenu.add(group);
+                group.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        for (Breakpoint bp : bps) {
+                            bp.setGroupName(gn);
+                        }
+                    }
+                });
+            }
+
+            JMenuItem newGroup = new JMenuItem(
+                    NbBundle.getMessage(BreakpointsActionsProvider.class,
+                                        "CTL_BreakpointAction_MoveIntoNewGroup_Label"));
+            newGroup.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    setGroupName(bps);
+                }
+            });
+            moveIntoGroupMenu.add(newGroup);
+            return moveIntoGroupMenu;
         }
     }
 }
