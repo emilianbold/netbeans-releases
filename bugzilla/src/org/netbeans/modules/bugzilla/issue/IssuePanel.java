@@ -849,7 +849,8 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_resolutionComboActionPerformed
 
     private void keywordsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keywordsButtonActionPerformed
-        String keywords = BugzillaUtil.getKeywords("Specify keywords that apply to the issue.", keywordsField.getText(), issue.getRepository());
+        String message = NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsButton.message"); // NOI18N
+        String keywords = BugzillaUtil.getKeywords(message, keywordsField.getText(), issue.getRepository());
         keywordsField.setText(keywords);
     }//GEN-LAST:event_keywordsButtonActionPerformed
 
