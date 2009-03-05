@@ -148,8 +148,8 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         edgeWriter.setSrcAnchorID(PersistenceUtil.findAnchor(this.getSourceAnchor()));
         edgeWriter.setTargetAnchorID(PersistenceUtil.findAnchor(this.getTargetAnchor()));
         
-        edgeWriter.beginGraphEdge();
         setEdgeWriterValues(edgeWriter, this);
+        edgeWriter.beginGraphEdge();
         LabelManager manager = getLabelManager();
         if (manager != null)
         {
