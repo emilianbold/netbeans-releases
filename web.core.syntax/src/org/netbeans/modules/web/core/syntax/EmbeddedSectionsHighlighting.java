@@ -152,6 +152,14 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
     }
 
     private static boolean isWhitespace(Document document, int startOffset, int endOffset) throws BadLocationException {
+        int docLen = document.getLength();
+        
+        assert startOffset >= 0;
+        assert startOffset <= docLen;
+        assert endOffset >= 0;
+        assert endOffset <= docLen;
+        assert endOffset >= startOffset;
+
         CharSequence chars = DocumentUtilities.getText(document, startOffset, endOffset - startOffset);
         for(int i = 0; i < chars.length(); i++) {
             if (!Character.isWhitespace(chars.charAt(i))) {

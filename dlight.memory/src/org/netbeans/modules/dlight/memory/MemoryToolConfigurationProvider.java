@@ -42,116 +42,245 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
+import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
+import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
-import java.util.logging.Level;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
+import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
+import org.netbeans.modules.dlight.spi.util.MangledNameType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
- * 
+ *
  * @author Vladimir Kvashin
  */
 public final class MemoryToolConfigurationProvider implements DLightToolConfigurationProvider {
 
-    private static final boolean useCollector = Util.getBoolean("dlight.memory.collector", true);
-    private static final boolean redirectStdErr = Util.getBoolean("dlight.memory.log.stderr", false);
+    private static final boolean useCollector =
+            Util.getBoolean("dlight.memory.collector", true); // NOI18N
+
+    /**
+     * This flag works only in the case we do NOT use collector.
+     * If it is true, we use LL indicator data provider,
+     * if it is false, we use DTrace-based indicator data provider
+     */
+    private static final boolean useLLIndicatorDataProvider =
+            Util.getBoolean("dlight.memory.LL", true); // NOI18N
+
+    private static final boolean redirectStdErr =
+            Util.getBoolean("dlight.memory.log.stderr", false); // NOI18N
+
+//    private static final boolean USE_SUNSTUDIO =
+//            Boolean.getBoolean("gizmo.mem.sunstudio"); // NOI18N
+    private static boolean USE_SUNSTUDIO = NbPreferences.forModule(DLightToolConfigurationProvider.class).getBoolean(SUNSTUDIO_COLLECTORS,  Boolean.getBoolean("gizmo.mem.sunstudio"));
+    private static final String TOOL_NAME = loc("MemoryTool.ToolName"); // NOI18N
+    private static final Column totalColumn;
+    private static final DataTableMetadata rawTableMetadata;
+//    /** this is for the case of using DTrace for indicator only  */
+//    private static final DataTableMetadata indicatorTableMetadata;
+
+    static {
+        final Column timestampColumn = new Column("timestamp", Long.class, loc("MemoryTool.ColumnName.timestamp"), null); // NOI18N
+        final Column kindColumn = new Column("kind", Integer.class, loc("MemoryTool.ColumnName.kind"), null); // NOI18N
+        final Column sizeColumn = new Column("size", Integer.class, loc("MemoryTool.ColumnName.size"), null); // NOI18N
+        final Column addressColumn = new Column("address", Long.class, loc("MemoryTool.ColumnName.address"), null); // NOI18N
+        final Column stackColumn = new Column("stackid", Integer.class, loc("MemoryTool.ColumnName.stackid"), null); // NOI18N
+
+        totalColumn = new Column("total", Integer.class, loc("MemoryTool.ColumnName.total"), null); // NOI18N
+
+        List<Column> columns = Arrays.asList(
+                timestampColumn,
+                kindColumn,
+                sizeColumn,
+                addressColumn,
+                totalColumn,
+                stackColumn);
+
+
+        rawTableMetadata = new DataTableMetadata("mem", columns); // NOI18N
+//
+//        columns = Arrays.asList(
+//                timestampColumn,
+//                kindColumn,
+//                sizeColumn,
+//                addressColumn,
+//                totalColumn);
+//
+//        indicatorTableMetadata = new DataTableMetadata("mem", columns); // NOI18N
+    }
 
     public MemoryToolConfigurationProvider() {
     }
 
     public DLightToolConfiguration create() {
-        final String toolName = "Memory Tool";
-        final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
-        Column totalColumn = new Column("total", Integer.class, "Heap size", null);
-        DataTableMetadata rawTableMetadata = null;
+        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(TOOL_NAME);
+
         if (useCollector) {
-            Column timestampColumn = new Column("timestamp", Long.class, "Timestamp", null);
-            Column kindColumn = new Column("kind", Integer.class, "Kind", null);
-            Column sizeColumn = new Column("size", Integer.class, "Size", null);
-            Column addressColumn = new Column("address", Long.class, "Address", null);
-            Column stackColumn = new Column("stackid", Integer.class, "Stack ID", null);
-
-            List<Column> columns = Arrays.asList(
-                    timestampColumn,
-                    kindColumn,
-                    sizeColumn,
-                    addressColumn,
-                    totalColumn,
-                    stackColumn);
-
-            String scriptFile = Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/mem.d");
-
-            rawTableMetadata = new DataTableMetadata("mem", columns);
-            DTDCConfiguration dataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(rawTableMetadata));
-            dataCollectorConfiguration.setStackSupportEnabled(true);
-            //dataCollectorConfiguration.setIndicatorFiringFactor(1);
-            // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
-            MultipleDTDCConfiguration multipleDTDCConfiguration = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:");
-            toolConfiguration.addDataCollectorConfiguration(multipleDTDCConfiguration);
-        }
-        List<Column> indicatorColumns = Arrays.asList(
-                totalColumn);
-        IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
-        DataTableMetadata indicatorTableMetadata = new DataTableMetadata("truss", indicatorColumns);
-
-        String monitor = MemoryMonitorUtil.getMonitorCmd();
-        String envVar = MemoryMonitorUtil.getEnvVar();
-        String agent = MemoryMonitorUtil.getAgentLib();
-        DLightLogger.instance.fine("Memory Indicator:\nmonitor:\n" + monitor + "\nagent:\n" + agent + "\n\n");
-        if (monitor != null && agent != null) {
-            CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration(monitor,
-                    " @PID " + (redirectStdErr ? " 2>/tmp/mmonitor.err" : ""),
-                    new MAgentClioParser(totalColumn), Arrays.asList(indicatorTableMetadata));
-            Map<String, String> env = new LinkedHashMap<String, String>();
-            env.put(envVar, agent);
-            DLightLogger.instance.fine("SET " + envVar + "=" + agent);//NOI18N
-            clioCollectorConfiguration.setDLightTargetExecutionEnv(env);
-            toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
-            MemoryIndicatorConfiguration indicator = new MemoryIndicatorConfiguration(indicatorMetadata, "total");
-            if (useCollector) {
-                indicator.setVisualizerConfiguration(getDetails(rawTableMetadata));
+            if (USE_SUNSTUDIO) {
+                DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
+                toolConfiguration.addDataCollectorConfiguration(dcc);
+            } else {
+                MultipleDTDCConfiguration mdcc = initDtraceDataCollectorConfiguration();
+                toolConfiguration.addDataCollectorConfiguration(mdcc);
+                // it's an indicator data provider as well!
+                toolConfiguration.addIndicatorDataProviderConfiguration(mdcc);
             }
-            toolConfiguration.addIndicatorConfiguration(indicator);
         }
+        // TODO: replace with just "else" after fixing #159681 (It is impossible to use DTrace as indicator data provider)
+        if (!(useCollector && USE_SUNSTUDIO)) {
+            // AK: Disable indicator data provider until issue with USR1 signal is resolved;
+            // VK: (in other words: don't use LL monitor since it breaks collect with SIGUSR1)
+            // VK: if we use DTrace collector, it will act as indicator data provider as well!
+            // so we need separate collector only in the case we don't collect details at all
+            toolConfiguration.addIndicatorDataProviderConfiguration(
+                    useLLIndicatorDataProvider ?
+                        initNativeIndicatorDataProviderConfiguration() :
+                        initDtraceIndicatorDataProviderConfiguration());
+        }
+        
+        toolConfiguration.addIndicatorConfiguration(initIndicatorConfiguration());
 
         return toolConfiguration;
+    }
+
+    private DataCollectorConfiguration initSunStudioDataCollectorConfiguration() {
+        return new SunStudioDCConfiguration(SunStudioDCConfiguration.CollectedInfo.MEMORY);
+    }
+
+    private MultipleDTDCConfiguration initDtraceDataCollectorConfiguration() {
+
+        DTDCConfiguration dataCollectorConfiguration =
+                new DTDCConfiguration(getScriptFile(), Arrays.asList(rawTableMetadata));
+
+        dataCollectorConfiguration.setIndicatorFiringFactor(1);
+        // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
+        dataCollectorConfiguration.setStackSupportEnabled(true);
+
+        MultipleDTDCConfiguration mdc = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:"); // NOI18N
+        return mdc;
+    }
+
+    private IndicatorDataProviderConfiguration initDtraceIndicatorDataProviderConfiguration() {
+
+        DTDCConfiguration dataCollectorConfiguration =
+                new DTDCConfiguration(getScriptFile(), Arrays.asList(rawTableMetadata)); // indicatorTableMetadata
+
+        dataCollectorConfiguration.setIndicatorFiringFactor(1);
+        // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
+        dataCollectorConfiguration.setScriptArgs(" -DNOSTACK");
+        dataCollectorConfiguration.setStackSupportEnabled(true); // true
+
+        MultipleDTDCConfiguration mdc = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:"); // NOI18N
+        return mdc;
+    }
+
+    private String getScriptFile() {
+        return Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/mem.d"); // NOI18N
+    }
+
+    private IndicatorDataProviderConfiguration initNativeIndicatorDataProviderConfiguration() {
+        CLIODCConfiguration memIndicatorDataProvider = null;
+
+        final DataTableMetadata indicatorTableMetadata =
+                new DataTableMetadata("magent", Arrays.asList(totalColumn)); // NOI18N
+
+        String monitor = NativeToolsUtil.getExecutable("mmonitor");
+        String envVar = NativeToolsUtil.getLdPreloadEnvVarName();
+        String agent = NativeToolsUtil.getSharefLibrary("magent");
+
+        DLightLogger.instance.fine("Memory Indicator:\nmonitor:\n" + // NOI18N
+                monitor + "\nagent:\n" + agent + "\n\n"); // NOI18N
+
+        if (monitor != null && agent != null) {
+            memIndicatorDataProvider = new CLIODCConfiguration(monitor,
+                    " @PID " + (redirectStdErr ? " 2>/tmp/mmonitor.err" : ""), // NOI18N
+                    new MAgentClioParser(totalColumn),
+                    Arrays.asList(indicatorTableMetadata));
+
+            Map<String, String> env = new LinkedHashMap<String, String>();
+            env.put(envVar, agent);
+
+            DLightLogger.instance.fine("SET " + envVar + "=" + agent);//NOI18N
+
+            if (monitor != null && agent != null) {
+                memIndicatorDataProvider.setDLightTargetExecutionEnv(env);
+            }
+        }
+
+        return memIndicatorDataProvider;
+    }
+
+    private IndicatorConfiguration initIndicatorConfiguration() {
+        IndicatorMetadata indicatorMetadata = null;
+        indicatorMetadata = new IndicatorMetadata(Arrays.asList(totalColumn));
+
+        MemoryIndicatorConfiguration indicatorConfiguration =
+                new MemoryIndicatorConfiguration(indicatorMetadata, "total"); // NOI18N
+
+        if (useCollector) {
+            if (USE_SUNSTUDIO) {
+                DataTableMetadata detailedViewTableMetadata =
+                        SunStudioDCConfiguration.getMemTableMetadata(
+                        SunStudioDCConfiguration.c_name,
+                        SunStudioDCConfiguration.c_leakSize,
+                        SunStudioDCConfiguration.c_leakCount);
+
+                indicatorConfiguration.setVisualizerConfiguration(
+                        new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata, SunStudioDCConfiguration.c_name.getColumnName()));
+            } else {
+                indicatorConfiguration.setVisualizerConfiguration(getDetails(rawTableMetadata));
+            }
+        }
+
+        return indicatorConfiguration;
     }
 
     private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
 
         List<Column> viewColumns = Arrays.asList(
-                new Column("func_name", String.class, "Function", null),
-                new Column("leak", Long.class, "Leak", null));
+                new Column("func_name", MangledNameType.class, loc("MemoryTool.ColumnName.func_name"), null), // NOI18N
+                 new Column("leak", Long.class, loc("MemoryTool.ColumnName.leak"), null)); // NOI18N
 
         String sql =
-            "SELECT func.func_name as func_name, SUM(size) as leak " +
-            "FROM mem, node AS node, func, ( " +
-            "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " +
-            "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " +
-            "   ) AS vt1 WHERE address = leak_address GROUP BY address " +
-            ") AS vt2 WHERE timestamp = leak_timestamp " +
-            "AND stackid = node.node_id and node.func_id = func.func_id " +
-            "GROUP BY node.func_id, func.func_name";
+                "SELECT func.func_name as func_name, SUM(size) as leak " + // NOI18N
+                "FROM mem, node AS node, func, ( " + // NOI18N
+                "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " + // NOI18N
+                "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " + // NOI18N
+                "   ) AS vt1 WHERE address = leak_address GROUP BY address " + // NOI18N
+                ") AS vt2 WHERE timestamp = leak_timestamp " + // NOI18N
+                "AND stackid = node.node_id and node.func_id = func.func_id " + // NOI18N
+                "GROUP BY node.func_id, func.func_name"; // NOI18N
 
-        DataTableMetadata viewTableMetadata = new DataTableMetadata("mem", viewColumns, sql, Arrays.asList(rawTableMetadata));
-        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration = new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name");
-        tableVisualizerConfiguration.setEmptyAnalyzeMessage(NbBundle.getMessage(MemoryToolConfigurationProvider.class, "DetailedView.EmptyAnalyzeMessage"));
-        tableVisualizerConfiguration.setEmptyRunningMessage(NbBundle.getMessage(MemoryToolConfigurationProvider.class, "DetailedView.EmptyRunningMessage"));
+        DataTableMetadata viewTableMetadata = new DataTableMetadata(
+                "mem", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N
+
+        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration =
+                new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name"); // NOI18N
+//        TableVisualizerConfiguration tableVisualizerConfiguration = new TableVisualizerConfiguration(viewTableMetadata);
+        tableVisualizerConfiguration.setEmptyAnalyzeMessage(
+                loc("DetailedView.EmptyAnalyzeMessage")); // NOI18N
+
+        tableVisualizerConfiguration.setEmptyRunningMessage(
+                loc("DetailedView.EmptyRunningMessage")); // NOI18N
+
         tableVisualizerConfiguration.setDefaultActionProvider();
-        return  tableVisualizerConfiguration;
+
+        return tableVisualizerConfiguration;
     }
 
     private static class MAgentClioParser implements CLIOParser {
@@ -172,8 +301,8 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 return null;
             }
             try {
-                long value = Integer.parseInt(line);
-                return new DataRow(colNames, Arrays.asList(new Long[] { value }));
+                Long value = Long.parseLong(line);
+                return new DataRow(colNames, Arrays.asList((Object) value));
             } catch (NumberFormatException e) {
                 DLightLogger.instance.log(Level.WARNING, e.getMessage(), e);
             }
@@ -184,7 +313,6 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             DLightLogger.assertTrue(s != null);
             return Integer.parseInt(s);
         }
-
     }
 
 //    private static class TrussClioParser implements CLIOParser {
@@ -279,6 +407,17 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 //            DLightLogger.assertTrue(s != null);
 //            DLightLogger.assertTrue(s.startsWith("0x"));
 //            return Integer.parseInt(s.substring(2), 16);
+//        }
+//    }
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(
+                MemoryToolConfigurationProvider.class, key, params);
+    }
+
+//    private static class _Column extends Column {
+//
+//        public _Column(Class clazz, String name) {
+//            super(name, clazz, loc("MemoryTool.ColumnName." + name), null); // NOI18N
 //        }
 //    }
 }

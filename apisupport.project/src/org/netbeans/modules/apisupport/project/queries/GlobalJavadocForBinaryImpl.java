@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery.Result;
@@ -57,6 +58,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.filesystems.FileUtil;
@@ -135,6 +138,12 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
             NbModuleProject module = p.getLookup().lookup(NbModuleProject.class);
             if (module != null) {
                 String cnb = module.getCodeNameBase();
+
+                Set<ModuleEntry> entries = ModuleList.getKnownEntries(module.getModuleJarLocation());
+                for (ModuleEntry entry : entries) {
+//              TODO C.P      if (entry instanceof );
+                }
+
                 for (NbPlatform plaf : NbPlatform.getPlatforms()) {
                     Result r = findByDashedCNB(cnb.replace('.', '-'), plaf);
                     if (r != null) {

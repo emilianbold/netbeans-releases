@@ -67,10 +67,10 @@ public class APTIncludeUtils {
      * caller must check that resolved path is not the same as base file
      * to prevent recursive inclusions 
      */
-    public static ResolvedPath resolveFilePath(String file, String baseFile) {           
+    public static ResolvedPath resolveFilePath(String inclString, String baseFile) {
         if (baseFile != null) {
             String folder = new File(baseFile).getParent();
-            File fileFromBasePath = new File(folder, file);
+            File fileFromBasePath = new File(folder, inclString);
             if (!isDirectory(fileFromBasePath) && exists(fileFromBasePath)) {
                 //return fileFromBasePath.getAbsolutePath();
                 return new ResolvedPath(folder, fileFromBasePath.getAbsolutePath(), true, 0);

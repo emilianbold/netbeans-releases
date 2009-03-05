@@ -36,19 +36,26 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.support;
 
+import java.io.StringWriter;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory.MacroExpander;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.Exceptions;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -78,20 +85,53 @@ public class MacroExpanderFactoryTest {
     /**
      * Test of getExpander method, of class MacroExpanderFactory.
      */
-    @Test
+//    @Test
     public void testGetExpander_ExecutionEnvironment_String() {
         System.out.println("getExpander");
-        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "brighton.russia.sun.com");
-//        ExecutionEnvironment execEnv = new ExecutionEnvironment();
-        ConnectionManager.getInstance().getConnectToAction(execEnv, null).invoke();
+//        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "brighton.russia.sun.com");
+        ExecutionEnvironment execEnv = new ExecutionEnvironment();
+//        ConnectionManager.getInstance().getConnectToAction(execEnv, null).invoke();
         MacroExpander expander = MacroExpanderFactory.getExpander(execEnv, "SunStudio");
+
+        Map<String, String> myenv = new HashMap<String, String>();
         try {
-            System.out.println("$osname-${platform}$_isa -> " + expander.expandMacros("$osname-$platform$_isa"));
+            myenv.put("PATH", expander.expandMacros("/bin:$PATH", myenv));
+            myenv.put("PATH", expander.expandMacros("/usr/bin:$platform:$PATH", myenv));
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
 
-
+        System.out.println(myenv.toString());
+        try {
+            System.out.println("$osname-${platform}$_isa -> " + expander.expandPredefinedMacros("$osname-$platform$_isa"));
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
+    @Test
+    public void testPath() {
+        ExecutionEnvironment execEnv = new ExecutionEnvironment("test", "localhost");
+        NativeProcessBuilder npb = new NativeProcessBuilder(
+                execEnv, "/bin/echo").setArguments("$PATH").addEnvironmentVariable(
+                "PATH", "/firstPath:$PATH:${ZZZ}_${platform}").addEnvironmentVariable("PATH", "$PATH:/secondPath");
+
+        StringWriter result = new StringWriter();
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "test"); // NOI18N
+
+        Future<Integer> res = execService.run();
+
+        try {
+            res.get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        System.out.println("Output is " + result.toString());
+
+    }
 }

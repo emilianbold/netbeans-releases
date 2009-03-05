@@ -59,7 +59,7 @@ import javax.swing.undo.UndoManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.customization.multiview.WSCustomizationTopComponent;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
@@ -94,10 +94,15 @@ public class CustomizationWSEditor implements WSEditor {
     private boolean jaxwsDirty;
     private Definitions primaryDefinitions;
     private UndoManager undoManager;
+    private JaxWsModel jaxWsModel;
 
     /**
      * Creates a new instance of CustomizationWSEditor
      */
+    public CustomizationWSEditor(JaxWsModel jaxWsModel) {
+        this.jaxWsModel = jaxWsModel;
+    }
+    
     public CustomizationWSEditor() {
     }
 
@@ -154,12 +159,12 @@ public class CustomizationWSEditor implements WSEditor {
         }
     }
 
-    public void save(final Node node, final JaxWsModel jaxWsModel) {
+    public void save(final Node node) {
         saveAndRefresh(node, jaxWsModel);
         removeListeners();
     }
 
-    public JComponent createWSEditorComponent(Node node, JaxWsModel jaxWsModel) {
+    public JComponent createWSEditorComponent(Node node) {
         try {
             initializeModels(node);
         } catch (Exception e) {
@@ -167,8 +172,7 @@ public class CustomizationWSEditor implements WSEditor {
             return null;
         }
 
-        wsTopComponent = new WSCustomizationTopComponent(node, getWSDLModels(), primaryDefinitions,
-                jaxWsModel);
+        wsTopComponent = new WSCustomizationTopComponent(node, getWSDLModels(), primaryDefinitions, false);
         wsTopComponent.setName(getTitle());
         return wsTopComponent;
     }
@@ -290,7 +294,7 @@ public class CustomizationWSEditor implements WSEditor {
         return model;
     }
 
-    public void cancel(Node node, JaxWsModel jaxWsModel) {
+    public void cancel(Node node) {
         if (undoManager != null) {
             while (undoManager.canUndo()) {
                 undoManager.undo();

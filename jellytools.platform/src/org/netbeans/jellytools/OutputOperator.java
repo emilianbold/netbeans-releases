@@ -185,11 +185,11 @@ public class OutputOperator extends TopComponentOperator {
      */
     private static final ComponentChooser outputSubchooser = new ComponentChooser() {
         public boolean checkComponent(Component comp) {
-            return comp.getClass().getName().endsWith("OutputWindow"); //NOI18N
+            return comp.getClass().getName().endsWith("IOWindowImpl"); //NOI18N
         }
         
         public String getDescription() {
-            return "component instanceof org.netbeans.core.output2.OutputWindow";// NOI18N
+            return "component instanceof org.netbeans.core.io.ui.IOWindow$IOWindowImpl";// NOI18N
         }
     };
 }

@@ -86,9 +86,9 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     public CsmFunction getDeclaration() {
         if( isCStyleStatic() ) {
             CharSequence name = getName();
-            CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(
-                               name.toString(), true, true, false);
-            Iterator<CsmFunction> it = CsmSelect.getDefault().getStaticFunctions(getContainingFile(), filter);
+            CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(
+                               name, true, true, false);
+            Iterator<CsmFunction> it = CsmSelect.getStaticFunctions(getContainingFile(), filter);
             while(it.hasNext()){
                 CsmFunction fun = it.next();
                 if( name.equals(fun.getName()) ) {

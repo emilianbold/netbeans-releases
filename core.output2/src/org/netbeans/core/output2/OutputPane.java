@@ -87,6 +87,7 @@ class OutputPane extends AbstractOutputPane {
         }
     }
 
+    @Override
     public void setMouseLine (int line, Point p) {
         Document doc = getDocument();
         if (doc instanceof OutputDocument) {
@@ -157,6 +158,7 @@ class OutputPane extends AbstractOutputPane {
      * numbers of calls to viewToModel if the cursor is never going to be 
      * changed anyway.
      */
+    @Override
     public void mouseMoved (MouseEvent evt) {
         Document doc = getDocument();
         if (doc instanceof OutputDocument) {
@@ -166,6 +168,7 @@ class OutputPane extends AbstractOutputPane {
         }
     }
     
+    @Override
     public void mousePressed(MouseEvent e) {
         super.mousePressed(e);
         if (e.getSource() == textView && SwingUtilities.isLeftMouseButton(e)) {
@@ -189,6 +192,7 @@ class OutputPane extends AbstractOutputPane {
         return  (OutputTab) SwingUtilities.getAncestorOfClass (OutputTab.class, this);
     }
 
+    @Override
     protected void setDocument (Document doc) {
         if (doc == null) {
             Document d = getDocument();
@@ -207,6 +211,7 @@ class OutputPane extends AbstractOutputPane {
     public void setWrapped (boolean val) {
         if (val != isWrapped() || !(getEditorKit() instanceof OutputEditorKit)) {
             NbPreferences.forModule(OutputPane.class).putBoolean("wrap", val); //NOI18N
+            textView.setFont(val ? Controller.getDefault().getCurrentFontMS() : Controller.getDefault().getCurrentFont());
             final int pos = textView.getCaret().getDot();
             Cursor cursor = textView.getCursor();
             try {
@@ -266,7 +271,7 @@ class OutputPane extends AbstractOutputPane {
         InputMap map = result.getInputMap();
         MyInputMap myMap = new MyInputMap();
         myMap.setParent(map);
-        result.setInputMap(result.WHEN_FOCUSED, myMap);
+        result.setInputMap(JEditorPane.WHEN_FOCUSED, myMap);
         
         Action act = new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
@@ -290,10 +295,10 @@ class OutputPane extends AbstractOutputPane {
     }
 
     @Override
-    protected void changeFontSizeBy(int amt) {
-        findOutputTab().changeFontSizeBy(amt);
+    protected void changeFontSizeBy(int change) {
+        Controller.getDefault().changeFontSizeBy(change, isWrapped());
     }
-    
+
     //#83118 - remove the "control shift 0" from editor pane to lt the Open Project action through
     protected class MyInputMap extends  InputMap {
         
@@ -301,6 +306,7 @@ class OutputPane extends AbstractOutputPane {
             super();
         }
         
+        @Override
         public Object get(KeyStroke keyStroke) {
             KeyStroke stroke = KeyStroke.getKeyStroke("control shift O");
             if (keyStroke.equals(stroke)) {
@@ -330,6 +336,7 @@ class OutputPane extends AbstractOutputPane {
     }
     
     private static final class GEP extends JEditorPane {
+        @Override
         public java.awt.Color getBackground() {
             return UIManager.getColor("text");
         }

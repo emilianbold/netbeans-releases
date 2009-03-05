@@ -42,14 +42,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.support.Logger;
 
-/**
- *
- */
 public final class LocalNativeProcess extends AbstractNativeProcess {
 
-    private static final Runtime rt = Runtime.getRuntime();
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -57,29 +54,36 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     public LocalNativeProcess(NativeProcessInfo info) throws IOException {
         super(info);
-        
-        final String commandLine = info.getCommandLine(true);
+
+        final String commandLine = info.getCommandLine();
         final String workingDirectory = info.getWorkingDirectory(true);
         final File wdir =
                 workingDirectory == null ? null : new File(workingDirectory);
 
-        synchronized (rt) {
-            ProcessBuilder pb = new ProcessBuilder(Arrays.asList(
-                    "/bin/sh", "-c", // NOI18N
-                    "/bin/echo $$ && exec " + commandLine)); // NOI18N
+        ProcessBuilder pb = new ProcessBuilder(
+                HostInfoUtils.getShell(info.getExecutionEnvironment()), "-c", // NOI18N
+                "/bin/echo $$ && exec " + commandLine); // NOI18N
 
-            pb.environment().putAll(info.getEnvVariables(true));
-            pb.directory(wdir);
+        pb.environment().putAll(info.getEnvVariables(pb.environment()));
+        pb.directory(wdir);
 
-            process = pb.start();
+        Process pr = null;
 
-            processOutput = process.getInputStream();
-            processError = process.getErrorStream();
-            processInput = process.getOutputStream();
-
-
-            readPID(processOutput);
+        try {
+            pr = pb.start();
+        } catch (IOException ex) {
+            Logger.getInstance().warning("Unable to start process [" + // NOI18N
+                    commandLine + "]! " + ex.getMessage()); // NOI18N
+            throw ex;
         }
+
+        process = pr;
+
+        processOutput = process.getInputStream();
+        processError = process.getErrorStream();
+        processInput = process.getOutputStream();
+
+        readPID(processOutput);
     }
 
     @Override
@@ -99,10 +103,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     public final int waitResult() throws InterruptedException {
-        int result = process.waitFor();
-//        // TODO: How to wait for all buffers?
-        Thread.yield();
-        return result;
+        return process.waitFor();
     }
 
     @Override

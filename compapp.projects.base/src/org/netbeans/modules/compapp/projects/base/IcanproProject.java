@@ -62,6 +62,7 @@ import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -72,6 +73,12 @@ import org.w3c.dom.Text;
  * Represents one ejb module project
  * @author Chris Webster
  */
+@AntBasedProjectRegistration(
+    type=IcanproProjectType.TYPE,
+    iconResource="org/netbeans/modules/compapp/projects/base/ui/resources/icanproProjectIcon.gif",
+    sharedNamespace=IcanproProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+    privateNamespace=IcanproProjectType.PRIVATE_CONFIGURATION_NAMESPACE
+)
 public final class IcanproProject implements Project, AntProjectListener {
 
     private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/compapp/projects/base/ui/resources/icanproProjectIcon.gif", false); // NOI18N

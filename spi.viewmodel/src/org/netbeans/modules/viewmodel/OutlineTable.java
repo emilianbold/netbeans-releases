@@ -579,7 +579,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         int tci = d;
         TableColumn[] tableColumns = new TableColumn[columns.length];
         for (int i = 0; i < columns.length; i++) {
-            if (i < columnsToSet.length && columns[i] == columnsToSet[ci]) {
+            if (ci < columnsToSet.length && columns[i] == columnsToSet[ci]) {
                 TableColumn tc = tcm.getColumn(tci);
                 tableColumns[i] = tc;
                 if (columns[i].isHidden()) {

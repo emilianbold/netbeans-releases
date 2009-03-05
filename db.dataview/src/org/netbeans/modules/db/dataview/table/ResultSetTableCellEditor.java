@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,8 +34,9 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.db.dataview.table;
 
 import java.awt.BorderLayout;
@@ -50,6 +51,7 @@ import java.awt.event.MouseEvent;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.EventObject;
 import javax.swing.AbstractCellEditor;
 import javax.swing.Action;
@@ -75,6 +77,7 @@ import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.netbeans.modules.db.dataview.util.JXDateTimePicker;
+import org.netbeans.modules.db.dataview.util.TimestampType;
 import org.openide.awt.StatusDisplayer;
 import org.openide.windows.WindowManager;
 
@@ -289,7 +292,7 @@ class DateTimePickerCellEditor extends AbstractCellEditor implements TableCellEd
     private JTable table;
 
     public DateTimePickerCellEditor() {
-        this(DateFormat.getDateTimeInstance());
+        this(new SimpleDateFormat (TimestampType.DEFAULT_FORMAT_PATTERN));
     }
 
     /**
@@ -302,7 +305,7 @@ class DateTimePickerCellEditor extends AbstractCellEditor implements TableCellEd
 
         // JW: the copy is used to synchronize .. can 
         // we use something else?
-        this.dateFormat = dateFormat != null ? dateFormat : DateFormat.getDateTimeInstance();
+        this.dateFormat = dateFormat != null ? dateFormat : new SimpleDateFormat (TimestampType.DEFAULT_FORMAT_PATTERN);
         datePicker = new JXDateTimePicker();
         // default border crushes the editor/combo
         datePicker.getEditor().setBorder(

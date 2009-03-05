@@ -2077,7 +2077,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
         return lastSeparatorOffset;
     }
 
-    public void start(int startOffset, int firstTokenOffset) {
+    public void start(int startOffset, int firstTokenOffset, int lastOffset) {
     }
 
     @SuppressWarnings("fallthrough")

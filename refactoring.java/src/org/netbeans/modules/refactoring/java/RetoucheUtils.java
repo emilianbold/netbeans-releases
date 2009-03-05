@@ -180,28 +180,31 @@ public class RetoucheUtils {
         return null;
     }
     
-    public static Set<ElementHandle<TypeElement>> getImplementorsAsHandles(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {    
+    public static Set<ElementHandle<TypeElement>> getImplementorsAsHandles(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
         cancel = false;
-       ClassPath source = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-       LinkedList<ElementHandle<TypeElement>> elements = new LinkedList<ElementHandle<TypeElement>>(idx.getElements(ElementHandle.create(el),
-                EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
-                EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES)));
-        HashSet<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();
-        while(!elements.isEmpty()) {
+        LinkedList<ElementHandle<TypeElement>> elements = new LinkedList<ElementHandle<TypeElement>>(
+                implementorsQuery(idx, ElementHandle.create(el)));
+        Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();
+        while (!elements.isEmpty()) {
             if (cancel) {
                 cancel = false;
-                return Collections.<ElementHandle<TypeElement>>emptySet();
+                return Collections.emptySet();
             }
             ElementHandle<TypeElement> next = elements.removeFirst();
-            FileObject file = SourceUtils.getFile(next, cpInfo);
-            if(file!=null && source.contains(file)) {
-                result.add(next);
+            if (!result.add(next)) {
+                // it is a duplicate; do not query again
+                continue;
             }
-            elements.addAll(idx.getElements(next,
-                    EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
-                    EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES)));
+            Set<ElementHandle<TypeElement>> foundElements = implementorsQuery(idx, next);
+            elements.addAll(foundElements);
         }
         return result;
+    }
+
+    private static Set<ElementHandle<TypeElement>> implementorsQuery(ClassIndex idx, ElementHandle<TypeElement> next) {
+        return idx.getElements(next,
+                    EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+                    EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES));
     }
 
     public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement e, CompilationInfo info) {

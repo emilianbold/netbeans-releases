@@ -38,29 +38,23 @@
  */
 package org.netbeans.core.validation;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.jar.Attributes;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
+import org.netbeans.core.NbTopManager;
 import org.netbeans.core.startup.ConsistencyVerifier;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Lookup;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * Checks that all modules in the distribution are suitably visible to Plugin Manager.
@@ -69,6 +63,20 @@ public class ValidateUpdateCenterTest extends NbTestCase {
 
     public ValidateUpdateCenterTest(String n) {
         super(n);
+    }
+
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
+                clusters(".*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
+                clusters("(platform|harness|ide|websvccommon|gsf|java|profiler|nb)[0-9.]*").enableModules(".*").
+                honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
+        /* Too many failures to all be fixed:
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
+                clusters("(platform|ide)[0-9.]*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
+         */
+        return suite;
     }
 
     public void testInvisibleModules() throws Exception {
@@ -114,13 +122,29 @@ public class ValidateUpdateCenterTest extends NbTestCase {
         permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.platform");
         permittedDisabledAutoloads.add("org.netbeans.modules.jemmy");
         permittedDisabledAutoloads.add("org.netbeans.modules.nbjunit");
+        permittedDisabledAutoloads.add("org.netbeans.insane");
         permittedDisabledAutoloads.add("org.netbeans.modules.visualweb.gravy");
+        // just has to be present, not enabled
+        permittedDisabledAutoloads.add("org.netbeans.modules.apisupport.harness");
         // really unused, yet kept in build for tutorials
         permittedDisabledAutoloads.add("org.netbeans.modules.lexer.editorbridge");
         // for compatibility
         permittedDisabledAutoloads.add("org.openide.util.enumerations");
         // for use by developers
         permittedDisabledAutoloads.add("org.netbeans.spi.actions.support");
+        // kept in base IDE but not used in all cluster configs
+        permittedDisabledAutoloads.add("org.netbeans.libs.commons_net");
+        permittedDisabledAutoloads.add("org.netbeans.libs.httpunit");
+        permittedDisabledAutoloads.add("org.netbeans.libs.jakarta_oro");
+        permittedDisabledAutoloads.add("org.netbeans.modules.gsf.testrunner");
+        permittedDisabledAutoloads.add("org.netbeans.modules.gsf.codecoverage");
+        permittedDisabledAutoloads.add("org.netbeans.modules.extexecution");
+        permittedDisabledAutoloads.add("org.netbeans.modules.glassfish.common");
+        permittedDisabledAutoloads.add("org.netbeans.modules.server");
+        // still under development
+        permittedDisabledAutoloads.add("org.netbeans.modules.spi.actions");
+        // currently in gsf cluster, probably belongs in webcommon?
+        permittedDisabledAutoloads.add("org.netbeans.modules.web.client.tools.api");
         SortedMap<String,SortedSet<String>> problems = ConsistencyVerifier.findInconsistencies(manifests, permittedDisabledAutoloads);
         if (!problems.isEmpty()) {
             StringBuilder message = new StringBuilder("Problems found with autoloads");
@@ -132,81 +156,16 @@ public class ValidateUpdateCenterTest extends NbTestCase {
     }
 
     private static Set<Manifest> loadManifests() throws Exception {
-        // Intentionally does _not_ use NbModuleSuite, as that tries to make all modules regular modules!
-        File util = new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-        assertTrue("Util exists: " + util, util.exists());
-        File install = util.getParentFile().getParentFile().getParentFile();
+        ModuleManager mgr = NbTopManager.get().getModuleSystem().getManager();
         Set<Manifest> manifests = new HashSet<Manifest>();
-        XPath xpath = XPathFactory.newInstance().newXPath();
-        for (File cluster : install.listFiles()) {
-            File configModules = new File(cluster, "config/Modules");
-            if (!configModules.isDirectory()) {
-                continue;
+        for (Module m : mgr.getModules()) {
+            Manifest manifest = m.getManifest();
+            if (m.isAutoload()) {
+                manifest.getMainAttributes().putValue("autoload", "true");
+            } else if (m.isEager()) {
+                manifest.getMainAttributes().putValue("eager", "true");
             }
-            for (File xml : configModules.listFiles()) {
-                if (!xml.getName().endsWith(".xml")) {
-                    continue;
-                }
-                Document doc = XMLUtil.parse(new InputSource(xml.toURI().toString()), false, false, null, new EntityResolver() {
-                    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                        if (publicId.equals("-//NetBeans//DTD Module Status 1.0//EN")) {
-                            return new InputSource(new ByteArrayInputStream(new byte[0]));
-                        } else {
-                            return null;
-                        }
-                    }
-                });
-                File jarFile = new File(cluster, xpath.evaluate("//param[@name=\'jar\']", doc));
-                if (!jarFile.isFile()) {
-                    // Common when processing ergonomics cluster.
-                    continue;
-                }
-                try {
-                    JarFile jar = new JarFile(jarFile);
-                    try {
-                        Manifest m = jar.getManifest();
-                        for (String pseudoAttr : new String[] {"autoload", "eager"}) {
-                            m.getMainAttributes().putValue(pseudoAttr, xpath.evaluate("//param[@name='" + pseudoAttr + "']", doc));
-                        }
-                        manifests.add(m);
-                    } finally {
-                        jar.close();
-                    }
-                } catch (IOException x) {
-                    throw (IOException) new IOException("Could not open " + jarFile + ": " + x).initCause(x);
-                }
-            }
-            // The following have no associated config/Modules/*.xml:
-            for (String special : new String[] {"lib", "core"}) {
-                File dir = new File(cluster, special);
-                if (!dir.isDirectory()) {
-                    continue;
-                }
-                for (File jarFile : dir.listFiles()) {
-                    if (!jarFile.getName().endsWith(".jar")) {
-                        continue;
-                    }
-                    try {
-                        JarFile jar = new JarFile(jarFile);
-                        try {
-                            Manifest m = jar.getManifest();
-                            if (m.getMainAttributes().getValue("OpenIDE-Module") != null) {
-                                manifests.add(m);
-                            }
-                        } finally {
-                            jar.close();
-                        }
-                    } catch (IOException x) {
-                        throw (IOException) new IOException("Could not open " + jarFile + ": " + x).initCause(x);
-                    }
-                }
-            }
-        }
-        for (Manifest m : manifests) {
-            // Could not actually load the bundle anyway, so would just throw an exception:
-            m.getMainAttributes().remove(new Attributes.Name("OpenIDE-Module-Localizing-Bundle"));
-            // Public packages would be ignored anyway:
-            m.getMainAttributes().remove(new Attributes.Name("OpenIDE-Module-Friends"));
+            manifests.add(manifest);
         }
         return manifests;
     }

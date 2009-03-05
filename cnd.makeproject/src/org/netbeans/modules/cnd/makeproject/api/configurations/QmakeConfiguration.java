@@ -94,6 +94,7 @@ public class QmakeConfiguration implements Cloneable {
     private StringConfiguration uiDir;
 
     // expert
+    private StringConfiguration qmakespec;
     private VectorConfiguration<String> customDefs;
 
     public QmakeConfiguration(MakeConfiguration makeConfiguration) {
@@ -116,6 +117,7 @@ public class QmakeConfiguration implements Cloneable {
         rccDir = new StringConfiguration(null, ""); // NOI18N
         uiDir = new StringConfiguration(null, ""); // NOI18N
         customDefs = new VectorConfiguration<String>(null);
+        qmakespec = new StringConfiguration(null, ""); // NOI18N
     }
 
     public Sheet getGeneralSheet() {
@@ -160,6 +162,7 @@ public class QmakeConfiguration implements Cloneable {
         expert.setName("QtExpert"); // NOI18N
         expert.setDisplayName(getString("QtExpertTxt")); // NOI18N
         expert.setShortDescription(getString("QtExpertHint")); // NOI18N
+        expert.put(new StringNodeProp(qmakespec, "QtQmakeSpec", getString("QtQmakeSpecTxt"), getString("QtQmakeSpecHint"))); // NOI18N
         expert.put(new StringListNodeProp(customDefs, null, new String[]{"QtCustomDefs", getString("QtCustomDefsTxt"), getString("QtCustomDefsHint"), getString("QtCustomDefsLbl")}, false, HelpCtx.DEFAULT_HELP)); // NOI18N
         sheet.put(expert);
 
@@ -423,6 +426,14 @@ public class QmakeConfiguration implements Cloneable {
         this.customDefs = customDefs;
     }
 
+    public StringConfiguration getQmakeSpec() {
+        return qmakespec;
+    }
+
+    private void setQmakespec(StringConfiguration qmakespec) {
+        this.qmakespec = qmakespec;
+    }
+
     public void assign(QmakeConfiguration other) {
         getDestdir().assign(other.getDestdir());
         getTarget().assign(other.getTarget());
@@ -442,6 +453,7 @@ public class QmakeConfiguration implements Cloneable {
         getRccDir().assign(other.getRccDir());
         getUiDir().assign(other.getUiDir());
         getCustomDefs().assign(other.getCustomDefs());
+        getQmakeSpec().assign(other.getQmakeSpec());
     }
 
     @Override
@@ -466,6 +478,7 @@ public class QmakeConfiguration implements Cloneable {
             clone.setRccDir(getRccDir().clone());
             clone.setUiDir(getUiDir().clone());
             clone.setCustomDefs(getCustomDefs().clone());
+            clone.setQmakespec(getQmakeSpec().clone());
             return clone;
         } catch (CloneNotSupportedException ex) {
             // should not happen while this class implements Cloneable

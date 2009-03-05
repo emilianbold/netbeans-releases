@@ -97,7 +97,10 @@ public final class UIDProviderIml implements UIDProvider {
             out = uid;
         } else {
             if (debugMode && nonIdentifiable.add(obj.getClass())) {
-                System.err.println("Not implementing CsmIdentifiable: " + obj.getClass()); // NOI18N
+                final Class<? extends Object> aClass = obj.getClass();
+                if (!aClass.equals(org.netbeans.modules.cnd.modelimpl.csm.deep.LabelImpl.class)) {
+                    System.err.println("Not implementing CsmIdentifiable: " + obj.getClass()); // NOI18N
+                }
             }
             out = createSelfUID(obj);
         }

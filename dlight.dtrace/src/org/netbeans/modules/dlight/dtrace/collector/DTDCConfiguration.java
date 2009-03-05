@@ -93,6 +93,7 @@ public final class DTDCConfiguration implements
         this.args = null;
         this.parser = null;
         this.requiredPrivileges = null;
+        this.indicatorFiringFactor = 1;
     }
 
     /**

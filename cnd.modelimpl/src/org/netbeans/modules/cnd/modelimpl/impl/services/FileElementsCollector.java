@@ -168,8 +168,8 @@ public class FileElementsCollector {
     public synchronized Collection<CsmNamespace> _getVisibleNamespaces() {
         Collection<CsmNamespace> res = visibleNamespaces;
         if (res == null) {
-            res = CsmUsingResolver.extractNamespaces(globalUsingNamespaces);
-            res.addAll(CsmUsingResolver.extractNamespaces(localUsingNamespaces));
+            res = UsingResolverImpl.extractNamespaces(globalUsingNamespaces, destFile.getProject());
+            res.addAll(UsingResolverImpl.extractNamespaces(localUsingNamespaces, destFile.getProject()));
             // add scope's and unnamed visible namespaces
             res.addAll(globalDirectVisibleNamespaces);
             res.addAll(localDirectVisibleNamespaces);
@@ -201,8 +201,8 @@ public class FileElementsCollector {
             return;
         }
         visitedFiles.add(file);
-        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(startOffset, endOffset);
-        Iterator<CsmInclude> iter = CsmSelect.getDefault().getIncludes(file, filter);
+        CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(startOffset, endOffset);
+        Iterator<CsmInclude> iter = CsmSelect.getIncludes(file, filter);
         while (iter.hasNext()){
             CsmInclude inc = iter.next();
             if (inc.getStartOffset() < startOffset) {
@@ -218,7 +218,7 @@ public class FileElementsCollector {
             }
         }
         // gather this file maps
-        gatherDeclarationsMaps(CsmSelect.getDefault().getDeclarations(file, filter), startOffset, endOffset, true);
+        gatherDeclarationsMaps(CsmSelect.getDeclarations(file, filter), startOffset, endOffset, true);
     }
 
     protected void gatherDeclarationsMaps(Iterable declarations, int startOffset, int endOffset, boolean global) {

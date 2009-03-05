@@ -256,7 +256,13 @@ public class TraceXRef extends TraceModel {
             if (callback != null) {
                 callback.fileParsingStarted(file);
             }
-            analyzeFile(file, params, bag, printOut, printErr, canceled);
+            String oldName = Thread.currentThread().getName();
+            try {
+		    Thread.currentThread().setName("Testing xRef "+file.getAbsolutePath()); //NOI18N
+                analyzeFile(file, params, bag, printOut, printErr, canceled);
+            } finally {
+                Thread.currentThread().setName(oldName);
+            }
             if (canceled.get()) {
                 printOut.println("Cancelled"); // NOI18N
                 break;

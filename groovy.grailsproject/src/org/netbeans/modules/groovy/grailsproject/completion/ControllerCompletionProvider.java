@@ -50,6 +50,7 @@ import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.spi.completion.CompletionContext;
 import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -136,11 +137,16 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
     }
 
     private boolean isController(FileObject source, Project project) {
-        return source != null
-                    && source.getName().endsWith("Controller") // NOI18N
-                    && source.getParent().getName().equals("controllers") // NOI18N
-                    && source.getParent().getParent().getName().equals("grails-app") // NOI18N
-                    && source.getParent().getParent().getParent().equals(project.getProjectDirectory());
+        if (source == null || !source.getName().endsWith("Controller")) { // NOI18N
+            return false;
+        }
+
+        FileObject controllerDir = project.getProjectDirectory().getFileObject("grails-app/controllers"); // NOI18N
+        if (controllerDir == null || !controllerDir.isFolder()) {
+            return false;
+        }
+
+        return FileUtil.isParentOf(controllerDir, source);
     }
 
 }

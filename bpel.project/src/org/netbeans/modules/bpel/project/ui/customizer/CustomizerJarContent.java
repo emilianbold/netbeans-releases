@@ -34,10 +34,11 @@ import org.netbeans.modules.bpel.project.ProjectConstants;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.bpel.project.ui.ProjectLogicalViewProvider;
 
 /** Customizer for WAR packaging.
  */
-public class CustomizerJarContent extends JPanel implements IcanproCustomizer.Panel, HelpCtx.Provider {
+public class CustomizerJarContent extends JPanel implements Customizer.Panel, HelpCtx.Provider {
 
     private Dialog dialog;
     //private final AddFilter filterDlg = new AddFilter();

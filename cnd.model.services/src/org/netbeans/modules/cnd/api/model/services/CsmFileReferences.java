@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.model.services;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Lookup;
 
 /**
@@ -71,6 +73,7 @@ import org.openide.util.Lookup;
 * @author Sergey Grinev
 */
 public abstract class CsmFileReferences {
+    private static final int MAX_INHERITANCE_DEPTH = 15;
    /**
     * Provides visiting of the identifiers of the CsmFile
     */
@@ -153,18 +156,18 @@ public abstract class CsmFileReferences {
            CsmReference ref = context.getReference(context.size() - 2);
            if (ref != null) {
                if (getDefault().isThis(ref)) {
-                   return hasTemplateBasedAncestors(findContextClass(context));
+                   return hasTemplateBasedAncestors(findContextClass(context), MAX_INHERITANCE_DEPTH);
                }
                CsmObject refObj = ref.getReferencedObject();
                if (isTemplateParameterInvolved(refObj)) {
                    return true;
                } else {
-                   return hasTemplateBasedAncestors(getType(refObj));
+                   return hasTemplateBasedAncestors(getType(refObj), MAX_INHERITANCE_DEPTH);
                }
            }
        } else {
            // it isn't a dereference - check current context
-           return hasTemplateBasedAncestors(findContextClass(context));
+           return hasTemplateBasedAncestors(findContextClass(context), MAX_INHERITANCE_DEPTH);
        }
        return false;
    }
@@ -179,7 +182,8 @@ public abstract class CsmFileReferences {
        }
        return null;
    }
-      private static CsmClass findContextClass(CsmReferenceContext context) {
+
+   private static CsmClass findContextClass(CsmReferenceContext context) {
        CsmObject owner = context.getReference().getOwner();
        while (CsmKindUtilities.isScopeElement(owner)) {
            if (CsmKindUtilities.isClass(owner)) {
@@ -201,17 +205,27 @@ public abstract class CsmFileReferences {
        }
        return null;
    }
-      private static boolean hasTemplateBasedAncestors(CsmType type) {
+
+   private static boolean hasTemplateBasedAncestors(CsmType type, int level) {
        if( type != null) {
+           if (level == 0) {
+               CndUtils.assertTrue(false, "Infinite recursion in file " + type.getContainingFile() + " class " + type, Level.INFO); //NOI18N
+               return false;
+           }
            CsmClassifier cls = type.getClassifier();
            if (CsmKindUtilities.isClass(cls)) {
-               return hasTemplateBasedAncestors((CsmClass) cls);
+               return hasTemplateBasedAncestors((CsmClass) cls, level - 1);
            }
        }
        return false;
    }
-      private static boolean hasTemplateBasedAncestors(CsmClass cls) {
+      
+   private static boolean hasTemplateBasedAncestors(CsmClass cls, int level) {
        if (cls != null) {
+           if (level == 0) {
+               CndUtils.assertTrue(false, "Infinite recursion in file " + cls.getContainingFile() + " class " + cls, Level.INFO); //NOI18N
+               return false;
+           }
            if (isActualInstantiation(cls)) {
                return false; // like my_class<int, char>
            }
@@ -221,7 +235,7 @@ public abstract class CsmFileReferences {
                }
                CsmClassifier classifier = inh.getClassifier();
                if (classifier instanceof CsmClass) { // paranoia
-                   if (hasTemplateBasedAncestors((CsmClass) classifier)) {
+                   if (hasTemplateBasedAncestors((CsmClass) classifier, level - 1)) {
                        return true;
                    }
                }

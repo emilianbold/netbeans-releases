@@ -116,17 +116,17 @@ public class UrlData {
     }
 
     private void parseUrl() {
-        Logger.getLogger("glassfish.javaee").log(Level.FINEST, "Parsing DB Url: " + url);
+        Logger.getLogger("glassfish-eecommon").log(Level.FINEST, "Parsing DB Url: " + url);
         Matcher matcher = urlPattern.matcher(url);
         if(matcher.matches()) {
             for(int i = 1; i <= matcher.groupCount(); i++) {
                 String part = matcher.group(i);
-                Logger.getLogger("glassfish.javaee").log(Level.FINEST, "    Part " + i + " is " + part);
+                Logger.getLogger("glassfish-eecommon").log(Level.FINEST, "    Part " + i + " is " + part);
                 parts[i-1] = part;
             }
             props.putAll(parseProperties(parts[DB_PROPERTIES]));
         } else {
-            Logger.getLogger("glassfish.javaee").log(Level.FINE, "Url parsing failed for " + url);
+            Logger.getLogger("glassfish-eecommon").log(Level.FINE, "Url parsing failed for " + url);
         }
     }
     

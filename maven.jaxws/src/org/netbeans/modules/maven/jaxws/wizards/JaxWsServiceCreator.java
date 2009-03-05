@@ -66,7 +66,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportIml;
+import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportImpl;
 import org.netbeans.modules.maven.jaxws.MavenWebService;
 import org.netbeans.modules.maven.jaxws.WSUtils;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -230,7 +230,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             try {
                 wsdlFo = WSUtils.retrieveResource(
                         localWsdlFolder,
-                        (hasSrcFolder ? new URI(MavenJAXWSSupportIml.CATALOG_PATH) : new URI("jax-ws-catalog.xml")), //NOI18N
+                        (hasSrcFolder ? new URI(MavenJAXWSSupportImpl.CATALOG_PATH) : new URI("jax-ws-catalog.xml")), //NOI18N
                         new URI(wsdlUrl));
             } catch (URISyntaxException ex) {
                 //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

@@ -62,11 +62,13 @@ import org.netbeans.modules.glassfish.common.CreateDomain;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -137,7 +139,8 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     
     public Set instantiate() throws IOException {
         Set<ServerInstance> result = new HashSet<ServerInstance>();
-        ensureExecutable(new File(installRoot));
+        File ir = new File(installRoot);
+        ensureExecutable(ir);
         File domainDir = new File(domainsDir, domainName);
         if (!domainDir.exists() && AddServerLocationPanel.canCreate(domainDir)) {
             // Need to create a domain right here!
@@ -158,6 +161,14 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
                     formatUri(glassfishRoot,"localhost",adminPort),gip.getUriFragment(),gip);
             gip.addServerInstance(instance);
             result.add(instance.getCommonInstance());
+        }
+        // lookup the javadb register service here and use it.
+        RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
+        if (null != db) {
+            File f = new File(ir,"javadb");
+            if (f.exists() && f.isDirectory() && f.canRead()) {
+                db.initialize(f.getAbsolutePath());
+            }
         }
         NbPreferences.forModule(this.getClass()).put(gip.getInstallRootKey(), installRoot);
         return result;

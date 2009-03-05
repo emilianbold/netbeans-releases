@@ -58,7 +58,9 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
-import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
@@ -68,13 +70,14 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.spi.model.services.CsmSelectProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmSelect.class)
-public class SelectImpl extends CsmSelect {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmSelectProvider.class)
+public class SelectImpl implements CsmSelectProvider {
     private static final FilterBuilder builder = new FilterBuilder();
 
     @Override
@@ -320,7 +323,7 @@ public class SelectImpl extends CsmSelect {
         }
 
         @SuppressWarnings("unchecked")
-        public CsmFilter createNameFilter(final String strPrefix, final boolean match, final boolean caseSensitive, final boolean allowEmptyName) {
+        public CsmFilter createNameFilter(final CharSequence strPrefix, final boolean match, final boolean caseSensitive, final boolean allowEmptyName) {
             return new NameFilterImpl(allowEmptyName, strPrefix, match, caseSensitive);
         }
 
@@ -368,11 +371,11 @@ public class SelectImpl extends CsmSelect {
 
         private static class NameFilterImpl implements Filter {
             private final boolean allowEmptyName;
-            private final String strPrefix;
+            private final CharSequence strPrefix;
             private final boolean match;
             private final boolean caseSensitive;
             
-            public NameFilterImpl(boolean allowEmptyName, String strPrefix, boolean match, boolean caseSensitive) {
+            public NameFilterImpl(boolean allowEmptyName, CharSequence strPrefix, boolean match, boolean caseSensitive) {
                 this.allowEmptyName = allowEmptyName;
                 this.strPrefix = strPrefix;
                 this.match = match;

@@ -229,8 +229,7 @@ public class SVGTextField extends AbstractTextRenderingComponent {
 
     private void initTextField(SVGRect textBox, float width , float x ) {
         if (textBox != null) {
-            elemWidth = (int) (width + 0.5f -
-                    (textBox.getX() - x) * 2);
+            elemWidth = (int) (width + 0.5f -(textBox.getX() - x) * 2);
         } else {
             elemWidth = 0;
         }
