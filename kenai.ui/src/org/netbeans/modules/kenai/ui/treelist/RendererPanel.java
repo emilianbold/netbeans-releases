@@ -198,6 +198,10 @@ final class RendererPanel extends JPanel {
                 expandableRootBackground = new Color(red, green, blue);
             }
         }
+        if( isAqua )
+            expandableRootBackground = new Color( (int)Math.max(0.0, expandableRootBackground.getRed()*0.85)
+                    , (int)Math.max(0.0, expandableRootBackground.getGreen()*0.85)
+                    , (int)Math.max(0.0, expandableRootBackground.getBlue()*0.85));
 
         if (expandableRootSelectedBackground == null) {
             Color col = windows ? UIManager.getColor("Table.selectionBackground") //NOI18N
@@ -239,6 +243,8 @@ final class RendererPanel extends JPanel {
                 expandableRootSelectedForeground = Color.WHITE;
             }
         }
+        if( isAqua )
+            expandableRootSelectedForeground = Color.black;
 
         Integer i = (Integer) UIManager.get("netbeans.ps.iconmargin"); //NOI18N
 

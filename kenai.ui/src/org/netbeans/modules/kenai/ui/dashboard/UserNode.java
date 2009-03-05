@@ -145,5 +145,6 @@ public class UserNode extends LeafNode {
         this.login = login;
         if( null != login )
             lblUser.setText( login.getUserName() );
+        fireContentChanged();
     }
 }
