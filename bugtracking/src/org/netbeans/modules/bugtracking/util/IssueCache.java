@@ -196,8 +196,12 @@ public abstract class IssueCache {
         for (Entry<String, String> e : oldAttr.entrySet()) {
             String newValue = newAttr.get(e.getKey());
             String oldValue = e.getValue();
-            if(newValue == null && oldValue == null) continue;
-            if(newValue == null || !newValue.trim().equals(oldValue.trim())) return true;
+            if(newValue == null && oldValue == null) {
+                continue;
+            }
+            if(newValue == null || !newValue.trim().equals(oldValue.trim())) {
+                return true;
+            }
         }
         return false;
     }
