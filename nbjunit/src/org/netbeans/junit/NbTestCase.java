@@ -42,11 +42,15 @@
 package org.netbeans.junit;
 
 import java.awt.EventQueue;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.ref.Reference;
@@ -390,17 +394,43 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 }
                 String path = wd.getAbsolutePath();
                 if (path.startsWith(workspace)) {
-                    if (wd.renameTo(new File(wd.getParentFile(), wd.getName() + "-FAILED"))) {
-                        System.err.println("Working directory: " + hudsonURL + "job/" + System.getenv("JOB_NAME") + "/" +
-                                System.getenv("BUILD_NUMBER") + "/artifact/" +
-                                path.substring(workspace.length()).replace(File.separatorChar, '/') + "-FAILED/");
-                        return;
-                    }
+                    copytree(wd, new File(wd.getParentFile(), wd.getName() + "-FAILED"));
+                    System.err.println("Working directory: " + hudsonURL + "job/" + System.getenv("JOB_NAME") + "/" +
+                            System.getenv("BUILD_NUMBER") + "/artifact/" +
+                            path.substring(workspace.length()).replace(File.separatorChar, '/') + "-FAILED/");
+                    return;
                 }
             }
             System.err.println("Working directory: " + wd);
-        } catch (RuntimeException x) {
+        } catch (Exception x) {
             x.printStackTrace(); // do not mask real error
+        }
+    }
+    private static void copytree(File from, File to) throws IOException {
+        if (from.isDirectory()) {
+            if (!to.mkdirs()) {
+                throw new IOException("mkdir: " + to);
+            }
+            for (File f : from.listFiles()) {
+                copytree(f, new File(to, f.getName()));
+            }
+        } else {
+            InputStream is = new FileInputStream(from);
+            try {
+                OutputStream os = new FileOutputStream(to);
+                try {
+                    BufferedInputStream bis = new BufferedInputStream(is);
+                    BufferedOutputStream bos = new BufferedOutputStream(os);
+                    int c;
+                    while ((c = bis.read()) != -1) {
+                        bos.write(c);
+                    }
+                } finally {
+                    os.close();
+                }
+            } finally {
+                is.close();
+            }
         }
     }
 
