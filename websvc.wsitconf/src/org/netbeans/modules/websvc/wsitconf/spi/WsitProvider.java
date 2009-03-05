@@ -89,8 +89,7 @@ public abstract class WsitProvider {
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
         FileObject txFO = classPath.findResource("com/sun/xml/ws/tx/service/TxServerPipe.class"); // NOI18N
-        FileObject fiFO = classPath.findResource("com/sun/xml/ws/api/fastinfoset/FastInfosetFeature.class"); // NOI18N
-        if ((fiFO != null) || (txFO != null)) {
+        if ((txFO != null)) {
             return true;
         }
         J2eePlatform j2eePlatform = ServerUtils.getJ2eePlatform(project);
