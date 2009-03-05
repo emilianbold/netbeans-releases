@@ -49,21 +49,19 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Maros Sandor
  * @author Jan Becicka
  */
-public class KenaiTest extends junit.framework.TestCase {
+public class KenaiTest extends NbTestCase {
 
-    static String UNITTESTUNIQUENAME_BASE = "testuniquename";
-    static String UNITTESTUNIQUENAME = "testuniquename00"; // initial value, will be changed in setUpClass method
+    static String UNITTESTUNIQUENAME_BASE = "test";
+    static String UNITTESTUNIQUENAME = "test00"; // initial value, will be changed in setUpClass method
     private static Kenai instance;
     private static boolean firstRun = true;
-
-    public KenaiTest() {
-    }
 
     public KenaiTest(String S) {
         super(S);
@@ -91,7 +89,7 @@ public class KenaiTest extends junit.framework.TestCase {
             br.close();
             instance.login(username, password.toCharArray());
             if (firstRun) {
-                UNITTESTUNIQUENAME = UNITTESTUNIQUENAME_BASE + instance.getMyProjects().size();
+                UNITTESTUNIQUENAME = UNITTESTUNIQUENAME_BASE + System.currentTimeMillis();
                 System.out.println("== Name: " + UNITTESTUNIQUENAME);
                 firstRun = false;
             }
@@ -110,6 +108,7 @@ public class KenaiTest extends junit.framework.TestCase {
      */
     @Test
     public void testSearchProjects() throws Exception {
+        System.out.println("testSearchProjects");
         String pattern = "jav";
         Collection<KenaiProject> result = instance.searchProjects(pattern);
 
@@ -120,10 +119,57 @@ public class KenaiTest extends junit.framework.TestCase {
 
     @Test
     public void testGetProject() throws Exception {
+        System.out.println("testGetProject");
+        String name = "java-inline";
+        KenaiProject prj = instance.getProject(name);
+        System.out.println("Project: " + prj.getName());
+        if (!prj.getName().equals("java-inline")) {
+            fail("Call to getProject failed.");
+        }
+    }
+
+    @Test
+    public void testGetDisplayName() throws Exception {
+        System.out.println("testGetDisplayName");
         String name = "java-inline";
         KenaiProject prj = instance.getProject(name);
         System.out.println("Project: " + prj.getDisplayName());
+        if (!prj.getDisplayName().equals("JavaInline for JRuby")) {
+            fail("Display Name of the project has changed.");
+        }
+    }
+
+    @Test
+    public void testGetDescription() throws Exception {
+        System.out.println("testGetDescription");
+        String name = "java-inline";
+        KenaiProject prj = instance.getProject(name);
+        System.out.println(prj.getDescription());
+        if (!prj.getDescription().equals("JavaInline provides a way to embed Java code into Ruby code under JRuby and have it compiled and available at runtime. Depends on Java 6 compiler API.")) {
+            fail("Description of the project has changed.");
+        }
+    }
+
+    @Test
+    public void testGetWebLocation() throws Exception {
+        System.out.println("testGetWebLocation");
+        String name = "java-inline";
+        KenaiProject prj = instance.getProject(name);
         System.out.println(prj.getWebLocation());
+        if (!prj.getWebLocation().toString().equals("http://testkenai.com/api/projects/java-inline.json")) {
+            fail("Web Location of the project has changed.");
+        }
+    }
+
+    @Test
+    public void testGetTags() throws Exception {
+        System.out.println("testGetTags");
+        String name = "java-inline";
+        KenaiProject prj = instance.getProject(name);
+        System.out.println(prj.getTags());
+        if (prj.getTags() == null || !prj.getTags().equals("java, javac, jruby, ruby")) {
+            fail("Tags of the project have changed.");
+        }
     }
 
     @Test
@@ -238,6 +284,7 @@ public class KenaiTest extends junit.framework.TestCase {
 
     @Test
     public void testGetMyProjects() throws Exception {
+        System.out.println("testGetMyProjects (takes quite long - please wait...)");
         Collection<KenaiProject> result = instance.getMyProjects();
         System.out.println("size: " + result.size());
 
@@ -250,6 +297,10 @@ public class KenaiTest extends junit.framework.TestCase {
         junit.framework.TestSuite _suite = new junit.framework.TestSuite();
         _suite.addTest(new KenaiTest("testSearchProjects"));
         _suite.addTest(new KenaiTest("testGetProject"));
+        _suite.addTest(new KenaiTest("testGetDescription"));
+        _suite.addTest(new KenaiTest("testGetDisplayName"));
+        _suite.addTest(new KenaiTest("testGetWebLocation"));
+        _suite.addTest(new KenaiTest("testGetTags"));
         _suite.addTest(new KenaiTest("testLogin"));
         _suite.addTest(new KenaiTest("testCreateProject"));
         _suite.addTest(new KenaiTest("testCreateFeature"));
