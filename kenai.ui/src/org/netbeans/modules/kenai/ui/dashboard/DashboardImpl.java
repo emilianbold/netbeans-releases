@@ -87,7 +87,7 @@ public final class DashboardImpl extends Dashboard {
     private static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
     private static final String PREF_COUNT = "count"; //NOI18N
     private static final String PREF_ID = "id"; //NOI18N
-
+    private static final String PREF_IGNORED_PROJECTS = "ignoredProjects";
     private LoginHandle login;
     private final TreeListModel model = new TreeListModel();
     private static final ListModel EMPTY_MODEL = new AbstractListModel() {
@@ -219,12 +219,15 @@ public final class DashboardImpl extends Dashboard {
         synchronized( LOCK ) {
             if( allProjects.contains(project) )
                 return;
-            
+
+            ignoredProjectIds.remove(project.getId());
+            storeIgnoredProjects();
             allProjects.add(project);
             storeAllProjects();
             ArrayList<ProjectHandle> tmp = new ArrayList<ProjectHandle>(1);
             tmp.add(project);
             addProjectsToModel(-1, tmp);
+            userNode.set(login, !allProjects.isEmpty());
             switchMemberProjects();
             if( isOpened() ) {
                 switchContent();
@@ -330,9 +333,11 @@ public final class DashboardImpl extends Dashboard {
 
     private void fillModel() {
         synchronized( LOCK ) {
+            if( !model.getRootNodes().contains(userNode) ) {
+                model.addRoot(0, userNode);
+            }
             if( model.getSize() > 0 )
                 return;
-            model.addRoot(-1, userNode);
             addProjectsToModel(-1, allProjects);
         }
     }
@@ -384,6 +389,7 @@ public final class DashboardImpl extends Dashboard {
         lbl.setHorizontalAlignment(JLabel.CENTER);
         LinkButton btnWhatIs = new LinkButton(NbBundle.getMessage(DashboardImpl.class, "LBL_WhatIsKenai"), createWhatIsKenaiAction() ); //NOI18N
 
+        model.removeRoot(userNode);
         userNode.set(null, false);
         res.add( userNode.getComponent(UIManager.getColor("List.foreground"), ColorManager.getDefault().getDefaultBackground(), false, false), new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(3, 4, 3, 4), 0, 0) ); //NOI18N
         res.add( new JLabel(), new GridBagConstraints(0, 1, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
@@ -416,7 +422,7 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void loadIgnoredProjects() {
-        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node("ignoredProjects"); //NOI18N
+        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_IGNORED_PROJECTS); //NOI18N
         ignoredProjectIds.clear();
         int count = prefs.getInt(PREF_COUNT, 0); //NOI18N
 
@@ -430,7 +436,7 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void storeIgnoredProjects() {
-        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node("ignoredProjects"); //NOI18N
+        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_IGNORED_PROJECTS); //NOI18N
         prefs.putInt(PREF_COUNT, ignoredProjectIds.size()); //NOI18N
         int index = 0;
         for( String id : ignoredProjectIds ) {

@@ -40,6 +40,7 @@
 package org.netbeans.modules.kenai.ui.dashboard;
 
 import java.awt.Color;
+import javax.swing.UIManager;
 
 /**
  *
@@ -48,6 +49,8 @@ import java.awt.Color;
 public class ColorManager {
     
     private static ColorManager theInstance;
+
+    private static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID());
 
     private Color defaultBackground = Color.white;
     private Color defaultForeground = Color.black;
@@ -67,6 +70,8 @@ public class ColorManager {
     }
 
     public Color getDefaultBackground() {
+        if( isAqua )
+            return UIManager.getColor("NbExplorerView.background");
         return defaultBackground;
     }
 
