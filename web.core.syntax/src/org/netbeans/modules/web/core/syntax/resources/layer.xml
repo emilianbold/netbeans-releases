@@ -86,7 +86,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-jsp-editor-preferences.xml" url="Preferences.xml" />
                 </folder>
                 <folder name="FoldManager">
-                    <file name="org-netbeans-modules-gsfret-editor-fold-GsfFoldManagerFactory.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
                     <file name="org-netbeans-modules-web-core-syntax-folding-JspFoldManagerFactory.instance"/>
                 </folder>
                 <folder name="SideBar">
@@ -201,7 +201,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-jsp-editor-preferences.xml" url="Preferences.xml" />
                 </folder>
                 <folder name="FoldManager">
-                    <file name="org-netbeans-modules-gsfret-editor-fold-GsfFoldManagerFactory.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
                     <file name="org-netbeans-modules-web-core-syntax-folding-JspFoldManagerFactory.instance"/>
                 </folder>
                 <folder name="SideBar">
