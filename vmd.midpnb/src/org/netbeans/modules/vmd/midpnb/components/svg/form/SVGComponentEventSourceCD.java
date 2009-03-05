@@ -43,7 +43,6 @@ import java.awt.Image;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.CancellableTask;
@@ -80,6 +79,7 @@ import org.netbeans.modules.vmd.midp.components.general.ClassSupport;
 import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerSupport;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midpnb.screen.display.SVGComponentDisplayPresenter;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -139,7 +139,9 @@ public abstract class SVGComponentEventSourceCD extends ComponentDescriptor {
                 // delete
                 DeleteDependencyPresenter.createDependentOnParentComponentPresenter(),
                 //inspector
-                new SVGComponentInspectorFolderPresenter()
+                new SVGComponentInspectorFolderPresenter(),
+                //screen
+                new SVGComponentDisplayPresenter()
                 );
 
     }
