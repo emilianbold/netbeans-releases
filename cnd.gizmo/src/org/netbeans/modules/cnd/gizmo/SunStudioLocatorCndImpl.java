@@ -36,36 +36,45 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.gizmo;
 
-package org.netbeans.modules.dlight.spi.tool;
-
-import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.dlight.spi.SunStudioLocator;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * Implement this interface whenever you want to create new {@link org.netbeans.modules.dlight.api.tool.DLightToolConfiguration} which
- * is used  DLightTool instance will be created for.
- * <p>
- * To register your D-Light tool configuration provider add the following to the D-Light filesystem
- * (layer.xml file).
-  <pre>
-  &lt;filesystem&gt;
-    &lt;folder name="DLight"&gt;
-        &lt;folder name="ToolConfigurationProviders"&gt;
-            &lt;file name="MyDLightToolConfigurationProvider.instance"&gt;
-               &lt;attr name="instanceClass" stringvalue="org.netbeans.mytool.MyDLightToolConfigurationProvider"/&gt;
-            &lt;/file&gt;
-        &lt;/folder&gt;
-    &lt;/folder&gt;
-&lt;/filesystem&gt;
-  </pre>
+ *
+ * @author mt154047
  */
- 
-public interface DLightToolConfigurationProvider {
-        static final String SUNSTUDIO_COLLECTORS = "SunStudioDataCollectors"; // NOI18N
-  /**
-   * Please be aware that instance returned by this method should be
-   * new every time this method is invoked
-   * @return new instance of {@link org.netbeans.modules.dlight.api.tool.DLightToolConfiguration}
-   */
-  public DLightToolConfiguration create();
+public final class SunStudioLocatorCndImpl implements SunStudioLocator {
+
+    private static final String LOCALHOST = "localhost";
+    private final ExecutionEnvironment env;
+
+    
+    public SunStudioLocatorCndImpl(ExecutionEnvironment env) {
+        this.env = env;
+    }
+
+    public Collection<SunStudioDescription> getSunStudioLocations() {
+        Collection<SunStudioDescription> result = new ArrayList<SunStudioDescription>();
+        List<CompilerSet> compilerCollections = env.isLocal()? CompilerSetManager.getDefault().getCompilerSets() : CompilerSetManager.getDefault(env.getUser() + "@" + env.getHost()).getCompilerSets();
+        if (compilerCollections.size() == 1 && compilerCollections.get(0).getName().equals(CompilerSet.None)) {
+            return result;
+        }
+
+        for (CompilerSet compilerSet : compilerCollections) {
+            String binDir = compilerSet.getDirectory();
+            String baseDir = new File(binDir).getParent();
+            //collectionsDirectories.add(baseDir);
+            result.add(new SunStudioDescription(baseDir));
+        }
+        return result;
+    //throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

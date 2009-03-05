@@ -6,6 +6,14 @@
             <code-name-base>org.netbeans.modules.dlight.spi</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.nativeexecution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -18,6 +26,8 @@
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.dlight.core.stack</friend>
                 <friend>org.netbeans.modules.dlight.memory</friend>
+                <friend>org.netbeans.modules.dlight.perfan</friend>
+                <friend>org.netbeans.modules.dlight.sync</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <package>org.netbeans.modules.dlight.spi</package>
                 <package>org.netbeans.modules.dlight.spi.util</package>

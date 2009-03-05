@@ -57,10 +57,12 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
+import org.netbeans.modules.dlight.spi.util.MangledNameType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
-import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -91,15 +93,16 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private static final Column locksColumn =
         new Column("locks", Float.class, loc("SyncTool.ColumnName.locks"), null); // NOI18N
     private static final DataTableMetadata rawTableMetadata;
-    
+
+
     static {
         List<Column> rawColumns = Arrays.asList(
-                timestampColumn,
-                waiterColumn,
-                mutexColumn,
-                blockerColumn,
-                timeColumn,
-                stackColumn);
+            timestampColumn,
+            waiterColumn,
+            mutexColumn,
+            blockerColumn,
+            timeColumn,
+            stackColumn);
 
         rawTableMetadata = new DataTableMetadata("sync", rawColumns);
     }
@@ -125,10 +128,10 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         if (COLLECTOR.equals(PRSTAT_DTRACE)) {
 
             String scriptFile = Util.copyResource(getClass(),
-                    Util.getBasePath(getClass()) + "/resources/sync.d"); // NOI18N
+                Util.getBasePath(getClass()) + "/resources/sync.d"); // NOI18N
 
             DTDCConfiguration dataCollectorConfiguration =
-                    new DTDCConfiguration(scriptFile, Arrays.asList(rawTableMetadata));
+                new DTDCConfiguration(scriptFile, Arrays.asList(rawTableMetadata));
 
             dataCollectorConfiguration.setStackSupportEnabled(true);
             dataCollectorConfiguration.setIndicatorFiringFactor(1);
@@ -160,17 +163,18 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             // In indicator we want to display data from c_ulockSummary column
 
             indicatorMetadata = new IndicatorMetadata(
-                    Arrays.asList(SunStudioDCConfiguration.c_ulockSummary));
+                Arrays.asList(SunStudioDCConfiguration.c_ulockSummary));
 
             // Then configure what happens when user clicks on the indicator...
             // configure metadata for the detailed view ...
             DataTableMetadata detailedViewTableMetadata =
-                    SunStudioDCConfiguration.getSyncTableMetadata(
-                    SunStudioDCConfiguration.c_name,
-                    SunStudioDCConfiguration.c_iSync,
-                    SunStudioDCConfiguration.c_iSyncn);
+                SunStudioDCConfiguration.getSyncTableMetadata(
+                SunStudioDCConfiguration.c_name,
+                SunStudioDCConfiguration.c_iSync,
+                SunStudioDCConfiguration.c_iSyncn);
 
-            vc = new TableVisualizerConfiguration(detailedViewTableMetadata);
+            vc = new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata,
+                SunStudioDCConfiguration.c_name.getColumnName());
 
         } else if (COLLECTOR.equals(LLTOOL)) {
 
@@ -180,7 +184,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         }
 
         SyncIndicatorConfiguration indicatorConfiguration =
-                new SyncIndicatorConfiguration(indicatorMetadata);
+            new SyncIndicatorConfiguration(indicatorMetadata);
 
         indicatorConfiguration.setVisualizerConfiguration(vc);
 
@@ -256,16 +260,16 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
         DataTableMetadata viewTableMetadata = null;
         List<Column> viewColumns = Arrays.asList(
-                new Column("func_name", String.class, "Function", null),
-                new Column("time", Long.class, "Time, ms", null),
-                new Column("count", Long.class, "Count", null));
+            new Column("func_name", MangledNameType.class, "Function", null),
+            new Column("time", Long.class, "Time, ms", null),
+            new Column("count", Long.class, "Count", null));
 
         if (COLLECTOR.equals(PRSTAT_DTRACE)) {
 
             String sql = "SELECT func.func_name as func_name, SUM(sync.time/1000000) as time, COUNT(*) as count" +
-                    " FROM sync, node AS node, func" +
-                    " WHERE  sync.stackid = node.node_id and node.func_id = func.func_id" +
-                    " GROUP BY node.func_id, func.func_name";
+                " FROM sync, node AS node, func" +
+                " WHERE  sync.stackid = node.node_id and node.func_id = func.func_id" +
+                " GROUP BY node.func_id, func.func_name";
 
             viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));
         } else if (COLLECTOR.equals(SUNSTUDIO)) {
@@ -274,14 +278,16 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             return null;
         }
 
-        TableVisualizerConfiguration tableVisualizerConfiguration =
-                new TableVisualizerConfiguration(viewTableMetadata);
+        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration =
+            new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name");
 
         tableVisualizerConfiguration.setEmptyAnalyzeMessage(
-                loc("DetailedView.EmptyAnalyzeMessage")); // NOI18N
+            loc("DetailedView.EmptyAnalyzeMessage")); // NOI18N
 
         tableVisualizerConfiguration.setEmptyRunningMessage(
-                loc("DetailedView.EmptyRunningMessage")); // NOI18N
+            loc("DetailedView.EmptyRunningMessage")); // NOI18N
+
+        tableVisualizerConfiguration.setDefaultActionProvider();
 
         return tableVisualizerConfiguration;
     }

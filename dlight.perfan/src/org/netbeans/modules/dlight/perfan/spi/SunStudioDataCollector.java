@@ -70,7 +70,8 @@ import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
-import org.netbeans.modules.dlight.perfan.util.SunStudioLocator;
+import org.netbeans.modules.dlight.spi.SunStudioLocator.SunStudioDescription;
+import org.netbeans.modules.dlight.spi.SunStudioLocatorFactory;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -85,6 +86,7 @@ import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
 /**
@@ -201,10 +203,26 @@ public class SunStudioDataCollector
                 return ValidationStatus.invalidStatus("SunStudioDataCollector works on SunOS only."); // NOI18N
             }
 
-            sproHome = SunStudioLocator.getInstance().getSproHome(execEnv);
-            collectCmd = sproHome + "/bin/collect"; // NOI18N
+            Collection<? extends SunStudioLocatorFactory> factories = Lookup.getDefault().lookupAll(SunStudioLocatorFactory.class);
+            if (factories.isEmpty()){
+                return ValidationStatus.invalidStatus("No SunStudio Found"); //NOI18N
+            }
+            //we will get first we have
+            boolean notFound = true;
+            for (SunStudioLocatorFactory factory : factories){
+                Collection<SunStudioDescription> ssDescriptions = factory.getInstance(execEnv).getSunStudioLocations();
+                for (SunStudioDescription ss : ssDescriptions){
+                    sproHome = ss.getPath();
+                        //SunStudioLocator.getInstance().getSproHome(execEnv);
+                    collectCmd = sproHome + "/bin/collect"; // NOI18N
+                    if (HostInfoUtils.fileExists(execEnv, collectCmd)){
+                        notFound = false;
+                        break;
+                    }
+                }
+            }
 
-            if (!HostInfoUtils.fileExists(execEnv, collectCmd)) {
+            if (notFound) {
                 return ValidationStatus.invalidStatus(collectCmd + " not found");
             }
 
