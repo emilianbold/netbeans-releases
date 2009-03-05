@@ -76,7 +76,7 @@ public final class DLightCPUToolConfigurationProvider
     private static final String SUNSTUDIO = "sunstudio"; // NOI18N
     private static final String LLTOOL = "lltool"; // NOI18N
     private static final String COLLECTOR =
-            System.getProperty("gizmo.cpu.collector", PRSTAT_DTRACE); // NOI18N
+            System.getProperty("dlight.cpu.collector", PRSTAT_DTRACE); // NOI18N
     private static final List<Column> PRSTAT_COLUMNS = Arrays.asList(
             new Column("utime", Float.class, loc("CPUMonitorTool.ColumnName.utime"), null), // NOI18N
             new Column("stime", Float.class, loc("CPUMonitorTool.ColumnName.stime"), null), // NOI18N
