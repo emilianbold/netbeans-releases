@@ -193,7 +193,6 @@ made subject to such option by the copyright holder.
         </condition>
     </fail>
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
-    <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
     <taskdef name="getdependsclusters" classname="org.netbeans.nbbuild.GetDependsClusters" classpath="nbantext.jar"/>
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
     <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="nbantext.jar"/>
@@ -224,14 +223,9 @@ made subject to such option by the copyright holder.
       
       <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted"/>
       
-      <pathconvert property="modules.foreach" dirsep="/" pathsep=",">
-          <path path="${modules.sorted}" />
-          <mapper>
-              <globmapper handledirsep="true" from="${nb_all}/*" to="*" />
-          </mapper>
-      </pathconvert>
-      
-      <for-each startdir=".." target="conditional-nbm" locations="${modules.foreach}"/>
+      <subant-junit target="conditional-nbm" failonerror="true">
+          <buildpath path="${modules.sorted}"/>
+      </subant-junit>
   </target>
   <target name="nbm"/><!-- dummy target -->
   <target name="conditional-nbm"/><!-- dummy target -->
@@ -338,16 +332,11 @@ made subject to such option by the copyright holder.
       
       <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted"/>
       
-      <pathconvert property="modules.foreach" dirsep="/" pathsep=",">
-          <path path="${modules.sorted}" />
-          <mapper>
-              <globmapper handledirsep="true" from="${nb_all}/*" to="*" />
-          </mapper>
-      </pathconvert>
-      
       <property name="netbeans.zipped.sources.dir" location="build/source-zips" />
       
-      <for-each startdir=".." target="sources-zip" locations="${modules.foreach}"/>
+      <subant-junit target="sources-zip" failonerror="true">
+          <buildpath path="${modules.sorted}"/>
+      </subant-junit>
   </target>
   
       
