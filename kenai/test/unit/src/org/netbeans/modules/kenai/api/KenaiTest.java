@@ -42,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.PasswordAuthentication;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,6 +64,8 @@ public class KenaiTest extends NbTestCase {
     static String UNITTESTUNIQUENAME = "java-inline"; // initial value, will be changed in setUpClass method
     private static Kenai instance;
     private static boolean firstRun = true;
+    private static String uname = null;
+    private static String passw = null;
 
     public KenaiTest(String S) {
         super(S);
@@ -84,11 +87,13 @@ public class KenaiTest extends NbTestCase {
             logger.setLevel(Level.FINE);
             System.setProperty("kenai.com.url", "http://testkenai.com");
             instance = Kenai.getDefault();
-            BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
-            String username = br.readLine();
-            String password = br.readLine();
-            br.close();
-            instance.login(username, password.toCharArray());
+            if (uname == null) {
+                BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
+                uname = br.readLine();
+                passw = br.readLine();
+                br.close();
+            }
+            instance.login(uname, passw.toCharArray());
             if (firstRun) {
                 UNITTESTUNIQUENAME = UNITTESTUNIQUENAME_BASE + System.currentTimeMillis();
                 System.out.println("== Name: " + UNITTESTUNIQUENAME);
@@ -193,6 +198,7 @@ public class KenaiTest extends NbTestCase {
      * Test of login method of class Kenai
      */
     public void testLogin() throws Exception {
+        System.out.println("testLogin");
         try {
             instance.login("jerry", "mouse".toCharArray());
             assert false : "Bogus login successful";
@@ -203,17 +209,66 @@ public class KenaiTest extends NbTestCase {
 
     @Test
     /**
+     * Test of login method of class Kenai
+     */
+    public void testPasswordAuthentication() throws Exception {
+        System.out.println("testPasswordAuthentication");
+        PasswordAuthentication passAuth = instance.getPasswordAuthentication();
+        assertEquals(uname, passAuth.getUserName());
+        assertEquals(passw, new String(passAuth.getPassword()));
+    }
+
+    @Test
+    /**
+     * Test of login method of class Kenai
+     */
+    public void testLogout() throws Exception {
+        System.out.println("testLogout");
+        // Check if user is logged in at the moment
+        PasswordAuthentication passAuth = instance.getPasswordAuthentication();
+        assertEquals(uname, passAuth.getUserName());
+        assertEquals(passw,  new String(passAuth.getPassword()));
+        // Do log out
+        instance.logout();
+        System.out.println("Originally logged in, OK");
+        // User should be logged out
+        assertNull(instance.getPasswordAuthentication());
+        Throwable thr = null;
+        try {
+        instance.getMyProjects();
+        } catch (Throwable t) {
+            thr = t;
+        }
+        if (thr == null) {
+            fail("It is possible to check 'my projects' when not logged in");
+        } else {
+            System.out.println("Logged out, OK - 1/2");
+        }
+        System.out.println("Logged out, OK - 2/2");
+        // Login again and check if user is logged in
+        instance.login(uname, passw.toCharArray());
+        passAuth = instance.getPasswordAuthentication();
+        assertEquals(uname, passAuth.getUserName());
+        assertEquals(passw,  new String(passAuth.getPassword()));
+        System.out.println("Logged out, OK");
+    }
+
+    @Test
+    /**
      * Test of isAuthorized method of class Kenai
      */
     public void testIsAuthorized() throws Exception {
+        System.out.println("testIsAuthorized");
         String name = "java-inline";
         KenaiProject prj = instance.getProject(name);
 
         boolean authorized = instance.isAuthorized(prj, KenaiActivity.FORUM_READ);
         System.out.println("Read? " + authorized);
+        assertTrue(authorized);
 
         authorized = instance.isAuthorized(prj, KenaiActivity.FORUM_ADMIN);
         System.out.println("Admin? " + authorized);
+        assertFalse(authorized);
     }
 
     @Test
@@ -221,12 +276,14 @@ public class KenaiTest extends NbTestCase {
      * Test of isAuthorized method of class Kenai
      */
     public void testIsAuthorized2() throws Exception {
+        System.out.println("testIsAuthorized2");
         String name = UNITTESTUNIQUENAME;
         try {
             KenaiProject prj = instance.getProject(name);
 
             boolean authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_ADMIN);
             System.out.println("PROJECTS_ADMIN? " + authorized);
+            assertTrue(authorized);
         } catch (KenaiErrorMessage mes) {
             System.out.println(mes.getAsString());
             throw mes;
@@ -327,7 +384,7 @@ public class KenaiTest extends NbTestCase {
             throw mes;
         }
     }
-    
+
     @Test
     /**
      * Test of getLicences method of class Kenai<br />
@@ -403,6 +460,8 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testGetWebLocation"));
         _suite.addTest(new KenaiTest("testGetTags"));
         _suite.addTest(new KenaiTest("testLogin"));
+        _suite.addTest(new KenaiTest("testLogout"));
+        _suite.addTest(new KenaiTest("testPasswordAuthentication"));
         _suite.addTest(new KenaiTest("testCreateProject"));
         _suite.addTest(new KenaiTest("testCreateFeature"));
         _suite.addTest(new KenaiTest("testIsAuthorized"));

@@ -55,6 +55,8 @@ import org.junit.Test;
 public class KenaiProjectTest {
 
     static String UNITTESTUNIQUENAME = "unittestuniquename01";
+    private static String uname = null;
+    private static String passw = null;
 
     public KenaiProjectTest() {
     }
@@ -71,11 +73,13 @@ public class KenaiProjectTest {
     public void setUp() {
         try {
             System.setProperty("kenai.com.url","http://testkenai.com");
-            BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
-            String username = br.readLine();
-            String password = br.readLine();
-            br.close();
-            Kenai.getDefault().login(username, password.toCharArray());
+            if (uname == null) {
+                BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
+                uname = br.readLine();
+                passw = br.readLine();
+                br.close();
+            }
+            Kenai.getDefault().login(uname, passw.toCharArray());
 
         } catch (Exception ex) {
             throw new RuntimeException(ex);
