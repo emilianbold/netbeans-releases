@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.api;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,7 +60,7 @@ import org.netbeans.junit.NbTestCase;
 public class KenaiTest extends NbTestCase {
 
     static String UNITTESTUNIQUENAME_BASE = "test";
-    static String UNITTESTUNIQUENAME = "test00"; // initial value, will be changed in setUpClass method
+    static String UNITTESTUNIQUENAME = "java-inline"; // initial value, will be changed in setUpClass method
     private static Kenai instance;
     private static boolean firstRun = true;
 
@@ -249,25 +250,83 @@ public class KenaiTest extends NbTestCase {
 
     @Test
     public void testGetFeatures() throws KenaiException {
+        BufferedReader br = null;
         try {
+            System.out.println("testGetFeatures");
+            String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "features-java-inline.data";
+            br = new BufferedReader(new FileReader(_fileName));
+            String line = null;
             System.out.println("getFeature");
-            KenaiProject project = instance.getProject(UNITTESTUNIQUENAME);
+            KenaiProject project = instance.getProject("java-inline");
             for (KenaiProjectFeature feature : project.getFeatures()) {
+                System.out.println("===");
+                // Check feature's name
+                line = br.readLine().trim();
+                assertEquals(line, feature.getName());
                 System.out.println(feature.getName());
+                // Check feature's type
+                line = br.readLine().trim();
+                assertEquals(line, feature.getType().toString());
+                System.out.println(feature.getType().toString());
+                // Check feature's display name
+                line = br.readLine().trim();
+                assertEquals(line, feature.getDisplayName());
+                System.out.println(feature.getDisplayName());
+                // Check feature's location
+                line = br.readLine().trim();
+                if (line.equals("null")) { // feature is not present 
+                    assertEquals(null, feature.getLocation());
+                } else {
+                    assertEquals(line, feature.getLocation().toString());
+                }
+                System.out.println(feature.getLocation());
+                // Check feature's service
+                line = br.readLine().trim();
+                assertEquals(line, feature.getService());
+                System.out.println(feature.getService());
+                // Check feature's web location
+                line = br.readLine().trim();
+                assertEquals(line, feature.getWebLocation().toString());
+                System.out.println(feature.getWebLocation().toString());
             }
+        } catch (IOException ex) {
+            fail("Failure while reading the features-java-inline.data golden file.");
         } catch (KenaiErrorMessage mes) {
             System.out.println(mes.getAsString());
             throw mes;
         }
     }
-
+    
     @Test
     public void testGetLicenses() throws KenaiException {
-        System.out.println("testGetLicenses");
-        for (KenaiLicense lic : Kenai.getDefault().getLicenses()) {
-            System.out.println(lic.getName());
-            System.out.println(lic.getDisplayName());
-            System.out.println(lic.getUri());
+        BufferedReader br = null;
+        try {
+            System.out.println("testGetLicenses");
+            String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "licences.data";
+            br = new BufferedReader(new FileReader(_fileName));
+            String line = null;
+            for (KenaiLicense lic : Kenai.getDefault().getLicenses()) {
+                // Check the licence name
+                line = br.readLine().trim();
+                assertEquals(line, lic.getName());
+                System.out.println(lic.getName());
+                // Check the licence display name
+                line = br.readLine().trim();
+                assertEquals(line, lic.getDisplayName());
+                System.out.println(lic.getDisplayName());
+                // Check the licence uri
+                line = br.readLine().trim();
+                assertEquals(line, lic.getUri().toString());
+                System.out.println(lic.getUri().toString());
+            }
+        } catch (IOException ex) {
+            fail("Failure while reading the licences.data golden file.");
+        } finally {
+            try {
+                br.close();
+            } catch (IOException ex) {
+                //
+            }
         }
     }
 
