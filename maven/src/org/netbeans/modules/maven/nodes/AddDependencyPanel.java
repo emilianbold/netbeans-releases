@@ -638,6 +638,18 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             }
         }
         Collections.sort(vers);
+        // also include properties/expressions that could be related to version
+        // management
+        List<String> propList = new ArrayList<String>();
+        for (Object propKey : project.getProperties().keySet()) {
+            String key = (String)propKey;
+            if (key.endsWith(".version")) { //NOI18N
+                // is this the correct heuristics?
+                propList.add("${" + key + "}");
+            }
+        }
+        Collections.sort(propList);
+        vers.addAll(propList);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 versionCompleter.setValueList(vers);
