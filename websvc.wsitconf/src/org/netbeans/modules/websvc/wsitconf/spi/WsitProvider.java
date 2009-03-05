@@ -44,14 +44,8 @@ package org.netbeans.modules.websvc.wsitconf.spi;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.autoupdate.InstallSupport;
-import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -62,7 +56,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
@@ -92,11 +85,12 @@ public abstract class WsitProvider {
     }
 
     public boolean isWsitSupported() {
-        // check if the Policy class is already present - this means we don't need to add the library
+        // check if the FI or TX class exists - this means we don't need to add the library
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
-        FileObject wsimportFO = classPath.findResource("com/sun/xml/ws/policy/Policy.class"); // NOI18N
-        if (wsimportFO != null) {
+        FileObject txFO = classPath.findResource("com/sun/xml/ws/tx/service/TxServerPipe.class"); // NOI18N
+        FileObject fiFO = classPath.findResource("com/sun/xml/ws/api/fastinfoset/FastInfosetFeature.class"); // NOI18N
+        if ((fiFO != null) || (txFO != null)) {
             return true;
         }
         J2eePlatform j2eePlatform = ServerUtils.getJ2eePlatform(project);
