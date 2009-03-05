@@ -423,8 +423,10 @@ public class DwarfSource implements SourceFileProperties{
             }
             for (String cp : systemIncludes){
                 for(String sub : bits) {
-                    if (path.startsWith(cp+sub)){
-                        return true;
+                    if (path.startsWith(cp)) {
+                        if (path.startsWith(cp+sub)){
+                            return true;
+                        }
                     }
                 }
             }
