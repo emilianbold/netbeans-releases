@@ -93,7 +93,7 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
             panel.setOpaque(false);
 
             lblName = new JLabel(displayName);
-            lblStatus = new JLabel();
+            lblStatus = createProgressLabel(NbBundle.getMessage(SectionNode.class, "LBL_LoadingInProgress"));
             lblError = new JLabel();
             lblStatus.setVisible(false);
             lblError.setVisible(false);
@@ -136,7 +136,6 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
 
     @Override
     protected void childrenLoadingStarted() {
-        lblStatus.setText(NbBundle.getMessage(SectionNode.class, "LBL_LoadingInProgress")); //NOI18N
         lblStatus.setVisible(true);
         lblError.setVisible(false);
         fireContentChanged();

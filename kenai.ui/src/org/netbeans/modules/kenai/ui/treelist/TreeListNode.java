@@ -40,14 +40,21 @@
 package org.netbeans.modules.kenai.ui.treelist;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import org.jdesktop.swingx.painter.BusyPainter;
+import org.jdesktop.swingx.painter.PainterIcon;
 import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -258,6 +265,14 @@ public abstract class TreeListNode {
             listener.contentChanged(this);
     }
 
+    final protected JLabel createProgressLabel() {
+        return createProgressLabel(NbBundle.getMessage(TreeListNode.class, "LBL_LoadingInProgress")); //NOI18N
+    }
+
+    final protected JLabel createProgressLabel( String text ) {
+        return new ProgressLabel(text);
+    }
+
     final int getNestingDepth() {
         if( null == getParent() )
             return 0;
@@ -321,4 +336,42 @@ public abstract class TreeListNode {
             return true;
         }
     }
+
+    private class ProgressLabel extends JLabel {
+        private int frame = 0;
+        private Timer t;
+        final BusyPainter painter;
+
+        public ProgressLabel( String text ) {
+            super( text );
+            painter = new BusyPainter(16);
+            PainterIcon icon = new PainterIcon(new Dimension(16, 16));
+            icon.setPainter(painter);
+            setIcon(icon );
+            t = new Timer(100, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame = (frame+1)%painter.getPoints();
+                    painter.setFrame(frame);
+//                    ProgressLabel.this.repaint();
+                    fireContentChanged();
+                }
+            });
+            t.setRepeats(true);
+            super.setVisible(false);
+        }
+
+        @Override
+        public void setVisible( boolean visible ) {
+            boolean old = isVisible();
+            super.setVisible(visible);
+            if( old != visible ) {
+                if( visible )
+                    t.start();
+                else {
+                    t.stop();
+                }
+            }
+        }
+    }
+
 }

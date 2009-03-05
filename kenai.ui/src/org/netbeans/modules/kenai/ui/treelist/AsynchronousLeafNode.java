@@ -82,7 +82,7 @@ public abstract class AsynchronousLeafNode extends LeafNode {
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         lblTitle = new JLabel(title);
-        lblLoading = new JLabel(NbBundle.getMessage(AsynchronousLeafNode.class, "LBL_LoadingInProgress")); //NOI18N
+        lblLoading = createProgressLabel(NbBundle.getMessage(AsynchronousLeafNode.class, "LBL_LoadingInProgress")); //NOI18N
         lblLoading.setForeground(ColorManager.disabledColor);
         lblError = new JLabel(NbBundle.getMessage(AsynchronousLeafNode.class, "LBL_NotResponding")); //NOI18N
         lblError.setForeground(ColorManager.errorColor);
