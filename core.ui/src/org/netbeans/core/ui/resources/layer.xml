@@ -718,11 +718,11 @@ made subject to such option by the copyright holder.
             <attr name="displayName" bundlevalue="org.netbeans.core.ui.options.general.Bundle#General.Options.Export.Category.displayName"/>
             <attr name="position" intvalue="100"/>
             <file name="General">
-                <attr name="include" stringvalue="config/Preferences/org/netbeans/core.properties|config/Services/Browsers/.*"/>
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/core[.]properties|config/Services/Browsers/.*"/>
                 <attr name="displayName" bundlevalue="org.netbeans.core.ui.options.general.Bundle#General.Options.Export.displayName"/>
             </file>
             <file name="netbeans.conf">
-                <attr name="include" stringvalue="etc/netbeans.conf"/>
+                <attr name="include" stringvalue="etc/netbeans[.]conf"/>
                 <attr name="displayName" bundlevalue="org.netbeans.core.ui.options.general.Bundle#netbeans.conf.Options.Export.displayName"/>
             </file>
             <file name="Other">
@@ -732,7 +732,7 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Advanced">
             <file name="Files">
-                <attr name="include" stringvalue="config/Preferences/org/netbeans/core.properties|config/Services/MIMEResolver/.*"/>
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/core[.]properties|config/Services/MIMEResolver/.*"/>
                 <attr name="displayName" bundlevalue="org.netbeans.core.ui.options.filetypes.Bundle#Files.Options.Export.displayName"/>
             </file>
         </folder>

@@ -75,6 +75,9 @@ public class DataNode extends AbstractNode {
     /** should file extensions be displayed? */
     private static boolean showFileExtensions = true;
 
+    /** Name of extension property. Allows to change extension. */
+    private static final String PROP_EXTENSION = "extension"; // NOI18N
+
     /** Create a data node with the given children set for the given data object.
     * @param obj object to work with
     * @param ch children container for the node
@@ -550,7 +553,7 @@ public class DataNode extends AbstractNode {
     private final class ExtensionProperty extends PropertySupport.ReadWrite<String> {
 
         public ExtensionProperty() {
-            super(DataObject.PROP_EXTENSION, String.class,
+            super(PROP_EXTENSION, String.class,
                     DataObject.getString("PROP_extension"), DataObject.getString("HINT_extension"));  //NOI18N
         }
 
