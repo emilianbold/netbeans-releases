@@ -110,7 +110,7 @@ public class UserNode extends LeafNode {
         if( isSelected ) {
             lblUser.setForeground(foreground);
         } else {
-            lblUser.setForeground(ColorManager.disabledColor);
+            lblUser.setForeground(ColorManager.getDefault().getDisabledColor());
         }
         btnOpenProject.setForeground(foreground, isSelected);
         btnRefresh.setForeground(foreground, isSelected);

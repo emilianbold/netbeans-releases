@@ -46,12 +46,55 @@ import java.awt.Color;
  * @author S. Aubrecht
  */
 public class ColorManager {
+    
+    private static ColorManager theInstance;
 
-    public static final Color defaultBackground = Color.white;
-    public static final Color defaultForeground = Color.black;
-    public static final Color disabledColor = Color.gray;
-    public static final Color linkColor = Color.blue;
-    public static final Color errorColor = new Color(153,0,0);
-    public static final Color stableBuildColor = new Color(0,153,0);
-    public static final Color unstableBuildColor = Color.yellow.darker().darker();
+    private Color defaultBackground = Color.white;
+    private Color defaultForeground = Color.black;
+    private Color disabledColor = Color.gray;
+    private Color linkColor = Color.blue;
+    private Color errorColor = new Color(153,0,0);
+    private Color stableBuildColor = new Color(0,153,0);
+    private Color unstableBuildColor = Color.yellow.darker().darker();
+
+    private ColorManager() {
+    }
+
+    public static ColorManager getDefault() {
+        if( null == theInstance )
+            theInstance = new ColorManager();
+        return theInstance;
+    }
+
+    public Color getDefaultBackground() {
+        return defaultBackground;
+    }
+
+    public Color getDefaultForeground() {
+        return defaultForeground;
+    }
+
+    public Color getDisabledColor() {
+        return disabledColor;
+    }
+
+    public Color getErrorColor() {
+        return errorColor;
+    }
+
+    public Color getLinkColor() {
+        return linkColor;
+    }
+
+    public Color getStableBuildColor() {
+        return stableBuildColor;
+    }
+
+    public static ColorManager getTheInstance() {
+        return theInstance;
+    }
+
+    public Color getUnstableBuildColor() {
+        return unstableBuildColor;
+    }
 }

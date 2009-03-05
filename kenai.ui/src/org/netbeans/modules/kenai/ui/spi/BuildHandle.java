@@ -7,7 +7,6 @@ package org.netbeans.modules.kenai.ui.spi;
 
 import java.awt.Color;
 import java.beans.PropertyChangeListener;
-import javax.swing.UIManager;
 import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 
 /**
@@ -25,11 +24,11 @@ public abstract class BuildHandle {
 
     public enum Status {
         
-        RUNNING( "running", ColorManager.defaultForeground ),
-        FAILED( "failed", ColorManager.errorColor ),
-        STABLE( "stable", ColorManager.stableBuildColor ),
-        UNSTABLE( "unstable", ColorManager.unstableBuildColor ),
-        UNKNOWN( "unknown", ColorManager.disabledColor );
+        RUNNING( "running", ColorManager.getDefault().getDefaultForeground() ),
+        FAILED( "failed", ColorManager.getDefault().getErrorColor() ),
+        STABLE( "stable", ColorManager.getDefault().getStableBuildColor() ),
+        UNSTABLE( "unstable", ColorManager.getDefault().getUnstableBuildColor() ),
+        UNKNOWN( "unknown", ColorManager.getDefault().getDisabledColor() );
 
         private final Color c;
         private final String displayName;
@@ -43,6 +42,7 @@ public abstract class BuildHandle {
             return c;
         }
 
+        @Override
         public String toString() {
             return displayName;
         }

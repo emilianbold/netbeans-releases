@@ -56,6 +56,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.UIManager;
 
 /**
  * Popup window with a list of all Notifications.
@@ -143,7 +144,12 @@ public class PopupList {
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.getVerticalScrollBar().setUnitIncrement(avgRowHeight);
         scroll.getVerticalScrollBar().setBlockIncrement(MAX_VISIBLE_ROWS*avgRowHeight);
-        prefSize.width += scroll.getVerticalScrollBar().getPreferredSize().width;
+        int scrollBarWidth = scroll.getVerticalScrollBar().getPreferredSize().width;
+        if( scrollBarWidth <= 0 )
+            scrollBarWidth = UIManager.getInt("ScrollBar.width"); //NOI18N
+        if( scrollBarWidth <= 0 )
+            scrollBarWidth = 18; //let's take some reasonable guess
+        prefSize.width += scrollBarWidth;
         Insets i = scroll.getInsets();
         if( null != i ) {
             prefSize.width += i.left + i.right;

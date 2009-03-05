@@ -94,7 +94,7 @@ public class TreeList extends JList {
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setFixedCellHeight( ROW_HEIGHT+2 );
         setCellRenderer(renderer);
-        setBackground(ColorManager.defaultBackground);
+        setBackground(ColorManager.getDefault().getDefaultBackground());
     }
 
     @Override

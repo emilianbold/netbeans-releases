@@ -103,9 +103,9 @@ public class LinkButton extends JButton {
                 foreground = new Color(foreground.getRGB());
             setForeground(foreground);
         } else if( isEnabled() ) {
-            setForeground(ColorManager.linkColor);
+            setForeground(ColorManager.getDefault().getLinkColor());
         } else {
-            setForeground(ColorManager.disabledColor);
+            setForeground(ColorManager.getDefault().getDisabledColor());
         }
     }
 
@@ -120,10 +120,10 @@ public class LinkButton extends JButton {
         setModel( new Model() );
         if( null != al ) {
             addActionListener(al);
-            setForeground(ColorManager.linkColor);
+            setForeground(ColorManager.getDefault().getLinkColor());
         } else {
             setEnabled(false);
-            setForeground(ColorManager.disabledColor);
+            setForeground(ColorManager.getDefault().getDisabledColor());
         }
     }
 
