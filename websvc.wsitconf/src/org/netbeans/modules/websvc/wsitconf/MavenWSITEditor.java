@@ -114,8 +114,8 @@ public class MavenWSITEditor implements WSEditor, UndoManagerHolder {
                 wsdlModel = MavenWSITModelSupport.getModel(node, project, jaxWsSupport, jaxWsService, this, true, createdFiles);
                 if (isClient) {
                     clientWsdlModel = MavenWSITModelSupport.getModel(node, project, jaxWsSupport, jaxWsService, this, true, createdFiles);
-//                    wsdlModel = WSITModelSupport.getServiceModelForClient(wscs, client);
-//                    return new ClientTopComponent(client, jaxWsModel, clientWsdlModel, wsdlModel, node);
+                    wsdlModel = MavenWSITModelSupport.getServiceModelForClient(jaxWsSupport, jaxWsService);
+                    return new ClientTopComponent(jaxWsSupport, jaxWsService, clientWsdlModel, wsdlModel, node);
                 } else {
                     return new ServiceTopComponent(node, jaxWsService, wsdlModel, getUndoManager());
                 }

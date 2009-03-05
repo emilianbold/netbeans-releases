@@ -46,6 +46,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -136,7 +137,7 @@ public class MavenWSITModelSupport {
         
         try {
             CatalogModel cm = Utilities.getCatalogModel(catalogms);
-            ModelSource originalms = cm.getModelSource(URI.create(jaxWsService.getWsdlUrl()));
+            ModelSource originalms = cm.getModelSource(jaxWsSupport.getWsdlFolder(false).getFileObject(jaxWsService.getLocalWsdl()).getURL().toURI());
             FileObject originalWsdlFO = Utilities.getFileObject(originalms);
             WSDLModel originalwsdlmodel = WSITModelSupport.getModelFromFO(originalWsdlFO, true);
 
@@ -205,6 +206,8 @@ public class MavenWSITModelSupport {
             }
 
         } catch (CatalogModelException ex) {
+            logger.log(Level.INFO, null, ex);
+        } catch (URISyntaxException ex) {
             logger.log(Level.INFO, null, ex);
         }
         

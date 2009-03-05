@@ -86,6 +86,13 @@ public class WSITEditorProvider implements WSEditorProvider {
                     }
                 }
             }
+        } else {
+            JaxWsService service = nodeLookup.lookup(JaxWsService.class);
+            JAXWSLightSupport jaxWsSupport = nodeLookup.lookup(JAXWSLightSupport.class);
+            if ((service != null) && (jaxWsSupport != null)) {
+                Project prj = FileOwnerQuery.getOwner(jaxWsSupport.getDeploymentDescriptorFolder());
+                return new MavenWSITEditor(jaxWsSupport, service, prj);
+            }
         }
         return null;
     }

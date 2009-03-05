@@ -141,14 +141,6 @@ public abstract class WsitProvider {
     }
 
     public boolean addMetroLibrary() {
-
-        List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
-        for (UpdateUnit unit : units) {
-            System.out.println("------------------------------------");
-            System.out.println("Code name: " + unit.getCodeName());
-            System.out.println("tostring: " + unit.toString());
-        }
-        
         Library[] jaxwsLibs = new Library[] {LibraryManager.getDefault().getLibrary("jaxws21")};
         Library metroLib = LibraryManager.getDefault().getLibrary("metro"); //NOI18N
         if (metroLib != null) {
@@ -158,8 +150,6 @@ public abstract class WsitProvider {
                     ProjectClassPathModifier.removeLibraries(jaxwsLibs, sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
                     return ProjectClassPathModifier.addLibraries(new Library[] {metroLib}, sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
                 }
-
-                
             } catch (IOException e) {
                 //NOOP
             }
