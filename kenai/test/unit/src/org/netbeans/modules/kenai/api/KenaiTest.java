@@ -119,6 +119,9 @@ public class KenaiTest extends NbTestCase {
     }
 
     @Test
+    /**
+     * Test of getProject method of class Kenai
+     */
     public void testGetProject() throws Exception {
         System.out.println("testGetProject");
         String name = "java-inline";
@@ -130,6 +133,9 @@ public class KenaiTest extends NbTestCase {
     }
 
     @Test
+    /**
+     * Test of getDisplayName method of class KenaiProject
+     */
     public void testGetDisplayName() throws Exception {
         System.out.println("testGetDisplayName");
         String name = "java-inline";
@@ -141,6 +147,9 @@ public class KenaiTest extends NbTestCase {
     }
 
     @Test
+    /**
+     * Test of getDescription method of class KenaiProject
+     */
     public void testGetDescription() throws Exception {
         System.out.println("testGetDescription");
         String name = "java-inline";
@@ -152,6 +161,9 @@ public class KenaiTest extends NbTestCase {
     }
 
     @Test
+    /**
+     * Test of getWebLocation method of class KenaiProject
+     */
     public void testGetWebLocation() throws Exception {
         System.out.println("testGetWebLocation");
         String name = "java-inline";
@@ -163,6 +175,9 @@ public class KenaiTest extends NbTestCase {
     }
 
     @Test
+    /**
+     * Test of getTags method of class KenaiProject
+     */
     public void testGetTags() throws Exception {
         System.out.println("testGetTags");
         String name = "java-inline";
@@ -174,6 +189,9 @@ public class KenaiTest extends NbTestCase {
     }
 
     @Test
+    /**
+     * Test of login method of class Kenai
+     */
     public void testLogin() throws Exception {
         try {
             instance.login("jerry", "mouse".toCharArray());
@@ -184,6 +202,9 @@ public class KenaiTest extends NbTestCase {
     }
 
     @Test
+    /**
+     * Test of isAuthorized method of class Kenai
+     */
     public void testIsAuthorized() throws Exception {
         String name = "java-inline";
         KenaiProject prj = instance.getProject(name);
@@ -196,6 +217,9 @@ public class KenaiTest extends NbTestCase {
     }
 
     @Test
+    /**
+     * Test of isAuthorized method of class Kenai
+     */
     public void testIsAuthorized2() throws Exception {
         String name = UNITTESTUNIQUENAME;
         try {
@@ -232,6 +256,9 @@ public class KenaiTest extends NbTestCase {
     }
 
     @Test
+    /**
+     * Test of createProjectFeature method of class Kenai
+     */
     public void testCreateFeature() throws KenaiException {
         System.out.println("createFeature");
         String name = "unittestfeature01";
@@ -249,6 +276,10 @@ public class KenaiTest extends NbTestCase {
     }
 
     @Test
+    /**
+     * Test of getFeatures method of class Kenai
+     * Note: This test also checks all methods from KenaiProjectFeature
+     */
     public void testGetFeatures() throws KenaiException {
         BufferedReader br = null;
         try {
@@ -298,6 +329,10 @@ public class KenaiTest extends NbTestCase {
     }
     
     @Test
+    /**
+     * Test of getLicences method of class Kenai<br />
+     * Note: This test also checks all methods from KenaiLicense
+     */
     public void testGetLicenses() throws KenaiException {
         BufferedReader br = null;
         try {
@@ -331,6 +366,10 @@ public class KenaiTest extends NbTestCase {
     }
 
     @Test
+    /**
+     * Test of getServices method of class Kenai<br />
+     * Note: more detailed tests are in KenaiServiceTest.java
+     */
     public void testGetServices() throws KenaiException {
         System.out.println("testGetServices");
         for (KenaiService ser : Kenai.getDefault().getServices()) {
@@ -342,6 +381,9 @@ public class KenaiTest extends NbTestCase {
     }
 
     @Test
+    /**
+     * Test of getMyProjects method of class Kenai
+     */
     public void testGetMyProjects() throws Exception {
         System.out.println("testGetMyProjects (takes quite long - please wait...)");
         Collection<KenaiProject> result = instance.getMyProjects();
