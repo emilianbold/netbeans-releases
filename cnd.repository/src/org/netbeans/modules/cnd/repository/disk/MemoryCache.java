@@ -121,7 +121,7 @@ public final class MemoryCache {
         }
     }
     
-    public void put(Key key, Persistent obj, boolean primary) {
+    public void put(Key key, Persistent obj) {
         Slice s = cache.getSilce(key);
         SoftValue<Persistent> value = new SoftValue<Persistent>(obj, key, refQueue);
         s.w.lock();
@@ -130,11 +130,42 @@ public final class MemoryCache {
         } finally {
             s.w.unlock();
         }
-        if( ! primary ) {
-            processQueue();
-        }
     }
-    
+
+    /**
+     *
+     * @param key key with which the specified value is to be associated
+     * @param value value to be associated with the specified key
+     * @return the previous value associated with the specified key, or
+     *         <tt>null</tt> if there was no mapping for the key.
+     */
+    public Persistent putIfAbsent(Key key, Persistent obj) {
+        Persistent prevPersistent = null;
+        Slice s = cache.getSilce(key);
+        SoftValue<Persistent> value = new SoftValue<Persistent>(obj, key, refQueue);
+        s.w.lock();
+        try {
+            // do not override existed value if any
+            Object old = s.storage.get(key);
+            if (old instanceof SoftReference) {
+                prevPersistent = (Persistent) ((SoftReference) old).get();
+            } else if (old instanceof Persistent) {
+                prevPersistent = (Persistent) old;
+            } else {
+                System.err.println("unexpected value " + old + " for key " + key);
+            }
+            if (prevPersistent == null) {
+                // no previous value
+                // put new item into storage
+                s.storage.put(key, value);
+            }
+        } finally {
+            s.w.unlock();
+        }
+        processQueue();
+        return prevPersistent;
+    }
+
     public Persistent get(Key key) {
         if (STATISTIC) {readCnt++;}
         Slice s = cache.getSilce(key);

@@ -85,20 +85,18 @@ public final class UnitImpl implements Unit {
         // Use another way to control the assertion. For example by flag in unit tests.
         //assert getName().equals(key.getUnit().toString());
         Persistent data = cache.get(key);
-        // use double check to speedup without locks
-        Persistent oldData = data;
-        if (oldData == null) {
-            // all work with key data under key's sync
-            synchronized (key) {
-                data = cache.get(key);
-                if (data == null) {
-                    data = oldData = getStorage(key).read(key);
-                    if (data != null) {
-                        // no syncronization here!!!
-                        // the only possible collision here is lost of element, which is currently being deleted
-                        // by processQueue - it will be reread
-                        cache.put(key, data, false);
-                    }
+        if (data == null) {
+            data = getStorage(key).read(key);
+            if (data != null) {
+                // no syncronization here!!!
+                // the only possible collision here is lost of element, which is currently being deleted
+                // by processQueue - it will be reread
+
+                // we checked that nothing in cache above
+                // but if someone already put object before us => reuse it
+                Persistent prev = cache.putIfAbsent(key, data);
+                if (prev != null) {
+                    data = prev;
                 }
             }
         }
@@ -108,46 +106,31 @@ public final class UnitImpl implements Unit {
     public void putToCache(Key key, Persistent obj) {
         assert key != null;
         assert getName().equals(key.getUnit().toString());
-        // all work with key data under key's sync
-        synchronized (key) {
-            cache.put(key, obj, true);
-        }
+        cache.put(key, obj);
     }
     
     public void hang(Key key, Persistent obj) {
         assert key != null;
         assert getName().equals(key.getUnit().toString());
-        // all work with key data under key's sync
-        synchronized (key) {
-            cache.hang(key, obj);
-        }
+        cache.hang(key, obj);
     }
     
     public Persistent tryGet(Key key) {
         assert key != null;
         assert getName().equals(key.getUnit().toString());
-        // all work with key data under key's sync
-        synchronized (key) {
-            return cache.get(key);
-        }
+        return cache.get(key);
     }
 
     public void removePhysically(Key key) throws IOException {
         assert key != null;
         assert getName().equals(key.getUnit().toString());
-        // all work with key data under key's sync
-        synchronized (key) {
-            getStorage(key).remove(key);
-        }
+        getStorage(key).remove(key);
     }
     
     public void removeFromCache(Key key) {
         assert key != null;
         assert getName().equals(key.getUnit().toString());
-        // all work with key data under key's sync
-        synchronized (key) {
-            cache.remove(key);
-        }
+        cache.remove(key);
     }
 
     public void close() throws IOException {
@@ -163,10 +146,7 @@ public final class UnitImpl implements Unit {
         assert key != null;
         assert getName().equals(key.getUnit().toString());
         assert object != null;
-        // all work with key data under key's sync
-        synchronized (key) {
-            getStorage(key).write(key, object);
-        }
+        getStorage(key).write(key, object);
     }
 
     public boolean maintenance(long timeout) throws IOException {
@@ -184,4 +164,11 @@ public final class UnitImpl implements Unit {
     public void debugClear() {
         cache.clearSoftRefs();
     }
+
+    private static void traceKey(String msg, Key key) {
+        if (key.getDepth() == 3 && "argc".contentEquals(key.getAt(2))) {
+            System.err.println(msg + " at @" + System.identityHashCode(key) + " " + key);
+        }
+    }
+    private static final boolean TRACE = false;
 }
