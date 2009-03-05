@@ -243,7 +243,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                 aw.setPaintState(EdgeWidget.REGULAR);
                 aw.setReadable(true);
             } else if (childrenNodes.contains(curN)) {
-                aw.setPaintState(EdgeWidget.GRAYED);
+                aw.setPaintState(EdgeWidget.REGULAR);
                 aw.setReadable(true);
             } else {
                 aw.setPaintState(EdgeWidget.DISABLED);
@@ -383,17 +383,33 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
 
         @Override
         protected void performLayout() {
-            Rectangle rectangle = new Rectangle (0, 0, 1, 1);
+            Rectangle rectangle = null;
             List<? extends Widget> toFit = widgets != null ? widgets : depScene.getChildren();
-            for (Widget widget : toFit)
-                rectangle = rectangle.union (widget.convertLocalToScene (widget.getBounds ()));
-            rectangle.grow(5, 5);
+            for (Widget widget : toFit) {
+                if (rectangle == null) {
+                    rectangle = widget.convertLocalToScene (widget.getBounds ());
+                } else {
+                    rectangle = rectangle.union (widget.convertLocalToScene (widget.getBounds ()));
+                }
+            }
+            // margin around
+            if (widgets == null) {
+                rectangle.grow(5, 5);
+            } else {
+                rectangle.grow(25, 25);
+            }
             Dimension dim = rectangle.getSize();
             Dimension viewDim = depScene.tc.getScrollPane().
                     getViewportBorderBounds ().getSize ();
             double zf = Math.min ((double) viewDim.width / dim.width, (double) viewDim.height / dim.height);
             if (depScene.isAnimated()) {
-                depScene.getSceneAnimator().animateZoomFactor(zf);
+                if (widgets == null) {
+                    depScene.getSceneAnimator().animateZoomFactor(zf);
+                } else {
+                    CenteredZoomAnimator cza = new CenteredZoomAnimator(depScene.getSceneAnimator());
+                    cza.setZoomFactor(zf,
+                            new Point((int)rectangle.getCenterX(), (int)rectangle.getCenterY()));
+                }
             } else {
                 depScene.setZoomFactor (zf);
             }
@@ -428,7 +444,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             for (ArtifactGraphNode grNode : grNodes) {
                 aw = grNode.getWidget();
                 paintState = aw.getPaintState();
-                if (paintState != EdgeWidget.DISABLED || paintState != EdgeWidget.GRAYED) {
+                if (paintState != EdgeWidget.DISABLED && paintState != EdgeWidget.GRAYED) {
                     aws.add(aw);
                 }
             }
