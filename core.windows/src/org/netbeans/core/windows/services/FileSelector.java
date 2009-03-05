@@ -74,7 +74,6 @@ import org.openide.util.NbBundle;
  * @author Ales Novak, Jaroslav Tulach, Ian Formanek, Petr Hamernik, Jan Jancura
  */
 final class FileSelector extends JPanel implements PropertyChangeListener, ExplorerManager.Provider {
-    //XXX AFAIK nothing in NetBeans uses NodeOperation.select().  Probably this class can be deleted and NodeOperation.select deprecated. - Tim
 
     /** generated Serialized Version UID */
     static final long serialVersionUID = 6524404012203099065L;
