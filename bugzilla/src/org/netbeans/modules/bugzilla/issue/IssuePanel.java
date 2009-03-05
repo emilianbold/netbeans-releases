@@ -58,6 +58,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.eclipse.core.runtime.CoreException;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
@@ -81,6 +83,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private CommentsPanel commentsPanel;
     private int resolvedIndex;
     private Map<BugzillaIssue.IssueField,String> initialValues = new HashMap<BugzillaIssue.IssueField,String>();
+    private boolean reloading;
 
     public IssuePanel() {
         initComponents();
@@ -91,6 +94,7 @@ public class IssuePanel extends javax.swing.JPanel {
         headerLabel.setFont(font.deriveFont((float)(font.getSize()*1.7)));
         duplicateLabel.setVisible(false);
         duplicateField.setVisible(false);
+        attachDocumentListeners();
 
         // Comments panel
         commentsPanel = new CommentsPanel();
@@ -129,6 +133,7 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void reloadForm(boolean force) {
+        reloading = true;
         String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
         String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
         headerLabel.setText(headerTxt);
@@ -170,6 +175,7 @@ public class IssuePanel extends javax.swing.JPanel {
             addCommentArea.setText(""); // NOI18N
         }
         updateFieldStatuses();
+        reloading = false;
     }
 
     private String reloadField(boolean force, JComponent component, BugzillaIssue.IssueField field) {
@@ -299,6 +305,13 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
+    private void cancelHighlight(JLabel label) {
+        if (!reloading) {
+            label.setOpaque(false);
+            label.getParent().repaint();
+        }
+    }
+
     private void storeFieldValue(BugzillaIssue.IssueField field, JComboBox combo) {
         storeFieldValue(field, combo.getSelectedItem().toString());
     }
@@ -311,6 +324,16 @@ public class IssuePanel extends javax.swing.JPanel {
         if (!value.equals(initialValues.get(field))) {
             issue.setFieldValue(field, value);
         }
+    }
+
+    private void attachDocumentListeners() {
+        urlField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(urlLabel));
+        keywordsField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(keywordsLabel));
+        assignedField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(assignedLabel));
+        qaContactField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(qaContactLabel));
+        ccField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(ccLabel));
+        blocksField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(blocksLabel));
+        dependsField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(dependsLabel));
     }
     
     /** This method is called from within the constructor to
@@ -377,6 +400,8 @@ public class IssuePanel extends javax.swing.JPanel {
         blocksButton = new javax.swing.JButton();
         dependsOnButton = new javax.swing.JButton();
 
+        FormListener formListener = new FormListener();
+
         resolutionField.setEditable(false);
         resolutionField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
@@ -390,33 +415,33 @@ public class IssuePanel extends javax.swing.JPanel {
 
         platformLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.platformLabel.text")); // NOI18N
 
-        productCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                productComboActionPerformed(evt);
-            }
-        });
+        productCombo.addActionListener(formListener);
+
+        componentCombo.addActionListener(formListener);
+
+        versionCombo.addActionListener(formListener);
+
+        platformCombo.addActionListener(formListener);
 
         statusLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.statusLabel.text")); // NOI18N
 
-        statusCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                statusComboActionPerformed(evt);
-            }
-        });
+        statusCombo.addActionListener(formListener);
 
         resolutionLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolutionLabel.text")); // NOI18N
 
-        resolutionCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                resolutionComboActionPerformed(evt);
-            }
-        });
+        resolutionCombo.addActionListener(formListener);
 
         priorityLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.priorityLabel.text")); // NOI18N
 
+        priorityCombo.addActionListener(formListener);
+
         severityLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.severityLabel.text")); // NOI18N
 
+        severityCombo.addActionListener(formListener);
+
         targetMilestoneLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.targetMilestoneLabel.text")); // NOI18N
+
+        targetMilestoneCombo.addActionListener(formListener);
 
         urlLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.urlLabel.text")); // NOI18N
 
@@ -463,18 +488,10 @@ public class IssuePanel extends javax.swing.JPanel {
         scrollPane1.setViewportView(addCommentArea);
 
         submitButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
-        submitButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                submitButtonActionPerformed(evt);
-            }
-        });
+        submitButton.addActionListener(formListener);
 
         cancelButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.cancelButton.text")); // NOI18N
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
+        cancelButton.addActionListener(formListener);
 
         attachmentsLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachmentsLabel.text")); // NOI18N
 
@@ -490,40 +507,24 @@ public class IssuePanel extends javax.swing.JPanel {
         );
 
         refreshButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.text")); // NOI18N
-        refreshButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshButtonActionPerformed(evt);
-            }
-        });
+        refreshButton.addActionListener(formListener);
 
         duplicateLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateLabel.text")); // NOI18N
 
         keywordsButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsButton.text")); // NOI18N
         keywordsButton.setFocusPainted(false);
         keywordsButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        keywordsButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                keywordsButtonActionPerformed(evt);
-            }
-        });
+        keywordsButton.addActionListener(formListener);
 
         blocksButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.text")); // NOI18N
         blocksButton.setFocusPainted(false);
         blocksButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        blocksButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                blocksButtonActionPerformed(evt);
-            }
-        });
+        blocksButton.addActionListener(formListener);
 
         dependsOnButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.text")); // NOI18N
         dependsOnButton.setFocusPainted(false);
         dependsOnButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        dependsOnButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dependsOnButtonActionPerformed(evt);
-            }
-        });
+        dependsOnButton.addActionListener(formListener);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -715,9 +716,63 @@ public class IssuePanel extends javax.swing.JPanel {
 
         layout.linkSize(new java.awt.Component[] {assignedLabel, attachmentsLabel, blocksLabel, ccLabel, componentLabel, dependsLabel, keywordsLabel, platformLabel, priorityLabel, productLabel, qaContactLabel, resolutionLabel, severityLabel, statusCombo, statusLabel, targetMilestoneLabel, urlLabel, versionLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener {
+        FormListener() {}
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == productCombo) {
+                IssuePanel.this.productComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == statusCombo) {
+                IssuePanel.this.statusComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == resolutionCombo) {
+                IssuePanel.this.resolutionComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == submitButton) {
+                IssuePanel.this.submitButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == cancelButton) {
+                IssuePanel.this.cancelButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == refreshButton) {
+                IssuePanel.this.refreshButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == keywordsButton) {
+                IssuePanel.this.keywordsButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == blocksButton) {
+                IssuePanel.this.blocksButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == dependsOnButton) {
+                IssuePanel.this.dependsOnButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == componentCombo) {
+                IssuePanel.this.componentComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == versionCombo) {
+                IssuePanel.this.versionComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == platformCombo) {
+                IssuePanel.this.platformComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == priorityCombo) {
+                IssuePanel.this.priorityComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == severityCombo) {
+                IssuePanel.this.severityComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == targetMilestoneCombo) {
+                IssuePanel.this.targetMilestoneComboActionPerformed(evt);
+            }
+        }
     }// </editor-fold>//GEN-END:initComponents
 
     private void productComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_productComboActionPerformed
+        cancelHighlight(productLabel);
         // Reload componentCombo, versionCombo and targetMilestoneCombo
         Bugzilla bugzilla = Bugzilla.getInstance();
         BugzillaRepository repository = issue.getRepository();
@@ -741,6 +796,8 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_productComboActionPerformed
 
     private void statusComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statusComboActionPerformed
+        cancelHighlight(statusLabel);
+        cancelHighlight(resolutionLabel);
         // Hide/show resolution combo
         String initialStatus = initialValues.get(BugzillaIssue.IssueField.STATUS);
         boolean resolvedInitial = "RESOLVED".equals(initialStatus); // NOI18N
@@ -840,6 +897,7 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void resolutionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolutionComboActionPerformed
+        cancelHighlight(resolutionLabel);
         if (resolutionCombo.getParent() == null) {
             return;
         }
@@ -877,6 +935,30 @@ public class IssuePanel extends javax.swing.JPanel {
             dependsField.setText(sb.toString());
         }
     }//GEN-LAST:event_dependsOnButtonActionPerformed
+
+    private void componentComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_componentComboActionPerformed
+        cancelHighlight(componentLabel);
+    }//GEN-LAST:event_componentComboActionPerformed
+
+    private void versionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionComboActionPerformed
+        cancelHighlight(versionLabel);
+    }//GEN-LAST:event_versionComboActionPerformed
+
+    private void platformComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformComboActionPerformed
+        cancelHighlight(platformLabel);
+    }//GEN-LAST:event_platformComboActionPerformed
+
+    private void priorityComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_priorityComboActionPerformed
+        cancelHighlight(priorityLabel);
+    }//GEN-LAST:event_priorityComboActionPerformed
+
+    private void severityComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_severityComboActionPerformed
+        cancelHighlight(severityLabel);
+    }//GEN-LAST:event_severityComboActionPerformed
+
+    private void targetMilestoneComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetMilestoneComboActionPerformed
+        cancelHighlight(targetMilestoneLabel);
+    }//GEN-LAST:event_targetMilestoneComboActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea addCommentArea;
@@ -935,5 +1017,26 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JComboBox versionCombo;
     private javax.swing.JLabel versionLabel;
     // End of variables declaration//GEN-END:variables
+
+    class CancelHighlightDocumentListener implements DocumentListener {
+        private JLabel label;
+        
+        CancelHighlightDocumentListener(JLabel label) {
+            this.label = label;
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            cancelHighlight(label);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            cancelHighlight(label);
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            cancelHighlight(label);
+        }
+
+    }
 
 }
