@@ -41,13 +41,17 @@ package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
@@ -65,6 +69,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.IssueFinder;
+import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.openide.util.NbBundle;
@@ -77,8 +82,11 @@ import org.openide.util.RequestProcessor;
 public class CommentsPanel extends JPanel {
     private final static String STACKTRACE_ATTRIBUTE = "stacktrace"; // NOI18N
     private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
+    private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
+    private final static String QUOTE_PREFIX = "> "; // NOI18N
     private BugzillaIssue issue;
     private MouseInputListener listener;
+    private NewCommentHandler newCommentHandler;
 
     public CommentsPanel() {
         setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
@@ -141,6 +149,10 @@ public class CommentsPanel extends JPanel {
         setVisible(true);
     }
 
+    public void setNewCommentHandler(NewCommentHandler handler) {
+        newCommentHandler = handler;
+    }
+
     private void addSection(String text, String author, String dateTimeString,
             GroupLayout.ParallelGroup horizontalGroup, GroupLayout.SequentialGroup verticalGroup, boolean description) {
         JTextPane textPane = new JTextPane();
@@ -158,12 +170,17 @@ public class CommentsPanel extends JPanel {
         String rightFormat = bundle.getString("CommentsPanel.rightLabel.format"); // NOI18N
         String rightTxt = MessageFormat.format(rightFormat, dateTimeString, author);
         rightLabel.setText(rightTxt);
+        LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N
+        replyButton.addActionListener(getReplyListener());
+        replyButton.putClientProperty(REPLY_TO_PROPERTY, textPane);
         setupTextPane(textPane, text);
 
         // Layout
         GroupLayout layout = (GroupLayout)getLayout();
         horizontalGroup.add(layout.createSequentialGroup()
-            .add(leftLabel)
+            .add(leftLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(LayoutStyle.RELATED)
+            .add(replyButton)
             .addPreferredGap(LayoutStyle.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(rightLabel))
         .add(textPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
@@ -172,6 +189,7 @@ public class CommentsPanel extends JPanel {
         }
         verticalGroup.add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
             .add(leftLabel)
+            .add(replyButton)
             .add(rightLabel))
             .addPreferredGap(LayoutStyle.RELATED)
             .add(textPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
@@ -242,6 +260,33 @@ public class CommentsPanel extends JPanel {
         textPane.addMouseMotionListener(listener);
     }
 
+    private ActionListener replyListener;
+    private ActionListener getReplyListener() {
+        if (replyListener == null) {
+            replyListener = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    Object source = e.getSource();
+                    if (source instanceof JComponent) {
+                        JComponent comp = (JComponent)source;
+                        Object value = comp.getClientProperty(REPLY_TO_PROPERTY);
+                        if (value instanceof JTextPane) {
+                            JTextPane pane = (JTextPane)value;
+                            String text = pane.getText();
+                            StringBuilder sb = new StringBuilder();
+                            StringTokenizer tokenizer = new StringTokenizer(text, "\n"); // NOI18N
+                            while (tokenizer.hasMoreElements()) {
+                                String line = tokenizer.nextToken();
+                                sb.append(QUOTE_PREFIX).append(line).append('\n');
+                            }
+                            newCommentHandler.append(sb.toString());
+                        }
+                    }
+                }
+            };
+        }
+        return replyListener;
+    }
+
     private static class StackTraceAction {
         void openStackTrace(String text) {
             StackTraceSupport.findAndOpen(text);
@@ -260,6 +305,10 @@ public class CommentsPanel extends JPanel {
                 }
             });
         }
+    }
+
+    public interface NewCommentHandler {
+        void append(String text);
     }
 
 }

@@ -56,7 +56,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -98,9 +97,14 @@ public class IssuePanel extends javax.swing.JPanel {
 
         // Comments panel
         commentsPanel = new CommentsPanel();
-        JScrollPane scrollPane = new JScrollPane(commentsPanel);
-        scrollPane.setBorder(null);
-        ((GroupLayout)getLayout()).replace(dummyCommentsPanel, scrollPane);
+        commentsPanel.setNewCommentHandler(new CommentsPanel.NewCommentHandler() {
+            public void append(String text) {
+                addCommentArea.append(text);
+                addCommentArea.requestFocus();
+                scrollRectToVisible(scrollPane1.getBounds());
+            }
+        });
+        ((GroupLayout)getLayout()).replace(dummyCommentsPanel, commentsPanel);
     }
 
     void reloadFormInAWT(final boolean force) {

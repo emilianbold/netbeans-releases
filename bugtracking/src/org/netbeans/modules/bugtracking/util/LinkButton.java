@@ -169,9 +169,9 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
     }
 
     public void focusGained(FocusEvent e) {
-        Rectangle rect = getBounds();
+/*        Rectangle rect = getBounds();
         rect.grow( 0, BUTTON_FONT.getSize() );
-        scrollRectToVisible( rect );
+        scrollRectToVisible( rect );*/
     }
 
     protected void onMouseExited(MouseEvent e) {

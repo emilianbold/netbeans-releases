@@ -39,9 +39,8 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import java.text.SimpleDateFormat;
-import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
+import javax.swing.JScrollPane;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.openide.util.HelpCtx;
 
@@ -50,14 +49,14 @@ import org.openide.util.HelpCtx;
  * @author Tomas Stupka, Jan Stola
  */
 public class IssueController extends BugtrackingController {
-    private IssuePanel issuePanel = new IssuePanel();
-    private DefaultListModel attachmentsModel;
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("hh24:mmm:ss dd.mm.yyyy");
-    private BugzillaIssue issue;
+    private JComponent issuePanel;
 
     public IssueController(BugzillaIssue issue) {
-        this.issue = issue;
-        issuePanel.setIssue(issue);
+        IssuePanel panel = new IssuePanel();
+        panel.setIssue(issue);
+        JScrollPane scrollPane = new JScrollPane(panel);
+        scrollPane.setBorder(null);
+        issuePanel = scrollPane;
     }
 
     @Override
@@ -73,36 +72,11 @@ public class IssueController extends BugtrackingController {
     @Override
     public boolean isValid() {
         return true; // PENDING
-        /*return !panel.summaryField.getText().trim().equals("") &&
-               !panel.priorityField.getText().trim().equals("") &&
-               !panel.summaryField.getText().trim().equals("") &&
-               !panel.descTextArea.getText().trim().equals("") &&
-               !panel.typeField.getText().trim().equals("");*/
     }
 
     @Override
     public void applyChanges() {
     }
-
-    /*private void onResolve() {
-        Set<TaskAttribute> attrs;
-        try {
-            BugzillaClient client = Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(issue.getTaskRepository(), new NullProgressMonitor());
-            List<String> res = client.getRepositoryConfiguration().getResolutions();
-            resolvePanel.resolutionCBO.setModel(new DefaultComboBoxModel(res.toArray(new String[res.size()])));
-            if (!BugzillaUtil.show(resolvePanel, "Got resolution?", "submit")) {
-                return;
-            }
-            attrs = issue.getResolveAttributes((String) resolvePanel.resolutionCBO.getSelectedItem());
-            RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(issue.getTaskRepository(), issue.getData(), attrs, new NullProgressMonitor());
-            issue.refresh();
-            refreshViewData();
-        } catch (MalformedURLException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
-    }*/
 
     void refreshViewData() {
         // PENDING
