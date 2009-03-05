@@ -88,6 +88,7 @@ import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -586,7 +587,11 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             return DeclarationLocation.NONE;
         }
 
-        RubyIndex index = RubyIndex.get(Collections.singleton(fileInProject));
+        RubyIndex index = RubyIndex.get(GsfUtilities.getRoots(fileInProject,
+                Collections.singleton(RubyLanguage.SOURCE),
+                Collections.singleton(RubyLanguage.BOOT),
+                Collections.<String>emptySet()));
+
         if (index == null) {
             return DeclarationLocation.NONE;
         }
