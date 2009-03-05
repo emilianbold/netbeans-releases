@@ -389,6 +389,8 @@ public final class SourceCache {
     //jjancura: probably has race condition too
     public void sourceModified () {
         SourceModificationEvent sourceModificationEvent = SourceAccessor.getINSTANCE ().getSourceModificationEvent (source);
+        if (sourceModificationEvent == null)
+            return;
         Map<Class<? extends Scheduler>,SchedulerEvent> schedulerEvents = new HashMap<Class<? extends Scheduler>, SchedulerEvent> ();
         for (Scheduler scheduler : Schedulers.getSchedulers ()) {
             SchedulerEvent schedulerEvent = SchedulerAccessor.get ().createSchedulerEvent (scheduler, sourceModificationEvent);
