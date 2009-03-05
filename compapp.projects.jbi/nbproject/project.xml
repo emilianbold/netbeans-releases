@@ -499,6 +499,10 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.netbeans.libs.xerces</code-name-base>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.text</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
