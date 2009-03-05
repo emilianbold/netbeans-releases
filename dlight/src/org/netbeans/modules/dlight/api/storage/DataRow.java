@@ -47,7 +47,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
  */
 public final class DataRow {
   private List<String> colnames;
-  private List<Object> data;
+  private List data;
 
   /**
    * Created new DataRow instance with the <code>colnames</code> column names
@@ -55,7 +55,7 @@ public final class DataRow {
    * @param colnames column names
    * @param data data 
    */
-  public DataRow(List<String> colnames, List<Object> data) {
+  public DataRow(List colnames, List data) {
     this.colnames = colnames;
     DLightLogger.assertTrue(data != null, "data parameter should not be null"); //NOI18N
     this.data = data;
