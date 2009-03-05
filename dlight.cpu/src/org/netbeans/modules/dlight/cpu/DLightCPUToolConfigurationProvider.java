@@ -63,7 +63,6 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -181,20 +180,16 @@ public final class DLightCPUToolConfigurationProvider
 
     private DataTableMetadata createProfilerTableMetadata() {
         Column cpuId = new Column("cpu_id", Integer.class, loc("CPUMonitorTool.ColumnName.cpu_id"), null); // NOI18N
-        Column cpuId = new Column("cpu_id", Integer.class,  loc("CPUMonitorTool.ColumnName.cpu_id"), null); // NOI18N
         Column threadId = new Column("thread_id", Integer.class, loc("CPUMonitorTool.ColumnName.thread_id"), null); // NOI18N
         Column timestamp = new Column("time_stamp", Long.class, loc("CPUMonitorTool.ColumnName.time_stamp"), null); // NOI18N
-        Column timestamp = new Column("time_stamp",  Long.class, loc("CPUMonitorTool.ColumnName.time_stamp"), null); // NOI18N
         Column stackId = new Column("leaf_id", Integer.class, loc("CPUMonitorTool.ColumnName.leaf_id"), null); // NOI18N
 
         return new DataTableMetadata("CallStack", // NOI18N
             Arrays.asList(cpuId, threadId, timestamp, stackId));
-                Arrays.asList(cpuId, threadId, timestamp, stackId));
     }
 
     private DataTableMetadata createFunctionsListMetadata(
         DataTableMetadata profilerTableMetadata) {
-            DataTableMetadata profilerTableMetadata) {
 
         List<Column> columns = new ArrayList<Column>();
         columns.add(new Column("name", String.class, loc("CPUMonitorTool.ColumnName.name"), null)); // NOI18N
@@ -207,16 +202,12 @@ public final class DLightCPUToolConfigurationProvider
                 metric.getMetricID(),
                 metric.getMetricValueClass(),
                 metric.getMetricDisplayedName(), null));
-                    metric.getMetricID(),
-                    metric.getMetricValueClass(),
-                    metric.getMetricDisplayedName(), null));
         }
 
         DataTableMetadata result = new DataTableMetadata(
             StackDataStorage.STACK_METADATA_VIEW_NAME,
             columns, null, Arrays.asList(profilerTableMetadata));
-                StackDataStorage.STACK_METADATA_VIEW_NAME,
-                columns, null, Arrays.asList(profilerTableMetadata));
+
 
         return result;
     }
@@ -224,10 +215,6 @@ public final class DLightCPUToolConfigurationProvider
     private static class PrstatParser implements CLIOParser {
 
         private final List<String> colnames = Arrays.asList(new String[]{
-                "utime", // NOI18N
-                "stime", // NOI18N
-                "wtime" // NOI18N
-            });
                     "utime", // NOI18N
                     "stime", // NOI18N
                     "wtime" // NOI18N
@@ -256,13 +243,11 @@ public final class DLightCPUToolConfigurationProvider
 
             return new DataRow(colnames, Arrays.asList(
                 new Float[]{utime, stime, wtime}));
-                    new Float[]{utime, stime, wtime}));
         }
     }
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(
             DLightCPUToolConfigurationProvider.class, key, params);
-                DLightCPUToolConfigurationProvider.class, key, params);
     }
 }
