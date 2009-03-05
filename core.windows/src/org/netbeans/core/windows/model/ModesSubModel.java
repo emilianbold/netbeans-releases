@@ -302,7 +302,7 @@ final class ModesSubModel {
     public boolean setActiveMode(ModeImpl activeMode) {
         if(activeMode == null || modes.contains(activeMode)) {
             this.activeMode = activeMode;
-            if (activeMode.getKind() == Constants.MODE_KIND_EDITOR) {
+            if ((activeMode != null) && (activeMode.getKind() == Constants.MODE_KIND_EDITOR)) {
                 lastActiveEditorMode = activeMode;
             }
             return true;
