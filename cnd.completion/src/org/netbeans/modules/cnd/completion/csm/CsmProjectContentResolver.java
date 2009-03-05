@@ -185,7 +185,10 @@ public final class CsmProjectContentResolver {
                 CsmObject ob = (CsmObject) it.next();
                 CsmEnum elemEnum = null;
                 if (CsmKindUtilities.isEnumerator(ob)) {
-                    res.add((CsmEnumerator) ob);
+                    CsmEnumerator elem = (CsmEnumerator) ob;
+                    if (matchName(elem.getName().toString(), strPrefix, match)) {
+                        res.add((CsmEnumerator) ob);
+                    }
                 } else if (CsmKindUtilities.isEnum(ob)) {
                     elemEnum = (CsmEnum) ob;
                 } else {
