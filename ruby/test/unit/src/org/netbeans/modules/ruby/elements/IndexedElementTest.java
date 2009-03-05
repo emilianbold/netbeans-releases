@@ -159,7 +159,7 @@ public class IndexedElementTest extends RubyTestBase {
 
     // XXX - Parsing API
     public void checkCreate(String testFile) throws Exception {
-        throw new UnsupportedOperationException("not implemented yet");
+        fail("Not migrated to CSL yet");
 //        List<SearchResult> maps;
 //        if (testFile.endsWith(".indexed")) {
 //            maps = createTestMapsFromIndexFile(getTestFile(testFile));
