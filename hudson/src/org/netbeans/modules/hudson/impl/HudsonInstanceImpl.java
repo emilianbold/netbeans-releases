@@ -82,14 +82,14 @@ import org.openide.util.RequestProcessor.Task;
 public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     
     private HudsonInstanceProperties properties;
-    private HudsonConnector connector;
+    private final HudsonConnector connector;
     
     private HudsonVersion version;
     private boolean connected;
     private boolean terminated;
     
     private final Synchronization synchronization;
-    private Semaphore semaphore;
+    private final Semaphore semaphore;
     
     private Collection<HudsonJob> jobs = new ArrayList<HudsonJob>();
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
