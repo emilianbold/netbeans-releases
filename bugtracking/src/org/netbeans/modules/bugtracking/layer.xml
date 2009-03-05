@@ -18,22 +18,20 @@
 
     <folder name="Menu">
         <folder name="Versioning">
-            <attr name="position" intvalue="960"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bugtracking.Bundle"/>
             <file name="org-netbeans-modules-bugtracking-ui-query-QueryAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Versioning/org-netbeans-modules-bugtracking-ui-query-QueryAction.instance"/>
-                <attr name="position" intvalue="100"/>
+                <attr name="position" intvalue="200"/>
             </file>
         </folder>
     </folder>
     
     <folder name="Windows2">
         <folder name="Components">
-            <file name="QueryTopComponent.settings" url="QueryTopComponentSettings.xml"/>
+            <file name="QueryTopComponent.settings" url="ui/query/QueryTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
             <folder name="editor">
-                <file name="QueryTopComponent.wstcref" url="QueryTopComponentWstcref.xml"/>
+                <file name="QueryTopComponent.wstcref" url="ui/query/QueryTopComponentWstcref.xml"/>
             </folder>
         </folder>
     </folder>
