@@ -63,9 +63,6 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     
     MakefileOrConfigurePanel(MakefileOrConfigureDescriptorPanel buildActionsDescriptorPanel) {
         initComponents();
-        if (!NewMakeProjectWizardIterator.USE_SIMPLE_IMPORT_PROJECT){
-            makeCheckBox.setVisible(false);
-        }
         instructionsTextArea.setBackground(instructionPanel.getBackground());
         this.descriptorPanel = buildActionsDescriptorPanel;
         documentListener = new DocumentListener() {
