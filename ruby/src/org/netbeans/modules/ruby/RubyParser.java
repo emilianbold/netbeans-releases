@@ -449,7 +449,7 @@ public final class RubyParser extends Parser {
         }
         
         Error error = new RubyError(description, id, context.snapshot.getSource().getFileObject(), offset, offset, severity, data);
-
+        context.errorHandler.error(error);
         if (sanitizing == Sanitize.NONE) {
             context.errorOffset = offset;
         }
