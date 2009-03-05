@@ -52,6 +52,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.vcshooks.VCSHooksConfig.PushAction;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
 import org.netbeans.modules.mercurial.hooks.spi.HgHookContext.LogEntry;
@@ -75,6 +76,38 @@ public class HgHookImpl extends HgHook {
 
     @Override
     public HgHookContext beforeCommit(HgHookContext context) throws IOException {
+        if(context.getFiles().length == 0) {
+            LOG.warning("calling hg beforeCommit for zero files");               // NOI18N
+            return null;
+        }
+
+        File file = context.getFiles()[0];
+        LOG.log(Level.FINE, "hg beforeCommit start for " + file);                // NOI18N
+
+        if(panel.addIssueCheckBox1.isSelected()) {
+            String msg = context.getMessage();
+            
+            String formatString = VCSHooksConfig.getInstance().getHgIssueFormat().getFormat();
+            formatString = formatString.replaceAll("\\{id\\}", "\\{0\\}");           // NOI18N
+            formatString = formatString.replaceAll("\\{summary\\}", "\\{1\\}");    // NOI18N
+            
+            Issue issue = panel.getIssue();
+            if (issue == null) {
+                LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
+                return null;
+            }
+            String issueInfo = new MessageFormat(formatString).format(
+                    new Object[] {issue.getID(), issue.getSummary()},
+                    new StringBuffer(),
+                    null).toString();
+
+            LOG.log(Level.FINER, " svn commit hook issue info '" + issueInfo + "'");     // NOI18N
+            // XXX check before/after
+            msg = msg + "\n" + issueInfo;
+            
+            context = new HgHookContext(context.getFiles(), msg, context.getLogEntries());
+            return context;
+        }   
         return super.beforeCommit(context);
     }
 
@@ -118,7 +151,7 @@ public class HgHookImpl extends HgHook {
             Date date = context.getLogEntries()[0].getDate();
             String message = context.getLogEntries()[0].getMessage();
 
-            String formatString = VCSHooksConfig.getInstance().getHgCommentFormat();
+            String formatString = VCSHooksConfig.getInstance().getHgCommentFormat().getFormat();
             formatString = formatString.replaceAll("\\{changeset\\}", "\\{0\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{author\\}",    "\\{1\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{date\\}",      "\\{2\\}");           // NOI18N
@@ -133,6 +166,7 @@ public class HgHookImpl extends HgHook {
         }
         if(panel.commitRadioButton.isSelected()) {
             issue.addComment(msg, panel.resolveCheckBox.isSelected());
+            issue.open();
         } else {
             VCSHooksConfig.getInstance().setHgPushAction(context.getLogEntries()[0].getChangeset(), new PushAction(issue.getID(), msg, panel.resolveCheckBox.isSelected()));
             LOG.log(Level.FINE, "schedulig issue  " + file);                    // NOI18N
@@ -193,9 +227,14 @@ public class HgHookImpl extends HgHook {
             }
             panel = new HookPanel(repos, repoToSelect);
         }
-        panel.changeFormatButton.addActionListener(new ActionListener() {
+        panel.changeRevisionFormatButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                onShowFormat();
+                onShowRevisionFormat();
+            }
+        });
+        panel.changeIssueFormatButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onShowIssueFormat();
             }
         });
         return panel;
@@ -206,30 +245,17 @@ public class HgHookImpl extends HgHook {
         return name;
     }
 
-    private void onShowFormat() {
+    private void onShowRevisionFormat() {
         FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgCommentFormat());
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
             VCSHooksConfig.getInstance().setHgCommentFormat(p.getFormat());
         }
     }
 
-    static class PushAction {
-        private final String issueID;
-        private final String msg;
-        private final boolean close;
-        public PushAction(String issueID, String msg, boolean close) {
-            this.issueID = issueID;
-            this.msg = msg;
-            this.close = close;
-        }
-        public String getIssueID() {
-            return issueID;
-        }
-        public boolean isClose() {
-            return close;
-        }
-        public String getMsg() {
-            return msg;
+    private void onShowIssueFormat() {
+        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgIssueFormat());
+        if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
+            VCSHooksConfig.getInstance().setHgIssueFormat(p.getFormat());
         }
     }
 }

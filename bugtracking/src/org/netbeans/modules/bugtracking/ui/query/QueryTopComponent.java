@@ -117,12 +117,6 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                 }
             });
 
-            Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
-            DefaultComboBoxModel  repoModel = new DefaultComboBoxModel(repos);
-            if(toSelect != null) {
-                repoModel.addElement(toSelect);
-            }
-            repositoryComboBox.setModel(repoModel);
             repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
                 @Override
                 public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -139,7 +133,24 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                 }
             });
 
-            queriesPanel.setVisible(false);
+            DefaultComboBoxModel repoModel;
+            if(toSelect != null) {
+                repoModel = new DefaultComboBoxModel();
+                repoModel.addElement(toSelect);
+                repositoryComboBox.setModel(repoModel);
+                repositoryComboBox.setSelectedItem(toSelect);
+                repositoryComboBox.setEnabled(false);
+                newButton.setEnabled(false);
+                onRepoSelected();
+            } else {
+                Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
+                repoModel = new DefaultComboBoxModel(repos);
+                repositoryComboBox.setModel(repoModel);
+                if(repositoryComboBox.getModel().getSize() > 0) {
+                    repositoryComboBox.setSelectedIndex(0);
+                    onRepoSelected();
+                }   
+            }
             repositoryComboBox.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
                     if(e.getStateChange() == ItemEvent.SELECTED) {
@@ -147,14 +158,9 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                     }
                 }
             });
-            if(repositoryComboBox.getModel().getSize() > 0) {
-                if(toSelect != null) {
-                    repositoryComboBox.setSelectedItem(toSelect);
-                } else {
-                    repositoryComboBox.setSelectedIndex(0);
-                }
-                onRepoSelected();
-            }
+
+            queriesPanel.setVisible(false);
+            
         }
     }
 

@@ -45,6 +45,8 @@
 
 package org.netbeans.modules.bugtracking.vcshooks;
 
+import org.netbeans.modules.bugtracking.vcshooks.VCSHooksConfig.Format;
+
 /**
  *
  * @author Tomas Stupka
@@ -52,13 +54,14 @@ package org.netbeans.modules.bugtracking.vcshooks;
 public class FormatPanel extends javax.swing.JPanel {
 
     /** Creates new form FormatPanel */
-    public FormatPanel(String txt) {
+    FormatPanel(Format format) {
         initComponents();
-        jTextArea1.setText(txt);
+        jTextArea1.setText(format.getFormat());
+        aboveRadio.setSelected(format.isAbove());
     }
 
-    String getFormat() {
-        return jTextArea1.getText();
+    Format getFormat() {
+        return new Format(aboveRadio.isSelected(), jTextArea1.getText());
     }
 
     /** This method is called from within the constructor to
@@ -75,26 +78,29 @@ public class FormatPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
         jLabel2 = new javax.swing.JLabel();
-        jRadioButton1 = new javax.swing.JRadioButton();
-        jRadioButton2 = new javax.swing.JRadioButton();
+        aboveRadio = new javax.swing.JRadioButton();
+        beloveRadio = new javax.swing.JRadioButton();
         jButton1 = new javax.swing.JButton();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel1.text")); // NOI18N
 
         jTextArea1.setColumns(20);
-        jTextArea1.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
+        jTextArea1.setFont(new java.awt.Font("Monospaced", 0, 13));
         jTextArea1.setRows(5);
         jTextArea1.setToolTipText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jTextArea1.toolTipText")); // NOI18N
         jScrollPane1.setViewportView(jTextArea1);
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel2.text")); // NOI18N
 
-        jRadioButton1.setText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jRadioButton1.text")); // NOI18N
+        buttonGroup1.add(aboveRadio);
+        aboveRadio.setText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.aboveRadio.text")); // NOI18N
 
-        jRadioButton2.setText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jRadioButton2.text")); // NOI18N
-        jRadioButton2.addActionListener(new java.awt.event.ActionListener() {
+        buttonGroup1.add(beloveRadio);
+        beloveRadio.setSelected(true);
+        beloveRadio.setText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.beloveRadio.text")); // NOI18N
+        beloveRadio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRadioButton2ActionPerformed(evt);
+                beloveRadioActionPerformed(evt);
             }
         });
 
@@ -117,8 +123,8 @@ public class FormatPanel extends javax.swing.JPanel {
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jRadioButton2)
-                            .add(jRadioButton1))
+                            .add(beloveRadio)
+                            .add(aboveRadio))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 85, Short.MAX_VALUE)
                         .add(jButton1)
                         .add(20, 20, 20))))
@@ -136,24 +142,24 @@ public class FormatPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jLabel2)
-                            .add(jRadioButton1))
+                            .add(aboveRadio))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jRadioButton2)))
+                        .add(beloveRadio)))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
+    private void beloveRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_beloveRadioActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jRadioButton2ActionPerformed
+    }//GEN-LAST:event_beloveRadioActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton aboveRadio;
+    private javax.swing.JRadioButton beloveRadio;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables

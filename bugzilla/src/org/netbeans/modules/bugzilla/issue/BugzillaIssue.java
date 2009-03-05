@@ -72,6 +72,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -372,10 +373,28 @@ public class BugzillaIssue extends Issue {
     }
 
     public void setTaskData(TaskData taskData) {
-        data = taskData;
+        if(data != null && !data.isPartial() && taskData.isPartial()) {
+            // XXX something (a query perhaps) set new partial taskdata, yet this
+            // issue contains already complete ones. Refresh!
+            // XXX the issue cache is supposed to be used in a generec way
+            // this should be also solved on a higher level then in each
+            // particular bugtracking system
+            data = getRemoteTaskData();
+        } else {
+            data = taskData;
+        }
         attributes = null; // reset
         ((BugzillaIssueNode)getNode()).fireDataChanged();
         fireDataChanged();
+    }
+
+    private TaskData getRemoteTaskData() {
+        try {
+            return Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), data.getTaskId(), new NullProgressMonitor());
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     TaskData getTaskData() {
@@ -617,17 +636,16 @@ public class BugzillaIssue extends Issue {
     public void refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         try {
-            TaskData td = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), data.getTaskId(), new NullProgressMonitor());
+            TaskData td = getRemoteTaskData();
             getRepository().getIssueCache().setIssueData(getID(), td); // XXX
+            if (controller != null) {
+                controller.refreshViewData();
+            }
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
-        if(controller != null) {
-            controller.refreshViewData();
         }
     }
+
 
     private Map<String, String> getSeenAttributes() {
         Map<String, String> seenAtributes = repository.getIssueCache().getSeenAttributes(getID());

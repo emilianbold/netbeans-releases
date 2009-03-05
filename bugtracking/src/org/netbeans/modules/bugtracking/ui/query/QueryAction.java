@@ -95,4 +95,18 @@ public class QueryAction extends SystemAction {
             }
         });
     }
+
+    public static void closeQuery(final Query query) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                TopComponent tc = null;
+                if(query != null) {
+                    tc = WindowManager.getDefault().findTopComponent(query.getDisplayName());
+                }
+                if(tc != null) {
+                    tc.close();
+                }
+            }
+        });
+    }
 }

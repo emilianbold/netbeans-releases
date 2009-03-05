@@ -66,9 +66,8 @@ public class BugzillaQuery extends Query {
     private QueryController controller;
     private final List<String> issues = new ArrayList<String>();
 
-    private String urlParameters;
+    protected String urlParameters;
     private boolean firstRun = true;
-//    private boolean kenai;
 
     public BugzillaQuery(BugzillaRepository repository) {
         super();
@@ -80,7 +79,6 @@ public class BugzillaQuery extends Query {
         this.name = name;
         this.repository = repository;
         this.urlParameters = urlParameters;
-//        this.kenai = kenai;
         this.saved = saved;
     }
 
@@ -89,16 +87,9 @@ public class BugzillaQuery extends Query {
         this.name = name;
         this.urlParameters = urlParameters;
         this.setLastRefresh(lastRefresh);
-        setSaved(true);
+        this.saved = true;
     }
-
-    public static BugzillaQuery forKenai(String name, BugzillaRepository repository, String urlParameters, String product, boolean saved) {
-        BugzillaQuery q = new BugzillaQuery(name, repository, null, true);
-        q.getController().populateKenai(urlParameters, product); // bypass async populate
-        if(urlParameters != null) q.refresh(urlParameters);     // and get the issues eventually
-        return q;
-    }
-
+    
     @Override
     public String getDisplayName() {
         return name;
@@ -112,9 +103,13 @@ public class BugzillaQuery extends Query {
     @Override
     public QueryController getController() {
         if (controller == null) {
-            controller = new QueryController(repository, this, urlParameters);
+            controller = createControler(repository, this, urlParameters);
         }
         return controller;
+    }
+
+    protected QueryController createControler(BugzillaRepository r, BugzillaQuery q, String parameters) {
+        return new QueryController(r, q, parameters);
     }
 
     @Override
@@ -176,6 +171,12 @@ public class BugzillaQuery extends Query {
         });
     }
 
+    public void refresh(String urlParameters) {
+        assert urlParameters != null;
+        this.urlParameters = urlParameters;
+        refresh();
+    }
+
     @Override
     public int getIssueStatus(Issue issue) {
         String id = issue.getID();
@@ -195,12 +196,6 @@ public class BugzillaQuery extends Query {
         return issues.size();
     }
 
-    public void refresh(String urlParameters) {
-        assert urlParameters != null;
-        this.urlParameters = urlParameters;
-        refresh();
-    }
-
     public String getUrlParameters() {
         return getController().getUrlParameters();
     }
@@ -208,10 +203,6 @@ public class BugzillaQuery extends Query {
     public void setName(String name) {
         this.name = name;
     }
-//
-//    public boolean isKenai() {
-//        return kenai;
-//    }
 
     @Override
     public void setSaved(boolean saved) {

@@ -49,6 +49,7 @@ import java.util.List;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 
@@ -60,12 +61,17 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
     private final Query query;
     private final PropertyChangeSupport changeSupport;
     private Issue[] issues = new Issue[0];
+    private boolean firstTime = true;
 
     public QueryHandleImpl(Query query) {
         this.query = query;
         changeSupport = new PropertyChangeSupport(query);
         query.addPropertyChangeListener(this);
         registerIssues();
+    }
+
+    public Query getQuery() {
+        return query;
     }
 
     @Override
@@ -93,7 +99,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
         } else if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_SEEN_CHANGED)) {
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
-        }
+        } 
     }
 
     public List<QueryResultHandle> getQueryResults() {
@@ -111,6 +117,13 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
             ret.add(qh);
         }
         return ret;
+    }
+
+    public void refreshIfFirstTime() {
+        if(firstTime) {
+            firstTime = false;
+            query.refresh();
+        }
     }
 
     private void registerIssues() {

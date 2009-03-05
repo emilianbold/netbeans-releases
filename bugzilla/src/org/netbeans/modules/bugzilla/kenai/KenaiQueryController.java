@@ -37,34 +37,29 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.util;
+package org.netbeans.modules.bugzilla.kenai;
 
-import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
+import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.netbeans.modules.bugzilla.query.QueryController;
 
 /**
  *
- * @author Tomas Stupka
+ * @author tomas
  */
-public interface BugzillaConstants {
-    public static final String URL_ADVANCED_BUG_LIST = IBugzillaConstants.URL_BUGLIST + "?query_format=advanced"; //NOI18N
-    public static final String URL_BUG_IDS = IBugzillaConstants.URL_BUGLIST + "?bug_id="; //NOI18N
+public class KenaiQueryController extends QueryController {
+    private String product;
 
-    public static final String MY_ISSUES_PARAMETERS_FORMAT =
-            "&product={0}" +                                         //NOI18N
-            "&bug_status=UNCONFIRMED" +                                         //NOI18N
-            "&bug_status=NEW" +                                                 //NOI18N
-            "&bug_status=ASSIGNED" +                                            //NOI18N
-            "&bug_status=REOPENED" +
-            "&emailassigned_to1=1" +
-            "&emailreporter1=1" +
-            "&emailtype1=exact" +
-            "&email1={1}";
+    public KenaiQueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, String product) {
+        super(repository, query, urlParameters);
+        this.product = product;
+        disableModify();
+    }
 
-    public static final String ALL_ISSUES_PARAMETERS =
-            "&product={0}" +                                         //NOI18N
-            "&bug_status=UNCONFIRMED" +
-            "&bug_status=NEW" +
-            "&bug_status=ASSIGNED" +
-            "&bug_status=REOPENED";
+    @Override
+    public void populate(String urlParameters) {
+        super.populate(urlParameters);
+        disableProduct(product);
+    }
 
 }
