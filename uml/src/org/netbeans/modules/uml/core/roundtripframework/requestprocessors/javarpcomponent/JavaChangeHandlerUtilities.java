@@ -708,7 +708,7 @@ public class JavaChangeHandlerUtilities
             IClassifier pClass,
             IOperationCollectionBehavior behaviorControl)
     {
-        ETList < IOperation > retList = null;
+        ETList < IOperation > retList = new ETArrayList < IOperation >();
         if (pClass != null && behaviorControl != null)
         {
             try
