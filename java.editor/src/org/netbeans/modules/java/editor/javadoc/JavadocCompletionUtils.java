@@ -81,6 +81,7 @@ final class JavadocCompletionUtils {
     
     static final Pattern JAVADOC_LINE_BREAK = Pattern.compile("\\n[ \\t]*\\**[ \\t]*\\z"); // NOI18N
     static final Pattern JAVADOC_WHITE_SPACE = Pattern.compile("[^ \\t]"); // NOI18N
+    static final Pattern JAVADOC_EMPTY = Pattern.compile("^\\n?[ \\t]*$"); // NOI18N
     static final Pattern JAVADOC_FIRST_WHITE_SPACE = Pattern.compile("[ \\t]*\\**[ \\t]*"); // NOI18N
     private static Set<JavaTokenId> IGNORE_TOKES = EnumSet.of(
             JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT);
@@ -447,14 +448,24 @@ final class JavadocCompletionUtils {
      * 
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=139147">139147</a>
      */
-    private static boolean isInvalidDocInstance(Doc javadoc, TokenSequence<JavadocTokenId> ts) {
+    static boolean isInvalidDocInstance(Doc javadoc, TokenSequence<JavadocTokenId> ts) {
         if (javadoc != null && javadoc.getRawCommentText().length() == 0) {
             if (!ts.isEmpty()) {
                 ts.moveStart();
-                return !(ts.moveNext() && isWhiteSpace(ts.token()) && ts.moveNext() == false);
+                return !(ts.moveNext() && isTokenOfEmptyJavadoc(ts.token()) && ts.moveNext() == false);
             }
         }
         return false;
+    }
+
+    static boolean isTokenOfEmptyJavadoc(Token<JavadocTokenId> token) {
+        if (token == null || token.id() != JavadocTokenId.OTHER_TEXT) {
+            return false;
+        }
+
+        CharSequence text = token.text();
+        boolean result = JAVADOC_EMPTY.matcher(text).find();
+        return result;
     }
 
     private static final int MAX_DUMPS = 255;
