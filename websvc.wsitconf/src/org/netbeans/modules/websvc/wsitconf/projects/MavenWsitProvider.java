@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.wsitconf.projects;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -163,10 +164,8 @@ public class MavenWsitProvider extends WsitProvider {
 //                    ProjectClassPathModifier.removeLibraries(jaxwsLibs, sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
                     return ProjectClassPathModifier.addLibraries(new Library[] {metroLib}, sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
                 }
-
-
             } catch (IOException e) {
-                //NOOP
+                logger.log(Level.FINE, e.getMessage());
             }
         }
         return false;

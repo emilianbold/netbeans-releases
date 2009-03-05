@@ -61,9 +61,11 @@ public class ServerUtils {
 
     private static final Logger logger = Logger.getLogger(Util.class.getName());
 
+    public static final String DEVNULL = "DEV-NULL"; //NOI18N
+
     public static J2eePlatform getJ2eePlatform(Project project) {
         String serverInstanceID = getServerInstanceID(project);
-        if ((serverInstanceID != null) && (serverInstanceID.length() > 0)) {
+        if ((serverInstanceID != null) && (serverInstanceID.length() > 0) && (!DEVNULL.equals(serverInstanceID))) {
             try {
                 return Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
             } catch (InstanceRemovedException ex) {
