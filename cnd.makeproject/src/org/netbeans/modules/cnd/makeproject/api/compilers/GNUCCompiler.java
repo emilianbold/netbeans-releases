@@ -56,10 +56,14 @@ public class GNUCCompiler extends GNUCCCCompiler {
     }
     
     /** Creates a new instance of GNUCCompiler */
-    public GNUCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    protected GNUCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
     }
-    
+
+    public static GNUCCompiler create(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return new GNUCCompiler(hkey, flavor, kind, name, displayName, path);
+    }
+
     @Override
     public GNUCCompiler createCopy() {
         GNUCCompiler copy = new GNUCCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());

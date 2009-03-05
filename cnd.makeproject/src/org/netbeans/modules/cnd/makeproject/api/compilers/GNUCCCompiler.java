@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescripto
 public class GNUCCCompiler extends GNUCCCCompiler {
     
     /** Creates a new instance of GNUCCompiler */
-    public GNUCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    protected GNUCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
     }
     
@@ -56,6 +56,10 @@ public class GNUCCCompiler extends GNUCCCCompiler {
         GNUCCCompiler copy = new GNUCCCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
+    }
+
+    public static GNUCCCompiler create(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return new GNUCCCompiler(hkey, flavor, kind, name, displayName, path);
     }
 
     @Override

@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescripto
 public class SunFortranCompiler extends BasicCompiler {
     
     /** Creates a new instance of SunCCompiler */
-    public SunFortranCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    private SunFortranCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
     }
     
@@ -56,6 +56,10 @@ public class SunFortranCompiler extends BasicCompiler {
         SunFortranCompiler copy = new SunFortranCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
+    }
+
+    public static SunFortranCompiler create(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return new SunFortranCompiler(hkey, flavor, kind, name, displayName, path);
     }
 
     @Override

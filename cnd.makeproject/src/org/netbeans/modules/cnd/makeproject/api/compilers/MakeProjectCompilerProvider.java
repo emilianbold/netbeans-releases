@@ -68,35 +68,35 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
             } else if (kind == Tool.CCCompiler) {
                 return SunCCCompiler.create(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.FortranCompiler) {
-                return new SunFortranCompiler(hkey, flavor, kind, name, displayName, path);
+                return SunFortranCompiler.create(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.MakeTool) {
                 return SunMaketool.create(hkey, flavor, name, displayName, path);
             } else if (kind == Tool.DebuggerTool) {
                 return SunDebuggerTool.create(hkey, flavor, name, displayName, path);
             } else if (kind == Tool.Assembler) {
-                return new Assembler(hkey, flavor, kind, name, displayName, path);
+                return Assembler.create(hkey, flavor, kind, name, displayName, path);
             }
         } else /* if (flavor.isGnuCompiler()) */ { // Assume GNU (makeproject system doesn't handle Unknown)
            if (kind == Tool.CCompiler) {
                if ("MSVC".equals(flavor.toString())) { // NOI18N
-                   return new MsvcCompiler(hkey, flavor, kind, name, displayName, path);
+                   return MsvcCompiler.create(hkey, flavor, kind, name, displayName, path);
                } else {
-                   return new GNUCCompiler(hkey, flavor, kind, name, displayName, path);
+                   return GNUCCompiler.create(hkey, flavor, kind, name, displayName, path);
                }
            } else if (kind == Tool.CCCompiler) {
                if ("MSVC".equals(flavor.toString())) { // NOI18N
                    return new MsvcCompiler(hkey, flavor, kind, name, displayName, path);
                } else {
-                   return new GNUCCCompiler(hkey, flavor, kind, name, displayName, path);
+                   return GNUCCCompiler.create(hkey, flavor, kind, name, displayName, path);
                }
             } else if (kind == Tool.FortranCompiler) {
-                return new GNUFortranCompiler(hkey, flavor, kind, name, displayName, path);
+                return GNUFortranCompiler.create(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.MakeTool) {
                 return GNUMaketool.create(hkey, flavor, name, displayName, path);
             } else if (kind == Tool.DebuggerTool) {
                 return GNUDebuggerTool.create(hkey, flavor, name, displayName, path);
             } else if (kind == Tool.Assembler) {
-                return new Assembler(hkey, flavor, kind, name, displayName, path);
+                return Assembler.create(hkey, flavor, kind, name, displayName, path);
             }
         }
         if (kind == Tool.CustomTool) {

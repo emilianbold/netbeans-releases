@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.api.compilers.ToolchainManager.PredefinedMacro;
  */
 public class MsvcCompiler extends GNUCCompiler {
    /** Creates a new instance of GNUCCompiler */
-   public MsvcCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+   protected MsvcCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
        super(hkey, flavor, kind, name, displayName, path);
    }
 
@@ -61,6 +61,10 @@ public class MsvcCompiler extends GNUCCompiler {
        MsvcCompiler copy = new MsvcCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath()); // NOI18N
        copy.setName(getName());
        return copy;
+   }
+
+   public static MsvcCompiler create(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+       return new MsvcCompiler(hkey, flavor, kind, name, displayName, path);
    }
 
     @Override

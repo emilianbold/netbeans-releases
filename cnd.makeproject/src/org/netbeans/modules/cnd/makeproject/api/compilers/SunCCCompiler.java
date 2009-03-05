@@ -54,7 +54,7 @@ public class SunCCCompiler extends SunCCCCompiler {
     /** 
      * Creates a new instance of SunCCompiler
      */
-    private SunCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    protected SunCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
     }
     
