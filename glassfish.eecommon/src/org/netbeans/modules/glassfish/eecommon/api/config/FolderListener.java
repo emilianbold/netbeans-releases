@@ -61,7 +61,7 @@ public class FolderListener implements FileChangeListener {
         } else if(type == ModuleType.CAR) {
             targets = new String [] { "application-client.xml" };
         } else {
-            Logger.getLogger("glassfish.eecommon").log(Level.WARNING, "Unsupported module type: " + type);
+            Logger.getLogger("glassfish-eecommon").log(Level.WARNING, "Unsupported module type: " + type);
             targets = new String [0];
         }
         

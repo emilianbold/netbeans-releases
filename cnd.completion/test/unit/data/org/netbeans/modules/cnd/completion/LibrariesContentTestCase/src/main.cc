@@ -7,3 +7,9 @@ int main(int argc, char** argv) {
     return (EXIT_SUCCESS);
 }
 
+#include <sys1_incl_sys2.h>
+
+void checkStd() {
+      // <- test completion here
+    std::size_t std_t;
+}

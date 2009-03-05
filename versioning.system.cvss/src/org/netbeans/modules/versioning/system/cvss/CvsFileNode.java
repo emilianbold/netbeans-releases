@@ -58,7 +58,7 @@ public class CvsFileNode {
     private final File file;
 
     public CvsFileNode(File file) {
-        this.file = file;
+        this.file = FileUtil.normalizeFile(file);
     }
 
     public String getName() {

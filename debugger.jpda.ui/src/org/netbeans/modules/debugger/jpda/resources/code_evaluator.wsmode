@@ -6,10 +6,12 @@
 
 <mode version="2.0">
     <name unique="code_evaluator" />
-    <kind type="editor" />
+    <kind type="view" />
     <state type="joined" />
     <constraints>
-        <path orientation="vertical" number="1" weight="0.25" />
+        <path orientation="horizontal" number="60" weight="0.7" />
+        <path orientation="vertical" number="79" weight="0.1" />
+        <path orientation="horizontal" number="30" weight="0.8" />
     </constraints>
     <active-tc id="evaluator" />
     <empty-behavior permanent="true" />

@@ -246,9 +246,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 // TODO: For now add target listeners to
                 // first target.... (from the first context)
                 boolean f = false;
-                
-                final DLightTargetAccessor targetAccess = 
-                        DLightTargetAccessor.getDefault();
+
+                final DLightTargetAccessor targetAccess =
+                    DLightTargetAccessor.getDefault();
 
                 for (ExecutionContext context : contexts) {
                     DLightTarget target = context.getTarget();
@@ -257,10 +257,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                         target.addTargetListener(DLightSession.this);
                         f = true;
                     }
-                    
+
                     DLightTarget.ExecutionEnvVariablesProvider envProvider =
-                            context.getDLightTargetExecutionEnvProvider();
-                    
+                        context.getDLightTargetExecutionEnvProvider();
+
                     targetAccess.getDLightTargetExecution(target).start(target, envProvider);
                 }
             }
@@ -287,17 +287,27 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         }
 
         DataCollector notAttachableDataCollector = null;
-        
+
         if (collectors == null) {
             collectors = new ArrayList<DataCollector>();
         }
-        
+
         for (DLightTool tool : validTools) {
-            List<DataCollector> toolCollectors = tool.getCollectors();
-            //TODO: no algorithm here:) should be better
-            for (DataCollector c : toolCollectors) {
-                if (!collectors.contains(c)) {
-                    collectors.add(c);
+            if (tool.collectorsTurnedOn()) {
+                List<DataCollector> toolCollectors = tool.getCollectors();
+                //TODO: no algorithm here:) should be better
+                for (DataCollector c : toolCollectors) {
+                    if (!collectors.contains(c)) {
+                        collectors.add(c);
+                    }
+                }
+            } else {
+                //should remove if any
+                List<DataCollector> toolCollectors = tool.getCollectors();
+                //TODO: no algorithm here:) should be better
+                for (DataCollector c : toolCollectors) {
+                    collectors.remove(c);
+
                 }
             }
         }

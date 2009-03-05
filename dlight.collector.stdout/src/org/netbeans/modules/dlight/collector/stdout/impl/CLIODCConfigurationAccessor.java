@@ -79,6 +79,8 @@ public abstract class CLIODCConfigurationAccessor {
     public CLIODCConfigurationAccessor() {
     }
 
+    public abstract String getName(CLIODCConfiguration configuration);
+    
     public abstract String getCommand(CLIODCConfiguration configuration);
 
     public abstract String getArguments(CLIODCConfiguration configuration);

@@ -63,7 +63,7 @@ final class DatabasePropertiesIndexer {
     private final String classFqn;
     private final Set<IndexedMethod> methods;
 
-    public DatabasePropertiesIndexer(RubyIndex index, String prefix, NameKind kind, String classFqn, Set<IndexedMethod> methods) {
+    private DatabasePropertiesIndexer(RubyIndex index, String prefix, NameKind kind, String classFqn, Set<IndexedMethod> methods) {
         this.index = index;
         this.prefix = prefix;
         this.kind = kind;
@@ -252,56 +252,38 @@ final class DatabasePropertiesIndexer {
             Map<String, String> fileUrls,
             Set<String> currentCols) {
 
-        if ("find_by_".startsWith(prefix) ||
-                "find_all_by".startsWith(prefix)) {
-            // Generate dynamic finders
-            for (String column : currentCols) {
-                String methodOneName = "find_by_" + column;
-                String methodAllName = "find_all_by_" + column;
-                if (methodOneName.startsWith(prefix) || methodAllName.startsWith(prefix)) {
-                    if (kind == NameKind.EXACT_NAME) {
-// XXX methodOneName || methodAllName?
-                        // Ensure that the method is not longer than the prefix
-                        if ((column.length() > prefix.length())) {
-                            continue;
-                        }
-                    } else {
-                        // REGEXP, CAMELCASE filtering etc. not supported here
-                        assert (kind == NameKind.PREFIX) ||
-                                (kind == NameKind.CASE_INSENSITIVE_PREFIX);
-                    }
-
-                    String type = columnDefs.get(column);
-                    type = type.substring(type.indexOf(';') + 1);
-                    String fileUrl = fileUrls.get(column);
-
-                    String clz = classFqn;
-                    String require = null;
-                    int flags = IndexedElement.STATIC;
-                    String attributes = IndexedElement.flagToString(flags) + ";;;" + "options(:first|:all),args(=>conditions|order|group|limit|offset|joins|readonly:bool|include|select|from|readonly:bool|lock:bool)";
-
-                    if (methodOneName.startsWith(prefix)) {
-                        String signature = methodOneName + "(" + column + ",*options)";
-                        String fqn = tableName + "#" + signature;
-                        IndexedMethod method =
-                                IndexedMethod.create(index, signature, fqn, clz, fileUrl, require, attributes, flags, index.getContext());
-                        method.setInherited(false);
-                        method.setSmart(true);
-                        methods.add(method);
-                    }
-                    if (methodAllName.startsWith(prefix)) {
-                        String signature = methodAllName + "(" + column + ",*options)";
-                        String fqn = tableName + "#" + signature;
-                        IndexedMethod method =
-                                IndexedMethod.create(index, signature, fqn, clz, fileUrl, require, attributes, flags, index.getContext());
-                        method.setInherited(false);
-                        method.setSmart(true);
-                        methods.add(method);
-                    }
-                }
+        List<FindersHelper.FinderMethod> finders = new ArrayList<FindersHelper.FinderMethod>();
+        for (String finderPrefix : FindersHelper.FINDER_PREFIXES) {
+            if (prefix.startsWith(finderPrefix) || finderPrefix.startsWith(prefix)) {
+                finders.addAll(FindersHelper.getFinderSignatures(finderPrefix, currentCols));
             }
-
         }
+
+
+        for (FindersHelper.FinderMethod finder : finders) {
+            String methodName = finder.getName();
+            String methodSignature = finder.getSignature();
+            if (!methodName.startsWith(prefix) || prefix.length() > methodName.length()) {
+                continue;
+            }
+            // XXX: what's this needed for?
+            String column = finder.getColumn();
+            String fileUrl = fileUrls.get(column);
+
+            String clz = classFqn;
+            String require = null;
+            int flags = IndexedElement.STATIC;
+            String attributes = IndexedElement.flagToString(flags) + ";;;" + "options(:first|:all),args(=>conditions|order|group|limit|offset|joins|readonly:bool|include|select|from|readonly:bool|lock:bool)";
+
+            String fqn = tableName + "#" + methodSignature;
+            IndexedMethod method =
+                    IndexedMethod.create(index, methodSignature, fqn, clz, fileUrl, require, attributes, flags, index.getContext());
+            method.setMethodType(IndexedMethod.MethodType.DYNAMIC_FINDER);
+            method.setInherited(false);
+            method.setSmart(true);
+            methods.add(method);
+        }
+
     }
 
     private static class TableDefinition implements Comparable<TableDefinition> {

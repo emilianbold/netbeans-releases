@@ -189,7 +189,7 @@ public final class CheckoutAction extends CallableSystemAction {
                 }
             }
         }
-        CheckoutCompleted cc = new CheckoutCompleted(workingDir, folders, true);
+        CheckoutCompleted cc = new CheckoutCompleted(workingDir, folders);
         if (support != null && support.isCanceled()) {
             return;
         }

@@ -40,46 +40,13 @@
  */
 package org.netbeans.modules.php.project;
 
-import java.io.IOException;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-
-
 /**
  * @author ads
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
-public final class PhpProjectType implements AntBasedProjectType {
+public final class PhpProjectType {
 
-    public static final String TYPE = PhpProjectType.class.getPackage().getName();
+    public static final String TYPE = "org.netbeans.modules.php.project"; // NOI18N
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/php-project/1"; // NOI18N
-    private static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
+    static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/php-project-private/1"; // NOI18N
 
-    private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/php-project-private/1"; // NOI18N
-    private static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
-
-    public Project createProject(AntProjectHelper helper) throws IOException {
-        assert helper != null;
-        return new PhpProject(helper);
-    }
-
-    public String getPrimaryConfigurationDataElementName( boolean shared ) {
-        /*
-         * Copied from MakeProjectType.
-         */
-        return shared ? PROJECT_CONFIGURATION_NAME : PRIVATE_CONFIGURATION_NAME;
-    }
-
-    public String getPrimaryConfigurationDataElementNamespace( boolean shared ) {
-        /*
-         * Copied from MakeProjectType.
-         */
-        return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
-    }
-
-    public String getType() {
-        return TYPE;
-    }
 }

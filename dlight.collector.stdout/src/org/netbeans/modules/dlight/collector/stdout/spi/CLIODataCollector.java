@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.collector.stdout.spi;
 
+import java.io.File;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -97,6 +98,7 @@ public final class CLIODataCollector
     private final Map<String, String> envs;
     private String argsTemplate;
     private DataStorage storage;
+    private String displayedName;
     private Future<Integer> collectorTask;
     private CLIOParser parser;
     private List<DataTableMetadata> dataTablesMetadata;
@@ -121,7 +123,20 @@ public final class CLIODataCollector
         this.parser = accessor.getParser(configuration);
         this.dataTablesMetadata = accessor.getDataTablesMetadata(configuration);
         this.envs = accessor.getDLightTargetExecutionEnv(configuration);
+        this.displayedName = accessor.getName(configuration);
+        if (displayedName == null){
+            //lets create own name on the base of command
+            int separatorIndex = this.command.lastIndexOf(File.separator);
+            displayedName =  separatorIndex == -1  || separatorIndex == command.length() -1?
+                command : this.command.substring(separatorIndex, command.length());
+        }
     }
+
+    public String getName() {
+        return displayedName;
+    }
+
+
 
     /**
      * The types of storage this collector supports

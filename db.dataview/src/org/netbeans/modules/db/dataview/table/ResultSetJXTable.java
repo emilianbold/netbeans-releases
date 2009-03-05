@@ -45,6 +45,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -164,10 +165,10 @@ public class ResultSetJXTable extends JXTableDecorator {
         b.addKeyListener(kl);
         setDefaultEditor(Boolean.class, new BooleanTableCellEditor(b));
 
-        DatePickerCellEditor dateEditor = new DatePickerCellEditor(DateType.DEFAULT_FOMAT);
+        DatePickerCellEditor dateEditor = new DatePickerCellEditor(new SimpleDateFormat (DateType.DEFAULT_FOMAT_PATTERN));
         setDefaultEditor(java.sql.Date.class, dateEditor);
 
-        DateTimePickerCellEditor dateTimeEditor = new DateTimePickerCellEditor(TimestampType.DEFAULT_FORMAT);
+        DateTimePickerCellEditor dateTimeEditor = new DateTimePickerCellEditor(new SimpleDateFormat (TimestampType.DEFAULT_FORMAT_PATTERN));
         dateTimeEditor.addKeyListener(kl);
         setDefaultEditor(Timestamp.class, dateTimeEditor);
         setDefaultEditor(java.util.Date.class, dateTimeEditor);

@@ -304,18 +304,10 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
                             int indentDelta = indentLevels.get(point);
                             int lineNumber = Utilities.getLineOffset(doc, point);
                             int rowStart = Utilities.getRowStart(doc, point);
+                            int firstNonWSBefore = Utilities.getFirstNonWhiteBwd(doc, point);
 
-                            int firstNonWSBefore = Utilities.getFirstNonWhiteFwd(doc, rowStart);
-
-                            if (firstNonWSBefore < rowStart){
+                            if (firstNonWSBefore >= rowStart){
                                 lineNumber ++;
-                            } else {
-                                int rowEnd = Utilities.getRowEnd(doc, point);
-                                int firstNonWSAfter = Utilities.getFirstNonWhiteFwd(doc, point);
-
-                                if (firstNonWSAfter > rowEnd){
-                                    lineNumber ++;
-                                }
                             }
 
                             Integer lineDelta = indentDeltaByLine.get(lineNumber);

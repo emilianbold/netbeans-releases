@@ -310,7 +310,6 @@ public class TargetEditor extends javax.swing.JPanel implements PropertyChangeLi
         notifyDescriptor.setInputText(listData.elementAt(selectedIndex));
         DialogDisplayer.getDefault().notify(notifyDescriptor);
         if (notifyDescriptor.getValue() == NotifyDescriptor.OK_OPTION && notifyDescriptor.getInputText().length() > 0) {
-            Object tmp = listData.elementAt(selectedIndex);
             listData.removeElementAt(selectedIndex);
             listData.add(selectedIndex, notifyDescriptor.getInputText());
             targetList.setListData(listData);

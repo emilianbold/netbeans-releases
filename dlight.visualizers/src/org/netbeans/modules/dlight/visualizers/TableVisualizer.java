@@ -82,7 +82,7 @@ class TableVisualizer extends JPanel implements
     private boolean isEmptyContent;
 
     TableVisualizer(TableDataProvider provider, final TableVisualizerConfiguration configuration) {
-        timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
+        //timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.provider = provider;
         this.configuration = configuration;
         setEmptyContent();
@@ -95,7 +95,7 @@ class TableVisualizer extends JPanel implements
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
         asyncFillModel();
 
-        if (timerHandler.isSessionRunning()) {
+        if (timerHandler != null && timerHandler.isSessionRunning()) {
             timerHandler.startTimer();
             return;
         }
@@ -110,7 +110,9 @@ class TableVisualizer extends JPanel implements
     @Override
     public void removeNotify() {
         super.removeNotify();
-        timerHandler.stopTimer();
+        if (timerHandler != null){
+            timerHandler.stopTimer();
+        }
         removeComponentListener(this);
         VisualizerTopComponentTopComponent.findInstance().removeComponentListener(this);
 
@@ -125,7 +127,7 @@ class TableVisualizer extends JPanel implements
 //            tableSorterModel.removeTableModelListener(this);
             tableSorterModel = null;
         }
-        JLabel label = new JLabel(timerHandler.isSessionAnalyzed() ? TableVisualizerConfigurationAccessor.getDefault().getEmptyAnalyzeMessage(configuration) : TableVisualizerConfigurationAccessor.getDefault().getEmptyRunningMessage(configuration)); // NOI18N
+        JLabel label = new JLabel(timerHandler != null && timerHandler.isSessionAnalyzed() ? TableVisualizerConfigurationAccessor.getDefault().getEmptyAnalyzeMessage(configuration) : TableVisualizerConfigurationAccessor.getDefault().getEmptyRunningMessage(configuration)); // NOI18N
         label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         this.add(label);
         repaint();

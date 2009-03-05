@@ -1,4 +1,3 @@
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,13 +39,13 @@
 
 package org.netbeans.modules.dlight.spi;
 
-
+import java.io.File;
 
 /**
  *
  */
 public interface SourceFileInfoProvider {
-  SourceFileInfo fileName(String functionName) throws SourceFileInfoCannotBeProvided;
+  SourceFileInfo fileName(String functionName, long offset, File executable) throws SourceFileInfoCannotBeProvided;
 
 
   public final class SourceFileInfoCannotBeProvided extends Exception{

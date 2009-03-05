@@ -123,13 +123,15 @@ public class SVGSlider extends SVGComponent {
         if ( myMax == myMin ){
             return;
         }
+        final int max = myMax;
+        final int min = myMin;
         getForm().invokeLaterSafely(new Runnable() {
 
             public void run() {
                 SVGRect rect = myRuleElement.getBBox();
                 float width = rect.getWidth();
                 SVGMatrix matrix = myKnobElement.getMatrixTrait(TRANSFORM);
-                matrix.mTranslate(step * width / (myMax - myMin),0);
+                matrix.mTranslate(step * width / (max - min),0);
                 myKnobElement.setMatrixTrait(TRANSFORM, matrix);
             }
         });
@@ -144,6 +146,7 @@ public class SVGSlider extends SVGComponent {
          * element will have position that can't be express
          * in relationship between current value/min/max.
          */
+        int curValue = myValue;
         setValue(myMin);
         
         if ( min > myMax ){
@@ -152,10 +155,10 @@ public class SVGSlider extends SVGComponent {
         else {
             myMin = min;
         }
-
-        if ( myValue <myMin ){
-            myValue = myMin;
-        }
+        
+        myValue = myMin;
+        setValue( curValue );
+        
     }
     
     public void setMax( int max ){
@@ -164,6 +167,7 @@ public class SVGSlider extends SVGComponent {
          * element will have position that can't be express
          * in relationship between current value/min/max.
          */
+        int curValue = myValue;
         setValue(myMin);
         
         if ( max < myMin ){
@@ -172,13 +176,9 @@ public class SVGSlider extends SVGComponent {
         else {
             myMax = max;
         }
-        if ( myValue > myMax ){
-            myValue = myMax;
-        }
-
-        if ( myValue >myMax ){
-            myValue = myMax;
-        }
+        
+        myValue = myMin;
+        setValue( curValue );
     }
     
     public int getMin(){

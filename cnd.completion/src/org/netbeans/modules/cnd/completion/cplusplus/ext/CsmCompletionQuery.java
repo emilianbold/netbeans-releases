@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -76,6 +77,7 @@ import org.netbeans.cnd.api.lexer.CndTokenProcessor;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -595,7 +597,7 @@ abstract public class CsmCompletionQuery {
             return null;
         }
         CsmClass cls = (CsmClass) classifier;
-        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter("operator " + opKind.getImage(), false, true, false); // NOI18N
+        CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter("operator " + opKind.getImage(), false, true, false); // NOI18N
         return getOperatorCheckBaseClasses(cls, contextFile, filter, opKind, new AntiLoop());
     }
 
@@ -604,7 +606,7 @@ abstract public class CsmCompletionQuery {
             return null;
         }
         antiLoop.add(cls);
-        Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(cls, filter);
+        Iterator<CsmMember> it = CsmSelect.getClassMembers(cls, filter);
         while (it.hasNext()) {
             CsmMember member = it.next();
             if (CsmKindUtilities.isOperator(member)) {
@@ -761,6 +763,22 @@ abstract public class CsmCompletionQuery {
                 cls = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
             }
             return cls;
+        }
+
+        private Collection<CsmFunction> getConstructors(CsmClass cls) {
+            Collection<CsmFunction> out = new ArrayList<CsmFunction>();
+            CsmFilterBuilder filterBuilder = CsmSelect.getFilterBuilder();
+            CsmSelect.CsmFilter filter = filterBuilder.createCompoundFilter(
+                    filterBuilder.createKindFilter(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION),
+                    filterBuilder.createNameFilter(cls.getName(), true, true, false));
+            Iterator<CsmMember> classMembers = CsmSelect.getClassMembers(cls, filter);
+            while (classMembers.hasNext()) {
+                CsmMember csmMember = classMembers.next();
+                if (CsmKindUtilities.isConstructor(csmMember)) {
+                    out.add((CsmConstructor)csmMember);
+                }
+            }
+            return out;
         }
 
         private CsmType extractFunctionType(Collection<CsmFunction> mtdList, CsmCompletionExpression genericNameExp) {
@@ -1660,10 +1678,26 @@ abstract public class CsmCompletionQuery {
                         // want to resolve "method"
                         // otherwise we need all in current context
                         if (!methodOpen || openingSource) {
-                            Collection mtdList = new ArrayList();
+                            Collection<CsmFunction> mtdList = new LinkedHashSet<CsmFunction>();
                             if (first && !(isConstructor && lastType != null)) { // already resolved for constructor
                                 // resolve all functions in context
                                 int varPos = mtdNameExp.getTokenOffset(0);
+                                boolean look4Constructors = findType || openingSource;
+                                if (look4Constructors) {
+                                    Collection<? extends CsmObject> candidates = new ArrayList<CsmObject>();
+                                    // try to resolve the most visible
+                                    compResolver.setResolveTypes(CompletionResolver.RESOLVE_FUNCTIONS | CompletionResolver.RESOLVE_CONTEXT_CLASSES);
+                                    if (compResolver.refresh() && compResolver.resolve(varPos, mtdName, true)) {
+                                        compResolver.getResult().addResulItemsToCol(candidates);
+                                    }
+                                    for (CsmObject object : candidates) {
+                                        if (CsmKindUtilities.isClass(object)) {
+                                            mtdList.addAll(getConstructors((CsmClass) object));
+                                        } else if (CsmKindUtilities.isFunction(object)) {
+                                            mtdList.add((CsmFunction) object);
+                                        }
+                                    }
+                                }
                                 compResolver.setResolveTypes(CompletionResolver.RESOLVE_FUNCTIONS);
                                 if (compResolver.refresh() && compResolver.resolve(varPos, mtdName, openingSource)) {
                                     compResolver.getResult().addResulItemsToCol(mtdList);
@@ -1674,7 +1708,7 @@ abstract public class CsmCompletionQuery {
                                     CsmClassifier classifier = extractLastTypeClassifier(kind);
                                     // try to find method in last resolved class appropriate for current context
                                     if (CsmKindUtilities.isClass(classifier)) {
-                                        mtdList = finder.findMethods(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, true, scopeAccessedClassifier, this.sort);
+                                        mtdList.addAll(finder.findMethods(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, true, scopeAccessedClassifier, this.sort));
                                         if ((!last || findType) && (mtdList == null || mtdList.size() == 0)) {
                                             // could be pointer to function-type field
                                             lastType = null;
@@ -1721,7 +1755,7 @@ abstract public class CsmCompletionQuery {
                             }
                             String parmStr = "*"; // NOI18N
                             List typeList = getTypeList(item, 1);
-                            Collection filtered = CompletionSupport.filterMethods(mtdList, typeList, methodOpen);
+                            Collection<CsmFunction> filtered = CompletionSupport.filterMethods(mtdList, typeList, methodOpen);
                             if (filtered.size() > 0) {
                                 mtdList = filtered;
                                 parmStr = formatTypeList(typeList, methodOpen);

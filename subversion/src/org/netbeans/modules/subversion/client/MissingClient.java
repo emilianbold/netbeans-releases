@@ -41,7 +41,6 @@
 package org.netbeans.modules.subversion.client;
 
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
-import org.netbeans.modules.subversion.client.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -72,7 +71,6 @@ import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  *
@@ -202,11 +200,17 @@ public class MissingClient implements ActionListener, HyperlinkListener {
                         }
                     }
                 } catch (OperationException e) {
-                    Subversion.LOG.log(Level.SEVERE, null, e);
-                    SvnClientExceptionHandler.notifyException(new SVNClientException(e), true, true);
+                    Subversion.LOG.log(Level.INFO, null, e);
+                    notifyError(NbBundle.getMessage(MissingClient.class, "MSG_MissingClient_UC_Unavailable"),   // NOI18N
+                            NbBundle.getMessage(MissingClient.class, "LBL_MissingClient_UC_Unavailable"));      // NOI18N
                 }
             }
         });
+    }
+
+    private static void notifyError (final String message, final String title) {
+        NotifyDescriptor nd = new NotifyDescriptor(message, title, NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION}, NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notifyLater(nd);
     }
 
     private void radioSwitch() {
