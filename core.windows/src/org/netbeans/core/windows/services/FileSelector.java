@@ -44,24 +44,15 @@ package org.netbeans.core.windows.services;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ResourceBundle;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -133,40 +124,11 @@ final class FileSelector extends JPanel implements PropertyChangeListener, Explo
 
         // component to place at the top
         try {
-            Node[] roots;
-            if (
-                root instanceof org.netbeans.core.DataSystem &&
-                (roots = root.getChildren ().getNodes ()).length > 0
-            ) {
-                final JComboBox combo = new JComboBox(roots);
-                combo.setRenderer(new FileSelectRenderer());
-                combo.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        Node o = (Node) combo.getSelectedItem();
-                        manager.setRootContext(o);
-                    }
-                });
-                combo.getAccessibleContext().setAccessibleDescription(bundle.getString ("ACSD_FileSelectorComboBox"));
-                manager.setSelectedNodes (new Node[] { roots[0] });
-
-                // North - "Create In" // NOI18N
-                JPanel comboPanel = new JPanel();
-                // Space between label and drop-down list
-                comboPanel.setLayout(new BorderLayout(5, 0));
-
-                JLabel label = new JLabel();
-                Mnemonics.setLocalizedText(label, rootLabel);
-                label.setLabelFor(combo);
-                comboPanel.add(label, BorderLayout.WEST);
-                comboPanel.add(combo, BorderLayout.CENTER);
-                add(comboPanel, BorderLayout.NORTH);
-            } else {
                 manager.setSelectedNodes (new Node[] { root });
                 JLabel label = new JLabel();
                 Mnemonics.setLocalizedText(label, rootLabel);
                 label.setLabelFor(tree);
                 add(label, BorderLayout.NORTH);
-            }
         } catch(PropertyVetoException pve) {
             throw new IllegalStateException(pve.getMessage());
         }
@@ -240,51 +202,4 @@ final class FileSelector extends JPanel implements PropertyChangeListener, Explo
     public ExplorerManager getExplorerManager() {
         return manager;
     }
-    
-
-    /** Renderer used in list box of exit dialog */
-    private static class FileSelectRenderer extends JLabel implements ListCellRenderer {
-        /** Generated Serialized Version UID. */
-        static final long serialVersionUID = -7071698027341621636L;
-
-        protected static Border hasFocusBorder;
-        protected static Border noFocusBorder;
-
-        public FileSelectRenderer() {
-            setOpaque(true);
-            setBorder(noFocusBorder);
-            hasFocusBorder = new LineBorder(UIManager.getColor("List.focusCellHighlight")); // NOI18N
-            noFocusBorder = new EmptyBorder(1, 1, 1, 1);
-        }
-
-        /** Implements <code>ListCellRenderer</code>. */
-        public Component getListCellRendererComponent(
-            JList list,
-            Object value,            // value to display
-            int index,               // cell index
-            boolean isSelected,      // is the cell selected
-            boolean cellHasFocus)    // the list and the cell have the focus
-        {
-            if (!(value instanceof Node)) return this;
-
-            Node node = (Node)value;
-
-            ImageIcon icon = new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16));
-            setIcon(icon);
-
-            setText(node.getDisplayName());
-            if (isSelected){
-                super.setBackground(UIManager.getColor("List.selectionBackground")); // NOI18N
-                super.setForeground(UIManager.getColor("List.selectionForeground")); // NOI18N
-            }
-            else {
-                super.setBackground(list.getBackground());
-                super.setForeground(list.getForeground());
-            }
-
-            setBorder(cellHasFocus ? hasFocusBorder : noFocusBorder);
-
-            return this;
-        }
-    } // End of class FileSelectRenderer.
 }
