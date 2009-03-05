@@ -187,7 +187,7 @@ public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerM
         listeners.remove(l);
     }
     
-    public boolean isValid() {
+    public boolean isStateValid() {
         HashSet<String> names = new HashSet(bannedNames);
         for (ConfigurationTemplateDescriptor cfg : selection) {
             if (!names.add(cfg.getCfgName())) return false;
