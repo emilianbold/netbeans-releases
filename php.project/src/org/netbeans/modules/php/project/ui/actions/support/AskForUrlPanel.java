@@ -40,28 +40,34 @@
 package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectSettings;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class AskForUrlPanel extends JPanel {
     private static final long serialVersionUID = 9261149997804215L;
 
     private final PhpProject project;
+    private final JTextField urlComboBoxEditor;
     private DialogDescriptor descriptor = null;
     private NotificationLineSupport notificationLineSupport;
 
@@ -73,17 +79,22 @@ public class AskForUrlPanel extends JPanel {
 
         initComponents();
 
-        urlComboBox.addItem(defaultUrl);
-        try {
-            for (int i = 1; i <= 10; i++) {
-                urlComboBox.addItem(new URL("http://localhost/project" + i)); // NOI18N
-            }
-        } catch (MalformedURLException exc) {
-            Exceptions.printStackTrace(exc);
+        Set<String> urls = new LinkedHashSet<String>();
+        urls.add(defaultUrl.toExternalForm());
+        urls.addAll(ProjectSettings.getDebugUrls(project));
+        for (String s : urls) {
+            urlComboBox.addItem(s);
         }
 
-        urlComboBox.getEditor().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        urlComboBoxEditor = (JTextField) urlComboBox.getEditor().getEditorComponent();
+        urlComboBoxEditor.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                validateFields();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                validateFields();
+            }
+            public void changedUpdate(DocumentEvent e) {
                 validateFields();
             }
         });
@@ -103,16 +114,36 @@ public class AskForUrlPanel extends JPanel {
         } finally {
             dialog.dispose();
         }
-        return descriptor.getValue() == NotifyDescriptor.OK_OPTION;
+        boolean ok = descriptor.getValue() == NotifyDescriptor.OK_OPTION;
+        if (ok) {
+            Set<String> urls = new LinkedHashSet<String>();
+            urls.add((String) urlComboBox.getSelectedItem());
+            for (int i = 1; i < urlComboBox.getItemCount(); ++i) {
+                urls.add((String) urlComboBox.getItemAt(i));
+            }
+            ProjectSettings.setDebugUrls(project, new ArrayList<String>(urls));
+        }
+        return ok;
     }
 
     public URL getUrl() {
-        return (URL) urlComboBox.getSelectedItem();
+        try {
+            return new URL((String) urlComboBox.getSelectedItem());
+        } catch (MalformedURLException ex) {
+            throw new IllegalStateException("The URL must already be valid!", ex);
+        }
     }
 
     void validateFields() {
         assert descriptor != null;
         assert notificationLineSupport != null;
+
+        String url = urlComboBoxEditor.getText();
+        if (!Utils.isValidUrl(url)) {
+            notificationLineSupport.setErrorMessage(NbBundle.getMessage(AskForUrlPanel.class, "MSG_InvalidUrl"));
+            descriptor.setValid(false);
+            return;
+        }
 
         notificationLineSupport.clearMessages();
         descriptor.setValid(true);
@@ -153,7 +184,7 @@ public class AskForUrlPanel extends JPanel {
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(urlLabel)
                     .add(urlComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(0, 0, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

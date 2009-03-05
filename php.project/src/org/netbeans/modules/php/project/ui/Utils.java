@@ -42,6 +42,8 @@ package org.netbeans.modules.php.project.ui;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
@@ -95,6 +97,11 @@ public final class Utils {
      */
     public static boolean isValidUrl(String url) {
         if (url == null) {
+            return false;
+        }
+        try {
+            new URL(url);
+        } catch (MalformedURLException ex) {
             return false;
         }
         return URL_PATTERN.matcher(url).matches();

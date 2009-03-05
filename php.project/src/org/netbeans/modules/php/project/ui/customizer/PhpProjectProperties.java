@@ -57,8 +57,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
-import org.netbeans.modules.php.project.connections.RemoteSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -397,7 +397,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         }
 
         // reset timestamp of the last upload
-        RemoteSettings.resetLastUpload(project);
+        ProjectSettings.resetLastUpload(project);
 
         // UI log
         logUsage(helper.getProjectDirectory(), ProjectPropertiesSupport.getSourcesDirectory(project),
