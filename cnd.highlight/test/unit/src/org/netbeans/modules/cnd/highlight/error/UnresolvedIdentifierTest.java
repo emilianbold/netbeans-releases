@@ -122,6 +122,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz158831.cpp");
     }
 
+    public void testIZ158873() throws Exception {
+        // IZ#158873 : recursion in Instantiation.Type.isInstantiation()
+        performStaticTest("iz158873.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
