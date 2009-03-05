@@ -44,15 +44,15 @@ import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
-public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Provider  {
+public class Customizer extends javax.swing.JPanel implements HelpCtx.Provider  {
     
     private Component currentCustomizer;
     private GridBagConstraints fillConstraints;
     private IcanproProjectProperties webProperties;
 
-    public IcanproCustomizer(IcanproProjectProperties webProperties) {
+    public Customizer(IcanproProjectProperties webProperties) {
         initComponents();
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IcanproCustomizer.class, "ACS_Customize_A11YDesc")); //NOI18N
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Customizer.class, "ACS_Customize_A11YDesc")); //NOI18N
         this.webProperties = webProperties;
         
         fillConstraints = new GridBagConstraints();
@@ -66,7 +66,7 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(IcanproCustomizer.class);
+        return new HelpCtx(Customizer.class);
     }     
     
     /** This method is called from within the constructor to
@@ -138,12 +138,12 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
             selectFirstNode();
             btv.expandAll();
                    
-            btv.getAccessibleContext().setAccessibleName(NbBundle.getMessage(IcanproCustomizer.class, "ACS_CustomizeTree_A11YName")); //NOI18N
-            btv.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IcanproCustomizer.class, "ACS_CustomizeTree_A11YDesc")); //NOI18N
+            btv.getAccessibleContext().setAccessibleName(NbBundle.getMessage(Customizer.class, "ACS_CustomizeTree_A11YName")); //NOI18N
+            btv.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Customizer.class, "ACS_CustomizeTree_A11YDesc")); //NOI18N
         }
         
         public HelpCtx getHelpCtx() {
-            return new HelpCtx(IcanproCustomizer.class);
+            return new HelpCtx(Customizer.class);
         }         
         public ExplorerManager getExplorerManager() {
             return manager;
@@ -209,7 +209,7 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
              
     private static Node createRootNode(IcanproProjectProperties webProperties) {
         String ICON_FOLDER = "org/netbeans/modules/bpel/project/ui/resources/";
-        ResourceBundle bundle = NbBundle.getBundle( IcanproCustomizer.class );
+        ResourceBundle bundle = NbBundle.getBundle( Customizer.class );
         
         ConfigurationDescription descriptions[] = new ConfigurationDescription[] {
             new ConfigurationDescription(

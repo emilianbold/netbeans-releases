@@ -117,6 +117,21 @@ public class DocumentSupport {
                 iterator.remove();
         }
     }
+
+    /**
+     * Takes a specified list of presenters and removed those presenters which are provided in second parameter.
+     * @param presenters the list of presenters
+     * @param presenter to remove
+     */
+    public static void removePresenter(ArrayList<? super Presenter> presenters, Presenter presenter) {
+        for (Iterator<? super Presenter> iterator = presenters.iterator(); iterator.hasNext();) {
+            Object object = iterator.next();
+            if (presenter == object) {
+                iterator.remove();
+                return;
+            }
+        }
+    }
     
     /**
      * Takes a specified list of presenters and removed those presenters which are compatible with specified presenter id.

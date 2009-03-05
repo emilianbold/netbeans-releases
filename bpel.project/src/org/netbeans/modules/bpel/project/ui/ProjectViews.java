@@ -58,14 +58,12 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
-import org.netbeans.modules.bpel.project.IcanproProject;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.loaders.DataObject;
@@ -76,24 +74,25 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
+import org.netbeans.modules.bpel.project.ProjectConstants;
 
-class IcanproViews {
-    private static Logger logger = Logger.getLogger(IcanproViews.class.getName());
+class ProjectViews {
+    private static Logger logger = Logger.getLogger(ProjectViews.class.getName());
     
     private static final DataFilter NO_FOLDERS_FILTER = new NoFoldersDataFilter();
     
-    private IcanproViews() {}
+    private ProjectViews() {}
 
     static final class LogicalViewChildren extends Children.Keys implements FileChangeListener {
 
-        private static final String KEY_SOURCE_DIR = "srcDir"; // NOI18N
+        private static final String SOURCE_NODE = "source_node"; // NOI18N
 
         private AntProjectHelper helper;
         private final PropertyEvaluator evaluator;
         private FileObject projectDir;
         private Project project;
 
-        public LogicalViewChildren (AntProjectHelper helper, PropertyEvaluator evaluator, Project project) {
+        public LogicalViewChildren(AntProjectHelper helper, PropertyEvaluator evaluator, Project project) {
             assert helper != null;
             this.helper = helper;
             projectDir = helper.getProjectDirectory();
@@ -101,6 +100,7 @@ class IcanproViews {
             this.project = project;
         }
 
+        @Override
         protected void addNotify() {
             super.addNotify();
             projectDir.addFileChangeListener(this);
@@ -113,7 +113,7 @@ class IcanproViews {
             DataFolder srcDir = getFolder(IcanproProjectProperties.SRC_DIR);
 
             if (srcDir != null) {
-                l.add(KEY_SOURCE_DIR);
+                l.add(SOURCE_NODE);
             }
             if (l.size() > 0) {
                 setKeys(l);
@@ -121,6 +121,7 @@ class IcanproViews {
         }
 
         @SuppressWarnings("unchecked")
+        @Override
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
             projectDir.removeFileChangeListener(this);
@@ -130,11 +131,11 @@ class IcanproViews {
         protected Node[] createNodes(Object key) {
           Node node = null;
           
-          if (key == KEY_SOURCE_DIR) {
+          if (key == SOURCE_NODE) {
             FileObject srcRoot = helper.resolveFileObject(evaluator.getProperty(IcanproProjectProperties.SRC_DIR));
             Project p = FileOwnerQuery.getOwner(srcRoot);
             Sources s = ProjectUtils.getSources(p);
-            SourceGroup sgs [] = ProjectUtils.getSources(p).getSourceGroups(IcanproProject.SOURCES_TYPE_ICANPRO);
+            SourceGroup sgs [] = ProjectUtils.getSources(p).getSourceGroups(ProjectConstants.SOURCES_TYPE_PROJECT);
     
             for (int i = 0; i < sgs.length; i++) {
               if (sgs [i].contains(srcRoot)) {
@@ -149,7 +150,7 @@ class IcanproViews {
               }
             }
           }
-          return node == null ? new Node[0] : new Node[] { node };
+          return node == null ? new Node [0] : new Node [] { node };
         }
 
         private DataFolder getFolder(String propName) {
@@ -211,6 +212,7 @@ class IcanproViews {
           };
       }
 
+        @Override
       public boolean canDestroy() {
         return false;
       }
@@ -238,10 +240,12 @@ class IcanproViews {
             super (orig);
         }
 
+        @Override
         public Image getIcon( int type ) {
             return computeIcon( false, type );
         }
 
+        @Override
         public Image getOpenedIcon( int type ) {
             return computeIcon( true, type );
         }
@@ -252,8 +256,9 @@ class IcanproViews {
             return ImageUtilities.mergeImages( image, CONFIGURATION_FILES_BADGE, 7, 7 );
         }
 
+        @Override
         public String getDisplayName () {
-            return NbBundle.getMessage(IcanproViews.class, "LBL_Node_DocBase"); //NOI18N
+            return NbBundle.getMessage(ProjectViews.class, "LBL_Node_DocBase"); //NOI18N
         }
     }
     

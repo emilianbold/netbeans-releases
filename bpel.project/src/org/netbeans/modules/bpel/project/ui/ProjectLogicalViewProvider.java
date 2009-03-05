@@ -49,7 +49,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.netbeans.modules.bpel.model.api.support.Utils;
-import org.netbeans.modules.bpel.project.IcanproConstants;
+import org.netbeans.modules.bpel.project.ProjectConstants;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -63,7 +63,7 @@ import org.openide.util.lookup.Lookups;
  * Support for creating logical views.
  * @author Petr Hrebejk
  */
-public class IcanproLogicalViewProvider implements LogicalViewProvider {
+public class ProjectLogicalViewProvider implements LogicalViewProvider {
 
     private final Project project;
     private final AntProjectHelper helper;
@@ -71,8 +71,7 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
 
-
-    public IcanproLogicalViewProvider(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
+    public ProjectLogicalViewProvider(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
         assert project != null;
         this.helper = helper;
@@ -85,12 +84,11 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
     }
 
     public Node createLogicalView() {
-        return new IcanLogicalViewRootNode();
+        return new IcanLogicalViewRootNode(new ProjectViews.LogicalViewChildren(helper, evaluator, project));
     }
 
     /**
-     * {@inheritDoc}
-     * Fix for #83576.
+     * Fix for # 83576
      * @author ads
      */
     public Node findPath( Node root, Object target ) {
@@ -167,13 +165,15 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
             return false;
         }
     }
-   private static Lookup createLookup( Project project ) {
-        DataFolder rootFolder = DataFolder.findFolder( project.getProjectDirectory() );
+
+   private static Lookup createLookup(Project project) {
+        DataFolder rootFolder = DataFolder.findFolder( project.getProjectDirectory());
         // XXX remove after SimpleTargetChooserPanel rewrite (suggestion if default dir is project dir then it's source dir)
         Sources sources = ProjectUtils.getSources(project);
         List<SourceGroup> roots = new ArrayList<SourceGroup>();
         SourceGroup[] javaRoots = sources.getSourceGroups(Utils.SOURCES_TYPE_BPELPRO);
         roots.addAll(Arrays.asList(javaRoots));
+
         if (roots.isEmpty()) {
             SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             roots.addAll(Arrays.asList(sourceGroups));
@@ -195,10 +195,6 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
     };
 
     public static boolean hasBrokenLinks(AntProjectHelper helper, ReferenceHelper resolver) {
-        /*
-        return BrokenReferencesSupport.isBroken(helper, resolver, BREAKABLE_PROPERTIES,
-            new String[] {IcanproProjectProperties.JAVA_PLATFORM});
-        */
         return false;
     }
 
@@ -209,24 +205,20 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
         private Action brokenLinksAction;
         private boolean broken;
 
-
-        public IcanLogicalViewRootNode() {
-            super( new IcanproViews.LogicalViewChildren( helper, evaluator, project ), createLookup( project ) );
-            setIconBaseWithExtension("org/netbeans/modules/bpel/project/ui/resources/icanproProjectIcon.gif"); // NOI18N
+        public IcanLogicalViewRootNode(Children children) {
+            super(children, createLookup(project));
+            setIconBaseWithExtension("org/netbeans/modules/bpel/project/ui/resources/projectIcon.gif"); // NOI18N
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
             if (hasBrokenLinks(helper, resolver)) {
                 broken = true;
                 brokenLinksAction = new BrokenLinksAction();
             }
         }
-        /**
-         * DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
+
         public HelpCtx getHelpCtx() {
-            return new HelpCtx(IcanproLogicalViewProvider.class);
+            return new HelpCtx(ProjectLogicalViewProvider.class);
         }
+
         public Action[] getActions( boolean context ) {
             if ( context )
                 return super.getActions( true );
@@ -245,9 +237,7 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
         // Private methods -------------------------------------------------
 
         private Action[] getAdditionalActions() {
-
-            ResourceBundle bundle = NbBundle.getBundle(IcanproLogicalViewProvider.class);
-
+            ResourceBundle bundle = NbBundle.getBundle(ProjectLogicalViewProvider.class);
 
             List<Action> actions = new ArrayList<Action>();
 
@@ -257,9 +247,7 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
                 actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null )); // NOI18N
                 actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null )); // NOI18N
                 actions.add(null);
-//                ProjectSensitiveActions.projectCommandAction( IcanproConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null ), // NOI18N
-//                ProjectSensitiveActions.projectCommandAction( IcanproConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
-                actions.add(ProjectSensitiveActions.projectCommandAction( IcanproConstants.POPULATE_CATALOG, bundle.getString( "LBL_Populate_Catalog" ), null )); // NOI18N
+                actions.add(ProjectSensitiveActions.projectCommandAction( ProjectConstants.POPULATE_CATALOG, bundle.getString( "LBL_Populate_Catalog" ), null )); // NOI18N
                 actions.add(null);
                 actions.add(CommonProjectActions.setAsMainProjectAction());
                 actions.add(CommonProjectActions.openSubprojectsAction());
@@ -272,9 +260,9 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
                 actions.add(null);
                 actions.add(SystemAction.get( org.openide.actions.FindAction.class ));
                 // add versioning support
-                actions.addAll(Utilities.actionsForPath("Projects/Actions")); //NOI18N
-//                null,
-//                SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
+                //[MOVE_TO_61_FIXME]actions.addAll(Utilities.actionsForPath("Projects/Actions")); //NOI18N
+//              null,
+//              SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
                 actions.add(null);
                 actions.add(brokenLinksAction);
                 actions.add(CommonProjectActions.customizeProjectAction());
@@ -289,18 +277,10 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
 
             public BrokenLinksAction() {
                 evaluator.addPropertyChangeListener(this);
-                putValue(Action.NAME, NbBundle.getMessage(IcanproLogicalViewProvider.class, "LBL_Fix_Broken_Links_Action"));
+                putValue(Action.NAME, NbBundle.getMessage(ProjectLogicalViewProvider.class, "LBL_Fix_Broken_Links_Action"));
             }
 
-            public void actionPerformed(ActionEvent e) {
-                /*
-                BrokenReferencesSupport.showCustomizer(helper, resolver, BREAKABLE_PROPERTIES, new String[]{IcanproProjectProperties.JAVA_PLATFORM});
-                if (!hasBrokenLinks(helper, resolver)) {
-                    disable();
-                }
-                */
-                // do nothing...
-            }
+            public void actionPerformed(ActionEvent e) {}
 
             public void propertyChange(PropertyChangeEvent evt) {
                 if (!broken) {
@@ -362,7 +342,5 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
                 return new ActionImpl( command, name, lookup );
             }
         }
-
     }
-
 }
