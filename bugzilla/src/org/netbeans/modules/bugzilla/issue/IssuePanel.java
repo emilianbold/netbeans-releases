@@ -141,6 +141,7 @@ public class IssuePanel extends javax.swing.JPanel {
         reloadField(force, componentCombo, BugzillaIssue.IssueField.COMPONENT);
         reloadField(force, versionCombo, BugzillaIssue.IssueField.VERSION);
         reloadField(force, platformCombo, BugzillaIssue.IssueField.PLATFORM);
+        reloadField(force, osCombo, BugzillaIssue.IssueField.OS);
         reloadField(force, resolutionField, BugzillaIssue.IssueField.RESOLUTION); // Must be before statusCombo
         String status = reloadField(force, statusCombo, BugzillaIssue.IssueField.STATUS);
         initStatusCombo(status);
@@ -210,6 +211,7 @@ public class IssuePanel extends javax.swing.JPanel {
         // componentCombo, versionCombo, targetMilestoneCombo are filled
         // automatically when productCombo is set/changed
         platformCombo.setModel(toComboModel(bugzilla.getPlatforms(repository)));
+        osCombo.setModel(toComboModel(bugzilla.getOSs(repository)));
         // Do not support MOVED resolution (yet?)
         List<String> resolutions = new LinkedList<String>(bugzilla.getResolutions(repository));
         resolutions.remove("MOVED"); // NOI18N
@@ -283,6 +285,7 @@ public class IssuePanel extends javax.swing.JPanel {
         updateFieldStatus(BugzillaIssue.IssueField.COMPONENT, componentLabel);
         updateFieldStatus(BugzillaIssue.IssueField.VERSION, versionLabel);
         updateFieldStatus(BugzillaIssue.IssueField.PLATFORM, platformLabel);
+        updateFieldStatus(BugzillaIssue.IssueField.OS, osLabel);
         updateFieldStatus(BugzillaIssue.IssueField.STATUS, statusLabel);
         updateFieldStatus(BugzillaIssue.IssueField.RESOLUTION, resolutionLabel);
         updateFieldStatus(BugzillaIssue.IssueField.PRIORITY, priorityLabel);
@@ -399,6 +402,8 @@ public class IssuePanel extends javax.swing.JPanel {
         keywordsButton = new javax.swing.JButton();
         blocksButton = new javax.swing.JButton();
         dependsOnButton = new javax.swing.JButton();
+        osLabel = new javax.swing.JLabel();
+        osCombo = new javax.swing.JComboBox();
 
         FormListener formListener = new FormListener();
 
@@ -526,6 +531,10 @@ public class IssuePanel extends javax.swing.JPanel {
         dependsOnButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         dependsOnButton.addActionListener(formListener);
 
+        osLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.osLabel.text")); // NOI18N
+
+        osCombo.addActionListener(formListener);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -549,7 +558,8 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(urlLabel)
                     .add(keywordsLabel)
                     .add(dummyLabel2)
-                    .add(addCommentLabel))
+                    .add(addCommentLabel)
+                    .add(osLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
@@ -558,6 +568,7 @@ public class IssuePanel extends javax.swing.JPanel {
                         .add(cancelButton))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(osCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(keywordsField)
                                 .add(0, 0, 0)
@@ -647,7 +658,9 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(qaContactLabel)
-                    .add(qaContactField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(qaContactField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(osLabel)
+                    .add(osCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(ccLabel)
@@ -714,7 +727,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
         layout.linkSize(new java.awt.Component[] {dummyLabel1, dummyLabel2, targetMilestoneCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
-        layout.linkSize(new java.awt.Component[] {assignedLabel, attachmentsLabel, blocksLabel, ccLabel, componentLabel, dependsLabel, keywordsLabel, platformLabel, priorityLabel, productLabel, qaContactLabel, resolutionLabel, severityLabel, statusCombo, statusLabel, targetMilestoneLabel, urlLabel, versionLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {assignedLabel, attachmentsLabel, blocksLabel, ccLabel, componentLabel, dependsLabel, keywordsLabel, osLabel, platformLabel, priorityLabel, productLabel, qaContactLabel, resolutionLabel, severityLabel, statusCombo, statusLabel, targetMilestoneLabel, urlLabel, versionLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
     }
 
@@ -726,11 +739,29 @@ public class IssuePanel extends javax.swing.JPanel {
             if (evt.getSource() == productCombo) {
                 IssuePanel.this.productComboActionPerformed(evt);
             }
+            else if (evt.getSource() == componentCombo) {
+                IssuePanel.this.componentComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == versionCombo) {
+                IssuePanel.this.versionComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == platformCombo) {
+                IssuePanel.this.platformComboActionPerformed(evt);
+            }
             else if (evt.getSource() == statusCombo) {
                 IssuePanel.this.statusComboActionPerformed(evt);
             }
             else if (evt.getSource() == resolutionCombo) {
                 IssuePanel.this.resolutionComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == priorityCombo) {
+                IssuePanel.this.priorityComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == severityCombo) {
+                IssuePanel.this.severityComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == targetMilestoneCombo) {
+                IssuePanel.this.targetMilestoneComboActionPerformed(evt);
             }
             else if (evt.getSource() == submitButton) {
                 IssuePanel.this.submitButtonActionPerformed(evt);
@@ -750,23 +781,8 @@ public class IssuePanel extends javax.swing.JPanel {
             else if (evt.getSource() == dependsOnButton) {
                 IssuePanel.this.dependsOnButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == componentCombo) {
-                IssuePanel.this.componentComboActionPerformed(evt);
-            }
-            else if (evt.getSource() == versionCombo) {
-                IssuePanel.this.versionComboActionPerformed(evt);
-            }
-            else if (evt.getSource() == platformCombo) {
-                IssuePanel.this.platformComboActionPerformed(evt);
-            }
-            else if (evt.getSource() == priorityCombo) {
-                IssuePanel.this.priorityComboActionPerformed(evt);
-            }
-            else if (evt.getSource() == severityCombo) {
-                IssuePanel.this.severityComboActionPerformed(evt);
-            }
-            else if (evt.getSource() == targetMilestoneCombo) {
-                IssuePanel.this.targetMilestoneComboActionPerformed(evt);
+            else if (evt.getSource() == osCombo) {
+                IssuePanel.this.osComboActionPerformed(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
@@ -837,6 +853,7 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(BugzillaIssue.IssueField.COMPONENT, componentCombo);
         storeFieldValue(BugzillaIssue.IssueField.VERSION, versionCombo);
         storeFieldValue(BugzillaIssue.IssueField.PLATFORM, platformCombo);
+        storeFieldValue(BugzillaIssue.IssueField.OS, osCombo);
         storeFieldValue(BugzillaIssue.IssueField.STATUS, statusCombo);
         if (resolutionCombo.isVisible()) {
             storeFieldValue(BugzillaIssue.IssueField.RESOLUTION, resolutionCombo);
@@ -960,6 +977,10 @@ public class IssuePanel extends javax.swing.JPanel {
         cancelHighlight(targetMilestoneLabel);
     }//GEN-LAST:event_targetMilestoneComboActionPerformed
 
+    private void osComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_osComboActionPerformed
+        cancelHighlight(osLabel);
+    }//GEN-LAST:event_osComboActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea addCommentArea;
     private javax.swing.JLabel addCommentLabel;
@@ -990,6 +1011,8 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel keywordsLabel;
     private javax.swing.JTextField modifiedField;
     private javax.swing.JLabel modifiedLabel;
+    private javax.swing.JComboBox osCombo;
+    private javax.swing.JLabel osLabel;
     private javax.swing.JComboBox platformCombo;
     private javax.swing.JLabel platformLabel;
     private javax.swing.JComboBox priorityCombo;

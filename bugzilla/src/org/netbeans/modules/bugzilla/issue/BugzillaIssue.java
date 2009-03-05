@@ -124,6 +124,7 @@ public class BugzillaIssue extends Issue {
         COMPONENT(BugzillaAttribute.COMPONENT.getKey()),
         VERSION(BugzillaAttribute.VERSION.getKey()),
         PLATFORM(BugzillaAttribute.REP_PLATFORM.getKey()),
+        OS(BugzillaAttribute.OP_SYS.getKey()),
         MILESTONE(BugzillaAttribute.TARGET_MILESTONE.getKey()),
         REPORTER(BugzillaAttribute.REPORTER.getKey()),
         ASSIGNED_TO(BugzillaAttribute.ASSIGNED_TO.getKey()),
