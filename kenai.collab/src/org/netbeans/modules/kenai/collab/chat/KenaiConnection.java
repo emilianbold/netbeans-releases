@@ -97,7 +97,7 @@ public class KenaiConnection implements PropertyChangeListener {
     public static synchronized KenaiConnection getDefault() {
         if (instance == null) {
             instance = new KenaiConnection();
-            Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_LOGIN,instance);
+            Kenai.getDefault().addPropertyChangeListener(instance);
         }
         return instance;
     }
@@ -246,20 +246,22 @@ public class KenaiConnection implements PropertyChangeListener {
     }
 
     public void propertyChange(PropertyChangeEvent e) {
-        final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
-        if (pa != null) {
+        if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
+            final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
+            if (pa != null) {
                 USER = pa.getUserName();
                 PASSWORD = new String(pa.getPassword());
                 tryConnect();
-        } else {
-            for (MultiUserChat muc : getChats()) {
-                muc.leave();
+            } else {
+                for (MultiUserChat muc : getChats()) {
+                    muc.leave();
+                }
+                chats.clear();
+                connection.disconnect();
+                messageQueue.clear();
+                listeners.clear();
+                PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
             }
-            chats.clear();
-            connection.disconnect();
-            messageQueue.clear();
-            listeners.clear();
-            PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
         }
     }
     
