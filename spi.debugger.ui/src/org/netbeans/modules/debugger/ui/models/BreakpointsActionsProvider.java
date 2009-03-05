@@ -321,26 +321,28 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
             if (((Breakpoint) node).isEnabled ())
                 return new Action [] {
                     DISABLE_ACTION,
-                    DELETE_ACTION,
                     moveIntoGroupAction,
                     null,
                     NEW_BREEAKPOINT_ACTION,
                     null,
                     ENABLE_ALL_ACTION,
                     DISABLE_ALL_ACTION,
+                    null,
+                    DELETE_ACTION,
                     DELETE_ALL_ACTION,
                     null
                 };
             else
                 return new Action [] {
                     ENABLE_ACTION,
-                    DELETE_ACTION,
                     moveIntoGroupAction,
                     null,
                     NEW_BREEAKPOINT_ACTION,
                     null,
                     ENABLE_ALL_ACTION,
                     DISABLE_ALL_ACTION,
+                    null,
+                    DELETE_ACTION,
                     DELETE_ALL_ACTION,
                     null
                 };
