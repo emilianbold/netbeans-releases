@@ -41,10 +41,13 @@ package org.netbeans.modules.maven.graph;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -60,15 +63,13 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.SceneLayout;
-import org.netbeans.api.visual.model.ObjectSceneEvent;
-import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -87,12 +88,16 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private WidgetAction zoomAction = ActionFactory.createMouseCenteredZoomAction(1.1);
     private WidgetAction panAction = ActionFactory.createPanAction();
     private WidgetAction editAction = ActionFactory.createEditAction(allActionsP);
+
+    Action sceneZoomToFitAction = new SceneZoomToFitAction();
+    Action highlitedZoomToFitAction = new HighlitedZoomToFitAction();
+
     private FruchtermanReingoldLayout layout;
     private int maxDepth = 0;
     private final MavenProject project;
     private final Project nbProject;
     private final DependencyGraphTopComponent tc;
-    private SceneLayout fitViewL;
+    private FitToViewLayout fitViewL;
 
     private static Set<ArtifactGraphNode> EMPTY_SELECTION = new HashSet<ArtifactGraphNode>();
     
@@ -105,14 +110,12 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         addChild(mainLayer);
         connectionLayer = new LayerWidget(this);
         addChild(connectionLayer);
-        //hoverAction = createObjectHoverAction();
-        //getActions ().addAction (ActionFactory.createMouseCenteredZoomAction (1.1));
         getActions().addAction(this.createObjectHoverAction());
         getActions().addAction(ActionFactory.createSelectAction(allActionsP));
         getActions().addAction(zoomAction);
         getActions().addAction(panAction);
         getActions().addAction(editAction);
-        //addObjectSceneListener(new SceneListener(), ObjectSceneEventType.OBJECT_HOVER_CHANGED, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+        getActions().addAction(popupMenuAction);
     }
 
 
@@ -156,7 +159,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         if (node.getPrimaryLevel() > maxDepth) {
             maxDepth = node.getPrimaryLevel();
         }
-        Widget root = new ArtifactWidget(this, node);
+        ArtifactWidget root = new ArtifactWidget(this, node);
         mainLayer.addChild(root);
         node.setWidget(root);
         if (rootNode == null) {
@@ -237,13 +240,13 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         for (ArtifactGraphNode curN : getNodes()) {
             aw = (ArtifactWidget) findWidget(curN);
             if (importantNodes.contains(curN)) {
-                aw.setGrayed(false);
+                aw.setPaintState(EdgeWidget.REGULAR);
                 aw.setReadable(true);
             } else if (childrenNodes.contains(curN)) {
-                aw.setGrayed(true);
+                aw.setPaintState(EdgeWidget.GRAYED);
                 aw.setReadable(true);
             } else {
-                aw.setGrayed(true);
+                aw.setPaintState(EdgeWidget.DISABLED);
                 aw.setReadable(false);
             }
         }
@@ -263,6 +266,8 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
 
     private class AllActionsProvider implements PopupMenuProvider, 
             MoveProvider, EditProvider, SelectProvider {
+
+        private Point moveStart;
 
 /*        public void select(Widget wid, Point arg1, boolean arg2) {
             System.out.println("select called...");
@@ -285,10 +290,15 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         @SuppressWarnings("unchecked")
         public JPopupMenu getPopupMenu(Widget widget, Point localLocation) {
             JPopupMenu popupMenu = new JPopupMenu();
-            ArtifactGraphNode node = (ArtifactGraphNode)findObject(widget);
-            Action a = CommonArtifactActions.createViewArtifactDetails(node.getArtifact().getArtifact(), project.getRemoteArtifactRepositories());
-            a.putValue("PANEL_HINT", ArtifactViewer.HINT_GRAPH); //NOI18N
-            popupMenu.add(a);
+            if (widget == DependencyGraphScene.this) {
+                popupMenu.add(sceneZoomToFitAction);
+            } else {
+                popupMenu.add(highlitedZoomToFitAction);
+                ArtifactGraphNode node = (ArtifactGraphNode)findObject(widget);
+                Action a = CommonArtifactActions.createViewArtifactDetails(node.getArtifact().getArtifact(), project.getRemoteArtifactRepositories());
+                a.putValue("PANEL_HINT", ArtifactViewer.HINT_GRAPH); //NOI18N
+                popupMenu.add(a);
+            }
             return popupMenu;
         }
 
@@ -296,8 +306,18 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
 
         public void movementStarted (Widget widget) {
             widget.bringToFront();
+            moveStart = widget.getLocation();
         }
         public void movementFinished (Widget widget) {
+            // little hack to call highlightRelated on mouse click while leaving
+            // normal move behaviour on real dragging
+            Point moveEnd = widget.getLocation();
+            if (moveStart.distance(moveEnd) < 5) {
+                Object obj = DependencyGraphScene.this.findObject(widget);
+                if (obj instanceof ArtifactGraphNode) {
+                    DependencyGraphScene.this.highlightRelated((ArtifactGraphNode)obj);
+                }
+            }
         }
         public Point getOriginalLocation (Widget widget) {
             return widget.getPreferredLocation ();
@@ -309,12 +329,10 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         /*** EditProvider ***/
 
         public void edit(Widget widget) {
-            ArtifactGraphNode grN = (ArtifactGraphNode) findObject(widget);
-            if (grN != null) {
-                highlightRelated(grN);
+            if (DependencyGraphScene.this == widget) {
+                sceneZoomToFitAction.actionPerformed(null);
             } else {
-                // scene doubleclick
-                getFitToViewLayout().invokeLayout();
+                highlitedZoomToFitAction.actionPerformed(null);
             }
         }
 
@@ -341,71 +359,84 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         }
     }
 
-    private SceneLayout getFitToViewLayout () {
+    private FitToViewLayout getFitToViewLayout () {
         if (fitViewL == null) {
             fitViewL = new FitToViewLayout(this);
         }
         return fitViewL;
     }
 
-    private class FitToViewLayout extends SceneLayout {
+    private static class FitToViewLayout extends SceneLayout {
 
-        public FitToViewLayout(Scene scene) {
+        private List<? extends Widget> widgets = null;
+        private DependencyGraphScene depScene;
+
+        public FitToViewLayout(DependencyGraphScene scene) {
             super(scene);
+            this.depScene = scene;
+        }
+
+        /** Sets list of widgets to fit or null for fitting whole scene */
+        public void setWidgetsToFit (List<? extends Widget> widgets) {
+            this.widgets = widgets;
         }
 
         @Override
         protected void performLayout() {
             Rectangle rectangle = new Rectangle (0, 0, 1, 1);
-            for (Widget widget : getChildren ())
+            List<? extends Widget> toFit = widgets != null ? widgets : depScene.getChildren();
+            for (Widget widget : toFit)
                 rectangle = rectangle.union (widget.convertLocalToScene (widget.getBounds ()));
             rectangle.grow(5, 5);
             Dimension dim = rectangle.getSize();
-            Dimension viewDim = DependencyGraphScene.this.tc.getScrollPane().
+            Dimension viewDim = depScene.tc.getScrollPane().
                     getViewportBorderBounds ().getSize ();
             double zf = Math.min ((double) viewDim.width / dim.width, (double) viewDim.height / dim.height);
-            if (isAnimated()) {
-                getSceneAnimator().animateZoomFactor(zf);
+            if (depScene.isAnimated()) {
+                depScene.getSceneAnimator().animateZoomFactor(zf);
             } else {
-                setZoomFactor (zf);
+                depScene.setZoomFactor (zf);
             }
         }
     }
 
-    public class SceneListener implements ObjectSceneListener {
-        
-        public void selectionChanged(ObjectSceneEvent state,
-                                     Set<Object> oldSet,
-                                     Set<Object> newSet) {
+    private class SceneZoomToFitAction extends AbstractAction {
+
+        public SceneZoomToFitAction() {
+            putValue(NAME, NbBundle.getMessage(DependencyGraphScene.class, "ACT_ZoomToFit"));
         }
 
-        public void objectAdded(ObjectSceneEvent event, Object addedObject) {
+        public void actionPerformed(ActionEvent e) {
+            FitToViewLayout ftvl = DependencyGraphScene.this.getFitToViewLayout();
+            ftvl.setWidgetsToFit(null);
+            ftvl.invokeLayout();
+        }
+    };
+
+    private class HighlitedZoomToFitAction extends AbstractAction {
+
+        public HighlitedZoomToFitAction() {
+            putValue(NAME, NbBundle.getMessage(DependencyGraphScene.class, "ACT_ZoomToFit"));
         }
 
-        public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
-        }
-
-        public void objectStateChanged(ObjectSceneEvent event, Object changedObject, ObjectState previousState, ObjectState newState) {
-        }
-
-        public void highlightingChanged(ObjectSceneEvent event, Set<Object> previousHighlighting, Set<Object> newHighlighting) {
-        }
-
-        public void hoverChanged(ObjectSceneEvent event, Object previousHoveredObject, Object newHoveredObject) {
-            ArtifactGraphNode newH = (ArtifactGraphNode)newHoveredObject;
-            ArtifactGraphNode prevH = (ArtifactGraphNode)previousHoveredObject;
-            if (prevH != null) {
-                // prevH.setHovering(false);
+        public void actionPerformed(ActionEvent e) {
+            @SuppressWarnings("unchecked")
+            Collection<ArtifactGraphNode> grNodes = DependencyGraphScene.this.getNodes();
+            List<ArtifactWidget> aws = new ArrayList<ArtifactWidget>();
+            ArtifactWidget aw = null;
+            int paintState;
+            for (ArtifactGraphNode grNode : grNodes) {
+                aw = grNode.getWidget();
+                paintState = aw.getPaintState();
+                if (paintState != EdgeWidget.DISABLED || paintState != EdgeWidget.GRAYED) {
+                    aws.add(aw);
+                }
             }
-            if (newH == null) {
-                //hide detail component
-            } else {
-                //show detail component
-            }
-        }
 
-        public void focusChanged(ObjectSceneEvent event, Object previousFocusedObject, Object newFocusedObject) {
+            FitToViewLayout ftvl = DependencyGraphScene.this.getFitToViewLayout();
+            ftvl.setWidgetsToFit(aws);
+            ftvl.invokeLayout();
         }
+    };
 
-    }
 }

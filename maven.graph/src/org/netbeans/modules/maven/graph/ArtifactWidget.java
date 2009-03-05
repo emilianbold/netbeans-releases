@@ -106,10 +106,12 @@ class ArtifactWidget extends Widget implements ActionListener {
     private Widget detailsW, contentW;
     private ImageWidget lockW, hintBulbW;
 
-    private boolean grayed = false;
+    private int paintState = EdgeWidget.REGULAR;
 
     private Font origFont;
     private Color origForeground;
+
+    private String tooltipText;
 
     ArtifactWidget(DependencyGraphScene scene, ArtifactGraphNode node) {
         super(scene);
@@ -118,10 +120,12 @@ class ArtifactWidget extends Widget implements ActionListener {
         Artifact artifact = node.getArtifact().getArtifact();
         setLayout(LayoutFactory.createVerticalFlowLayout());
 
-        setToolTipText(NbBundle.getMessage(DependencyGraphScene.class,
+        tooltipText = NbBundle.getMessage(DependencyGraphScene.class,
                 "TIP_Artifact", new Object[]{artifact.getGroupId(),
                     artifact.getArtifactId(), artifact.getVersion(),
-                    artifact.getScope(), artifact.getType(), constructConflictText(node)}));
+                    artifact.getScope(), artifact.getType(), constructConflictText(node)});
+        setToolTipText(tooltipText);
+
         initContent(scene, artifact);
 
         hoverTimer = new Timer(500, this);
@@ -175,16 +179,16 @@ class ArtifactWidget extends Widget implements ActionListener {
 
     private void doHightlightText(String searchTerm) {
         if (searchTerm != null && node.getArtifact().getArtifact().getArtifactId().contains(searchTerm)) {
-            if (grayed) {
-                artifactW.setBackground(DISABLE_HIGHTLIGHT);
-            } else {
-                artifactW.setBackground(HIGHTLIGHT);
-            }
+            artifactW.setBackground(HIGHTLIGHT);
             artifactW.setOpaque(true);
+            setPaintState(EdgeWidget.REGULAR);
+            setReadable(true);
         } else {
             //reset
             artifactW.setBackground(Color.WHITE);
             artifactW.setOpaque(false);
+            setPaintState(EdgeWidget.GRAYED);
+            setReadable(false);
         }
     }
 
@@ -208,27 +212,47 @@ class ArtifactWidget extends Widget implements ActionListener {
         return Color.BLACK;
     }
 
-    void setGrayed (boolean grayed) {
-        if (this.grayed == grayed) {
+    void setPaintState (int state) {
+        if (this.paintState == state) {
             return;
         }
-        this.grayed = grayed;
+        this.paintState = state;
 
+        updatePaintContent();
+    }
+
+    int getPaintState () {
+        return paintState;
+    }
+
+    private void updatePaintContent() {
         if (origForeground == null) {
             origForeground = getForeground();
         }
 
-        Color c = grayed ? UIManager.getColor("textInactiveText") : origForeground;
-        if (c == null) {
-            c = Color.LIGHT_GRAY;
+        boolean isDisabled = paintState == EdgeWidget.DISABLED;
+
+        Color foreC = origForeground;
+        if (paintState == EdgeWidget.GRAYED || isDisabled) {
+            foreC = UIManager.getColor("textInactiveText");
+            if (foreC == null) {
+                foreC = Color.LIGHT_GRAY;
+            }
+            if (isDisabled) {
+                foreC = new Color ((int)(foreC.getAlpha() / 1.3f), foreC.getRed(),
+                        foreC.getGreen(), foreC.getBlue());
+            }
         }
 
-        contentW.setBorder(BorderFactory.createLineBorder(10, c));
-        artifactW.setForeground(c);
-        versionW.setForeground(c);
+        contentW.setBorder(BorderFactory.createLineBorder(10, foreC));
+        artifactW.setForeground(foreC);
+        versionW.setForeground(foreC);
         if (lockW != null) {
-            lockW.setPaintAsDisabled(grayed);
+            lockW.setPaintAsDisabled(paintState == EdgeWidget.GRAYED);
+            lockW.setVisible(!isDisabled);
         }
+
+        setToolTipText(paintState != EdgeWidget.DISABLED ? tooltipText : null);
 
         contentW.repaint();
     }
@@ -264,6 +288,11 @@ class ArtifactWidget extends Widget implements ActionListener {
     @Override
     protected void paintBackground() {
         super.paintBackground();
+
+        if (paintState == EdgeWidget.DISABLED) {
+            return;
+        }
+
         Graphics2D g = getScene().getGraphics();
         Rectangle bounds = getClientArea();
 
@@ -278,8 +307,8 @@ class ArtifactWidget extends Widget implements ActionListener {
             Color leftTopC = null;
             if (conflictType != ArtifactGraphNode.NO_CONFLICT) {
                 leftTopC = conflictType == ArtifactGraphNode.CONFLICT
-                        ? (grayed ? DISABLE_CONFLICT : CONFLICT)
-                        : (grayed ? DISABLE_WARNING : WARNING);
+                        ? (paintState == EdgeWidget.GRAYED ? DISABLE_CONFLICT : CONFLICT)
+                        : (paintState == EdgeWidget.GRAYED ? DISABLE_WARNING : WARNING);
             } else {
                 int state = node.getManagedState();
                 if (ArtifactGraphNode.OVERRIDES_MANAGED == state) {
@@ -375,16 +404,18 @@ class ArtifactWidget extends Widget implements ActionListener {
         boolean repaintNeeded = false;
         boolean updateNeeded = false;
 
-        if (!previousState.isHovered() && state.isHovered()) {
-            hoverTimer.restart();
-            repaintNeeded = true;
-        }
+        if (paintState != EdgeWidget.DISABLED) {
+            if (!previousState.isHovered() && state.isHovered()) {
+                hoverTimer.restart();
+                repaintNeeded = true;
+            }
 
-        if (previousState.isHovered() && !state.isHovered()) {
-            hoverTimer.stop();
-            repaintNeeded = true;
-            updateNeeded = enlargedFromHover;
-            enlargedFromHover = false;
+            if (previousState.isHovered() && !state.isHovered()) {
+                hoverTimer.stop();
+                repaintNeeded = true;
+                updateNeeded = enlargedFromHover;
+                enlargedFromHover = false;
+            }
         }
         
         if (previousState.isSelected() != state.isSelected()) {
@@ -397,10 +428,6 @@ class ArtifactWidget extends Widget implements ActionListener {
             repaint();
         }
 
-        if (previousState.isHighlighted() != state.isHighlighted()) {
-            System.out.println(node.getArtifact().getArtifact().getArtifactId() +
-                    " highlighted state changed: " + state.isHighlighted());
-        }
     }
 
     /*** ActionListener ***/

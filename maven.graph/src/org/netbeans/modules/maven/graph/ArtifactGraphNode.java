@@ -41,7 +41,6 @@ package org.netbeans.modules.maven.graph;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.netbeans.api.visual.widget.Widget;
 
 /**
  *
@@ -64,7 +63,7 @@ public class ArtifactGraphNode {
     double dispX;
     double dispY;
     private boolean fixed;
-    private Widget widget;
+    private ArtifactWidget widget;
     
     private boolean root;
     private HashSet<DependencyNode> dupl;
@@ -145,11 +144,11 @@ public class ArtifactGraphNode {
         return level;
     }
     
-    void setWidget(Widget wid) {
+    void setWidget(ArtifactWidget wid) {
         widget = wid;
     }
 
-    Widget getWidget() {
+    ArtifactWidget getWidget() {
         return widget;
     }
 
