@@ -53,6 +53,7 @@ public final class ScreenPropertyDescriptor {
     private DesignComponent relatedComponent;
     private JComponent relatedView;
     private Shape selectionShape;
+    private Point viewLocation;
     private ScreenPropertyEditor editor;
 
     public ScreenPropertyDescriptor (DesignComponent relatedComponent, JComponent relatedView, ScreenPropertyEditor editor) {
@@ -60,10 +61,15 @@ public final class ScreenPropertyDescriptor {
     }
 
     public ScreenPropertyDescriptor (DesignComponent relatedComponent, JComponent relatedView, Shape selectionShape, ScreenPropertyEditor editor) {
+        this(relatedComponent, relatedView, selectionShape, null, editor);
+    }
+
+    public ScreenPropertyDescriptor (DesignComponent relatedComponent, JComponent relatedView, Shape selectionShape, Point viewLocation, ScreenPropertyEditor editor) {
         assert relatedComponent != null  &&  relatedView != null  &&  selectionShape != null  &&  editor != null;
         this.relatedComponent = relatedComponent;
         this.relatedView = relatedView;
         this.selectionShape = selectionShape;
+        this.viewLocation = viewLocation;
         this.editor = editor;
     }
 
@@ -73,6 +79,10 @@ public final class ScreenPropertyDescriptor {
 
     public JComponent getRelatedView () {
         return relatedView;
+    }
+
+    public Point getViewLocation () {
+        return viewLocation;
     }
 
     public Shape getSelectionShape () {

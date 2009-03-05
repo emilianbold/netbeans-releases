@@ -51,6 +51,10 @@ import java.awt.*;
 public class SVGImageComponent extends JPanel {
 
     private SVGImage image;
+    private int originalVieportWidth;
+    private int originalVieportHeight;
+    private float scaleX = 1.0f;
+    private float scaleY = 1.0f;
 
     public SVGImageComponent () {
         setOpaque (false);
@@ -66,21 +70,56 @@ public class SVGImageComponent extends JPanel {
         if (old == image)
             return;
         this.image = image;
+        if (image != null) {
+            this.originalVieportWidth = image.getViewportWidth();
+            this.originalVieportHeight = image.getViewportHeight();
+        }
         firePropertyChange ("svg-image", old, image); // NOI18N
         repaint ();
     }
-
 
     @Override
     public void paint (Graphics g) {
         super.paint (g);
         if (image != null) {
-            image.setViewportHeight (getHeight ());
-            image.setViewportWidth (getWidth ());
+            
+            updateScale();
+            if (getHeight() < originalVieportHeight || getWidth() < originalVieportWidth) {
+                image.setViewportHeight(getHeight());
+                image.setViewportWidth(getWidth());
+            } else {
+                image.setViewportHeight(originalVieportHeight);
+                image.setViewportWidth(originalVieportWidth);
+            }
             ScalableGraphics gr = ScalableGraphics.createInstance ();
             gr.bindTarget (g);
-            gr.render (0, 0, image);
+            gr.render (0, 0 , image);
             gr.releaseTarget ();
+        }
+    }
+
+    public float getScaleX(){
+        return scaleX;
+    }
+
+    public float getScaleY(){
+        return scaleY;
+    }
+
+    private void updateScale() {
+        assert image != null;
+        if (getHeight() < originalVieportHeight || getWidth() < originalVieportWidth) {
+            scaleX =(float) getWidth() / (float) originalVieportWidth;
+            scaleY = (float) getHeight() / (float) originalVieportHeight;
+            /*
+            float sx =(float) getWidth() / (float) originalVieportWidth;
+            float sy = (float) getHeight() / (float) originalVieportHeight;
+            scaleX = Math.min(sx, sy);
+            scaleY = scaleX;
+             */
+        } else {
+            scaleX = 1.0f;
+            scaleY = 1.0f;
         }
     }
 }

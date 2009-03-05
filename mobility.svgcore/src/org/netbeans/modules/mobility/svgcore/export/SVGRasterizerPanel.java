@@ -295,9 +295,9 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
                 if (elem != null && elem instanceof SVGLocatableElement) {
                     m_exportedElement = (SVGLocatableElement) elem;
                     SVGRect bBox = m_exportedElement.getBBox();
-                    SVGMatrix screenCTM = m_exportedElement.getScreenCTM();
-                    float [][] coords = SVGObjectOutline.transformRectangle(bBox, (Transform) screenCTM, new float[4][2]);
-                    Rectangle rect1 = SVGObjectOutline.getShapeBoundingBox(coords);
+                    //SVGMatrix screenCTM = m_exportedElement.getScreenCTM();
+                    //float [][] coords = SVGObjectOutline.transformRectangle(bBox, (Transform) screenCTM, new float[4][2]);
+                    //Rectangle rect1 = SVGObjectOutline.getShapeBoundingBox(coords);
                     
                     // svg -> screen
                     SVGMatrix svgCTM = svg.getScreenCTM();
@@ -311,7 +311,8 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
                     // elt-> svg matrix
                     SVGMatrix eltToSvg = svgICTM.mMultiply(eltCTM);
             
-                    coords = SVGObjectOutline.transformRectangle(m_exportedElement.getBBox(),
+                    float [][] coords = SVGObjectOutline.transformRectangle(
+                            m_exportedElement.getBBox(),
                             (Transform) eltToSvg, new float[4][2]);
                     Rectangle rect2 = SVGObjectOutline.getShapeBoundingBox(coords);
                     
