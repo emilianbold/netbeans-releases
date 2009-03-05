@@ -168,6 +168,7 @@ public class SvnHookImpl extends SvnHook {
         }
 
         issue.addComment(msg, panel.resolveCheckBox.isSelected());
+        issue.open();
         LOG.log(Level.FINE, "svn commit hook end for " + file);                 // NOI18N
     }
 

@@ -166,6 +166,7 @@ public class HgHookImpl extends HgHook {
         }
         if(panel.commitRadioButton.isSelected()) {
             issue.addComment(msg, panel.resolveCheckBox.isSelected());
+            issue.open();
         } else {
             VCSHooksConfig.getInstance().setHgPushAction(context.getLogEntries()[0].getChangeset(), new PushAction(issue.getID(), msg, panel.resolveCheckBox.isSelected()));
             LOG.log(Level.FINE, "schedulig issue  " + file);                    // NOI18N
