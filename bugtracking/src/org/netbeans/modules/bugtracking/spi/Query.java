@@ -63,7 +63,8 @@ public abstract class Query implements Comparable<Query> {
     public static Filter FILTER_ALL = new AllFilter();
     public static Filter FILTER_NOT_SEEN = new NotSeenFilter();
     public Filter FILTER_NEW = new NewFilter(this);
-    public Filter FILTER_OUTOFDATE = new OutOfDateFilter(this);
+    public Filter FILTER_OBSOLETE = new ObsoleteDateFilter(this);
+    public Filter FILTER_ALL_BUT_OBSOLETE = new AllButObsoleteDateFilter(this);
 
     /**
      * querie issues list was changed
@@ -119,7 +120,8 @@ public abstract class Query implements Comparable<Query> {
             FILTER_ALL,
             FILTER_NEW,
             FILTER_NOT_SEEN,
-            new OutOfDateFilter(this)
+            new ObsoleteDateFilter(this),
+            FILTER_ALL_BUT_OBSOLETE
         };    
     }
 
@@ -366,19 +368,34 @@ public abstract class Query implements Comparable<Query> {
             return query.getIssueStatus(issue) == Issue.ISSUE_STATUS_NEW;
         }
     }
-    private static class OutOfDateFilter extends Filter {
+    private static class ObsoleteDateFilter extends Filter {
         private final Query query;
 
-        public OutOfDateFilter(Query query) {
+        public ObsoleteDateFilter(Query query) {
             this.query = query;
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_RemovedIssuesFilter");
+            return NbBundle.getMessage(Query.class, "LBL_ObsoleteIssuesFilter");
         }
         @Override
         public boolean accept(Issue issue) {
             return !query.contains(issue);
+        }
+    }
+    private static class AllButObsoleteDateFilter extends Filter {
+        private final Query query;
+
+        public AllButObsoleteDateFilter(Query query) {
+            this.query = query;
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(Query.class, "LBL_AllButObsoleteIssuesFilter");
+        }
+        @Override
+        public boolean accept(Issue issue) {
+            return query.contains(issue);
         }
     }
 
