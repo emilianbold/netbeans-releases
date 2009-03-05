@@ -48,6 +48,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
+import org.netbeans.modules.hudson.impl.HudsonJobBuild;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
 import org.openide.util.RequestProcessor;
@@ -86,7 +87,14 @@ public class ShowChanges extends AbstractAction implements Runnable {
         io.select();
         OutputWriter out = io.getOut();
         OutputWriter err = io.getErr();
-        Collection<? extends HudsonJobChangeItem> changes = instance.getConnector().getJobBuild(job, buildNumber).getChanges();
+        HudsonJobBuild build = instance.getConnector().getJobBuild(job, buildNumber);
+        if (build == null) {
+            out.println("Could not retrieve build information."); // XXX I18N
+            out.close();
+            err.close();
+            return;
+        }
+        Collection<? extends HudsonJobChangeItem> changes = build.getChanges();
         boolean first = true;
         for (HudsonJobChangeItem item : changes) {
             if (first) {
