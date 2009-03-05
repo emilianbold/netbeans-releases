@@ -39,10 +39,7 @@
 package org.netbeans.modules.dlight.sync;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
@@ -59,6 +56,7 @@ import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
@@ -72,9 +70,11 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
     private static final String TOOL_NAME = loc("SyncTool.ToolName"); // NOI18N
 
-    private static final boolean USE_SUNSTUDIO = Boolean.getBoolean("gizmo.cpu.sunstudio"); // NOI18N
-    private static final boolean USE_PRSTAT = Util.getBoolean("gizmo.sync.prstat", true); // NOI18N
-    private static final boolean redirectStdErr = Util.getBoolean("dlight.sync.log.stderr", false); // NOI18N
+    private static final String SUNSTUDIO = "sunstudio"; // NOI18N
+    private static final String PRSTAT_DTRACE = "prstat+dtrace"; // NOI18N
+    private static final String LLTOOL = "lltool"; // NOI18N
+    private static final String COLLECTOR =
+            System.getProperty("dlight.sync.collector", PRSTAT_DTRACE); // NOI18N
     
     private static final Column timestampColumn = 
         new Column("timestamp", Long.class, loc("SyncTool.ColumnName.timestamp"), null); // NOI18N
@@ -122,12 +122,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private DataCollectorConfiguration initDataCollectorConfiguration() {
         DataCollectorConfiguration result = null;
 
-        if (USE_SUNSTUDIO) {
-            // SunStudio should collect detailed data about locks ...
-            // create a configuration that will collect CollectedInfo.SYNCHRONIZARION
+        if (COLLECTOR.equals(PRSTAT_DTRACE)) {
 
-            result = new SunStudioDCConfiguration(CollectedInfo.SYNCHRONIZARION);
-        } else {
             String scriptFile = Util.copyResource(getClass(),
                     Util.getBasePath(getClass()) + "/resources/sync.d"); // NOI18N
 
@@ -139,6 +135,11 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
             result = new MultipleDTDCConfiguration(
                     dataCollectorConfiguration, "sync:"); // NOI18N
+           
+        } else if (COLLECTOR.equals(SUNSTUDIO)) {
+            result = new SunStudioDCConfiguration(CollectedInfo.SYNCHRONIZARION);
+        } else if (COLLECTOR.equals(LLTOOL)) {
+            result = new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.SYNC);
         }
 
         return result;
@@ -147,14 +148,19 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private IndicatorConfiguration initIndicatorConfiguration() {
         VisualizerConfiguration vc = null;
         IndicatorMetadata indicatorMetadata = null;
-        if (USE_SUNSTUDIO) {
+
+        if (COLLECTOR.equals(PRSTAT_DTRACE)) {
+
+            indicatorMetadata = new IndicatorMetadata(Arrays.asList(locksColumn));
+            vc = getDetails(rawTableMetadata);
+
+        } else if (COLLECTOR.equals(SUNSTUDIO)) {
             // SunStudio data provider is already configured to get data
             // about locks summary.
             // In indicator we want to display data from c_ulockSummary column
 
             indicatorMetadata = new IndicatorMetadata(
                     Arrays.asList(SunStudioDCConfiguration.c_ulockSummary));
-
 
             // Then configure what happens when user clicks on the indicator...
             // configure metadata for the detailed view ...
@@ -165,9 +171,12 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
                     SunStudioDCConfiguration.c_iSyncn);
 
             vc = new TableVisualizerConfiguration(detailedViewTableMetadata);
-        } else {
-            indicatorMetadata = new IndicatorMetadata(Arrays.asList(locksColumn));
-            vc = getDetails(rawTableMetadata);
+
+        } else if (COLLECTOR.equals(LLTOOL)) {
+
+            indicatorMetadata = new IndicatorMetadata(
+                    LLDataCollectorConfiguration.SYNC_TABLE.getColumns());
+
         }
 
         SyncIndicatorConfiguration indicatorConfiguration =
@@ -179,90 +188,25 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     }
 
     private IndicatorDataProviderConfiguration initIndicatorDataProviderConfiguration() {
+
         IndicatorDataProviderConfiguration lockIndicatorDataProvider = null;
 
-        if (USE_SUNSTUDIO) {
-            // SunStudio should provide information about locks to display in
-            // indicator...
-            // Create data collector configuration that will provide such an
-            // information...
+        if (COLLECTOR.equals(PRSTAT_DTRACE)) {
 
-            lockIndicatorDataProvider = new SunStudioDCConfiguration(CollectedInfo.SYNCSUMMARY);
-        } else {
             final DataTableMetadata indicatorTableMetadata = new DataTableMetadata("locks", Arrays.asList(locksColumn));
             List<DataTableMetadata> indicatorTablesMetadata = Arrays.asList(indicatorTableMetadata);
-            if (USE_PRSTAT) {
-                lockIndicatorDataProvider = new CLIODCConfiguration(
-                        "/bin/prstat", "-mv -p @PID -c 1", // NOI18N
-                        new SyncCLIOParser(locksColumn), indicatorTablesMetadata);
-            } else {
-                String monitor = NativeToolsUtil.getExecutable("smonitor");
-                String envVar = NativeToolsUtil.getLdPreloadEnvVarName();
-                String agent = NativeToolsUtil.getSharefLibrary("sagent");
-                DLightLogger.instance.fine("Sync Indicator:\n\tmonitor: " + monitor + "\n\tagent: " + agent + "\n\n"); // NOI18N
-                if (monitor != null && agent != null) {
-                    CLIODCConfiguration clioCollectorConfiguration =
-                            new CLIODCConfiguration(monitor,
-                            " @PID " + (redirectStdErr ? " 2>/tmp/smonitor.err" : ""), // NOI18N
-                            new SAgentClioParser(locksColumn),
-                            Arrays.asList(indicatorTableMetadata));
-                    Map<String, String> env = new LinkedHashMap<String, String>();
-                    env.put(envVar, agent);
+            lockIndicatorDataProvider = new CLIODCConfiguration(
+                    "/bin/prstat", "-mv -p @PID -c 1", // NOI18N
+                    new SyncCLIOParser(locksColumn), indicatorTablesMetadata);
 
-                    DLightLogger.instance.fine("SET " + envVar + "=" + agent);//NOI18N
-
-                    clioCollectorConfiguration.setDLightTargetExecutionEnv(env);
-                    lockIndicatorDataProvider = clioCollectorConfiguration;
-                }
-            }
+        } else if (COLLECTOR.equals(SUNSTUDIO)) {
+            lockIndicatorDataProvider = new SunStudioDCConfiguration(CollectedInfo.SYNCSUMMARY);
+        } else if (COLLECTOR.equals(LLTOOL)) {
+            lockIndicatorDataProvider = new LLDataCollectorConfiguration(
+                    LLDataCollectorConfiguration.CollectedData.SYNC);
         }
 
         return lockIndicatorDataProvider;
-    }
-
-    private static class SAgentClioParser implements CLIOParser {
-
-            private List<String> colNames;
-            private float prev;
-
-            public SAgentClioParser(Column totalColumn) {
-                colNames = Arrays.asList(totalColumn.getColumnName());
-                prev = 0;
-            }
-
-            public DataRow process(String line) {
-                DLightLogger.instance.fine(getClass().getSimpleName() + ": " + line); //NOI18N
-                if (line == null) {
-                    return null;
-                }
-                line = line.trim();
-                if (!Character.isDigit(line.charAt(0))) {
-                    return null;
-                }
-                try {
-                    String l = line.trim();
-                    l = l.replaceAll(",", "."); // NOI18N
-                    String[] tokens = l.split("[ \t]+"); // NOI18N
-
-                    float curr = Float.parseFloat(tokens[0]);
-                    int threads = Integer.parseInt(tokens[1]);
-                    float delta = curr - prev;
-                    float res = delta * 100 / threads;
-                    DLightLogger.instance.fine(getClass().getSimpleName() +
-                            ": curr=" + curr + " threads=" + threads + //NOI18N
-                            " delta=" + delta + " res=" + res); //NOI18N
-                    return new DataRow(colNames, Arrays.asList(Float.valueOf(res)));
-                } catch (NumberFormatException e) {
-                    DLightLogger.instance.log(Level.WARNING, e.getMessage(), e);
-                }
-                return null;
-            }
-
-            int parseInt(String s) throws NumberFormatException {
-                DLightLogger.assertTrue(s != null);
-                return Integer.parseInt(s);
-            }
-
     }
 
     private static class SyncCLIOParser implements CLIOParser {
@@ -316,9 +260,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
                 new Column("time", Long.class, "Time, ms", null),
                 new Column("count", Long.class, "Count", null));
 
-        if (USE_SUNSTUDIO) {
-            viewTableMetadata = new DataTableMetadata("sync", viewColumns, null, Arrays.asList(rawTableMetadata));
-        } else {
+        if (COLLECTOR.equals(PRSTAT_DTRACE)) {
 
             String sql = "SELECT func.func_name as func_name, SUM(sync.time/1000000) as time, COUNT(*) as count" +
                     " FROM sync, node AS node, func" +
@@ -326,6 +268,10 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
                     " GROUP BY node.func_id, func.func_name";
 
             viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));
+        } else if (COLLECTOR.equals(SUNSTUDIO)) {
+            viewTableMetadata = new DataTableMetadata("sync", viewColumns, null, Arrays.asList(rawTableMetadata));
+        } else {
+            return null;
         }
 
         TableVisualizerConfiguration tableVisualizerConfiguration =
