@@ -6,6 +6,13 @@
             <code-name-base>org.netbeans.modules.web.kit</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.glassfish.javaee</code-name-base>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.ant</code-name-base>
                     <run-dependency>
                         <specification-version>1.9</specification-version>
@@ -32,9 +39,43 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.jboss4</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.12</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.persistence.kit</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.samples</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.sun.appsrv81</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.7</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.weblogic9</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.websphere6</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -44,9 +85,16 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.j2ee.samples</code-name-base>
+                    <code-name-base>org.netbeans.modules.tomcat5</code-name-base>
                     <run-dependency>
-                        <specification-version>1.1</specification-version>
+                        <release-version>1</release-version>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.client.javascript.debugger.ant</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -64,16 +112,16 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.web.fake</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.web.examples</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.7</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.fake</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -106,12 +154,6 @@
                     <code-name-base>org.netbeans.modules.web.refactoring</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-		<dependency>
-                    <code-name-base>org.netbeans.modules.web.client.javascript.debugger.ant</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.6</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
