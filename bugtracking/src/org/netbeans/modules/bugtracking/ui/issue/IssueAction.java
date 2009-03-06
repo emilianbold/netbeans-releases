@@ -82,7 +82,10 @@ public class IssueAction extends SystemAction {
     public static void openIssue(final Issue issue, final Repository repository) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                TopComponent tc = IssueTopComponent.find(issue);
+                TopComponent tc = null;
+                if(issue != null) {
+                    tc = IssueTopComponent.find(issue);
+                }
                 if(tc == null) {
                     tc = new IssueTopComponent(repository);
                 }

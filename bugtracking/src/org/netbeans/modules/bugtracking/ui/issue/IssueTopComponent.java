@@ -136,7 +136,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             }
         });
 
-        issuePanel.setVisible(false);
+//        issuePanel.setVisible(false);
     }
 
     /**
@@ -206,33 +206,35 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         repoPanelLayout.setHorizontalGroup(
             repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(repoPanelLayout.createSequentialGroup()
+                .addContainerGap()
                 .add(repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(repoPanelLayout.createSequentialGroup()
                         .add(repoLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(repositoryComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 225, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(findIssuesLabel))
-                .addContainerGap(110, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(90, Short.MAX_VALUE))
         );
         repoPanelLayout.setVerticalGroup(
             repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(repoPanelLayout.createSequentialGroup()
-                .add(13, 13, 13)
+                .add(50, 50, 50)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(repoPanelLayout.createSequentialGroup()
+                .addContainerGap()
                 .add(findIssuesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(repoLabel)
                     .add(repositoryComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-            .add(repoPanelLayout.createSequentialGroup()
-                .add(50, 50, 50)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
+        issuePanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
         issuePanel.setLayout(new java.awt.BorderLayout());
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -247,7 +249,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             .add(layout.createSequentialGroup()
                 .add(repoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE))
+                .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -280,7 +282,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 final BugtrackingController c = issue.getController();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        issuePanel.add(c.getComponent());
+                        issuePanel.add(c.getComponent(), BorderLayout.CENTER);
                         issue.addPropertyChangeListener(IssueTopComponent.this);
                         revalidate();
                         repaint();
@@ -335,13 +337,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private void setNameAndTooltip() throws MissingResourceException {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if(issue != null && issue.getDisplayName() != null) {
-                    setName(NbBundle.getMessage(IssueTopComponent.class, "LBL_IssueName", new Object[]{issue.getDisplayName()}));
-                    setToolTipText(NbBundle.getMessage(IssueTopComponent.class, "LBL_IssueName", new Object[]{issue.getTooltip()}));
-                } else {
-                    setName(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent"));
-                    setToolTipText(NbBundle.getMessage(IssueTopComponent.class, "HINT_IssueTopComponent"));
-                }
+                setName(issue.getDisplayName());
+                setToolTipText(issue.getTooltip());
             }
         });
     }

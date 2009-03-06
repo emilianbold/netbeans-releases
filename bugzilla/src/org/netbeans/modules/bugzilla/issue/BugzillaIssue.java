@@ -179,6 +179,18 @@ public class BugzillaIssue extends Issue {
         this.repository = repo;
     }
 
+    @Override
+    public String getDisplayName() {
+        return data.isNew() ?
+                NbBundle.getMessage(BugzillaIssue.class, "CTL_NewIssue") :
+                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()});
+    }
+
+    @Override
+    public String getTooltip() {
+        return getDisplayName();
+    }
+
     public static ColumnDescriptor[] getColumnDescriptors() {
         if(DESCRIPTORS == null) {
             ResourceBundle loc = NbBundle.getBundle(BugzillaIssue.class);

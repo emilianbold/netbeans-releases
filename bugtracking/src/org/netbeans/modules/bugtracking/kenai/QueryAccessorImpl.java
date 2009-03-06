@@ -53,6 +53,7 @@ import java.util.Set;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
@@ -134,6 +135,25 @@ public class QueryAccessorImpl extends QueryAccessor {
         };
     }
 
+
+    @Override
+    public ActionListener getCreateIssueAction(ProjectHandle project) {
+        final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
+        if(repo == null) {
+            return null;
+        }
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() { // XXX add post method to BM
+                    public void run() {
+                        IssueAction.openIssue(null, repo);
+                    }
+                });
+            }
+        };
+    }
+
+
     @Override
     public ActionListener getOpenQueryResultAction(QueryResultHandle result) {
         if(result instanceof QueryResultHandle) {
@@ -155,16 +175,6 @@ public class QueryAccessorImpl extends QueryAccessor {
     void fireQueriesChanged(ProjectHandle project, List<QueryHandle> newQueryList) {
         fireQueryListChanged(project, newQueryList);
     }
-    
-    @Override
-    public ActionListener getCreateIssueAction(ProjectHandle project) {
-        final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
-        if(repo == null) {
-            return null;
-        }
-        return null;
-    }
-
     
     private class ProjectHandleListener implements PropertyChangeListener {
         private ProjectHandle ph;

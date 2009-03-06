@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.openide.util.NbBundle;
@@ -126,17 +127,13 @@ public abstract class Issue {
      * Returns this issues display name
      * @return
      */
-    public String getDisplayName() {
-        return NbBundle.getMessage(Issue.class, "LBL_Issue") + " " +  getID(); // NOI18N
-    }
+    public abstract String getDisplayName();
 
     /**
      * Returns this issues tooltip
      * @return
      */
-    public String getTooltip() {
-        return NbBundle.getMessage(Issue.class, "LBL_Issue") + " " + getID() + " : " + getSummary(); // NOI18N
-    }
+    public abstract String getTooltip();
 
     /**
      * Refreshes this Issues data from its bugtracking repositry
