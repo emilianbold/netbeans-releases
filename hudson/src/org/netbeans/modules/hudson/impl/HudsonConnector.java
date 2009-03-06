@@ -215,7 +215,7 @@ public class HudsonConnector {
                     if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
                         name = o.getFirstChild().getTextContent();
                     } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                        url = Utilities.getURLWithoutSpaces(o.getFirstChild().getTextContent());
+                        url = o.getFirstChild().getTextContent();
                     }
                 }
             }
@@ -282,7 +282,7 @@ public class HudsonConnector {
                     if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
                         job.putProperty(JOB_NAME, o.getFirstChild().getTextContent());
                     } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                        job.putProperty(JOB_URL, Utilities.getURLWithoutSpaces(o.getFirstChild().getTextContent()));
+                        job.putProperty(JOB_URL, o.getFirstChild().getTextContent());
                     } else if (o.getNodeName().equals(XML_API_COLOR_ELEMENT)) {
                         String color = o.getFirstChild().getTextContent().trim();
                         try {

@@ -43,7 +43,6 @@ import java.awt.event.ActionEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -53,6 +52,7 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
+import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -97,12 +97,12 @@ public class CreateJob extends AbstractAction {
             Document doc = creator.configure();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
-            String createItemURL = instance.getUrl() + "createItem?name=" + URLEncoder.encode(name, "UTF-8"); // NOI18N
+            String createItemURL = instance.getUrl() + "createItem?name=" + Utilities.uriEncode(name); // NOI18N
             new ConnectionBuilder().instance(instance).url(createItemURL).
                     header("Content-Type", "text/xml").
                     postData(baos.toByteArray()).
                     httpConnection().disconnect();
-            URLDisplayer.getDefault().showURL(new URL(instance.getUrl() + "job/" + URLEncoder.encode(name, "UTF-8") + "/")); // NOI18N
+            URLDisplayer.getDefault().showURL(new URL(instance.getUrl() + "job/" + Utilities.uriEncode(name) + "/")); // NOI18N
             instance.synchronize();
             ProjectHudsonProvider.getDefault().recordAssociation(project,
                     new ProjectHudsonProvider.Association(instance.getUrl(), name));
