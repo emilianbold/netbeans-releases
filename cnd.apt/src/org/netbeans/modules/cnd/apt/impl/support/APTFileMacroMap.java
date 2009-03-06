@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
  * requests about macros if not found in own macro map
  * @author Vladimir Voskresensky
  */
-public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
+public class APTFileMacroMap extends APTBaseMacroMap {
     private APTMacroMap sysMacroMap;
     private Map<String,APTMacro> macroCache = new HashMap<String,APTMacro>();
 
