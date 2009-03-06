@@ -119,7 +119,8 @@ public class UserNode extends LeafNode {
             lblProgress.setVisible(loadingCounter > 0);
             btnRefresh.setVisible(loadingCounter <= 0 && projectsAvailable || null != login);
         }
-        lblUser.setText( login.getUserName() );
+        if( null != login )
+            lblUser.setText( login.getUserName() );
         btnLogin.setVisible( null == login );
         lblUser.setVisible( null != login );
         return panel;
