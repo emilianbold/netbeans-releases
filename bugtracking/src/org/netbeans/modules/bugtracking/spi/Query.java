@@ -60,7 +60,7 @@ public abstract class Query implements Comparable<Query> {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    public static Filter FILTER_ALL = new AllFilter();
+    public Filter FILTER_ALL = new AllFilter(this);
     public static Filter FILTER_NOT_SEEN = new NotSeenFilter();
     public Filter FILTER_NEW = new NewFilter(this);
     public Filter FILTER_OBSOLETE = new ObsoleteDateFilter(this);
@@ -335,13 +335,17 @@ public abstract class Query implements Comparable<Query> {
     }
 
     private static class AllFilter extends Filter {
+        private final Query query;
+        public AllFilter(Query query) {
+            this.query = query;
+        }
         @Override
         public String getDisplayName() {
             return NbBundle.getMessage(Query.class, "LBL_AllIssuesFilter");
         }
         @Override
         public boolean accept(Issue issue) {
-            return true;
+            return query.contains(issue) || !issue.wasSeen();
         }
     }
     private static class NotSeenFilter extends Filter {

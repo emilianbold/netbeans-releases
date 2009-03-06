@@ -60,6 +60,7 @@ import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.api.progress.ProgressHandle;
@@ -74,7 +75,6 @@ import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -107,6 +107,22 @@ public class BugzillaRepository extends Repository {
     public Query createQuery() {
         BugzillaQuery q = new BugzillaQuery(this);        
         return q;
+    }
+
+    @Override
+    public Issue createIssue() {
+        TaskAttributeMapper attributeMapper =
+                Bugzilla.getInstance()
+                    .getRepositoryConnector()
+                    .getTaskDataHandler()
+                    .getAttributeMapper(taskRepository);
+        TaskData data =
+                new TaskData(
+                    attributeMapper,
+                    taskRepository.getConnectorKind(),
+                    taskRepository.getRepositoryUrl(),
+                    "");
+        return new BugzillaIssue(data, this);
     }
 
     @Override
@@ -269,11 +285,6 @@ public class BugzillaRepository extends Repository {
     @Override
     public Image getIcon() {
         return null;
-    }
-
-    @Override
-    public Issue createIssue() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     private class Controller extends BugtrackingController implements DocumentListener, ActionListener {

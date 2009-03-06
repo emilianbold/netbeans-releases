@@ -52,6 +52,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.vcshooks.VCSHooksConfig.Format;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
 import org.netbeans.modules.subversion.hooks.spi.SvnHookContext.LogEntry;
@@ -86,7 +87,8 @@ public class SvnHookImpl extends SvnHook {
         if(panel.addIssueCheckBox1.isSelected()) {
             String msg = context.getMessage();
 
-            String formatString = VCSHooksConfig.getInstance().getSvnIssueFormat().getFormat();
+            final Format format = VCSHooksConfig.getInstance().getSvnIssueFormat();
+            String formatString = format.getFormat();
             formatString = formatString.replaceAll("\\{id\\}", "\\{0\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{summary\\}", "\\{1\\}");    // NOI18N
 
@@ -101,8 +103,11 @@ public class SvnHookImpl extends SvnHook {
                     null).toString();
 
             LOG.log(Level.FINER, " svn commit hook issue info '" + issueInfo + "'");     // NOI18N
-            // XXX check before/after
-            msg = msg + "\n" + issueInfo;
+            if(format.isAbove()) {
+                msg = issueInfo + "\n" + msg;
+            } else {
+                msg = msg + "\n" + issueInfo;
+            }
 
             context = new SvnHookContext(context.getFiles(), msg, context.getLogEntries());
             return context;

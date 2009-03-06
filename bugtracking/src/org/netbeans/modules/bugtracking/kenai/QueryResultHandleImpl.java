@@ -89,7 +89,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 return new QueryResultHandleImpl(
                         query,
                         totalFormat.format(new Object[] {issues != null ? issues.length : 0}, new StringBuffer(), null).toString(),
-                        Query.FILTER_ALL);
+                        query.FILTER_ALL);
 
             case Issue.ISSUE_STATUS_NOT_SEEN:
 

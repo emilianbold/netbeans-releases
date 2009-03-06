@@ -262,10 +262,12 @@ public class IssuePanel extends javax.swing.JPanel {
                     statuses.addAll(closedStatuses);
                 } else {
                     statuses.add(resolved);
-                    for (int i=allStatuses.indexOf(status); i<allStatuses.size(); i++) {
-                        String s = allStatuses.get(i);
-                        if (!openStatuses.contains(s)) {
-                            statuses.add(s);
+                    if(!status.equals("")) {
+                        for (int i=allStatuses.indexOf(status); i<allStatuses.size(); i++) {
+                            String s = allStatuses.get(i);
+                            if (!openStatuses.contains(s)) {
+                                statuses.add(s);
+                            }
                         }
                     }
                 }

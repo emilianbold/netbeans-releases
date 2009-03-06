@@ -41,6 +41,7 @@ package org.netbeans.modules.mercurial.api;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 
 /**
@@ -50,7 +51,9 @@ import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 public class Mercurial {
 
     /**
-     * Clones the given repository to the given directory.
+     * Clones the given repository to the given directory. The method blocks
+     * until the whole chcekout is done. Do not call in AWT.
+     * 
      * @param  repositoryUrl  URL of the Mercurial repository to be cloned
      * @param  targetDir  target where  cloned repository should be created
      * @param  cloneName  name of the cloned repository
@@ -63,6 +66,7 @@ public class Mercurial {
                                        String cloneName,
                                        String defaultPull,
                                        String defaultPush) throws MalformedURLException {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
         cloneRepository(repositoryUrl,
                         targetDir,
                         cloneName,
@@ -73,7 +77,9 @@ public class Mercurial {
     }
 
     /**
-     * Clones the given repository to the given directory.
+     * Clones the given repository to the given directory. The method blocks
+     * until the whole chcekout is done. Do not call in AWT.
+     *
      * @param  repositoryUrl  URL of the Mercurial repository to be cloned
      * @param  targetDir  target where  cloned repository should be created
      * @param  cloneName  name of the cloned repository
@@ -91,6 +97,7 @@ public class Mercurial {
                                        String username,
                                        String password)
             throws MalformedURLException {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
 
         File cloneFile = new File(targetDir, cloneName);
         CloneAction.performClone(repositoryUrl,

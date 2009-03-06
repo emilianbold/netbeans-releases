@@ -52,6 +52,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.vcshooks.VCSHooksConfig.Format;
 import org.netbeans.modules.bugtracking.vcshooks.VCSHooksConfig.PushAction;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
@@ -86,8 +87,9 @@ public class HgHookImpl extends HgHook {
 
         if(panel.addIssueCheckBox1.isSelected()) {
             String msg = context.getMessage();
-            
-            String formatString = VCSHooksConfig.getInstance().getHgIssueFormat().getFormat();
+
+            Format format = VCSHooksConfig.getInstance().getHgIssueFormat();
+            String formatString = format.getFormat();
             formatString = formatString.replaceAll("\\{id\\}", "\\{0\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{summary\\}", "\\{1\\}");    // NOI18N
             
@@ -102,8 +104,11 @@ public class HgHookImpl extends HgHook {
                     null).toString();
 
             LOG.log(Level.FINER, " svn commit hook issue info '" + issueInfo + "'");     // NOI18N
-            // XXX check before/after
-            msg = msg + "\n" + issueInfo;
+            if(format.isAbove()) {
+                msg = issueInfo + "\n" + msg;
+            } else {
+                msg = msg + "\n" + issueInfo;
+            }
             
             context = new HgHookContext(context.getFiles(), msg, context.getLogEntries());
             return context;
