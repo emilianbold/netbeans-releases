@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,53 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.junit.output;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
+import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.TestSuite;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Marian Petras
+ * @author answer
  */
-final class JumpAction extends AbstractAction {
+public class JUnitTestSuite extends TestSuite{
+    private final TestSession session;
+    private FileObject suiteFO = null;
 
-    /** */
-    private final Node node;
-    /** */
-    private final String callstackFrameInfo;
-
-    /** Creates a new instance of JumpAction */
-    public JumpAction(Node node, String callstackFrameInfo) {
-        this.node = node;
-        this.callstackFrameInfo = callstackFrameInfo;
+    public JUnitTestSuite(String name, TestSession session) {
+        super(name);
+        this.session = session;
     }
 
-    /**
-     * If the <code>callstackFrameInfo</code> is not <code>null</code>,
-     * tries to jump to the callstack frame source code. Otherwise does nothing.
-     */
-    public void actionPerformed(ActionEvent e) {
-        if (node instanceof TestsuiteNode){
-            OutputUtils.openTestsuite((TestsuiteNode)node);
-        } else {
-            OutputUtils.openCallstackFrame(node, callstackFrameInfo);
+    FileObject getSuiteFO(){
+        if (suiteFO == null){
+            FileLocator locator = session.getFileLocator();
+            if (locator != null){
+                suiteFO = locator.find(getName() + ".java"); //NOI18N
+            }
         }
+        return suiteFO;
     }
-
-    @Override
-    public Object getValue(String key) {
-        if (key.equals(Action.NAME)) {
-            return NbBundle.getMessage(JumpAction.class, "LBL_GotoSource"); //NOI18N
-        }else{
-            return super.getValue(key);
-        }
-    }
-
 }

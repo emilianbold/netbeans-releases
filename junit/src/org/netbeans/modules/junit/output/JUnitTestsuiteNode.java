@@ -67,7 +67,7 @@ public class JUnitTestsuiteNode extends TestsuiteNode{
 
     @Override
     public Action getPreferredAction() {
-        return null;
+        return new JumpAction(this, null);
     }
 
 }

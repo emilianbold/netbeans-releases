@@ -385,7 +385,7 @@ final class XmlOutputParser extends DefaultHandler {
         int timeMillis = regexp.parseTimeMillisNoNFE(timeStr);
         
         /* Create a report: */
-        TestSuite testSuite = new TestSuite(suiteName);
+        TestSuite testSuite = new JUnitTestSuite(suiteName, testSession);
 //        report.totalTests = numbers[0];
 //        report.failures = numbers[1];
 //        report.errors = numbers[2];
@@ -444,7 +444,7 @@ final class XmlOutputParser extends DefaultHandler {
     }
 
     private void addStackTraceLine(Trouble tr, String line, boolean validateST){
-        if ((tr == null) || (line == null) || (line.isEmpty()) || (line.equals("null"))){ //NOI18N
+        if ((tr == null) || (line == null) || (line.length() == 0) || (line.equals("null"))){ //NOI18N
             return;
         }
 

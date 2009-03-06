@@ -43,9 +43,11 @@ package org.netbeans.modules.junit.output;
 
 import javax.swing.Action;
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
+import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.junit.wizards.Utils;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /**
@@ -59,8 +61,17 @@ final class OutputUtils {
     private OutputUtils() {
     }
 
-    /**
-     */
+    static void openTestsuite(TestsuiteNode node) {
+        Children childrens  = node.getChildren();
+        if (childrens != null){
+            Node child = childrens.getNodeAt(0);
+            if ((child != null) && (child instanceof JUnitTestMethodNode)){
+                JUnitTestcase testcase = ((JUnitTestMethodNode)child).getTestcase();
+                Utils.openFile(testcase.getTestSuite().getSuiteFO(), -1); 
+            }
+        }
+    }
+
     static void openCallstackFrame(Node node, String frameInfo) {
             JUnitTestMethodNode methodNode = getTestMethodNode(node);
             FileLocator locator =  methodNode.getTestcase().getSession().getFileLocator();

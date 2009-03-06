@@ -41,7 +41,6 @@ package org.netbeans.modules.junit.output;
 
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
-import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.openide.filesystems.FileObject;
 
@@ -50,15 +49,15 @@ import org.openide.filesystems.FileObject;
  * @author answer
  */
 class JUnitTestcase extends Testcase{
-    private TestSuite testSuite;
+    private JUnitTestSuite testSuite;
     private FileObject classFO = null;
 
     public JUnitTestcase(String name, String type, TestSession session) {
         super(name, type, session);
-        testSuite = session.getCurrentSuite();
+        testSuite = (JUnitTestSuite)session.getCurrentSuite();
     }
 
-    public TestSuite getTestSuite() {
+    public JUnitTestSuite getTestSuite() {
         return testSuite;
     }
 

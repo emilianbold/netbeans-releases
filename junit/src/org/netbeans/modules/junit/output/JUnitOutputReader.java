@@ -589,7 +589,7 @@ final class JUnitOutputReader {
      */
     private void suiteStarted(final String suiteName) {
         closePereviousReport();
-        TestSuite suite = new TestSuite(suiteName);
+        TestSuite suite = new JUnitTestSuite(suiteName, testSession);
         if (classpath != null){
 //            suite.setClassPath(classpath, platformSources);
         }
@@ -797,7 +797,7 @@ final class JUnitOutputReader {
 
     private void addStackTraceLine(Testcase testcase, String line, boolean validateST){
         Trouble trouble = testcase.getTrouble();
-        if ((trouble == null) || (line == null) || (line.isEmpty()) || (line.equals("null"))){  //NOI18N
+        if ((trouble == null) || (line == null) || (line.length() == 0) || (line.equals("null"))){  //NOI18N
             return;
         }
 

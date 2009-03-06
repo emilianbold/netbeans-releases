@@ -366,13 +366,13 @@ public final class JUnitAntLogger extends AntLogger {
             String projectDir = null;
             Project project = null;
             try{
-                projectDir = event.getProperty("work.dir");
+                projectDir = event.getProperty("work.dir"); //NOI18N
             }catch(Exception e){}// Maven throws exception for this property
             try{
                 if (projectDir == null){
-                    projectDir = event.getProperty("basedir"); // for Maven project
+                    projectDir = event.getProperty("basedir"); // NOI18N
                 }
-                if ((projectDir != null) && !projectDir.isEmpty()){
+                if ((projectDir != null) && (projectDir.length() != 0)){
                     project = FileOwnerQuery.getOwner(FileUtil.toFileObject(new File(projectDir))); //NOI18N
                 }
             }catch(Exception e){}
