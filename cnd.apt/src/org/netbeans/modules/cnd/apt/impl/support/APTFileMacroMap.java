@@ -44,7 +44,14 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
@@ -123,7 +130,16 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     }
 
     protected APTMacro createMacro(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
-        return new APTMacroImpl(file, name, params, value, macroType);
+        APTMacro macro = new APTMacroImpl(file, name, params, value, macroType);
+        APTMacro prev = null;
+        if (APTTraceFlags.APT_SHARE_MACROS) {
+            ConcurrentMap<APTMacro, APTMacro> sharedMap = getSharedMap();
+            prev = sharedMap.get(macro);
+            if (prev == null) {
+                prev = sharedMap.putIfAbsent(macro, macro);
+            }
+        }
+        return prev != null ? prev : macro;
     }
 
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
@@ -253,4 +269,24 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         retValue.append(sysMacroMap);
         return retValue.toString();
     }
+
+    private static ConcurrentMap<APTMacro, APTMacro> getSharedMap() {
+        ConcurrentMap<APTMacro, APTMacro> map = mapRef.get();
+        if (map == null) {
+            try {
+                maRefLock.lock();
+                map = mapRef.get();
+                if (map == null) {
+                    map = new ConcurrentHashMap<APTMacro, APTMacro>();
+                    mapRef = new SoftReference<ConcurrentMap<APTMacro, APTMacro>>(map);
+                }
+            } finally {
+                maRefLock.unlock();
+            }
+        }
+        return map;
+    }
+
+    private static final Lock maRefLock = new ReentrantLock();
+    private static Reference<ConcurrentMap<APTMacro, APTMacro>> mapRef = new SoftReference<ConcurrentMap<APTMacro, APTMacro>>(new ConcurrentHashMap<APTMacro, APTMacro>());
 }

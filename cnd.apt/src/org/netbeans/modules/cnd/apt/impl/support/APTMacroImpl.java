@@ -46,8 +46,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -64,6 +66,7 @@ public final class APTMacroImpl implements APTMacro {
     private final APTToken[] paramsArray;
     private final List<APTToken> body;
     private final Kind macroType;
+    private int hashCode = 0;
 
     public APTMacroImpl(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> body, Kind macroType) {
         assert (name != null);
@@ -114,24 +117,58 @@ public final class APTMacroImpl implements APTMacro {
     @Override
     public boolean equals(Object obj) {
         boolean retValue;
-        if (obj == null || !(obj instanceof APTMacro)) {
+        if (obj == null || !(obj instanceof APTMacroImpl)) {
             retValue = false;
         } else {
-            APTMacro other = (APTMacro)obj;
+            APTMacroImpl other = (APTMacroImpl)obj;
             retValue = APTMacroImpl.equals(this, other);
         }
         return retValue;
     }
     
-    private static final boolean equals(APTMacro one, APTMacro other) {
-        // compare only name
-        return (one.getName().getText().compareTo(other.getName().getText()) == 0);
+    private static final boolean equals(APTMacroImpl one, APTMacroImpl other) {
+        if (one.getName().getText().compareTo(other.getName().getText()) == 0) {
+            if (APTTraceFlags.APT_SHARE_MACROS) {
+                // compare other fields as well
+                if (one.macroType != other.macroType) {
+                    return false;
+                }
+                // check files
+                if ((one.file == other.file) && (one.file != null) && !one.file.equals(other.file)) {
+                    return false;
+                }
+                // check equal params
+                if (!Arrays.equals(one.paramsArray, other.paramsArray)) {
+                    return false;
+                }
+                if ((one.body == other.body) && (one.body != null) && !one.body.equals(other.body)) {
+                    return false;
+                }
+                return true;
+            } else {
+                // compare only name
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
     
     @Override
     public int hashCode() {
-        int retValue = 17;
-        retValue = 31*retValue + getName().getText().hashCode();
+        int retValue = hashCode;
+        if (retValue == 0) {
+            // init hash
+            retValue = 31*retValue + getName().getText().hashCode();
+            if (APTTraceFlags.APT_SHARE_MACROS) {
+                // use other fields as well
+                retValue = 31*retValue + macroType.hashCode();
+                retValue = 31*retValue + (file == null ? 0 : file.hashCode());
+                retValue = 31*retValue + Arrays.hashCode(paramsArray);
+                retValue = 31*retValue + (body == null ? 0 : body.hashCode());
+            }
+            hashCode = retValue;
+        }
         return retValue;
     }       
 
