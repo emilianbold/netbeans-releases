@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
-import org.netbeans.modules.cnd.remote.experimental.RemoteableExtExecution;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
@@ -90,8 +89,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private final ToolsCacheManager cacheManager;
 
-    private static final boolean testExtExecution = Boolean.getBoolean("cnd.remote.testextexectuion");
-
     public EditServerListDialog(ToolsCacheManager cacheManager) {
         this.cacheManager = cacheManager;
         initComponents();
@@ -101,7 +98,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         tfReason.setVisible(false);
         pbarStatusPanel.setVisible(false);
         initListeners();
-        jButton1.setVisible(testExtExecution);
     }
 
     private void initListeners() {
@@ -336,7 +332,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         lbReason = new javax.swing.JLabel();
         tfReason = new javax.swing.JTextField();
         pbarStatusPanel = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(258, 315));
         setLayout(new java.awt.GridBagLayout());
@@ -481,30 +476,18 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         add(pbarStatusPanel, gridBagConstraints);
-
-        jButton1.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "EditServerListDialog.jButton1.text")); // NOI18N
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-        add(jButton1, new java.awt.GridBagConstraints());
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRetryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRetryActionPerformed
         this.revalidateRecord(getSelectedEnvironment(), null, false);
     }//GEN-LAST:event_btRetryActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        RemoteableExtExecution.getInstance().test();
-    }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAddServer;
     private javax.swing.JButton btPathMapper;
     private javax.swing.JButton btRemoveServer;
     private javax.swing.JButton btRetry;
     private javax.swing.JButton btSetAsDefault;
-    private javax.swing.JButton jButton1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lbDevHosts;
     private javax.swing.JLabel lbReason;
