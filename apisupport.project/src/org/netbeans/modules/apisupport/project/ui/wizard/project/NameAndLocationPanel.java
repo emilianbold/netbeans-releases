@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -180,11 +181,11 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             setError(getMessage("ERR_No_Platform"));
             return false;
         }
-        ModuleEntry[] entries = platform.getModules();
+        Set<ModuleEntry> entries = platform.getModules();
         Collection<String> modules = new HashSet<String>(Arrays.asList(NewProjectIterator.MODULES));
         
-        for (int i = 0; i < entries.length; i++) {
-            modules.remove(entries[i].getCodeNameBase());
+        for (ModuleEntry me : entries) {
+            modules.remove(me.getCodeNameBase());
         }
         if (modules.size() > 0) {
             setError(getMessage("ERR_Missing_Modules"));

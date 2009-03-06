@@ -1,4 +1,4 @@
-<!-- -//NetBeans//DTD Autoupdate Catalog 2.5//EN -->
+<!-- -//NetBeans//DTD Autoupdate Catalog 2.6//EN -->
 <!-- XML representation of Autoupdate Modules/Updates Catalog -->
 
 <!ELEMENT module_updates ((notification?, (module_group|module)*, license*)|error)>

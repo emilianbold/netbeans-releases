@@ -61,6 +61,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.SuiteSubModulesListModel;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -256,9 +257,9 @@ public final class SuiteProperties extends ModuleProperties {
                 if (plaf == null || plaf.getHarnessVersion() < NbPlatform.HARNESS_VERSION_50u1) {
                     // Compatibility.
                     SortedSet<String> disabledClusters = new TreeSet<String>();
-                    ModuleEntry[] modules = activePlatform.getModules();
-                    for (int i = 0; i < modules.length; i++) {
-                        disabledClusters.add(modules[i].getClusterDirectory().getName());
+                    Set<ModuleEntry> modules = activePlatform.getModules();
+                    for (ModuleEntry entry : modules) {
+                        disabledClusters.add(entry.getClusterDirectory().getName());
                     }
                     disabledClusters.removeAll(Arrays.asList(enabledClusters));
                     separated = disabledClusters.toArray(new String[disabledClusters.size()]);
@@ -289,9 +290,16 @@ public final class SuiteProperties extends ModuleProperties {
                         }
                         cpwdc.add(entry);
 
-                        if (ci.isExternalCluster() && ci.getSourceRoots() != null) {
-                            String propName = CLUSTER_SRC_PREFIX + entry + NbPlatform.PLATFORM_SOURCES_SUFFIX;
-                            ep.setProperty(propName, Util.urlsToAntPath(ci.getSourceRoots()));
+                        if (ci.isExternalCluster()) {
+                            if (ci.getSourceRoots() != null) {
+                                String propName = CLUSTER_SRC_PREFIX + entry + NbPlatform.PLATFORM_SOURCES_SUFFIX;
+                                ep.setProperty(propName, Util.urlsToAntPath(ci.getSourceRoots()));
+                            }
+                            if (ci.getJavadocRoots() != null) {
+                                String propName = CLUSTER_SRC_PREFIX + entry + NbPlatform.PLATFORM_JAVADOC_SUFFIX;
+                                ep.setProperty(propName, Util.urlsToAntPath(ci.getJavadocRoots()));
+                            }
+                            ModuleList.refreshClusterModuleList(ci.getClusterDir());
                         }
                     }
                 }

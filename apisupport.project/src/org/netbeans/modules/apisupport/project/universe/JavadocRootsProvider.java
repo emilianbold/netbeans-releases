@@ -39,45 +39,47 @@
 
 package org.netbeans.modules.apisupport.project.universe;
 
-import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.util.Set;
-import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.openide.modules.Dependency;
 
 /**
- * Entry for module in external binary cluster.
+ *
  * @author Richard Michalsky
  */
-final class BinaryClusterEntry  extends AbstractBinaryEntry {
-    private URL[] javadocRoots;
-    private URL[] sourceRoots;
+public interface JavadocRootsProvider {
 
-    public BinaryClusterEntry(String cnb, File jar, File[] exts, File clusterDir,
-            String releaseVersion, String specVersion, String[] providedTokens,
-            ManifestManager.PackageExport[] publicPackages, String[] friends,
-            boolean deprecated, Set<Dependency> moduleDependencies,
-            URL[] sourceRoots, URL[] javadocRoots) {
-        super(cnb, jar, exts, clusterDir, releaseVersion, specVersion, providedTokens,
-                publicPackages, friends, deprecated, moduleDependencies);
-        this.javadocRoots = javadocRoots != null ? javadocRoots : new URL[0];
-        this.sourceRoots = sourceRoots != null ? sourceRoots : new URL[0];
-    }
+    /**
+     * Property name.
+     */
+    public static final String PROP_JAVADOC_ROOTS = "javadocRoots"; // NOI18N
 
-    public File getSourceLocation() {
-        return null;    // TODO C.P may actually return something meaningful?
-    }
+    public URL[] getDefaultJavadocRoots();
 
-    public URL[] getSourceRoots() {
-        return sourceRoots;
-    }
+    /**
+     * Add given javadoc root to the current javadoc root list and save the
+     * result.
+     */
+    void addJavadocRoot(URL root) throws IOException;
 
-    public URL[] getJavadocRoots() {
-        return javadocRoots;
-    }
+    /**
+     * Get associated Javadoc roots.
+     * Each root may contain some Javadoc sets in the usual format as subdirectories,
+     * where the subdirectory is named acc. to the code name base of the module it
+     * is documenting (using '-' in place of '.').
+     * @return a list of Javadoc root URLs (may be empty but not null)
+     */
+    URL[] getJavadocRoots();
 
-    public String toString() {
-//        File source = getSourceLocation();
-        return "BinaryClusterEntry[" + getJarLocation() + /*(source != null ? "," + source : "") +*/ "]"; // NOI18N
-    }
+    void moveJavadocRootDown(int indexToDown) throws IOException;
+
+    void moveJavadocRootUp(int indexToUp) throws IOException;
+
+    /**
+     * Remove given javadoc roots from the current javadoc root list and save
+     * the result.
+     */
+    void removeJavadocRoots(URL[] urlsToRemove) throws IOException;
+
+    void setJavadocRoots(URL[] roots) throws IOException;
+
 }

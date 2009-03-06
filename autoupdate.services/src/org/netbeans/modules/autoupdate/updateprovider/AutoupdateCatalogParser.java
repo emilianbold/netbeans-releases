@@ -54,7 +54,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -173,15 +172,34 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     }
     
     private static InputSource getInputSource(URL toParse, AutoupdateCatalogProvider p, URI base) {
+        InputStream is = null;
         try {            
-            InputStream is = toParse.openStream ();
+            is = toParse.openStream ();
             if (isGzip (p)) {
-                is = new GZIPInputStream(is);
+                try {
+                    is = new GZIPInputStream(is);
+                } catch (IOException e) {
+                    ERR.log (Level.SEVERE,
+                            "The file at " + toParse +
+                            ", corresponding to the catalog at " + p.getUpdateCenterURL() +
+                            ", does not look like the gzip file, trying to parse it as the pure xml" , e);
+                    //#150034
+                    // Sometimes the .xml.gz file is downloaded as the pure .xml file due to the strange content-encoding processing
+                    is.close();
+                    is = null;
+                    is = toParse.openStream();
+                }
             }
             InputSource src = new InputSource(new BufferedInputStream (is));
             src.setSystemId(base.toString());
             return src;
         } catch (IOException ex) {
+            if(is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                }
+            }
             ERR.log (Level.SEVERE, "Cannot estabilish input stream for " + toParse , ex);
             return new InputSource();
         }

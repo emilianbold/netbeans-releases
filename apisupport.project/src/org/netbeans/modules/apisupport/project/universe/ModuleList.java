@@ -247,6 +247,19 @@ public final class ModuleList {
         return roots.toArray(new URL[roots.size()]);
     }
 
+    public static URL[] getJavadocRootsForExternalModule(File binaryRootF) {
+        Set<ModuleEntry> candidates = getKnownEntries(binaryRootF);
+        List<URL> roots = new ArrayList<URL>();
+
+        for (ModuleEntry entry : candidates) {
+            if (entry instanceof BinaryClusterEntry) {
+                BinaryClusterEntry bce = (BinaryClusterEntry) entry;
+                roots.addAll(Arrays.asList(bce.getJavadocRoots()));
+            }
+        }
+        return roots.toArray(new URL[roots.size()]);
+    }
+
     private static void registerEntry(ModuleEntry entry, Set<File> files) {
         synchronized (knownEntries) {
             for (File f : files) {
@@ -900,7 +913,7 @@ public final class ModuleList {
                     mm.getProvidedTokens(), mm.getPublicPackages(),
                     mm.getFriends(), mm.isDeprecated(),
                     mm.getModuleDependencies(),
-                    ci.getSourceRoots(), null);
+                    ci.getSourceRoots(), ci.getJavadocRoots());
                 if (entries.containsKey(codenamebase)) {
                     Util.err.log(ErrorManager.WARNING, "Warning: two modules found with the same code name base (" + codenamebase + "): " + entries.get(codenamebase) + " and " + entry);
                 } else {
@@ -1092,8 +1105,8 @@ public final class ModuleList {
         sourceLists.clear();
         binaryLists.clear();
         clusterLists.clear();
+        knownEntries.clear();
         PERMIT_CACHES = false; // #126524
-        // XXX what about knownEntries?
     }
     
     /**
@@ -1102,6 +1115,17 @@ public final class ModuleList {
      */
     public static void refreshSuiteModuleList(File suiteDir) {
         sourceLists.remove(suiteDir);
+        // XXX knownEntries ?
+    }
+
+    /**
+     * Refresh cached module list for given cluster. If there is not such a
+     * cached list yet, the method is just no-op.
+     */
+    public static void refreshClusterModuleList(File clusterDir) {
+        // TODO C.P refresh not working yet for sources, need to clear knownEntries selectively
+        // and ensure entries are loaded again when needed
+//        binaryLists.remove(clusterDir);
     }
     
     /**
