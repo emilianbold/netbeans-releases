@@ -42,19 +42,24 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public class Assembler extends BasicCompiler {
 
     /** Creates a new instance of GNUCCompiler */
-    public Assembler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(hkey, flavor, kind, name, displayName, path); // NOI18N
+    private Assembler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(env, flavor, kind, name, displayName, path); // NOI18N
     }
 
     @Override
     public Assembler createCopy() {
-        Assembler copy = new Assembler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
+        Assembler copy = new Assembler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
+    }
+
+    public static Assembler create(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return new Assembler(env, flavor, kind, name, displayName, path);
     }
 
     @Override

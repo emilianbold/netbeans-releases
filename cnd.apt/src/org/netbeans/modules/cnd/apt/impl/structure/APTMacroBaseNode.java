@@ -120,13 +120,25 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
     private static final NotHandledMacroName EMPTY_NAME = new NotHandledMacroName();
     
     //TODO: what about Serializable
-    private static class NotHandledMacroName extends APTTokenAbstact {
+    private static final class NotHandledMacroName extends APTTokenAbstact {
         public NotHandledMacroName() {
         }
         
         @Override
         public String getText() {
             return "<<DUMMY>>"; // NOI18N
-        }        
+        }
+
+        @Override
+        public int hashCode() {
+            return -1;
+        }
+
+        @Override
+        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+        public boolean equals(Object obj) {
+            return this == obj;
+        }
+
     };    
 }

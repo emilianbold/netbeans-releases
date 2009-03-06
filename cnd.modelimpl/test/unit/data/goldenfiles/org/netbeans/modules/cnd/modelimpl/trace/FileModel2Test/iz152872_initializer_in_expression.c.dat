@@ -25,7 +25,7 @@ FUNCTION DEFINITION foo  [6:1/69-9:2/150] FunctionDDImpl SCOPE: $Global$
     RETURNS void TEXT=void  [6:1/69-6:5/73]
     STATEMENT COMPOUND  [6:12/80-9:2/150] SCOPE: foo 
         STATEMENT DECLARATION  [7:5/86-7:31/112] SCOPE: Stmt  [6:12/80-9:2/150]
-            VARIABLE av1 [7:16/97-7:19/100]  TYPE: AVRational TEXT=AVRational  [7:5/86-7:15/96]  INIT: null  SCOPE: Stmt  [6:12/80-9:2/150]
+            VARIABLE av1 [7:16/97-7:25/106]  TYPE: AVRational TEXT=AVRational  [7:5/86-7:15/96]  INIT: null  SCOPE: Stmt  [6:12/80-9:2/150]
             VARIABLE av2 [7:27/108-7:30/111]  TYPE: AVRational TEXT=AVRational  [7:5/86-7:15/96]  INIT: null  SCOPE: Stmt  [6:12/80-9:2/150]
         STATEMENT EXPRESSION  [8:5/117-8:35/147] SCOPE: Stmt  [6:12/80-9:2/150] text: 'av2 = (AVRational){1, av1.den}'
 
@@ -44,7 +44,7 @@ FUNCTION DEFINITION foo  [6:1/69-9:2/150] FunctionDDImpl SCOPE: $Global$
     RETURNS void TEXT=void  [6:1/69-6:5/73]
     STATEMENT COMPOUND  [6:12/80-9:2/150] SCOPE: foo 
         STATEMENT DECLARATION  [7:5/86-7:31/112] SCOPE: Stmt  [6:12/80-9:2/150]
-            VARIABLE av1 [7:16/97-7:19/100]  TYPE: AVRational TEXT=AVRational  [7:5/86-7:15/96]  INIT: null  SCOPE: Stmt  [6:12/80-9:2/150]
+            VARIABLE av1 [7:16/97-7:25/106]  TYPE: AVRational TEXT=AVRational  [7:5/86-7:15/96]  INIT: null  SCOPE: Stmt  [6:12/80-9:2/150]
             VARIABLE av2 [7:27/108-7:30/111]  TYPE: AVRational TEXT=AVRational  [7:5/86-7:15/96]  INIT: null  SCOPE: Stmt  [6:12/80-9:2/150]
         STATEMENT EXPRESSION  [8:5/117-8:35/147] SCOPE: Stmt  [6:12/80-9:2/150] text: 'av2 = (AVRational){1, av1.den}'
 

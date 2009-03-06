@@ -70,7 +70,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * support collection of macros and saving/restoring this collection
  * @author Vladimir Voskresensky
  */
-public abstract class APTBaseMacroMap {
+public abstract class APTBaseMacroMap implements APTMacroMap {
 
     protected APTMacroMapSnapshot active;
     
@@ -133,16 +133,8 @@ public abstract class APTBaseMacroMap {
                     new Object[] {macroText, ex.getMessage()});
         }
     }
-    
-    public final void define(APTFile file, APTToken name, List<APTToken> value, Kind macroType) {
-        defineImpl(file, name, value, macroType);
-    }
-    
-    private void defineImpl(APTFile file, APTToken name, List<APTToken> value, Kind macroType) {
-        define(file, name, null, value, macroType);
-    }
 
-    protected void define(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
+    public void define(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
         defineImpl(file, name, params, value, macroType);
     }
     
@@ -150,7 +142,7 @@ public abstract class APTBaseMacroMap {
         active.macros.put(name.getText(), createMacro(file, name, params, value, macroType));
     }
 
-    protected void undef(APTFile file, APTToken name) {
+    public void undef(APTFile file, APTToken name) {
         active.macros.put(name.getText(), APTMacroMapSnapshot.UNDEFINED_MACRO);
     }
     
@@ -168,7 +160,7 @@ public abstract class APTBaseMacroMap {
         return getMacro(token) != null;
     } 
 
-    protected APTMacro getMacro(APTToken token) {
+    public APTMacro getMacro(APTToken token) {
         APTMacro res = active.getMacro(token);
         return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
     }
@@ -323,9 +315,6 @@ public abstract class APTBaseMacroMap {
         }      
 
         public void define(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
-        }
-
-        public void define(APTFile file, APTToken name, List<APTToken> value, Kind macroType) {
         }
 
         public void undef(APTFile file, APTToken name) {

@@ -153,6 +153,28 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                             }
                         }
                     }
+
+                    // search for enumerators
+                    if (referencedDeclaration == null && bestChoice == null) {
+                        CsmFilter filter2 = CsmSelect.getFilterBuilder().createKindFilter(new Kind[]{Kind.ENUM});
+                        outer2:
+                        for (CsmNamespace curr : namespacesToSearch) {
+                            Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(curr, filter2);
+                            while (it.hasNext()) {
+                                CsmDeclaration elem = it.next();
+                                if (CsmKindUtilities.isEnum(elem)) {
+                                    CsmEnum e = (CsmEnum) elem;
+                                    for (CsmEnumerator enumerator : e.getEnumerators()) {
+                                        if(lastName.toString().equals(enumerator.getName().toString())) {
+                                            referencedDeclaration = enumerator;
+                                            break outer2;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
                     referencedDeclaration = referencedDeclaration == null ? bestChoice : referencedDeclaration;
                 }
             }

@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.apt.support.APTWalker;
 public final class APTFileNode extends APTContainerNode 
                                 implements APTFile, Serializable {
     private static final long serialVersionUID = -6182803432699849825L;
-    private String path;
+    private final String path;
     transient private boolean tokenized;
     
     /** Copy constructor */
@@ -61,11 +61,6 @@ public final class APTFileNode extends APTContainerNode
         super(orig);
         this.path = orig.path;
         this.tokenized = false;
-    }
-    
-    /** Constructor for serialization */
-    protected APTFileNode() {
-        tokenized = false;
     }
     
     /** Creates a new instance of APTFileNode */
@@ -109,7 +104,30 @@ public final class APTFileNode extends APTContainerNode
 
     public boolean isTokenized() {
         return tokenized;
-    }    
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof APTFileNode)) {
+            return false;
+        }
+        final APTFileNode other = (APTFileNode) obj;
+        if (!this.path.equals(other.path)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 41 * hash + this.path.hashCode();
+        return hash;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
     

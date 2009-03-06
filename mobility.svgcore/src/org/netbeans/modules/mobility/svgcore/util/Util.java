@@ -260,6 +260,7 @@ public class Util {
             this.lastProgress = 0;
         }
 
+        @Override
         public synchronized int read() throws IOException {
             int i = super.read();
             alreadyRead += i;
@@ -267,6 +268,7 @@ public class Util {
             return i;
         }
 
+        @Override
         public synchronized int read(byte b[], int off, int len) throws IOException {
             int i = super.read(b, off, len);
             alreadyRead += i;
@@ -300,6 +302,14 @@ public class Util {
                     }
                 }
             }
+        }
+        return null;
+    }
+
+    public static SVGElement getElementById(SVGImage svgImage, String elementId) {
+        if (svgImage != null && elementId != null) {
+            SVGSVGElement svg = (SVGSVGElement) svgImage.getDocument().getDocumentElement();
+            return PerseusController.findElementById(svg, elementId);
         }
         return null;
     }

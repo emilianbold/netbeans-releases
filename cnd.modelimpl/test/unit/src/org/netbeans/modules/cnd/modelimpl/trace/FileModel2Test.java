@@ -199,4 +199,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#156004 : Unexpected token = in variable declaration
         performTest("iz156004.cc");
     }
+
+    public void testIZ159324() throws Exception {
+        // IZ#159324 : Unresolved variable definition
+        performTest("iz159324.cc");
+    }
 }

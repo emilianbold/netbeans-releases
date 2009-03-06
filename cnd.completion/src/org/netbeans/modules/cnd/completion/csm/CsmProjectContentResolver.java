@@ -178,13 +178,18 @@ public final class CsmProjectContentResolver {
         this.sort = needSort;
     }
 
-    private List<CsmEnumerator> getEnumeratorsFromEnumsAndTypedefs(List enumsAndTypedefs, boolean match, String strPrefix, boolean sort) {
+    private List<CsmEnumerator> getEnumeratorsFromEnumsEnumeratorsAndTypedefs(List enumsEnumeratorsAndTypedefs, boolean match, String strPrefix, boolean sort) {
         List<CsmEnumerator> res = new ArrayList<CsmEnumerator>();
-        if (enumsAndTypedefs != null) {
-            for (Iterator it = enumsAndTypedefs.iterator(); it.hasNext();) {
+        if (enumsEnumeratorsAndTypedefs != null) {
+            for (Iterator it = enumsEnumeratorsAndTypedefs.iterator(); it.hasNext();) {
                 CsmObject ob = (CsmObject) it.next();
                 CsmEnum elemEnum = null;
-                if (CsmKindUtilities.isEnum(ob)) {
+                if (CsmKindUtilities.isEnumerator(ob)) {
+                    CsmEnumerator elem = (CsmEnumerator) ob;
+                    if (matchName(elem.getName().toString(), strPrefix, match)) {
+                        res.add((CsmEnumerator) ob);
+                    }
+                } else if (CsmKindUtilities.isEnum(ob)) {
                     elemEnum = (CsmEnum) ob;
                 } else {
                     // for typedef check whether it defines unnamed enum
@@ -904,8 +909,13 @@ public final class CsmProjectContentResolver {
         };
         List enumsAndTypedefs = getNamespaceMembers(ns, classKinds, "", false, searchNested, true);
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
-        filterDeclarations(used.iterator(), enumsAndTypedefs, classKinds, "", false, true);
-        List res = getEnumeratorsFromEnumsAndTypedefs(enumsAndTypedefs, match, strPrefix, sort);
+        CsmDeclaration.Kind classAndEnumeratorKinds[] = {
+            CsmDeclaration.Kind.ENUM,
+            CsmDeclaration.Kind.TYPEDEF,
+            CsmDeclaration.Kind.ENUMERATOR
+        };
+        filterDeclarations(used.iterator(), enumsAndTypedefs, classAndEnumeratorKinds, "", false, true);
+        List res = getEnumeratorsFromEnumsEnumeratorsAndTypedefs(enumsAndTypedefs, match, strPrefix, sort);
         return res;
     }
 
@@ -982,7 +992,7 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.TYPEDEF
         };
         List enumsAndTypedefs = getClassMembers(clazz, contextDeclaration, classKinds, "", false, false, inspectParentClasses, scopeAccessedClassifier, true);
-        List<CsmEnumerator> res = getEnumeratorsFromEnumsAndTypedefs(enumsAndTypedefs, match, strPrefix, sort);
+        List<CsmEnumerator> res = getEnumeratorsFromEnumsEnumeratorsAndTypedefs(enumsAndTypedefs, match, strPrefix, sort);
         return res;
     }
 
