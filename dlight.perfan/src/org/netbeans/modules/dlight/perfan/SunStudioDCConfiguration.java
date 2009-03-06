@@ -144,7 +144,6 @@ public final class SunStudioDCConfiguration
 
     private static DataTableMetadata getTableMetadata(String tableName, Column[] columns, final List<Column> allowedColumns) {
         final List<Column> cols = new ArrayList<Column>();
-
         for (Column c : columns) {
             if (c == c_name) {
                 continue;
@@ -157,7 +156,6 @@ public final class SunStudioDCConfiguration
                         c.getColumnName() + " which is not related to it"); // NOI18N
             }
         }
-
         cols.add(c_name);
         return new DataTableMetadata(tableName, cols);
     }

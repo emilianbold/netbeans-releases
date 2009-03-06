@@ -110,7 +110,9 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void refreshDiskFolder() {
-        log.finer("----------refreshDiskFolder " + getPath()); // NOI18N
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("----------refreshDiskFolder " + getPath()); // NOI18N
+        }
         String rootPath = getRootPath();
         String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
 
@@ -119,14 +121,18 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Folders to be removed
         if (!folderFile.exists() || !folderFile.isDirectory() || !VisibilityQuery.getDefault().isVisible(folderFile)) {
             // Remove it plus all subfolders and items from project
-            log.fine("------------removing folder " + getPath() + " in " + getParent().getPath()); // NOI18N
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("------------removing folder " + getPath() + " in " + getParent().getPath()); // NOI18N
+            }
             getParent().removeFolder(this);
             return;
         }
         // Items to be removed
         for (Item item : getItemsAsArray()) {
             if (!item.getFile().exists() || !VisibilityQuery.getDefault().isVisible(item.getFile())) {
-                log.fine("------------removing item " + item.getPath() + " in " + getPath()); // NOI18N
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("------------removing item " + item.getPath() + " in " + getPath()); // NOI18N
+                }
                 removeItem(item);
             }
         }
@@ -145,7 +151,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         for (File file : fileList) {
             if (file.isDirectory()) {
                 if (findFolderByName(file.getName()) == null) {
-                    log.fine("------------adding folder " + file.getPath() + " in " + getPath()); // NOI18N
+                    if (log.isLoggable(Level.FINE)) {
+                        log.fine("------------adding folder " + file.getPath() + " in " + getPath()); // NOI18N
+                    }
                     ((MakeConfigurationDescriptor) getConfigurationDescriptor()).addSourceFilesFromFolder(this, file, true);
 
                 }
@@ -155,7 +163,9 @@ public class Folder implements FileChangeListener, ChangeListener {
                     path = path.substring(2);
                 }
                 if (findItemByPath(path) == null) {
-                    log.fine("------------adding item " + file.getPath() + " in " + getPath()); // NOI18N
+                    if (log.isLoggable(Level.FINE)) {
+                        log.fine("------------adding item " + file.getPath() + " in " + getPath()); // NOI18N
+                    }
                     addItem(new Item(path));
                 }
             }
@@ -179,15 +189,21 @@ public class Folder implements FileChangeListener, ChangeListener {
 
         if (isDiskFolder() && getRoot() != null) {
             VisibilityQuery.getDefault().addChangeListener(this);
-            log.finer("-----------attachFilterListener " + getPath()); // NOI18N
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("-----------attachFilterListener " + getPath()); // NOI18N
+            }
         }
 
         try {
             FileUtil.addFileChangeListener(this, folderFile);
-            log.finer("-----------attachFileChangeListener " + getPath()); // NOI18N
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("-----------attachFileChangeListener " + getPath()); // NOI18N
+            }
         } catch (IllegalArgumentException iae) {
             // Can happen if trying to attach twice...
-            log.finer("-----------attachFileChangeListener duplicate error" + getPath()); // NOI18N
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("-----------attachFileChangeListener duplicate error" + getPath()); // NOI18N
+            }
         }
 
         // Repeast for all sub folders
@@ -198,11 +214,15 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void detachListener() {
-        log.finer("-----------detachFileChangeListener " + getPath()); // NOI18N
+        if (log.isLoggable(Level.FINER)) {
+           log.finer("-----------detachFileChangeListener " + getPath()); // NOI18N
+        }
         FileUtil.removeFileChangeListener(this);
         if (isDiskFolder() && getRoot() != null) {
             VisibilityQuery.getDefault().removeChangeListener(this);
-            log.finer("-----------detachFilterListener " + getPath()); // NOI18N
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("-----------detachFilterListener " + getPath()); // NOI18N
+            }
         }
 
     }
@@ -408,7 +428,9 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (myNativeFileItemSet != null) {
                 myNativeFileItemSet.add(item);
             } else {
-                log.severe("can not add folder's " + this + " item " + item + " using " + dao); // NOI18N
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("can not add folder's " + this + " item " + item + " using " + dao); // NOI18N
+                }
             }
         }
 
@@ -525,10 +547,6 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Remove item from the dataObject's lookup
         if (isProjectFiles()) {
             DataObject dataObject = item.getDataObject();
-            if (dataObject == null) {
-                // try to use last Data Object (getDataObject() cannot find renamed data object)
-                dataObject = item.getLastDataObject();
-            }
             if (dataObject != null) {
                 NativeFileItemSet myNativeFileItemSet = dataObject.getCookie(NativeFileItemSet.class);
                 if (myNativeFileItemSet != null) {
@@ -877,7 +895,9 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void stateChanged(ChangeEvent e) {
-        log.fine("------------stateChanged " + getThis().getPath()); // NOI18N
+        if (log.isLoggable(Level.FINER)) {
+            log.fine("------------stateChanged " + getThis().getPath()); // NOI18N
+        }
         // Happens when filter has changed
         if (isDiskFolder()) {
             refreshDiskFolder();
@@ -894,7 +914,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
-        log.fine("------------fileDataCreated " + file + " in " + getThis().getPath()); // NOI18N
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("------------fileDataCreated " + file + " in " + getThis().getPath()); // NOI18N
+        }
         //if (true) return;
         if (!file.exists() || file.isDirectory()) {
             return; // FIXUP: error
@@ -915,7 +937,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
-        log.fine("------------fileFolderCreated " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("------------fileFolderCreated " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+        }
         //if (true) return;
         if (!file.exists() || !file.isDirectory()) {
             assert false;
@@ -929,7 +953,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
-        log.fine("------------fileDeleted " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("------------fileDeleted " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+        }
         //if (true) return;
         String path = getRootPath() + '/' + file.getName();
         if (path.startsWith("./")) { // NOI18N
@@ -990,7 +1016,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
-        log.fine("------------fileRenamed " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("------------fileRenamed " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+        }
         // Try only folders. Items are taken care of in Item.propertyChange takes care of it....
         Folder folder = findFolderByName(fe.getName());
         if (folder != null && folder.isDiskFolder()) {

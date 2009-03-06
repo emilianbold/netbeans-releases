@@ -105,7 +105,7 @@ class GraphConstructor implements DependencyNodeVisitor {
             edges.add(ed);
         }
 
-        if (grNode.getArtifact() != null) {
+        if (node != root && grNode.getArtifact() != null) {
             grNode.setManagedState(
                     obtainManagedState(grNode.getArtifact().getArtifact(), scene));
         }
@@ -150,7 +150,15 @@ class GraphConstructor implements DependencyNodeVisitor {
         }
 
         DependencyManagement dm = proj.getDependencyManagement();
+        if (dm == null) {
+            return ArtifactGraphNode.UNMANAGED;
+        }
+
+        @SuppressWarnings("unchecked")
         List<Dependency> deps = dm.getDependencies();
+        if (deps == null) {
+            return ArtifactGraphNode.UNMANAGED;
+        }
 
         String id = artifact.getArtifactId();
         String groupId = artifact.getGroupId();

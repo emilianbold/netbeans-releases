@@ -56,6 +56,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.glassfish.eecommon.api.RegisterDatabase;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
@@ -65,7 +66,6 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.RunTimeDDCatalog;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.db.ExecSupport;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.db.RegisterPointbase;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -391,7 +391,8 @@ public class AddDomainWizardIterator implements
         instanceProperties.setProperty("LOCATION",                      //NOI18N
                 domainDir);
         if (wizard.getProperty(TYPE) != REMOTE) {
-            RegisterPointbase.getDefault().register((File) wizard.getProperty(PLATFORM_LOCATION));
+            String location = ((File)wizard.getProperty(PLATFORM_LOCATION)).getAbsolutePath();
+            RegisterDatabase.getDefault().setupDerby(location);
             instanceProperties.setProperty(DeploymentManagerProperties.HTTP_MONITOR_ATTR,
                 Boolean.FALSE.toString());            
         }
