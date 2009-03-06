@@ -65,6 +65,7 @@ public class CompilerSettings {
     public static final String ENABLE_LINT_DIVZERO = "enable_lint_dvizero";
     public static final String ENABLE_LINT_EMPTY = "enable_lint_empty";
     public static final String ENABLE_LINT_OVERRIDES = "enable_lint_overrides";
+    public static final String ENABLE_LINT_RAWTYPES = "enable_lint_rawtypes";
     
     private static final Map<String, Boolean> DEFAULTS;
     
@@ -81,6 +82,7 @@ public class CompilerSettings {
         DEFAULTS.put(ENABLE_LINT_DIVZERO, false);
         DEFAULTS.put(ENABLE_LINT_EMPTY, false);
         DEFAULTS.put(ENABLE_LINT_OVERRIDES, false);
+        DEFAULTS.put(ENABLE_LINT_RAWTYPES, false);
     }
     
     public static Preferences getNode() {
@@ -110,6 +112,8 @@ public class CompilerSettings {
             sb.append("-Xlint:empty ");
         if (get(p, ENABLE_LINT_OVERRIDES))
             sb.append("-Xlint:overrides ");
+        if (get(p, ENABLE_LINT_RAWTYPES))
+            sb.append("-Xlint:rawtypes ");
         
         if (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
             sb.deleteCharAt(sb.length() - 1);
