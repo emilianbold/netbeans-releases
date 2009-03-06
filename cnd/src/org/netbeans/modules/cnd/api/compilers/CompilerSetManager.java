@@ -790,7 +790,7 @@ public class CompilerSetManager {
             // find 'best' Sun set and copy it
             sun = getCompilerSet("SunStudioExpress"); // NOI18N
             if (sun == null) {
-                sun = getCompilerSet("SunStudio_13"); // NOI18N
+                sun = getCompilerSet("SunStudio_12.1"); // NOI18N
             }
             if (sun == null) {
                 sun = getCompilerSet("SunStudio_12"); // NOI18N

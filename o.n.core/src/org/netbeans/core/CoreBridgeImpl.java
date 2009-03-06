@@ -218,8 +218,6 @@ implements Runnable {
         PropertyEditorManager.setEditorSearchPath(allpesp);
         PropertyEditorManager.registerEditor (java.lang.Character.TYPE, org.netbeans.beaninfo.editors.CharEditor.class);
         PropertyEditorManager.registerEditor(String[].class, org.netbeans.beaninfo.editors.StringArrayEditor.class); 
-        // bugfix #28676, register editor for a property which type is array of data objects
-        PropertyEditorManager.registerEditor(org.openide.loaders.DataObject[].class, org.netbeans.beaninfo.editors.DataObjectArrayEditor.class);
         // use replacement hintable/internationalizable primitive editors - issues 20376, 5278
         PropertyEditorManager.registerEditor (Integer.TYPE, org.netbeans.beaninfo.editors.IntEditor.class);
         PropertyEditorManager.registerEditor (Boolean.TYPE, org.netbeans.beaninfo.editors.BoolEditor.class);

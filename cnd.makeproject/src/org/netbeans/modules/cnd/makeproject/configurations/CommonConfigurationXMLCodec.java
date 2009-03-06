@@ -74,6 +74,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V59 - NB 7.0
+ *   QT_QMAKE_SPEC_ELEMENT
  * V58 - NB 7.0
  *   CCOMPILERTOOL_ELEMENT2
  *   CCCOMPILERTOOL_ELEMENT2
@@ -325,6 +327,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String QT_RCC_DIR_ELEMENT = "rccDir"; // NOI18N
     protected final static String QT_UI_DIR_ELEMENT = "uiDir"; // NOI18N
     protected final static String QT_DEFS_LIST_ELEMENT = "defs"; // NOI18N
+    protected final static String QT_QMAKE_SPEC_ELEMENT = "qmakeSpec"; // NOI18N
     private ConfigurationDescriptor projectDescriptor;
     private boolean publicLocation;
 
@@ -467,6 +470,9 @@ public abstract class CommonConfigurationXMLCodec
         }
         if (qmake.getUiDir().getModified()) {
             xes.element(QT_UI_DIR_ELEMENT, qmake.getUiDir().getValue());
+        }
+        if (qmake.getQmakeSpec().getModified()) {
+            xes.element(QT_QMAKE_SPEC_ELEMENT, qmake.getQmakeSpec().getValue());
         }
         if (qmake.getCustomDefs().getModified()) {
             xes.elementOpen(QT_DEFS_LIST_ELEMENT);

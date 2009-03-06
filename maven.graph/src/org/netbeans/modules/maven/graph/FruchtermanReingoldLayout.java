@@ -269,7 +269,7 @@ public class FruchtermanReingoldLayout extends SceneLayout {
         ArtifactGraphNode nd = it.next();
         while (true) {
             AffineTransform tr = AffineTransform.getRotateInstance(theta);
-            Point2D d2point = tr.transform(new Point2D.Double((double)(0), (double)(r)), null);
+            Point2D d2point = tr.transform(new Point2D.Double(0, r), null);
             Point point = new Point((int)d2point.getX() + masterPoint.x, (int)d2point.getY() + masterPoint.y);
             if (isThereFreeSpace(point, nd)) {
                 nd.locX = point.getX();
@@ -359,7 +359,7 @@ public class FruchtermanReingoldLayout extends SceneLayout {
         node.setFixed(false);
         while (true) {
             AffineTransform tr = AffineTransform.getRotateInstance(theta);
-            Point2D d2point = tr.transform(new Point2D.Double((double)(0), (double)(r)), null);
+            Point2D d2point = tr.transform(new Point2D.Double(0, r), null);
             Point point = new Point((int)d2point.getX() + masterPoint.x, (int)d2point.getY() + masterPoint.y);
             node.locX = point.getX();
             node.locY = point.getY();

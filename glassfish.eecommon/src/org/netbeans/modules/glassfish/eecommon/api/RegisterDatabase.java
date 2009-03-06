@@ -37,42 +37,70 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.javaee.ide;
+package org.netbeans.modules.glassfish.eecommon.api;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.netbeans.modules.derby.spi.support.DerbySupport;
-import org.netbeans.modules.glassfish.eecommon.api.RegisterDatabase;
-import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author vkraemer
+ * @author Nitya Doraisamy
  */
-@ServiceProvider(service=RegisteredDerbyServer.class)
-public class RegisteredDerbyServerImpl implements RegisteredDerbyServer {
+public class RegisterDatabase {
 
-    public void start() {
-        DerbySupport.ensureStarted();
+    private static RegisterDatabase reg = null;
+    
+    public static RegisterDatabase getDefault(){
+        if (reg == null) {
+            reg = new RegisterDatabase();
+        }
+        return reg;
     }
 
-    public void initialize(String candidateLocation) {
+    public void setupDerby(String serverinstall) {
         String location = DerbySupport.getLocation();
         if (null != location && location.trim().length() > 0) {
             return;
         }
-        DerbySupport.setLocation(candidateLocation);
-        location = DerbySupport.getSystemHome();
-        if (null != location && location.trim().length() > 0) {
-            return;
-        } else {
-            File dbdir = new File(DerbySupport.getDefaultSystemHome());
-            if (dbdir.exists() == false) {
-                dbdir.mkdirs();
+        File dbloc = new File(serverinstall, "javadb"); //NOI18N
+        if (dbloc.exists() && dbloc.isDirectory() && dbloc.canRead()) {
+            DerbySupport.setLocation(dbloc.getAbsolutePath());
+            location = DerbySupport.getSystemHome();
+            if (null != location && location.trim().length() > 0) {
+                return;
+            }else{
+                File dbdir = new File(DerbySupport.getDefaultSystemHome());
+                if (dbdir.exists() == false) {
+                    dbdir.mkdirs();
+                }
             }
+            DerbySupport.setSystemHome(DerbySupport.getDefaultSystemHome());
         }
-        DerbySupport.setSystemHome(DerbySupport.getDefaultSystemHome());
-        RegisterDatabase.getDefault().configureDatabase();
+        configureDatabase();
     }
 
+    public void configureDatabase(){
+        String location = DerbySupport.getLocation();
+        File dbInstall = new File(location);
+        if (dbInstall != null && dbInstall.exists()){
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        DerbyDatabases.createSampleDatabase();
+                    } catch (DatabaseException ex) {
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                    } catch (IOException ex) {
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                    }
+                }
+            });
+        }
+    }
+    
 }

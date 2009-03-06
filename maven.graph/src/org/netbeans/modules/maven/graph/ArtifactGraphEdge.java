@@ -87,5 +87,5 @@ public class ArtifactGraphEdge {
     public DependencyNode getTarget() {
         return target;
     }
-    
+
 }

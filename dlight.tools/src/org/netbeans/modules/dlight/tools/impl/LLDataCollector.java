@@ -179,6 +179,8 @@ public class LLDataCollector
 
     private class MonitorOutputProcessor implements LineProcessor {
 
+        private float syncPrev;
+
         @Override
         public void processLine(String line) {
             DataRow row = null;
@@ -188,7 +190,11 @@ public class LLDataCollector
             } else if (line.startsWith("mem:")) { // NOI18N
                 row = new DataRow(Arrays.asList("total"), Arrays.asList(line.substring(5))); // NOI18N
             } else if (line.startsWith("sync:")) { // NOI18N
-                row = new DataRow(Arrays.asList("sync"), Arrays.asList(line.substring(6).split("\t"))); // NOI18N
+                String[] fields = line.substring(6).split("\t"); // NOI18N
+                float syncCurr = Float.parseFloat(fields[0]);
+                int threads = Integer.parseInt(fields[1]);
+                row = new DataRow(Arrays.asList("sync"), Arrays.asList(Float.valueOf((syncCurr - syncPrev) * 100 / threads))); // NOI18N
+                syncPrev = syncCurr;
             }
             if (row != null) {
                 notifyIndicators(Collections.singletonList(row));
