@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.kenai.api;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.net.MalformedURLException;
 import org.junit.AfterClass;
 import org.junit.Before;
