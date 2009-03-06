@@ -40,7 +40,6 @@
 package org.netbeans.modules.php.project;
 
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +47,10 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.php.project.util.Pair;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -143,16 +145,20 @@ public final class ProjectPropertiesSupport {
     }
 
     public static FileObject getWebRootDirectory(PhpProject project) {
-        return getSourceSubdirectory(project, project.getEvaluator().getProperty(PhpProjectProperties.WEB_ROOT));
+        FileObject webRoot = getSourceSubdirectory(project, project.getEvaluator().getProperty(PhpProjectProperties.WEB_ROOT));
+        if (webRoot != null && webRoot.isValid()) {
+            return webRoot;
+        }
+        return getSourcesDirectory(project);
     }
 
     public static FileObject getSourceSubdirectory(PhpProject project, String subdirectoryPath) {
-        FileObject subdirectory = project.getSourcesDirectory();
-        if (subdirectoryPath != null && subdirectoryPath.trim().length() > 0 && !subdirectoryPath.equals(".")) { // NOI18N
-            subdirectory = subdirectory.getFileObject(subdirectoryPath);
+        FileObject sources = project.getSourcesDirectory();
+        if (subdirectoryPath != null && subdirectoryPath.trim().length() > 0) {
+            File resolved = PropertyUtils.resolveFile(FileUtil.toFile(sources), subdirectoryPath);
+            return FileUtil.toFileObject(resolved);
         }
-        assert subdirectory != null : "Subdirectory " + subdirectoryPath + " must be found";
-        return subdirectory;
+        return sources;
     }
 
     public static PhpInterpreter getPhpInterpreter(PhpProject project) {
@@ -263,12 +269,48 @@ public final class ProjectPropertiesSupport {
         return uploadFiles;
     }
 
+    /**
+     * @return debug url (default is DEFAULT_URL).
+     */
+    public static PhpProjectProperties.DebugUrl getDebugUrl(PhpProject project) {
+        String debugUrl = project.getEvaluator().getProperty(PhpProjectProperties.DEBUG_URL);
+        if (debugUrl == null) {
+            return PhpProjectProperties.DebugUrl.DEFAULT_URL;
+        }
+        return PhpProjectProperties.DebugUrl.valueOf(debugUrl);
+    }
+
+    /**
+     * @return pair of remote path (as a String) and local path (absolute path, as a String)
+     */
+    public static Pair<String, String> getDebugPathMapping(PhpProject project) {
+        String remotePath = getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, ""); // NOI18N
+        String localPath = ""; // NOI18N
+        if (PhpProjectUtils.hasText(remotePath)) {
+            FileObject subDir = getSourceSubdirectory(project, getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, null));
+            if (subDir == null || !subDir.isValid()) {
+                localPath = FileUtil.toFile(getSourcesDirectory(project)).getAbsolutePath();
+            } else {
+                localPath = FileUtil.toFile(subDir).getAbsolutePath();
+            }
+        }
+        return Pair.of(remotePath, localPath);
+    }
+
     private static boolean getBoolean(PhpProject project, String property, boolean defaultValue) {
         String boolValue = project.getEvaluator().getProperty(property);
         if (boolValue != null && boolValue.trim().length() > 0) {
             return Boolean.parseBoolean(boolValue);
         }
         return defaultValue;
+    }
+
+    private static String getString(PhpProject project, String property, String defaultValue) {
+        String stringValue = project.getEvaluator().getProperty(property);
+        if (stringValue == null) {
+            return defaultValue;
+        }
+        return stringValue;
     }
 
     private static void saveTestSources(final PhpProject project, final String propertyName, final File testDir) {
