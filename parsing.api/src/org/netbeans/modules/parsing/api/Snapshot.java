@@ -118,7 +118,7 @@ public final class Snapshot {
             });
         else {
             newCurrentToOriginal.add (new int[] {
-                0, currentToOriginal [i - 1] [1] + offset
+                0, currentToOriginal [i - 1] [1] + offset - currentToOriginal [i - 1] [0]
             });
             newOriginalToCurrent.add (new int[] {
                 currentToOriginal [i - 1] [1] + offset, 0
