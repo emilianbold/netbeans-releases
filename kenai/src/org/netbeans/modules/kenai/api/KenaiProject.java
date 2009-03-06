@@ -253,7 +253,7 @@ public final class KenaiProject {
 
             this.name = data.name;
             try {
-                this.web_url = new URL(data.href);
+                this.web_url = new URL(data.web_url);
             } catch (MalformedURLException ex) {
                 throw new IllegalArgumentException(ex);
             }
