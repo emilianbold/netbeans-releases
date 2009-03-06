@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,42 +31,37 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.junit.output;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.util.NbBundle;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.openide.nodes.Node;
 
 /**
- * Action which opens the JUnit Test Results window.
  *
- * @see  ResultWindow
- * @author  Marian Petras
+ * @author answer
  */
-public final class ResultWindowOpenAction extends AbstractAction {
+public class JUnitTestRunnerNodeFactory extends TestRunnerNodeFactory{
+    @Override
+    public Node createTestMethodNode(Testcase testcase, Project project) {
+        return new JUnitTestMethodNode(testcase, project);
+    }
 
-    /**
-     * Creates an instance of this action.
-     */
-    public ResultWindowOpenAction() {
-        String name = NbBundle.getMessage(ResultWindowOpenAction.class,
-                                          "ACT_TestResult");        //NOI18N
-        putValue(NAME, name);
-        putValue("iconBase",                                            //NOI18N
-               "org/netbeans/modules/junit/output/res/testResults.png");//NOI18N
+    @Override
+    public Node createCallstackFrameNode(String frameInfo, String dispayName) {
+        return new JUnitCallstackFrameNode(frameInfo, dispayName);
     }
-    
-    /**
-     * Opens and activates the JUnit Test Results window.
-     *
-     * @param  e  event that caused this action to be called
-     */
-    public void actionPerformed(ActionEvent e) {
-        ResultWindow resultWindow = ResultWindow.getInstance();
-        resultWindow.open();
-        resultWindow.requestActive();
+
+    @Override
+    public TestsuiteNode createTestSuiteNode(String suiteName, boolean filtered) {
+        return new JUnitTestsuiteNode(suiteName, filtered);
     }
-    
 }

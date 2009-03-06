@@ -49,9 +49,13 @@ import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.junit.output.antutils.AntProject;
 import org.netbeans.modules.junit.output.antutils.TestCounter;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Ant logger interested in task &quot;junit&quot;,
@@ -110,7 +114,7 @@ public final class JUnitAntLogger extends AntLogger {
      *             task;
      *          or {@code null} if no Ant task is currently running
      */
-    private static TaskType detectTaskType(AntEvent event) {
+    private static SessionType detectSessionType(AntEvent event) {
         final String taskName = event.getTaskName();
         
         if (taskName == null) {
@@ -118,7 +122,7 @@ public final class JUnitAntLogger extends AntLogger {
         }
         
         if (taskName.equals(TASK_JUNIT)) {
-            return TaskType.TEST_TASK;
+            return SessionType.TEST;
         }
         
         if (taskName.equals(TASK_JAVA)) {
@@ -126,7 +130,7 @@ public final class JUnitAntLogger extends AntLogger {
 
             String className = taskStructure.getAttribute("classname"); //NOI18N
             if (className == null) {
-                return TaskType.OTHER_TASK;
+                return null;
             }
             
             className = event.evaluate(className);
@@ -140,25 +144,25 @@ public final class JUnitAntLogger extends AntLogger {
                         String a;
                         if ((a = ts.getAttribute("value")) != null) {   //NOI18N
                             if (event.evaluate(a).equals("-Xdebug")) {  //NOI18N
-                                return TaskType.DEBUGGING_TEST_TASK;
+                                return SessionType.DEBUG;
                             }
                         } else if ((a=ts.getAttribute("line")) != null){//NOI18N
                             for (String part : parseCmdLine(event.evaluate(a))){
                                 if (part.equals("-Xdebug")) {           //NOI18N
-                                    return TaskType.DEBUGGING_TEST_TASK;
+                                    return SessionType.DEBUG;
                                 }
                             }
                         }
                     }
                 }
-                return TaskType.TEST_TASK;
+                return SessionType.TEST;
             }
             
-            return TaskType.OTHER_TASK;
+            return null;
         }
         
         assert false : "Unhandled task name";                           //NOI18N
-        return TaskType.OTHER_TASK;
+        return null;
     }
 
     /**
@@ -254,8 +258,8 @@ public final class JUnitAntLogger extends AntLogger {
      * @return  {@code true} if the given task type marks a test task;
      *          {@code false} otherwise
      */
-    private static boolean isTestTaskType(TaskType taskType) {
-        return (taskType != null) && (taskType != TaskType.OTHER_TASK);
+    private static boolean isTestSessionType(SessionType sessionType) {
+        return sessionType != null;
     }
     
     @Override
@@ -285,22 +289,21 @@ public final class JUnitAntLogger extends AntLogger {
     /**
      */
     private boolean isTestTaskRunning(AntEvent event) {
-        return isTestTaskType(
-                getSessionInfo(event.getSession()).currentTaskType);
+        return isTestSessionType(getSessionInfo(event.getSession()).getCurrentSessionType());
     }
     
     /**
      */
     @Override
     public void taskStarted(final AntEvent event) {
-        TaskType taskType = detectTaskType(event);
-        if (isTestTaskType(taskType)) {
+        SessionType sessionType = detectSessionType(event);
+        if (isTestSessionType(sessionType)) {
             AntSessionInfo sessionInfo = getSessionInfo(event.getSession());
-            assert !isTestTaskType(sessionInfo.currentTaskType);
-            sessionInfo.timeOfTestTaskStart = System.currentTimeMillis();
-            sessionInfo.currentTaskType = taskType;
-            if (sessionInfo.sessionType == null) {
-                sessionInfo.sessionType = taskType;
+            assert !isTestSessionType(sessionInfo.getCurrentSessionType());
+            sessionInfo.setTimeOfTestTaskStart(System.currentTimeMillis());
+            sessionInfo.setCurrentSessionType(sessionType);
+            if (sessionInfo.getSessionType() == null) {
+                sessionInfo.setSessionType(sessionType);
             }
             
             /*
@@ -326,9 +329,9 @@ public final class JUnitAntLogger extends AntLogger {
     @Override
     public void taskFinished(final AntEvent event) {
         AntSessionInfo sessionInfo = getSessionInfo(event.getSession());
-        if (isTestTaskType(sessionInfo.currentTaskType)) {
+        if (isTestSessionType(sessionInfo.getCurrentSessionType())) {
             getOutputReader(event).testTaskFinished();
-            sessionInfo.currentTaskType = null;
+            sessionInfo.setCurrentSessionType(null);
         }
         
     }
@@ -340,7 +343,7 @@ public final class JUnitAntLogger extends AntLogger {
         AntSession session = event.getSession();
         AntSessionInfo sessionInfo = getSessionInfo(session);
 
-        if (isTestTaskType(sessionInfo.sessionType)) {
+        if (isTestSessionType(sessionInfo.getSessionType())) {
             getOutputReader(event).buildFinished(event);
         }
         
@@ -354,16 +357,29 @@ public final class JUnitAntLogger extends AntLogger {
      * @return  output reader for the session
      */
     private JUnitOutputReader getOutputReader(final AntEvent event) {
-        assert isTestTaskType(getSessionInfo(event.getSession()).sessionType);
+        assert isTestSessionType(getSessionInfo(event.getSession()).getSessionType());
         
         final AntSession session = event.getSession();
         final AntSessionInfo sessionInfo = getSessionInfo(session);
         JUnitOutputReader outputReader = sessionInfo.outputReader;
         if (outputReader == null) {
+            String projectDir = null;
+            Project project = null;
+            try{
+                projectDir = event.getProperty("work.dir");
+            }catch(Exception e){}// Maven throws exception for this property
+            try{
+                if (projectDir == null){
+                    projectDir = event.getProperty("basedir"); // for Maven project
+                }
+                if ((projectDir != null) && !projectDir.isEmpty()){
+                    project = FileOwnerQuery.getOwner(FileUtil.toFileObject(new File(projectDir))); //NOI18N
+                }
+            }catch(Exception e){}
             outputReader = new JUnitOutputReader(
                                         session,
-                                        sessionInfo.sessionType,
-                                        sessionInfo.getTimeOfTestTaskStart());
+                                        sessionInfo,
+                                        project);
             sessionInfo.outputReader = outputReader;
         }
         return outputReader;

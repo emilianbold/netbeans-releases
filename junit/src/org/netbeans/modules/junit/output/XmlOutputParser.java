@@ -42,7 +42,18 @@
 package org.netbeans.modules.junit.output;
 
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.Reader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.TestSuite;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -86,25 +97,26 @@ final class XmlOutputParser extends DefaultHandler {
     /** */
     private final XMLReader xmlReader;
     /** */
-    private Report report;
+    private TestSuite suite;
     /** */
-    private Report.Testcase testcase;
+    private Testcase testcase;
     /** */
-    private Report.Trouble trouble;
+    private Trouble trouble;
     /** */
     private StringBuffer charactersBuf;
     
     /** */
     private final RegexpUtils regexp;
-    
+
+    private TestSession testSession;
     /**
      *
      * @exception  org.xml.sax.SAXException
      *             if initialization of the parser failed
      */
-    static Report parseXmlOutput(Reader reader) throws SAXException,
+    static TestSuite parseXmlOutput(Reader reader, TestSession session) throws SAXException,
                                                        IOException {
-        XmlOutputParser parser = new XmlOutputParser();
+        XmlOutputParser parser = new XmlOutputParser(session);
         try {
            parser.xmlReader.parse(new InputSource(reader));
         } catch (SAXException ex) {
@@ -123,11 +135,12 @@ final class XmlOutputParser extends DefaultHandler {
         } finally {
             reader.close();          //throws IOException
         }
-        return parser.report;
+        return parser.suite;
     }
     
     /** Creates a new instance of XMLOutputParser */
-    private XmlOutputParser() throws SAXException {
+    private XmlOutputParser(TestSession session) throws SAXException {
+        testSession = session;
         xmlReader = XMLUtil.createXMLReader();
         xmlReader.setContentHandler(this);
         
@@ -179,51 +192,42 @@ final class XmlOutputParser extends DefaultHandler {
                 }
                 if (state >= 0) {     //i.e. the element is "failure" or "error"
                     assert testcase != null;
-                    trouble = new Report.Trouble(state == STATE_ERROR);
+                    trouble = new Trouble(state == STATE_ERROR);
 
                     String attrValue;
-                    attrValue = attrs.getValue("type");                 //NOI18N
-                    if (attrValue != null) {
-                        trouble.exceptionClsName = attrValue;
-                    }
                     attrValue = attrs.getValue("message");              //NOI18N
                     if (attrValue != null) {
-                        trouble.message = attrValue;
+                        addStackTraceLine(trouble, attrValue, false);
+                    }
+
+                    attrValue = attrs.getValue("type");                 //NOI18N
+                    if (attrValue != null) {
+                        addStackTraceLine(trouble, attrValue, false);
                     }
 
                     /*
+                     * TODO!!!!!!!
                      * Comparison failures are incorrectly reported as errors
                      * (Ant 1.7 + JUnit 4.1) so there is a workaround here:
                      * If the failure/error's is of type ComparisonFailure,
                      * then set the status to "FAILURE", even though it is
                      * reported to be "ERROR":
                      */
-                    if (trouble.isFakeError()) {
-                        trouble.error = false;
-
-                        /* fix also the statistics: */
-                        report.errors--;
-                        report.failures++;
-                    }
 
                     /*
+                     * TODO!!!!
                      * Another hack-workaround:
                      * When run with Ant 1.7 + JUnit 4.1, comparison failures
                      * with no given failure message are reported as if they
                      * had failure message "null". The following workaround
                      * removes this fake message:
                      */
-                    if (trouble.isComparisonFailure()
-                            && (trouble.message != null)
-                            && trouble.message.startsWith("null expected:")) {  //NOI18N
-                        trouble.message = trouble.message.substring(5);
-                    }
                 }
                 break;  //</editor-fold>
             //<editor-fold defaultstate="collapsed" desc="STATE_OUT_OF_SCOPE">
             case STATE_OUT_OF_SCOPE:
                 if (qName.equals("testsuite")) {
-                    report = createReport(attrs.getValue("name"),
+                    suite = createSuite(attrs.getValue("name"),
                                           attrs.getValue("tests"),
                                           attrs.getValue("failures"),
                                           attrs.getValue("errors"),
@@ -271,7 +275,7 @@ final class XmlOutputParser extends DefaultHandler {
                 assert qName.equals("testcase");
                 
                 assert testcase != null;
-                report.reportTest(testcase, Report.InfoSource.XML_FILE);
+                suite.getTestcases().add(testcase);
                 testcase = null;
                 state = STATE_TESTSUITE;
                 break;                                          //</editor-fold>
@@ -293,10 +297,17 @@ final class XmlOutputParser extends DefaultHandler {
                 assert testcase != null;
                 assert trouble != null;
                 if (charactersBuf != null) {
-                    parseTroubleReport(charactersBuf.toString(), trouble);
+                    LineNumberReader lnr = new LineNumberReader(new StringReader(charactersBuf.toString()));
+                    try{
+                        String line = lnr.readLine();
+                        while(line != null){
+                            addStackTraceLine(trouble, line, true);
+                            line = lnr.readLine();
+                        }
+                    }catch(IOException e){}
                     charactersBuf = null;
                 }
-                testcase.trouble = trouble;
+                testcase.setTrouble(trouble);
                 trouble = null;
                 state = STATE_TESTCASE;
                 break;                                          //</editor-fold>
@@ -308,9 +319,9 @@ final class XmlOutputParser extends DefaultHandler {
                 if (charactersBuf != null) {
                     String[] output = getOutput(charactersBuf.toString());
                     if (state == STATE_OUTPUT_STD) {
-                        report.outputStd = output;
+//kaktus                        report.outputStd = output;
                     } else {
-                        report.outputErr = output;
+//kaktus                        report.outputErr = output;
                     }
                     charactersBuf = null;
                 }
@@ -335,7 +346,7 @@ final class XmlOutputParser extends DefaultHandler {
     
     /**
      */
-    private Report createReport(String suiteName,
+    private TestSuite createSuite(String suiteName,
                                 String testsCountStr,
                                 String failuresStr,
                                 String errorsStr,
@@ -347,6 +358,7 @@ final class XmlOutputParser extends DefaultHandler {
         }
         
         /* Parse the test counts: */
+/*
         final String[] numberStrings = new String[] { testsCountStr,
                                                       failuresStr,
                                                       errorsStr };
@@ -368,31 +380,30 @@ final class XmlOutputParser extends DefaultHandler {
                 numbers[i] = -1;
             }
         }
-        
+*/
         /* Parse the elapsed time: */
         int timeMillis = regexp.parseTimeMillisNoNFE(timeStr);
         
         /* Create a report: */
-        Report report = new Report(suiteName);
-        report.totalTests = numbers[0];
-        report.failures = numbers[1];
-        report.errors = numbers[2];
-        report.elapsedTimeMillis = timeMillis;
+        TestSuite testSuite = new TestSuite(suiteName);
+//        report.totalTests = numbers[0];
+//        report.failures = numbers[1];
+//        report.errors = numbers[2];
+//        report.elapsedTimeMillis = timeMillis;
         
-        return report;
+        return testSuite;
     }
     
     /**
      */
-    private Report.Testcase createTestcaseReport(String className,
+    private Testcase createTestcaseReport(String className,
                                                  String name,
                                                  String timeStr) {
-        Report.Testcase testcase = new Report.Testcase();
-        testcase.className = className;
-        testcase.name = name;
-        testcase.timeMillis = regexp.parseTimeMillisNoNFE(timeStr);
+        JUnitTestcase tc = new JUnitTestcase(name, "JUnit test", testSession);
+        tc.setClassName(className);
+        tc.setTimeMillis(regexp.parseTimeMillisNoNFE(timeStr));
         
-        return testcase;
+        return tc;
     }
     
     /**
@@ -416,20 +427,6 @@ final class XmlOutputParser extends DefaultHandler {
     
     /**
      */
-    private void parseTroubleReport(String report, Report.Trouble trouble) {
-        final String[] lines = report.split("[\\r\\n]+");               //NOI18N
-
-        TroubleParser troubleParser = new TroubleParser(trouble, regexp);
-        for (String line : lines) {
-            if (troubleParser.processMessage(line)) {
-                return;
-            }
-        }
-        troubleParser.finishProcessing();
-    }
-    
-    /**
-     */
     private String[] getOutput(String string) {
         String[] lines = string.split("(?:\\r|\\r\\n|\\n)");            //NOI18N
         
@@ -445,5 +442,58 @@ final class XmlOutputParser extends DefaultHandler {
         }
         return lines;
     }
-    
+
+    private void addStackTraceLine(Trouble tr, String line, boolean validateST){
+        if ((tr == null) || (line == null) || (line.isEmpty()) || (line.equals("null"))){ //NOI18N
+            return;
+        }
+
+        if (validateST){
+            boolean valid = false;
+            Pattern[] patterns = new Pattern[]{regexp.getCallstackLinePattern(),
+                                               regexp.getComparisonHiddenPattern(),
+                                               regexp.getFullJavaIdPattern()};
+            for(Pattern pattern: patterns){
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.matches()){
+                    valid = true;
+                    break;
+                }
+            }
+            if (!valid){
+                return;
+            }
+        }
+ 
+        String[] stArray = tr.getStackTrace();
+        if (stArray == null){
+            tr.setStackTrace(new String[]{line});
+            Matcher matcher = regexp.getComparisonPattern().matcher(line);
+            if (matcher.matches()){
+                tr.setComparisonFailure(
+                        new Trouble.ComparisonFailure(
+                            matcher.group(1)+matcher.group(2)+matcher.group(3),
+                            matcher.group(4)+matcher.group(5)+matcher.group(6))
+                );
+                return;
+            }
+            matcher = regexp.getComparisonHiddenPattern().matcher(line);
+            if (matcher.matches()){
+                tr.setComparisonFailure(
+                        new Trouble.ComparisonFailure(
+                            matcher.group(1),
+                            matcher.group(2))
+                );
+                return;
+            }
+
+        } else {
+            List<String> stList = new ArrayList(Arrays.asList(trouble.getStackTrace()));
+            if (!line.startsWith(stList.get(stList.size()-1))){
+                stList.add(line);
+                tr.setStackTrace(stList.toArray(new String[stList.size()]));
+            }
+        }
+    }
+
 }
