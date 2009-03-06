@@ -1575,8 +1575,9 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     }
     
     public void createSampleDataSourceinDomain(){
-        DomainEditor dEditor = new DomainEditor(this);
-        dEditor.createSampleDatasource();
+        DeploymentManagerProperties dmProps = new DeploymentManagerProperties(this);
+        org.netbeans.modules.glassfish.eecommon.api.DomainEditor de = new org.netbeans.modules.glassfish.eecommon.api.DomainEditor(dmProps.getLocation(), dmProps.getDomainName(), true);
+        de.createSampleDatasource();
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {

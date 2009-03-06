@@ -96,8 +96,18 @@ public class DomainEditor {
     private static String CONST_SERVER_NAME = "serverName"; // NOI18N
     private static String CONST_DRIVER_CLASS = "driverClass"; // NOI18N
     static private String CONST_NAME = "name"; // NOI18N
+    static private String CONST_VALUE = "value"; // NOI18N
+    static private String CONST_DS_CLASS = "datasource-classname"; // NOI18N
+    static private String CONST_RES_TYPE = "res-type"; // NOI18N
     static private String CONST_JVM_OPTIONS = "jvm-options"; // NOI18N
     static private String CONST_DERBY_CONN_ATTRS = "connectionAttributes"; // NOI18N
+    static private String CONST_JNDINAME = "jndi-name"; // NOI18N
+    static private String CONST_PROP = "property"; // NOI18N
+    static private String CONST_POOLNAME = "pool-name"; // NOI18N
+    static private String CONST_ENABLED = "enabled"; // NOI18N
+    static private String CONST_OBJTYPE = "object-type"; // NOI18N
+    static private String CONST_JDBC = "jdbc-resource"; // NOI18N
+    
     private String dmLoc;
     private String dmName;
     private boolean isGlassfishV1OrV2;
@@ -362,10 +372,16 @@ public class DomainEditor {
                 if(indent) {
                     transformer.setOutputProperty(OutputKeys.INDENT, "yes");
                 }
+
                 transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-                transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, domainScriptDocument.getDoctype().getPublicId());
-                transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, domainScriptDocument.getDoctype().getSystemId());
-                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+                transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
+                if(domainScriptDocument.getDoctype() != null) {
+                    transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, domainScriptDocument.getDoctype().getPublicId());
+                    transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, domainScriptDocument.getDoctype().getSystemId());
+                }
+                if(! isGlassfishV1OrV2) {
+                    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                }
                 
                 DOMSource domSource = new DOMSource(domainScriptDocument);
                 StreamResult streamResult = new StreamResult(domainScriptFileWriter);
@@ -556,11 +572,6 @@ public class DomainEditor {
         return pools;
     }
     
-    public void createSampleDatasource(){
-        Document domainDoc = getDomainDocument();
-        updateWithSampleDataSource(domainDoc);
-    }
-    
     private Map<String,NamedNodeMap> getDataSourcesAttrMap(Document domainDoc){
         Map<String,NamedNodeMap> dataSourceMap = new HashMap<String,NamedNodeMap>();
         updateWithSampleDataSource(domainDoc);
@@ -573,14 +584,21 @@ public class DomainEditor {
         }    
         return dataSourceMap;
     }
+
+    public void createSampleDatasource(){
+        Document domainDoc = getDomainDocument();
+        if (domainDoc != null) {
+            updateWithSampleDataSource(domainDoc);
+        }
+    }
     
     private boolean updateWithSampleDataSource(Document domainDoc){
         boolean sampleExists = false;
-        NodeList dataSourceNodeList = domainDoc.getElementsByTagName("jdbc-resource");
+        NodeList dataSourceNodeList = domainDoc.getElementsByTagName(CONST_JDBC);
         for(int i=0; i<dataSourceNodeList.getLength(); i++){
             Node dsNode = dataSourceNodeList.item(i);
             NamedNodeMap dsAttrMap = dsNode.getAttributes();
-            String jndiName = dsAttrMap.getNamedItem("jndi-name").getNodeValue();
+            String jndiName = dsAttrMap.getNamedItem(CONST_JNDINAME).getNodeValue();
             if(jndiName.equals(SAMPLE_DATASOURCE)) {
                 sampleExists = true;
             }
@@ -591,6 +609,72 @@ public class DomainEditor {
         return true;
     }
     
+    private boolean createSampleDatasource(Document domainDoc){
+        NodeList resourcesNodeList = domainDoc.getElementsByTagName("resources");
+        NodeList serverNodeList = domainDoc.getElementsByTagName("server");
+        if (resourcesNodeList == null || resourcesNodeList.getLength() == 0 ||
+                serverNodeList == null || serverNodeList.getLength() == 0) {
+            return true;
+        }
+        Node resourcesNode = resourcesNodeList.item(0);
+
+        Map<String,Node> cpMap = getConnPoolsNodeMap(domainDoc);
+        if(! cpMap.containsKey(SAMPLE_CONNPOOL)){
+            if (cpMap.size() == 0) {
+                System.err.println("Cannot create sample datasource :" + SAMPLE_DATASOURCE); //N0I18N
+                return false;
+            }
+            Node oldNode = (Node)cpMap.values().iterator().next();
+            Node cpNode = oldNode.cloneNode(false);
+            NamedNodeMap cpAttrMap = cpNode.getAttributes();
+            cpAttrMap.getNamedItem(CONST_NAME).setNodeValue(SAMPLE_CONNPOOL);
+            cpAttrMap.getNamedItem(CONST_DS_CLASS).setNodeValue("org.apache.derby.jdbc.ClientDataSource"); //N0I18N
+            cpAttrMap.getNamedItem(CONST_RES_TYPE).setNodeValue("javax.sql.DataSource"); //N0I18N
+            HashMap poolProps = new HashMap();
+            poolProps.put(CONST_SERVER_NAME, "localhost"); //N0I18N
+            poolProps.put(CONST_PASSWORD, "app"); //N0I18N
+            poolProps.put(CONST_USER, "app"); //N0I18N
+            poolProps.put(CONST_DATABASE_NAME, "sample"); //N0I18N
+            poolProps.put(CONST_PORT_NUMBER, "1527"); //N0I18N
+            poolProps.put(CONST_URL, "jdbc:derby://localhost:1527/sample"); //N0I18N
+
+            Object[] propNames = poolProps.keySet().toArray();
+            for(int i=0; i<propNames.length; i++){
+                String keyName = (String)propNames[i];
+                Element propElement = domainDoc.createElement(CONST_PROP); //N0I18N
+                propElement.setAttribute(CONST_NAME, keyName);
+                propElement.setAttribute(CONST_VALUE, (String)poolProps.get(keyName)); //N0I18N
+                cpNode.appendChild(propElement);
+            }
+            resourcesNode.appendChild(cpNode);
+        }
+
+        Element dsElement = domainDoc.createElement(CONST_JDBC); //N0I18N
+        dsElement.setAttribute(CONST_JNDINAME, SAMPLE_DATASOURCE); //N0I18N
+        dsElement.setAttribute(CONST_POOLNAME, SAMPLE_CONNPOOL); //N0I18N
+        dsElement.setAttribute(CONST_OBJTYPE, "user"); //N0I18N
+        dsElement.setAttribute(CONST_ENABLED, "true"); //N0I18N
+
+        // Insert the ds __Sample as a first child of "resources" element
+        if (resourcesNode.getFirstChild() != null)
+            resourcesNode.insertBefore(dsElement, resourcesNode.getFirstChild());
+        else
+            resourcesNode.appendChild(dsElement);
+
+        //<resource-ref enabled="true" ref="jdbc/__default"/>
+        Element dsResRefElement = domainDoc.createElement("resource-ref"); //N0I18N
+        dsResRefElement.setAttribute("ref", SAMPLE_DATASOURCE); //N0I18N
+        dsResRefElement.setAttribute(CONST_ENABLED, "true"); //N0I18N
+        // Insert the ds reference __Sample as last child of "server" element
+        Node serverNode = serverNodeList.item(0);
+        if (serverNode.getLastChild() != null)
+            serverNode.insertBefore(dsResRefElement, serverNode.getLastChild());
+        else
+            serverNode.appendChild(dsResRefElement);
+
+        return saveDomainScriptFile(domainDoc, getDomainLocation());
+    }
+
     private Map<String,Node> getConnPoolsNodeMap(Document domainDoc){
         Map<String,Node> connPoolMap = new HashMap<String,Node>();
         NodeList connPoolNodeList = domainDoc.getElementsByTagName("jdbc-connection-pool");
@@ -599,70 +683,10 @@ public class DomainEditor {
             NamedNodeMap cpAttrMap = cpNode.getAttributes();
             String cpName = cpAttrMap.getNamedItem(CONST_NAME).getNodeValue();
             connPoolMap.put(cpName, cpNode);
-        }    
+        }
         return connPoolMap;
     }
-        
-    public boolean createSampleDatasource(Document domainDoc){
-        NodeList resourcesNodeList = domainDoc.getElementsByTagName("resources");
-        NodeList serverNodeList = domainDoc.getElementsByTagName("server");
-        if (resourcesNodeList == null || resourcesNodeList.getLength() == 0 || 
-                serverNodeList == null || serverNodeList.getLength() == 0) {
-            return true;
-        }
-        Node resourcesNode = resourcesNodeList.item(0);
-        
-        Map<String,Node> cpMap = getConnPoolsNodeMap(domainDoc);
-        if(! cpMap.containsKey(SAMPLE_CONNPOOL)){
-            Node oldNode = cpMap.get("DerbyPool");
-            Node cpNode = oldNode.cloneNode(false);
-            NamedNodeMap cpAttrMap = cpNode.getAttributes();
-            cpAttrMap.getNamedItem(CONST_NAME).setNodeValue(SAMPLE_CONNPOOL);
-            Map<String,String> poolProps = new HashMap<String,String>();
-            poolProps.put(CONST_SERVER_NAME, "localhost");
-            poolProps.put(CONST_PASSWORD, "app");
-            poolProps.put(CONST_USER, "app");
-            poolProps.put(CONST_DATABASE_NAME, "sample");
-            poolProps.put(CONST_PORT_NUMBER, "1527");
-            poolProps.put(CONST_URL, "jdbc:derby://localhost:1527/sample");
-            
-            Object[] propNames = poolProps.keySet().toArray();
-            for(int i=0; i<propNames.length; i++){
-                String keyName = (String)propNames[i];
-                Element propElement = domainDoc.createElement("property");
-                propElement.setAttribute(CONST_NAME, keyName);
-                propElement.setAttribute("value", poolProps.get(keyName));
-                cpNode.appendChild(propElement);
-            }
-            resourcesNode.appendChild(cpNode);
-        }
-                
-        Element dsElement = domainDoc.createElement("jdbc-resource");
-        dsElement.setAttribute("jndi-name", SAMPLE_DATASOURCE);
-        dsElement.setAttribute("pool-name", SAMPLE_CONNPOOL);
-        dsElement.setAttribute("object-type", "user");
-        dsElement.setAttribute("enabled", "true");
-        
-        // Insert the ds __Sample as a first child of "resources" element
-        if (resourcesNode.getFirstChild() != null)
-            resourcesNode.insertBefore(dsElement, resourcesNode.getFirstChild());
-        else
-            resourcesNode.appendChild(dsElement);
-        
-        //<resource-ref enabled="true" ref="jdbc/__default"/>
-        Element dsResRefElement = domainDoc.createElement("resource-ref");
-        dsResRefElement.setAttribute("ref", SAMPLE_DATASOURCE);
-        dsResRefElement.setAttribute("enabled", "true");
-        // Insert the ds reference __Sample as last child of "server" element
-        Node serverNode = serverNodeList.item(0);
-        if (serverNode.getLastChild() != null)
-            serverNode.insertBefore(dsResRefElement, serverNode.getLastChild());
-        else
-            serverNode.appendChild(dsResRefElement);
-        
-        return saveDomainScriptFile(domainDoc, getDomainLocation());
-    }
-       
+    
     public Map<String,String> getAdminObjectResourcesFromXml(){
         Map<String,String> aoResources = new HashMap<String,String>();
         Document domainDoc = getDomainDocument();
