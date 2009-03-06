@@ -222,7 +222,7 @@ public final class CsmRefactoringUtils {
     }
     
     public static <T extends CsmObject> CsmUID<T> getHandler(T element) {
-        return UIDs.get(element);
+        return element == null ? null : UIDs.get(element);
     }
     
     public static <T> T getObject(CsmUID<T> handler) {
