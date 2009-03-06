@@ -75,7 +75,7 @@ public class NetworkAccess {
         }
         
         private void postTask () {
-            final SizedConnection<InputStream> connectTask = createCallableNetwork (url, timeout);
+            final SizedConnection connectTask = createCallableNetwork (url, timeout);
             rpTask = RequestProcessor.getDefault ().post (new Runnable () {
                 public void run () {
                     connect = es.submit (connectTask);
@@ -103,8 +103,8 @@ public class NetworkAccess {
             rpTask.waitFinished ();
         }
         
-        private SizedConnection<InputStream> createCallableNetwork (final URL url, final int timeout) {
-            return new SizedConnection<InputStream> () {
+        private SizedConnection createCallableNetwork (final URL url, final int timeout) {
+            return new SizedConnection () {
                 private int contentLength = -1;
 
                 public int getContentLength() {
@@ -126,7 +126,7 @@ public class NetworkAccess {
         }
         
     }
-    private interface SizedConnection<V> extends Callable {
+    private interface SizedConnection extends Callable<InputStream> {
         public int getContentLength();
     }
     public interface NetworkListener {

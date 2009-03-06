@@ -582,13 +582,9 @@ public class DataNode extends AbstractNode {
                 } finally {
                     lock.releaseLock();
                 }
-                try {
-                    // Invalidate current DataObject which enforces refresh
-                    // and new DataObject will be created.
-                    obj.setValid(false);
-                } catch (PropertyVetoException ex) {
-                    // ignore
-                }
+                // Dispose current DataObject which enforces refresh
+                // and new DataObject will be created.
+                obj.dispose();
                 if (obj instanceof MultiDataObject) {
                     // Refresh folder to show possible new single DataObjects
                     // (e.g. when renaming form DataObject).

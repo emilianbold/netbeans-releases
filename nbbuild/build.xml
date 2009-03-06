@@ -909,7 +909,8 @@ the ${netbeans.dest}/bin/ directory.
       </antcall>
       <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc"
                classpath="${nb_all}/nbbuild/nbantext.jar"/>
-      <makeupdatedesc desc="nbms/catalog.xml" distbase=".">
+      <property name="use.license.url.in.catalog" value="true"/>
+      <makeupdatedesc desc="nbms/catalog.xml" distbase="." uselicenseurl="${use.license.url.in.catalog}">
           <fileset dir="nbms">
               <include name="*.nbm"/>
           </fileset>
@@ -2007,8 +2008,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <property name="nbms.location" location="nbms"/>
       <property name="catalog.file" location="catalog.xml"/>
       <property name="catalog.base.url" value="http://bits.netbeans.org/"/>
+      <property name="use.license.url.in.catalog" value="true"/>
 <!--      <genau config="ausrc/modules.setup" nbmLocation="${nbms.location}" catalog="${catalog.file}" catalogDeploymentLocation="${catalog.base.url}"/>-->
-      <makeupdatedesc desc="${catalog.file}" distbase="${catalog.base.url}" automaticgrouping="true">
+      <makeupdatedesc desc="${catalog.file}" distbase="${catalog.base.url}" automaticgrouping="true" uselicenseurl="${use.license.url.in.catalog}">
           <fileset dir="${nbms.location}">
               <include name="**/*.nbm"/>
           </fileset>
