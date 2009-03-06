@@ -51,7 +51,7 @@ public interface APTFile extends APT {
     /**
      * returns the full path of file
      */
-    public String getPath();
+    public CharSequence getPath();
     
     /** check the existence of tokens **/
     public boolean isTokenized();    

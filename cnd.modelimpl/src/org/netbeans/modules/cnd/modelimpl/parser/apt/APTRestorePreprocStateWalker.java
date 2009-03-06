@@ -84,7 +84,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
         this.stopDirective = null;
     }
     
-    protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, int mode, APTInclude apt) throws IOException {
+    protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt) throws IOException {
         FileImpl csmFile = null;
         boolean foundDirective = false;
         if (searchInterestedFile) {
@@ -101,7 +101,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
             }
         }
         try {
-            csmFile = inclFileOwner.getFile(new File(inclPath));
+            csmFile = inclFileOwner.getFile(new File(inclPath.toString()));
             if( csmFile == null ) {
 		// this might happen if the file has been just deleted from project
 		return null;

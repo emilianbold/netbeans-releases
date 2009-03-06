@@ -63,11 +63,11 @@ public final class APTBuilderImpl {
     public APTBuilderImpl() {
     }
 
-    public APTFile buildAPT(String path, TokenStream ts) {
+    public APTFile buildAPT(CharSequence path, TokenStream ts) {
         if (ts == null) {
             return null;
         }
-        APTFileNode aptFile = new APTFileNode(path);        
+        APTFileNode aptFile = new APTFileNode(path);
         try {
             buildFileAPT(aptFile, ts);
         } catch (TokenStreamRecognitionException ex) {
