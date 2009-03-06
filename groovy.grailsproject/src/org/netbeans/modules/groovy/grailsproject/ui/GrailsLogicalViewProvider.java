@@ -139,8 +139,6 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_Compile_Name"), null));
             actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_CLEAN,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_CleanAction_Name"), null));
-            actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_STATS,
-                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_Stats_Name"), null));
             actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_UPGRADE,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_Upgrade_Name"), null));
             actions.add(null);
