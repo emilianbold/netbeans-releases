@@ -59,7 +59,6 @@ import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSour
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 
 /**
@@ -67,13 +66,10 @@ import org.openide.util.Exceptions;
  * @author akorostelev
  */
 public class SVGComponentDisplayPresenter extends ScreenDisplayPresenter {
+    
     // component bounds rectangle
-
     private Rectangle myBoundsRect = null;
     private JPanel myView = null;
-
-    public SVGComponentDisplayPresenter() {
-    }
 
     @Override
     public boolean isTopLevelDisplay() {
@@ -108,7 +104,6 @@ public class SVGComponentDisplayPresenter extends ScreenDisplayPresenter {
     public void reload(ScreenDeviceInfo deviceInfo) {
         myBoundsRect = null;
         myView = null;
-        // TODO do nothing for now
     }
 
     @Override
@@ -128,20 +123,13 @@ public class SVGComponentDisplayPresenter extends ScreenDisplayPresenter {
         return Collections.emptyList();
     }
 
-    private Rectangle getRectangle() {
-        if (myBoundsRect == null) {
-            myBoundsRect = doCalculateRectangle();
-        }
-        return myBoundsRect;
-    }
-
     /**
      * returns svg component to which this presenter is attached, or,
      * if presenter is attached to SVGComponentEventSourceCD child,
      * svg component connected with this SVGComponentEventSourceCD.
      * @return svg component
      */
-    private DesignComponent getSvgComponent(){
+    protected DesignComponent getSvgComponent(){
         DesignComponent svgComponent = null;
         DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
 
@@ -165,56 +153,87 @@ public class SVGComponentDisplayPresenter extends ScreenDisplayPresenter {
         return svgComponent;
     }
 
+    protected String getSvgComponentId(){
+        DesignComponent svgComponent = getSvgComponent();
+        if (svgComponent == null){
+            return null;
+        }
+        return (String) svgComponent.readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue();
+    }
+
+    protected SVGImage getSvgImage(){
+        SVGImage svgImage = null;
+        DesignComponent svgForm = getComponent().getParentComponent();
+        if (svgForm == null) {
+            return null;
+        }
+        SVGPlayerDisplayPresenter presenter = svgForm.getPresenter(SVGPlayerDisplayPresenter.class);
+        if (presenter != null) {
+            svgImage = presenter.getSVGImage();
+
+        }
+        if (svgImage == null) {
+            DesignComponent svgImageComponent = svgForm.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
+            if (svgImageComponent == null) {
+                return null;
+            }
+            FileObject file = SVGFormSupport.getSVGFile(svgImageComponent);
+            if (file == null){
+                return null;
+            }
+            try {
+                svgImage = Util.createSVGImage(file, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return svgImage;
+
+    }
+
     private Rectangle doCalculateRectangle() {
         float scaleX = 1.0f;
         float scaleY = 1.0f;
         int correctionX = 0;
         int correctionY = 0;
-        SVGImage svgImage = null;
 
-        DesignComponent svgComponent = getSvgComponent();
-        if (svgComponent == null){
-            return null;
-        }
-        String id = (String) svgComponent.readProperty(SVGComponentCD.PROP_ID)
-                .getPrimitiveValue();
-        DesignComponent svgForm = svgComponent.getParentComponent();
+        DesignComponent svgForm = getComponent().getParentComponent();
         if (svgForm == null) {
             return null;
         }
-        DesignComponent svgImageComponent = svgForm.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
-        if (svgImageComponent == null) {
-            return null;
-        }
-
         SVGPlayerDisplayPresenter presenter = svgForm.getPresenter(SVGPlayerDisplayPresenter.class);
         if (presenter != null) {
             scaleX = presenter.getScaleX();
             scaleY = presenter.getScaleY();
             correctionX = presenter.getCorrectionX();
             correctionY = presenter.getCorrectionY();
-            svgImage = presenter.getSVGImage();
-
         }
-        
-        try {
-            if (svgImage == null) {
-                FileObject file = SVGFormSupport.getSVGFile(svgImageComponent);
-                svgImage = Util.createSVGImage(file, true);
-            }
-            Rectangle rect = Util.getElementRectangle(svgImage, id);
-            if (rect != null) {
-                return new Rectangle(
-                        (int) Math.round(rect.getX() * scaleX) + correctionX,
-                        (int) Math.round(rect.getY() * scaleY) + correctionY,
-                        (int) Math.round(rect.getWidth() * scaleX),
-                        (int) Math.round(rect.getHeight() * scaleY));
-            }
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+
+        String id = getSvgComponentId();
+        if (id == null){
+            return null;
+        }
+
+        SVGImage svgImage = getSvgImage();
+        if (svgImage == null){
+            return null;
+        }
+        Rectangle rect = Util.getElementRectangle(svgImage, id);
+        if (rect != null) {
+            return new Rectangle(
+                    (int) Math.round(rect.getX() * scaleX) + correctionX,
+                    (int) Math.round(rect.getY() * scaleY) + correctionY,
+                    (int) Math.round(rect.getWidth() * scaleX),
+                    (int) Math.round(rect.getHeight() * scaleY));
         }
         return null;
     }
+
+    private Rectangle getRectangle() {
+        if (myBoundsRect == null) {
+            myBoundsRect = doCalculateRectangle();
+        }
+        return myBoundsRect;
+    }
+
 }
