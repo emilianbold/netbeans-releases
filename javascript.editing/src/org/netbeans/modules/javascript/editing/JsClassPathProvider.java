@@ -66,7 +66,7 @@ public final class JsClassPathProvider implements ClassPathProvider {
     }
     
     public ClassPath findClassPath(FileObject file, String type) {
-        if (type.equals(BOOT_CP) && file.getMIMEType().equals(JsTokenId.JAVASCRIPT_MIME_TYPE)) {
+        if (type.equals(BOOT_CP) ) {
             return getBootClassPath();
         } else {
             return null;
