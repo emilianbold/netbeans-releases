@@ -55,6 +55,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
@@ -65,11 +66,16 @@ import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
  * @author Tomas Stupka
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.kenai.ui.spi.QueryAccessor.class)
-public class QueryAccessorImpl extends QueryAccessor {
+public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeListener {
 
     private static final List<QueryHandle> EMPTY_QH_LIST = Collections.unmodifiableList(Collections.EMPTY_LIST);
     private static final List<QueryResultHandle> EMPTY_QRH_LIST = Collections.unmodifiableList(Collections.EMPTY_LIST);
-    private Map<String, Set<Query>> projetToQuery;
+    final private Map<String, ProjectHandleListener> projectListeners = new HashMap<String, ProjectHandleListener>();
+
+    public QueryAccessorImpl() {
+        Kenai.getDefault().addPropertyChangeListener(this);
+    }
+
     @Override
     public List<QueryHandle> getQueries(ProjectHandle project) {
         Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
@@ -77,23 +83,23 @@ public class QueryAccessorImpl extends QueryAccessor {
             // XXX log this inconvenience
             return EMPTY_QH_LIST;
         }
-        List<QueryHandle> queries = getQueries(repo);
-        for (QueryHandle qh : queries) {
-            Query q = ((QueryHandleImpl)qh).getQuery();
-            if(projetToQuery == null) {
-                projetToQuery = new HashMap<String, Set<Query>>();
-            }
-            Set<Query> set = projetToQuery.get(project.getId());
-            if(set == null) {
-                set = new HashSet<Query>();
-                projetToQuery.put(project.getId(), set);
-            }
-            set.add(q);
+        List<QueryHandle> queries = getQueryHandles(repo);
+        ProjectHandleListener pl;
+        synchronized(projectListeners) {
+            pl = projectListeners.get(project.getId());
+        }
+        if(pl != null) {
+            project.removePropertyChangeListener(pl);
+        }
+        pl = new ProjectHandleListener(project, queries);
+        project.addPropertyChangeListener(pl);
+        synchronized(projectListeners) {
+            projectListeners.put(project.getId(), pl);
         }
         return Collections.unmodifiableList(queries);
     }
 
-    List<QueryHandle> getQueries(Repository repo) {
+    List<QueryHandle> getQueryHandles(Repository repo) {
         Query[] queries = repo.getQueries();
         if(queries == null || queries.length == 0) {
             // XXX is this possible - at least preset queries
@@ -175,22 +181,37 @@ public class QueryAccessorImpl extends QueryAccessor {
     void fireQueriesChanged(ProjectHandle project, List<QueryHandle> newQueryList) {
         fireQueryListChanged(project, newQueryList);
     }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(Kenai.PROP_LOGIN) && evt.getNewValue() == null) {
+            ProjectHandleListener[] pls;
+            synchronized(projectListeners) {
+                pls = projectListeners.values().toArray(new ProjectHandleListener[projectListeners.values().size()]);
+            }
+            for (ProjectHandleListener pl : pls) {
+                pl.closeQueries();
+            }
+        }
+    }
     
     private class ProjectHandleListener implements PropertyChangeListener {
+        private List<QueryHandle> queries;
         private ProjectHandle ph;
-        public ProjectHandleListener(ProjectHandle ph) {
+        public ProjectHandleListener(ProjectHandle ph, List<QueryHandle> queries) {
+            this.queries = queries;
             this.ph = ph;
         }
-
         public void propertyChange(PropertyChangeEvent evt) {
-            if(projetToQuery == null) {
-                return;
-            }
             if(evt.getPropertyName().equals(ProjectHandle.PROP_CLOSE)) {
-                Set<Query> s = projetToQuery.get(ph.getId());
-                for (Query query : s) {
-                    QueryAction.closeQuery(query);
-                }
+                closeQueries();
+            }
+        }
+        public void closeQueries() {
+            for (QueryHandle qh : queries) {
+                QueryAction.closeQuery(((QueryHandleImpl) qh).getQuery());
+            }
+            synchronized (projectListeners) {
+                projectListeners.remove(ph.getId());
             }
         }
     }
