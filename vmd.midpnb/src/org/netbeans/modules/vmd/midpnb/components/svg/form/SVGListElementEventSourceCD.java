@@ -66,11 +66,19 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
+import org.openide.util.ImageUtilities;
 
 public class SVGListElementEventSourceCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#SVGListelement"); // NOI18N
     public static final String PROP_INDEX = "index";
+
+    private static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/element_16.png"; // NOI18N
+    private static final Image ICON = ImageUtilities.loadImage(ICON_PATH);
+
+    static {
+        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
+    }
 
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(EventSourceCD.TYPEID, TYPEID, true, false);
@@ -157,10 +165,11 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
         }
 
         public Image getIcon(DesignComponent component, IconType iconType) {
-            return null;
+            return ICON;
         }
     }
 
+    //TODO This is not finish yet!
     private class SVGListElementEventSourcePositionController implements InspectorPositionController {
 
         public boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component) {
