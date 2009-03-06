@@ -245,23 +245,33 @@ public class KenaiConnection implements PropertyChangeListener {
         return connection.getRoster();
     }
 
-    public void propertyChange(PropertyChangeEvent e) {
+    private RequestProcessor xmppProcessor = new RequestProcessor("XMPP Processor");
+    public RequestProcessor.Task post(Runnable run) {
+        return xmppProcessor.post(run);
+    }
+
+    public void propertyChange(final PropertyChangeEvent e) {
         if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
-            final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
-            if (pa != null) {
-                USER = pa.getUserName();
-                PASSWORD = new String(pa.getPassword());
-                tryConnect();
-            } else {
-                for (MultiUserChat muc : getChats()) {
-                    muc.leave();
+            post(new Runnable() {
+                public void run() {
+                    final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
+                    if (pa != null) {
+                        USER = pa.getUserName();
+                        PASSWORD = new String(pa.getPassword());
+                        tryConnect();
+                    } else {
+                        for (MultiUserChat muc : getChats()) {
+                            muc.leave();
+                        }
+                        chats.clear();
+                        connection.disconnect();
+                        messageQueue.clear();
+                        listeners.clear();
+                        PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
+                        ChatNotifications.getDefault().clearAll();
+                    }
                 }
-                chats.clear();
-                connection.disconnect();
-                messageQueue.clear();
-                listeners.clear();
-                PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
-            }
+            });
         }
     }
     
