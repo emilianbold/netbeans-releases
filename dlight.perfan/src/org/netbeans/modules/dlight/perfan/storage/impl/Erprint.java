@@ -84,6 +84,12 @@ public final class Erprint {
         return new ExperimentStatistics(stat);
     }
 
+    LeaksStatistics getExperimentLeaks() {
+        restart();
+        String[] stat = exec("leaks"); // NOI18N
+        return new LeaksStatistics(stat);
+    }
+
     private final void start() {
         final CountDownLatch doneSignal = new CountDownLatch(1);
 

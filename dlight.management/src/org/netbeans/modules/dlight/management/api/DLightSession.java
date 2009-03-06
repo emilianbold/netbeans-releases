@@ -338,11 +338,18 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 
         for (DLightTool tool : validTools) {
             // Try to subscribe every IndicatorDataProvider to every Indicator
+            //there can be the situation when IndicatorDataProvider is collector
+            //and not attacheble
             List<IndicatorDataProvider> idps = DLightToolAccessor.getDefault().getIndicatorDataProviders(tool);
             if (idps != null) {
                 for (IndicatorDataProvider idp : idps) {
                     if (idp instanceof DLightTarget.ExecutionEnvVariablesProvider) {
                         context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) idp);
+                    }
+                    if (idp instanceof DataCollector){
+                        if (notAttachableDataCollector == null && !((DataCollector)idp).isAttachable()) {
+                            notAttachableDataCollector = ((DataCollector)idp);
+                        }
                     }
                     List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
                     for (Indicator i : indicators) {
