@@ -132,7 +132,7 @@ public class KenaiTest extends NbTestCase {
      */
     @Test
     public void testSearchProjectsWithSpaceReplaced() throws Exception {
-        System.out.println("testSearchProjectsWithSpace");
+        System.out.println("testSearchProjectsWithSpaceReplaced");
         String pattern = "java%20inline";
         Collection<KenaiProject> result = instance.searchProjects(pattern);
 
@@ -511,7 +511,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testGetFeatures"));
         _suite.addTest(new KenaiTest("testGetLicenses"));
         _suite.addTest(new KenaiTest("testGetServices"));
-        _suite.addTest(new KenaiTest("testGetMyProjects"));
+//        _suite.addTest(new KenaiTest("testGetMyProjects"));
         return _suite;
     }
     ;
