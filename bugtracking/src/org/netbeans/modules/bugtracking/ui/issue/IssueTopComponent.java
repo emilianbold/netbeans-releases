@@ -85,8 +85,6 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         Font f = new JLabel().getFont();
         int s = f.getSize();
         findIssuesLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
-
-        setNameAndTooltip();
         
         newButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -135,8 +133,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 }
             }
         });
-
-//        issuePanel.setVisible(false);
+        setNameAndTooltip();
     }
 
     /**
