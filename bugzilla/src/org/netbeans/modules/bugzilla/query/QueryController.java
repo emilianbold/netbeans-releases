@@ -783,15 +783,25 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 products = new String[] {null};
             }
 
-            List<String> components = new ArrayList<String>();
-            List<String> versions = new ArrayList<String>();
+            List<String> newComponents = new ArrayList<String>();
+            List<String> newVersions = new ArrayList<String>();
             for (String p : products) {
-                components.addAll(bgz.getComponents(repository, p));
-                versions.addAll(bgz.getVersions(repository, p));
+                List<String> productComponents = bgz.getComponents(repository, p);
+                for (String c : productComponents) {
+                    if(!newComponents.contains(c)) {
+                        newComponents.add(c);
+                    }
+                }
+                List<String> productVersions = bgz.getVersions(repository, p);
+                for (String c : productVersions) {
+                    if(!newVersions.contains(c)) {
+                        newVersions.add(c);
+                    }
+                }
             }
             
-            componentParameter.setParameterValues(toParameterValues(components));
-            versionParameter.setParameterValues(toParameterValues(versions));
+            componentParameter.setParameterValues(toParameterValues(newComponents));
+            versionParameter.setParameterValues(toParameterValues(newVersions));
 
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
