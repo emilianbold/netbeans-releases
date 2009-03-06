@@ -39,27 +39,21 @@
 package org.netbeans.modules.dlight.memory;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
-import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
-import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
-import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.spi.util.MangledNameType;
-import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
@@ -81,9 +75,6 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
      */
     private static final boolean useLLIndicatorDataProvider =
             Util.getBoolean("dlight.memory.LL", true); // NOI18N
-
-    private static final boolean redirectStdErr =
-            Util.getBoolean("dlight.memory.log.stderr", false); // NOI18N
 
 //    private static final boolean USE_SUNSTUDIO =
 //            Boolean.getBoolean("gizmo.mem.sunstudio"); // NOI18N
@@ -134,6 +125,10 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             if (USE_SUNSTUDIO) {
                 DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
                 toolConfiguration.addDataCollectorConfiguration(dcc);
+            } else if (useLLIndicatorDataProvider) {
+                LLDataCollectorConfiguration lldcc = initLLDataCollectorConfiguration();
+                toolConfiguration.addDataCollectorConfiguration(lldcc);
+                toolConfiguration.addIndicatorDataProviderConfiguration(lldcc);
             } else {
                 MultipleDTDCConfiguration mdcc = initDtraceDataCollectorConfiguration();
                 toolConfiguration.addDataCollectorConfiguration(mdcc);
@@ -147,10 +142,10 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             // VK: (in other words: don't use LL monitor since it breaks collect with SIGUSR1)
             // VK: if we use DTrace collector, it will act as indicator data provider as well!
             // so we need separate collector only in the case we don't collect details at all
-            toolConfiguration.addIndicatorDataProviderConfiguration(
-                    useLLIndicatorDataProvider ?
-                        initNativeIndicatorDataProviderConfiguration() :
+            if (!useLLIndicatorDataProvider) {
+                toolConfiguration.addIndicatorDataProviderConfiguration(
                         initDtraceIndicatorDataProviderConfiguration());
+            }
         }
         
         toolConfiguration.addIndicatorConfiguration(initIndicatorConfiguration());
@@ -193,41 +188,18 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         return Util.copyResource(getClass(), Util.getBasePath(getClass()) + "/resources/mem.d"); // NOI18N
     }
 
-    private IndicatorDataProviderConfiguration initNativeIndicatorDataProviderConfiguration() {
-        CLIODCConfiguration memIndicatorDataProvider = null;
+    private LLDataCollectorConfiguration initLLDataCollectorConfiguration() {
 
-        final DataTableMetadata indicatorTableMetadata =
-                new DataTableMetadata("magent", Arrays.asList(totalColumn)); // NOI18N
-
-        String monitor = NativeToolsUtil.getExecutable("mmonitor");
-        String envVar = NativeToolsUtil.getLdPreloadEnvVarName();
-        String agent = NativeToolsUtil.getSharefLibrary("magent");
-
-        DLightLogger.instance.fine("Memory Indicator:\nmonitor:\n" + // NOI18N
-                monitor + "\nagent:\n" + agent + "\n\n"); // NOI18N
-
-        if (monitor != null && agent != null) {
-            memIndicatorDataProvider = new CLIODCConfiguration(monitor,
-                    " @PID " + (redirectStdErr ? " 2>/tmp/mmonitor.err" : ""), // NOI18N
-                    new MAgentClioParser(totalColumn),
-                    Arrays.asList(indicatorTableMetadata));
-
-            Map<String, String> env = new LinkedHashMap<String, String>();
-            env.put(envVar, agent);
-
-            DLightLogger.instance.fine("SET " + envVar + "=" + agent);//NOI18N
-
-            if (monitor != null && agent != null) {
-                memIndicatorDataProvider.setDLightTargetExecutionEnv(env);
-            }
-        }
+        LLDataCollectorConfiguration memIndicatorDataProvider =
+                new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.MEM);
 
         return memIndicatorDataProvider;
     }
 
     private IndicatorConfiguration initIndicatorConfiguration() {
         IndicatorMetadata indicatorMetadata = null;
-        indicatorMetadata = new IndicatorMetadata(Arrays.asList(totalColumn));
+        indicatorMetadata = new IndicatorMetadata(useLLIndicatorDataProvider ?
+            LLDataCollectorConfiguration.MEM_TABLE.getColumns() : Arrays.asList(totalColumn));
 
         MemoryIndicatorConfiguration indicatorConfiguration =
                 new MemoryIndicatorConfiguration(indicatorMetadata, "total"); // NOI18N
@@ -281,38 +253,6 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         tableVisualizerConfiguration.setDefaultActionProvider();
 
         return tableVisualizerConfiguration;
-    }
-
-    private static class MAgentClioParser implements CLIOParser {
-
-        private List<String> colNames;
-
-        public MAgentClioParser(Column totalColumn) {
-            colNames = Arrays.asList(totalColumn.getColumnName());
-        }
-
-        public DataRow process(String line) {
-            DLightLogger.instance.fine("MAgentClioParser: " + line); //NOI18N
-            if (line == null) {
-                return null;
-            }
-            line = line.trim();
-            if (!Character.isDigit(line.charAt(0))) {
-                return null;
-            }
-            try {
-                Long value = Long.parseLong(line);
-                return new DataRow(colNames, Arrays.asList((Object) value));
-            } catch (NumberFormatException e) {
-                DLightLogger.instance.log(Level.WARNING, e.getMessage(), e);
-            }
-            return null;
-        }
-
-        int parseInt(String s) throws NumberFormatException {
-            DLightLogger.assertTrue(s != null);
-            return Integer.parseInt(s);
-        }
     }
 
 //    private static class TrussClioParser implements CLIOParser {

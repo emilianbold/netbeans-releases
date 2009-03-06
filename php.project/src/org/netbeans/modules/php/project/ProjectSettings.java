@@ -36,43 +36,58 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.memory;
+
+package org.netbeans.modules.php.project;
 
 import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
-
+import java.util.prefs.Preferences;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.openide.util.NbPreferences;
 
 /**
- * Mmory usage indicator
- * @author Vladimir Kvashin
+ * Helper class to get miscellaneous properties related to single PHP project
+ * (like timestamp when a project has been uploaded last time etc.)
+ * @author Tomas Mysik
  */
-public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
+public final class ProjectSettings {
 
-    private final MemoryIndicatorPanel panel;
-    private final String colName;
+    private static final String LAST_UPLOAD = "lastUpload"; // NOI18N
+    private static final String DEBUG_URLS = "debugUrls"; // NOI18N
+    private static final String DEBUG_URLS_DELIMITER = "??NB??"; // NOI18N
+    private static final int DEBUG_URLS_LIMIT = 10;
 
-    public MemoryIndicator(MemoryIndicatorConfiguration configuration) {
-        super(configuration);
-        this.panel = new MemoryIndicatorPanel();
-        this.colName = configuration.getColName();
+    private ProjectSettings() {
     }
 
-    @Override
-    public JComponent getComponent() {
-        return panel;
+    private static Preferences getPreferences(Project project) {
+        return NbPreferences.forModule(ProjectSettings.class).node(ProjectUtils.getInformation(project).getName());
     }
 
-    public void reset() {
+    /**
+     * @return timestamp <b>in seconds</b> of the last upload of a project or <code>-1</code> if not found.
+     */
+    public static long getLastUpload(Project project) {
+        return getPreferences(project).getLong(LAST_UPLOAD, -1);
     }
 
-    public void updated(List<DataRow> data) {
-        for (DataRow row : data) {
-            String value = row.getStringValue(colName);
-            if (value != null) {
-                panel.setValue(Long.valueOf(value));
-            }
+    public static void setLastUpload(Project project, long timestamp) {
+        getPreferences(project).putLong(LAST_UPLOAD, timestamp);
+    }
+
+    public static void resetLastUpload(Project project) {
+        setLastUpload(project, -1);
+    }
+
+    public static List<String> getDebugUrls(Project project) {
+        return PhpProjectUtils.explode(getPreferences(project).get(DEBUG_URLS, null), DEBUG_URLS_DELIMITER);
+    }
+
+    public static void setDebugUrls(Project project, List<String> debugUrls) {
+        if (debugUrls.size() > DEBUG_URLS_LIMIT) {
+            debugUrls = debugUrls.subList(0, DEBUG_URLS_LIMIT);
         }
+        getPreferences(project).put(DEBUG_URLS, PhpProjectUtils.implode(debugUrls, DEBUG_URLS_DELIMITER));
     }
 }
