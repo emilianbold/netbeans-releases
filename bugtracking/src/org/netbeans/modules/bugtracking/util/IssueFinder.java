@@ -46,7 +46,9 @@ package org.netbeans.modules.bugtracking.util;
  */
 public class IssueFinder {
 
-    private static final String[] BUGWORDS = new String[] {"bug", "issue"}; //NOI18N
+    private static final String[] BUGWORDS = new String[] {"bug", "issue",  //NOI18N
+                                                           "Bug", "Issue",  //NOI18N
+                                                           "BUG", "ISSUE"}; //NOI18N
 
     private static final int[] EMPTY_INT_ARR = new int[0];
 

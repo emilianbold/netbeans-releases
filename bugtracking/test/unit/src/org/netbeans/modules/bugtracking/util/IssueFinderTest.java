@@ -90,6 +90,16 @@ public class IssueFinderTest {
         checkIssueSpans("bug  #123456", "bug  #123456");
         checkIssueSpans("bug # 123456", "bug # 123456");
 
+        checkIssueSpans("Bug 123456", "Bug 123456");
+        checkIssueSpans("BUG 123456", "BUG 123456");
+        checkIssueSpans("Issue 123456", "Issue 123456");
+        checkIssueSpans("ISSUE 123456", "ISSUE 123456");
+
+        checkIssueSpans("Bug #123456", "Bug #123456");
+        checkIssueSpans("BUG #123456", "BUG #123456");
+        checkIssueSpans("Issue #123456", "Issue #123456");
+        checkIssueSpans("ISSUE #123456", "ISSUE #123456");
+
         checkIssueSpans("bug# #123456", "#123456");
         checkIssueSpans("sbug #123456", "#123456");
 
@@ -166,6 +176,16 @@ public class IssueFinderTest {
 
         testGetIssueNumber("bug # abcdef", "abcdef");
         testGetIssueNumber("# abcdef", "abcdef");
+
+        testGetIssueNumber("Bug 123456", "123456");
+        testGetIssueNumber("BUG 123456", "123456");
+        testGetIssueNumber("Issue 123456", "123456");
+        testGetIssueNumber("ISSUE 123456", "123456");
+        testGetIssueNumber("Bug #123456", "123456");
+        testGetIssueNumber("BUG #123456", "123456");
+        testGetIssueNumber("Issue #123456", "123456");
+        testGetIssueNumber("ISSUE #123456", "123456");
+
     }
 
     private void checkIssueSpans(String str, String... substr) {
