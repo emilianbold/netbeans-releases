@@ -67,7 +67,7 @@ final class OutputUtils {
             Node child = childrens.getNodeAt(0);
             if ((child != null) && (child instanceof JUnitTestMethodNode)){
                 JUnitTestcase testcase = ((JUnitTestMethodNode)child).getTestcase();
-                Utils.openFile(testcase.getTestSuite().getSuiteFO(), -1); 
+                Utils.openFile(testcase.getTestSuite().getSuiteFO(), 1);
             }
         }
     }
