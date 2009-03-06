@@ -79,7 +79,16 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    
+
+    <folder name="OptionsExport">
+        <folder name="Advanced">
+            <file name="Diff">
+                <attr name="include" stringvalue="config/Services/DiffProviders/.*"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.diff.Bundle#Diff.Options.Export.displayName"/>
+            </file>
+        </folder>
+    </folder>
+
     <folder name="org-netbeans-modules-options-editor">
         <folder name="OptionsDialogCategories">
             <folder name="FontsColors">

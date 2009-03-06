@@ -543,6 +543,16 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
     }
     
+    /** Gets default mode for opening new component. */
+    /*private*/ ModeImpl getDefaultEditorModeForOpen() {
+        ModeImpl mode = central.getLastActiveEditorMode();
+        if (mode == null) {
+            return getDefaultEditorMode();
+        } else {
+            return mode;
+        }
+    }
+    
     // XXX
     /** Gets default view mode. */
     ModeImpl getDefaultViewMode() {
@@ -1081,11 +1091,11 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 "TopComponent"); //NOI18N
         }
         
-        
         ModeImpl mode = getMode(tc);
         
-        if(mode == null) {
-            mode = getDefaultEditorMode();
+        if (mode == null) {
+            mode = getDefaultEditorModeForOpen();
+            assert getModes().contains(mode) : "Mode " + mode.getName() + " is not in model."; //NOI18N
             if (tc.getClientProperty (Constants.TOPCOMPONENT_ALLOW_DOCK_ANYWHERE) == null) {
                 tc.putClientProperty (Constants.TOPCOMPONENT_ALLOW_DOCK_ANYWHERE, Boolean.TRUE);
             }

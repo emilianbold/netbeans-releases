@@ -89,7 +89,7 @@ made subject to such option by the copyright holder.
                 <action name="test">
                     <target>localtest</target>
                 </action>
-                <action name="run.single">
+                <action name="test.single">
                     <target>localtest</target>
                     <context>
                         <property>includes</property>
@@ -101,7 +101,7 @@ made subject to such option by the copyright holder.
                         </arity>
                     </context>
                 </action>
-                <action name="debug.single">
+                <action name="debug.test.single">
                     <target>localtest-single-nb-debug</target>
                     <context>
                         <property>includes</property>

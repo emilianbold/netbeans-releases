@@ -41,11 +41,14 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import java.io.IOException;
 import javax.lang.model.util.Types;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
@@ -54,6 +57,7 @@ import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -133,12 +137,14 @@ public class PushDownTransformer extends RefactoringVisitor {
             TypeMirror tm = el.asType();
             Types types = workingCopy.getTypes();
             if (types.isSubtype(types.erasure(tm), types.erasure(p.asType()))) {
+                List<String> imports = new ArrayList<String>();
                 for (int i = 0; i<members.length; i++) {
                     Element member = members[i].getElementHandle().resolve(workingCopy);
                     if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS) {
                         if (((TypeElement) el).getInterfaces().contains(member.asType())) {
                             problem = MoveTransformer.createProblem(problem, false, org.openide.util.NbBundle.getMessage(PushDownTransformer.class, "ERR_PushDown_AlreadyExists", member.getSimpleName(), el.getSimpleName()));
                         }
+                        imports.add(member.asType().toString()); //add may-be necessary import
                         njuClass = make.addClassImplementsClause(njuClass, make.Identifier(member));
                     } else {
                         if (RetoucheUtils.elementExistsIn((TypeElement) el, member, workingCopy)) {
@@ -151,6 +157,14 @@ public class PushDownTransformer extends RefactoringVisitor {
                             RetoucheUtils.copyJavadoc(member, memberTree, workingCopy);
                        njuClass = genUtils.insertClassMember(njuClass, memberTree);
                     }
+                }
+                try {
+                    if (imports.size() > 0) {
+                        CompilationUnitTree newCut = RetoucheUtils.addImports(workingCopy.getCompilationUnit(), imports, make);
+                        rewrite(workingCopy.getCompilationUnit(), newCut);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
                 rewrite(tree, njuClass);
             }
