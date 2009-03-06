@@ -91,6 +91,7 @@ public interface GlassfishModule {
     public static final String JRUBY_CONTAINER = "jruby"; // NOI18N
 
     // Resource types
+    public static final String JDBC = "JDBC"; // NOI18N
     public static final String JDBC_RESOURCE = "jdbc-resource"; // NOI18N
     public static final String JDBC_CONNECTION_POOL = "jdbc-connection-pool"; // NOI18N
     public static final String SESSION_PRESERVATION_FLAG = "preserveSessionsOn";

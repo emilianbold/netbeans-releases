@@ -41,67 +41,62 @@
 
 package org.netbeans.modules.glassfish.common.nodes;
 
-import java.util.Collection;
+import java.util.Set;
 import java.util.Vector;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.glassfish.common.GlassfishInstance;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Mutex;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 
 
 /**
- * 
+ *
  * @author Peter Williams
  */
-public class Hk2InstanceChildren extends Children.Keys<Hk2ItemNode> implements Refreshable, ChangeListener {
-    
-    private GlassfishInstance serverInstance;
-    
-    Hk2InstanceChildren(GlassfishInstance instance) {
-        serverInstance = instance;
-        serverInstance.addChangeListener(WeakListeners.change(this, serverInstance));
+public class Hk2ResourceContainers extends Children.Keys<Object> implements Refreshable {
+
+    private Lookup lookup;
+    private final static Node WAIT_NODE = Hk2ItemNode.createWaitNode();
+
+    Hk2ResourceContainers(Lookup lookup) {
+        this.lookup = lookup;
     }
 
     public void updateKeys(){
         Vector<Hk2ItemNode> keys = new Vector<Hk2ItemNode>();
-        if(serverInstance.getServerState() == ServerState.RUNNING) {
-            keys.add(new Hk2ItemNode(serverInstance.getLookup(), 
-                    new Hk2ApplicationsChildren(serverInstance.getLookup()),
-                    NbBundle.getMessage(Hk2InstanceNode.class, "LBL_Apps"),
-                    Hk2ItemNode.J2EE_APPLICATION_FOLDER));
-            keys.add(new Hk2ItemNode(serverInstance.getLookup(), 
-                    new Hk2ResourceContainers(serverInstance.getLookup()),
-                    NbBundle.getMessage(Hk2InstanceNode.class, "LBL_Resources"),
-                    Hk2ItemNode.RESOURCES_FOLDER));
+        String[] childTypes = NodeTypes.getChildTypes(NodeTypes.RESOURCES);
+        if(childTypes != null) {
+            for(int i = 0; i < childTypes.length; i++) {
+                String type = childTypes[i];
+                keys.add(new Hk2ItemNode(lookup,
+                    new Hk2ResourcesChildren(lookup, type),
+                    NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_"+type), 
+                    DecoratorManager.findDecorator(type, null)));
+            }
         }
         setKeys(keys);
     }
-    
+
     @Override
     protected void addNotify() {
         updateKeys();
     }
-    
+
     @Override
     protected void removeNotify() {
-        Collection<Hk2ItemNode> noKeys = java.util.Collections.emptySet();
-        setKeys(noKeys);
-    }
-    
-    protected org.openide.nodes.Node[] createNodes(Hk2ItemNode key) {
-        return new Node [] { key };
+        setKeys((Set<? extends Object>) java.util.Collections.EMPTY_SET);
     }
 
-    public void stateChanged(ChangeEvent e) {
-        Mutex.EVENT.readAccess(new Runnable() {
-            public void run() {
-                updateKeys();
-            }
-        });
+    protected org.openide.nodes.Node[] createNodes(Object key) {
+        if (key instanceof Hk2ItemNode){
+            return new Node [] { (Hk2ItemNode) key };
+        }
+
+        if (key instanceof String && key.equals(WAIT_NODE)){
+            return new Node [] { WAIT_NODE };
+        }
+
+        return null;
     }
+
 }

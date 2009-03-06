@@ -112,6 +112,12 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         @Override public boolean canShowBrowser() { return true; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EJB_ARCHIVE); }
     };
+
+    public static final Decorator JDBC_FOLDER = new Decorator() {
+        @Override public boolean isRefreshable() { return true; }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
+        @Override public Image getOpenedIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
+    };
     
     public static final Decorator JDBC_MANAGED_DATASOURCES = new ResourceDecorator() {
         @Override public boolean canUnregister() { return true; }
@@ -142,6 +148,7 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         decoratorMap.put("ear_ContractProvider", J2EE_APPLICATION);
         decoratorMap.put(GlassfishModule.JDBC_RESOURCE, JDBC_MANAGED_DATASOURCES);
         decoratorMap.put(GlassfishModule.JDBC_CONNECTION_POOL, CONNECTION_POOLS);
+        decoratorMap.put(GlassfishModule.JDBC, JDBC_FOLDER);
     };
     
 }
