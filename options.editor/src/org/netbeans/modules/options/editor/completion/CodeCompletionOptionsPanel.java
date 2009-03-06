@@ -134,7 +134,7 @@ public class CodeCompletionOptionsPanel extends JPanel implements PropertyChange
         panel = new javax.swing.JPanel();
 
         lLanguage.setLabelFor(cbLanguage);
-        lLanguage.setText("Language:");
+        org.openide.awt.Mnemonics.setLocalizedText(lLanguage, org.openide.util.NbBundle.getMessage(CodeCompletionOptionsPanel.class, "CTL_Language")); // NOI18N
 
         cbLanguage.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -154,7 +154,7 @@ public class CodeCompletionOptionsPanel extends JPanel implements PropertyChange
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbLanguage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .add(panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+            .add(panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
