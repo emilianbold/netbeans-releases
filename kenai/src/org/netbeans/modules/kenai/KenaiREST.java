@@ -40,7 +40,9 @@
 package org.netbeans.modules.kenai;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
@@ -123,8 +125,12 @@ public class KenaiREST extends KenaiImpl {
 
     @Override
     public Collection<ProjectData> searchProjects(String pattern) throws KenaiException {
-        ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects.json?q=" + pattern, ProjectsListData.class);
-        return new LazyList(pld, ProjectsListData.class);
+        try {
+            ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects.json?q=" + URLEncoder.encode(pattern, "UTF-8"), ProjectsListData.class);
+            return new LazyList(pld, ProjectsListData.class);
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
 
     }
 

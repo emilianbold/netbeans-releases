@@ -131,24 +131,6 @@ public class KenaiTest extends NbTestCase {
      * Test of searchProjects method, of class Kenai.
      */
     @Test
-    public void testSearchProjectsWithSpaceReplaced() throws Exception {
-        System.out.println("testSearchProjectsWithSpaceReplaced");
-        String pattern = "java%20inline";
-        Collection<KenaiProject> result = instance.searchProjects(pattern);
-
-        if (result.size() != 1) {
-            fail("The search returned incorrect number of the results when [java%20inline] was entered");
-        }
-        for (KenaiProject prj : result) {
-            assertEquals(prj.getDisplayName(), "JavaInline for JRuby");
-            System.out.println("Search projects: " + prj.getDisplayName());
-        }
-    }
-
-    /**
-     * Test of searchProjects method, of class Kenai.
-     */
-    @Test
     public void testSearchProjectsWithSpace() throws Exception {
         System.out.println("testSearchProjectsWithSpace");
         String pattern = "java inline";
@@ -495,7 +477,6 @@ public class KenaiTest extends NbTestCase {
         junit.framework.TestSuite _suite = new junit.framework.TestSuite();
         _suite.addTest(new KenaiTest("testSearchProjects"));
         _suite.addTest(new KenaiTest("testSearchProjectsWithSpace"));
-        _suite.addTest(new KenaiTest("testSearchProjectsWithSpaceReplaced"));
         _suite.addTest(new KenaiTest("testGetProject"));
         _suite.addTest(new KenaiTest("testGetDescription"));
         _suite.addTest(new KenaiTest("testGetDisplayName"));
