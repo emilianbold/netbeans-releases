@@ -50,10 +50,9 @@ import org.openide.util.ImageUtilities;
 public class SVGListEventSourceCD extends SVGComponentEventSourceCD {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, 
-            "#SVGListEventEventSource"); // NOI18
+            "#SVGListEventSource"); // NOI18
     
-    private static final String ICON_PATH = 
-        "org/netbeans/modules/mobility/svgcore/resources/palette/form/list_16.png"; // NOI18N                                                
+    private static final String ICON_PATH = "org/netbeans/modules/mobility/svgcore/resources/palette/form/list_16.png"; // NOI18N                                                
     private static final Image ICON = ImageUtilities.loadImage(ICON_PATH);
     
     /* (non-Javadoc)
