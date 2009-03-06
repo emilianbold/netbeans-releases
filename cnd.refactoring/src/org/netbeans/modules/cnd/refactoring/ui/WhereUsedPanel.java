@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -92,7 +93,7 @@ import org.openide.awt.Mnemonics;
 public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
     private final transient CsmObject origObject;
-    private transient CsmObject refObject;
+    private transient CsmUID<CsmObject> refObjectUID;
 
     private final transient ChangeListener parent;
     private String name;
@@ -122,7 +123,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         return Scope.ALL;
     }
     
-    private boolean initialized = false;
+    private volatile boolean initialized = false;
     private CsmClass methodDeclaringSuperClass = null;
     private CsmClass methodDeclaringClass = null;
     private CsmMethod baseVirtualMethod = null;
@@ -142,6 +143,10 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         return isMethodFromBaseClass() ? methodDeclaringSuperClass : methodDeclaringClass;
     }
 
+    public void uninitialize() {
+        initialized = false;
+    }
+
     public void initialize() {
         // method is called to make initialization of components out of AWT
         if (initialized) {
@@ -151,7 +156,8 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
         final JLabel currentProject;
         final JLabel allProjects;
-        if (!CsmKindUtilities.isLocalVariable(this.refObject)) {
+        CsmObject refObject = getReferencedObject();
+        if ((refObject != null) && !CsmKindUtilities.isLocalVariable(refObject)) {
             Project p = CsmRefactoringUtils.getContextProject(this.origObject);
             if (p!=null) {
                 ProjectInformation pi = ProjectUtils.getInformation(p);
@@ -167,7 +173,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             currentProject = null;
             allProjects = null;
         }
-        
         final String labelText;
         String _isBaseClassText = null;
         boolean _needVirtualMethodPanel = false;
@@ -249,8 +254,10 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             labelText = getString("DSC_MacroUsages", macroName.toString()); // NOI18N
         } else if (CsmKindUtilities.isQualified(refObject)) {
             labelText = ((CsmQualifiedNamedElement)refObject).getQualifiedName().toString();
-        } else {
+        } else if (refObject != null) {
             labelText = this.name;
+        } else {
+            labelText = getString("DSC_ElNotAvail", this.name); // NOI18N
         }
 
         this.name = labelText;
@@ -338,7 +345,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
 
     /*package*/ CsmObject getReferencedObject() {
-        return refObject;
+        return refObjectUID == null ? null : refObjectUID.getObject();
     }
 
     /*package*/ String getDescription() {
@@ -610,11 +617,12 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
     }
     
     /*package*/ boolean isClass() {
-        return CsmKindUtilities.isClass(refObject);
+        return CsmKindUtilities.isClass(getReferencedObject());
     }
     
     private void initFields() {
-        this.refObject = getReferencedElement(origObject);
+        final CsmObject refObject = getReferencedElement(origObject);
+        this.refObjectUID = CsmRefactoringUtils.getHandler(refObject);
         this.name = getSearchElementName(refObject, this.name);
         //System.err.println("initFields: refObject=" + refObject + "\n");
     }

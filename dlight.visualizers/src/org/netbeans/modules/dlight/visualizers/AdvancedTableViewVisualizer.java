@@ -39,8 +39,11 @@
 package org.netbeans.modules.dlight.visualizers;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +52,9 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.JToolBar;
+import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
@@ -58,8 +63,8 @@ import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.AdvancedTableViewVisualizerConfigurationAccessor;
-import org.openide.explorer.view.NodeTableModel;
-import org.openide.explorer.view.TableView;
+import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
+import org.openide.explorer.view.OutlineView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -86,17 +91,41 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private OnTimerRefreshVisualizerHandler timerHandler;
     private boolean isEmptyContent;
     private boolean isShown = true;
-    private NodeTableModel nodeTableModel;
-    private TableView tableView;
+    private OutlineView outlineView;
+    private final String nodeColumnName;
 
     AdvancedTableViewVisualizer(TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
-       // timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
+        // timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.provider = provider;
         this.configuration = configuration;
         setEmptyContent();
         setModels();
         addComponentListener(this);
-        tableView = new TableView();
+        AdvancedTableViewVisualizerConfigurationAccessor accessor = AdvancedTableViewVisualizerConfigurationAccessor.getDefault();
+//        tableView = new TableView();
+        nodeColumnName = accessor.getNodeColumnName(configuration);
+        outlineView = new OutlineView(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnUName());
+        outlineView.getOutline().setRootVisible(false);
+        outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
+        List<Property> result = new ArrayList();
+        for (String columnName : configuration.getMetadata().getColumnNames()) {
+            if (!nodeColumnName.equals(columnName)) {
+                final Column c = configuration.getMetadata().getColumnByName(columnName);
+                result.add(new PropertySupport(c.getColumnName(), c.getColumnClass(),
+                    c.getColumnUName(), c.getColumnUName(), true, false) {
+
+                    @Override
+                    public Object getValue() throws IllegalAccessException, InvocationTargetException {
+                        return null;
+                    }
+
+                    @Override
+                    public void setValue(Object arg0) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                    }
+                });
+            }
+        }
+        outlineView.setProperties(result.toArray(new Property[0]));
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
     }
@@ -118,7 +147,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     @Override
     public void removeNotify() {
         super.removeNotify();
-        if (timerHandler != null){
+        if (timerHandler != null) {
             timerHandler.stopTimer();
         }
         removeComponentListener(this);
@@ -153,8 +182,8 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     protected void updateList(List<DataRow> list) {
+        setNonEmptyContent();
         VisualizerTopComponentTopComponent.getDefault().getExplorerManager().setRootContext(new AbstractNode(new DataChildren(list)));
-        setNonEmptyContent();   
     //we have liste here, create node model on the base of it
 //        //if there is no elements in the list
 //        synchronized (TREE_ROOT) {
@@ -180,11 +209,12 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 //                treeModelImpl.fireTreeModelChanged();
 //            }
 //        });
+    //outlineView.getOutline().
 
     }
 
     private void setModels() {
-        nodeTableModel = new NodeTableModel();
+        //     nodeTableModel = new NodeTableModel();
 //        List<ColumnModel> columns = new ArrayList<ColumnModel>();
 //        List<Column> tableColumns = configuration.getMetadata().getColumns();
 //        for (final Column f : tableColumns) {
@@ -308,8 +338,8 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 //            Models.createView(compoundModel);
 //        add(treeTableView, BorderLayout.CENTER);
 //        treeModelImpl.fireTreeModelChanged();
-        tableView = new TableView();
-        add(tableView, BorderLayout.CENTER);
+//        tableView = new TableView();
+        add(outlineView, BorderLayout.CENTER);
 
 
         repaint();
@@ -618,7 +648,6 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 //            return null;
 //        }
 //    }
-
     public class DataChildren extends Children.Keys {
 
         private final List<DataRow> list;
@@ -629,7 +658,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 
         @Override
         protected Node[] createNodes(Object key) {
-            DataRow row = (DataRow)key;
+            DataRow row = (DataRow) key;
             return new Node[]{new DataRowNode(row)};
         }
 
@@ -640,30 +669,35 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     private class DataRowNode extends AbstractNode {
+
         private final DataRow dataRow;
         private PropertySet propertySet;
-        DataRowNode(DataRow row){
+
+        DataRowNode(DataRow row) {
             super(Children.LEAF);
             dataRow = row;
             propertySet = new PropertySet() {
+
                 @Override
                 public Property<?>[] getProperties() {
                     List<Property> result = new ArrayList();
-                    for (String columnName : dataRow.getColumnNames()){
-                        final Column c =  configuration.getMetadata().getColumnByName(columnName);
-                        result.add(new PropertySupport(columnName,  c.getColumnClass(),
-                            c.getColumnUName(),c.getColumnUName(), true, false) {
+                    for (String columnName : dataRow.getColumnNames()) {
+                        if (!columnName.equals(nodeColumnName)) {
+                            final Column c = configuration.getMetadata().getColumnByName(columnName);
+                            result.add(new PropertySupport(columnName, c.getColumnClass(),
+                                c.getColumnUName(), c.getColumnUName(), true, false) {
 
-                            @Override
-                            public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                                return dataRow.getData(c.getColumnName());
-                            }
+                                @Override
+                                public Object getValue() throws IllegalAccessException, InvocationTargetException {
+                                    return dataRow.getData(c.getColumnName());
+                                }
 
-                            @Override
-                            public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                                //throw new UnsupportedOperationException("Not supported yet.");
-                            }
-                        });
+                                @Override
+                                public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                                    //throw new UnsupportedOperationException("Not supported yet.");
+                                }
+                            });
+                        }
                     }
                     return result.toArray(new Property[0]);
 
@@ -674,24 +708,35 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 
         @Override
         public String getDisplayName() {
-            return super.getDisplayName();
+            return dataRow.getData(nodeColumnName) + "";
         }
-
-        @Override
-        public Object getValue(String attributeName) {
-            return super.getValue(attributeName);
-        }
-
-
 
         @Override
         public PropertySet[] getPropertySets() {
             return new PropertySet[]{propertySet};
         }
-
-        
     }
 
-    
+    private class ExtendedTableCellRendererForNode extends DefaultTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (column != 0) {//we have
+                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
+
+            PropertyEditor editor = PropertyEditorManager.findEditor(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnClass());
+            if (editor != null) {
+                editor.setValue(value);
+                return super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
+//                synchronized (nodesMapLock) {
+            //                  nodes.put(value + "", editor.getAsText());
+            }
+
+
+            //            }
+            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
+    }
 
 }

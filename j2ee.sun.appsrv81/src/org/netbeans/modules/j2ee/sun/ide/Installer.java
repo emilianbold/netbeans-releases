@@ -43,9 +43,9 @@ package org.netbeans.modules.j2ee.sun.ide;
 
 import java.io.File;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.modules.glassfish.eecommon.api.RegisterDatabase;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.db.RegisterPointbase;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.DomainCreator;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
@@ -124,7 +124,7 @@ public class Installer extends ModuleInstall {
                     if (null != cl && !Utils.canWrite(platformRoot)) {
                         createDomainAndRecord(platformRoot);
                     } 
-                    RegisterPointbase.getDefault().register(platformRoot);
+                    RegisterDatabase.getDefault().setupDerby(prop);
                 }
             }
         }

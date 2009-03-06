@@ -197,6 +197,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.derby.bundled</friend>
+                <friend>org.netbeans.modules.glassfish.eecommon</friend>
                 <friend>org.netbeans.modules.glassfish.javaee</friend>
                 <friend>org.netbeans.modules.j2ee.blueprints</friend>
                 <friend>org.netbeans.modules.j2ee.samples</friend>

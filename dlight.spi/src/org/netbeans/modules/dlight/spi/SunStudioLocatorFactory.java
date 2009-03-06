@@ -36,26 +36,15 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.perfan.util;
+
+package org.netbeans.modules.dlight.spi;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author ak119685
+ * @author mt154047
  */
-public final class SunStudioLocator {
-
-    private static final SunStudioLocator DEFAULT = new SunStudioLocator();
-
-    private SunStudioLocator() {
-    }
-    
-    public static SunStudioLocator getInstance() {
-        return DEFAULT;
-    }
-
-    public String getSproHome(ExecutionEnvironment execEnv) {
-        return "/shared/dp/sstrunk/intel-S2";
-    }
+public interface SunStudioLocatorFactory {
+    SunStudioLocator getInstance(ExecutionEnvironment env);
 }

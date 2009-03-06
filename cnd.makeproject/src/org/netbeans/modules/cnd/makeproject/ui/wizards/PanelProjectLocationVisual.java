@@ -161,6 +161,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 0);
         add(projectNameTextField, gridBagConstraints);
 

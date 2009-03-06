@@ -92,28 +92,32 @@ public class WhereUsedQueryUI implements RefactoringUI {
     }
 
     public Problem setParameters() {
-        // handle parameters defined in panel
-        assert panel != null;
-        query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS,panel.isSearchInComments());
-        boolean allProjects = (panel.getScope()==WhereUsedPanel.Scope.ALL);
-        Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(this.origObject, allProjects);
-        CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
-        query.getContext().add(ar);
+        try {
+            // handle parameters defined in panel
+            assert panel != null;
+            query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS,panel.isSearchInComments());
+            boolean allProjects = (panel.getScope()==WhereUsedPanel.Scope.ALL);
+            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(this.origObject, allProjects);
+            CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
+            query.getContext().add(ar);
 
-        CsmObject refObj = panel.getReferencedObject();
-        if (refObj == null) {
-            query.setRefactoringSource(Lookup.EMPTY);
-        } else {
-            query.setRefactoringSource(Lookups.singleton(CsmRefactoringUtils.getHandler(refObj)));
-        }
-        if (panel.isVirtualMethod()) {
-            setForMethod();
-            return query.checkParameters();
-        } else if (panel.isClass()) {
-            setForClass();
-            return query.checkParameters();
-        } else {
-            return null;
+            CsmObject refObj = panel.getReferencedObject();
+            if (refObj == null) {
+                query.setRefactoringSource(Lookup.EMPTY);
+            } else {
+                query.setRefactoringSource(Lookups.singleton(CsmRefactoringUtils.getHandler(refObj)));
+            }
+            if (panel.isVirtualMethod()) {
+                setForMethod();
+                return query.checkParameters();
+            } else if (panel.isClass()) {
+                setForClass();
+                return query.checkParameters();
+            } else {
+                return null;
+            }
+        } finally {
+            panel.uninitialize();
         }
     }
     

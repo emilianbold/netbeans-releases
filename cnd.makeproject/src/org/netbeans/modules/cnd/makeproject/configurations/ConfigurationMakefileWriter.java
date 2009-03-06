@@ -296,16 +296,18 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
 
         if (conf.isQmakeConfiguration()) {
-            String qmakespec = compilerSet.getQmakeSpec(conf.getPlatform().getValue());
-            if (qmakespec == null) {
-                qmakespec = ""; // NOI18N
-            } else {
-                qmakespec = "-spec " + qmakespec + " "; // NOI18N
+            String qmakeSpec = conf.getQmakeConfiguration().getQmakeSpec().getValue();
+            if (qmakeSpec.length() == 0 && conf.getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+                // on Mac we force spec to macx-g++, otherwise qmake generates xcode project
+                qmakeSpec = compilerSet.getQmakeSpec(conf.getPlatform().getValue());
+            }
+            if (0 < qmakeSpec.length()) {
+                qmakeSpec = "-spec " + qmakeSpec + " "; // NOI18N
             }
             bw.write("nbproject/qt-${CONF}.mk: nbproject/qt-${CONF}.pro FORCE\n"); // NOI18N
             // It is important to generate makefile in current directory, and then move it to nbproject/.
             // Otherwise qmake will complain that sources are not found.
-            bw.write("\tqmake VPATH=. " + qmakespec + "-o qttmp-${CONF}.mk nbproject/qt-${CONF}.pro\n"); // NOI18N
+            bw.write("\tqmake VPATH=. " + qmakeSpec + "-o qttmp-${CONF}.mk nbproject/qt-${CONF}.pro\n"); // NOI18N
             bw.write("\tmv -f qttmp-${CONF}.mk nbproject/qt-${CONF}.mk\n"); // NOI18N
             if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
                 // qmake uses backslashes on Windows, this code corrects them to forward slashes
@@ -621,16 +623,36 @@ public class ConfigurationMakefileWriter {
 
     private String getOutput(MakeConfiguration conf) {
         String output = conf.getOutputValue();
-        switch (conf.getConfigurationType().getValue()) {
-            case MakeConfiguration.TYPE_APPLICATION:
-            case MakeConfiguration.TYPE_QT_APPLICATION:
-                if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS &&
-                        !output.endsWith(".exe")) { // NOI18N
-                    output += ".exe"; // NOI18N
+        switch (conf.getPlatform().getValue()) {
+            case Platform.PLATFORM_WINDOWS:
+                switch (conf.getConfigurationType().getValue()) {
+                    case MakeConfiguration.TYPE_APPLICATION:
+                    case MakeConfiguration.TYPE_QT_APPLICATION:
+                        output = mangleAppnameWin(output);
+                        break;
+                }
+                break;
+            case Platform.PLATFORM_MACOSX:
+                switch (conf.getConfigurationType().getValue()) {
+                    case MakeConfiguration.TYPE_QT_APPLICATION:
+                        output = mangleAppnameMac(output);
+                        break;
                 }
                 break;
         }
         return conf.expandMacros(output);
+    }
+
+    private String mangleAppnameWin(String original) {
+        if (original.endsWith(".exe")) { // NOI18N
+            return original;
+        } else {
+            return original + ".exe"; // NOI18N
+        }
+    }
+
+    private String mangleAppnameMac(String original) {
+        return original + ".app/Contents/MacOS/" + IpeUtils.getBaseName(original); // NOI18N
     }
 
     public static String getObjectDir(MakeConfiguration conf) {

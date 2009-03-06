@@ -37,42 +37,22 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.javaee.ide;
+package org.netbeans.modules.cnd.gizmo;
 
-import java.io.File;
-import org.netbeans.modules.derby.spi.support.DerbySupport;
-import org.netbeans.modules.glassfish.eecommon.api.RegisterDatabase;
-import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
+import org.netbeans.modules.dlight.spi.SunStudioLocator;
+import org.netbeans.modules.dlight.spi.SunStudioLocatorFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author vkraemer
+ * @author mt154047
  */
-@ServiceProvider(service=RegisteredDerbyServer.class)
-public class RegisteredDerbyServerImpl implements RegisteredDerbyServer {
+@ServiceProvider(service=SunStudioLocatorFactory.class)
+public class SunStudioLocatorFactoryCndImpl implements SunStudioLocatorFactory{
 
-    public void start() {
-        DerbySupport.ensureStarted();
-    }
-
-    public void initialize(String candidateLocation) {
-        String location = DerbySupport.getLocation();
-        if (null != location && location.trim().length() > 0) {
-            return;
-        }
-        DerbySupport.setLocation(candidateLocation);
-        location = DerbySupport.getSystemHome();
-        if (null != location && location.trim().length() > 0) {
-            return;
-        } else {
-            File dbdir = new File(DerbySupport.getDefaultSystemHome());
-            if (dbdir.exists() == false) {
-                dbdir.mkdirs();
-            }
-        }
-        DerbySupport.setSystemHome(DerbySupport.getDefaultSystemHome());
-        RegisterDatabase.getDefault().configureDatabase();
+    public SunStudioLocator getInstance(ExecutionEnvironment env) {
+        return new SunStudioLocatorCndImpl(env);
     }
 
 }

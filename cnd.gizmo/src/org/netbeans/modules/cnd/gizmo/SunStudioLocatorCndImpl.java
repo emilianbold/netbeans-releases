@@ -36,43 +36,45 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.glassfish.javaee.ide;
+package org.netbeans.modules.cnd.gizmo;
 
 import java.io.File;
-import org.netbeans.modules.derby.spi.support.DerbySupport;
-import org.netbeans.modules.glassfish.eecommon.api.RegisterDatabase;
-import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.dlight.spi.SunStudioLocator;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author vkraemer
+ * @author mt154047
  */
-@ServiceProvider(service=RegisteredDerbyServer.class)
-public class RegisteredDerbyServerImpl implements RegisteredDerbyServer {
+public final class SunStudioLocatorCndImpl implements SunStudioLocator {
 
-    public void start() {
-        DerbySupport.ensureStarted();
+    private static final String LOCALHOST = "localhost"; // NOI18N
+    private final ExecutionEnvironment env;
+
+    
+    public SunStudioLocatorCndImpl(ExecutionEnvironment env) {
+        this.env = env;
     }
 
-    public void initialize(String candidateLocation) {
-        String location = DerbySupport.getLocation();
-        if (null != location && location.trim().length() > 0) {
-            return;
+    public Collection<SunStudioDescription> getSunStudioLocations() {
+        Collection<SunStudioDescription> result = new ArrayList<SunStudioDescription>();
+        List<CompilerSet> compilerCollections = env.isLocal()? CompilerSetManager.getDefault().getCompilerSets() : CompilerSetManager.getDefault(env.getUser() + "@" + env.getHost()).getCompilerSets(); // NOI18N
+        if (compilerCollections.size() == 1 && compilerCollections.get(0).getName().equals(CompilerSet.None)) {
+            return result;
         }
-        DerbySupport.setLocation(candidateLocation);
-        location = DerbySupport.getSystemHome();
-        if (null != location && location.trim().length() > 0) {
-            return;
-        } else {
-            File dbdir = new File(DerbySupport.getDefaultSystemHome());
-            if (dbdir.exists() == false) {
-                dbdir.mkdirs();
-            }
-        }
-        DerbySupport.setSystemHome(DerbySupport.getDefaultSystemHome());
-        RegisterDatabase.getDefault().configureDatabase();
-    }
 
+        for (CompilerSet compilerSet : compilerCollections) {
+            String binDir = compilerSet.getDirectory();
+            String baseDir = new File(binDir).getParent();
+            //collectionsDirectories.add(baseDir);
+            result.add(new SunStudioDescription(baseDir));
+        }
+        return result;
+    //throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
