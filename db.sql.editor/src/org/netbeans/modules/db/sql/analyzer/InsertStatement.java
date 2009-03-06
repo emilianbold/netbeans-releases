@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,19 +34,13 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.sql.analyzer;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.SortedMap;
 
 /**
@@ -60,30 +54,24 @@ public class InsertStatement extends SQLStatement {
     private final List<String> columns;
     private final List<String> values;
     private final SortedMap<Integer, InsertContext> offset2Context;
+    private final QualIdent table;
 
-    InsertStatement(SQLStatementKind kind, int startOffset, int endOffset, List<String> columns, List<String> values, SortedMap<Integer, InsertContext> offset2Context) {
+    InsertStatement(SQLStatementKind kind, int startOffset, int endOffset, QualIdent table, List<String> columns, List<String> values, SortedMap<Integer, InsertContext> offset2Context) {
         this.kind = kind;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.columns = columns;
         this.values = values;
         this.offset2Context = offset2Context;
+        this.table = table;
     }
 
     public SQLStatementKind getKind() {
         return kind;
     }
 
-    public FromClause getTablesInEffect(int offset) {
-        List<InsertStatement> statementPath = new ArrayList<InsertStatement>();
-        fillStatementPath(offset, statementPath);
-        if (statementPath.size() == 0) {
-            return null;
-        }
-        Collections.reverse(statementPath);
-        Set<QualIdent> unaliasedTableNames = new HashSet<QualIdent>();
-        Map<String, QualIdent> aliasedTableNames = new HashMap<String, QualIdent>();
-        return new FromClause(Collections.unmodifiableSet(unaliasedTableNames), Collections.unmodifiableMap(aliasedTableNames));
+    public QualIdent getTable () {
+        return table;
     }
 
     public List<String> getColumns() {
@@ -104,12 +92,6 @@ public class InsertStatement extends SQLStatement {
             }
         }
         return result;
-    }
-
-    private void fillStatementPath(int offset, List<InsertStatement> path) {
-        if (offset >= startOffset && offset <= endOffset) {
-            path.add(this);
-        }
     }
 
     public enum InsertContext {

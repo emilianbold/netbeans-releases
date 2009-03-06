@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.db.sql.analyzer;
 
@@ -61,7 +61,7 @@ public class InsertStatementAnalyzer {
     private final Quoter quoter;
     private final List<String> columns = new ArrayList<String> ();
     private final List<String> values = new ArrayList<String> ();
-    private final List<QualIdent> fromTables = new ArrayList<QualIdent> ();
+    private QualIdent table = null;
     private final SortedMap<Integer, InsertContext> offset2Context = new TreeMap<Integer, InsertContext> ();
     private int startOffset;
     private State state = State.START;
@@ -73,6 +73,7 @@ public class InsertStatementAnalyzer {
         }
         return new InsertStatement (SQLStatementKind.INSERT,
                 sa.startOffset, seq.offset () + seq.token ().length (),
+                sa.getTable (),
                 Collections.unmodifiableList (sa.columns),
                 Collections.unmodifiableList (sa.values),
                 sa.offset2Context);
@@ -125,10 +126,7 @@ public class InsertStatementAnalyzer {
                 case INTO:
                     switch (seq.token ().id ()) {
                         case IDENTIFIER:
-                            QualIdent fromTable = parseIntoTable ();
-                            if (fromTable != null) {
-                                fromTables.add (fromTable);
-                            }
+                            table = parseIntoTable ();
                             break;
                         case LPAREN:
                             moveToState (State.COLUMNS);
@@ -151,8 +149,10 @@ public class InsertStatementAnalyzer {
                         case KEYWORD:
                             if (SQLStatementAnalyzer.isKeyword ("VALUES", seq)) {
                                 moveToState (State.VALUES);
-                            } else {
                             }
+                            break;
+                        case RPAREN:
+                            moveToState (State.VALUES);
                             break;
                     }
                     break;
@@ -167,11 +167,6 @@ public class InsertStatementAnalyzer {
                     }
                     break;
                 default:
-//                    State newState = getStateForKeywordAfterFrom();
-//                    if (newState != null) {
-//                        moveToState(newState);
-//                    }
-                    break;
             }
         } while (nextToken ());
     }
@@ -186,6 +181,7 @@ public class InsertStatementAnalyzer {
                 case COMMA:
                     continue;
                 case RPAREN:
+                    moveToState (State.VALUES);
                     return parts;
                 default:
                     parts.add (getUnquotedIdentifier ());
@@ -245,35 +241,16 @@ public class InsertStatementAnalyzer {
         return move;
     }
 
+    private QualIdent getTable () {
+        return table;
+    }
+
     private void moveToState (State state) {
         this.state = state;
         InsertContext context = state.getContext ();
         if (context != null) {
             offset2Context.put (seq.offset () + seq.token ().length (), context);
         }
-    }
-
-    private boolean isKeywordAfterFrom () {
-        return getStateForKeywordAfterFrom () != null;
-    }
-
-    private State getStateForKeywordAfterFrom () {
-        if (seq.token ().id () != SQLTokenId.KEYWORD) {
-            return null;
-        }
-        CharSequence keyword = seq.token ().text ();
-//        if (StringUtils.textEqualsIgnoreCase("ON", keyword)) { // NOI18N
-//            return State.JOIN_CONDITION;
-//        } else if (StringUtils.textEqualsIgnoreCase("WHERE", keyword)) { // NOI18N
-//            return State.WHERE;
-//        } else if (StringUtils.textEqualsIgnoreCase("GROUP", keyword)) { // NOI18N
-//            return State.GROUP_WITHOUT_BY;
-//        } else if (StringUtils.textEqualsIgnoreCase("HAVING", keyword)) { // NOI18N
-//            return State.HAVING;
-//        } else if (StringUtils.textEqualsIgnoreCase("ORDER", keyword)) { // NOI18N
-//            return State.ORDER_WITHOUT_BY;
-//        }
-        return null;
     }
 
     private String getUnquotedIdentifier () {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.sql.editor.completion;
@@ -220,7 +220,6 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         if (context == null) {
             return;
         }
-        fromClause = insertStatement.getTablesInEffect(env.getCaretOffset());
 
         Identifier ident = findIdentifier();
         if (ident == null) {
@@ -234,6 +233,11 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             case INTO:
                 insideFrom (ident);
                 break;
+            case COLUMNS:
+                insideColumns (ident, insertStatement.getTable ());
+                break;
+            case VALUES:
+                break;
         }
     }
 
@@ -245,11 +249,19 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void insideInsert(Identifier ident) {
+    private void insideColumns (Identifier ident, QualIdent table) {
         if (ident.fullyTypedIdent.isEmpty()) {
-            completeSelectSimpleIdent(ident.lastPrefix, ident.quoted);
+            if (table == null) {
+                completeColumnWithTableIfSimpleIdent (ident.lastPrefix, ident.quoted);
+            } else {
+                items.addColumns (resolveTable (table), ident.lastPrefix, ident.quoted, substitutionOffset);
+            }
         } else {
-            completeSelectQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
+            if (table == null) {
+                completeColumnWithTableIfQualIdent (ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
+            } else {
+                items.addColumns (resolveTable (table), ident.lastPrefix, ident.quoted, substitutionOffset);
+            }
         }
     }
 
@@ -291,6 +303,47 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             // All catalogs.
             items.addCatalogs(metadata, null, typedPrefix, quoted, substitutionOffset);
         }
+    }
+
+    private void completeColumnWithTableIfSimpleIdent(String typedPrefix, boolean quoted) {
+        Schema defaultSchema = metadata.getDefaultSchema();
+        if (defaultSchema != null) {
+            // All columns in default schema, but only if a prefix has been typed, otherwise there
+            // would be too many columns.
+            if (typedPrefix != null) {
+                for (Table table : defaultSchema.getTables()) {
+                    items.addColumnsWithTableName (table, null, typedPrefix, quoted, substitutionOffset - 1);
+                }
+            } else {
+                // All tables in default schema.
+                items.addTablesAtInsertInto (defaultSchema, null, null, typedPrefix, quoted, substitutionOffset - 1);
+            }
+        }
+        // All schemas.
+        Catalog defaultCatalog = metadata.getDefaultCatalog();
+        items.addSchemas(defaultCatalog, null, typedPrefix, quoted, substitutionOffset);
+        // All catalogs.
+        items.addCatalogs(metadata, null, typedPrefix, quoted, substitutionOffset);
+    }
+
+    private void completeColumnWithTableIfQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
+            // Assume fullyTypedIdent is a table.
+            Table table = resolveTable(fullyTypedIdent);
+            if (table != null) {
+                items.addColumnsWithTableName (table, fullyTypedIdent, lastPrefix, quoted,
+                        substitutionOffset - 1);
+            }
+            // Assume fullyTypedIdent is a schema.
+            Schema schema = resolveSchema(fullyTypedIdent);
+            if (schema != null) {
+                items.addTablesAtInsertInto (schema, fullyTypedIdent, null, lastPrefix, quoted,
+                        substitutionOffset - 1);
+            }
+            // Assume fullyTypedIdent is a catalog.
+            Catalog catalog = resolveCatalog(fullyTypedIdent);
+            if (catalog != null) {
+                completeCatalog(catalog, lastPrefix, quoted);
+            }
     }
 
     private void completeSelectQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
