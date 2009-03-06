@@ -88,7 +88,7 @@ public class QueryPanel extends javax.swing.JPanel {
 
         this.tableComponent = tableComponent;
         noContentPanel = new NoContentPanel();
-        tablePanel.add(tableComponent, BorderLayout.CENTER);
+        tablePanel.add(tableComponent);
 
         JTree tv = new JTree();
         BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
@@ -1172,9 +1172,10 @@ public class QueryPanel extends javax.swing.JPanel {
 
 
     void showSearchingProgress(boolean on, JComponent progressBar, String text) {
+//        searchPanel.setVisible(!on);
         noContentContainer.setVisible(on);
         tableSummaryLabel.setVisible(!on);
-        tableFieldsPanel.setVisible(true);
+        tableFieldsPanel.setVisible(!on);
         if(on && text != null) {
             noContentPanel.setText(text);
         }
@@ -1183,6 +1184,7 @@ public class QueryPanel extends javax.swing.JPanel {
 
     void showRetrievingProgress(boolean on, JComponent progressBar, String text, boolean searchPanelVisible) {
         noContentContainer.setVisible(on);
+//        tableSummaryLabel.setVisible(!on);
         if(searchPanelVisible) {
             searchPanel.setVisible(!on);
         }
