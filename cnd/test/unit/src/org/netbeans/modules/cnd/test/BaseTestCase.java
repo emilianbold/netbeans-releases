@@ -50,12 +50,14 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.cplusplus.HKit;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * IMPORTANT NOTE:
@@ -235,7 +237,8 @@ public abstract class BaseTestCase extends NbTestCase {
                 int n = ui.indexOf('@');
                 String remotePassword = ui.substring(m+1, n);
                 remoteHKey = ui.substring(0,m) + ui.substring(n);
-                RemoteUserInfo rui = RemoteUserInfoAccessor.getDefault().get(remoteHKey);
+                ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(remoteHKey);
+                RemoteUserInfo rui = RemoteUserInfoAccessor.getDefault().get(env);
                 if (rui == null) {
                     System.err.println("There is no valid RemoteUserInfoAccessor.");
                     return false;

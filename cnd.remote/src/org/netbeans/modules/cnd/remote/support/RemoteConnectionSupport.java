@@ -48,6 +48,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -74,6 +76,10 @@ public abstract class RemoteConnectionSupport {
 
     /** TODO: deprecate and remove */
     public RemoteConnectionSupport(String key, int port) {
+//        this(ExecutionEnvironmentFactory.getExecutionEnvironment(key), port);
+//    }
+//
+//    public RemoteConnectionSupport(ExecutionEnvironment env, int port) {
         this.key = key;
         int pos = key.indexOf('@');
         user = key.substring(0, pos);
@@ -89,7 +95,7 @@ public abstract class RemoteConnectionSupport {
                 jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts"); // NOI18N
                 session = jsch.getSession(user, host, port);
 
-                RemoteUserInfo ui = RemoteUserInfo.getUserInfo(key, retry);
+                RemoteUserInfo ui = RemoteUserInfo.getUserInfo(ExecutionEnvironmentFactory.getExecutionEnvironment(key), retry);
                 retry = false;
                 session.setUserInfo(ui);
                 session.connect(timeout == null ? 30000 : timeout.intValue());
