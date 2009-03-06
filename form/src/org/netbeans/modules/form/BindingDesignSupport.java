@@ -1005,14 +1005,21 @@ public class BindingDesignSupport {
                     buf.append(columnVariable);
                     buf.append(" = "); // NOI18N
                     buf.append(variable);
+                    String subSourcePath = sub.getSourcePath();
                     buf.append(".addColumnBinding("); // NOI18N
-                    buf.append(ELProperty.class.getName());
-                    buf.append(".create(\""); // NOI18N
-                    buf.append(sub.getSourcePath());
-                    buf.append("\"));\n"); // NOI18N
+                    if ((subSourcePath == null) || "null".equals(subSourcePath)) { // NOI18N
+                        buf.append(ObjectProperty.class.getName());
+                        buf.append(".create()"); // NOI18N
+                    } else {
+                        buf.append(ELProperty.class.getName());
+                        buf.append(".create(\""); // NOI18N
+                        buf.append(subSourcePath);
+                        buf.append("\")"); // NOI18N
+                    }
+                    buf.append(");\n"); // NOI18N
                     String title = sub.getParameter(MetaBinding.NAME_PARAMETER);
                     if (title == null) {
-                        title = sub.getSourcePath();
+                        title = subSourcePath;
                         if (isSimpleExpression(title)) {
                             title = unwrapSimpleExpression(title);
                             title = capitalize(title);
@@ -1234,7 +1241,14 @@ public class BindingDesignSupport {
             if (bindingDef.hasSubBindings()) {
                 Collection<MetaBinding> subBindings = bindingDef.getSubBindings();
                 for (MetaBinding sub : subBindings) {
-                    JTableBinding.ColumnBinding columnBinding = tableBinding.addColumnBinding(createELProperty(sub.getSourcePath()));
+                    Property prop;
+                    String subSourcePath = sub.getSourcePath();
+                    if ((subSourcePath == null) || ("null".equals(subSourcePath))) { // NOI18N
+                        prop = ObjectProperty.create();
+                    } else {
+                        prop = createELProperty(subSourcePath);
+                    }
+                    JTableBinding.ColumnBinding columnBinding = tableBinding.addColumnBinding(prop);
                     String title = sub.getParameter(MetaBinding.NAME_PARAMETER);
                     if (title == null) {
                         title = sub.getSourcePath();
