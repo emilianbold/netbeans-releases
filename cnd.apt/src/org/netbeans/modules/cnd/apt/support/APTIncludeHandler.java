@@ -64,17 +64,17 @@ public interface APTIncludeHandler {
      * @param resolvedDirIndex index of resolved directory in lists of include paths
      * @return false if inclusion is recursive and was prohibited
      */
-    public boolean pushInclude(String path, int directiveLine, int resolvedDirIndex);
+    public boolean pushInclude(CharSequence path, int directiveLine, int resolvedDirIndex);
     
     /*
      * notify about finished inclusion
      */
-    public String popInclude();
+    public CharSequence popInclude();
     
     /**
      * get resolver for path
      */
-    public APTIncludeResolver getResolver(String path);
+    public APTIncludeResolver getResolver(CharSequence path);
 
     /**
      * returns the first file where include stack started
@@ -87,7 +87,7 @@ public interface APTIncludeHandler {
      * - resolved #include directive as absolute included path
      */
     public interface IncludeInfo {
-        public String getIncludedPath();
+        public CharSequence getIncludedPath();
         public int getIncludeDirectiveLine();
         public int getIncludedDirIndex();
     } 

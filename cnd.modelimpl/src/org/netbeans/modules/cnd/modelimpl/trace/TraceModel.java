@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.util.Lookup;
 
 /**
@@ -779,18 +780,18 @@ public class TraceModel extends TraceModelBase {
     private APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
 
     private APTIncludeHandler getIncludeHandler(File file) {
-        List<String> sysIncludes = sysAPTData.getIncludes("TraceModelSysIncludes", getSystemIncludes()); // NOI18N
-        List<String> qInc = getQuoteIncludePaths();
+        List<CharSequence> sysIncludes = sysAPTData.getIncludes("TraceModelSysIncludes", getSystemIncludes()); // NOI18N
+        List<CharSequence> qInc = getQuoteIncludePaths();
         if (isPathsRelCurFile()) {
-            qInc = new ArrayList<String>(getQuoteIncludePaths().size());
-            for (Iterator it = getQuoteIncludePaths().iterator(); it.hasNext();) {
-                String path = (String) it.next();
-                if (!(new File(path).isAbsolute())) {
+            qInc = new ArrayList<CharSequence>(getQuoteIncludePaths().size());
+            for (Iterator<CharSequence> it = getQuoteIncludePaths().iterator(); it.hasNext();) {
+                CharSequence path = it.next();
+                if (!(new File(path.toString()).isAbsolute())) {
                     File dirFile = file.getParentFile();
-                    File pathFile = new File(dirFile, path);
+                    File pathFile = new File(dirFile, path.toString());
                     path = pathFile.getAbsolutePath();
                 }
-                qInc.add(path);
+                qInc.add(FilePathCache.getString(path));
             }
         }
         StartEntry startEntry = new StartEntry(file.getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
