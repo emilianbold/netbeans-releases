@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,46 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.junit.output;
 
-import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.Document;
-import javax.swing.text.Element;
-import javax.swing.text.PlainView;
-import javax.swing.text.View;
-import javax.swing.text.ViewFactory;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.Action;
+import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
 
 /**
- * 
- * @author  Marian Petras
+ *
+ * @author answer
  */
-final class OutputEditorKit extends DefaultEditorKit
-                            implements ViewFactory {
+public class JUnitCallstackFrameNode extends CallstackFrameNode{
 
-    OutputEditorKit() {
-        super();
+    public JUnitCallstackFrameNode(String frameInfo, String displayName) {
+        super(frameInfo, displayName);
+    }
+
+    public JUnitCallstackFrameNode(String frameInfo) {
+        super(frameInfo);
     }
 
     @Override
-    public ViewFactory getViewFactory() {
-        return this;
-    }
-
-    public View create(Element element) {
-        return (element instanceof OutputDocument.RootElement)
-               ? new OutputView(element)
-               : new PlainView(element);
+    public Action[] getActions(boolean context) {
+        List<Action> actions = new ArrayList<Action>();
+        Action preferred = getPreferredAction();
+        if (preferred != null){
+            actions.add(preferred);
+        }
+        return actions.toArray(new Action[actions.size()]);
     }
 
     @Override
-    public Document createDefaultDocument() {
-        return new OutputDocument();
+    public Action getPreferredAction() {
+        return new JumpAction(this, frameInfo);
     }
 
 }

@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.api.util;
 
 import java.text.ParseException;
 import java.util.Collections;
@@ -47,7 +47,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 
 public final class MacroExpanderFactory {
 
@@ -98,8 +98,7 @@ public final class MacroExpanderFactory {
 
         public CommonMacroExpander(ExecutionEnvironment execEnv) {
             this.execEnv = execEnv;
-            hostInfoFetchingTaskResult =
-                    Executors.newSingleThreadExecutor().submit(
+            hostInfoFetchingTaskResult = NativeTaskExecutorService.submit(
                     new HostInfoFetchingTask(execEnv));
         }
 
@@ -152,7 +151,7 @@ public final class MacroExpanderFactory {
             } finally {
                 if (hostInfoFetchingTaskResult != null) {
                     hostInfoFetchingTaskResult =
-                            Executors.newSingleThreadExecutor().submit(
+                            NativeTaskExecutorService.submit(
                             new HostInfoFetchingTask(execEnv));
                 }
             }

@@ -40,6 +40,8 @@ package org.netbeans.modules.dlight.tools.impl;
 
 import org.netbeans.modules.dlight.tools.*;
 import java.io.File;
+import java.net.ConnectException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,6 +50,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
@@ -63,6 +66,7 @@ import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -70,7 +74,16 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 
 /**
  * @author Alexey Vladykin
@@ -83,8 +96,10 @@ public class LLDataCollector
     private EnumSet<LLDataCollectorConfiguration.CollectedData> collectedData;
     private DLightTarget target;
     private String ldPreload;
-    private String agentLibrary;
-    private String monitorExecutable;
+    private File agentLibraryLocal;
+    private String agentLibraryRemote;
+    private File monitorExecutableLocal;
+    private String monitorExecutableRemote;
     private ValidationStatus validationStatus;
     private List<ValidationListener> validationListeners;
 
@@ -122,6 +137,28 @@ public class LLDataCollector
 
     public void init(DataStorage storage, DLightTarget target) {
         this.target = target;
+
+        ExecutionEnvironment env = target.getExecEnv();
+
+        if (env.isLocal()) {
+            agentLibraryRemote = agentLibraryLocal.getAbsolutePath();
+            monitorExecutableRemote = monitorExecutableLocal.getAbsolutePath();
+        } else {
+            try {
+                agentLibraryRemote = "/tmp/" + agentLibraryLocal.getName(); // NOI18N
+                CommonTasksSupport.uploadFile(
+                        agentLibraryLocal.getAbsolutePath(), env,
+                        agentLibraryRemote, 644, null).get();
+                monitorExecutableRemote = "/tmp/" + monitorExecutableLocal.getName(); // NOI18N
+                CommonTasksSupport.uploadFile(
+                        monitorExecutableLocal.getAbsolutePath(), env,
+                        monitorExecutableRemote, 755, null).get();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     public boolean isAttachable() {
@@ -139,7 +176,7 @@ public class LLDataCollector
     }
 
     public Map<String, String> getExecutionEnv() {
-        return Collections.singletonMap(ldPreload, agentLibrary);
+        return Collections.singletonMap(ldPreload, agentLibraryRemote);
     }
 
     public void targetStateChanged(DLightTarget source, State oldState, State newState) {
@@ -152,7 +189,7 @@ public class LLDataCollector
 
     private void startMonitor() {
         AttachableTarget at = (AttachableTarget) target;
-        NativeProcessBuilder npb = new NativeProcessBuilder(target.getExecEnv(), monitorExecutable);
+        NativeProcessBuilder npb = new NativeProcessBuilder(target.getExecEnv(), monitorExecutableRemote);
         StringBuilder flags = new StringBuilder("-"); // NOI18N
         if (collectedData.contains(LLDataCollectorConfiguration.CollectedData.CPU)) {
             flags.append('c'); // NOI18N
@@ -232,6 +269,9 @@ public class LLDataCollector
 
     public void invalidate() {
         validationStatus = ValidationStatus.initialStatus();
+        ldPreload = null;
+        agentLibraryLocal = null;
+        monitorExecutableLocal = null;
     }
 
     public ValidationStatus getValidationStatus() {
@@ -241,18 +281,60 @@ public class LLDataCollector
     private ValidationStatus doValidation(final DLightTarget target) {
         DLightLogger.assertNonUiThread();
 
-        ldPreload = NativeToolsUtil.getLdPreloadEnvVarName();
-        agentLibrary = NativeToolsUtil.getSharedLibrary("prof_agent"); // NOI18N
-        monitorExecutable = NativeToolsUtil.getExecutable("prof_monitor"); // NOI18N
+        ExecutionEnvironment env = target.getExecEnv();
 
-        // TODO: handle remote
-        if (agentLibrary == null || !new File(agentLibrary).exists()) {
-            return ValidationStatus.invalidStatus(agentLibrary);
-        } else if (monitorExecutable == null || !new File(monitorExecutable).exists()) {
-            return ValidationStatus.invalidStatus(monitorExecutable);
-        } else {
-            return ValidationStatus.validStatus();
+        try {
+            String osnameRemote = HostInfoUtils.getOS(env);
+            if ("Mac_OS_X".equals(osnameRemote)) { // NOI18N
+                ldPreload = "DYLD_INSERT_LIBRARIES"; // NOI18N
+            } else {
+                ldPreload = "LD_PRELOAD"; // NOI18N
+            }
+        } catch (ConnectException ex) {
+            ldPreload = null;
         }
+        if (ldPreload == null) {
+            ConnectionManager mgr = ConnectionManager.getInstance();
+
+            Runnable doOnConnect = new Runnable() {
+
+                public void run() {
+                    DLightManager.getDefault().revalidateSessions();
+                }
+            };
+
+            AsynchronousAction connectAction = mgr.getConnectToAction(env, doOnConnect);
+
+            return ValidationStatus.unknownStatus(
+                    "ValidationStatus.HostNotConnected",
+                    connectAction);
+        }
+
+        MacroExpander mef = MacroExpanderFactory.getExpander(env);
+
+        String agentLibraryLocalPath = null;
+        try {
+            agentLibraryLocalPath = mef.expandPredefinedMacros(NativeToolsUtil.getSharedLibrary("prof_agent")); // NOI18N
+            agentLibraryLocal = InstalledFileLocator.getDefault().locate(agentLibraryLocalPath, null, false);
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (agentLibraryLocal == null || !agentLibraryLocal.exists()) {
+            return ValidationStatus.invalidStatus(agentLibraryLocalPath);
+        }
+
+        String monitorExecutableLocalPath = null;
+        try {
+            monitorExecutableLocalPath = mef.expandPredefinedMacros(NativeToolsUtil.getExecutable("prof_monitor")); // NOI18N
+            monitorExecutableLocal = InstalledFileLocator.getDefault().locate(monitorExecutableLocalPath, null, false);
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (monitorExecutableLocal == null || !monitorExecutableLocal.exists()) {
+            return ValidationStatus.invalidStatus(monitorExecutableLocalPath);
+        }
+
+        return ValidationStatus.validStatus();
     }
 
     private void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {

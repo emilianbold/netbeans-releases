@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.memory;
 import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 
 
@@ -51,12 +52,12 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
 public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
 
     private final MemoryIndicatorPanel panel;
-    private final String colName;
+    //private final String colName;
 
     public MemoryIndicator(MemoryIndicatorConfiguration configuration) {
         super(configuration);
         this.panel = new MemoryIndicatorPanel();
-        this.colName = configuration.getColName();
+      //  this.colName = configuration.getColName();
     }
 
     @Override
@@ -68,11 +69,18 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
     }
 
     public void updated(List<DataRow> data) {
-        for (DataRow row : data) {
-            String value = row.getStringValue(colName);
-            if (value != null) {
-                panel.setValue(Long.valueOf(value));
+        List<Column> columns = getMetadataColumns();
+        for (DataRow lastRow : data) {
+            List<String> colNames = lastRow.getColumnNames();
+            for (Column c: columns){
+                if (colNames.contains(c.getColumnName())){
+                    String value = lastRow.getStringValue(c.getColumnName()); //TODO: change to Long
+                    if (value != null){
+                        panel.setValue(Long.parseLong(value));
+                    }
+                }
             }
+
         }
     }
 }

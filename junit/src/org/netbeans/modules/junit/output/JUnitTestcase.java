@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,47 +31,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.junit.output;
 
-import org.openide.util.NbBundle;
+import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.openide.filesystems.FileObject;
 
 /**
- * Constants and utility methods for building HTML-marked labels.
  *
- * @author  Marian Petras
+ * @author answer
  */
-final class HtmlMarkupUtils {
+class JUnitTestcase extends Testcase{
+    private JUnitTestSuite testSuite;
+    private FileObject classFO = null;
 
-    private HtmlMarkupUtils() {}
-
-    static final String COLOR_OK = "00CC00";        //green             //NOI18N
-    static final String COLOR_WARNING = "CE7B00";   //dark orange       //NOI18N
-    static final String COLOR_FAILURE = "FF0000";   //red               //NOI18N
-
-    static final String FONT_COLOR_PREFIX = "<font color='#";           //NOI18N
-    static final String FONT_COLOR_SUFFIX = "'>";                       //NOI18N
-    static final String FONT_COLOR_END = "</font>";                     //NOI18N
-
-    static void appendColourText(StringBuilder buf,
-                                 String colour,
-                                 String bundleKey) { 
-        buf.append(FONT_COLOR_PREFIX).append(colour).append(FONT_COLOR_SUFFIX);
-        buf.append(NbBundle.getMessage(HtmlMarkupUtils.class, bundleKey));
-        buf.append(FONT_COLOR_END);
+    public JUnitTestcase(String name, String type, TestSession session) {
+        super(name, type, session);
+        testSuite = (JUnitTestSuite)session.getCurrentSuite();
     }
 
-    static void appendColourText(StringBuilder buf,
-                                 String colour,
-                                 String bundleKey,
-                                 Object bundleParam) { 
-        buf.append(FONT_COLOR_PREFIX).append(colour).append(FONT_COLOR_SUFFIX);
-        buf.append(NbBundle.getMessage(HtmlMarkupUtils.class, bundleKey, bundleParam));
-        buf.append(FONT_COLOR_END);
+    public JUnitTestSuite getTestSuite() {
+        return testSuite;
+    }
+
+    public FileObject getClassFileObject(){
+        FileLocator fileLocator = getSession().getFileLocator();
+        if ((classFO == null) && (fileLocator != null) && (getClassName() != null)){
+            classFO = fileLocator.find(getClassName().replace('.', '/') + ".java"); //NOI18N
+        }
+        return classFO;
     }
 }

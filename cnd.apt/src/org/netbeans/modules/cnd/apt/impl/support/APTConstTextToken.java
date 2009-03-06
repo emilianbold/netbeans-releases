@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
  *
  * @author gorrus
  */
-public class APTConstTextToken extends APTTokenAbstact implements APTTokenTypes {
+public final class APTConstTextToken extends APTTokenAbstact implements APTTokenTypes {
     private final static String[] constText = new String[APTTokenTypes.LAST_LEXER_FAKE_RULE];
     
     protected int type = INVALID_TYPE;
