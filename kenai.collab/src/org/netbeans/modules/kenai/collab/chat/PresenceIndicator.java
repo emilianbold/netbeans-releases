@@ -47,6 +47,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.util.StringUtils;
@@ -103,7 +105,15 @@ public class PresenceIndicator {
         label = new JLabel(OFFLINE, JLabel.HORIZONTAL);
         label.addMouseListener(helper);
     }
-    
+
+    void showPopup() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                ToolTipManager.sharedInstance().mouseMoved(new MouseEvent(label, 0, 0, 0, 0, 0, 0, false));
+            }
+        });
+    }
+
     private class MouseL extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent event) {
@@ -112,7 +122,7 @@ public class PresenceIndicator {
                 ChatTopComponent.getDefault().requestActive();
             }
         }
-    }
+        }
 
     private static RequestProcessor presenceUpdater = new RequestProcessor();
 
