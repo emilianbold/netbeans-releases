@@ -65,6 +65,7 @@ import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
+import org.netbeans.modules.apisupport.project.universe.JavadocRootsProvider;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.SourceRootsProvider;
@@ -424,14 +425,14 @@ public final class PlatformComponentFactory {
      * <code>ListModel</code> capable to manage NetBeans platform javadoc roots.
      * <p>Can be used in conjuction with {@link URLListRenderer}</p>
      */
-    static final class NbPlatformJavadocRootsModel extends AbstractListModel {
+    static final class JavadocRootsModel extends AbstractListModel {
         
-        private NbPlatform plaf;
+        private JavadocRootsProvider jrp;
         private URL[] javadocRoots;
         
-        NbPlatformJavadocRootsModel(NbPlatform plaf) {
-            this.plaf = plaf;
-            this.javadocRoots = plaf.getJavadocRoots();
+        JavadocRootsModel(JavadocRootsProvider jrp) {
+            this.jrp = jrp;
+            this.javadocRoots = jrp.getJavadocRoots();
         }
         
         public Object getElementAt(int index) {
@@ -444,8 +445,8 @@ public final class PlatformComponentFactory {
         
         void removeJavadocRoots(URL[] jdRootToRemove) {
             try {
-                plaf.removeJavadocRoots(jdRootToRemove);
-                this.javadocRoots = plaf.getJavadocRoots(); // refresh
+                jrp.removeJavadocRoots(jdRootToRemove);
+                this.javadocRoots = jrp.getJavadocRoots(); // refresh
                 fireContentsChanged(this, 0, javadocRoots.length);
             } catch (IOException e) {
                 // tell the user that something goes wrong
@@ -455,8 +456,8 @@ public final class PlatformComponentFactory {
         
         void addJavadocRoot(URL jdRootToAdd) {
             try {
-                plaf.addJavadocRoot(jdRootToAdd);
-                this.javadocRoots = plaf.getJavadocRoots(); // refresh
+                jrp.addJavadocRoot(jdRootToAdd);
+                this.javadocRoots = jrp.getJavadocRoots(); // refresh
                 fireContentsChanged(this, 0, javadocRoots.length);
             } catch (IOException e) {
                 // tell the user that something goes wrong
@@ -467,9 +468,9 @@ public final class PlatformComponentFactory {
         void moveJavadocRootsDown(int[] toMoveDown) {
             try {
                 for (int i = 0; i < toMoveDown.length; i++) {
-                    plaf.moveJavadocRootDown(toMoveDown[i]);
+                    jrp.moveJavadocRootDown(toMoveDown[i]);
                 }
-                this.javadocRoots = plaf.getJavadocRoots(); // refresh
+                this.javadocRoots = jrp.getJavadocRoots(); // refresh
                 fireContentsChanged(this, 0, javadocRoots.length);
             } catch (IOException e) {
                 // tell the user that something goes wrong
@@ -480,9 +481,9 @@ public final class PlatformComponentFactory {
         void moveJavadocRootsUp(int[] toMoveUp) {
             try {
                 for (int i = 0; i < toMoveUp.length; i++) {
-                    plaf.moveJavadocRootUp(toMoveUp[i]);
+                    jrp.moveJavadocRootUp(toMoveUp[i]);
                 }
-                this.javadocRoots = plaf.getJavadocRoots(); // refresh
+                this.javadocRoots = jrp.getJavadocRoots(); // refresh
                 fireContentsChanged(this, 0, javadocRoots.length);
             } catch (IOException e) {
                 // tell the user that something goes wrong
@@ -494,7 +495,7 @@ public final class PlatformComponentFactory {
     /**
      * Render {@link java.net.URL} using {@link java.net.URL#getFile}.
      * <p>Use in conjuction with {@link SourceRootsModel} and
-     * {@link NbPlatformJavadocRootsModel}</p>
+     * {@link JavadocRootsModel}</p>
      */
     static final class URLListRenderer extends DefaultListCellRenderer {
         
