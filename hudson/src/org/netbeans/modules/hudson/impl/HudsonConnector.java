@@ -133,7 +133,7 @@ public class HudsonConnector {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    new ConnectionBuilder().instance(instance).url(job.getUrl() + XML_API_BUILD_URL).connection();
+                    new ConnectionBuilder().instance(instance).url(job.getUrl() + "build?delay=0sec").connection(); // NOI18N
                 } catch (IOException e) {
                     LOG.log(Level.FINE, "Could not start {0}: {1}", new Object[] {job, e});
                 } finally {
