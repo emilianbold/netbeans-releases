@@ -128,7 +128,7 @@ public class RhtmlLanguage extends RubyLanguage {
 
     @Override
     public Parser getParser() {
-        return null;
+        return new RhtmlParser();
     }
 
     @Override
