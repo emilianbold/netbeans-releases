@@ -302,14 +302,6 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         doc.addLayer(new ELDrawLayerFactory.ELLayer(),
                 ELDrawLayerFactory.EL_LAYER_VISIBILITY);
 
-        //listen on the HTML parser and create javascript and css embeddings
-        LanguagePath jspLP = LanguagePath.get(JspTokenId.language());
-        LanguagePath htmlLP = LanguagePath.get(jspLP, HTMLTokenId.language());
-
-//        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
-        //initialize JSP embedding updater
-        //just a prototype - better disable it for 6.0
-        //JspColoringUpdater.init(doc);
     }
 
     private void initLexerColoringListener(Document doc) {
