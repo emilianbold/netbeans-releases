@@ -86,4 +86,10 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#159068 : Unresolved ids in instantiations after &
         performTest("iz159068.cc", 4, 27, "iz159068.cc", 2, 5);
     }
+
+    public void test159054() throws Exception {
+        // IZ#159054 : Unresolved id in case of reference to template as return type
+        performTest("iz159054.cc", 9, 17, "iz159054.cc", 3, 5);
+        performTest("iz159054.cc", 15, 17, "iz159054.cc", 4, 5);
+    }
 }
