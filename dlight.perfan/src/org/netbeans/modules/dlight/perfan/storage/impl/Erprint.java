@@ -228,6 +228,7 @@ public final class Erprint {
         // user clicks on indicator)
         // The problem may appear when one thread gets buffer, while another one
         // cleans it... 
+
         private final List<String> buffer = Collections.synchronizedList(new ArrayList<String>());
         private FilterType filterType = FilterType.noFiltering;
         private String prompt = null;
@@ -319,28 +320,31 @@ public final class Erprint {
                     final Runnable onStart = new Runnable() {
 
                         public void run() {
-                            writer.println("limit -1"); // NOI18N
-                            writer.flush();
-                            String[] er_output;
-                            while (true) {
-                                er_output = erOutputProcessor.getBuffer();
-                                if (er_output.length == 1) {
-                                    erOutputProcessor.setPrompt(er_output[0]);
-                                    break;
-                                } else {
-                                    try {
-                                        Thread.sleep(100);
-                                    } catch (InterruptedException ex) {
+                            try {
+                                writer.println("limit -1"); // NOI18N
+                                writer.flush();
+                                String[] er_output;
+                                while (true) {
+                                    er_output = erOutputProcessor.getBuffer();
+                                    if (er_output.length == 1) {
+                                        erOutputProcessor.setPrompt(er_output[0]);
+                                        break;
+                                    } else {
+                                        try {
+                                            Thread.sleep(100);
+                                        } catch (InterruptedException ex) {
+                                        }
                                     }
                                 }
-                            }
 
-                            in = writer;
-                            doneSignal.countDown();
+                                in = writer;
+                            } finally {
+                                doneSignal.countDown();
+                            }
                         }
                     };
 
-                    Thread promptReaderThread = new Thread(onStart);
+                    Thread promptReaderThread = new Thread(onStart, "Prompt Thread Reader");
                     promptReaderThread.start();
 
                     break;
