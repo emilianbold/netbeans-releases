@@ -1526,7 +1526,7 @@ function_definition
 protected
 is_declaration
         :
-        LITERAL_extern | LITERAL_using | (declaration_specifiers[true, false] declarator)    
+        LITERAL_extern | LITERAL_using | (declaration_specifiers[true, false] declarator[true])
         ;
 
 declaration
@@ -1807,11 +1807,11 @@ typeID
 	;
 
 init_declarator_list
-	:	init_declarator (COMMA init_declarator)*
+	:	init_declarator[true] (COMMA init_declarator[false])*
 	;
 
-init_declarator
-	:	declarator 
+init_declarator[boolean first]
+	:	declarator[first]
 		(	
 			ASSIGNEQUAL 
                         ((LPAREN ID RPAREN LCURLY) => (LPAREN ID RPAREN))?
@@ -1909,7 +1909,7 @@ member_declarator
 	:	
 		((ID)? COLON constant_expression)=>(ID)? COLON constant_expression
 	|  
-		declarator
+		declarator[true]
 	;
 
 conversion_function_decl_or_def returns [boolean definition = false]
@@ -1932,72 +1932,61 @@ cv_qualifier_seq
 	(options {warnWhenFollowAmbig = false;}:tq = cv_qualifier)*
 	;
 
-declarator
+declarator[boolean first]
     :
         // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
         // This rule adds support for declarations like
         // void (__attribute__((noreturn)) ****f) (void);
         (attribute_specification)=> attribute_specification!
-        declarator
+        declarator[first]
     |   //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
         // VV: 23/05/06 added support for __restrict after pointers
         //i.e. void foo (char **__restrict a)
         (ptr_operator)=> ptr_operator // AMPERSAND or STAR
-        restrict_declarator
+        restrict_declarator[first]
     |
         // typedef ((...));
         // int (i);
-        {_td || (_ts != tsTYPEID && _ts != tsInvalid)}? (LPAREN declarator RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
-        LPAREN declarator RPAREN
+        {_td || (_ts != tsTYPEID && _ts != tsInvalid)}? (LPAREN declarator[first] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        LPAREN declarator[first] RPAREN
     |
-        direct_declarator
+        direct_declarator[first]
     ;
 
-restrict_declarator
+restrict_declarator[boolean first]
     :
         // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
         // IZ 140559 : parser fails on code from boost
-        (LPAREN declarator RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
-        LPAREN declarator RPAREN
+        (LPAREN declarator[first] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        LPAREN declarator[first] RPAREN
     |
         // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
         // This rule adds support for declarations like
         // char *__attribute__((aligned(8))) *f;
         (attribute_specification)=> attribute_specification!
-        restrict_declarator
+        restrict_declarator[first]
     |
         //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
         (ptr_operator)=> ptr_operator // AMPERSAND or STAR
-        restrict_declarator
+        restrict_declarator[first]
     |   
-        (literal_restrict!)? direct_declarator
+        (literal_restrict!)? direct_declarator[first]
     ;
 
-direct_declarator
+direct_declarator[boolean first]
 	{String id;
 	 TypeQualifier tq;}  
 	:
-		// Must be function declaration               
-		((options {greedy=true;} :function_attribute_specification)? idInBalanceParensHard LPAREN (RPAREN|parameter_list))=>
-		// TODO: refactor the grammar and use function_declarator here
-		(options {greedy=true;} :function_attribute_specification)?
-		id = idInBalanceParensHard                                                     
-		{declaratorID(id, qiFun);}                
-		LPAREN //{declaratorParameterList(false);}
-		(parameter_list)?
-		RPAREN //{declaratorEndParameterList(false);}                
-		(tq = cv_qualifier)*
-		(exception_specification)?
-		(options {greedy=true;} :function_attribute_specification)?
-		(asm_block!)?
-                (options {greedy=true;} :function_attribute_specification)?
-	|	(qualified_id LPAREN qualified_id)=>	// Must be class instantiation
+		// Must be function declaration
+        {first}? (function_like_var_declarator (SEMICOLON | ASSIGNEQUAL | RPAREN)) =>
+        function_like_var_declarator
+    |	(qualified_id LPAREN)=>	// Must be class instantiation
 		id = qualified_id
 		{
 		    declaratorID(id, qiVar);
 		}
 		LPAREN
-		expression_list
+		(expression_list)?
 		RPAREN
 		{#direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);}
 	|
@@ -2051,7 +2040,7 @@ direct_declarator
 		(parameter_list)?
 		RPAREN //{declaratorEndParameterList(false);}
 	|	
-		LPAREN declarator RPAREN 
+		LPAREN declarator[first] RPAREN
         (options {greedy=true;} :variable_attribute_specification)?
         declarator_suffixes
         (options {greedy=true;} :variable_attribute_specification)?
@@ -2063,6 +2052,23 @@ direct_declarator
                 ) 
 ** */
 	;
+
+function_like_var_declarator
+{String id; TypeQualifier tq;}
+    :
+		// TODO: refactor the grammar and use function_declarator here
+		(options {greedy=true;} :function_attribute_specification)?
+		id = idInBalanceParensHard
+		{declaratorID(id, qiFun);}
+		LPAREN //{declaratorParameterList(false);}
+		(parameter_list)?
+		RPAREN //{declaratorEndParameterList(false);}
+		(tq = cv_qualifier)*
+		(exception_specification)?
+		(options {greedy=true;} :function_attribute_specification)?
+		(asm_block!)?
+        (options {greedy=true;} :function_attribute_specification)?
+    ;
 
 declarator_suffixes
 	{TypeQualifier tq;}  
@@ -2385,12 +2391,12 @@ parameter_declaration
 			    qualifiedItemIsOneOf(qiType|qiCtor) )}?
 			declaration_specifiers[true, false]	// DW 24/3/98 Mods for K & R
 			(  
-				(declarator)=> declarator        // if arg name given
+				(declarator[true])=> declarator[true]        // if arg name given
 			| 
 				abstract_declarator  // if arg name not given  // can be empty
 			)
 		|
-			(declarator)=> declarator	// DW 24/3/98 Mods for K & R
+			(declarator[true])=> declarator[true]	// DW 24/3/98 Mods for K & R
 		|
 			ELLIPSIS
 		)
@@ -2846,7 +2852,7 @@ protected
 condition_declaration {int ts = tsInvalid;}
 	:
         cv_qualifier_seq (LITERAL_typename)?
-	ts=type_specifier[dsInvalid, false] declarator ASSIGNEQUAL assignment_expression
+	ts=type_specifier[dsInvalid, false] declarator[true] ASSIGNEQUAL assignment_expression
 	;
 
 //	(declaration)=> declaration|	expression

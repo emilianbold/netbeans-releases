@@ -254,6 +254,11 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz155148.cc", 12, 13, "iz155148.cc", 5, 5);
     }
     
+    public void testIZ145142() throws Exception {
+        // IZ#145142 : unable to resolve declaration imported from child namespace
+        performTest("iz145142.cc", 16, 35, "iz145142.cc", 4, 13);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
