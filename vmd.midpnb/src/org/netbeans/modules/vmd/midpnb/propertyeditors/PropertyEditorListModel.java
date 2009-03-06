@@ -50,32 +50,31 @@ import javax.swing.JRadioButton;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGListCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGListElementEventSourceCD;
 import org.openide.util.NbBundle;
 import org.openide.awt.Mnemonics;
-
 
 /**
  * @author ads
  *
  */
-public class PropertyEditorListModel extends PropertyEditorUserCode 
-    implements PropertyEditorElement 
-{
+public final class PropertyEditorListModel extends PropertyEditorUserCode
+        implements PropertyEditorElement {
 
-    private PropertyEditorListModel( String userCodeLabel , String modelText) {
+    private PropertyEditorListModel(String userCodeLabel, String modelText) {
         super(userCodeLabel);
         myModelText = modelText;
     }
-    
-    public static PropertyEditorListModel createInstance( String label, 
-            String modelText){
-        return new PropertyEditorListModel( label , modelText );
+
+    public static PropertyEditorListModel createInstance(String label,
+            String modelText) {
+        return new PropertyEditorListModel(label, modelText);
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode#cleanUp(org.netbeans.modules.vmd.api.model.DesignComponent)
      */
@@ -88,17 +87,17 @@ public class PropertyEditorListModel extends PropertyEditorUserCode
         }
         myRadioButton = null;
     }
-    
+
     @Override
     public Boolean canEditAsText() {
         return false;
     }
-    
+
     @Override
     public String getAsText() {
         return myModelText;
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement#getCustomEditorComponent()
      */
@@ -112,7 +111,7 @@ public class PropertyEditorListModel extends PropertyEditorUserCode
     public JRadioButton getRadioButton() {
         return myRadioButton;
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode#getCustomEditor()
      */
@@ -149,7 +148,7 @@ public class PropertyEditorListModel extends PropertyEditorUserCode
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement#setTextForPropertyValue(java.lang.String)
      */
-    public void setTextForPropertyValue( String arg0 ) {
+    public void setTextForPropertyValue(String arg0) {
         // should not be called becuase it is not editable as text
         assert false;
     }
@@ -157,52 +156,94 @@ public class PropertyEditorListModel extends PropertyEditorUserCode
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement#updateState(org.netbeans.modules.vmd.api.model.PropertyValue)
      */
-    public void updateState( PropertyValue value ) {
-        if ( value != null ){
+    public void updateState(PropertyValue value) {
+        if (value != null) {
             myCustomEditor.setValue(value);
         }
-        myRadioButton.setSelected(!isCurrentValueAUserCodeType());        
+        myRadioButton.setSelected(!isCurrentValueAUserCodeType());
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode#customEditorOKButtonPressed()
      */
     @Override
     public void customEditorOKButtonPressed() {
         super.customEditorOKButtonPressed();
-        if ( myRadioButton.isSelected()) {
-            saveValue( myCustomEditor.getValue() );
+        if (myRadioButton.isSelected()) {
+            saveValue(myCustomEditor.getValue());
         }
+        if (component.get().getType() != SVGListCD.TYPEID) {
+            return;
+        }
+        component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+            public void run() {
+                Integer index = -1;
+                for (DesignComponent child : component.get().getComponents()) {
+                    if (child.getType() != SVGListElementEventSourceCD.TYPEID) {
+                        continue;
+                    }
+                    Integer currentIndex = (Integer) child.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue();
+                    if (currentIndex == null) {
+                        throw new IllegalArgumentException();
+                    }
+                    if (currentIndex > index) {
+                        index = currentIndex;
+                    }
+                }
+                if (index < myCustomEditor.getValue().size() - 1) {
+                    if (index == -1)  
+                        index =0;
+                    else
+                        index ++;
+                    for (int i = index; i <= myCustomEditor.getValue().size() - 1 ; i++) {
+                        DesignComponent element = component.get().getDocument().createComponent(SVGListElementEventSourceCD.TYPEID);
+                        component.get().addComponent(element);
+                        element.writeProperty(SVGListElementEventSourceCD.PROP_INDEX, MidpTypes.createIntegerValue(i));
+                    }
+                } else if (index > myCustomEditor.getValue().size() - 1) {
+                    for (DesignComponent child : component.get().getComponents()) {
+                        if (child.getType() != SVGListElementEventSourceCD.TYPEID) {
+                            continue;
+                        }
+                        Integer currentIndex = (Integer) child.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue();
+                        if (currentIndex == null) {
+                            throw new IllegalArgumentException();
+                        }
+                        if (currentIndex > myCustomEditor.getValue().size() - 1) {
+                            component.get().getDocument().deleteComponent(child);
+                        }
+                    }
+                }
+            }
+        });
     }
-    
-    private void saveValue(List<String> modelItems ) {
-        List<PropertyValue> list = new ArrayList<PropertyValue>( modelItems.size());
+
+    private void saveValue(List<String> modelItems) {
+        List<PropertyValue> list = new ArrayList<PropertyValue>(modelItems.size());
         for (String string : modelItems) {
-            PropertyValue value = MidpTypes.createStringValue( string );
-            list.add( value );
+            PropertyValue value = MidpTypes.createStringValue(string);
+            list.add(value);
         }
-        PropertyValue model = PropertyValue.createArray( 
+        PropertyValue model = PropertyValue.createArray(
                 MidpTypes.TYPEID_JAVA_LANG_STRING, list);
-        super.setValue( model );
+        super.setValue(model);
     }
-    
+
     private void initComponents() {
         myRadioButton = new JRadioButton();
         Mnemonics.setLocalizedText(myRadioButton, NbBundle.getMessage(
                 PropertyEditorButtonGroup.class, "LBL_DefaultModel")); // NOI18N
 
         myRadioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(
-                        PropertyEditorButtonGroup.class, "ACSN_DefaultModel")); // NOI18N
+                PropertyEditorButtonGroup.class, "ACSN_DefaultModel")); // NOI18N
         myRadioButton.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(
-                        PropertyEditorButtonGroup.class, "ACSD_DefaultModel"));
+                PropertyEditorButtonGroup.class, "ACSD_DefaultModel"));
 
         myCustomEditor = new SVGListPropertyCustomEditor();
     }
-    
     private SVGListPropertyCustomEditor myCustomEditor;
     private JRadioButton myRadioButton;
-    
-    private String myModelText; 
-
+    private String myModelText;
 }

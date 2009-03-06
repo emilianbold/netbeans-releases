@@ -43,7 +43,6 @@
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;

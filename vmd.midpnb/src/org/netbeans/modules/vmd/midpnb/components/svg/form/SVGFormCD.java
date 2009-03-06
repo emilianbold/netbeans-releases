@@ -95,7 +95,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  * This class represents Component Descriptor for SVG Form component.
- * 
+ *
  * @author Andrew Korostelev
  */
 public class SVGFormCD extends ComponentDescriptor {
@@ -110,7 +110,7 @@ public class SVGFormCD extends ComponentDescriptor {
     public static final String PROP_OLD_START_ANIM_IMMEDIATELY = "startAnimationImmideately"; //NOI18N
     public static final String PROP_COMPONENTS = "components"; //NOI18N
     private static final Comparator NAME_COMPERATOR = new EventComperator();
-    
+
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
@@ -189,6 +189,7 @@ public class SVGFormCD extends ComponentDescriptor {
                 new SVGFormFileChangePresenter(),
                 //flow
                 new SVGComponentEventSourceOrder(),
+                new SVGListElementOrderCategory(),
                 //delete
                 new DeleteDependencyPresenter() {
 
@@ -270,8 +271,8 @@ public class SVGFormCD extends ComponentDescriptor {
         }
 
     }
-    
-    private static void generateSVGButtonSelectedSetter(MultiGuardedSection section, 
+
+    private static void generateSVGButtonSelectedSetter(MultiGuardedSection section,
             DesignComponent button)
     {
         Object value = button.readProperty( SVGRadioButtonCD.PROP_SELECTED ).
@@ -281,7 +282,7 @@ public class SVGFormCD extends ComponentDescriptor {
                     generateAccessCode( button )+".setSelected( true );\n");
         }
     }
-    
+
     final class SVGComponentEventSourceOrder extends FlowPinOrderPresenter {
 
         static final String CATEGORY_ID = "SVGComponent"; //NOI18N
@@ -293,8 +294,8 @@ public class SVGFormCD extends ComponentDescriptor {
 
         @Override
         public String getCategoryDisplayName() {
-            return NbBundle.getMessage(SVGFormCD.class, 
-                    "DISP_FlowCategory_SVGComponents"); // NOI18N; 
+            return NbBundle.getMessage(SVGFormCD.class,
+                    "DISP_FlowCategory_SVGComponents"); // NOI18N;
         }
 
         @Override
@@ -323,6 +324,28 @@ public class SVGFormCD extends ComponentDescriptor {
                 name2 = ""; //NOI18N
             }
             return name1.compareTo(name2);
+        }
+    }
+
+    class SVGListElementOrderCategory extends FlowPinOrderPresenter {
+
+        static final String CATEGORY_ID = "SVGListElement"; //NOI18N
+
+        @Override
+        public String getCategoryID() {
+            return CATEGORY_ID;
+        }
+
+        @Override
+        public String getCategoryDisplayName() {
+            return "SVG List Elements";
+        }
+
+        @Override
+        public List<FlowPinDescriptor> sortCategory(final ArrayList<FlowPinDescriptor> descriptors) {
+
+
+            return descriptors;
         }
     }
 
