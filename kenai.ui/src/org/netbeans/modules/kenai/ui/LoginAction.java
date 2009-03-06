@@ -89,9 +89,7 @@ public final class LoginAction extends AbstractAction implements Runnable {
             if (!UIUtils.showLogin()) {
                 return;
             }
-            final KenaiTopComponent kenaiTC = KenaiTopComponent.getDefault();
-            kenaiTC.open();
-            kenaiTC.requestActive();
+            KenaiTopComponent.openAction(KenaiTopComponent.getDefault(), (String) getValue(NAME), "", true).actionPerformed(e);
         }
     }
 

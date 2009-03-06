@@ -109,10 +109,7 @@ public class ChatNotifications {
                 final ActionListener l = new ActionListener() {
 
                     public void actionPerformed(ActionEvent arg0) {
-                        final ChatTopComponent chatTC = ChatTopComponent.getDefault();
-                        chatTC.open();
-                        chatTC.requestActive();
-                        chatTC.setActive(chatRoomName);
+                        ChatTopComponent.openAction(ChatTopComponent.getDefault(), "", "", false).actionPerformed(arg0);
                     }
                 };
 

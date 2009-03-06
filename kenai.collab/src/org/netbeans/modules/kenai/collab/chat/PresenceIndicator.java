@@ -41,6 +41,7 @@
 package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
@@ -118,11 +119,10 @@ public class PresenceIndicator {
         @Override
         public void mouseClicked(MouseEvent event) {
             if (event.getClickCount() == 2) {
-                ChatTopComponent.getDefault().open();
-                ChatTopComponent.getDefault().requestActive();
+                ChatTopComponent.openAction(ChatTopComponent.getDefault(), "", "", false).actionPerformed(new ActionEvent(event,event.getID(),""));
             }
         }
-        }
+    }
 
     private static RequestProcessor presenceUpdater = new RequestProcessor();
 
