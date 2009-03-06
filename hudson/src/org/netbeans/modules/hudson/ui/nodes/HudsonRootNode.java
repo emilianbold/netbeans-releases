@@ -42,7 +42,6 @@
 package org.netbeans.modules.hudson.ui.nodes;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
@@ -100,10 +99,7 @@ public class HudsonRootNode extends AbstractNode {
         return new Action[] {SystemAction.get(AddInstanceAction.class)};
     }
     
-    private static class RootNodeChildren extends Children.Keys<Object> implements HudsonChangeListener {
-        
-        private final Node tooltip = new TooltipNode(NbBundle.getMessage(HudsonRootNode.class,
-                "MSG_Tooltip"), SystemAction.get(AddInstanceAction.class));
+    private static class RootNodeChildren extends Children.Keys<HudsonInstanceImpl> implements HudsonChangeListener {
         
         /**
          * Creates a new instance of RootNodeChildren
@@ -112,14 +108,8 @@ public class HudsonRootNode extends AbstractNode {
             HudsonManagerImpl.getDefault().addHudsonChangeListener(this);
         }
         
-        protected Node[] createNodes(Object o) {
-            if (o instanceof HudsonInstanceImpl)
-                return new Node[] {new HudsonInstanceNode((HudsonInstanceImpl) o)};
-            
-            if (o instanceof TooltipNode)
-                return new Node[] {(TooltipNode) o};
-            
-            return new Node[] {};
+        protected Node[] createNodes(HudsonInstanceImpl instance) {
+            return new Node[] {new HudsonInstanceNode(instance)};
         }
         
         @Override
@@ -135,22 +125,13 @@ public class HudsonRootNode extends AbstractNode {
         }
         
         private void refreshKeys() {
-            Collection<HudsonInstanceImpl> keys = getKeys();
-            
-            if (keys.size() == 0 && !HudsonManagerImpl.getInstance().isStarting())
-                setKeys(new Object[] {tooltip});
-            else
-                setKeys(keys);
-        }
-        
-        private Collection<HudsonInstanceImpl> getKeys() {
             List<HudsonInstanceImpl> l = Arrays.asList(HudsonManagerImpl.getDefault().
                     getInstances().toArray(new HudsonInstanceImpl[] {}));
             
             // Sort repositories
             Collections.sort(l);
             
-            return l;
+            setKeys(l);
         }
         
         public void stateChanged() {}

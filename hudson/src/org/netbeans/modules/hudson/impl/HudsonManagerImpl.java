@@ -263,12 +263,7 @@ public class HudsonManagerImpl extends HudsonManager {
         return instances;
     }
 
-    private boolean starting;
-    /** True if manager is starting up at the moment. */
-    public boolean isStarting() {return starting;}
-
     private void init() {
-        starting = true;
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
@@ -285,7 +280,6 @@ public class HudsonManagerImpl extends HudsonManager {
                         Exceptions.printStackTrace(ex);
                     }
                 } finally {
-                    starting = false;
                     checkOpenProjects();
                     OpenProjects.getDefault().addPropertyChangeListener(projectsListener);
                     // Fire changes
