@@ -163,6 +163,7 @@ public interface HudsonJob extends Lookup.Provider, Comparable<HudsonJob> {
      * 
      * @return default job lookup
      */
+    // XXX replace with a getter for HudsonInstance
     public Lookup getLookup();
 
     /**
