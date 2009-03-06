@@ -396,7 +396,6 @@
                 <package>org.netbeans.modules.cnd.execution</package>
                 <package>org.netbeans.modules.cnd.execution41.org.openide.cookies</package>
                 <package>org.netbeans.modules.cnd.execution41.org.openide.loaders</package>
-                <package>org.netbeans.modules.cnd.loaders</package>
                 <package>org.netbeans.modules.cnd.settings</package>
                 <package>org.netbeans.modules.cnd.ui.options</package>
             </friend-packages>

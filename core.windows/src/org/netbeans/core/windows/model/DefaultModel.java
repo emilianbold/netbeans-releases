@@ -474,6 +474,13 @@ final class DefaultModel implements Model {
         }
     }
 
+    /** Gets last active editor mode. */
+    public ModeImpl getLastActiveEditorMode() {
+        synchronized(LOCK_MODES) {
+            return modesSubModel.getLastActiveEditorMode();
+        }
+    }
+
     /**
      * @return The docking status (docked/slided) of TopComponents before the window system
      * switched to maximized mode.

@@ -87,11 +87,8 @@ public class Clone implements PropertyChangeListener {
     } 
     
     public boolean showDialog() {
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(Clone.class, "CTL_CloneDialog")); // NOI18N
-        
-        dialogDescriptor.setModal(true);
-        dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});
-        dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(Clone.class, "CTL_CloneDialog"),  // NOI18N
+                true, new Object[] {okButton, cancelButton}, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(this.getClass()), null);
         dialogDescriptor.setValid(false);
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     

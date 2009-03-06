@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,54 +34,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import org.netbeans.modules.nativeexecution.support.ObservableAction;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import com.jcraft.jsch.ChannelShell;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import java.io.CharArrayWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.lang.ref.WeakReference;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.security.acl.NotOwnerException;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import javax.swing.Action;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.support.ui.GrantPrivilegesDialog;
-import org.netbeans.modules.nativeexecution.support.Encrypter;
-import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
-import org.netbeans.modules.nativeexecution.support.Logger;
-import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory;
-import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory.MacroExpander;
-import org.netbeans.modules.nativeexecution.support.ObservableActionListener;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-import org.openide.windows.InputOutput;
 
 /**
  * Supporting class to provide functionality of requesting additional
@@ -100,24 +58,24 @@ import org.openide.windows.InputOutput;
  * but is never stored. So the password is asked for every new execution session.
  *
  */
-public final class SolarisPrivilegesSupport {
-
-    private static final java.util.logging.Logger log = Logger.getInstance();
-    private Map<ExecutionEnvironment, List<String>> privilegesHash =
-            Collections.synchronizedMap(new HashMap<ExecutionEnvironment, List<String>>());
-    private static SolarisPrivilegesSupport instance = new SolarisPrivilegesSupport();
-    private WeakReference<GrantPrivilegesDialog> dialogRef = null;
-
-    private SolarisPrivilegesSupport() {
-    }
+public interface SolarisPrivilegesSupport {
 
     /**
-     * Returnes <tt>SolarisPrivilegesSupport</tt> instance.
-     * @return <tt>SolarisPrivilegesSupport</tt> instance.
+     * Retrieves a list of currently effective execution privileges in the
+     * <tt>ExecutionEnvironment</tt>
+     *
+     * @param execEnv <tt>ExecutionEnvironment</tt> to get privileges list from
+     * @return a list of currently effective execution privileges
      */
-    public static SolarisPrivilegesSupport getInstance() {
-        return instance;
-    }
+    public List<String> getExecutionPrivileges();
+
+    public void requestPrivileges(
+            List<String> requestedPrivileges,
+            boolean askForPassword) throws NotOwnerException;
+
+    public void requestPrivileges(
+            List<String> requestedPrivs,
+            String user, char[] passwd) throws NotOwnerException;
 
     /**
      * Tests whether the <tt>ExecutionEnvironment</tt> has all needed
@@ -127,168 +85,7 @@ public final class SolarisPrivilegesSupport {
      * @return true if <tt>execEnv</tt> has all execution privileges listed in
      *         <tt>privs</tt>
      */
-    public synchronized boolean hasPrivileges(
-            final ExecutionEnvironment execEnv,
-            final List<String> privs) {
-
-        boolean status = true;
-        List<String> real_privs = getExecutionPrivileges(execEnv);
-
-        for (String priv : privs) {
-            if (!status) {
-                break;
-            }
-            status &= real_privs.contains(priv);
-        }
-
-        return status;
-    }
-
-    /**
-     * Retrieves a list of currently effective execution privileges in the
-     * <tt>ExecutionEnvironment</tt>
-     *
-     * @param execEnv <tt>ExecutionEnvironment</tt> to get privileges list from
-     * @return a list of currently effective execution privileges
-     */
-    public List<String> getExecutionPrivileges(
-            final ExecutionEnvironment execEnv) {
-        return getCurrentPrivilegesList(execEnv, false);
-    }
-
-    private synchronized List<String> getCurrentPrivilegesList(
-            final ExecutionEnvironment execEnv,
-            final boolean forceQuery) {
-        if (!forceQuery && privilegesHash.containsKey(execEnv)) {
-            return privilegesHash.get(execEnv);
-        }
-
-        /*
-         * To find out actual privileges that tasks will have use
-         * > /bin/ppriv -v $$ | /bin/grep [IL]
-         *
-         * and return intersection of list of I (inherit) and L (limit)
-         * privileges...
-         */
-
-        CharArrayWriter outWriter = new CharArrayWriter();
-
-        NativeProcessBuilder npb =
-                new NativeProcessBuilder(execEnv, "/bin/ppriv").setArguments("-v $$ | /bin/grep [IL]"); // NOI18N
-
-        ExecutionDescriptor d = new ExecutionDescriptor();
-        d = d.inputOutput(InputOutput.NULL);
-        d = d.outLineBased(true);
-        d = d.outProcessorFactory(new InputRedirectorFactory(outWriter));
-
-        ExecutionService execService = ExecutionService.newService(
-                npb, d, "getExecutionPrivileges"); // NOI18N
-
-        Future<Integer> fresult = execService.run();
-        int result = -1;
-
-        try {
-            result = fresult.get();
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
-            return Collections.emptyList();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-            return Collections.emptyList();
-        }
-
-        if (result != 0) {
-            return Collections.emptyList();
-        }
-
-        List<String> iprivs = new ArrayList<String>();
-        List<String> lprivs = new ArrayList<String>();
-
-        String[] outArray = outWriter.toString().split("\n"); // NOI18N
-        for (String str : outArray) {
-
-            if (str.contains("I:")) { // NOI18N
-                String[] privs = str.substring(
-                        str.indexOf(": ") + 2).split(","); // NOI18N
-                iprivs = Arrays.asList(privs);
-            } else if (str.contains("L:")) { // NOI18N
-                String[] privs = str.substring(
-                        str.indexOf(": ") + 2).split(","); // NOI18N
-                lprivs = Arrays.asList(privs);
-            }
-        }
-
-        if (iprivs == null || lprivs == null) {
-            return Collections.emptyList();
-        }
-
-        List<String> real_privs = new ArrayList<String>();
-
-        for (String ipriv : iprivs) {
-            if (lprivs.contains(ipriv)) {
-                real_privs.add(ipriv);
-            }
-        }
-
-        privilegesHash.put(execEnv, real_privs);
-
-        return real_privs;
-    }
-
-    /**
-     * Tries to get requested privileges for the <tt>ExecutionEnvironment</tt>.
-     * SHOULD NOT be called in AWT thread
-     *
-     * @return  true - if privileges has changed
-     *          false - if no changes to privileges happened
-     */
-    private synchronized boolean requestExecutionPrivileges(
-            final ExecutionEnvironment execEnv,
-            final List<String> requiredPrivileges) {
-
-        if (SwingUtilities.isEventDispatchThread()) {
-            throw new RuntimeException("requestExecutionPrivileges " + // NOI18N
-                    "should never be called in AWT thread"); // NOI18N
-        }
-
-        if (hasPrivileges(execEnv, requiredPrivileges)) {
-            return false;
-        }
-
-        final ProgressHandle ph = ProgressHandleFactory.createHandle(
-                loc("TaskPrivilegesSupport_Progress_RequestPrivileges")); // NOI18N
-
-        ph.start();
-
-        final List<String> currentPrivileges =
-                getCurrentPrivilegesList(execEnv, false);
-
-        List<String> newPrivileges = null;
-
-        try {
-            if (dialogRef == null || dialogRef.get() == null) {
-                dialogRef = new WeakReference<GrantPrivilegesDialog>(
-                        new GrantPrivilegesDialog());
-            }
-
-            GrantPrivilegesDialog dialog = dialogRef.get();
-            boolean result = dialog.askPassword();
-
-            if (result) {
-                char[] clearPassword = dialog.getPassword();
-                PrivilegesRequestor.doRequest(execEnv, requiredPrivileges,
-                        dialog.getUser(), clearPassword);
-                Arrays.fill(clearPassword, (char) 0);
-                dialog.clearPassword();
-                newPrivileges = getCurrentPrivilegesList(execEnv, true);
-            }
-        } finally {
-            ph.finish();
-        }
-
-        return newPrivileges != null &&
-                !newPrivileges.equals(currentPrivileges);
-    }
+    public boolean hasPrivileges(List<String> privs);
 
     /**
      * Returns {@link Action javax.swing.Action} that can be invoked in order
@@ -301,283 +98,6 @@ public final class SolarisPrivilegesSupport {
      * @return <tt>Action</tt> that can be invoked in order
      *        to request needed execution privileges
      */
-    public AsynchronousAction requestPrivilegesAction(
-            final ExecutionEnvironment execEnv,
-            final List<String> requestedPrivileges,
-            final Runnable onPrivilegesGranted) {
-
-        RequestPrivilegesAction action =
-                new RequestPrivilegesAction(execEnv, requestedPrivileges);
-
-        if (onPrivilegesGranted != null) {
-            action.addObservableActionListener(new ObservableActionListener<Boolean>() {
-
-                public void actionStarted(Action source) {
-                }
-
-                public void actionCompleted(Action source, Boolean result) {
-                    if (result != null && result.booleanValue() == true) {
-                        onPrivilegesGranted.run();
-                    }
-                }
-            });
-        }
-
-        return action;
-    }
-
-    private static class RequestPrivilegesAction
-            extends ObservableAction<Boolean> {
-
-        private final ExecutionEnvironment execEnv;
-        private final List<String> requestedPrivileges;
-
-        public RequestPrivilegesAction(
-                final ExecutionEnvironment execEnv,
-                final List<String> requestedPrivileges) {
-
-            super(loc("TaskPrivilegesSupport_GrantPrivileges_Action")); // NOI18N
-            this.execEnv = execEnv;
-            this.requestedPrivileges = requestedPrivileges;
-        }
-
-        @Override
-        public Boolean performAction() {
-            SolarisPrivilegesSupport sup = SolarisPrivilegesSupport.getInstance();
-            return sup.requestExecutionPrivileges(execEnv, requestedPrivileges);
-        }
-    }
-
-    private static String loc(String key, String... params) {
-        return NbBundle.getMessage(SolarisPrivilegesSupport.class, key, params);
-    }
-
-    private static class PrivilegesRequestor {
-
-        private static final Map<String, Long> csums =
-                new HashMap<String, Long>();
-
-
-        static {
-            csums.put("SunOS-x86", 2839716019L); // NOI18N
-        }
-
-        private static void doRequest(
-                final ExecutionEnvironment execEnv,
-                final List<String> requestedPrivileges,
-                String user, char[] passwd) {
-
-            // Construct privileges list
-            StringBuffer sb = new StringBuffer();
-
-            for (String priv : requestedPrivileges) {
-                sb.append(priv).append(","); // NOI18N
-            }
-
-            if (execEnv.isLocal()) {
-                doRequestLocal(execEnv, sb.toString(), user, passwd);
-            } else {
-                doRequestRemote(execEnv, sb.toString(), user, passwd);
-            }
-        }
-
-        private static void doRequestLocal(final ExecutionEnvironment execEnv,
-                final String requestedPrivs, String user, char[] passwd) {
-
-            MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
-            String privp = null;
-            String path = "$osname-$platform";
-            try {
-                path = macroExpander.expandMacros(path); // NOI18N
-            } catch (ParseException ex) {
-            }
-
-            privp = "bin/nativeexecution/" + path + "/privp"; // NOI18N
-            InstalledFileLocator fl = InstalledFileLocator.getDefault();
-            File file = fl.locate(privp, null, false);
-
-            if (file == null || !file.exists()) {
-                log.severe("Cannot request privileges! privp not found!"); // NOI18N
-                return;
-            }
-
-            privp = file.getAbsolutePath();
-
-            // Will not pass any password to unknown program...
-            if (!Encrypter.checkCRC32(privp, csums.get(path))) {
-                log.severe("Wrong privp executable! CRC check failed!"); // NOI18N
-                return;
-            }
-
-            Runtime rt = Runtime.getRuntime();
-            Process p = null;
-
-            try {
-                // Set execution privileges ...
-                p = rt.exec(new String[]{"/bin/chmod", "755", privp}); // NOI18N
-                p.waitFor();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            String pid = null;
-
-            try {
-                File self = new File("/proc/self"); // NOI18N
-                pid = self.getCanonicalFile().getName();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            if (pid == null) {
-                return;
-            }
-
-            try {
-                p = rt.exec(new String[]{privp, user, requestedPrivs, pid});
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            if (p == null) {
-                return;
-            }
-
-            PrintWriter w = new PrintWriter(p.getOutputStream());
-            w.println(passwd);
-            w.flush();
-
-            try {
-                int result = p.waitFor();
-                if (result != 0) {
-                    log.severe("doRequestLocal failed! privp returned " + result); // NOI18N
-                }
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        /**
-         * Expects some predefined string to appear in reader's stream
-         * @param r - reader to use
-         * @param expectedString
-         * @return
-         */
-        private final static String expect(
-                final InputStream in,
-                final String expectedString) {
-
-            int pos = 0;
-            int len = expectedString.length();
-            char[] cbuf = new char[2];
-            StringBuffer sb = new StringBuffer();
-
-            try {
-                Reader r = new InputStreamReader(in);
-                while (pos != len && r.read(cbuf, 0, 1) != -1) {
-                    char currentChar = expectedString.charAt(pos);
-                    if (currentChar == '%') {
-                        pos++;
-                        sb.append(cbuf[0]);
-                    } else if (currentChar == cbuf[0]) {
-                        pos++;
-                    } else {
-                        pos = 0;
-                    }
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            return sb.toString();
-
-        }
-
-        private static synchronized void doRequestRemote(
-                final ExecutionEnvironment execEnv,
-                final String requestedPrivs,
-                final String user, final char[] passwd) {
-
-            ConnectionManager mgr = ConnectionManager.getInstance();
-
-            final Session session = ConnectionManagerAccessor.getDefault().
-                    getConnectionSession(mgr, execEnv);
-
-            if (session == null) {
-                return;
-            }
-
-            String pid = "`/usr/bin/ptree $$|" + // NOI18N
-                    "/bin/awk '/sshd$/{p=$1}END{print p}'`"; // NOI18N
-
-            OutputStream out = null;
-            InputStream in = null;
-
-            String script = "/usr/bin/ppriv -s I+" + // NOI18N
-                    requestedPrivs + " " + pid; // NOI18N
-
-            StringBuffer cmd = new StringBuffer("/sbin/su - "); // NOI18N
-            cmd.append(user).append(" -c \""); // NOI18N
-            cmd.append(script).append("\"; echo ExitStatus:$?\n"); // NOI18N
-
-            ChannelShell channel = null;
-            try {
-                channel = (ChannelShell) session.openChannel("shell"); // NOI18N
-                channel.setPty(true);
-                channel.setPtyType("ldterm"); // NOI18N
-
-                out = channel.getOutputStream();
-                in = channel.getInputStream();
-
-                channel.connect();
-
-                PrintWriter w = new PrintWriter(out);
-                w.write(cmd.toString());
-                w.flush();
-
-                expect(in, "Password:"); // NOI18N
-
-                w.println(passwd);
-                w.flush();
-
-                String exitStatus = expect(in, "ExitStatus:%"); // NOI18N
-
-                int status = 1;
-                try {
-                    status = Integer.valueOf(exitStatus).intValue();
-                } finally {
-                    if (status != 0) {
-                        NotifyDescriptor dd =
-                                new NotifyDescriptor.Message("/sbin/su failed"); // NOI18N
-                        DialogDisplayer.getDefault().notify(dd);
-                    }
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (JSchException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                // DO NOT CLOSE CHANNEL HERE...
-                // channel.disconnect();
-
-                if (out != null) {
-                    try {
-                        out.close();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        }
-    }
+    public AsynchronousAction getRequestPrivilegesAction(
+            List<String> requestedPrivileges, Runnable onPrivilegesGranted);
 }

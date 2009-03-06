@@ -263,6 +263,7 @@ public class Dwarf2NameFinder {
         }
     }
 
+    @SuppressWarnings("fallthrough")
     private boolean interpret(long target, ByteBuffer section, LinkedList fnames,
             dw2_debug_line header, boolean scan_only) {
         long address = 0;
@@ -364,7 +365,7 @@ public class Dwarf2NameFinder {
                                 section.position(section.position() + (int) insn_len);
                                 break;
                         }
-
+                        // fallthrough is legitimate (program author said)
                     }
                     case DW_LNS_copy:
                         if (Configuration.DEBUG) {

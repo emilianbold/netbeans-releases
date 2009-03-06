@@ -11,7 +11,7 @@
             <text display="none">editable=false</text>
             <text display="none">enabled=true</text>
             <g>
-                <text id="%%COMPONENT_ID%%_editor_text" x="0.75" y="16.0" font-size="16">0</text>                     <!-- Metadata information. Please don't edit. -->
+                <text id="%%COMPONENT_ID%%_editor_text" x="0.75" y="16.0" font-size="16" font-family="">0</text>                     <!-- Metadata information. Please don't edit. -->
                 <text display="none">type=text</text>
             </g>
         </g>

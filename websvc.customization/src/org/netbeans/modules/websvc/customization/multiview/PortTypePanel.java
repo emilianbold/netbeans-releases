@@ -47,7 +47,6 @@
 
 package org.netbeans.modules.websvc.customization.multiview;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -59,14 +58,13 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
-import org.netbeans.modules.websvc.customization.model.CustomizationComponentFactory;
-import org.netbeans.modules.websvc.customization.model.DefinitionsCustomization;
-import org.netbeans.modules.websvc.customization.model.EnableAsyncMapping;
-import org.netbeans.modules.websvc.customization.model.EnableWrapperStyle;
-import org.netbeans.modules.websvc.customization.model.JavaClass;
-import org.netbeans.modules.websvc.customization.model.PortTypeCustomization;
+import org.netbeans.modules.websvc.api.customization.model.CustomizationComponentFactory;
+import org.netbeans.modules.websvc.api.customization.model.DefinitionsCustomization;
+import org.netbeans.modules.websvc.api.customization.model.EnableAsyncMapping;
+import org.netbeans.modules.websvc.api.customization.model.EnableWrapperStyle;
+import org.netbeans.modules.websvc.api.customization.model.JavaClass;
+import org.netbeans.modules.websvc.api.customization.model.PortTypeCustomization;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;

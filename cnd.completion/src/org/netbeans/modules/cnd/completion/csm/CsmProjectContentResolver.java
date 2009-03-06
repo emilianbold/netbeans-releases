@@ -65,6 +65,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmField;
@@ -91,6 +92,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * help class to resolve content of the project
@@ -948,7 +950,7 @@ public final class CsmProjectContentResolver {
             minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration, CsmVisibility.PUBLIC, true);
         }
 
-        Map<CharSequence, CsmClass> set = getBaseClasses(clazz, contextDeclaration, strPrefix, match, new AntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL);
+        Map<CharSequence, CsmClass> set = getBaseClasses(clazz, contextDeclaration, strPrefix, match, new AntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL, MAX_INHERITANCE_DEPTH);
         List<CsmClass> res;
         if (set != null && set.size() > 0) {
             res = new ArrayList<CsmClass>(set.values());
@@ -1001,6 +1003,8 @@ public final class CsmProjectContentResolver {
         return getClassMembers(clazz, contextDeclaration, new CsmDeclaration.Kind[]{kind}, strPrefix, staticOnly, match, inspectParentClasses, scopeAccessedClassifier, false);
     }
     // =============== help methods to get/check content of containers =========
+    private static final int MAX_INHERITANCE_DEPTH = 15;
+
     private static final int INIT_INHERITANCE_LEVEL = 0;
     private static final int NO_INHERITANCE = 1;
     private static final int EXACT_CLASS = 2;
@@ -1150,7 +1154,7 @@ public final class CsmProjectContentResolver {
 
     @SuppressWarnings("unchecked")
     private Map<CharSequence, CsmClass> getBaseClasses(CsmClass csmClass, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match,
-            AntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel) {
+            AntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel, int level) {
         assert (csmClass != null);
 
         if (handledClasses.contains(csmClass)) {
@@ -1172,18 +1176,22 @@ public final class CsmProjectContentResolver {
             CsmInheritance inherit = it2.next();
             CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(inherit);
             if (baseClass != null) {
-                VisibilityInfo nextInfo = getNextInheritanceInfo(minVisibility, inherit, inheritanceLevel, friend);
-                CsmVisibility nextMinVisibility = nextInfo.visibility;
-                int nextInheritanceLevel = nextInfo.inheritanceLevel;
-                if (nextMinVisibility != CsmVisibility.NONE) {
-                    Map<CharSequence, CsmClass> baseRes = getBaseClasses(baseClass, contextDeclaration, strPrefix, match,
-                            handledClasses, nextMinVisibility, nextInheritanceLevel);
-                    if (matchName(baseClass.getName(), strPrefix, match)) {
-                        baseRes.put(baseClass.getQualifiedName(), baseClass);
+                if (!baseClass.equals(csmClass) && (level != 0)) {
+                    VisibilityInfo nextInfo = getNextInheritanceInfo(minVisibility, inherit, inheritanceLevel, friend);
+                    CsmVisibility nextMinVisibility = nextInfo.visibility;
+                    int nextInheritanceLevel = nextInfo.inheritanceLevel;
+                    if (nextMinVisibility != CsmVisibility.NONE) {
+                        Map<CharSequence, CsmClass> baseRes = getBaseClasses(baseClass, contextDeclaration, strPrefix, match,
+                                handledClasses, nextMinVisibility, nextInheritanceLevel, level - 1);
+                        if (matchName(baseClass.getName(), strPrefix, match)) {
+                            baseRes.put(baseClass.getQualifiedName(), baseClass);
+                        }
+                        // replace by own elements in inherited set
+                        baseRes.putAll(res);
+                        res = baseRes;
                     }
-                    // replace by own elements in inherited set
-                    baseRes.putAll(res);
-                    res = baseRes;
+                } else {
+                   CndUtils.assertTrue(false, "Infinite recursion in file " + csmClass.getContainingFile() + " class " + csmClass, Level.INFO); //NOI18N
                 }
             }
         }

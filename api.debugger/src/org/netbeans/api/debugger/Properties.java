@@ -689,7 +689,7 @@ public abstract class Properties {
         }
 
 
-        private PrimitiveRegister impl = new PrimitiveRegister ();
+        private final PrimitiveRegister impl = new PrimitiveRegister ();
 
 
         private <T> T getInitialValue(String propertyName, Class<T> clazz) {
@@ -1076,15 +1076,16 @@ public abstract class Properties {
             synchronized(impl) {
                 if (value == null) {
                     impl.setProperty (propertyName, null);
-                }
-                impl.setProperty (propertyName, "# " + value.getClass ().getName ());
-                Properties p = getProperties (propertyName);
-                Iterator it = value.iterator ();
-                int i = 0;
-                p.setInt ("length", value.size ());
-                while (it.hasNext ()) {
-                    p.setObject ("" + i, it.next ());
-                    i++;
+                } else {
+                    impl.setProperty (propertyName, "# " + value.getClass ().getName ());
+                    Properties p = getProperties (propertyName);
+                    Iterator it = value.iterator ();
+                    int i = 0;
+                    p.setInt ("length", value.size ());
+                    while (it.hasNext ()) {
+                        p.setObject ("" + i, it.next ());
+                        i++;
+                    }
                 }
             }
             pcs.firePropertyChange(propertyName, null, value);
@@ -1131,17 +1132,18 @@ public abstract class Properties {
             synchronized(impl) {
                 if (value == null) {
                     impl.setProperty (propertyName, null);
-                }
-                impl.setProperty (propertyName, "# " + value.getClass ().getName ());
-                Properties p = getProperties (propertyName);
-                Iterator it = value.keySet ().iterator ();
-                int i = 0;
-                p.setInt ("length", value.size ());
-                while (it.hasNext ()) {
-                    Object o = it.next ();
-                    p.setObject ("" + i + "-key", o);
-                    p.setObject ("" + i + "-value", value.get (o));
-                    i++;
+                } else {
+                    impl.setProperty (propertyName, "# " + value.getClass ().getName ());
+                    Properties p = getProperties (propertyName);
+                    Iterator it = value.keySet ().iterator ();
+                    int i = 0;
+                    p.setInt ("length", value.size ());
+                    while (it.hasNext ()) {
+                        Object o = it.next ();
+                        p.setObject ("" + i + "-key", o);
+                        p.setObject ("" + i + "-value", value.get (o));
+                        i++;
+                    }
                 }
             }
             pcs.firePropertyChange(propertyName, null, value);

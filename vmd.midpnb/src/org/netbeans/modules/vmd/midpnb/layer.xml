@@ -145,4 +145,13 @@ made subject to such option by the copyright holder.
         </folder>
         
     </folder>
+
+    <folder name="OptionsExport">
+        <folder name="Advanced">
+            <file name="VmdMidp">
+                <attr name="include" stringvalue="config/vmd-midp/palette/custom/.*"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.vmd.midpnb.Bundle#VmdMidp.Options.Export.displayName"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

@@ -47,6 +47,18 @@
 
 package org.netbeans.modules.websvc.customization.model;
 
+import org.netbeans.modules.websvc.api.customization.model.EnableWrapperStyle;
+import org.netbeans.modules.websvc.api.customization.model.PortTypeOperationCustomization;
+import org.netbeans.modules.websvc.api.customization.model.EnableAsyncMapping;
+import org.netbeans.modules.websvc.api.customization.model.ServiceCustomization;
+import org.netbeans.modules.websvc.api.customization.model.JavaClass;
+import org.netbeans.modules.websvc.api.customization.model.JavaParameter;
+import org.netbeans.modules.websvc.api.customization.model.PortTypeCustomization;
+import org.netbeans.modules.websvc.api.customization.model.PortCustomization;
+import org.netbeans.modules.websvc.api.customization.model.BindingCustomization;
+import org.netbeans.modules.websvc.api.customization.model.JavaMethod;
+import org.netbeans.modules.websvc.api.customization.model.DefinitionsCustomization;
+import org.netbeans.modules.websvc.api.customization.model.PortTypeOperationFaultCustomization;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -59,7 +71,7 @@ import java.util.Collection;
 import java.util.List;
 import javax.swing.text.Document;
 import junit.framework.*;
-import org.netbeans.modules.websvc.customization.model.JAXWSQName;
+import org.netbeans.modules.websvc.api.customization.model.JAXWSQName;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Fault;

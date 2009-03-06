@@ -80,7 +80,9 @@ import org.netbeans.modules.maven.jaxws.WSStackUtils;
 import org.netbeans.modules.maven.jaxws.WSUtils;
 import org.netbeans.modules.maven.jaxws._RetoucheUtil;
 import org.netbeans.modules.maven.jaxws.actions.AddOperationAction;
+import org.netbeans.modules.maven.jaxws.actions.WSEditAttributesAction;
 import org.netbeans.modules.maven.jaxws.actions.WsTesterPageAction;
+import org.netbeans.modules.maven.jaxws.wseditor.EditWSAttributesCookieImpl;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -154,7 +156,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         };
         content.add(cookie);
         setServiceUrl();
-        
+        content.add(new EditWSAttributesCookieImpl(this));
         attachFileChangeListener();
 
     }
@@ -265,8 +267,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
                 null,
                 SystemAction.get(WsTesterPageAction.class),
 //                null,
-//                SystemAction.get(WSEditAttributesAction.class),
-//                null,
+                SystemAction.get(WSEditAttributesAction.class),
                 SystemAction.get(ConfigureHandlerAction.class),
 //                null,
 //                SystemAction.get(JaxWsGenWSDLAction.class),

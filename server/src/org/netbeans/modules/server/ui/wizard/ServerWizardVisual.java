@@ -397,8 +397,10 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
         static {
             PRIORITY_LIST.add(Pattern.compile(".*Sailfin.*")); // NOI18N
             PRIORITY_LIST.add(Pattern.compile(".*Sun\\s*Java\\s*System.*")); // NOI18N
-            PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*V1.*")); // NOI18N
-            PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*V2.*")); // NOI18N
+            PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*v1.*")); // NOI18N
+            PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*v2.*")); // NOI18N
+            PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*v3.*")); // NOI18N
+            PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*v3")); // NOI18N
         }
 
         public int compare(WizardAdapter o1, WizardAdapter o2) {

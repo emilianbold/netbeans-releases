@@ -52,6 +52,8 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import java.awt.*;
 import java.util.Iterator;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
+import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.xml.wsdl.model.Service;
 
 /**
@@ -64,10 +66,13 @@ public class ClientTopComponent extends TopComponent {
     private InnerPanelFactory panelFactory = null;
 
     private JaxWsModel jaxWsModel;
-    private WSDLModel  clientWsdlModel;
-    private WSDLModel  serviceModel;
+    private WSDLModel clientWsdlModel;
+    private WSDLModel serviceModel;
     private Client client;
     private Node node;
+
+    private JAXWSLightSupport jaxWsSupport;
+    private JaxWsService jaxWsService;
     
     private Service service;
 
@@ -78,6 +83,18 @@ public class ClientTopComponent extends TopComponent {
         this.serviceModel = serviceWsdlModel;
         this.initialized = false;
         this.client = client;
+        this.node = node;
+    }
+
+    public ClientTopComponent(JAXWSLightSupport jaxWsSupport, JaxWsService jaxService, WSDLModel clientWsdlModel, WSDLModel serviceWsdlModel, Node node) {
+        setLayout(new BorderLayout());
+        this.clientWsdlModel = clientWsdlModel;
+        this.serviceModel = serviceWsdlModel;
+        this.initialized = false;
+        this.jaxWsSupport = jaxWsSupport;
+        this.jaxWsService = jaxService;
+        this.client = null;
+        this.jaxWsModel = null;
         this.node = node;
     }
     
@@ -120,15 +137,18 @@ public class ClientTopComponent extends TopComponent {
 
         ToolBarDesignEditor tb = new ToolBarDesignEditor();
         panelFactory = new ClientPanelFactory(tb, clientWsdlModel, node, serviceModel, jaxWsModel);
-        
-        Service s = null;
-        if (client != null) {
-            s = getService(client.getName(), clientWsdlModel); //TODO - the client name just won't work!!!
+
+        ClientView mview = null;
+        if (jaxWsService == null) {
+            Service s = service;
+            if (client != null) {
+                s = getService(client.getName(), clientWsdlModel); //TODO - the client name just won't work!!!
+            }
+            mview = new ClientView(panelFactory, clientWsdlModel, serviceModel, s.getPorts());
         } else {
-            s = service;
+            mview = new ClientView(panelFactory, clientWsdlModel, serviceModel, null);
         }
-        if (s != null) {
-            ClientView mview = new ClientView(panelFactory, clientWsdlModel, serviceModel, s);
+        if (mview != null) {
             tb.setContentView(mview);
             add(tb);
         }

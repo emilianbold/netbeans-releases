@@ -307,4 +307,13 @@ made subject to such option by the copyright holder.
     	</folder>
     </folder>
 
+    <folder name="OptionsExport">
+        <folder name="Advanced">
+            <file name="Toolbars">
+                <attr name="include" stringvalue="config/Toolbars/.*"/>
+                <attr name="exclude" stringvalue="config/Toolbars/Progress/.*"/>
+                <attr name="displayName" bundlevalue="org.netbeans.core.windows.resources.Bundle#Toolbars.Options.Export.displayName"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

@@ -84,7 +84,7 @@ public class ExternalProcessBuilderTest extends NbTestCase {
         File addedPath = new File("addedPath");
         creator = creator.prependPath(addedPath);
         env = new HashMap<String, String>(creator.buildEnvironment(original));
-        assertEquals(addedPath.getAbsolutePath() + File.pathSeparator + "original", env.remove("PATH"));
+        assertEquals(addedPath.getAbsolutePath().replace(" ", "\\ ") + File.pathSeparator + "original", env.remove("PATH"));
         assertTrue(env.isEmpty());
 
         // yet another path
@@ -92,8 +92,8 @@ public class ExternalProcessBuilderTest extends NbTestCase {
         creator = creator.prependPath(nextPath);
         env = new HashMap<String, String>(creator.buildEnvironment(original));
         assertEquals(
-                nextPath.getAbsolutePath() + File.pathSeparator
-                + addedPath.getAbsolutePath() + File.pathSeparator
+                nextPath.getAbsolutePath().replace(" ", "\\ ") + File.pathSeparator
+                + addedPath.getAbsolutePath().replace(" ", "\\ ") + File.pathSeparator
                 + "original", env.remove("PATH"));
         assertTrue(env.isEmpty());
     }

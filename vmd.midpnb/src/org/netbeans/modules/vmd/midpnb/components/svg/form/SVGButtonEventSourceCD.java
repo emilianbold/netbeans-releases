@@ -81,6 +81,7 @@ public class SVGButtonEventSourceCD extends SVGComponentEventSourceCD {
         return TYPEID;
     }
 
+    @Override
     protected List<? extends Presenter> createPresenters() {
         List<? extends Presenter> presenters = super.createPresenters();
         List<Presenter> result = new ArrayList<Presenter>( presenters  );

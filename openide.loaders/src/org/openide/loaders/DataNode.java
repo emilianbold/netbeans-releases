@@ -45,9 +45,12 @@ package org.openide.loaders;
 import java.awt.datatransfer.*;
 import java.beans.*;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import javax.swing.Action;
 import org.netbeans.modules.openide.loaders.UIException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -71,6 +74,9 @@ public class DataNode extends AbstractNode {
 
     /** should file extensions be displayed? */
     private static boolean showFileExtensions = true;
+
+    /** Name of extension property. Allows to change extension. */
+    private static final String PROP_EXTENSION = "extension"; // NOI18N
 
     /** Create a data node with the given children set for the given data object.
     * @param obj object to work with
@@ -455,6 +461,10 @@ public class DataNode extends AbstractNode {
         }
 
         if (fo.isData()) {
+            if (!obj.getPrimaryFile().getNameExt().equals(obj.getName())) {
+                // show extension property only if name differs from getNameExt
+                ss.put(new ExtensionProperty());
+            }
             ss.put(new AllFilesProperty());
             ss.put(new SizeProperty());
             ss.put(new LastModifiedProperty());
@@ -536,7 +546,62 @@ public class DataNode extends AbstractNode {
         }
         
     }
-    
+
+    /** 
+     * A property with an extension of this object. It allows to change the extension (#27444).
+     */
+    private final class ExtensionProperty extends PropertySupport.ReadWrite<String> {
+
+        public ExtensionProperty() {
+            super(PROP_EXTENSION, String.class,
+                    DataObject.getString("PROP_extension"), DataObject.getString("HINT_extension"));  //NOI18N
+        }
+
+        @Override
+        public boolean canWrite() {
+            return obj.isRenameAllowed();
+        }
+
+        @Override
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
+            return obj.getPrimaryFile().getExt();
+        }
+
+        @Override
+        public void setValue(String newExt) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            try {
+                if (obj.isModified()) {
+                    String message = DataObject.getString("ERROR_extension");  //NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+                    return;
+                }
+                FileObject prim = obj.getPrimaryFile();
+                FileLock lock = prim.lock();
+                try {
+                    prim.rename(lock, prim.getName(), newExt);
+                } finally {
+                    lock.releaseLock();
+                }
+                try {
+                    // Invalidate current DataObject which enforces refresh
+                    // and new DataObject will be created.
+                    obj.setValid(false);
+                } catch (PropertyVetoException ex) {
+                    // ignore
+                }
+                if (obj instanceof MultiDataObject) {
+                    // Refresh folder to show possible new single DataObjects
+                    // (e.g. when renaming form DataObject).
+                    FolderList folderList = FolderList.find(prim.getParent(), true);
+                    folderList.getChildren(); // need to be here - refresh is not enough
+                    folderList.refresh();
+                }
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+    }
+
     /** Copy this node to the clipboard.
     *
     * @return {@link org.openide.util.datatransfer.ExTransferable.Single} with one copy flavor

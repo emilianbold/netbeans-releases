@@ -17,11 +17,14 @@ BEGIN {
 	total = 0;
 }
 
+#ifdef NOSTACK
+#define PRINT_STACK() 
+#else
 #define PRINT_STACK() \
 	printf("%d %d %d", cpu, tid, timestamp); \
 	ustack(); \
-	printf("\n"); \
-	
+	printf("\n");
+#endif
 
 #define ALLOC_ENTRY(_sz) \
 	self->size = _sz; \

@@ -40,6 +40,8 @@ package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
 import java.awt.Image;
 
+import java.util.ArrayList;
+import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.openide.util.ImageUtilities;
 
@@ -76,6 +78,12 @@ public class SVGTextFieldEventSourceCD extends SVGComponentEventSourceCD {
     @Override
     protected TypeID getTypeId() {
         return TYPEID;
+    }
+
+    @Override
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        removeActions(presenters);
+        super.gatherPresenters(presenters);
     }
 
 }
