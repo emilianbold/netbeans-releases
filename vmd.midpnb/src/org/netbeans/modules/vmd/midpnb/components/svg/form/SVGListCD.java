@@ -68,14 +68,12 @@ public class SVGListCD extends ComponentDescriptor{
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGList"); // NOI18N
     
     public static final String PROP_MODEL = "listModel"; // NOI18N
+    private static final String ICON_PATH = "org/netbeans/modules/mobility/svgcore/resources/palette/form/list_16.png"; // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);
     }
-    
-    static {
-        SVGComponentCD.addPairType( TYPEID, SVGListEventSourceCD.TYPEID );
-    }
+   
 
     @Override
     public VersionDescriptor getVersionDescriptor() {
@@ -111,8 +109,10 @@ public class SVGListCD extends ComponentDescriptor{
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
-                new SVGCodeFooter( SVGListEventSourceCD.TYPEID ),
-                new SVGListModelFooter()
+                //new SVGCodeFooter( SVGListEventSourceCD.TYPEID ),
+                new SVGListModelFooter(),
+                //inspector
+                new SVGComponentInspectorFolderPresenter()
         );
     }
 
