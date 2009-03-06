@@ -102,6 +102,14 @@ public class ChatTopComponent extends TopComponent {
         }
     };
 
+    @Override
+    public void requestActive() {
+        super.requestActive();
+        Component c = chats.getSelectedComponent();
+        if (c!=null) {
+            c.requestFocus();
+        }
+    }
 
     private ChatTopComponent() {
         initComponents();
@@ -124,6 +132,7 @@ public class ChatTopComponent extends TopComponent {
                 if (index>=0) {
                     chats.setForegroundAt(index, Color.BLACK);
                     ChatNotifications.getDefault().removeGroup(chats.getTitleAt(index));
+                    chats.getComponentAt(index).requestFocus();
                 }
             }
         };
@@ -230,12 +239,13 @@ public class ChatTopComponent extends TopComponent {
 
     public void setActive(String name) {
         ChatNotifications.getDefault().removeGroup(name);
-        final int indexOfTab = chats.indexOfTab(name);
+        int indexOfTab = chats.indexOfTab(name);
         if (indexOfTab < 0) {
             MultiUserChat muc = kec.getChat(name);
             if (muc != null) {
                 ChatPanel chatPanel = new ChatPanel(muc);
                 addChat(chatPanel);
+                indexOfTab=chats.getTabCount()-1;
             }
 
         }
@@ -299,13 +309,15 @@ public class ChatTopComponent extends TopComponent {
             addChat(chatPanel);
         } else if (chs.size()!=0) {
             String s = prefs.get("kenai.open.chats." + Kenai.getDefault().getPasswordAuthentication().getUserName(),"");
-            for (String chat:s.split(",")) {
-                MultiUserChat muc = cc.getChat(chat);
-                if (muc!=null) {
-                    ChatPanel chatPanel = new ChatPanel(muc);
-                    addChat(chatPanel);
-                } else {
-                    Logger.getLogger(ChatTopComponent.class.getName()).warning("Cannot find chat " + chat);
+            if (s.length() > 1) {
+                for (String chat : s.split(",")) {
+                    MultiUserChat muc = cc.getChat(chat);
+                    if (muc != null) {
+                        ChatPanel chatPanel = new ChatPanel(muc);
+                        addChat(chatPanel);
+                    } else {
+                        Logger.getLogger(ChatTopComponent.class.getName()).warning("Cannot find chat " + chat);
+                    }
                 }
             }
         }

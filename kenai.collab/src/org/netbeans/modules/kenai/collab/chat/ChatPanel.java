@@ -107,6 +107,12 @@ public class ChatPanel extends javax.swing.JPanel {
 //        setUpPrivateMessages();
     }
 
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        outbox.requestFocus();
+    }
+
 //    void setUpPrivateMessages() {
 //
 //        final JPopupMenu popupMenu = new JPopupMenu();
