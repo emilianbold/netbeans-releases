@@ -127,6 +127,13 @@ public final class Indexable {
         }
 
         @Override
+        public void index(BinaryIndexer indexer, Context context) {
+            assert indexer != null;
+            assert context != null;
+            indexer.index(context);
+        }
+
+        @Override
         public void index(CustomIndexer indexer, Iterable<? extends Indexable> files, Context context) {
             assert indexer != null;
             assert files != null;

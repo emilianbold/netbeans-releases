@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.impl.indexing;
 import java.io.IOException;
 import java.net.URL;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
@@ -92,6 +93,8 @@ public abstract class SPIAccessor {
     public abstract String getIndexerPath (String indexerName, int indexerVersion);
 
     public abstract IndexFactoryImpl getIndexFactory (Context ctx);
+
+    public abstract void index (BinaryIndexer indexer, Context context);
 
     public abstract void index (CustomIndexer indexer, Iterable<? extends Indexable> files, Context context);
 

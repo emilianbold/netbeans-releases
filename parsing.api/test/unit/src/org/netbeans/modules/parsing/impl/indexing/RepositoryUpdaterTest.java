@@ -84,6 +84,8 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
+import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -115,6 +117,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private static final String LIBS = "FOO_LIBS";
     private static final String MIME = "text/foo";
     private static final String EMIME = "text/emb";
+    private static final String JARMIME = "application/java-archive";
 
     private FileObject srcRoot1;
     private FileObject srcRoot2;
@@ -123,6 +126,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private FileObject compRoot2;
     private FileObject bootRoot1;
     private FileObject bootRoot2;
+    private FileObject bootRoot3;
     private FileObject compSrc1;
     private FileObject compSrc2;
     private FileObject bootSrc1;
@@ -136,6 +140,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private URL[] customFiles;
     private URL[] embeddedFiles;
 
+    private final BinIndexerFactory binIndexerFactory = new BinIndexerFactory();
+    private final BinIndexerFactory jarIndexerFactory = new BinIndexerFactory();
     private final FooIndexerFactory indexerFactory = new FooIndexerFactory();
     private final EmbIndexerFactory eindexerFactory = new EmbIndexerFactory();
 
@@ -153,6 +159,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         CacheFolder.setCacheFolder(cache);
 
         MockServices.setServices(FooPathRecognizer.class, EmbPathRecognizer.class, SFBQImpl.class, OpenProject.class);
+        MockMimeLookup.setInstances(MimePath.EMPTY, binIndexerFactory);
+        MockMimeLookup.setInstances(MimePath.get(JARMIME), jarIndexerFactory);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
         MockMimeLookup.setInstances(MimePath.get(EMIME), eindexerFactory, new EmbParserFactory());
         Set<String> mt = new HashSet<String>();
@@ -175,6 +183,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertNotNull (bootRoot1);
         bootRoot2 = wd.createFolder("boot2");
         assertNotNull (bootRoot2);
+        FileUtil.setMIMEType("jar", JARMIME);
+        FileObject jarFile = FileUtil.toFileObject(getDataDir()).getFileObject("JavaApplication1.jar");
+        assertNotNull(jarFile);
+        assertTrue(FileUtil.isArchiveFile(jarFile));
+        bootRoot3 = FileUtil.getArchiveRoot(jarFile);
+        assertNotNull (bootRoot3);
         compSrc1 = wd.createFolder("cs1");
         assertNotNull (compSrc1);
         compSrc2 = wd.createFolder("cs2");
@@ -457,6 +471,21 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, eindexerFactory.indexer.expectedDirty.size());
     }
 
+    public void testBinaryIndexers() throws Exception {
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+
+        binIndexerFactory.indexer.setExpectedRoots(bootRoot2.getURL(), bootRoot3.getURL());
+        jarIndexerFactory.indexer.setExpectedRoots(bootRoot3.getURL());
+        ClassPath cp = ClassPathSupport.createClassPath(new FileObject[] {bootRoot2, bootRoot3});
+        GlobalPathRegistry.getDefault().register(PLATFORM,new ClassPath[] {cp});
+        assertTrue(handler.await());
+        assertEquals(2, handler.getBinaries().size());
+        assertEquals(1, jarIndexerFactory.indexer.getCount());
+        assertEquals(2, binIndexerFactory.indexer.getCount());
+    }
 
     public void testFileChanges() throws Exception {
         final TestHandler handler = new TestHandler();
@@ -772,7 +801,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 this.listeners.remove(l);
             }
 
-            public FileObject[] getRoots() {
+            public @Override FileObject[] getRoots() {
                 if (this.root == null) {
                     return new FileObject[0];
                 }
@@ -852,15 +881,15 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
     public static class OpenProject implements  OpenProjectsTrampoline {
 
-        public Project[] getOpenProjectsAPI() {
+        public @Override Project[] getOpenProjectsAPI() {
             return new Project[0];
         }
 
-        public void openAPI(Project[] projects, boolean openRequiredProjects) {
+        public @Override void openAPI(Project[] projects, boolean openRequiredProjects) {
 
         }
 
-        public void closeAPI(Project[] projects) {
+        public @Override void closeAPI(Project[] projects) {
 
         }
 
@@ -897,14 +926,65 @@ public class RepositoryUpdaterTest extends NbTestCase {
             
         }
 
-        public Project getMainProject() {
+        public @Override Project getMainProject() {
             return null;
         }
 
-        public void setMainProject(Project project) {
+        public @Override void setMainProject(Project project) {
             
         }
 
+    }
+
+    private static class BinIndexerFactory extends BinaryIndexerFactory {
+
+        private final BinIndexer indexer = new BinIndexer();
+
+        @Override
+        public BinaryIndexer createIndexer() {
+            return this.indexer;
+        }
+
+        @Override
+        public String getIndexerName() {
+            return "jar";
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return 1;
+        }
+
+    }
+
+    private static class BinIndexer extends BinaryIndexer {
+
+        private Set<URL> expectedRoots = new HashSet<URL>();
+        private CountDownLatch latch;
+        private volatile int counter;
+
+        public void setExpectedRoots (URL... roots) {
+            expectedRoots.clear();
+            expectedRoots.addAll(Arrays.asList(roots));
+            counter = 0;
+            latch = new CountDownLatch(expectedRoots.size());
+        }
+
+        public boolean await () throws InterruptedException {
+            return this.latch.await(TIME, TimeUnit.MILLISECONDS);
+        }
+
+        public int getCount () {
+            return this.counter;
+        }
+
+        @Override
+        protected void index(Context context) {
+            if (expectedRoots.remove(context.getRootURI())) {
+                counter++;
+                latch.countDown();
+            }
+        }
     }
 
     private static class FooIndexerFactory extends CustomIndexerFactory {
