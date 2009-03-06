@@ -45,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.ErrorManager;
 
 public class SunCCCompiler extends SunCCCCompiler {
@@ -54,19 +55,19 @@ public class SunCCCompiler extends SunCCCCompiler {
     /** 
      * Creates a new instance of SunCCompiler
      */
-    protected SunCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(hkey, flavor, kind, name, displayName, path);
+    protected SunCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(env, flavor, kind, name, displayName, path);
     }
     
     @Override
     public SunCCCompiler createCopy() {
-        SunCCCompiler copy = new SunCCCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
+        SunCCCompiler copy = new SunCCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
     }
 
-    public static SunCCCompiler create(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        return new SunCCCompiler(hkey, flavor, kind, name, displayName, path);
+    public static SunCCCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return new SunCCCompiler(env, flavor, kind, name, displayName, path);
     }
 
     @Override

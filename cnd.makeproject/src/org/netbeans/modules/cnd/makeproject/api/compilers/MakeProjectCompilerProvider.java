@@ -43,6 +43,8 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import org.netbeans.modules.cnd.api.compilers.CompilerProvider;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,45 +64,46 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
      * could be deferred to makeproject.
      */
     public Tool createCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
         if (flavor.isSunStudioCompiler()) {
             if (kind == Tool.CCompiler) {
-                return SunCCompiler.create(hkey, flavor, kind, name, displayName, path);
+                return SunCCompiler.create(env, flavor, kind, name, displayName, path);
             } else if (kind == Tool.CCCompiler) {
-                return SunCCCompiler.create(hkey, flavor, kind, name, displayName, path);
+                return SunCCCompiler.create(env, flavor, kind, name, displayName, path);
             } else if (kind == Tool.FortranCompiler) {
-                return SunFortranCompiler.create(hkey, flavor, kind, name, displayName, path);
+                return SunFortranCompiler.create(env, flavor, kind, name, displayName, path);
             } else if (kind == Tool.MakeTool) {
-                return SunMaketool.create(hkey, flavor, name, displayName, path);
+                return SunMaketool.create(env, flavor, name, displayName, path);
             } else if (kind == Tool.DebuggerTool) {
-                return SunDebuggerTool.create(hkey, flavor, name, displayName, path);
+                return SunDebuggerTool.create(env, flavor, name, displayName, path);
             } else if (kind == Tool.Assembler) {
-                return Assembler.create(hkey, flavor, kind, name, displayName, path);
+                return Assembler.create(env, flavor, kind, name, displayName, path);
             }
         } else /* if (flavor.isGnuCompiler()) */ { // Assume GNU (makeproject system doesn't handle Unknown)
            if (kind == Tool.CCompiler) {
                if ("MSVC".equals(flavor.toString())) { // NOI18N
-                   return MsvcCompiler.create(hkey, flavor, kind, name, displayName, path);
+                   return MsvcCompiler.create(env, flavor, kind, name, displayName, path);
                } else {
-                   return GNUCCompiler.create(hkey, flavor, kind, name, displayName, path);
+                   return GNUCCompiler.create(env, flavor, kind, name, displayName, path);
                }
            } else if (kind == Tool.CCCompiler) {
                if ("MSVC".equals(flavor.toString())) { // NOI18N
-                   return new MsvcCompiler(hkey, flavor, kind, name, displayName, path);
+                   return new MsvcCompiler(env, flavor, kind, name, displayName, path);
                } else {
-                   return GNUCCCompiler.create(hkey, flavor, kind, name, displayName, path);
+                   return GNUCCCompiler.create(env, flavor, kind, name, displayName, path);
                }
             } else if (kind == Tool.FortranCompiler) {
-                return GNUFortranCompiler.create(hkey, flavor, kind, name, displayName, path);
+                return GNUFortranCompiler.create(env, flavor, kind, name, displayName, path);
             } else if (kind == Tool.MakeTool) {
-                return GNUMaketool.create(hkey, flavor, name, displayName, path);
+                return GNUMaketool.create(env, flavor, name, displayName, path);
             } else if (kind == Tool.DebuggerTool) {
-                return GNUDebuggerTool.create(hkey, flavor, name, displayName, path);
+                return GNUDebuggerTool.create(env, flavor, name, displayName, path);
             } else if (kind == Tool.Assembler) {
-                return Assembler.create(hkey, flavor, kind, name, displayName, path);
+                return Assembler.create(env, flavor, kind, name, displayName, path);
             }
         }
         if (kind == Tool.CustomTool) {
-            return CustomTool.create(hkey);
+            return CustomTool.create(env);
         }
         throw new IllegalArgumentException(NbBundle.getMessage(MakeProjectCompilerProvider.class,
                 "ERR_UnrecognizedCompilerType")); // NOI18N
