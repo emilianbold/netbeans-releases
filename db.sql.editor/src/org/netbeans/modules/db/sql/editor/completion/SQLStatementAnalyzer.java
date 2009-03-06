@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,17 +34,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.db.sql.editor.completion;
 
-package org.netbeans.modules.db.sql.analyzer;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.db.sql.analyzer.SQLStatementKind;
+import org.netbeans.modules.db.sql.editor.StringUtils;
+import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
 /**
  *
- * @author Andrei Badea
+ * @author Jiri Rechtacek
  */
-public enum SQLStatementKind {
+public class SQLStatementAnalyzer {
 
-    SELECT,
-    INSERT
+    public static SQLStatementKind analyzeKind (TokenSequence<SQLTokenId> seq) {
+        seq.moveStart ();
+        if ( ! seq.moveNext ()) {
+            return null;
+        }
+        if (isKeyword ("SELECT", seq)) { // NOI18N
+            return SQLStatementKind.SELECT;
+        } else if (isKeyword ("INSERT", seq)) {
+            return SQLStatementKind.INSERT;
+        }
+        return null;
+    }
+
+    public static boolean isKeyword (CharSequence keyword, TokenSequence<SQLTokenId> seq) {
+        return seq.token ().id () == SQLTokenId.KEYWORD && StringUtils.textEqualsIgnoreCase (seq.token ().text (), keyword);
+    }
 }

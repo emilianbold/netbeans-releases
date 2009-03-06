@@ -67,13 +67,16 @@ import org.netbeans.modules.db.api.metadata.DBConnMetadataModelManager;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.sql.analyzer.FromClause;
+import org.netbeans.modules.db.sql.analyzer.InsertStatement;
+import org.netbeans.modules.db.sql.analyzer.InsertStatement.InsertContext;
+import org.netbeans.modules.db.sql.analyzer.InsertStatementAnalyzer;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
 import org.netbeans.modules.db.sql.analyzer.SQLStatement;
-import org.netbeans.modules.db.sql.analyzer.SQLStatement.SelectContext;
-import org.netbeans.modules.db.sql.analyzer.SQLStatementAnalyzer;
+import org.netbeans.modules.db.sql.analyzer.SelectStatement;
+import org.netbeans.modules.db.sql.analyzer.SelectStatement.SelectContext;
+import org.netbeans.modules.db.sql.analyzer.SelectStatementAnalyzer;
 import org.netbeans.modules.db.sql.analyzer.SQLStatementKind;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionResultSet;
-import org.netbeans.modules.db.sql.editor.api.completion.SubstitutionHandler;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -160,19 +163,33 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         anchorOffset = -1;
         substitutionOffset = 0;
         items = new SQLCompletionItems(quoter, env.getSubstitutionHandler());
-        statement = SQLStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
-        if (statement != null && statement.getKind() == SQLStatementKind.SELECT) {
-            completeSelect();
+        SQLStatementKind kind = SQLStatementAnalyzer.analyzeKind (env.getTokenSequence());
+        switch (kind) {
+            case SELECT:
+                statement = SelectStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
+                if (statement != null) {
+                    assert statement.getKind() == SQLStatementKind.SELECT : statement.getKind ();
+                    completeSelect ();
+                }
+                break;
+            case INSERT:
+                statement = InsertStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
+                if (statement != null) {
+                    assert statement.getKind() == SQLStatementKind.INSERT : statement.getKind ();
+                    completeInsert ();
+                }
+                break;
         }
         return items;
     }
 
     private void completeSelect() {
-        SelectContext context = statement.getContextAtOffset(env.getCaretOffset());
+        SelectStatement selectStatement = (SelectStatement) statement;
+        SelectContext context = selectStatement.getContextAtOffset(env.getCaretOffset());
         if (context == null) {
             return;
         }
-        fromClause = statement.getTablesInEffect(env.getCaretOffset());
+        fromClause = selectStatement.getTablesInEffect(env.getCaretOffset());
 
         Identifier ident = findIdentifier();
         if (ident == null) {
@@ -197,7 +214,38 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
+    private void completeInsert () {
+        InsertStatement insertStatement = (InsertStatement) statement;
+        InsertContext context = insertStatement.getContextAtOffset(env.getCaretOffset());
+        if (context == null) {
+            return;
+        }
+        fromClause = insertStatement.getTablesInEffect(env.getCaretOffset());
+
+        Identifier ident = findIdentifier();
+        if (ident == null) {
+            return;
+        }
+        anchorOffset = ident.anchorOffset;
+        substitutionOffset = ident.substitutionOffset;
+        switch (context) {
+            case INSERT:
+                break;
+            case INTO:
+                insideFrom (ident);
+                break;
+        }
+    }
+
     private void insideSelect(Identifier ident) {
+        if (ident.fullyTypedIdent.isEmpty()) {
+            completeSelectSimpleIdent(ident.lastPrefix, ident.quoted);
+        } else {
+            completeSelectQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
+        }
+    }
+
+    private void insideInsert(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
             completeSelectSimpleIdent(ident.lastPrefix, ident.quoted);
         } else {
