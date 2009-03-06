@@ -41,7 +41,9 @@ package org.netbeans.modules.bugtracking.kenai;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
@@ -51,6 +53,7 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 
 /**
@@ -68,6 +71,22 @@ public class KenaiRepositories {
             instance = new KenaiRepositories();
         }
         return instance;
+    }
+
+    public Repository[] getRepositories() {
+        ProjectHandle[] phs = Dashboard.getDefault().getOpenProjects();
+        if(phs == null || phs.length == 0) {
+            return new Repository[0];
+        }
+        List<Repository> ret = new ArrayList<Repository>();
+        for (ProjectHandle projectHandle : phs) {
+            if(projectHandle == null) continue;
+            Repository repo = getRepository(projectHandle, null);
+            if(repo != null) {
+                ret.add(repo);
+            }
+        }
+        return ret.toArray(new Repository[ret.size()]);
     }
 
     public Repository getRepository(KenaiProject kp) {
