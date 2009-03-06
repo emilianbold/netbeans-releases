@@ -44,11 +44,12 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.DebuggerDescriptor;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 
 public class SunDebuggerTool extends Tool {
     
     private SunDebuggerTool(String hkey, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
-        super(hkey, flavor, DebuggerTool, name, displayName, path); // NOI18N
+        super(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), flavor, DebuggerTool, name, displayName, path); // NOI18N
     }
     
     @Override

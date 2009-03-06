@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -75,7 +76,7 @@ public class Tool {
         getString("Assembler"), // NOI18N // Noy yet
         getString("CustomBuildTool"), // NOI18N
     };
-    private String hkey;
+    private final ExecutionEnvironment executionEnvironment;
     private CompilerFlavor flavor;
     private int kind;
     private String name;
@@ -84,8 +85,8 @@ public class Tool {
     private CompilerSet compilerSet = null;
 
     /** Creates a new instance of GenericCompiler */
-    protected Tool(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        this.hkey = hkey;
+    protected Tool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        this.executionEnvironment = executionEnvironment;
         this.flavor = flavor;
         this.kind = kind;
         this.name = name;
@@ -99,17 +100,25 @@ public class Tool {
     }
 
     public Tool createCopy() {
-        Tool copy = new Tool(hkey, flavor, kind, "", displayName, path);
+        Tool copy = new Tool(executionEnvironment, flavor, kind, "", displayName, path);
         copy.setName(getName());
         return copy;
     }
 
-    public static Tool createTool(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        return new Tool(hkey, flavor, kind, name, displayName, path);
+    public static Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return new Tool(executionEnvironment, flavor, kind, name, displayName, path);
     }
 
     public String getHostKey() {
-        return hkey;
+        if (executionEnvironment.isLocal()) {
+            return CompilerSetManager.LOCALHOST; // executionEnvironment.getHost();
+        } else {
+            return executionEnvironment.getUser() + '@' + executionEnvironment.getHost();
+        }
+    }
+
+    public ExecutionEnvironment getExecutionEnvironment() {
+        return executionEnvironment;
     }
 
     public CompilerFlavor getFlavor() {

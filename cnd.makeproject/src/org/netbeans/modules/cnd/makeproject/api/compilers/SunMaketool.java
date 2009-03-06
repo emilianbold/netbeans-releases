@@ -44,11 +44,12 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.MakeDescriptor;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 
 public final class SunMaketool extends Tool {
 
     private SunMaketool(String hkey, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
-        super(hkey, flavor, MakeTool, name, displayName, path); // NOI18N
+        super(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), flavor, MakeTool, name, displayName, path); // NOI18N
     }
 
     @Override

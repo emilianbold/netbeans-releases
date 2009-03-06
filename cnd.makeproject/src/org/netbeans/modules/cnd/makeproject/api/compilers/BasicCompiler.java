@@ -46,6 +46,7 @@ import java.util.Vector;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.openide.filesystems.FileUtil;
 
@@ -53,7 +54,7 @@ public abstract class BasicCompiler extends Tool {
 
     /** Creates a new instance of GenericCompiler */
     protected BasicCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(hkey, flavor, kind, name, displayName, path);
+        super(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), flavor, kind, name, displayName, path);
         if (!RemoteUtils.isLocalhost(hkey)) {
             includeFilePrefix = System.getProperty("netbeans.user") + "/var/cache/cnd2/includes-cache/" + RemoteUtils.getHostName(getHostKey()) + "/"; //NOI18N
         } else {

@@ -100,7 +100,7 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
             }
         }
         if (kind == Tool.CustomTool) {
-            return new CustomTool(hkey);
+            return CustomTool.create(hkey);
         }
         throw new IllegalArgumentException(NbBundle.getMessage(MakeProjectCompilerProvider.class,
                 "ERR_UnrecognizedCompilerType")); // NOI18N

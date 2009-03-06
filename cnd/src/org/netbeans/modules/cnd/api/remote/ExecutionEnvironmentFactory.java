@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote;
+package org.netbeans.modules.cnd.api.remote;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
