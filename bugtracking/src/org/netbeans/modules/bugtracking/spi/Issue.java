@@ -151,7 +151,7 @@ public abstract class Issue {
      * Returns this issues controller
      * @return
      */
-    public abstract BugtrackingController getControler();
+    public abstract BugtrackingController getController();
 
     /**
      * Opens this issue in the IDE

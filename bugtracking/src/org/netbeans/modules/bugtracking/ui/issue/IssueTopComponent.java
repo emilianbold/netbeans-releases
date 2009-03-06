@@ -40,9 +40,28 @@
 package org.netbeans.modules.bugtracking.ui.issue;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashSet;
+import java.util.MissingResourceException;
 import java.util.Set;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -51,7 +70,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Jan Stola, Tomas Stupka
  */
-public final class IssueTopComponent extends TopComponent {
+public final class IssueTopComponent extends TopComponent implements PropertyChangeListener {
     /** Set of opened {@code IssueTopComponent}s. */
     private static Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
     /** Issue displayed by this top-component. */
@@ -60,10 +79,64 @@ public final class IssueTopComponent extends TopComponent {
     /**
      * Creates new {@code IssueTopComponent}.
      */
-    public IssueTopComponent() {
+    public IssueTopComponent(Repository toSelect) {
         initComponents();
-        setName(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent")); // NOI18N
-        setToolTipText(NbBundle.getMessage(IssueTopComponent.class, "HINT_IssueTopComponent")); // NOI18N
+
+        Font f = new JLabel().getFont();
+        int s = f.getSize();
+        findIssuesLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
+
+        setNameAndTooltip();
+        
+        newButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onNewClick();
+            }
+        });
+
+        repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Repository r = null;
+                if(value != null) {
+                    r = (Repository) value;
+                    value = r.getDisplayName();
+                }
+                Component renderer = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if(renderer instanceof JLabel && r != null) {
+                    ((JLabel) renderer).setIcon((Icon) r.getIcon());
+                }
+                return renderer;
+            }
+        });
+
+        DefaultComboBoxModel repoModel;
+        if(toSelect != null) {
+            repoModel = new DefaultComboBoxModel();
+            repoModel.addElement(toSelect);
+            repositoryComboBox.setModel(repoModel);
+            repositoryComboBox.setSelectedItem(toSelect);
+            repositoryComboBox.setEnabled(false);
+            newButton.setEnabled(false);
+            onRepoSelected();
+        } else {
+            Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
+            repoModel = new DefaultComboBoxModel(repos);
+            repositoryComboBox.setModel(repoModel);
+            if(repositoryComboBox.getModel().getSize() > 0) {
+                repositoryComboBox.setSelectedIndex(0);
+                onRepoSelected();
+            }
+        }
+        repositoryComboBox.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if(e.getStateChange() == ItemEvent.SELECTED) {
+                    onRepoSelected();
+                }
+            }
+        });
+
+        issuePanel.setVisible(false);
     }
 
     /**
@@ -83,10 +156,9 @@ public final class IssueTopComponent extends TopComponent {
     public void setIssue(Issue issue) {
         assert (this.issue == null);
         this.issue = issue;
-        add(issue.getControler().getComponent(), BorderLayout.CENTER);
-
-        setName(issue.getDisplayName());
-        setToolTipText(issue.getTooltip());
+        issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);
+        repoPanel.setVisible(false);
+        setNameAndTooltip();
     }
 
     /** This method is called from within the constructor to
@@ -97,11 +169,135 @@ public final class IssueTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setLayout(new java.awt.BorderLayout());
+        repoPanel = new javax.swing.JPanel();
+        repositoryComboBox = new javax.swing.JComboBox();
+        findIssuesLabel = new javax.swing.JLabel();
+        repoLabel = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        newButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        issuePanel = new javax.swing.JPanel();
+
+        repoPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
+
+        repositoryComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        org.openide.awt.Mnemonics.setLocalizedText(findIssuesLabel, org.openide.util.NbBundle.getMessage(IssueTopComponent.class, "IssueTopComponent.findIssuesLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(repoLabel, org.openide.util.NbBundle.getMessage(IssueTopComponent.class, "IssueTopComponent.repoLabel.text")); // NOI18N
+        repoLabel.setFocusCycleRoot(true);
+
+        jPanel1.setOpaque(false);
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 64, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 8, Short.MAX_VALUE)
+        );
+
+        org.openide.awt.Mnemonics.setLocalizedText(newButton, org.openide.util.NbBundle.getMessage(IssueTopComponent.class, "IssueTopComponent.newButton.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout repoPanelLayout = new org.jdesktop.layout.GroupLayout(repoPanel);
+        repoPanel.setLayout(repoPanelLayout);
+        repoPanelLayout.setHorizontalGroup(
+            repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(repoPanelLayout.createSequentialGroup()
+                .add(repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(repoPanelLayout.createSequentialGroup()
+                        .add(repoLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(repositoryComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 225, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(findIssuesLabel))
+                .addContainerGap(110, Short.MAX_VALUE))
+        );
+        repoPanelLayout.setVerticalGroup(
+            repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(repoPanelLayout.createSequentialGroup()
+                .add(13, 13, 13)
+                .add(findIssuesLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(repoLabel)
+                    .add(repositoryComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+            .add(repoPanelLayout.createSequentialGroup()
+                .add(50, 50, 50)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+
+        issuePanel.setLayout(new java.awt.BorderLayout());
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 598, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(repoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void onNewClick() {
+        RepositorySelector rs = new RepositorySelector();
+        Repository repo = rs.create();
+        if(repo != null) {
+            repositoryComboBox.addItem(repo);
+            repositoryComboBox.setSelectedItem(repo);
+        }
+    }
+
+    private void onRepoSelected() {
+        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                Repository repo = (Repository) repositoryComboBox.getSelectedItem();
+                if (repo == null) {
+                    return;
+                }
+                if(issue != null) {
+                    BugtrackingController c = issue.getController();
+                    issuePanel.remove(c.getComponent());
+                    issue.removePropertyChangeListener(IssueTopComponent.this);
+                }
+                issue = repo.createIssue();
+                if (issue == null) {
+                    return;
+                }
+
+                final BugtrackingController c = issue.getController();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        issuePanel.add(c.getComponent());
+                        issue.addPropertyChangeListener(IssueTopComponent.this);
+                        revalidate();
+                        repaint();
+                    }
+                });
+            }
+        });
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel findIssuesLabel;
+    private javax.swing.JPanel issuePanel;
+    private javax.swing.JPanel jPanel1;
+    private org.netbeans.modules.bugtracking.util.LinkButton newButton;
+    private javax.swing.JLabel repoLabel;
+    private javax.swing.JPanel repoPanel;
+    private javax.swing.JComboBox repositoryComboBox;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -131,9 +327,29 @@ public final class IssueTopComponent extends TopComponent {
                 return tc;
             }
         }
-        IssueTopComponent tc = new IssueTopComponent();
+        IssueTopComponent tc = new IssueTopComponent(null);
         tc.setIssue(issue);
         return tc;
+    }
+
+    private void setNameAndTooltip() throws MissingResourceException {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if(issue != null && issue.getDisplayName() != null) {
+                    setName(NbBundle.getMessage(IssueTopComponent.class, "LBL_IssueName", new Object[]{issue.getDisplayName()}));
+                    setToolTipText(NbBundle.getMessage(IssueTopComponent.class, "LBL_IssueName", new Object[]{issue.getTooltip()}));
+                } else {
+                    setName(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent"));
+                    setToolTipText(NbBundle.getMessage(IssueTopComponent.class, "HINT_IssueTopComponent"));
+                }
+            }
+        });
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_DATA_CHANGED)) {
+//            setExisting();
+        } 
     }
 
 }
