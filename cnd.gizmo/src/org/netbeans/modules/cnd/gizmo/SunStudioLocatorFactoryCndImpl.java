@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,56 +34,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.sync;
 
-import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
+package org.netbeans.modules.cnd.gizmo;
 
+import org.netbeans.modules.dlight.spi.SunStudioLocator;
+import org.netbeans.modules.dlight.spi.SunStudioLocatorFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Mmory usage indicator
- * @author Vladimir Kvashin
+ *
+ * @author mt154047
  */
-public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
+@ServiceProvider(service=SunStudioLocatorFactory.class)
+public class SunStudioLocatorFactoryCndImpl implements SunStudioLocatorFactory{
 
-    private SyncIndicatorPanel panel;
-
-    public SyncIndicator(SyncIndicatorConfiguration configuration) {
-        super(configuration);
+    public SunStudioLocator getInstance(ExecutionEnvironment env) {
+        return new SunStudioLocatorCndImpl(env);
     }
 
-    @Override
-    public synchronized JComponent getComponent() {
-        if (panel == null) {
-            panel = new SyncIndicatorPanel();
-        }
-        return panel;
-    }
-
-    public void reset() {
-    }
-
-    public void updated(List<DataRow> data) {
-        List<Column> indicatorColumns = getMetadataColumns();
-        String firstColumnName = indicatorColumns.iterator().next().getColumnName();
-        int[][] values = new int[data.size()][indicatorColumns.size()];
-        int rowIdx = 0;
-        for (DataRow row : data) {
-            if (!row.getColumnNames().contains(firstColumnName)) {
-                continue;
-            }
-            int colIdx = 0;
-            for (Column column : indicatorColumns) {
-                String strValue = row.getStringValue(column.getColumnName()); //TODO: change to Long
-                values[rowIdx][colIdx++] = (int) Float.parseFloat(strValue);
-            }
-            panel.updated(values);
-            rowIdx++;
-        }
-    }
 }

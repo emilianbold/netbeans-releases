@@ -197,10 +197,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
     }
 
-    public DataObject getLastDataObject() {
-        return lastDataObject;
-    }
-
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("name")) { // NOI18N
             // File has been renamed
@@ -340,6 +336,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public DataObject getDataObject() {
+        synchronized (this) {
+            if (lastDataObject != null && lastDataObject.isValid()){
+                return lastDataObject;
+            }
+        }
         DataObject dataObject = null;
         FileObject fo = getFileObject();
         if (fo != null) {
@@ -350,10 +351,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 ErrorManager.getDefault().notify(e);
             }
         }
-        if (dataObject != lastDataObject) {
-            // DataObject can change without notification. We need to track this
-            // and properly attach/detach listeners.
-            synchronized (this) {
+        synchronized (this) {
+            if (dataObject != lastDataObject) {
+                // DataObject can change without notification. We need to track this
+                // and properly attach/detach listeners.
                 if (lastDataObject != null) {
                     lastDataObject.removePropertyChangeListener(this);
                 }

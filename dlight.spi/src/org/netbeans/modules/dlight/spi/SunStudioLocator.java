@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,56 +34,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.sync;
 
-import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
+package org.netbeans.modules.dlight.spi;
 
+import java.util.Collection;
 
 /**
- * Mmory usage indicator
- * @author Vladimir Kvashin
+ * Provides information about SunStudio locations
  */
-public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
+public interface SunStudioLocator {
+    Collection<SunStudioDescription> getSunStudioLocations();
 
-    private SyncIndicatorPanel panel;
 
-    public SyncIndicator(SyncIndicatorConfiguration configuration) {
-        super(configuration);
-    }
+    public final class SunStudioDescription{
+        private final String path;
 
-    @Override
-    public synchronized JComponent getComponent() {
-        if (panel == null) {
-            panel = new SyncIndicatorPanel();
+        public SunStudioDescription(String path) {
+            this.path = path;
         }
-        return panel;
-    }
 
-    public void reset() {
-    }
-
-    public void updated(List<DataRow> data) {
-        List<Column> indicatorColumns = getMetadataColumns();
-        String firstColumnName = indicatorColumns.iterator().next().getColumnName();
-        int[][] values = new int[data.size()][indicatorColumns.size()];
-        int rowIdx = 0;
-        for (DataRow row : data) {
-            if (!row.getColumnNames().contains(firstColumnName)) {
-                continue;
-            }
-            int colIdx = 0;
-            for (Column column : indicatorColumns) {
-                String strValue = row.getStringValue(column.getColumnName()); //TODO: change to Long
-                values[rowIdx][colIdx++] = (int) Float.parseFloat(strValue);
-            }
-            panel.updated(values);
-            rowIdx++;
+        public String getPath(){
+            return path;
         }
     }
 }

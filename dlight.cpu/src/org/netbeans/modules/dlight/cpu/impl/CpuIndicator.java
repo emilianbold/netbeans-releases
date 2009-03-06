@@ -153,16 +153,19 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
 
     @Override
     public void updated(List<DataRow> data) {
+        DataRow lastRow = null;
         for (DataRow row : data) {
             if (DLightLogger.instance.isLoggable(Level.FINE)) { DLightLogger.instance.fine("UPDATE: " + row.getData().get(0) + " " + row.getData().get(1)); }
-            Float usr = (Float) row.getData().get(0);
-            Float sys = (Float) row.getData().get(1);
-            graph.addData(sys.shortValue(), usr.shortValue());
+            Float usr = (Float) row.getData("utime"); // NOI18N
+            Float sys = (Float) row.getData("stime"); // NOI18N
+            if (usr != null && sys != null) {
+                graph.addData(sys.shortValue(), usr.shortValue());
+                lastRow = row;
+            }
         }
-        if (data.size() > 0) {
-            DataRow row = data.get(data.size()-1);
-            Float usr = (Float) row.getData().get(0);
-            Float sys = (Float) row.getData().get(1);
+        if (lastRow != null) {
+            Float usr = (Float) lastRow.getData("utime"); // NOI18N
+            Float sys = (Float) lastRow.getData("stime"); // NOI18N
             lblSysValue.setText(formatValue(sys.intValue()));
             lblUsrValue.setText(formatValue(usr.intValue()));
         }
