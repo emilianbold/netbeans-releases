@@ -40,11 +40,11 @@
 package org.netbeans.modules.parsing.spi.indexing.support;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexingSPIAccessor;
+import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.impl.indexing.SupportAccessor;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
@@ -56,16 +56,51 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 //@NotThreadSafe
-public class IndexingSupport {
+public final class IndexingSupport {
+
+    private static final Logger LOG = Logger.getLogger(IndexingSupport.class.getName());
+    
+    static {
+        SupportAccessor.setInstance(new MyAccessor());
+    }
 
     private final IndexFactoryImpl spiFactory;
     private final IndexImpl spiIndex;
-    private static final Map<String,IndexingSupport> instances = new HashMap<String,IndexingSupport>();
+//    private static final Map<String,IndexingSupport> instances = new HashMap<String,IndexingSupport>();
 
     private IndexingSupport (final Context ctx) throws IOException {
-        this.spiFactory = new LuceneIndexFactory();
+        IndexFactoryImpl factory = SPIAccessor.getInstance().getIndexFactory(ctx);
+        if (factory == null) {
+            factory = new LuceneIndexFactory();
+        }
+        assert factory != null;
+        this.spiFactory = factory;
         this.spiIndex = this.spiFactory.createIndex(ctx);
     }
+
+//    static Collection<? extends IndexingSupport> getDirtySupports () {
+//        return instances.values();
+//    }
+//
+//    static void beginTrans () {
+//        assert instances.isEmpty();
+//    }
+//
+//    static void endTrans () {
+//        try {
+//            for (Iterator<IndexingSupport> it = instances.values().iterator(); it.hasNext(); ) {
+//                final IndexingSupport is = it.next();
+//                it.remove();
+//                try {
+//                    is.spiIndex.store();
+//                } catch (IOException ex) {
+//                    LOG.log(Level.WARNING, null, ex);
+//                }
+//            }
+//        } finally {
+//            instances.clear();
+//        }
+//    }
 
     /**
      * Returns an {@link IndexingSupport} for given indexing {@link Context}
@@ -74,14 +109,21 @@ public class IndexingSupport {
      * @throws java.io.IOException when underlying storage is corrupted or cannot
      * be created
      */
-    public IndexingSupport getInstance (final Context context) throws IOException {
+    public static IndexingSupport getInstance (final Context context) throws IOException {
         Parameters.notNull("context", context);
-        final String key = createkey(context);
-        IndexingSupport support = instances.get(key);
+//        final String key = createkey(context);
+//        IndexingSupport support = instances.get(key);
+//        if (support == null) {
+//            support = new IndexingSupport(context);
+//            instances.put(key,support);
+//        }
+//        return support;
+        IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(context);
         if (support == null) {
             support = new IndexingSupport(context);
-            instances.put(key,support);
+            SPIAccessor.getInstance().context_attachIndexingSupport(context, support);
         }
+
         return support;
     }
 
@@ -89,32 +131,68 @@ public class IndexingSupport {
      * Creates a new {@link IndexDocument}.
      * @return the decument
      */
-    public IndexDocument createDocument () {
-        return new IndexDocument(this.spiFactory.createDocument());
+    public IndexDocument createDocument (final Indexable indexable) {
+        Parameters.notNull("indexable", indexable);
+        return new IndexDocument(this.spiFactory.createDocument(indexable));
     }
 
     /**
      * Adds a new {@link IndexDocument} into the index
-     * @param indexable from which the document was created
      * @param document to be added
      */
-    public void addDocument (final Indexable indexable, final IndexDocument document) {
-        Parameters.notNull("indexable", indexable);
+    public void addDocument (final IndexDocument document) {
         Parameters.notNull("document", document.spi);
-        spiIndex.addDocument (indexable, document.spi);
+        spiIndex.addDocument (document.spi);
     }
 
     /**
      * Removes all documents for given indexables
      * @param indexable to be removed
      */
-    public void removeDocument (final Indexable indexable) {
+    public void removeDocuments (final Indexable indexable) {
         Parameters.notNull("indexable", indexable);
-        spiIndex.removeDocument (indexable);
+        spiIndex.removeDocument (indexable.getRelativePath());
     }
 
-    private String createkey (final Context ctx) {
-        return ctx.getIndexFolder().getName() + IndexingSPIAccessor.getInstance().getIndexerName (ctx);
+    /**
+     * Marks all documents for an <code>Indexable</code> as dirty. Any subsequent
+     * use of <code>QuerySupport</code> for those <code>Indexable</code>s will first
+     * refresh the documents (ie. call indexers) to make sure that the documents
+     * are up-to-date.
+     *
+     * @param indexable The {@link Indexable} whose documents will be marked as dirty.
+     * @since 1.4
+     */
+    public void markDirtyDocuments (final Indexable indexable) {
+        LOG.fine("markDirtyDocuments: " + indexable.getURL()); //NOI18N
+        spiIndex.fileModified(indexable.getRelativePath());
+    }
+
+//    private static String createkey (final Context ctx) {
+//        return ctx.getIndexFolder().getName() + SPIAccessor.getInstance().getIndexerName (ctx);
+//    }
+//
+    private static class MyAccessor extends SupportAccessor {
+
+//        @Override
+//        public void beginTrans() {
+//            IndexingSupport.beginTrans();
+//        }
+//
+//        @Override
+//        public void endTrans() {
+//            IndexingSupport.endTrans();
+//        }
+//
+//        @Override
+//        public Collection<? extends IndexingSupport> getDirtySupports() {
+//            return IndexingSupport.getDirtySupports();
+//        }
+
+        public void store(IndexingSupport support) throws IOException {
+            assert support != null;
+            support.spiIndex.store();
+        }
     }
    
 }

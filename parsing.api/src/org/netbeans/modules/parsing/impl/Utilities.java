@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.impl;
 import java.util.Collections;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 
@@ -90,11 +91,12 @@ public class Utilities {
      * @return true when indexing is active
      */
     public static boolean isScanInProgress () {
+        boolean ruStatus = RepositoryUpdater.getDefault().isScanInProgress();
         if (status == null) {
-            return true;
+            return ruStatus;
         }
         else {
-            return status.isScanInProgress();
+            return status.isScanInProgress() || ruStatus;
         }
     }
     //where
