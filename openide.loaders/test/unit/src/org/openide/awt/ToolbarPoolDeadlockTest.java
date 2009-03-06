@@ -42,6 +42,7 @@
 package org.openide.awt;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.logging.Level;
@@ -60,16 +61,17 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
+import org.openide.util.Exceptions;
 
 /** Mostly to test the correct behaviour of AWTTask.waitFinished.
  *
  * @author Jaroslav Tulach
  */
-public class ToolbarPoolTest extends NbTestCase {
+public class ToolbarPoolDeadlockTest extends NbTestCase {
     FileObject toolbars;
     DataFolder toolbarsFolder;
     
-    public ToolbarPoolTest (String testName) {
+    public ToolbarPoolDeadlockTest (String testName) {
         super (testName);
     }
 
@@ -83,6 +85,7 @@ public class ToolbarPoolTest extends NbTestCase {
         return Level.FINE;
     }
 
+    @Override
     protected void setUp() throws Exception {
         FileObject root = FileUtil.getConfigRoot();
         toolbars = FileUtil.createFolder (root, "Toolbars");
@@ -96,63 +99,54 @@ public class ToolbarPoolTest extends NbTestCase {
         tp.waitFinished ();
     }
 
-    public void testGetConf () throws Exception {
-        ToolbarPool tp = ToolbarPool.getDefault ();
-        
-        String conf = tp.getConfiguration ();
-        assertEquals ("By default there is no config", "", conf);
-        
-    }
-    
-
-    
-    public void testCreateConf () throws Exception {
-        JLabel conf = new JLabel ();
-        conf.setName ("testCreateConf");
-        
-        conf = (JLabel)writeInstance (toolbars, "conf1.ser", conf);
-        
-        ToolbarPool tp = ToolbarPool.getDefault ();
-        
-        tp.waitFinished ();
-        String[] myConfs = tp.getConfigurations ();
-        assertEquals ("One", 1, myConfs.length);
-        assertEquals ("By default there is the one", "testCreateConf", myConfs[0]);
-        
-    }
-
-    public void testCreateFolderTlbs () throws Exception {
-        FileUtil.createFolder (toolbars, "tlb2");
-        
-        ToolbarPool tp = ToolbarPool.getDefault ();
-        
-        tp.waitFinished ();
-        Toolbar[] myTlbs = tp.getToolbars ();
-        assertEquals ("One", 1, myTlbs.length);
-        assertEquals ("By default there is the one", "tlb2", myTlbs[0].getName ());
-        
-    }
-
-    @RandomlyFails // NB-Core-Build #1337
     public void testWaitsForToolbars () throws Exception {
+        assertFalse("Not in AWT thread", EventQueue.isDispatchThread());
+        class Block implements Runnable {
+            int cnt;
+            Toolbar[] myTlbs;
+            public void run() {
+                if (cnt++ > 0) {
+                    return;
+                }
+                init();
+            }
+            private synchronized void init() {
+                try {
+                    notifyAll();
+                    wait();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+                ToolbarPool.getDefault().waitFinished();
+                myTlbs = ToolbarPool.getDefault().getToolbars ();
+            }
+
+            public synchronized void waitAWTBlocked() throws InterruptedException {
+                EventQueue.invokeLater(this);
+                wait();
+            }
+
+            public void finish() throws Exception {
+                synchronized (this) {
+                    notifyAll();
+                }
+                EventQueue.invokeAndWait(this);
+                assertNotNull("My toolbars has been obtained", myTlbs);
+            }
+        }
+        Block block = new Block();
+        block.waitAWTBlocked();
+
         FileObject tlb = FileUtil.createFolder (toolbars, "tlbx");
         DataFolder f = DataFolder.findFolder (tlb);
         InstanceDataObject.create (f, "test1", JLabel.class);
-        
-        ToolbarPool tp = ToolbarPool.getDefault ();
-        
-        tp.waitFinished ();
-        Toolbar[] myTlbs = tp.getToolbars ();
-        assertEquals ("One", 1, myTlbs.length);
-        assertEquals ("By default there is the one", "tlbx", myTlbs[0].getName ());
-        
-        assertLabels ("One subcomponent", 1, myTlbs[0]);
-        
-        InstanceDataObject.create (f, "test2", JLabel.class);
-        
-        tp.waitFinished ();
-        
-        assertLabels ("Now there are two", 2, myTlbs[0]);
+
+        block.finish();
+
+        assertEquals ("One", 1, block.myTlbs.length);
+        assertEquals ("By default there is the one", "tlbx", block.myTlbs[0].getName ());
+        assertLabels ("One subcomponent", 1, block.myTlbs[0]);
     }
 
     public void testWhoCreatesConstructor() throws Exception {
