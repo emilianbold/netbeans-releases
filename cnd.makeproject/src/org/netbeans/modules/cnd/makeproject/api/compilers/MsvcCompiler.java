@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.PredefinedMacro;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
@@ -52,19 +53,19 @@ import org.netbeans.modules.cnd.api.compilers.ToolchainManager.PredefinedMacro;
  */
 public class MsvcCompiler extends GNUCCompiler {
    /** Creates a new instance of GNUCCompiler */
-   protected MsvcCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-       super(hkey, flavor, kind, name, displayName, path);
+   protected MsvcCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+       super(env, flavor, kind, name, displayName, path);
    }
 
    @Override
    public MsvcCompiler createCopy() {
-       MsvcCompiler copy = new MsvcCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath()); // NOI18N
+       MsvcCompiler copy = new MsvcCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath()); // NOI18N
        copy.setName(getName());
        return copy;
    }
 
-   public static MsvcCompiler create(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-       return new MsvcCompiler(hkey, flavor, kind, name, displayName, path);
+   public static MsvcCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+       return new MsvcCompiler(env, flavor, kind, name, displayName, path);
    }
 
     @Override

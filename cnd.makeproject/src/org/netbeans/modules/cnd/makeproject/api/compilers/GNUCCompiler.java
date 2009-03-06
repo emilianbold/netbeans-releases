@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public class GNUCCompiler extends GNUCCCCompiler {
 
@@ -56,17 +57,17 @@ public class GNUCCompiler extends GNUCCCCompiler {
     }
     
     /** Creates a new instance of GNUCCompiler */
-    protected GNUCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(hkey, flavor, kind, name, displayName, path);
+    protected GNUCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(env, flavor, kind, name, displayName, path);
     }
 
-    public static GNUCCompiler create(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        return new GNUCCompiler(hkey, flavor, kind, name, displayName, path);
+    public static GNUCCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return new GNUCCompiler(env, flavor, kind, name, displayName, path);
     }
 
     @Override
     public GNUCCompiler createCopy() {
-        GNUCCompiler copy = new GNUCCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
+        GNUCCompiler copy = new GNUCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
     }
