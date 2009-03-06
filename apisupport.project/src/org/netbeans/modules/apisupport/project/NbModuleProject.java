@@ -212,7 +212,7 @@ public final class NbModuleProject implements Project {
     }
 
     private Lookup createLookup(ProjectInformation info, AuxiliaryConfiguration aux, AntProjectHelper helper, FileBuiltQueryImplementation fileBuilt, final SourcesHelper sourcesHelper) {
-        Lookup baseLookup = Lookups.fixed(
+        Object[] basicContent = new Object[] {
             this,
             info,
             aux,
@@ -237,7 +237,6 @@ public final class NbModuleProject implements Project {
             sourcesHelper.createSources(),
             new AntArtifactProviderImpl(this, helper, evaluator()),
             new CustomizerProviderImpl(this, getHelper(), evaluator()),
-            new SuiteProviderImpl(),
             typeProvider,
             new PrivilegedTemplatesImpl(),
             new ModuleProjectClassPathExtender(this),
@@ -247,7 +246,15 @@ public final class NbModuleProject implements Project {
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             new TemplateAttributesProvider(getHelper(), getModuleType() == NbModuleType.NETBEANS_ORG),
-            new FileEncodingQueryImpl());
+            new FileEncodingQueryImpl()
+        };
+        Object[] lookupContent = basicContent;
+        if (getModuleType() == NbModuleType.SUITE_COMPONENT) {
+            lookupContent = new Object[basicContent.length + 1];
+            System.arraycopy(basicContent, 0, lookupContent, 0, basicContent.length);
+            lookupContent[basicContent.length] = new SuiteProviderImpl();
+        }
+        Lookup baseLookup = Lookups.fixed(lookupContent);
         return  LookupProviderSupport.createCompositeLookup(baseLookup, "Projects/org-netbeans-modules-apisupport-project/Lookup"); //NOI18N
     }
 
@@ -472,8 +479,14 @@ public final class NbModuleProject implements Project {
     
     public ModuleList getModuleList() throws IOException {
         NbPlatform p = getPlatform(false);
-        if (p == null) {
+        if (p == null || ! p.isValid()) {
             // #67148: have to use something... (and getEntry(codeNameBase) will certainly fail!)
+
+            // TODO dealing with nonexistent platforms probably not complete / 100% correct yet,
+            // see #61227; but project with unresolved platform may also load as result
+            // of suite-chaining; perhaps resolve already in loadProject
+            Util.err.log(ErrorManager.WARNING, "Project in " + FileUtil.getFileDisplayName(getProjectDirectory()) // NOI18N
+                    + " is missing its platform '" + evaluator().getProperty("nbplatform.active") + "', switching to default platform");    // NOI18N
             NbPlatform p2 = NbPlatform.getDefaultPlatform();
             return ModuleList.getModuleList(getProjectDirectoryFile(), p2 != null ? p2.getDestDir() : null);
         }

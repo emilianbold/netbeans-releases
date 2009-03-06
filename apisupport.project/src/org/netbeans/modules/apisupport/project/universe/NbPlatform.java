@@ -244,6 +244,9 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      */
     public static synchronized NbPlatform getPlatformByDestDir(File destDir) {
         for (NbPlatform p : getPlatformsInternal()) {
+            // DEBUG only
+            int dif = p.getDestDir().compareTo(destDir);
+           
             if (p.getDestDir().equals(destDir)) {
                 return p;
             }

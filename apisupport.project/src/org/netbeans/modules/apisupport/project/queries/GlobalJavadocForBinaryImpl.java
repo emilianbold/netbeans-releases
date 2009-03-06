@@ -58,6 +58,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.universe.JavadocRootsProvider;
+import org.netbeans.modules.apisupport.project.universe.JavadocRootsSupport;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -115,10 +117,16 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
             }
         }
         if (supposedPlaf == null) {
+            // try external clusters
+            URL[] javadocRoots = ModuleList.getJavadocRootsForExternalModule(binaryRootF);
+            if (javadocRoots.length > 0)
+                return findByDashedCNB(cnbdashes, javadocRoots);
             Util.err.log(binaryRootF + " does not correspond to a known platform"); // NOI18N
             return null;
         }
-        return findByDashedCNB(cnbdashes, supposedPlaf);
+        Util.err.log("Platform in " + supposedPlaf.getDestDir() + " claimed to have Javadoc roots "
+            + Arrays.asList(supposedPlaf.getJavadocRoots()));
+        return findByDashedCNB(cnbdashes, supposedPlaf.getJavadocRoots());
     }
 
     /**
@@ -138,14 +146,11 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
             NbModuleProject module = p.getLookup().lookup(NbModuleProject.class);
             if (module != null) {
                 String cnb = module.getCodeNameBase();
-
-                Set<ModuleEntry> entries = ModuleList.getKnownEntries(module.getModuleJarLocation());
-                for (ModuleEntry entry : entries) {
-//              TODO C.P      if (entry instanceof );
-                }
-
+    //  TODO C.P scan external clusters? Doesn't seem necessary, javadoc is built from source on the fly for clusters with sources
                 for (NbPlatform plaf : NbPlatform.getPlatforms()) {
-                    Result r = findByDashedCNB(cnb.replace('.', '-'), plaf);
+                    Util.err.log("Platform in " + plaf.getDestDir() + " claimed to have Javadoc roots "
+                            + Arrays.asList(plaf.getJavadocRoots()));
+                    Result r = findByDashedCNB(cnb.replace('.', '-'), plaf.getJavadocRoots());
                     if (r != null) {
                         return r;
                     }
@@ -155,10 +160,8 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
         return null;
     }
    
-    private Result findByDashedCNB(final String cnbdashes, final NbPlatform plaf) throws MalformedURLException {
+    private Result findByDashedCNB(final String cnbdashes, final URL[] roots) throws MalformedURLException {
         final List<URL> candidates = new ArrayList<URL>();
-        URL[] roots = plaf.getJavadocRoots();
-        Util.err.log("Platform in " + plaf.getDestDir() + " claimed to have Javadoc roots " + Arrays.asList(roots));
         for (URL root : roots) {
             // XXX: so should be checked, instead of always adding both?
             // 1. user may insert directly e.g ...nbbuild/build/javadoc/org-openide-actions[.zip]
