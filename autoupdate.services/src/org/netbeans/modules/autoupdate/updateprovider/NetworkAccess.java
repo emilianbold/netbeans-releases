@@ -31,6 +31,8 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -46,6 +48,7 @@ import org.openide.util.RequestProcessor;
  * @author Jirka Rechtacek
  */
 public class NetworkAccess {
+    private static final Logger err = Logger.getLogger(NetworkAccess.class.getName());
 
     private NetworkAccess () {}
     
@@ -116,6 +119,14 @@ public class NetworkAccess {
                     conn.setConnectTimeout (timeout);
                     InputStream is = conn.getInputStream ();
                     contentLength = conn.getContentLength();
+                    Map <String, List <String>> map = conn.getHeaderFields();
+                    StringBuilder sb = new StringBuilder("Connection opened for:\n");
+                       sb.append("    Url: " + conn.getURL() + "\n");
+                    for(String field : map.keySet()) {
+                       sb.append("    " + (field==null ? "Status" : field )+ ": " + map.get(field) + "\n");
+                    }
+                    sb.append("\n");
+                    err.log(Level.INFO, sb.toString());
                     return new BufferedInputStream (is);
                 }
             };
