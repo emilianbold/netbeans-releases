@@ -141,6 +141,15 @@ public class ChatNotifications {
         return handle;
     }
 
+    void clearAll() {
+        for (MessagingHandleImpl h:groupMessages.values()) {
+            h.disposeNotification();
+            h.setMessageCount(-1);
+            h.setOnlineCount(-1);
+        }
+        groupMessages.clear();
+    }
+
     private Icon getIcon() {
         return ONLINE;
     }
