@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,45 +34,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.connections;
+package org.netbeans.modules.php.project.util;
 
-import java.util.prefs.Preferences;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.openide.util.NbPreferences;
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.junit.NbTestCase;
+import static org.junit.Assert.*;
 
-/**
- * Helper class to get miscellaneous properties like timestamp when a project has been uploaded last time etc.
- * @author Tomas Mysik
- */
-public final class RemoteSettings {
+public class PhpProjectUtilsTest extends NbTestCase {
 
-    private static final String PREFERENCES_PATH = "RemoteSettings"; // NOI18N
-
-    private static final String LAST_UPLOAD = "lastUpload"; // NOI18N
-
-    private RemoteSettings() {
+    public PhpProjectUtilsTest(String name) {
+        super(name);
     }
 
-    private static Preferences getPreferences(Project project) {
-        return NbPreferences.forModule(RemoteSettings.class).node(PREFERENCES_PATH).node(ProjectUtils.getInformation(project).getName());
+    public void testImplode() {
+        final List<String> items = Arrays.asList("one", "two");
+        assertEquals("one*two", PhpProjectUtils.implode(items, "*"));
+        assertEquals("oneonetwo", PhpProjectUtils.implode(items, "one"));
+        assertEquals("one??NB??two", PhpProjectUtils.implode(items, "??NB??"));
     }
 
-    /**
-     * @return timestamp <b>in seconds</b> of the last upload of a project or <code>-1</code> if not found.
-     */
-    public static long getLastUpload(Project project) {
-        return getPreferences(project).getLong(LAST_UPLOAD, -1);
-    }
-
-    public static void setLastUpload(Project project, long timestamp) {
-        getPreferences(project).putLong(LAST_UPLOAD, timestamp);
-    }
-
-    public static void resetLastUpload(Project project) {
-        setLastUpload(project, -1);
+    public void testExplode() {
+        final String[] items = {"one", "two"};
+        String string = "one*two";
+        assertArrayEquals(items, PhpProjectUtils.explode(string, "*").toArray(new String[0]));
+        string = "one??NB??two";
+        assertArrayEquals(items, PhpProjectUtils.explode(string, "??NB??").toArray(new String[0]));
     }
 }

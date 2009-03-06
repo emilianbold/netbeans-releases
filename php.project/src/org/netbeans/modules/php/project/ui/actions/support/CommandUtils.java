@@ -322,9 +322,19 @@ public final class CommandUtils {
         DebugInfo debugInfo = getDebugInfo(project);
         URL debugUrl = urlForProject(project);
         if (debugInfo.debugServer) {
-            debugUrl = appendQuery(debugUrl, getDebugArguments(project));
+            debugUrl = appendQuery(debugUrl, getDebugArguments());
         }
         return debugUrl;
+    }
+
+    /**
+     * Create {@link URL} for debugging from the given {@link URL}.
+     * @param url original URL
+     * @return {@link URL} for debugging
+     * @throws MalformedURLException if any error occurs
+     */
+    public static URL createDebugUrl(URL url) throws MalformedURLException {
+        return appendQuery(url, getDebugArguments());
     }
 
     /**
@@ -351,7 +361,7 @@ public final class CommandUtils {
         DebugInfo debugInfo = getDebugInfo(project);
         URL debugUrl = urlForContext(project, context);
         if (debugInfo.debugServer) {
-            debugUrl = appendQuery(debugUrl, getDebugArguments(project));
+            debugUrl = appendQuery(debugUrl, getDebugArguments());
         }
         return debugUrl;
     }
@@ -436,6 +446,14 @@ public final class CommandUtils {
     }
 
     private static URL appendQuery(URL originalURL, String queryWithoutQMark) throws MalformedURLException {
+        assert PhpProjectUtils.hasText(queryWithoutQMark);
+        assert !queryWithoutQMark.startsWith("&");
+        assert !queryWithoutQMark.startsWith("?");
+
+        String query = originalURL.getQuery();
+        if (PhpProjectUtils.hasText(query)) {
+            queryWithoutQMark = query + "&" + queryWithoutQMark; // NOI18N
+        }
         URI retval;
         try {
             retval = new URI(originalURL.getProtocol(), originalURL.getUserInfo(),
@@ -449,15 +467,8 @@ public final class CommandUtils {
         return retval.toURL();
     }
 
-    private static String getDebugArguments(PhpProject project) {
-        String args = ProjectPropertiesSupport.getArguments(project);
-        StringBuilder arguments = new StringBuilder();
-        if (PhpProjectUtils.hasText(args)) {
-            arguments.append(args);
-            arguments.append("&"); // NOI18N
-        }
-        arguments.append("XDEBUG_SESSION_START=" + PhpOptions.getInstance().getDebuggerSessionId()); // NOI18N
-        return arguments.toString();
+    private static String getDebugArguments() {
+        return "XDEBUG_SESSION_START=" + PhpOptions.getInstance().getDebuggerSessionId(); // NOI18N
     }
 
     private static FileObject[] filterValidFiles(FileObject[] files, FileObject dir) {
