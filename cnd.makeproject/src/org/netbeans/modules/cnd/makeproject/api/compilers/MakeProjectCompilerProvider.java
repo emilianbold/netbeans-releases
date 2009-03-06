@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import org.netbeans.modules.cnd.api.compilers.CompilerProvider;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
@@ -63,8 +62,7 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
      * this method. We can also add others, if desired. This was mainly a proof-of-concept that tool creation
      * could be deferred to makeproject.
      */
-    public Tool createCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
+    public Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         if (flavor.isSunStudioCompiler()) {
             if (kind == Tool.CCompiler) {
                 return SunCCompiler.create(env, flavor, kind, name, displayName, path);

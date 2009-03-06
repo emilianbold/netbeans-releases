@@ -42,6 +42,8 @@
 package org.netbeans.modules.cnd.api.compilers;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
@@ -49,6 +51,11 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
  */
 public abstract class CompilerProvider {
     
-    public abstract Tool createCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path);
+    /** TODO: deprecate and remove */
+    public Tool createCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return createCompiler(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), flavor, kind, name, displayName, path);
+    }
+
+    public abstract Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path);
         
 }
