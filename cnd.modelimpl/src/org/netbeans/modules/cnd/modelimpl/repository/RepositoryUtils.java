@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -66,7 +67,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
  */
 public final class RepositoryUtils {
 
-    private static final boolean TRACE_REPOSITORY_ACCESS = DebugUtils.getBoolean("cnd.modelimpl.trace.repository", false);
+    private static final boolean TRACE_ARGS = CndUtils.getBoolean("cnd.repository.trace.args", false); //NOI18N;
+    private static final boolean TRACE_REPOSITORY_ACCESS = TRACE_ARGS || DebugUtils.getBoolean("cnd.modelimpl.trace.repository", false);
     private static final Repository repository = RepositoryAccessor.getRepository();
     /**
      * the version of the persistency mechanism
@@ -93,7 +95,7 @@ public final class RepositoryUtils {
     public static Persistent tryGet(Key key) {
         assert key != null;
         Persistent out = repository.tryGet(key);
-        if (TRACE_REPOSITORY_ACCESS) {
+        if (TRACE_REPOSITORY_ACCESS && isTracingKey(key)) {
             System.err.printf("%d:trying key %s got %s", nextIndex(), key, out);
         }
         return out;
@@ -101,13 +103,13 @@ public final class RepositoryUtils {
 
     public static Persistent get(Key key) {
         assert key != null;
-        if (TRACE_REPOSITORY_ACCESS) {
+        if (TRACE_REPOSITORY_ACCESS && isTracingKey(key)) {
             long time = System.currentTimeMillis();
             int index = nextIndex();
-            System.err.println(index + ":getting key " + key);
+            System.err.println(index + ": " + System.identityHashCode(key) + "@getting key " + key);
             Persistent out = repository.get(key);
             time = System.currentTimeMillis() - time;
-            System.err.println(index + ":got in " + time + "ms the key " + key + (out == null ? " - NULL":""));
+            System.err.println(index + ": " + System.identityHashCode(key) + "@got" + (out == null ? " - NULL":"") + " in " + time + "ms the key " + key);
             return out;
         }
         return repository.get(key);
@@ -120,15 +122,15 @@ public final class RepositoryUtils {
     public static void remove(CsmUID uid) {
         Key key = UIDtoKey(uid);
         if (key != null) {
-            if (TRACE_REPOSITORY_ACCESS) {
+            if (TRACE_REPOSITORY_ACCESS && isTracingKey(key)) {
                 long time = System.currentTimeMillis();
                 int index = nextIndex();
-                System.err.println(index + ":removing key " + key);
+                System.err.println(index + ": " + System.identityHashCode(key) + "@removing key " + key);
                 if (!TraceFlags.SAFE_REPOSITORY_ACCESS) {
                     repository.remove(key);
                 }
                 time = System.currentTimeMillis() - time;
-                System.err.println(index + ":removed in " + time + "ms the key " + key);
+                System.err.println(index + ": " + System.identityHashCode(key) + "@removed in " + time + "ms the key " + key);
                 return;
             }
             if (!TraceFlags.SAFE_REPOSITORY_ACCESS) {
@@ -162,17 +164,17 @@ public final class RepositoryUtils {
 
     public static void put(Key key, Persistent obj) {
         if (key != null) {
-            if (TRACE_REPOSITORY_ACCESS) {
+            if (TRACE_REPOSITORY_ACCESS && isTracingKey(key)) {
                 long time = System.currentTimeMillis();
                 int index = nextIndex();
-                System.err.println(index + ":putting key " + key);
+                System.err.println(index + ": " + System.identityHashCode(key) + "@putting key " + key);
                 repository.put(key, obj);
                 // A workaround for #131701
                 if (key instanceof FileKey) {
                     repository.hang(key, obj);
                 }
                 time = System.currentTimeMillis() - time;
-                System.err.println(index + ":put in " + time + "ms the key " + key);
+                System.err.println(index + ": " + System.identityHashCode(key) + "@put in " + time + "ms the key " + key);
                 return;
             }
             repository.put(key, obj);
@@ -199,13 +201,13 @@ public final class RepositoryUtils {
 
     public static void hang(Key key, Persistent obj) {
         if (key != null) {
-            if (TRACE_REPOSITORY_ACCESS) {
+            if (TRACE_REPOSITORY_ACCESS && isTracingKey(key)) {
                 long time = System.currentTimeMillis();
                 int index = nextIndex();
-                System.err.println(index + ":hanging key " + key);
+                System.err.println(index + ": " + System.identityHashCode(key) + "@hanging key " + key);
                 repository.hang(key, obj);
                 time = System.currentTimeMillis() - time;
-                System.err.println(index + ":hung in " + time + "ms the key " + key);
+                System.err.println(index + ": " + System.identityHashCode(key) + "@hung in " + time + "ms the key " + key);
                 return;
             }
             repository.hang(key, obj);
@@ -335,5 +337,19 @@ public final class RepositoryUtils {
     static String getFileNameById(int unitId, int fileId) {
         return RepositoryAccessor.getTranslator().getFileNameById(unitId, fileId);
     }
+
+    private static boolean isTracingKey(Key key) {
+        if (TRACE_ARGS) {
+            if (key.getDepth() == 3 &&
+                    ("argc".contentEquals(key.getAt(2)) || // NOI18N
+                    "main".contentEquals(key.getAt(2)))) { // NOI18N
+                return true;
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 }
 
