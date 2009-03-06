@@ -83,8 +83,7 @@ public class InsertStatementAnalyzer {
         if ( ! sa.state.isAfter (State.INSERT)) {
             return null;
         }
-        // Currently only SELECT is supported.
-        return SQLStatementKind.SELECT;
+        return SQLStatementKind.INSERT;
     }
 
     private static InsertStatementAnalyzer doParse (TokenSequence<SQLTokenId> seq, Quoter quoter, boolean detectKind) {
