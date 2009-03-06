@@ -348,8 +348,16 @@ public class BugzillaIssue extends Issue {
         return "";
     }
 
+    /**
+     * Returns the id from the given taskData or null if taskData.isNew()
+     * @param taskData
+     * @return id or null
+     */
     public static String getID(TaskData taskData) {
         try {
+            if(taskData.isNew()) {
+                return null;
+            }
             return Integer.toString(BugzillaRepositoryConnector.getBugId(taskData.getTaskId()));
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
