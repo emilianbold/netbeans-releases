@@ -74,6 +74,8 @@ import com.sun.tools.javac.util.Context;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -91,14 +93,18 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
@@ -527,7 +533,7 @@ public class SourceUtils {
                 }
                 if (fo != null) {
                     URL url = fo.getURL();
-                    sourceRoot = Index.getSourceRootForClassFolder(url);
+                    sourceRoot = null;//XXX: Index.getSourceRootForClassFolder(url);
                     if (sourceRoot == null) {
                         binaries.add(url);
                     } else {
@@ -661,7 +667,7 @@ out:                    for (URL e : roots) {
      * Tests whether the initial scan is in progress.
      */
     public static boolean isScanInProgress () {
-        return RepositoryUpdater.getDefault().isScanInProgress();
+        return IndexingManager.getDefault().isIndexing();
     }
 
     /**
@@ -671,7 +677,16 @@ out:                    for (URL e : roots) {
      * @deprecated use {@link JavaSource#runWhenScanFinished}
      */
     public static void waitScanFinished () throws InterruptedException {
-        RepositoryUpdater.getDefault().waitScanFinished();
+        try {
+            Future<Void> f = ParserManager.parseWhenScanFinished(JavacParser.MIME_TYPE, new UserTask() {
+                public void run(ResultIterator resultIterator) throws Exception {
+                }
+            });
+            if (!f.isDone()) {
+                f.get();
+            }
+        } catch (Exception ex) {
+        }
     }
     
     

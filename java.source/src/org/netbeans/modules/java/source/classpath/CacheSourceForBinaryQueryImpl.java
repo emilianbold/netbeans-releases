@@ -69,7 +69,7 @@ public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
         if (!FILE_PROTOCOL.equals (binaryRoot.getProtocol())) {
             return null;
         }
-        URL sourceURL = Index.getSourceRootForClassFolder(binaryRoot);
+        URL sourceURL = null;//Index.getSourceRootForClassFolder(binaryRoot);
         SourceForBinaryQuery.Result result = null;
         if (sourceURL != null) {            
             for ( SourceForBinaryQueryImplementation impl :Lookup.getDefault().lookupAll(SourceForBinaryQueryImplementation.class)) {
