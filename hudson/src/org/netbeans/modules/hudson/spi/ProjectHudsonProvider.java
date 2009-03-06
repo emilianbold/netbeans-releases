@@ -129,7 +129,7 @@ public abstract class ProjectHudsonProvider {
             if (!serverURL.endsWith("/")) {
                 throw new IllegalArgumentException(serverURL + " must end in a slash");
             }
-            if (jobName != null && !jobName.matches("\\S+")) {
+            if (jobName != null && (jobName.length() == 0 || !jobName.trim().equals(jobName))) {
                 throw new IllegalArgumentException("Must provide a nonempty or null job name: " + jobName);
             }
             this.serverURL = serverURL;

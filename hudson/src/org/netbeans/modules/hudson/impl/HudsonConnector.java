@@ -133,7 +133,7 @@ public class HudsonConnector {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    new ConnectionBuilder().instance(instance).url(job.getUrl() + XML_API_BUILD_URL).connection();
+                    new ConnectionBuilder().instance(instance).url(job.getUrl() + "build?delay=0sec").connection(); // NOI18N
                 } catch (IOException e) {
                     LOG.log(Level.FINE, "Could not start {0}: {1}", new Object[] {job, e});
                 } finally {
@@ -215,7 +215,7 @@ public class HudsonConnector {
                     if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
                         name = o.getFirstChild().getTextContent();
                     } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                        url = Utilities.getURLWithoutSpaces(o.getFirstChild().getTextContent());
+                        url = o.getFirstChild().getTextContent();
                     }
                 }
             }
@@ -282,7 +282,7 @@ public class HudsonConnector {
                     if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
                         job.putProperty(JOB_NAME, o.getFirstChild().getTextContent());
                     } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                        job.putProperty(JOB_URL, Utilities.getURLWithoutSpaces(o.getFirstChild().getTextContent()));
+                        job.putProperty(JOB_URL, o.getFirstChild().getTextContent());
                     } else if (o.getNodeName().equals(XML_API_COLOR_ELEMENT)) {
                         String color = o.getFirstChild().getTextContent().trim();
                         try {

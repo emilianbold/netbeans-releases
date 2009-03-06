@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.hudson.api;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -226,11 +227,13 @@ public final class ConnectionBuilder {
                     }
                 }
                 throw new IOException("Must log in to access " + url);
+            case HttpURLConnection.HTTP_NOT_FOUND:
+                throw new FileNotFoundException(conn.getURL().toString());
             case HttpURLConnection.HTTP_OK:
                 break RETRY;
             default:
                 // XXX are there other legitimate response codes?
-                throw new IOException("Server rejected connection to " + url + " with code " + responseCode);
+                throw new IOException("Server rejected connection to " + conn.getURL() + " with code " + responseCode);
             }
         }
         return conn;

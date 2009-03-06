@@ -49,6 +49,8 @@ import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -134,8 +136,22 @@ public class Utilities {
         
         return gbc;
     }
-    
-    public static String getURLWithoutSpaces(String url) {
-        return url.replaceAll(" ", "%20");
+
+    /**
+     * Encode a path segment of a URI (e.g. a job name) suitably for a URL.
+     * @param segment a path segment
+     * @return the same with spaces and unsafe characters escaped
+     * @throws IllegalArgumentException if there is some other URI problem, or a slash
+     */
+    public static String uriEncode(String segment) {
+        if (segment.contains("/")) {
+            throw new IllegalArgumentException("cannot contain a slash: " + segment);
+        }
+        try {
+            return new URI(null, segment, null).toASCIIString();
+        } catch (URISyntaxException x) {
+            throw (IllegalArgumentException) new IllegalArgumentException(x.toString()).initCause(x);
+        }
     }
+
 }

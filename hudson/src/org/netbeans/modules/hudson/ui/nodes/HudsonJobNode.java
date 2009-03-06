@@ -191,13 +191,12 @@ public class HudsonJobNode extends AbstractNode {
             setIconBaseWithExtension(ICON_BASE_YELLOW_RUN);
             htmlDisplayName = "<b>"+job.getDisplayName()+"</b>";
             break;
-        case grey:
-            setIconBaseWithExtension(ICON_BASE_GREY);
-            break;
         case grey_anime:
             setIconBaseWithExtension(ICON_BASE_GREY_RUN);
             htmlDisplayName = "<b>"+job.getDisplayName()+"</b>";
             break;
+        default: // grey, disabled, aborted
+            setIconBaseWithExtension(ICON_BASE_GREY);
         }
         
         // Fire changes if any
