@@ -6,15 +6,15 @@
             <code-name-base>org.netbeans.modules.websvc.saas.kit</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.saas.api</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
+                    <code-name-base>org.netbeans.modules.ide.kit</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.saas.ui</code-name-base>
+                    <code-name-base>org.netbeans.modules.websvc.saas.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
@@ -68,6 +68,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.saas.services.weatherbug</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.websvc.saas.services.yahoo</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
@@ -86,7 +92,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.saas.services.weatherbug</code-name-base>
+                    <code-name-base>org.netbeans.modules.websvc.saas.ui</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
