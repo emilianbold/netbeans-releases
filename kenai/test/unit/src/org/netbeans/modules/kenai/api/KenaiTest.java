@@ -115,26 +115,50 @@ public class KenaiTest extends NbTestCase {
     @Test
     public void testSearchProjects() throws Exception {
         System.out.println("testSearchProjects");
+        String pattern = "JRuby-parser";
+        Collection<KenaiProject> result = instance.searchProjects(pattern);
+
+        if (result.size() != 1) {
+            fail("The search returned incorrect number of the results when [JRuby-parser] was entered");
+        }
+        for (KenaiProject prj : result) {
+            assertEquals(prj.getDisplayName(), "JRuby-parser: A Ruby parser");
+            System.out.println("Search projects: " + prj.getDisplayName());
+        }
+    }
+
+    /**
+     * Test of searchProjects method, of class Kenai.
+     */
+    @Test
+    public void testSearchProjectsWithSpaceReplaced() throws Exception {
+        System.out.println("testSearchProjectsWithSpace");
+        String pattern = "java%20inline";
+        Collection<KenaiProject> result = instance.searchProjects(pattern);
+
+        if (result.size() != 1) {
+            fail("The search returned incorrect number of the results when [java%20inline] was entered");
+        }
+        for (KenaiProject prj : result) {
+            assertEquals(prj.getDisplayName(), "JavaInline for JRuby");
+            System.out.println("Search projects: " + prj.getDisplayName());
+        }
+    }
+
+    /**
+     * Test of searchProjects method, of class Kenai.
+     */
+    @Test
+    public void testSearchProjectsWithSpace() throws Exception {
+        System.out.println("testSearchProjectsWithSpace");
         String pattern = "java inline";
         Collection<KenaiProject> result = instance.searchProjects(pattern);
 
         if (result.size() != 1) {
-            fail("The search returned incorrect number of the results");
+            fail("The search returned incorrect number of the results when [java inline] was entered");
         }
         for (KenaiProject prj : result) {
-            assertEquals(prj.getDisplayName(), "JavaInline for Ruby");
-            assertEquals(prj.getWebLocation().toString(), "http://testkenai.com/projects/java-inline");
-            System.out.println("Search projects: " + prj.getDisplayName());
-        }
-        pattern = "JRuby-parser";
-        result = instance.searchProjects(pattern);
-
-        if (result.size() != 1) {
-            fail("The search returned incorrect number of the results");
-        }
-        for (KenaiProject prj : result) {
-            assertEquals(prj.getDisplayName(), "JRuby-parser: A Ruby parser");
-            assertEquals(prj.getWebLocation().toString(), "http://testkenai.com/projects/jruby-parser");
+            assertEquals(prj.getDisplayName(), "JavaInline for JRuby");
             System.out.println("Search projects: " + prj.getDisplayName());
         }
     }
@@ -190,7 +214,7 @@ public class KenaiTest extends NbTestCase {
         String name = "java-inline";
         KenaiProject prj = instance.getProject(name);
         System.out.println(prj.getWebLocation());
-        if (!prj.getWebLocation().toString().equals("http://testkenai.com/api/projects/java-inline.json")) {
+        if (!prj.getWebLocation().toString().equals("http://testkenai.com/projects/java-inline")) {
             fail("Web Location of the project has changed.");
         }
     }
@@ -470,22 +494,24 @@ public class KenaiTest extends NbTestCase {
     static public junit.framework.Test suite() {
         junit.framework.TestSuite _suite = new junit.framework.TestSuite();
         _suite.addTest(new KenaiTest("testSearchProjects"));
-//        _suite.addTest(new KenaiTest("testGetProject"));
-//        _suite.addTest(new KenaiTest("testGetDescription"));
-//        _suite.addTest(new KenaiTest("testGetDisplayName"));
-//        _suite.addTest(new KenaiTest("testGetWebLocation"));
-//        _suite.addTest(new KenaiTest("testGetTags"));
-//        _suite.addTest(new KenaiTest("testLogin"));
-//        _suite.addTest(new KenaiTest("testLogout"));
-//        _suite.addTest(new KenaiTest("testPasswordAuthentication"));
-//        _suite.addTest(new KenaiTest("testCreateProject"));
-//        _suite.addTest(new KenaiTest("testCreateFeature"));
-//        _suite.addTest(new KenaiTest("testIsAuthorized"));
-//        _suite.addTest(new KenaiTest("testIsAuthorized2"));
-//        _suite.addTest(new KenaiTest("testGetFeatures"));
-//        _suite.addTest(new KenaiTest("testGetLicenses"));
-//        _suite.addTest(new KenaiTest("testGetServices"));
-//        _suite.addTest(new KenaiTest("testGetMyProjects"));
+        _suite.addTest(new KenaiTest("testSearchProjectsWithSpace"));
+        _suite.addTest(new KenaiTest("testSearchProjectsWithSpaceReplaced"));
+        _suite.addTest(new KenaiTest("testGetProject"));
+        _suite.addTest(new KenaiTest("testGetDescription"));
+        _suite.addTest(new KenaiTest("testGetDisplayName"));
+        _suite.addTest(new KenaiTest("testGetWebLocation"));
+        _suite.addTest(new KenaiTest("testGetTags"));
+        _suite.addTest(new KenaiTest("testLogin"));
+        _suite.addTest(new KenaiTest("testLogout"));
+        _suite.addTest(new KenaiTest("testPasswordAuthentication"));
+        _suite.addTest(new KenaiTest("testCreateProject"));
+        _suite.addTest(new KenaiTest("testCreateFeature"));
+        _suite.addTest(new KenaiTest("testIsAuthorized"));
+        _suite.addTest(new KenaiTest("testIsAuthorized2"));
+        _suite.addTest(new KenaiTest("testGetFeatures"));
+        _suite.addTest(new KenaiTest("testGetLicenses"));
+        _suite.addTest(new KenaiTest("testGetServices"));
+        _suite.addTest(new KenaiTest("testGetMyProjects"));
         return _suite;
     }
     ;
