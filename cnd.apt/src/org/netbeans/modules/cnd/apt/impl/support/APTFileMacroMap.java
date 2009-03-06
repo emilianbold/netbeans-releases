@@ -137,6 +137,13 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             prev = sharedMap.get(macro);
             if (prev == null) {
                 prev = sharedMap.putIfAbsent(macro, macro);
+                if (TRACE_HITS && prev != null) {
+                    cacheCollisionsHits++;
+                }
+            }
+            if (TRACE_HITS && prev != null) {
+                cacheHits++;
+                traceHits(sharedMap.size());
             }
         }
         return prev != null ? prev : macro;
@@ -277,6 +284,8 @@ public class APTFileMacroMap extends APTBaseMacroMap {
                 maRefLock.lock();
                 map = mapRef.get();
                 if (map == null) {
+                    cacheHits = 0;
+                    cacheCollisionsHits = 0;
                     map = new ConcurrentHashMap<APTMacro, APTMacro>();
                     mapRef = new SoftReference<ConcurrentMap<APTMacro, APTMacro>>(map);
                 }
@@ -287,6 +296,14 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         return map;
     }
 
+    private static void traceHits(int size) {
+        if (cacheHits % 5000 == 0) {
+            System.err.printf("%s hits with %s collisions, map size %s\n", cacheHits, cacheCollisionsHits, size);
+        }
+    }
     private static final Lock maRefLock = new ReentrantLock();
     private static Reference<ConcurrentMap<APTMacro, APTMacro>> mapRef = new SoftReference<ConcurrentMap<APTMacro, APTMacro>>(new ConcurrentHashMap<APTMacro, APTMacro>());
+    private static volatile long cacheHits = 0; // we can unsync a little, but it's fine
+    private static volatile long cacheCollisionsHits = 0; // we can unsync a little, but it's fine
+    private static final boolean TRACE_HITS = false;
 }

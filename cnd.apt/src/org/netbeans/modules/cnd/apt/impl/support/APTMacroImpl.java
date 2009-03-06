@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -127,31 +126,26 @@ public final class APTMacroImpl implements APTMacro {
     }
     
     private static final boolean equals(APTMacroImpl one, APTMacroImpl other) {
-        if (one.getName().getText().compareTo(other.getName().getText()) == 0) {
-            if (APTTraceFlags.APT_SHARE_MACROS) {
-                // compare other fields as well
-                if (one.macroType != other.macroType) {
-                    return false;
-                }
-                // check files
-                if ((one.file == other.file) && (one.file != null) && !one.file.equals(other.file)) {
-                    return false;
-                }
-                // check equal params
-                if (!Arrays.equals(one.paramsArray, other.paramsArray)) {
-                    return false;
-                }
-                if ((one.body == other.body) && (one.body != null) && !one.body.equals(other.body)) {
-                    return false;
-                }
-                return true;
-            } else {
-                // compare only name
-                return true;
-            }
-        } else {
+        if (one.macroType != other.macroType) {
             return false;
         }
+        if (!one.name.equals(other.name)) {
+            return false;
+        }
+        // check files
+        if ((one.file == other.file) && (one.file != null) && !one.file.equals(other.file)) {
+            return false;
+        }
+        // TODO: probably we don't need params and body becuase file is the same and name is positions based
+        // check equal params
+        if (!Arrays.equals(one.paramsArray, other.paramsArray)) {
+            return false;
+        }
+        // check equal body
+        if ((one.body == other.body) && (one.body != null) && !one.body.equals(other.body)) {
+            return false;
+        }
+        return true;
     }
     
     @Override
@@ -159,14 +153,12 @@ public final class APTMacroImpl implements APTMacro {
         int retValue = hashCode;
         if (retValue == 0) {
             // init hash
+            retValue = 31*retValue + macroType.hashCode();
             retValue = 31*retValue + getName().getText().hashCode();
-            if (APTTraceFlags.APT_SHARE_MACROS) {
-                // use other fields as well
-                retValue = 31*retValue + macroType.hashCode();
-                retValue = 31*retValue + (file == null ? 0 : file.hashCode());
-                retValue = 31*retValue + Arrays.hashCode(paramsArray);
-                retValue = 31*retValue + (body == null ? 0 : body.hashCode());
-            }
+            retValue = 31*retValue + (file == null ? 0 : file.hashCode());
+            // TODO: probably we don't need params and body becuase file is the same and name is positions based
+            retValue = 31*retValue + Arrays.hashCode(paramsArray);
+            retValue = 31*retValue + (body == null ? 0 : body.hashCode());
             hashCode = retValue;
         }
         return retValue;
