@@ -1390,7 +1390,12 @@ final class Central implements ControllerHandler {
     public ModeImpl getActiveMode () {
         return model.getActiveMode();
     }
-
+    
+    /** Gets last active editor mode from model. */
+    public ModeImpl getLastActiveEditorMode () {
+        return model.getLastActiveEditorMode();
+    }
+    
     /** Gets editor area bounds from model. */
     public Rectangle getEditorAreaBounds() {
         return model.getEditorAreaBounds();

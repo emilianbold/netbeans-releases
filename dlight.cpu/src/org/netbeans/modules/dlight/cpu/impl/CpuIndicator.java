@@ -159,11 +159,13 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
             Float sys = (Float) row.getData().get(1);
             graph.addData(sys.shortValue(), usr.shortValue());
         }
-        DataRow row = data.get(data.size()-1);
-        Float usr = (Float) row.getData().get(0);
-        Float sys = (Float) row.getData().get(1);
-        lblSysValue.setText(formatValue(sys.intValue()));
-        lblUsrValue.setText(formatValue(usr.intValue()));
+        if (data.size() > 0) {
+            DataRow row = data.get(data.size()-1);
+            Float usr = (Float) row.getData().get(0);
+            Float sys = (Float) row.getData().get(1);
+            lblSysValue.setText(formatValue(sys.intValue()));
+            lblUsrValue.setText(formatValue(usr.intValue()));
+        }
     }
 
     private void fireActionPerformed() {

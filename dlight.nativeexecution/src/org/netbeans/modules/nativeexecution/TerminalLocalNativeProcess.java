@@ -54,12 +54,12 @@ import org.openide.util.Exceptions;
  */
 public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
-    private static final Runtime rt = Runtime.getRuntime();
     private final static String dorunScript;
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
     private final File pidFile;
+    private final Process termProcess;
 //    private final PipedInputStream pin = new PipedInputStream();
 //    private final PipedOutputStream pout = new PipedOutputStream(pin);
 
@@ -83,7 +83,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
         ExternalTerminal terminal = t;
 
-        final String commandLine = info.getCommandLine(true);
+        final String commandLine = info.getCommandLine();
         final String workingDirectory = info.getWorkingDirectory(true);
         final File wdir =
                 workingDirectory == null ? null : new File(workingDirectory);
@@ -106,19 +106,21 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 "-x", terminalInfo.getPrompt(terminal), // NOI18N
                 commandLine);
 
-        synchronized (rt) {
-            ProcessBuilder pb = new ProcessBuilder(command);
-            pb.environment().putAll(info.getEnvVariables(true));
-            pb.directory(wdir);
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.environment().putAll(info.getEnvVariables());
+        pb.directory(wdir);
 
-            Process termProcess = pb.start();
+        termProcess = pb.start();
 
-            processOutput = new ByteArrayInputStream(new byte[0]);
-            processError = new ByteArrayInputStream(new byte[0]);
-            processInput = null;
+        processOutput = new ByteArrayInputStream(new byte[0]);
+        processError = new ByteArrayInputStream(new byte[0]);
+        processInput = null;
 
-            readPID(new FileInputStream(pidFile));
+        while (!pidFile.exists() || pidFile.length() == 0) {
+            Thread.yield();
         }
+
+        readPID(new FileInputStream(pidFile));
     }
 
     @Override

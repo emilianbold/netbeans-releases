@@ -36,20 +36,13 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.util;
 
-import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
-import java.util.Arrays;
-import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 
 /**
  *
@@ -79,72 +72,9 @@ public class SolarisPrivilegesSupportTest {
     }
 
     /**
-     * Test of getInstance method, of class SolarisPrivilegesSupport.
-     */
-//    @Test
-    public void testGetInstance() {
-        System.out.println("getInstance");
-        SolarisPrivilegesSupport expResult = null;
-        SolarisPrivilegesSupport result = SolarisPrivilegesSupport.getInstance();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of hasPrivileges method, of class SolarisPrivilegesSupport.
-     */
-//    @Test
-    public void testHasPrivileges() {
-        System.out.println("hasPrivileges");
-        ExecutionEnvironment execEnv = null;
-        List<String> privs = null;
-        SolarisPrivilegesSupport instance = null;
-        boolean expResult = false;
-        boolean result = instance.hasPrivileges(execEnv, privs);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getExecutionPrivileges method, of class SolarisPrivilegesSupport.
+     * Test of getInstance method, of class SolarisPrivilegesSupportImpl.
      */
     @Test
-    public void testGetExecutionPrivileges() {
-        System.out.println("getExecutionPrivileges");
-        ExecutionEnvironment execEnv = new ExecutionEnvironment();
-        SolarisPrivilegesSupport instance = SolarisPrivilegesSupport.getInstance();
-        List<String> result = instance.getExecutionPrivileges(execEnv);
-
-        for (String s : result) {
-            System.out.println(s);
-        }
-        
-//        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
+    public void test() {
     }
-
-    /**
-     * Test of requestPrivilegesAction method, of class SolarisPrivilegesSupport.
-     */
-    @Test
-    public void testRequestPrivilegesAction() {
-        System.out.println("----- requestPrivilegesAction");
-        ExecutionEnvironment execEnv = new ExecutionEnvironment();
-        List<String> requestedPrivileges = Arrays.asList("dtrace_proc", "dtrace_kernel");
-        SolarisPrivilegesSupport instance = SolarisPrivilegesSupport.getInstance();
-        AsynchronousAction action = instance.requestPrivilegesAction(execEnv, requestedPrivileges, null);
-        action.invoke();
-
-        List<String> privs = instance.getExecutionPrivileges(execEnv);
-
-        for (String s : privs) {
-            System.out.println(s);
-        }
-
-        
-    }
-
 }

@@ -57,7 +57,7 @@ import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 public class SVGButtonCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGButton"); //NOI18N
-    
+
     static {
         SVGComponentCD.addPairType( TYPEID, SVGButtonEventSourceCD.TYPEID );
     }
@@ -81,8 +81,8 @@ public class SVGButtonCD extends ComponentDescriptor {
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
-                new SVGCodeFooter( SVGButtonEventSourceCD.TYPEID )               
+                new SVGCodeFooter( SVGButtonEventSourceCD.TYPEID )
         );
     }
-    
+
 }

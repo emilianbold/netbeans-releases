@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.editor.makefile;
 
 import java.util.HashSet;
@@ -48,127 +47,132 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
-
 /**
  *
  * @author Jan Jancura
  */
 class MakefileLexer implements Lexer<MakefileTokenId> {
 
-    private static Set<String> specialTarget = new HashSet<String> ();
+    private static Set<String> specialTarget = new HashSet<String>();
 
     static {
-        specialTarget.add ("%");
-        specialTarget.add (".DEFAULT");
-        specialTarget.add (".DONE");
-        specialTarget.add (".FAILED");
-        specialTarget.add (".GET_POSIX");
-        specialTarget.add (".IGNORE");
-        specialTarget.add (".INIT");
-        specialTarget.add (".KEEP_STATE");
-        specialTarget.add (".KEEP_STATE_FILE");
-        specialTarget.add (".MAKE_VERSION");
-        specialTarget.add (".NO_PARALLEL");
-        specialTarget.add (".PARALLEL");
-        specialTarget.add (".PHONY");
-        specialTarget.add (".POSIX");
-        specialTarget.add (".PRECIOUS");
-        specialTarget.add (".SCCS_GET");
-        specialTarget.add (".SCCS_GET_POSIX");
-        specialTarget.add (".SILENT");
-        specialTarget.add (".SUFFIXES");
-        specialTarget.add (".WAIT");
+        specialTarget.add("%"); // NOI18N
+        specialTarget.add(".DEFAULT");// NOI18N
+        specialTarget.add(".DONE");// NOI18N
+        specialTarget.add(".FAILED");// NOI18N
+        specialTarget.add(".GET_POSIX");// NOI18N
+        specialTarget.add(".IGNORE");// NOI18N
+        specialTarget.add(".INIT");// NOI18N
+        specialTarget.add(".KEEP_STATE");// NOI18N
+        specialTarget.add(".KEEP_STATE_FILE");// NOI18N
+        specialTarget.add(".MAKE_VERSION");// NOI18N
+        specialTarget.add(".NO_PARALLEL");// NOI18N
+        specialTarget.add(".PARALLEL");// NOI18N
+        specialTarget.add(".PHONY");// NOI18N
+        specialTarget.add(".POSIX");// NOI18N
+        specialTarget.add(".PRECIOUS");// NOI18N
+        specialTarget.add(".SCCS_GET");// NOI18N
+        specialTarget.add(".SCCS_GET_POSIX");// NOI18N
+        specialTarget.add(".SILENT");// NOI18N
+        specialTarget.add(".SUFFIXES");// NOI18N
+        specialTarget.add(".WAIT");// NOI18N
     }
-
-
     private LexerRestartInfo<MakefileTokenId> info;
 
-    MakefileLexer (LexerRestartInfo<MakefileTokenId> info) {
+    MakefileLexer(LexerRestartInfo<MakefileTokenId> info) {
         this.info = info;
     }
 
-    public Token<MakefileTokenId> nextToken () {
-        LexerInput input = info.input ();
-        int i = input.read ();
+    public Token<MakefileTokenId> nextToken() {
+        LexerInput input = info.input();
+        int i = input.read();
         switch (i) {
             case LexerInput.EOF:
                 return null;
             case ' ':
                 do {
-                    i = input.read ();
+                    i = input.read();
                     if (i == '\\') {
-                        i = input.read ();
+                        i = input.read();
                         if (i != 'n') {
-                            input.backup (2);
-                            return info.tokenFactory ().createToken (MakefileTokenId.WHITESPACE);
+                            input.backup(2);
+                            return info.tokenFactory().createToken(MakefileTokenId.WHITESPACE);
                         }
-                        i = input.read ();
+                        i = input.read();
                     }
                 } while (i == ' ');
-                if (i != LexerInput.EOF)
-                    input.backup (1);
-                return info.tokenFactory ().createToken (MakefileTokenId.WHITESPACE);
+                if (i != LexerInput.EOF) {
+                    input.backup(1);
+                }
+                return info.tokenFactory().createToken(MakefileTokenId.WHITESPACE);
             case '\\':
-                i = input.read ();
+                i = input.read();
                 if (i == 'n') {
                     do {
-                        i = input.read ();
+                        i = input.read();
                         if (i == '\\') {
-                            i = input.read ();
+                            i = input.read();
                             if (i != 'n') {
-                                input.backup (2);
-                                return info.tokenFactory ().createToken (MakefileTokenId.WHITESPACE);
+                                input.backup(2);
+                                return info.tokenFactory().createToken(MakefileTokenId.WHITESPACE);
                             }
-                            i = input.read ();
+                            i = input.read();
                         }
                     } while (i == ' ');
-                    if (i != LexerInput.EOF)
-                        input.backup (1);
-                    return info.tokenFactory ().createToken (MakefileTokenId.WHITESPACE);
+                    if (i != LexerInput.EOF) {
+                        input.backup(1);
+                    }
+                    return info.tokenFactory().createToken(MakefileTokenId.WHITESPACE);
                 } else {
                     //string
                 }
             case '\n':
-                return info.tokenFactory ().createToken (MakefileTokenId.NEW_LINE);
+                return info.tokenFactory().createToken(MakefileTokenId.NEW_LINE);
             case '\t':
-                return info.tokenFactory ().createToken (MakefileTokenId.TAB);
+                return info.tokenFactory().createToken(MakefileTokenId.TAB);
             case '#':
                 do {
-                    i = input.read ();
+                    i = input.read();
                 } while (i != '\n' && i != LexerInput.EOF);
-                return info.tokenFactory ().createToken (MakefileTokenId.LINE_COMMENT);
+                return info.tokenFactory().createToken(MakefileTokenId.LINE_COMMENT);
             case '$':
-                if (readMacro (input))
-                    return info.tokenFactory ().createToken (MakefileTokenId.MACRO);
-                return info.tokenFactory ().createToken (MakefileTokenId.ERROR);
-            case ':':
-                i = input.read ();
-                if (i == 's') {
-                    i = input.read ();
-                    if (i == 'h')
-                        return info.tokenFactory ().createToken (MakefileTokenId.MACRO_OPERATOR);
-                    input.backup (2);
-                    return info.tokenFactory ().createToken (MakefileTokenId.SEPARATOR);
+                if (readMacro(input)) {
+                    return info.tokenFactory().createToken(MakefileTokenId.MACRO);
                 }
-                if (i == '=')
-                    return info.tokenFactory ().createToken (MakefileTokenId.MACRO_OPERATOR);
-                if (i == ':')
-                    return info.tokenFactory ().createToken (MakefileTokenId.SEPARATOR);
-                if (i != LexerInput.EOF)
-                    input.backup (1);
-                return info.tokenFactory ().createToken (MakefileTokenId.SEPARATOR);
+                return info.tokenFactory().createToken(MakefileTokenId.ERROR);
+            case ':':
+                i = input.read();
+                if (i == 's') {
+                    i = input.read();
+                    if (i == 'h') {
+                        return info.tokenFactory().createToken(MakefileTokenId.MACRO_OPERATOR);
+                    }
+                    input.backup(2);
+                    return info.tokenFactory().createToken(MakefileTokenId.SEPARATOR);
+                }
+                if (i == '=') {
+                    return info.tokenFactory().createToken(MakefileTokenId.MACRO_OPERATOR);
+                }
+                if (i == ':') {
+                    return info.tokenFactory().createToken(MakefileTokenId.SEPARATOR);
+                }
+                if (i != LexerInput.EOF) {
+                    input.backup(1);
+                }
+                return info.tokenFactory().createToken(MakefileTokenId.SEPARATOR);
             case '=':
-                return info.tokenFactory ().createToken (MakefileTokenId.MACRO_OPERATOR);
+                return info.tokenFactory().createToken(MakefileTokenId.MACRO_OPERATOR);
             case '+':
-                i = input.read ();
-                if (i == '=')
-                    return info.tokenFactory ().createToken (MakefileTokenId.MACRO_OPERATOR);
-                return info.tokenFactory ().createToken (MakefileTokenId.RULE_OPERATOR);
+                i = input.read();
+                if (i == '=') {
+                    return info.tokenFactory().createToken(MakefileTokenId.MACRO_OPERATOR);
+                }
+                return info.tokenFactory().createToken(MakefileTokenId.RULE_OPERATOR);
             case '-':
             case '@':
             case '?':
             case '!':
-                return info.tokenFactory ().createToken (MakefileTokenId.RULE_OPERATOR);
+                return info.tokenFactory().createToken(MakefileTokenId.RULE_OPERATOR);
             case '(':
             case ')':
             case '[':
@@ -180,127 +184,129 @@ class MakefileLexer implements Lexer<MakefileTokenId> {
             case '<':
             case '>':
             case '&':
-                return info.tokenFactory ().createToken (MakefileTokenId.SEPARATOR);
+                return info.tokenFactory().createToken(MakefileTokenId.SEPARATOR);
             case '"':
                 do {
-                    i = input.read ();
+                    i = input.read();
                     if (i == '\\') {
-                        i = input.read ();
-                        i = input.read ();
+                        i = input.read();
+                        i = input.read();
                     }
                 } while (i != '"' && i != LexerInput.EOF);
-                return info.tokenFactory ().createToken (MakefileTokenId.STRING_LITERAL);
+                return info.tokenFactory().createToken(MakefileTokenId.STRING_LITERAL);
             case '\'':
                 do {
-                    i = input.read ();
+                    i = input.read();
                     if (i == '\\') {
-                        i = input.read ();
-                        i = input.read ();
+                        i = input.read();
+                        i = input.read();
                     }
                 } while (i != '\'' && i != LexerInput.EOF);
-                return info.tokenFactory ().createToken (MakefileTokenId.STRING_LITERAL);
+                return info.tokenFactory().createToken(MakefileTokenId.STRING_LITERAL);
             case '`':
                 do {
-                    i = input.read ();
+                    i = input.read();
                     if (i == '\\') {
-                        i = input.read ();
-                        i = input.read ();
+                        i = input.read();
+                        i = input.read();
                     }
                 } while (i != '`' && i != LexerInput.EOF);
-                return info.tokenFactory ().createToken (MakefileTokenId.STRING_LITERAL);
+                return info.tokenFactory().createToken(MakefileTokenId.STRING_LITERAL);
             default:
                 do {
-                    i = input.read ();
+                    i = input.read();
                     if (i == '\\') {
-                        i = input.read ();
+                        i = input.read();
                         if (i == '\n') {
-                            input.backup (2);
-                            return identifier (input);
+                            input.backup(2);
+                            return identifier(input);
                         }
                     }
-                } while (
-                    i != '\t' &&
-                    i != '\n' && 
-                    i != '\r' && 
-                    i != ' ' && 
-                    i != '\\' && 
-                    i != '$' && 
-                    i != '\'' && 
-                    i != '"' && 
-                    i != '`' && 
-                    i != ':' && 
-                    i != '(' && 
-                    i != ')' && 
-                    i != '[' && 
-                    i != ']' && 
-                    i != '{' && 
-                    i != '}' && 
-                    i != ';' && 
-                    i != '&' && 
-                    i != '=' && 
-                    i != LexerInput.EOF
-                );
-                if (i != LexerInput.EOF)
-                    input.backup (1);
-                return identifier (input);
+                } while (i != '\t' &&
+                        i != '\n' &&
+                        i != '\r' &&
+                        i != ' ' &&
+                        i != '\\' &&
+                        i != '$' &&
+                        i != '\'' &&
+                        i != '"' &&
+                        i != '`' &&
+                        i != ':' &&
+                        i != '(' &&
+                        i != ')' &&
+                        i != '[' &&
+                        i != ']' &&
+                        i != '{' &&
+                        i != '}' &&
+                        i != ';' &&
+                        i != '&' &&
+                        i != '=' &&
+                        i != LexerInput.EOF);
+                if (i != LexerInput.EOF) {
+                    input.backup(1);
+                }
+                return identifier(input);
         }
     }
 
-    private Token<MakefileTokenId> identifier (LexerInput input) {
-        String identifier = input.readText ().toString ();
-        if ("include".equals (identifier))
-            return info.tokenFactory ().createToken (MakefileTokenId.KEYWORD);
-        if (specialTarget.contains (identifier))
-            return info.tokenFactory ().createToken (MakefileTokenId.SPECIAL_TARGET);
-        return info.tokenFactory ().createToken (MakefileTokenId.IDENTIFIER);
+    private Token<MakefileTokenId> identifier(LexerInput input) {
+        String identifier = input.readText().toString();
+        if ("include".equals(identifier)) { // NOI18N
+            return info.tokenFactory().createToken(MakefileTokenId.KEYWORD);
+        }
+        if (specialTarget.contains(identifier)) {
+            return info.tokenFactory().createToken(MakefileTokenId.SPECIAL_TARGET);
+        }
+        return info.tokenFactory().createToken(MakefileTokenId.IDENTIFIER);
     }
 
-
-    private static boolean readMacro (LexerInput input) {
-        int i = input.read ();
+    private static boolean readMacro(LexerInput input) {
+        int i = input.read();
         while (i != LexerInput.EOF) {
             switch (i) {
                 case '(': // NOI18N
-                    return readTo (input, ')'); // NOI18N
+                    return readTo(input, ')'); // NOI18N
                 case '{': // NOI18N
-                    return readTo (input, '}'); // NOI18N
+                    return readTo(input, '}'); // NOI18N
                 case ' ': // NOI18N
                 case '\r': // NOI18N
                 case '\n': // NOI18N
                     return false;
                 default:
-                    input.read ();
+                    input.read();
                     return true;
             }
         }
         return false;
     }
 
-    private static boolean readTo (LexerInput input, char barrier) {
-        int i = input.read ();
+    private static boolean readTo(LexerInput input, char barrier) {
+        int i = input.read();
         while (i != LexerInput.EOF) {
             switch (i) {
                 case '$': // NOI18N
-                    if (!readMacro (input))
+                    if (!readMacro(input)) {
                         return false;
+                    }
                     break;
                 case '\\': // NOI18N
-                    input.read ();
-                    input.read ();
+                    input.read();
+                    input.read();
                     break;
                 default:
-                    if (input.read () == barrier)
+                    if (input.read() == barrier) {
                         return true;
+                    }
             }
         }
         return false;
     }
 
-    public Object state () {
+    public Object state() {
         return null;
     }
 
-    public void release () {
+    public void release() {
     }
 }
 

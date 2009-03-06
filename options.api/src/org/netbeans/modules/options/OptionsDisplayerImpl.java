@@ -57,6 +57,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.options.export.OptionsChooserPanel;
 import org.netbeans.spi.options.OptionsPanelController;
 
 import org.openide.DialogDescriptor;
@@ -93,6 +94,10 @@ public class OptionsDisplayerImpl {
     static final LookupListener lookupListener = new LookupListenerImpl();
     /** Advanced Options button. */
     private JButton bClassic;
+    /** Export Options button */
+    private JButton btnExport;
+    /** Import Options button */
+    private JButton btnImport;
     
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
@@ -149,14 +154,18 @@ public class OptionsDisplayerImpl {
             bClassic = (JButton) loc(new JButton(), "CTL_Classic");//NOI18N
             bClassic.getAccessibleContext().setAccessibleDescription(loc("ACS_ClassicButton"));//NOI18N
             setVisibleAdvancedOptionsButton();
+            btnExport = (JButton) loc(new JButton(), "CTL_Export");//NOI18N
+            btnExport.getAccessibleContext().setAccessibleDescription(loc("ACS_Export"));//NOI18N
+            btnImport = (JButton) loc(new JButton(), "CTL_Import");//NOI18N
+            btnImport.getAccessibleContext().setAccessibleDescription(loc("ACS_Import"));//NOI18N
             boolean isMac = Utilities.isMac();
             Object[] options = new Object[2];            
             options[0] = isMac ? DialogDescriptor.CANCEL_OPTION : bOK;
             options[1] = isMac ? bOK : DialogDescriptor.CANCEL_OPTION;
             descriptor = new DialogDescriptor(optionsPanel,title,modal,options,DialogDescriptor.OK_OPTION,DialogDescriptor.DEFAULT_ALIGN, null, null, false);
-            descriptor.setAdditionalOptions(new Object[] {bClassic});
+            descriptor.setAdditionalOptions(new Object[] {bClassic, btnExport, btnImport});
             descriptor.setHelpCtx(optionsPanel.getHelpCtx());
-            OptionsPanelListener listener = new OptionsPanelListener(descriptor, optionsPanel, bOK, bClassic);
+            OptionsPanelListener listener = new OptionsPanelListener(descriptor, optionsPanel, bOK, bClassic, btnExport, btnImport);
             descriptor.setButtonListener(listener);
             optionsPanel.addPropertyChangeListener(listener);
             synchronized(lookupListener) {
@@ -227,18 +236,24 @@ public class OptionsDisplayerImpl {
         private OptionsPanel        optionsPanel;
         private JButton             bOK;
         private JButton             bClassic;
+        private JButton             btnExport;
+        private JButton             btnImport;
         
         
         OptionsPanelListener (
             DialogDescriptor    descriptor, 
             OptionsPanel        optionsPanel,
             JButton             bOK,
-            JButton             bClassic
+            JButton             bClassic,
+            JButton             btnExport,
+            JButton             btnImport
         ) {
             this.descriptor = descriptor;
             this.optionsPanel = optionsPanel;
             this.bOK = bOK;
             this.bClassic = bClassic;
+            this.btnExport = btnExport;
+            this.btnImport = btnImport;
         }
         
         public void propertyChange (PropertyChangeEvent ev) {
@@ -309,6 +324,11 @@ public class OptionsDisplayerImpl {
                     Exceptions.printStackTrace(ex);
                 }
             } // classic
+            else if (e.getSource() == btnExport) {
+                OptionsChooserPanel.showExportDialog();
+            } else if (e.getSource() == btnImport) {
+                OptionsChooserPanel.showImportDialog();
+            }
         }
     }
     

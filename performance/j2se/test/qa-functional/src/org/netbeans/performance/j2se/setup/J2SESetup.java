@@ -79,6 +79,7 @@ public class J2SESetup extends JellyTestCase {
         }
     }
 
+/* commented until IZ 159587 is fixed
    public void testOpenNBProject() {
 
         try {
@@ -86,7 +87,7 @@ public class J2SESetup extends JellyTestCase {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
+    }*/
 
     public void testCloseMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();

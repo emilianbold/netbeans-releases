@@ -295,8 +295,19 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                     //add error element into the structure
                     if(debug) System.out.println("Error found! => adding error element.");
                     String errorText = doc.getText(sel.getElementOffset(), sel.getElementLength());
+
+                    //check for empty elements - the error syntax elements is often
+                    //just one character long and due to the great hack with
+                    //substracting the elements lenght (see getSyntaxElementEndOffset()
+                    //method comment) we need to ensure we do not try to add
+                    //empty elements (from==to).
+                    int from = sel.getElementOffset();
+                    int to = getSyntaxElementEndOffset(sel);
+                    if(from == to) {
+                        to++;
+                    }
                     addedElements.add(dtm.addDocumentElement(errorText, XML_ERROR, Collections.EMPTY_MAP,
-                            sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
+                            from, to));
                 }
                 
                 if(sel instanceof StartTag) {
@@ -467,14 +478,19 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
     }
     
     private int getSyntaxElementEndOffset(SyntaxElement sel) {
-        //zmenil jsem velikost vsech elementu tak, ze jejich
-        //delka je kratsi o jeden => to resi problem kdyz se zacne psat na end position ->
-        //text se v tomto pripade pridava jeste do elementu pred end positionou
-        //napr:
+        //I have reduced the length of all SyntaxElements by one character which
+        //solves a problem of typing at the SE end position. In such case the text
+        //is added to the next SyntaxElement after the position.
+        //An example:
         // <a>xxx</a>X
-        //predtim to X padalo do tagu <a>, coz je blbe. Ted to padne za nej.
-        //TODO musi se ale nejak vyresit problem zkracene delky - u text elementu se pri cteni
-        //hodnoty musi pouzit endoffset + 1
+        //Originally the X char was added to the 'a' element which is wrong
+        //TODO - the problem of the reduced length needs to be solved somehow
+        //resonably. Now if anyone needs to get the SE's text, one character needs
+        //to be added to the SE lenght.
+        //
+        //Please note that this is a big hack which is supposed to be solved
+        //in completely different way. However such change would be quite extensive
+        //so keeping the current state until it is absolute must to fix that :-|
         return sel.getElementOffset() + sel.getElementLength() -1;
     }
     

@@ -42,10 +42,12 @@ import java.io.CharArrayWriter;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.concurrent.Callable;
+import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.junit.After;
@@ -79,6 +81,30 @@ public class NativeTaskTest {
     public static void setUpClass() throws Exception {
         String dirs = System.getProperty("netbeans.dirs", "");
         System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/dlight.suite/build/cluster:" + dirs);
+//        Handler handler = new LogHandler();
+//        Logger l = Logger.getLogger(ExecutionService.class.getName());
+//        l.setLevel(Level.ALL);
+//        l.addHandler(handler);
+        
+//        l = Logger.getLogger(ProcessInputStream.class.getName());
+//        l.setLevel(Level.ALL);
+//        l.addHandler(handler);
+    }
+
+    private static class LogHandler extends Handler {
+
+        @Override
+        public void publish(LogRecord record) {
+            System.err.println("!!!!!!!! > " + record.getMessage() + " " + Arrays.toString(record.getParameters()));
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
     }
 
     @AfterClass
@@ -94,56 +120,86 @@ public class NativeTaskTest {
     }
     static int count = 0;
 
-
     @Test
-    public void testDemangle(){
+    public void testDemangle() {
 
         System.out.println("STart-TestDEmangle");
-        final ExecutionEnvironment env = new ExecutionEnvironment();
-        final String dem_util_path="/usr/sfw/bin/gc++filt";
-        final String functionName = "fractal_2`_Z10Mandelbrotv+0x602";
-        final String nameToDemangle ;
-        if (functionName.indexOf("`") != -1 && functionName.indexOf("+") != -1){
-            nameToDemangle = functionName.substring(functionName.indexOf("`") + 1, functionName.indexOf("+")); //NOI18N;
-        }else{
-            nameToDemangle = functionName;
+        int threadsNum = 100;
+        CountDownLatch latch = new CountDownLatch(threadsNum);
+        CountDownLatch start = new CountDownLatch(1);
+
+        for (int i = 0; i < threadsNum; i++) {
+            new Thread(new Demangler("fractal_2`_Z10Mandelbrotv+0x602", latch, start)).start();
         }
-        System.out.println("name to demangle=" + nameToDemangle);
-        Future<String> myResult =   Executors.newCachedThreadPool().submit(new Callable<String>() {
 
-            public String call() {
-                NativeProcessBuilder npb = new NativeProcessBuilder(env, dem_util_path + " " + nameToDemangle); //NOI18N
-                ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                    InputOutput.NULL);
-                StringWriter result = new StringWriter();
-                descriptor = descriptor.outProcessorFactory(new InputRedirectorFactory(result));
-                ExecutionService execService = ExecutionService.newService(
-                    npb, descriptor, "Demangling function " + nameToDemangle); // NOI18N
-                Future<Integer> res = execService.run();
-                try {
-                    res.get();
-                    return result.toString();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+        System.out.println("GO!");
+        start.countDown();
 
-                //process.
-                return nameToDemangle;
-            }
-        });
         try {
-            System.out.println("result is = " + myResult.get());
+            latch.await();
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
         }
 
+        System.out.println("Done");
     }
 
-    private class InputRedirectorFactory implements ExecutionDescriptor.InputProcessorFactory {
+    private static class Demangler implements Runnable {
+
+        private final String str;
+        private CountDownLatch start;
+        private CountDownLatch latch;
+
+        public Demangler(String str, CountDownLatch latch, CountDownLatch start) {
+            this.str = str;
+            this.start = start;
+            this.latch = latch;
+        }
+
+        private String demangle() {
+            String nameToDemangle;
+            final ExecutionEnvironment env = new ExecutionEnvironment();
+            final String dem_util_path = "/usr/sfw/bin/gc++filt";
+
+            if (str.indexOf("`") != -1 && str.indexOf("+") != -1) {
+                nameToDemangle = str.substring(str.indexOf("`") + 1, str.indexOf("+")); //NOI18N;
+            } else {
+                nameToDemangle = str;
+            }
+
+            NativeProcessBuilder npb = new NativeProcessBuilder(env, dem_util_path).setArguments(nameToDemangle);
+            StringWriter result = new StringWriter();
+            ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));
+            ExecutionService execService = ExecutionService.newService(
+                    npb, descriptor, "Demangling function " + nameToDemangle); // NOI18N
+
+            Future<Integer> res = execService.run();
+
+            try {
+                res.get();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            return result.toString().trim();
+        }
+
+        public void run() {
+            try {
+                start.await();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            System.out.println(str + " == " + demangle());
+
+            latch.countDown();
+        }
+    }
+
+    private static class InputRedirectorFactory implements ExecutionDescriptor.InputProcessorFactory {
 
         private final Writer writer;
 
@@ -155,12 +211,11 @@ public class NativeTaskTest {
             return InputProcessors.copying(writer);
         }
     }
-    
 
     /**
      * Test of run method, of class NativeTask.
      */
-    @Test
+//    @Test
     public void testRun() {
         System.out.println("run");
 
@@ -174,7 +229,7 @@ public class NativeTaskTest {
 //        } catch (ParseException ex) {
 //            System.out.println("Parse exception! Pos = " + ex.getErrorOffset());
 //        }
-        
+
         final String cmd = "/export/home/ak119685/welcome.sh";
 
         ChangeListener l = new ChangeListener() {

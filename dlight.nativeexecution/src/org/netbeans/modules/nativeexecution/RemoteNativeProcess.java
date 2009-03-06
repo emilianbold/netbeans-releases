@@ -8,9 +8,12 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -32,7 +35,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
     public RemoteNativeProcess(NativeProcessInfo info) throws IOException {
         super(info);
 
-        final String commandLine = info.getCommandLine(true);
+        final String commandLine = info.getCommandLine();
         final ConnectionManager mgr = ConnectionManager.getInstance();
 
         ChannelExec echannel = null;
@@ -47,7 +50,10 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             }
 
             final String workingDirectory = info.getWorkingDirectory(true);
-            final Map<String, String> envVars = info.getEnvVariables(true);
+
+            final Map<String, String> userEnv = getUserEnv(session);
+
+            final Map<String, String> envVars = info.getEnvVariables(userEnv);
 
             String envSetup = "";
 
@@ -56,7 +62,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                 final StringBuilder envVarsExport = new StringBuilder();
 
                 for (String var : envVars.keySet()) {
-                    envVarsAssign.append(var + '=' + envVars.get(var) + ' ');
+                    envVarsAssign.append(var + "='" + envVars.get(var) + "' ");
                     envVarsExport.append(' ' + var);
                 }
 
@@ -93,7 +99,6 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
         }
 
         readPID(out);
-
     }
 
     @Override
@@ -143,5 +148,36 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
     private static String loc(String key, Object... params) {
         return NbBundle.getMessage(RemoteNativeProcess.class, key, params);
+    }
+
+    private Map<String, String> getUserEnv(Session session) {
+        Map<String, String> result = new HashMap<String, String>();
+
+        try {
+            ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
+            echannel.setCommand("/bin/env"); // NOI18N
+            echannel.connect();
+            InputStream is = echannel.getInputStream();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String s;
+
+            while (true) {
+                s = br.readLine();
+                if (s == null) {
+                    break;
+                }
+
+                int eidx = s.indexOf('=');
+                result.put(s.substring(0, eidx), s.substring(eidx + 1));
+            }
+
+        } catch (IOException ex) {
+            log.warning("Unable to fetch user's env"); // NOI18N
+        } catch (JSchException ex) {
+            log.warning("Unable to fetch user's env"); // NOI18N
+        }
+
+        return result;
     }
 }

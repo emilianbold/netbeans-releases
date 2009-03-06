@@ -59,11 +59,13 @@ made subject to such option by the copyright holder.
         <!-- Build Javadoc in the usual way: -->
         <property file="../nbbuild/build.properties"/>
         <mkdir dir="${docs.dir}"/>
+        <property name="javadoc.fail.on.error" value="true"/>
         <ant dir="../nbbuild" target="build-javadoc" inheritall="false">
             <!-- Skip friend and experimental APIs: -->
             <property name="config.javadoc.all" value="${config.javadoc.stable},${config.javadoc.devel},${config.javadoc.deprecated}"/>
             <!-- build into my personal javadoc build area -->
             <property name="building.apisupport/apidocs" value="true"/><!-- avoid recursion -->
+            <property name="javadoc.fail.on.error" value="${javadoc.fail.on.error}"/>
 
             <!-- pass there our local directories to build javadocs in -->
             <property name="netbeans.javadoc.dir" value="${local.javadoc.dir}"/>

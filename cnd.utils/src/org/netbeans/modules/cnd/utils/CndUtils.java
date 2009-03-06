@@ -93,7 +93,7 @@ public class CndUtils {
     }
 
     public static void assertFalse(boolean value) {
-       if ( isReleaseMode()) {
+       if ( isDebugMode()) {
            assertTrue(!value, "Assertion error"); //NOI18N
        }
    }
@@ -105,6 +105,12 @@ public class CndUtils {
     public static void assertTrue(boolean value, String message) {
         if (isDebugMode() && !value) {
             LOG.log(Level.SEVERE, message, new Exception(message));
+        }
+    }
+
+    public static void assertTrue(boolean value, String message, Level level) {
+        if (isDebugMode() && !value) {
+            LOG.log(level, message, new Exception(message));
         }
     }
 

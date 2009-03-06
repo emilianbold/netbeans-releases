@@ -84,6 +84,8 @@ final class ModesSubModel {
 
     /** Active mode. */
     private ModeImpl activeMode;
+    /** Last editor active mode. */
+    private ModeImpl lastActiveEditorMode;
     /** Maximized mode. */
     private ModeImpl editorMaximizedMode;
     private ModeImpl viewMaximizedMode;
@@ -286,6 +288,9 @@ final class ModesSubModel {
 //            return slidingModes2Sides.remove(mode) != null;
         }
         modes.remove(mode);
+        if (mode.equals(lastActiveEditorMode)) {
+            lastActiveEditorMode = null;
+        }
         if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
             return editorSplitSubModel.getEditorArea().removeMode(mode);
         } else {
@@ -297,15 +302,23 @@ final class ModesSubModel {
     public boolean setActiveMode(ModeImpl activeMode) {
         if(activeMode == null || modes.contains(activeMode)) {
             this.activeMode = activeMode;
+            if ((activeMode != null) && (activeMode.getKind() == Constants.MODE_KIND_EDITOR)) {
+                lastActiveEditorMode = activeMode;
+            }
             return true;
         }
         
         return false;
     }
     
-    /** Gets acitve mode. */
+    /** Gets active mode. */
     public ModeImpl getActiveMode() {
         return this.activeMode;
+    }
+
+    /** Gets last active editor mode. */
+    public ModeImpl getLastActiveEditorMode() {
+        return this.lastActiveEditorMode;
     }
     
     /** Sets maximized mode for editor components. */

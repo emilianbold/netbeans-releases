@@ -72,6 +72,8 @@ import org.xml.sax.SAXException;
  */
 public final class AutoUpgrade {
 
+    private static File importFile;
+
     public static void main (String[] args) throws Exception {
         String[] version = new String[1];
         File sourceFolder = checkPrevious (version, VERSION_TO_CHECK);
@@ -79,8 +81,14 @@ public final class AutoUpgrade {
             if (!showUpgradeDialog (sourceFolder)) {
                 throw new org.openide.util.UserCancelException ();
             }
-            doUpgrade (sourceFolder, version[0]);
-            //support for non standard configuration files
+            File netBeansDir = InstalledFileLocator.getDefault().locate("modules", null, false).getParentFile().getParentFile();  //NOI18N
+            importFile = new File(netBeansDir, "etc/netbeans.import");  //NOI18N
+            // less than 6.5 or import file dosn't exist
+            if (version[0].compareTo("6.5") < 0 || !importFile.exists()) {  //NOI18N
+                doUpgrade (sourceFolder, version[0]);
+            }
+            // Till 6.1 support for non standard configuration files and since
+            // 6.5 it is standard way of import.
             doNonStandardUpgrade(sourceFolder, version[0]);
             //#75324 NBplatform settings are not imported
             upgradeBuildProperties(sourceFolder, version);
@@ -215,8 +223,15 @@ public final class AutoUpgrade {
         File userdir = new File(System.getProperty("netbeans.user", "")); // NOI18N        
         java.util.Set includeExclude;
         try {
-            InputStream is = AutoUpgrade.class.getResourceAsStream("nonstandard" + oldVersion);
-            if (is == null) return;
+            InputStream is;
+            if (oldVersion.compareTo("6.5") < 0 || !importFile.exists()) {  //NOI18N
+                // less than 6.5
+                is = AutoUpgrade.class.getResourceAsStream("nonstandard" + oldVersion); // NOI18N
+                if (is == null) return;
+            } else {
+                // 6.5 or greater
+                is = new FileInputStream(importFile);
+            }
             Reader r = new InputStreamReader(is, "utf-8"); // NOI18N
             includeExclude = IncludeExclude.create(r);
             r.close();

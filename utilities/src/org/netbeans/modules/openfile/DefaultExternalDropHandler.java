@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.openfile;
 
+import java.awt.Component;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -66,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.ExternalDropHandler;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -100,6 +102,19 @@ public class DefaultExternalDropHandler extends ExternalDropHandler {
         List<File> fileList = getFileList( t );
         if ((fileList == null) || fileList.isEmpty()) {
             return false;
+        }
+
+        //#158473: Activate target TC to inform winsys in which mode new editor
+        //component should be opened. It assumes that openFile opens new editor component
+        //in some editor mode. If there would be problem with activating another TC first
+        //then another way how to infrom winsys must be used.
+        Component c = e.getDropTargetContext().getComponent();
+        while (c != null) {
+            if (c instanceof TopComponent) {
+                ((TopComponent) c).requestActive();
+                break;
+            }
+            c = c.getParent();
         }
 
         Object errMsg = null;

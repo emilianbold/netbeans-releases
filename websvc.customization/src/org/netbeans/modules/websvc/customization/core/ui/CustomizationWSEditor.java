@@ -172,8 +172,7 @@ public class CustomizationWSEditor implements WSEditor {
             return null;
         }
 
-        wsTopComponent = new WSCustomizationTopComponent(node, getWSDLModels(), primaryDefinitions,
-                jaxWsModel);
+        wsTopComponent = new WSCustomizationTopComponent(node, getWSDLModels(), primaryDefinitions, false);
         wsTopComponent.setName(getTitle());
         return wsTopComponent;
     }

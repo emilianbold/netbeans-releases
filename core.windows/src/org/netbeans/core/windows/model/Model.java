@@ -153,6 +153,8 @@ public interface Model {
     public String getToolbarConfigName();
     /** Gets active mode. */
     public ModeImpl getActiveMode();
+    /** Gets last active editor mode. */
+    public ModeImpl getLastActiveEditorMode();
     /** Gets editor maximized mode. */
     public ModeImpl getEditorMaximizedMode();
     /** Gets view maximized mode. */

@@ -51,21 +51,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.List;
 import javax.swing.JComponent;
-import org.netbeans.modules.websvc.customization.model.BindingCustomization;
-import org.netbeans.modules.websvc.customization.model.CustomizationComponentFactory;
-import org.netbeans.modules.websvc.customization.model.DefinitionsCustomization;
-import org.netbeans.modules.websvc.customization.model.EnableMIMEContent;
+import org.netbeans.modules.websvc.api.customization.model.BindingCustomization;
+import org.netbeans.modules.websvc.api.customization.model.CustomizationComponentFactory;
+import org.netbeans.modules.websvc.api.customization.model.DefinitionsCustomization;
+import org.netbeans.modules.websvc.api.customization.model.EnableMIMEContent;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
