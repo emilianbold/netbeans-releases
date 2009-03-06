@@ -85,6 +85,7 @@ import org.openide.util.*;
 public final class MainWindow extends JFrame {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -1160791973145645501L;
+    private static JMenuBar mainMenuBar;
 
     /** Desktop. */
     private Component desktop;
@@ -135,6 +136,11 @@ public final class MainWindow extends JFrame {
             root.setGlassPane(c);
         }
     }
+
+    public static void init() {
+        mainMenuBar = createMenuBar();
+        ToolbarPool.getDefault().waitFinished();
+    }
     
     /** Initializes main window. */
     public void initializeComponents() {
@@ -153,7 +159,7 @@ public final class MainWindow extends JFrame {
         getAccessibleContext().setAccessibleDescription(
                 NbBundle.getBundle(MainWindow.class).getString("ACSD_MainWindow"));
 
-        setJMenuBar(createMenuBar());
+        setJMenuBar(mainMenuBar);
     
         if (!Constants.NO_TOOLBARS) {
             JComponent tb = getToolbarComponent();
@@ -304,7 +310,7 @@ public final class MainWindow extends JFrame {
     }
     
     static void initFrameIcons (Frame f) {
-        Class clazz = null;
+        Class<?> clazz = null;
         try {
             clazz = Class.forName("java.awt.Window");
         } catch (ClassNotFoundException ex) {

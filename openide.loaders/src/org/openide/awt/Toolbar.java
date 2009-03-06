@@ -41,6 +41,7 @@
 
 package org.openide.awt;
 
+import org.netbeans.modules.openide.loaders.AWTTask;
 import java.awt.Component;
 import java.awt.Insets;
 import java.io.IOException;
@@ -53,13 +54,13 @@ import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
+import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -328,6 +329,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
          */
         public Folder () {
             super (backingFolder);
+            DataObjectAccessor.DEFAULT.precreateInstances(this);
             recreate ();
         }
 

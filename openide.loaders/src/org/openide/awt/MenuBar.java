@@ -41,6 +41,7 @@
 
 package org.openide.awt;
 
+import org.netbeans.modules.openide.loaders.AWTTask;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
@@ -64,6 +65,7 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -302,6 +304,9 @@ public class MenuBar extends JMenuBar implements Externalizable {
          */
         public MenuBarFolder (final DataFolder folder) {
             super(folder);
+            DataObjectAccessor.DEFAULT.precreateInstances(this);
+            // preinitialize outside of AWT
+            new DynaMenuModel();
             recreate ();
         }
 
@@ -435,6 +440,10 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
     /** Menu based on the folder content whith lazy items creation. */
     private static class LazyMenu extends JMenu implements NodeListener, Runnable, ChangeListener {
+        static {
+            // preinitialize outside of AWT
+            new DynaMenuModel();
+        }
         DataFolder master;
         boolean icon;
         MenuFolder slave;
@@ -583,6 +592,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
              */
     	    public MenuFolder () {
                 super(master);
+                DataObjectAccessor.DEFAULT.precreateInstances(this);
     	    }
 
 
@@ -648,32 +658,33 @@ public class MenuBar extends JMenuBar implements Externalizable {
     	     * @param cookies array of instance cookies for the folder
     	     * @return the updated <code>JMenu</code> representee
     	     */
-    	    protected Object createInstance(InstanceCookie[] cookies)
-    			    throws IOException, ClassNotFoundException {
-        	LazyMenu m = LazyMenu.this;
+            protected Object createInstance(InstanceCookie[] cookies)
+            throws IOException, ClassNotFoundException {
+                LazyMenu m = LazyMenu.this;
+                assert EventQueue.isDispatchThread() : Thread.currentThread().getName();
 
-        	//synchronized (this) { // see #15917 - attachment from 2001/09/27
-        	LinkedList<Object> cInstances = new LinkedList<Object>();
-        	allInstances (cookies, cInstances);
+                //synchronized (this) { // see #15917 - attachment from 2001/09/27
+                LinkedList<Object> cInstances = new LinkedList<Object>();
+                allInstances(cookies, cInstances);
 
-        	m.removeAll();
+                m.removeAll();
 
-        	// #11848, #13013. Enablement should be set immediatelly,
-        	// popup will be created on-demand.
-        	// m.setEnabled(!cInstances.isEmpty());
-		// TODO: fill it with empty sign instead
-		if(cInstances.isEmpty()) {
-		    JMenuItem item = new JMenuItem(
+                // #11848, #13013. Enablement should be set immediatelly,
+                // popup will be created on-demand.
+                // m.setEnabled(!cInstances.isEmpty());
+                // TODO: fill it with empty sign instead
+                if (cInstances.isEmpty()) {
+                    JMenuItem item = new JMenuItem(
                             NbBundle.getMessage(DataObject.class, "CTL_EmptyMenu"));
 
-		    item.setEnabled(false);
-		    m.add(item);
-		}
+                    item.setEnabled(false);
+                    m.add(item);
+                }
 
                 m.dynaModel.loadSubmenu(cInstances, m);
-                
-        	return m;
-    	    }
+
+                return m;
+            }
             
             /** Removes icons from all direct menu items of this menu.
              * Not recursive, * /

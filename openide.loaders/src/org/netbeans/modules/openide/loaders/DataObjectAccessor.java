@@ -43,6 +43,7 @@ package org.netbeans.modules.openide.loaders;
 import java.io.IOException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.FolderInstance;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 
@@ -71,4 +72,8 @@ public abstract class DataObjectAccessor {
     public abstract DataObject copyRename( DataObject dob, DataFolder f, String name, String ext ) throws IOException;
     
     public abstract CookieSet getCookieSet( MultiDataObject dob );
+
+    public abstract boolean isInstancesThread();
+
+    public abstract void precreateInstances(FolderInstance fi);
 }
