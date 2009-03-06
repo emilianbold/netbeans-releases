@@ -120,7 +120,9 @@ public class QueryAccessorImpl extends QueryAccessor {
     @Override
     public ActionListener getFindIssueAction(ProjectHandle project) {
         final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
-        // XXX what if repo null!
+        if(repo == null) {
+            return null;
+        }
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() { // XXX add post method to BM
@@ -156,7 +158,10 @@ public class QueryAccessorImpl extends QueryAccessor {
     
     @Override
     public ActionListener getCreateIssueAction(ProjectHandle project) {
-        //TODO: implement me
+        final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
+        if(repo == null) {
+            return null;
+        }
         return null;
     }
 

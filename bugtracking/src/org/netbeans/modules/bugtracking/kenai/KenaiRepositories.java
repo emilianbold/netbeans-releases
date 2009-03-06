@@ -97,6 +97,10 @@ public class KenaiRepositories {
             return null;
         }
         Repository repo = getRepository(kp);
+        if(repo == null) {
+            BugtrackingManager.LOG.warning("No bugtracking repository available for project " + kp.getName());
+            return null;
+        }
         if((qaImpl != null) && (ph != null)) {
             repo.addPropertyChangeListener(new RepositoryListener(repo, ph, qaImpl));
         }
