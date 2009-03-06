@@ -87,8 +87,8 @@ public class KenaiProjectTest {
      * Test of forRepository method, of class KenaiProject.
      */
     @Test
-    public void testForRepository1() throws Exception {
-        System.out.println("forRepository1");
+    public void testForRepositorySvn() throws Exception {
+        System.out.println("forRepositoryHg");
         String uri = "https://testkenai.com/svn/unittestuniquename01~source-code-repository";
         KenaiProject result = KenaiProject.forRepository(uri);
         assert result.getName().equals(UNITTESTUNIQUENAME);
@@ -97,8 +97,8 @@ public class KenaiProjectTest {
      * Test of forRepository method, of class KenaiProject.
      */
     @Test
-    public void testForRepository2() throws Exception {
-        System.out.println("forRepository2");
+    public void testForRepositoryHg() throws Exception {
+        System.out.println("forRepositorySvn");
         String uri = "https://testkenai.com/hg/unittestuniquename01~source-code-repository2";
         KenaiProject result = KenaiProject.forRepository(uri);
         assert result.getName().equals(UNITTESTUNIQUENAME);
