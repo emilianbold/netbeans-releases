@@ -138,7 +138,8 @@ public class TestKit {
         ISVNClientAdapter client = getClient();
         String url = TestUtilities.formatFileURL(repoDir);
         SVNUrl repoUrl = new SVNUrl(url);
-        client.mkdir(repoUrl, folder);
+        repoUrl = repoUrl.appendPath(folder);
+        client.mkdir(repoUrl, "creating folder " + folder);
     }
 
     public static void commit(File folder) throws SVNClientException {

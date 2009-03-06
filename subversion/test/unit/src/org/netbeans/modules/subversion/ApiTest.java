@@ -107,7 +107,7 @@ public class ApiTest extends NbTestCase {
                 true);
 
         assertTrue(workDir.exists());
-        assertTrue(workDir.list().length == 2);
+        assertTrue(workDir.list().length == 3); // two folders + metadata
 
         org.netbeans.modules.subversion.api.Subversion.checkoutRepositoryFolder(
                 TestUtilities.formatFileURL(repoDir),
@@ -118,7 +118,7 @@ public class ApiTest extends NbTestCase {
                 true);
 
         assertTrue(workDir.exists());
-        assertTrue(workDir.list().length == 2);
+        assertTrue(workDir.list().length == 3); // two folders + metadata
 
         FileUtils.deleteRecursively(workDir);
         org.netbeans.modules.subversion.api.Subversion.checkoutRepositoryFolder(
@@ -130,7 +130,7 @@ public class ApiTest extends NbTestCase {
                 true);
 
         assertTrue(workDir.exists());
-        assertTrue(workDir.list().length == 1);
+        assertTrue(workDir.list().length == 2); // one folder + metadata
 
     }
     
