@@ -138,8 +138,10 @@ public final class MainWindow extends JFrame {
     }
 
     public static void init() {
-        mainMenuBar = createMenuBar();
-        ToolbarPool.getDefault().waitFinished();
+        if (mainMenuBar == null) {
+            mainMenuBar = createMenuBar();
+            ToolbarPool.getDefault().waitFinished();
+        }
     }
     
     /** Initializes main window. */
@@ -148,6 +150,8 @@ public final class MainWindow extends JFrame {
             return;
         }
         inited = true;
+
+        init();
         
         // initialize frame
         initFrameIcons(this);
