@@ -51,8 +51,8 @@ import java.util.MissingResourceException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.support.Encrypter;
 import org.netbeans.modules.nativeexecution.support.Logger;
-import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory;
-import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 

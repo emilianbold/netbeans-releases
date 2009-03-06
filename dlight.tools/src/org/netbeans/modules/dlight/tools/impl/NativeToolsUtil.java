@@ -40,9 +40,6 @@
 package org.netbeans.modules.dlight.tools.impl;
 
 import java.io.File;
-import org.netbeans.modules.dlight.util.DLightLogger;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Utilities;
 
 /**
  * An utility class that helps working with native mmonitor and magent
@@ -51,71 +48,15 @@ import org.openide.util.Utilities;
 // package-local
 class NativeToolsUtil {
 
-    private static String getExecutableSuffix() {
-        return Utilities.isWindows() ? ".exe" : ""; //NOI18N
-    }
-
-    private static String getSharedLibrarySuffix() {
-        if (Utilities.isWindows()) {
-            return ".dll";  //NOI18N
-        } else if(Utilities.isMac()) {
-            return ".dylib";    //NOI18N
-        } else if (Utilities.isUnix()) {
-            return ".so";   //NOI18N
-        } else {
-            DLightLogger.instance.warning("unknown platform"); //NOI18N
-            return "";
-        }
-    }
-
-    private static String getPlatformPath() {
-
-        String result = null;
-
-        String arch = System.getProperty("os.arch"); //NOI18N
-        
-        if (Utilities.isWindows()) {
-            result = "Windows-x86"; //NOI18N
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-            result = "Linux-x86"; //NOI18N
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            if (arch.indexOf("86") >= 0) { //NOI18N
-                result = "SunOS-x86"; //NOI18N
-            } else {
-                result = "SunOS-sparc"; //NOI18N
-            }
-        } else if (Utilities.isMac()) {
-            if (arch.indexOf("86") >= 0) {
-                result = "Mac_OS_X-x86"; //NOI18N
-            }
-        } else {
-            DLightLogger.instance.warning("unknown platform"); //NOI18N
-        }
-        return result;
-    }
-
     public static String getExecutable(String name) {
-        return getPlatformBinary(name + getExecutableSuffix()); //NOI18N
+        return getPlatformBinary(name);
     }
 
     public static String getSharedLibrary(String name) {
-        return getPlatformBinary(name + getSharedLibrarySuffix()); //NOI18N
-    }
-
-    public static String getLdPreloadEnvVarName() {
-        return Utilities.isMac() ? "DYLD_INSERT_LIBRARIES" : "LD_PRELOAD"; //NOI18N
+        return getPlatformBinary(name + ".${soext}"); //NOI18N
     }
 
     private static String getPlatformBinary(String nameWithSuffix) {
-        String platformPath = getPlatformPath();
-        if (platformPath != null) {
-            String relativePath = "bin" + File.separator + platformPath + File.separator + nameWithSuffix; //NOI18N
-            File file = InstalledFileLocator.getDefault().locate(relativePath, null, false);
-            if (file != null && file.exists()) {
-                return file.getAbsolutePath();
-//                return file.getParentFile().getAbsolutePath() + "${_isa}" + '/' + file.getName();
-            }
-        }
-        return null;
+        return "bin" + File.separator + "${osname}-${platform}${_isa}" + File.separator + nameWithSuffix; //NOI18N
     }
 }
