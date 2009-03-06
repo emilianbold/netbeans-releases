@@ -53,6 +53,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 public final class GetSourcesFromKenaiAction implements ActionListener {
 
@@ -86,28 +87,32 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
         if (options[0].equals(option)) {
             
             // Run the checkout with progress !!!
-            PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
-            GetSourcesInfo sourcesInfo = getSourcesPanel.getSelectedSourcesInfo();
-            KenaiProjectFeature feature = sourcesInfo.feature;
+            final PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
+            final GetSourcesInfo sourcesInfo = getSourcesPanel.getSelectedSourcesInfo();
+            final KenaiProjectFeature feature = sourcesInfo.feature;
 
             if (Utilities.SVN_REPO.equals(feature.getService())) { // XXX service or name
-                try {
-
-                    Subversion.checkoutRepositoryFolder(feature.getLocation().toExternalForm(), sourcesInfo.relativePaths,
-                            new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), passwdAuth.getPassword().toString(), true);
-
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            Subversion.checkoutRepositoryFolder(feature.getLocation().toExternalForm(), sourcesInfo.relativePaths,
+                                new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), passwdAuth.getPassword().toString(), true);
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
             } else if (Utilities.HG_REPO.equals(sourcesInfo.feature.getService())) { // XXX service or name
-                try {
-
-                    Mercurial.cloneRepository(feature.getLocation().toExternalForm(), new File(sourcesInfo.localFolderPath),
-                            "", "", "", passwdAuth.getUserName(), passwdAuth.getPassword().toString());
-
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            Mercurial.cloneRepository(feature.getLocation().toExternalForm(), new File(sourcesInfo.localFolderPath),
+                                    "", "", "", passwdAuth.getUserName(), passwdAuth.getPassword().toString());
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
             }
             // XXX store the project in preferrences, it will be shown as first for next Get From Kenai
         }
