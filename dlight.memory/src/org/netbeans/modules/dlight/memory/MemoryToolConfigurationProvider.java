@@ -126,10 +126,9 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             if (USE_SUNSTUDIO) {
                 DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
                 toolConfiguration.addDataCollectorConfiguration(dcc);
-            } else if (useLLIndicatorDataProvider) {
-                LLDataCollectorConfiguration lldcc = initLLDataCollectorConfiguration();
-                toolConfiguration.addDataCollectorConfiguration(lldcc);
-                toolConfiguration.addIndicatorDataProviderConfiguration(lldcc);
+//            }else if (useLLIndicatorDataProvider) {
+//                LLDataCollectorConfiguration lldcc = initLLDataCollectorConfiguration();
+//                toolConfiguration.addDataCollectorConfiguration(lldcc);
             } else {
                 MultipleDTDCConfiguration mdcc = initDtraceDataCollectorConfiguration();
                 toolConfiguration.addDataCollectorConfiguration(mdcc);
@@ -152,6 +151,10 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         if (USE_SUNSTUDIO){
             toolConfiguration.addIndicatorDataProviderConfiguration(initSunStudioIndicatorDataProviderConfiguration());
 
+        }else if (useLLIndicatorDataProvider) {
+                LLDataCollectorConfiguration lldcc = initLLDataCollectorConfiguration();
+//                toolConfiguration.addDataCollectorConfiguration(lldcc);
+                toolConfiguration.addIndicatorDataProviderConfiguration(lldcc);
         }
 
         toolConfiguration.addIndicatorConfiguration(initIndicatorConfiguration());
@@ -212,8 +215,8 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         IndicatorMetadata indicatorMetadata = null;
         if (USE_SUNSTUDIO) {
             indicatorMetadata = new IndicatorMetadata(Arrays.asList(SunStudioDCConfiguration.c_leakSize));
-        } else if (useLLIndicatorDataPRovider){
- 	   indicatorMetadaData = new IndicatorMetadata(LLDataCollectorConfiguration.MEM_TABLE.getColumns());
+        } else if (useLLIndicatorDataProvider){
+            indicatorMetadata = new IndicatorMetadata(LLDataCollectorConfiguration.MEM_TABLE.getColumns());
         } else{
             indicatorMetadata = new IndicatorMetadata(Arrays.asList(totalColumn));
         }
