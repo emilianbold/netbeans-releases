@@ -36,71 +36,38 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.rhtml;
+package org.netbeans.modules.groovy.gsp;
 
 import java.util.Collections;
 import java.util.List;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.csl.api.Error;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-
 
 /**
  * just fake class, we need the parser and the StructureScanner to enable 
  * navigator of embedded languages
  *
- * @author Marek Fukala
+ * @author marek
  */
-public class RhtmlParser extends Parser {
-
-    private Result fakeResult;
+public class GspStructureScanner implements StructureScanner {
 
     @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        fakeResult = new FakeParserResult(snapshot);
+    public List<? extends StructureItem> scan(ParserResult info) {
+        return Collections.EMPTY_LIST;
     }
 
     @Override
-    public Result getResult(Task task) throws ParseException {
-        return fakeResult;
+    public Map<String,List<OffsetRange>> folds(ParserResult info) {
+        return  Collections.EMPTY_MAP;
     }
 
     @Override
-    public void cancel() {
-        //do nothing
+    public Configuration getConfiguration() {
+        return null;
     }
 
-    @Override
-    public void addChangeListener(ChangeListener changeListener) {
-        //do nothing
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener changeListener) {
-        //do nothing
-    }
-
-    private static class FakeParserResult extends ParserResult {
-
-        public FakeParserResult(Snapshot s) {
-            super(s);
-        }
-
-        @Override
-        public List<? extends Error> getDiagnostics() {
-            return Collections.EMPTY_LIST;
-        }
-
-        @Override
-        protected void invalidate() {
-            //do nothing
-        }
-
-    }
 
 }

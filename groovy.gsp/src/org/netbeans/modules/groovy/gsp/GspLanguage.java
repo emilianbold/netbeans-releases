@@ -53,7 +53,6 @@ import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
-import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -143,7 +142,7 @@ public class GspLanguage extends DefaultLanguageConfig {
 
     @Override
     public Parser getParser() {
-        return null;
+        return new GspParser();
     }
 
     @Override
@@ -158,7 +157,7 @@ public class GspLanguage extends DefaultLanguageConfig {
     
     @Override
     public StructureScanner getStructureScanner() {
-        return new StructureAnalyzer();
+        return new GspStructureScanner();
     }
 
     @Override

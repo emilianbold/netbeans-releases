@@ -36,7 +36,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.rhtml;
+package org.netbeans.modules.groovy.gsp;
 
 import java.util.Collections;
 import java.util.List;
@@ -54,9 +54,9 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
  * just fake class, we need the parser and the StructureScanner to enable 
  * navigator of embedded languages
  *
- * @author Marek Fukala
+ * @author marek
  */
-public class RhtmlParser extends Parser {
+public class GspParser extends Parser {
 
     private Result fakeResult;
 
