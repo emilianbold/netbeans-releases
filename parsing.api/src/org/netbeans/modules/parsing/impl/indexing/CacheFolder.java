@@ -109,6 +109,22 @@ public class CacheFolder {
         }
     }
 
+    public static synchronized URL getSourceRootForDataFolder (final FileObject dataFolder) {
+        final FileObject segFolder = dataFolder.getParent();
+        if (segFolder == null || !segFolder.equals(cacheFolder)) {
+            return null;
+        }
+        String source = segments.getProperty(dataFolder.getName());
+        if (source != null) {
+            try {
+                return new URL (source);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+        return null;
+    }
+
     public static synchronized FileObject getDataFolder (final URL root) throws IOException {
         return getDataFolder(root, false);
     }

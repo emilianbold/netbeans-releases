@@ -43,7 +43,9 @@ import java.io.IOException;
 import java.net.URL;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -51,15 +53,16 @@ import org.openide.filesystems.FileUtil;
  */
 public class JavaIndex {
 
-    public static final String NAME = "java";
+    public static final String NAME = "java"; //NOI18N
     public static final int    VERSION = 12;
+    public static final String CLASSES = "classes"; //NOI18N
 
     public static File getIndex(Context c) {
         return FileUtil.toFile(c.getIndexFolder());
     }
 
     public static File getIndex(URL url) throws IOException {
-        return new File(FileUtil.toFile(CacheFolder.getDataFolder(url)), NAME + "/" + VERSION);
+        return new File(FileUtil.toFile(CacheFolder.getDataFolder(url)), NAME + '/' + VERSION);
     }
 
     public static File getClassFolder(Context c) {
@@ -67,7 +70,7 @@ public class JavaIndex {
     }
     
     public static File getClassFolder(Context c, boolean onlyIfExists) {
-        return processCandidate(new File(getIndex(c), "classes"), onlyIfExists);
+        return processCandidate(new File(getIndex(c), CLASSES), onlyIfExists);
     }
 
     public static File getClassFolder(File root) throws IOException {
@@ -79,7 +82,23 @@ public class JavaIndex {
     }
 
     public static File getClassFolder(URL url, boolean onlyIfExists) throws IOException {
-        return processCandidate(new File(getIndex(url), "classes"), onlyIfExists);
+        return processCandidate(new File(getIndex(url), CLASSES), onlyIfExists);
+    }
+
+    public static URL getSourceRootForClassFolder(URL binaryRoot) {
+        FileObject folder = URLMapper.findFileObject(binaryRoot);
+        if (folder == null || !CLASSES.equals(folder.getName()))
+            return null;
+        folder = folder.getParent();
+        if (folder == null || !String.valueOf(VERSION).equals(folder.getName()))
+            return null;
+        folder = folder.getParent();
+        if (folder == null || !NAME.equals(folder.getName()))
+            return null;
+        folder = folder.getParent();
+        if (folder == null)
+            return null;
+        return CacheFolder.getSourceRootForDataFolder(folder);
     }
 
     private static File processCandidate(File result, boolean onlyIfExists) {
