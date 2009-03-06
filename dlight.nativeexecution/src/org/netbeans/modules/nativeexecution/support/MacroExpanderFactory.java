@@ -98,8 +98,7 @@ public final class MacroExpanderFactory {
 
         public CommonMacroExpander(ExecutionEnvironment execEnv) {
             this.execEnv = execEnv;
-            hostInfoFetchingTaskResult =
-                    Executors.newSingleThreadExecutor().submit(
+            hostInfoFetchingTaskResult = NativeTaskExecutorService.submit(
                     new HostInfoFetchingTask(execEnv));
         }
 
