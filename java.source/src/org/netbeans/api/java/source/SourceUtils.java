@@ -74,7 +74,6 @@ import com.sun.tools.javac.util.Context;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,10 +87,10 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery.Result;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -101,10 +100,8 @@ import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
@@ -678,10 +675,19 @@ out:                    for (URL e : roots) {
      */
     public static void waitScanFinished () throws InterruptedException {
         try {
-            Future<Void> f = ParserManager.parseWhenScanFinished(JavacParser.MIME_TYPE, new UserTask() {
+            class T extends UserTask implements ClasspathInfoProvider {
+                private final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
+                private final ClasspathInfo cpinfo = ClasspathInfo.create(EMPTY_PATH, EMPTY_PATH, EMPTY_PATH);
+                @Override
                 public void run(ResultIterator resultIterator) throws Exception {
+                    // no-op
                 }
-            });
+
+                public ClasspathInfo getClasspathInfo() {
+                    return cpinfo;
+                }
+            }
+            Future<Void> f = ParserManager.parseWhenScanFinished(JavacParser.MIME_TYPE, new T());
             if (!f.isDone()) {
                 f.get();
             }
@@ -768,7 +774,7 @@ out:                    for (URL e : roots) {
                 public void run(final CompilationController control) throws Exception {
                     if (control.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo (JavaSource.Phase.ELEMENTS_RESOLVED)>=0) {
                         new TreePathScanner<Void,Void> () {
-                           public Void visitMethod(MethodTree node, Void p) {
+                           public @Override Void visitMethod(MethodTree node, Void p) {
                                ExecutableElement method = (ExecutableElement) control.getTrees().getElement(getCurrentPath());
                                if (method != null && SourceUtils.isMainMethod(method) && isAccessible(method.getEnclosingElement())) {
                                    result.add (ElementHandle.create((TypeElement)method.getEnclosingElement()));
