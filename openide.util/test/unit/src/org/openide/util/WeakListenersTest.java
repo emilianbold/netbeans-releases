@@ -47,8 +47,16 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.prefs.NodeChangeEvent;
+import java.util.prefs.NodeChangeListener;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
@@ -71,7 +79,60 @@ public class WeakListenersTest extends NbTestCase {
     protected Level logLevel() {
         return Level.ALL;
     }
-    
+
+    /** Tests that exception is not logged when WeakListenerImpl tries to
+     * remove listener on already removed node (#151415). */
+    public void testPreferenceChangeListener() throws Exception {
+        PreferenceChangeListener pcl = new PreferenceChangeListener() {
+
+            public void preferenceChange(PreferenceChangeEvent evt) {
+            }
+        };
+        NodeChangeListener ncl = new NodeChangeListener() {
+
+            public void childAdded(NodeChangeEvent evt) {
+            }
+
+            public void childRemoved(NodeChangeEvent evt) {
+            }
+        };
+        Preferences nbp = NbPreferences.forModule(WeakListeners.class);
+        nbp.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, pcl, nbp));
+        nbp.addNodeChangeListener(WeakListeners.create(NodeChangeListener.class, ncl, nbp));
+        nbp.removeNode();
+
+        Logger logger = Logger.getLogger(WeakListenerImpl.class.getName());
+        final AtomicBoolean nodeRemovedException = new AtomicBoolean(false);
+        logger.addHandler(new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                Throwable t = record.getThrown();
+                if (t != null) {
+                    if (t.getCause() instanceof IllegalStateException && t.getCause().getMessage().equals("Node has been removed.")) {  //NOI18N
+                        nodeRemovedException.set(true);
+                    }
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        });
+        Reference<PreferenceChangeListener> ref = new WeakReference<PreferenceChangeListener>(pcl);
+        pcl = null;
+        assertGC("PreferenceChangeListener cannot be collected", ref);
+        Reference<NodeChangeListener> ref1 = new WeakReference<NodeChangeListener>(ncl);
+        ncl = null;
+        assertGC("NodeChangeListener cannot be collected", ref1);
+        Thread.sleep(2000);
+        assertFalse("The \"Node has been removed\" exception should not be thrown from WeakListenerImpl.", nodeRemovedException.get());
+    }
+
     public void testOneCanCallHashCodeOrOnWeakListener () {
         Listener l = new Listener ();
         Object weak = WeakListeners.create (PropertyChangeListener.class, l, null);
