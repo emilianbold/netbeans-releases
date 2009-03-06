@@ -33,8 +33,8 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jSeparator1" alignment="1" pref="498" max="32767" attributes="0"/>
-          <Component id="dummyCommentsPanel" alignment="0" pref="498" max="32767" attributes="0"/>
+          <Component id="jSeparator1" alignment="1" pref="819" max="32767" attributes="0"/>
+          <Component id="dummyCommentsPanel" alignment="0" pref="819" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
@@ -114,7 +114,7 @@
                           </Group>
                       </Group>
                   </Group>
-                  <Component id="scrollPane1" pref="380" max="32767" attributes="0"/>
+                  <Component id="scrollPane1" pref="645" max="32767" attributes="0"/>
                   <Component id="attachmentsPanel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -122,10 +122,10 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="headerLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="488" max="32767" attributes="0"/>
+              <EmptySpace pref="799" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace pref="448" max="32767" attributes="0"/>
+              <EmptySpace pref="753" max="32767" attributes="0"/>
               <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
