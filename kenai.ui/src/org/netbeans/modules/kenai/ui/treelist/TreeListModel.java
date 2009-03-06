@@ -77,7 +77,7 @@ public class TreeListModel extends AbstractListModel implements TreeListListener
         int firstIndex = -1;
         int lastIndex = -1;
         synchronized( nodes ) {
-            if( index < 0 )
+            if( index < 0 || index >= nodes.size() )
                 nodes.add(root);
             else
                 nodes.add(index, root);
