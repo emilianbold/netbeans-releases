@@ -104,7 +104,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
             String workspaceDir = workspacePath.substring(0, slash + 1);
             String workspaceFile = workspacePath.substring(slash + 1);
             URL remoteCheckout = new URL(job.getUrl() + "ws/" + workspaceDir);
-            SvnUtils.Info remote = SvnUtils.parseCheckout(remoteCheckout);
+            SvnUtils.Info remote = SvnUtils.parseCheckout(remoteCheckout, job);
             if (remote == null) {
                 LOG.log(Level.FINE, "no remote checkout found at {0}", remoteCheckout);
                 return null;

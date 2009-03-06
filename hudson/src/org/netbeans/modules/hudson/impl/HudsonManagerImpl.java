@@ -232,20 +232,21 @@ public class HudsonManagerImpl extends HudsonManager {
         if (!instance.isPersisted()) {
             return;
         }
-        Preferences node = instancePrefs().node(keyName(instance.getName()));
+        Preferences node = instancePrefs().node(simplifyServerLocation(instance.getName(), true));
         for (Map.Entry<String,String> entry : instance.getProperties().entrySet()) {
             node.put(entry.getKey(), entry.getValue());
         }
     }
 
-    private String keyName(String name) {
+    public static String simplifyServerLocation(String name, boolean forKey) {
         // http://deadlock.netbeans.org/hudson/ => deadlock.netbeans.org_hudson
-        return name.replaceFirst("http://", "").replaceFirst("/$", "").replace('/', '_');
+        String display = name.replaceFirst("https?://", "").replaceFirst("/$", "");
+        return forKey ? display.replaceAll("[/:]", "_") : display;
     }
     
     private void removeInstanceDefinition(HudsonInstanceImpl instance) {
         try {
-            instancePrefs().node(keyName(instance.getName())).removeNode();
+            instancePrefs().node(simplifyServerLocation(instance.getName(), true)).removeNode();
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
         }

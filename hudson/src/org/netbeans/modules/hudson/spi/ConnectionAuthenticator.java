@@ -37,35 +37,33 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.api;
+package org.netbeans.modules.hudson.spi;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 
 /**
- * Hudson-related utilities.
+ * Service which is able to add authentication to a Hudson HTTP connection.
  */
-public class HudsonUtils {
-
-    private HudsonUtils() {}
+public interface ConnectionAuthenticator {
 
     /**
-     * Workaround for JDK bug #6810084.
-     * @see HttpURLConnection#setInstanceFollowRedirects
+     * Prepare a request with authentication that might be needed.
+     * Could for example add a session cookie.
+     * {@link URLConnection#connect} has not yet been called.
+     * @param conn a pending connection
+     * @param home the Hudson root URL
      */
-    public static URLConnection followRedirects(URLConnection conn) throws IOException {
-        if (!(conn instanceof HttpURLConnection)) {
-            return conn;
-        }
-        switch (((HttpURLConnection) conn).getResponseCode()) {
-        case HttpURLConnection.HTTP_MOVED_PERM:
-        case HttpURLConnection.HTTP_MOVED_TEMP:
-            return followRedirects(new URL(conn.getHeaderField("Location")).openConnection());
-        default:
-            return conn;
-        }
-    }
+    void prepareRequest(URLConnection conn, URL home);
+
+    /**
+     * Called in response to a failed attempt to access a resource.
+     * Can try to authenticate and restart the request.
+     * @param conn a connection which has received a 403 (Forbidden) response
+     * @param home the Hudson root URL
+     * @return a fresh connection (do not call {@link URLConnection#connect}),
+     *         or null if this authenticator is unable to log in
+     */
+    URLConnection forbidden(URLConnection conn, URL home);
 
 }

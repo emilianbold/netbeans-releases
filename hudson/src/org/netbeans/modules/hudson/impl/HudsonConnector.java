@@ -44,8 +44,6 @@ package org.netbeans.modules.hudson.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,7 +55,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
-import org.netbeans.modules.hudson.api.HudsonUtils;
+import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import static org.netbeans.modules.hudson.constants.HudsonJobBuildConstants.*;
@@ -65,7 +63,6 @@ import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
 import org.netbeans.modules.hudson.impl.HudsonJobBuild.Result;
 import org.netbeans.modules.hudson.util.Utilities;
-import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -129,40 +126,21 @@ public class HudsonConnector {
         return cJobs;
     }
     
-    public synchronized boolean startJob(HudsonJob job) {
+    public synchronized void startJob(final HudsonJob job) {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(HudsonInstanceImpl.class, "MSG_Starting", job.getName()));
-        
-        // Start progress
         handle.start();
-        
-        try {
-            final URL url = new URL(job.getUrl() + XML_API_BUILD_URL);
-            
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        // Start job
-                        HttpURLConnection conn = (HttpURLConnection) HudsonUtils.followRedirects(url.openConnection());
-                        
-                        if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                            LOG.warning("Cannot start build; HTTP error from " + url + ": " + conn.getResponseMessage());
-                        }
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    } finally {
-                        // Stop progress
-                        handle.finish();
-                    }
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    new ConnectionBuilder().instance(instance).url(job.getUrl() + XML_API_BUILD_URL).connection();
+                } catch (IOException e) {
+                    LOG.log(Level.FINE, "Could not start {0}: {1}", new Object[] {job, e});
+                } finally {
+                    handle.finish();
                 }
-            });
-            
-            return true;
-        } catch (MalformedURLException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
-        
-        return false;
+            }
+        });
     }
 
     /**
@@ -373,14 +351,11 @@ public class HudsonConnector {
         HudsonVersion v = null;
         
         try {
-            URL u = new java.net.URL(instance.getUrl());
-            HttpURLConnection conn = (HttpURLConnection) HudsonUtils.followRedirects(u.openConnection());
-            String sVersion = conn.getHeaderField("X-Hudson");
+
+            String sVersion = new ConnectionBuilder().instance(instance).url(instance.getUrl()).httpConnection().getHeaderField("X-Hudson");
             if (sVersion != null) {
                 v = new HudsonVersionImpl(sVersion);
             }
-        } catch (MalformedURLException e) {
-            // Nothing
         } catch (IOException e) {
             // Nothing
         }
@@ -393,16 +368,7 @@ public class HudsonConnector {
         Document doc = null;
         
         try {
-            URL u = new URL(url);
-            HttpURLConnection conn = (HttpURLConnection) HudsonUtils.followRedirects(u.openConnection());
-            
-            int responseCode = conn.getResponseCode();
-            // Connected failed
-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                LOG.log(Level.FINE, "{0}: {1} {2}", new Object[] {url, responseCode, conn.getResponseMessage()});
-                connected = false;
-                return null;
-            }
+            HttpURLConnection conn = new ConnectionBuilder().instance(instance).url(url).httpConnection();
             
             // Connected successfully
             if (!isConnected()) {
@@ -440,8 +406,7 @@ public class HudsonConnector {
                 version = v;
             }
             
-            if(conn != null)
-                conn.disconnect();
+            conn.disconnect();
         } catch (SAXParseException x) {
             // already reported
         } catch (Exception x) {

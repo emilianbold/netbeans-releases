@@ -52,8 +52,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ini4j.Ini;
 import org.ini4j.InvalidIniFormatException;
+import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
-import org.netbeans.modules.hudson.api.HudsonUtils;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
@@ -177,13 +177,20 @@ public class HudsonMercurialSCM implements HudsonSCM {
      *         or null in case it could not be determined
      */
     static URI getDefaultPull(URI repository) {
+        return getDefaultPull(repository, null);
+    }
+    private static URI getDefaultPull(URI repository, HudsonJob job) {
         assert repository.toString().endsWith("/");
         URI hgrc = repository.resolve(".hg/hgrc");
         String defaultPull = null;
         ClassLoader l = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(HudsonMercurialSCM.class.getClassLoader()); // #141364
         try {
-            InputStream is = HudsonUtils.followRedirects(hgrc.toURL().openConnection()).getInputStream();
+            ConnectionBuilder cb = new ConnectionBuilder();
+            if (job != null) {
+                cb = cb.job(job);
+            }
+            InputStream is = cb.url(hgrc.toURL()).connection().getInputStream();
             try {
                 Ini ini = new Ini(is);
                 Ini.Section section = ini.get("paths");

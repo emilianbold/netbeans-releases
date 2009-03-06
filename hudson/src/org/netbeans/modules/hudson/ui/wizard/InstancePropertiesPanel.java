@@ -43,14 +43,14 @@ package org.netbeans.modules.hudson.ui.wizard;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.hudson.api.HudsonUtils;
+import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.impl.HudsonVersionImpl;
@@ -149,10 +149,12 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel<InstanceW
                     wizard.setErrorMessage(NbBundle.getMessage(InstancePropertiesPanel.class, "MSG_Checking"));
                     
                     try {
-                        URLConnection connection = HudsonUtils.followRedirects(new URL(checkingUrl).openConnection());
+                        URL u = new URL(checkingUrl);
+                        HttpURLConnection connection = new ConnectionBuilder().homeURL(u).url(u).httpConnection();
                         
                         // Resolve Hudson version
                         String sVersion = connection.getHeaderField("X-Hudson");
+                        connection.disconnect();
                         if (sVersion == null) {
                             return;
                         }

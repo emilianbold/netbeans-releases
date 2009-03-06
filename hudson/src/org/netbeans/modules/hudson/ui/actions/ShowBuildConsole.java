@@ -44,7 +44,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,7 +51,7 @@ import java.util.zip.GZIPInputStream;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob;
-import org.netbeans.modules.hudson.api.HudsonUtils;
+import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -101,9 +100,9 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
                     LOG.log(Level.FINE, "{0} stopped", name);
                     break;
                 }
-                URLConnection conn = new URL(url + start).openConnection();
-                conn.setRequestProperty("Accept-Encoding", "gzip"); // NOI18N
-                conn = HudsonUtils.followRedirects(conn);
+                URLConnection conn = new ConnectionBuilder().job(job).url(url + start).
+                        header("Accept-Encoding", "gzip"). // NOI18N
+                        connection();
                 boolean moreData = Boolean.parseBoolean(conn.getHeaderField("X-More-Data"));
                 LOG.log(Level.FINE, "{0} retrieving text from {1}", new Object[] {name, start});
                 start = conn.getHeaderFieldInt("X-Text-Size", start);

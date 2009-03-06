@@ -69,7 +69,7 @@ class ProjectHIP extends HudsonInstanceProperties {
         if (assoc != null) {
             String u = assoc.getServerUrl();
             put(INSTANCE_URL, u);
-            put(INSTANCE_NAME, u.replaceFirst("https?://", "").replaceFirst("/$", "")); // NOI18N
+            put(INSTANCE_NAME, HudsonManagerImpl.simplifyServerLocation(u, false));
             setPreferredJobs();
         }
         //TODO listen on changes from the provider and refire them as changed properties.

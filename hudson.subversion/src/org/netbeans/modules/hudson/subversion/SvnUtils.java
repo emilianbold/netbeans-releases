@@ -47,7 +47,8 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import org.netbeans.modules.hudson.api.HudsonUtils;
+import org.netbeans.modules.hudson.api.ConnectionBuilder;
+import org.netbeans.modules.hudson.api.HudsonJob;
 
 /**
  * Utilities for working with Subversion.
@@ -65,10 +66,17 @@ public class SvnUtils {
      * @throws IOException if it is a checkout but cannot be parsed
      */
     public static Info parseCheckout(URL dir) throws IOException {
+        return parseCheckout(dir, null);
+    }
+    static Info parseCheckout(URL dir, HudsonJob job) throws IOException {
         URL svnEntries = new URL(dir, ".svn/entries");
+        ConnectionBuilder cb = new ConnectionBuilder();
+        if (job != null) {
+            cb = cb.job(job);
+        }
         InputStream is;
         try {
-            is = HudsonUtils.followRedirects(svnEntries.openConnection()).getInputStream();
+            is = cb.url(svnEntries).connection().getInputStream();
         } catch (FileNotFoundException x) {
             return null;
         }
