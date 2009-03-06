@@ -118,8 +118,9 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         while (stok.hasMoreTokens()) {
             tokens.add(stok.nextToken());
         }
+        String relPaths[] = tokens.size() == 0 ? new String[] { "" } : tokens.toArray(new String[tokens.size()]);
         return new GetSourcesInfo(((KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem()).feature,
-                localFolderTextField.getText(), tokens.toArray(new String[tokens.size()]));
+                localFolderTextField.getText(), relPaths);
     }
 
     /** This method is called from within the constructor to
