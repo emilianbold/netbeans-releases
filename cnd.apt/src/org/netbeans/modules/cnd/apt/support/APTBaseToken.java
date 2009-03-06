@@ -148,4 +148,34 @@ public class APTBaseToken extends CommonToken implements APTToken {
     public void setEndLine(int l) {
         // do nothing
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final APTBaseToken other = (APTBaseToken) obj;
+        if (this.getType() != other.getType()) {
+            return false;
+        }
+        if (this.getOffset() != other.getOffset()) {
+            return false;
+        }
+        if (!this.getText().equals(other.getText())) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 23 * hash + this.getType();
+        hash = 23 * hash + this.offset;
+        hash = 23 * hash + this.getText().hashCode();
+        return hash;
+    }
 }

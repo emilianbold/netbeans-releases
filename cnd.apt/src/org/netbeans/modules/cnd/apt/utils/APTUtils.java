@@ -517,7 +517,7 @@ public class APTUtils {
         }
     };
     
-    private static class APTEOFToken extends APTTokenAbstact {
+    private static final class APTEOFToken extends APTTokenAbstact {
         public APTEOFToken() {
         }
         
@@ -575,5 +575,17 @@ public class APTUtils {
         public int getType() {
             return APTTokenTypes.EOF;
         }
+
+        @Override
+        public int hashCode() {
+            return 1;
+        }
+
+        @Override
+        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+        public boolean equals(Object obj) {
+            return this == obj;
+        }
+
     }
 }
