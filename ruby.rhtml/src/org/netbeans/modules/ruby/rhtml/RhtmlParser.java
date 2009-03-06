@@ -62,7 +62,7 @@ public class RhtmlParser extends Parser {
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        fakeResult = new JspFakeParserResult(snapshot);
+        fakeResult = new FakeParserResult(snapshot);
     }
 
     @Override
@@ -85,9 +85,9 @@ public class RhtmlParser extends Parser {
         //do nothing
     }
 
-    private static class JspFakeParserResult extends ParserResult {
+    private static class FakeParserResult extends ParserResult {
 
-        public JspFakeParserResult(Snapshot s) {
+        public FakeParserResult(Snapshot s) {
             super(s);
         }
 
