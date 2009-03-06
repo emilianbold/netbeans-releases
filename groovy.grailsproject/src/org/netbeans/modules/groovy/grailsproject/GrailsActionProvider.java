@@ -66,11 +66,11 @@ public class GrailsActionProvider implements ActionProvider {
     public static final String COMMAND_COMPILE = "compile"; // NOI18N
     public static final String COMMAND_STATS = "stats"; // NOI18N
     public static final String COMMAND_UPGRADE = "upgrade"; // NOI18N
-    public static final String COMMAND_WAR = "war"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(GrailsActionProvider.class.getName());
 
     private static final String[] supportedActions = {
+        COMMAND_BUILD,
         COMMAND_RUN,
         COMMAND_TEST,
         COMMAND_CLEAN,
@@ -78,8 +78,7 @@ public class GrailsActionProvider implements ActionProvider {
         COMMAND_GRAILS_SHELL,
         COMMAND_COMPILE,
         COMMAND_STATS,
-        COMMAND_UPGRADE,
-        COMMAND_WAR
+        COMMAND_UPGRADE
     };
 
     private final GrailsProject project;
@@ -129,6 +128,8 @@ public class GrailsActionProvider implements ActionProvider {
             executeSimpleAction("upgrade"); // NOI18N
         } else if (COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
+        } else if (COMMAND_BUILD.equals(command)) {
+            executeSimpleAction("war"); // NOI18N
         }
     }
 
