@@ -707,7 +707,10 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 }
             }
         }
-        ((MakeProject) getProject()).updateExtensions(c, cpp, h);
+        MakeProject makeProject = (MakeProject) getProject();
+        if (makeProject != null) {
+            makeProject.updateExtensions(c, cpp, h);
+        }
     }
 
     /**
