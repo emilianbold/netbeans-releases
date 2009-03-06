@@ -52,8 +52,8 @@ public class MessagingHandleImpl extends MessagingHandle {
 
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private Notification notification;
-    private int onlineCount;
-    private int messageCount;
+    private int onlineCount = -1;
+    private int messageCount = -1;
 
     MessagingHandleImpl() {
     }
