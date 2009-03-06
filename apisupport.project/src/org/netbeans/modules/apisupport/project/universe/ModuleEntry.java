@@ -42,17 +42,20 @@
 package org.netbeans.modules.apisupport.project.universe;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 
 /**
  * One known module.
- * Falls into four categories:
+ * Falls into five categories:
  * <ol>
  * <li>Modules inside netbeans.org (with source).
  * <li>Modules with source in an external suite.
  * <li>Standalone external modules with source.
  * <li>JARs from a NB binary. May or may not have an associated source dir.
+ * <li>JARs from an external cluster specified in cluster.path.
+ * May or may not have an associated source dir <i>(new in NB 6.7)</i>.
  * </ol>
  */
 public interface ModuleEntry extends Comparable {
@@ -79,7 +82,7 @@ public interface ModuleEntry extends Comparable {
     String getCodeNameBase();
     
     /**
-     * Get the directory to which the module is built.
+     * Get the directory to which the mogdule is built.
      * @return e.g. .../nbbuild/netbeans/ide6
      */
     File getClusterDirectory();
@@ -94,11 +97,6 @@ public interface ModuleEntry extends Comparable {
      * Get any added class path entries, as a path suffix (may be empty).
      */
     String getClassPathExtensions();
-    
-    /**
-     * Path which resolves to the root of the NetBeans binary installation used for this module.
-     */
-    File getDestDir();
     
     /**
      * Returns either the module release version or <code>null</code> if
@@ -148,7 +146,13 @@ public interface ModuleEntry extends Comparable {
      * @return array of public packages. May be empty but not <code>null</code>.
      */
     ManifestManager.PackageExport[] getPublicPackages();
-    
+
+    /**
+     * Returns javadoc for the module.
+     * @return Javadoc for the module. May be <tt>null</tt>.
+     */
+    URL getJavadoc(NbPlatform platform);
+
     /**
      * Get a set of names of all <em>nonempty</em> packages this module
      * contains.

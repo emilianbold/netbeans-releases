@@ -40,7 +40,6 @@ package org.netbeans.modules.cnd.gizmo;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Iterator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -70,7 +69,6 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
         CsmDeclaration csmDeclaration = csmProject.findDeclaration(functionName);
         if (csmDeclaration == null) {
             Collection<CsmProject> libraries = csmProject.getLibraries();
-            Iterator<CsmProject> iterator = libraries.iterator();
             for (CsmProject library : libraries) {
                 csmDeclaration = library.findDeclaration(functionName);
                 if (csmDeclaration != null) {

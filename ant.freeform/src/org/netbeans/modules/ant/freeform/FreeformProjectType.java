@@ -41,42 +41,14 @@
 
 package org.netbeans.modules.ant.freeform;
 
-import java.io.IOException;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-
 /**
  * Freeform project type.
  * @author Jesse Glick
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
-public final class FreeformProjectType implements AntBasedProjectType {
-
+public final class FreeformProjectType {
     public static final String TYPE = "org.netbeans.modules.ant.freeform";
     public static final String NS_GENERAL_1 = "http://www.netbeans.org/ns/freeform-project/1"; // NOI18N
     public static final String NS_GENERAL = org.netbeans.modules.ant.freeform.spi.support.Util.NAMESPACE;
     public static final String NAME_SHARED = "general-data"; // NOI18N
-    private static final String NS_GENERAL_PRIVATE = "http://www.netbeans.org/ns/freeform-project-private/1"; // NOI18N
-    
-    /** Default constructor for lookup. */
-    public FreeformProjectType() {}
-    
-    public Project createProject(AntProjectHelper helper) throws IOException {
-        return new FreeformProject(helper);
-    }
-    
-    public String getPrimaryConfigurationDataElementName(boolean shared) {
-        return NAME_SHARED;
-    }
-    
-    public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
-        // No private.xml defined anyway.
-        return shared ? /* old! for FreeformProjectGenerator */ NS_GENERAL_1 : NS_GENERAL_PRIVATE;
-    }
-    
-    public String getType() {
-        return TYPE; // NOI18N
-    }
-    
+    static final String NS_GENERAL_PRIVATE = "http://www.netbeans.org/ns/freeform-project-private/1"; // NOI18N
 }

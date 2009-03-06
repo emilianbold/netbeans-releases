@@ -55,7 +55,7 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider;
+import org.netbeans.modules.bpel.project.ui.ProjectLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.queries.IcanproProjectEncodingQueryImpl;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproXmlCustomizerProvider;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
@@ -87,6 +87,7 @@ import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -96,6 +97,14 @@ import org.w3c.dom.Text;
 /**
  * @author Chris Webster
  */
+@AntBasedProjectRegistration(
+    type=BpelproProjectType.TYPE,
+    iconResource="org/netbeans/modules/bpel/project/resources/bpelProject.png",
+    sharedNamespace=BpelproProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+    sharedName=BpelproProjectType.PROJECT_CONFIGURATION_NAME,
+    privateNamespace=BpelproProjectType.PRIVATE_CONFIGURATION_NAMESPACE,
+    privateName=BpelproProjectType.PRIVATE_CONFIGURATION_NAME
+)
 public final class BpelproProject implements Project, AntProjectListener, ProjectPropertyProvider {
     private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bpel/project/resources/bpelProject.png", false); // NOI18N
 
@@ -162,8 +171,8 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
                 new String[] {"${build.classes.dir}/*.class"} // NOI18N
         );
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
-        String webModuleLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_EJBModule"); //NOI18N
-        String srcJavaLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
+        String webModuleLabel = org.openide.util.NbBundle.getMessage(ProjectLogicalViewProvider.class, "LBL_Node_EJBModule"); //NOI18N
+        String srcJavaLabel = org.openide.util.NbBundle.getMessage(ProjectLogicalViewProvider.class, "LBL_Node_Sources"); //NOI18N
         
         sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SOURCE_ROOT+"}", webModuleLabel, null, null);
         sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", srcJavaLabel, null, null);
@@ -185,9 +194,9 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
             helper,
             spp,
             new BpelproActionProvider( this, helper, refHelper ),
-            new IcanproLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
+            new ProjectLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
 //            new BpelProjectCustomizerProvider(this),
-//            new IcanproCustomizerProvider(this, helper, refHelper, 
+//            new ProjectLogicalViewProvider(this, helper, refHelper, 
 //                    BpelproProjectType.PROJECT_CONFIGURATION_NAMESPACE),
             new IcanproXmlCustomizerProvider(this, helper, refHelper,
                     BpelproProjectType.PROJECT_CONFIGURATION_NAMESPACE),
@@ -403,7 +412,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
                   return null;
               }
           });
-          if (IcanproLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
+          if (ProjectLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
               BrokenReferencesSupport.showAlert();
           }
             

@@ -553,11 +553,9 @@ public class DetectPanel extends javax.swing.JPanel {
                         else {
                             src.add (ClassPathSupport.createResource(url));
                         }
+                    } catch (IllegalArgumentException mue) {
                     } catch (MalformedURLException mue) {
-                        ErrorManager.getDefault().notify (mue);
-                    }
-                    catch (FileStateInvalidException e) {
-                        ErrorManager.getDefault().notify(e);
+                    } catch (FileStateInvalidException e) {
                     }
                 }
                 String jdocPath = this.component.getJavadoc();
@@ -573,7 +571,6 @@ public class DetectPanel extends javax.swing.JPanel {
                         }
                         jdoc.add (url);
                     } catch (MalformedURLException mue) {
-                        ErrorManager.getDefault().notify (mue);
                     }
                 }
                 

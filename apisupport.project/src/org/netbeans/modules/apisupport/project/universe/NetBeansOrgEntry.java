@@ -42,7 +42,9 @@
 package org.netbeans.modules.apisupport.project.universe;
 
 import java.io.File;
+import java.net.URL;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.Util;
 import org.openide.filesystems.FileUtil;
 
 final class NetBeansOrgEntry extends AbstractEntryWithSources {
@@ -58,6 +60,7 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     private final ManifestManager.PackageExport[] publicPackages;
     private final String[] friends;
     private final boolean deprecated;
+    private URL javadoc;
     
     public NetBeansOrgEntry(File nball, String cnb, String path, File cluster,
             String module, String cpext, String releaseVersion,
@@ -87,10 +90,6 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     
     public File getJarLocation() {
         return new File(getClusterDirectory(), module.replace('/', File.separatorChar));
-    }
-    
-    public File getDestDir() {
-        return ModuleList.findNetBeansOrgDestDir(nball);
     }
     
     public String getCodeNameBase() {
@@ -128,5 +127,35 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     public @Override String toString() {
         return "NetBeansOrgEntry[" + getSourceLocation() + "]"; // NOI18N
     }
-    
+
+    public URL getJavadoc(final NbPlatform platform) {
+        if (javadoc == null)
+            javadoc = findJavadocForNetBeansOrgModules(this, ModuleList.findNetBeansOrgDestDir(nball));
+        return javadoc;
+    }
+
+    /**
+     * Find Javadoc URL for NetBeans.org modules. May return <code>null</code>.
+     */
+    static URL findJavadocForNetBeansOrgModules(final ModuleEntry entry, File destDir) {
+        File nbOrg = null;
+        if (destDir.getParent() != null) {
+            nbOrg = destDir.getParentFile().getParentFile();
+        }
+        if (nbOrg == null) {
+            throw new IllegalArgumentException("ModuleEntry " + entry +  // NOI18N
+                    " doesn't represent nb.org module"); // NOI18N
+        }
+        File builtJavadoc = new File(nbOrg, "nbbuild/build/javadoc"); // NOI18N
+        URL[] javadocURLs = null;
+        if (builtJavadoc.exists()) {
+            File[] javadocs = builtJavadoc.listFiles();
+            javadocURLs = new URL[javadocs.length];
+            for (int i = 0; i < javadocs.length; i++) {
+                javadocURLs[i] = FileUtil.urlForArchiveOrDir(javadocs[i]);
+            }
+        }
+        return javadocURLs == null ? null : Util.findJavadocURL(
+                entry.getCodeNameBase().replace('.', '-'), javadocURLs);
+    }
 }

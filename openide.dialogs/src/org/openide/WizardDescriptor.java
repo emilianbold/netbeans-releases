@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -1129,6 +1129,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 wizardPanel.getRootPane ().registerKeyboardAction (escapeActionListener, "Escape",
                     KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
             }
+            wizardPanel.setProgressComponent (null, null);
         }
 
         waitingComponent.setCursor(null);
@@ -2597,18 +2598,23 @@ public class WizardDescriptor extends DialogDescriptor {
         }
 
         private void setProgressComponent (JComponent progressComp, final JLabel progressLabel) {
-            if (progressLabel != null) {
-                progressLabel.setText (PROGRESS_BAR_DISPLAY_NAME);
-                progressLabel.addPropertyChangeListener ("text", new PropertyChangeListener () { // NOI18N
-                    public void propertyChange (PropertyChangeEvent evt) {
-                        progressLabel.putClientProperty (JComponent.TOOL_TIP_TEXT_KEY, evt.getNewValue ().toString ());
-                    }
-                });
-                progressLabel.setToolTipText (PROGRESS_BAR_DISPLAY_NAME);
-                progressBarPanel.add (progressLabel, BorderLayout.NORTH);
+            if (progressComp == null) {
+                progressBarPanel.removeAll ();
+                progressBarPanel.setVisible (false);
+            } else {
+                if (progressLabel != null) {
+                    progressLabel.setText (PROGRESS_BAR_DISPLAY_NAME);
+                    progressLabel.addPropertyChangeListener ("text", new PropertyChangeListener () { // NOI18N
+                        public void propertyChange (PropertyChangeEvent evt) {
+                            progressLabel.putClientProperty (JComponent.TOOL_TIP_TEXT_KEY, evt.getNewValue ().toString ());
+                        }
+                    });
+                    progressLabel.setToolTipText (PROGRESS_BAR_DISPLAY_NAME);
+                    progressBarPanel.add (progressLabel, BorderLayout.NORTH);
+                }
+                progressBarPanel.add (progressComp, BorderLayout.CENTER);
+                progressBarPanel.setVisible (true);
             }
-            progressBarPanel.add (progressComp, BorderLayout.CENTER);
-            progressBarPanel.setVisible (true);
         }
 
         /** Creates content panel.

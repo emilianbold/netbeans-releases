@@ -45,7 +45,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
@@ -53,18 +52,19 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.Timer;
 import javax.swing.text.Caret;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.loaders.CppEditorSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileFilter.SortMode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.text.DataEditorSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -85,7 +85,8 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     
     private CsmFileModel fileModel;
     private Timer checkModifiedTimer;
-    private long lastModified = -1;
+    private long lastModified = 0;
+    private long lastDocVersion = 0;
     private Timer checkCursorTimer;
     private long lastCursorPos = -1;
     private long lastCursorPosWhenChecked = 0;
@@ -192,19 +193,30 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     
     private void checkModified() {
         stopTimers();
-        updateNodesIfModified(getCppEditorSupport(), findCurrentJEditorPane());
+        updateNodesIfModified(findCurrentJEditorPane());
         restartTimers();
     }
-    
-    private void updateNodesIfModified(CppEditorSupport cppEditorSupport, JEditorPane jEditorPane) {
-        if (jEditorPane == null || cppEditorSupport.getLastModified() <= lastModified) {
+
+    private boolean isUpdateNeeded(JEditorPane jEditorPane) {
+        if (jEditorPane == null || jEditorPane.getDocument() == null) {
+            return false;
+        }
+        if (DocumentUtilities.getDocumentVersion(jEditorPane.getDocument()) <= lastDocVersion) {
+            return false;
+        }
+        long timeSinceLastModification = System.currentTimeMillis() - lastModified;
+        if (timeSinceLastModification < getParsingDelay()) {
+            return false;
+        }
+        return true;
+    }
+
+    private void updateNodesIfModified(JEditorPane jEditorPane) {
+        if (!isUpdateNeeded(jEditorPane)) {
             return;
         }
-        long timeSinceLastModification = System.currentTimeMillis() - cppEditorSupport.getLastModified();
-        if (timeSinceLastModification < getParsingDelay()){
-            return;
-        }
-        lastModified = cppEditorSupport.getLastModified();
+        lastDocVersion = DocumentUtilities.getDocumentVersion(jEditorPane.getDocument());
+        lastModified = System.currentTimeMillis();
         lastCursorPos = -1;
         lastCursorPosWhenChecked = 0;
     }
@@ -239,7 +251,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     
     private JEditorPane findCurrentJEditorPane() {
         JEditorPane currentJEditorPane = null;
-        CppEditorSupport support = getCppEditorSupport();
+        DataEditorSupport support = getEditorSupport();
         if (support != null) {
             JEditorPane[] jEditorPanes = support.getOpenedPanes();
             if (jEditorPanes == null) {
@@ -252,9 +264,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         return currentJEditorPane;
     }
     
-    private CppEditorSupport getCppEditorSupport(){
+    private DataEditorSupport getEditorSupport(){
         if (cdo != null) {
-            return cdo.getCookie(CppEditorSupport.class);
+            return cdo.getLookup().lookup(DataEditorSupport.class);
         }
         return null;
     }

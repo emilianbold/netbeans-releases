@@ -41,6 +41,7 @@ package org.netbeans.modules.html.editor.gsf;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -123,7 +124,7 @@ public class HtmlGSFParser implements Parser, PositionManager {
                                     AstNode unmatched = node.children().get(0);
                                     if (dtd != null) {
                                         //check the unmatched tag according to the DTD
-                                        Element element = dtd.getElement(node.name().toUpperCase());
+                                        Element element = dtd.getElement(node.name().toUpperCase(Locale.US));
                                         if (element != null) {
                                             if (unmatched.type() == AstNode.NodeType.OPEN_TAG && element.hasOptionalEnd() || unmatched.type() == AstNode.NodeType.ENDTAG && element.hasOptionalStart()) {
                                                 return;

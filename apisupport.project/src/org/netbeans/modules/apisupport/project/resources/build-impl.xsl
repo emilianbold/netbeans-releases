@@ -84,13 +84,21 @@ made subject to such option by the copyright holder.
                     <property name="@{{name}}" value="${{@{{value}}}}"/>
                 </sequential>
             </macrodef>
+            <macrodef name="evalprops" uri="http://www.netbeans.org/ns/nb-module-project/2">
+                <attribute name="property"/>
+                <attribute name="value"/>
+                <sequential>
+                    <property name="@{{property}}" value="@{{value}}"/>
+                </sequential>
+            </macrodef>
             <property file="${{user.properties.file}}"/>
             <nbmproject2:property name="harness.dir" value="nbplatform.${{nbplatform.active}}.harness.dir"/>
-            <nbmproject2:property name="netbeans.dest.dir" value="nbplatform.${{nbplatform.active}}.netbeans.dest.dir"/>
-            <fail message="You must define 'nbplatform.${{nbplatform.active}}.harness.dir'">
+            <nbmproject2:property name="nbplatform.active.dir" value="nbplatform.${{nbplatform.active}}.netbeans.dest.dir"/>
+            <nbmproject2:evalprops property="cluster.path.evaluated" value="${{cluster.path}}"/>
+            <fail message="You must specify at least path to 'platform' cluster in $${{cluster.path}} property.">
                 <condition>
                     <not>
-                        <available file="${{harness.dir}}" type="dir"/>
+                        <contains string="${{cluster.path.evaluated}}" substring="platform"/>
                     </not>
                 </condition>
             </fail>

@@ -177,12 +177,31 @@ public class Resolver3 implements Resolver {
     private CsmNamespace findNamespace(CharSequence qualifiedName) {
         CsmNamespace result = project.findNamespace(qualifiedName);
         if( result == null ) {
-            for (Iterator iter = project.getLibraries().iterator(); iter.hasNext() && result == null;) {
+            for (Iterator iter = getLibraries().iterator(); iter.hasNext() && result == null;) {
                 CsmProject lib = (CsmProject) iter.next();
                 result = lib.findNamespace(qualifiedName);
             }
         }
         return result;
+    }
+
+    public Collection<CsmProject> getLibraries() {
+        return getSearchLibraries(this.startFile.getProject());
+    }
+
+    public static Collection<CsmProject> getSearchLibraries(CsmProject prj) {
+        if (prj.isArtificial() && prj instanceof ProjectBase) {
+            List<ProjectBase> dependentProjects = ((ProjectBase)prj).getDependentProjects();
+            Set<CsmProject> libs = new HashSet<CsmProject>();
+            for (ProjectBase projectBase : dependentProjects) {
+                if (!projectBase.isArtificial()) {
+                    libs.addAll(projectBase.getLibraries());
+                }
+            }
+            return libs;
+        } else {
+            return prj.getLibraries();
+        }
     }
 
     public CsmClassifier getOriginalClassifier(CsmClassifier orig) {

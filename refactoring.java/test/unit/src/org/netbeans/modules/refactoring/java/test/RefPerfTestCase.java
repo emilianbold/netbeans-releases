@@ -47,26 +47,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.parsing.JavacParserFactory;
-import org.netbeans.modules.java.source.usages.IndexUtil;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.lookup.Lookups;
 import static org.netbeans.modules.refactoring.java.test.Utilities.*;
-import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 
 /**
  * 
@@ -75,11 +67,11 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
  */
 public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
 
-    private ClassPath boot;
-    private ClassPath source;
-    private ClassPath compile;
+    ClassPath boot;
+    ClassPath source;
+    ClassPath compile;
     
-    private FileObject projectDir;
+    FileObject projectDir;
 
     final MyHandler handler;
     final List<PerformanceData> data;
@@ -97,16 +89,6 @@ public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
     @Override
     protected void setUp() throws IOException, InterruptedException {
         clearWorkDir();
-        MockServices.setServices (MockMimeLookup.class);
-        MockMimeLookup.setInstances (
-            MimePath.get ("text/x-java"), new JavacParserFactory());
-
-        File cache = new File(getWorkDir(), "cache");       //NOI18N
-        cache.mkdirs();
-        IndexUtil.setCacheFolder(cache);
-
-        RepositoryUpdater.getDefault();
-
         String work = getWorkDirPath();
         System.setProperty("netbeans.user", work);
         String zipPath = Utilities.jEditProjectOpen();
@@ -119,30 +101,6 @@ public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
         boot = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
         source = createSourcePath(projectDir);
         compile = createEmptyPath();
-
-        ClassLoader l = FindUsagesPerfTest.class.getClassLoader();
-        TestLkp.setLookupsWrapper(
-                Lookups.singleton(new ClassPathProvider() {
-
-                    public ClassPath findClassPath(FileObject file, String type) {
-                        if (ClassPath.BOOT.equals(type)) {
-                            return boot;
-                        }
-
-                        if (ClassPath.SOURCE.equals(type)) {
-                            return source;
-                        }
-
-                        if (ClassPath.COMPILE.equals(type)) {
-                            return compile;
-                        }
-                        return null;
-                    }
-                }),
-                Lookups.metaInfServices(l),
-                Lookups.singleton(l));
-
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(fo, fo).await();
     }
 
     /**

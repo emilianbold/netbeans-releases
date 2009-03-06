@@ -28,12 +28,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.bpel.project.ui.ProjectLogicalViewProvider;
 
 /** Customizer for general project attributes.
  *
  * @author  phrebejk
  */
-public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel, HelpCtx.Provider {
+public class CustomizerGeneral extends JPanel implements Customizer.Panel, HelpCtx.Provider {
 
     private IcanproProjectProperties webProperties;
     private VisualPropertySupport vps;

@@ -89,8 +89,6 @@ public final class SuiteCustomizer extends BasicCustomizer {
         suiteProps = null;
     }    
     
-    void postSave() { /* nothing needs to be done for now */ }
-    
     protected Lookup prepareData() {
         Set<NbModuleProject> subModules = SuiteUtils.getSubProjects(getProject());
         suiteProps = new SuiteProperties((SuiteProject) getProject(), helper, evaluator, subModules);

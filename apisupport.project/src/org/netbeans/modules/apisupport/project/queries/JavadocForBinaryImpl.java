@@ -58,7 +58,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
 /**
- * Defines Javadoc locations for built modules.
+ * Defines Javadoc locations for built modules with built javadoc.
  * @author Jesse Glick
  */
 public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplementation {

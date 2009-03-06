@@ -448,7 +448,13 @@ final class JavadocCompletionUtils {
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=139147">139147</a>
      */
     private static boolean isInvalidDocInstance(Doc javadoc, TokenSequence<JavadocTokenId> ts) {
-        return javadoc != null && javadoc.getRawCommentText().length() == 0 && !ts.isEmpty();
+        if (javadoc != null && javadoc.getRawCommentText().length() == 0) {
+            if (!ts.isEmpty()) {
+                ts.moveStart();
+                return !(ts.moveNext() && isWhiteSpace(ts.token()) && ts.moveNext() == false);
+            }
+        }
+        return false;
     }
 
     private static final int MAX_DUMPS = 255;

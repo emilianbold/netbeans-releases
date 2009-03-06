@@ -56,6 +56,8 @@ public class ServicesTest extends BaseTestSuite {
         
         addTestSuite(UsingResolverImplTestCase.class);
         addTestSuite(IncludeResolverImplTestCase.class);
+        addTestSuite(SelectModelTestCase.class);
+        addTestSuite(SelectQuoteTestCase.class);
     }
 
     public static Test suite() {

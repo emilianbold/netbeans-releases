@@ -45,20 +45,26 @@ import java.net.URL;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.util.Collection;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
+import java.util.Iterator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.web.project.test.TestBase;
 import org.netbeans.modules.web.project.test.TestUtil;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Document;
@@ -75,14 +81,18 @@ public class SourceRootsTest extends NbTestCase {
     private WebProject pp;
     private AntProjectHelper helper;
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         
-        TestBase.setLookup(new Object[] {
-            new org.netbeans.modules.web.project.WebProjectType(),
+        MockLookup.init();
+        Collection<? extends AntBasedProjectType> all = Lookups.forPath("Services/AntBasedProjectTypes").lookupAll(AntBasedProjectType.class);
+        Iterator<? extends AntBasedProjectType> it = all.iterator();
+        AntBasedProjectType t = it.next();
+        MockLookup.setInstances(
+            t,
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
-        });
-        
+        );
         File f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication1");
         projdir = FileUtil.toFileObject(f);
         sources = projdir.getFileObject("src/java");
@@ -93,13 +103,14 @@ public class SourceRootsTest extends NbTestCase {
         helper = pp.getAntProjectHelper();
     }
 
+    @Override
     protected void tearDown() throws Exception {
         projdir = null;
         sources = null;
         tests = null;
         pp = null;
         helper = null;
-        TestUtil.setLookup(Lookup.EMPTY);
+        MockLookup.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
 

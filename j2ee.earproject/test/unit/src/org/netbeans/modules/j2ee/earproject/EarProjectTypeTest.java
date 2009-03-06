@@ -42,18 +42,22 @@
 package org.netbeans.modules.j2ee.earproject;
 
 import java.io.File;
+import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author vkraemer
  */
 public final class EarProjectTypeTest extends NbTestCase {
     
-    private EarProjectType prjType;
+    private AntBasedProjectType prjType;
     
     public EarProjectTypeTest(String testName) {
         super(testName);
@@ -62,7 +66,15 @@ public final class EarProjectTypeTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
-        prjType = new EarProjectType();
+        MockLookup.init();
+        Collection<? extends AntBasedProjectType> all = Lookups.forPath("Services/AntBasedProjectTypes").lookupAll(AntBasedProjectType.class);
+        prjType = null;
+        for (AntBasedProjectType instance : all) {
+            if ("org.netbeans.modules.j2ee.earproject".equals(instance.getType()))
+            prjType = instance;
+        }
+        MockLookup.setInstances(prjType);
+        assertNotNull(prjType);
     }
     
     public void testCreateProject() throws Exception {
