@@ -44,7 +44,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
@@ -99,7 +98,8 @@ public final class MacroExpanderFactory {
         public CommonMacroExpander(ExecutionEnvironment execEnv) {
             this.execEnv = execEnv;
             hostInfoFetchingTaskResult = NativeTaskExecutorService.submit(
-                    new HostInfoFetchingTask(execEnv));
+                    new HostInfoFetchingTask(execEnv), 
+                    "Fetch host info for " + execEnv.toString()); // NOI18N
         }
 
         private int getCharClass(char c) {
@@ -152,7 +152,8 @@ public final class MacroExpanderFactory {
                 if (hostInfoFetchingTaskResult != null) {
                     hostInfoFetchingTaskResult =
                             NativeTaskExecutorService.submit(
-                            new HostInfoFetchingTask(execEnv));
+                            new HostInfoFetchingTask(execEnv),
+                            "Fetch host info for " + execEnv.toString()); // NOI18N
                 }
             }
         }

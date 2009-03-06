@@ -96,7 +96,7 @@ final class OnTimerRefreshVisualizerHandler
                     public void run() {
                         task.onTimer();
                     }
-                }, period, unit);
+                }, period, unit, "OnTimerRefreshVisualizerHandler");
     }
 
     synchronized void stopTimer() {

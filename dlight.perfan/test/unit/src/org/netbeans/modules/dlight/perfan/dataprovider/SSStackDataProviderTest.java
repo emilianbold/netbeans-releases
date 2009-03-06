@@ -53,9 +53,9 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -200,7 +200,7 @@ public class SSStackDataProviderTest {
         storage.init(new ExecutionEnvironment(), "/shared/dp/sstrunk/intel-S2", "/var/tmp/dlightExperiment.er");
         provider.attachTo(storage);
 
-        int threadLimit = 200;
+        int threadLimit = 20;
         threadCount = 1;
 
         final CountDownLatch latch = new CountDownLatch(threadLimit);
@@ -211,7 +211,7 @@ public class SSStackDataProviderTest {
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            RequestProcessor.getDefault().post(new Runnable() {
+            DLightExecutorService.submit(new Runnable() {
                 String prefix;
                 
                 public void run() {
@@ -231,7 +231,7 @@ public class SSStackDataProviderTest {
                         latch.countDown();
                     }
                 }
-            });
+            }, "getHotSpotFunctions for columns " + columns.toString());
 
 
         }

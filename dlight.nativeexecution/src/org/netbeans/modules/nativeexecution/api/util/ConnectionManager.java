@@ -167,8 +167,19 @@ public final class ConnectionManager {
             }
         };
 
+        final Callable<String> c = new Callable<String>() {
+
+            public String call() throws Exception {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+
+        NativeTaskExecutorService.submit(c, "a");
+
+
         final Future<Session> futureSession =
-                NativeTaskExecutorService.submit(connectionTask);
+                NativeTaskExecutorService.submit(connectionTask, 
+                "Connect to " + sessionKey); // NOI18N
 
         final Cancellable cancelConnection = new Cancellable() {
 

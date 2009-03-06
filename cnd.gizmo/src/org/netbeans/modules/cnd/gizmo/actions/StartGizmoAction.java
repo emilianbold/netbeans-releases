@@ -54,6 +54,7 @@ import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
 import org.netbeans.modules.dlight.api.support.NativeExecutableTarget;
 import org.netbeans.modules.dlight.api.support.NativeExecutableTargetConfiguration;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.openide.util.Exceptions;
 
 public final class StartGizmoAction implements ActionListener {
@@ -89,7 +90,7 @@ public final class StartGizmoAction implements ActionListener {
                 sessionCreationTask =
                 dtm.createSession(target, "Gizmo"); // NOI18N
 
-        new Thread(new Runnable() {
+        DLightExecutorService.submit(new Runnable() {
             public void run() {
                 try {
                     dtm.startSession(sessionCreationTask.get());
@@ -99,7 +100,7 @@ public final class StartGizmoAction implements ActionListener {
                     Exceptions.printStackTrace(ex);
                 }
             }
-        }).start();
+        }, "DLight Session for " + application); // NOI18N
     }
 
     private Configuration getActiveConfiguration(Project project) {
