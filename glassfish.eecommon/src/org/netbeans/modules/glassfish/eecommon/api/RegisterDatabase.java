@@ -74,6 +74,11 @@ public class RegisterDatabase {
             location = DerbySupport.getSystemHome();
             if (null != location && location.trim().length() > 0) {
                 return;
+            }else{
+                File dbdir = new File(DerbySupport.getDefaultSystemHome());
+                if (dbdir.exists() == false) {
+                    dbdir.mkdirs();
+                }
             }
             DerbySupport.setSystemHome(DerbySupport.getDefaultSystemHome());
         }

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.glassfish.javaee.ide;
 
+import java.io.File;
 import org.netbeans.modules.derby.spi.support.DerbySupport;
 import org.netbeans.modules.glassfish.eecommon.api.RegisterDatabase;
 import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
@@ -64,6 +65,11 @@ public class RegisteredDerbyServerImpl implements RegisteredDerbyServer {
         location = DerbySupport.getSystemHome();
         if (null != location && location.trim().length() > 0) {
             return;
+        } else {
+            File dbdir = new File(DerbySupport.getDefaultSystemHome());
+            if (dbdir.exists() == false) {
+                dbdir.mkdirs();
+            }
         }
         DerbySupport.setSystemHome(DerbySupport.getDefaultSystemHome());
         RegisterDatabase.getDefault().configureDatabase();
