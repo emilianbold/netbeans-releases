@@ -47,6 +47,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
@@ -54,6 +55,7 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
@@ -234,25 +236,39 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
     protected void loadTree(final DefaultMutableTreeNode rootNode, final List<FunctionCallTreeTableNode> ppath) {
         //we should show Loading Node
         //this.functionsCallTreeModel.get
-        //go away from AWT Thread
-        RequestProcessor.getDefault().post(new Runnable() {
+        Runnable r = new Runnable() {
 
             public void run() {
 
-                List<FunctionCall> result = null;
+                final List<FunctionCall> result;
                 FunctionCall[] path = new FunctionCall[ppath.size()];
                 for (int i = 0, size = ppath.size(); i < size; i++) {
                     path[i] = ppath.get(i).getDeligator();
                 }
                 //FunctionCall[] path = ppath.toArray(new FunctionCallTreeTableNode[0]);
+
                 if (CallersCalleesVisualizer.this.isCalls) {
                     result = dataProvider.getCallees(path, isCalls);
                 } else {
                     result = dataProvider.getCallers(path, false);
                 }
-                update(rootNode, result);
+
+                UIThread.invoke(new Runnable() {
+
+                    public void run() {
+                        update(rootNode, result);
+                    }
+                });
+
             }
-        });
+        };
+
+        //go away from AWT Thread
+        if (SwingUtilities.isEventDispatchThread()) {
+            DLightExecutorService.submit(r, "Get callers/callees"); // NOI18N
+        } else {
+            r.run();
+        }
     }
 
     @Override
@@ -283,7 +299,7 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
     @Override
     protected void syncFillModel(final List<Column> columns) {
         final List<FunctionCall> list =
-            dataProvider.getHotSpotFunctions(columns, null, TOP_FUNCTIONS_COUNT);
+                dataProvider.getHotSpotFunctions(columns, null, TOP_FUNCTIONS_COUNT);
         final boolean isEmptyConent = list == null || list.isEmpty();
         UIThread.invoke(new Runnable() {
 
@@ -377,11 +393,10 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
                 @Override
                 public boolean isEnabled() {
                     return Lookup.getDefault().lookup(SourceSupportProvider.class) != null &&
-                        Lookup.getDefault().lookup(SourceFileInfoProvider.class) != null;
+                            Lookup.getDefault().lookup(SourceFileInfoProvider.class) != null;
                 }
             };
             return new Action[]{goToSourceAction};
         }
     }
-
 }
