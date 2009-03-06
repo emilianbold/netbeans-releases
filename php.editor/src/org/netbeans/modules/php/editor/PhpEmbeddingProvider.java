@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -65,6 +66,19 @@ public class PhpEmbeddingProvider extends EmbeddingProvider {
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), PHPTokenId.language());
         TokenSequence<PHPTokenId> sequence = th.tokenSequence(PHPTokenId.language());
+
+        //issue #159775 logging >>>
+        if(sequence == null) {
+            Logger.getLogger("PhpEmbeddingProvider").warning(
+                    "TokenHierarchy.tokenSequence(PhpTokenId.language()) == null " +
+                    "for static immutable PHP TokenHierarchy!\nFile = '"+
+                    snapshot.getSource().getFileObject().getPath() +
+                    "' ;snapshot mimepath='" + snapshot.getMimePath() + "'");
+
+            return Collections.emptyList();
+        }
+        //<<< end of the logging
+        
         sequence.moveStart();
         List<Embedding> embeddings = new ArrayList<Embedding>();
 
