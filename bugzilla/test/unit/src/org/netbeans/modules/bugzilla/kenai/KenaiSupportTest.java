@@ -51,7 +51,9 @@ import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiProjectFeature;
 
 /**
  *
@@ -102,8 +104,20 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
         WebUtil.init();
     }
     
-    public void testGetRepository () throws Throwable {
+    public void testGetRepositoryFromName () throws Throwable {
         KenaiProject prj = instance.getProject("koliba");
+        assertNotNull(prj);
+
+        KenaiSupportImpl support = new KenaiSupportImpl();
+        BugzillaRepository repo = (BugzillaRepository) support.createRepository(prj);
+        assertNotNull(repo);
+
+        trm.addRepository(repo.getTaskRepository());
+        TestUtil.validate(brc, repo.getTaskRepository());
+    }
+
+    public void testGetRepositoryFromUrl () throws Throwable {
+        KenaiProject prj = KenaiProject.forRepository("https://testkenai.com/svn/koliba~subversion ");
         assertNotNull(prj);
 
         KenaiSupportImpl support = new KenaiSupportImpl();
