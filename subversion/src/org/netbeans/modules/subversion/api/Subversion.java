@@ -41,6 +41,7 @@ package org.netbeans.modules.subversion.api;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
@@ -168,7 +169,9 @@ public class Subversion {
 
 
     /**
-     * Checks out a given folder from a given Subversion repository.
+     * Checks out a given folder from a given Subversion repository. The method blocks
+     * until the whole chcekout is done. Do not call in AWT.
+     * 
      * @param  repositoryUrl  URL of the Subversion repository
      * @param  relativePaths  relative paths denoting folder the folder in the
      *                       repository that is to be checked-out; to specify
@@ -185,6 +188,7 @@ public class Subversion {
                                                    File localFolder,
                                                    boolean scanForNewProjects)
             throws MalformedURLException {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
         return checkoutRepositoryFolder(repositoryUrl,
                                         relativePaths,
                                         localFolder,
@@ -194,7 +198,9 @@ public class Subversion {
     }
 
     /**
-     * Checks out a given folder from a given Subversion repository.
+     * Checks out a given folder from a given Subversion repository. The method blocks
+     * until the whole chcekout is done. Do not call in AWT.
+     * 
      * @param  repositoryUrl  URL of the Subversion repository
      * @param  relativePaths  relative paths denoting folder the folder in the
      *                       repository that is to be checked-out; to specify
@@ -215,6 +221,8 @@ public class Subversion {
                                                    String password,
                                                    boolean scanForNewProjects)
             throws MalformedURLException {
+
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
 
         org.netbeans.modules.subversion.Subversion subversion
                 = org.netbeans.modules.subversion.Subversion.getInstance();
