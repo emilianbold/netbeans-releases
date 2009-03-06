@@ -81,4 +81,9 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz153986.cc", 18, 15, "iz153986.cc", 9, 9);
         performTest("iz153986.cc", 18, 30, "iz153986.cc", 4, 9);
     }
+
+    public void test159068() throws Exception {
+        // IZ#159068 : Unresolved ids in instantiations after &
+        performTest("iz159068.cc", 4, 27, "iz159068.cc", 2, 5);
+    }
 }
