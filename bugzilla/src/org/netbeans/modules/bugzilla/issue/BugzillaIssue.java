@@ -207,7 +207,7 @@ public class BugzillaIssue extends Issue {
     }
 
     @Override
-    public BugtrackingController getControler() {
+    public BugtrackingController getController() {
         if (controller == null) {
             controller = new IssueController(this);
         }
@@ -299,40 +299,40 @@ public class BugzillaIssue extends Issue {
                 for (IssueField changedField : changedFields) {
                     switch(changedField) {
                         case SUMMARY :
-                            ret = changedCount + " changes, inclusive summary";
+                            ret = changedCount + " changes, incl. summary";
                             break;
                         case PRIORITY :
-                            ret = changedCount + " changes, inclusive priority";
+                            ret = changedCount + " changes, incl. priority";
                             break;
                         case SEVERITY :
-                            ret = changedCount + " changes, inclusive severity";
+                            ret = changedCount + " changes, incl. severity";
                             break;
                         case PRODUCT :
-                            ret = changedCount + " changes, inclusive product";
+                            ret = changedCount + " changes, incl. product";
                             break;
                         case COMPONENT :
-                            ret = changedCount + " changes, inclusive component";
+                            ret = changedCount + " changes, incl. component";
                             break;
                         case PLATFORM :
-                            ret = changedCount + " changes, inclusive platform";
+                            ret = changedCount + " changes, incl. platform";
                             break;
                         case VERSION :
-                            ret = changedCount + " changes, inclusive version";
+                            ret = changedCount + " changes, incl. version";
                             break;
                         case MILESTONE :
-                            ret = changedCount + " changes, inclusive milestone";
+                            ret = changedCount + " changes, incl. milestone";
                             break;
                         case KEYWORDS :
-                            ret = changedCount + " changes, inclusive keywords";
+                            ret = changedCount + " changes, incl. keywords";
                             break;
                         case URL :
-                            ret = changedCount + " changes, inclusive url";
+                            ret = changedCount + " changes, incl. url";
                             break;
                         case ASSIGNED_TO :
-                            ret = changedCount + " changes, inclusive Assignee";
+                            ret = changedCount + " changes, incl. Assignee";
                             break;
                         case QA_CONTACT :
-                            ret = changedCount + " changes, inclusive qa contact";
+                            ret = changedCount + " changes, incl. qa contact";
                             break;
                         case DEPENDS_ON :
                         case BLOCKS :
