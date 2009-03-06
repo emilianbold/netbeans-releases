@@ -144,13 +144,25 @@ public class HtmlIndenterTest extends TestBase2 {
 //        format("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"\n\"http://www.w3.org/TR/html4/loose.dtd\">\n<table>",
 //                "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"\n        \"http://www.w3.org/TR/html4/loose.dtd\">\n<table>",null);
 
+        // test tab character replacement:
+        format(
+            "<html>\n    <body>\n\t<table>",
+            "<html>\n    <body>\n        <table>", null);
     }
 
     public void testFormattingHTML() throws Exception {
         reformatFileContents("testfiles/simple.html",new IndentPrefs(4,4));
     }
 
+    public void testFormattingHTML01() throws Exception {
+        reformatFileContents("testfiles/simple01.html",new IndentPrefs(4,4));
+    }
+
     public void testIndentation() throws Exception {
+        insertNewline("<html>  ^  </html>", "<html>  \n    ^\n</html>", null);
+//        insertNewline("        <table>\n            <tr>\n                <td>^</td>\n            </tr>\n</table>",
+//                      "        <table>\n            <tr>\n                <td>\n                    ^\n                </td>\n            </tr>\n</table>", null);
+        
         insertNewline("  <html><table      color=aaa^", "  <html><table      color=aaa\n                    ^", null);
         // property tag indentation:
         insertNewline("<html>^<table>", "<html>\n    ^<table>", null);
@@ -167,11 +179,11 @@ public class HtmlIndenterTest extends TestBase2 {
             "<html>\n  <body>\n        <h1>Hello World!</h1>\n                <p>text^</body>",
             "<html>\n  <body>\n        <h1>Hello World!</h1>\n                <p>text\n  ^</body>", null);
         insertNewline(
-            "<html><body><table><tr>   <td>^</td></tr></table>",
-            "<html><body><table><tr>   <td>\n                ^</td></tr></table>", null);
+            "<html><body><table><tr>   <td>aa^</td></tr></table>",
+            "<html><body><table><tr>   <td>aa\n                ^</td></tr></table>", null);
         insertNewline(
-            "<html>\n    <body><table><tr>   <td>\n                ^</td></tr></table>",
-            "<html>\n    <body><table><tr>   <td>\n                \n                ^</td></tr></table>", null);
+            "<html>\n    <body><table><tr>   <td>a\n                ^</td></tr></table>",
+            "<html>\n    <body><table><tr>   <td>a\n                \n                ^</td></tr></table>", null);
 
         // misc invalid HTML doc formatting:
         insertNewline(
@@ -190,11 +202,11 @@ public class HtmlIndenterTest extends TestBase2 {
 
         // those two tests are for particular condition in AI.calculateLineIndent():
         insertNewline(
-                "          <table><tr><td>^</td>",
-                "          <table><tr><td>\n                  ^</td>", null);
+                "          <table><tr><td>a^</td>",
+                "          <table><tr><td>a\n                  ^</td>", null);
         insertNewline(
-                "          <table><tr><td>\n                  ^</td>",
-                "          <table><tr><td>\n                  \n                  ^</td>", null);
+                "          <table><tr><td>a\n                  ^</td>",
+                "          <table><tr><td>a\n                  \n                  ^</td>", null);
     }
 
 }

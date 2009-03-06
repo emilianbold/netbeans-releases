@@ -47,6 +47,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
+import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
 import org.netbeans.modules.editor.indent.spi.Context;
 
@@ -67,7 +68,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     @Override
     protected boolean isWhiteSpaceToken(Token<HTMLTokenId> token) {
         return token.id() == HTMLTokenId.WS ||
-                (token.id() == HTMLTokenId.TEXT && token.text().toString().replace("\n", "").replace("\r", "").trim().length() == 0);
+                (token.id() == HTMLTokenId.TEXT && token.text().toString().trim().length() == 0);
     }
 
     @Override
@@ -202,16 +203,34 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
         return false;
     }
 
-    @Override
-    protected boolean isForeignLanguageStartToken(Token<HTMLTokenId> token) {
-        // TODO: should probabaly return <SCRIPT>; will need token context to do that
-        return false;
+    private boolean isOpeningTag(JoinedTokenSequence<HTMLTokenId> ts) {
+        int index = ts.index();
+        boolean found = false;
+        while (ts.moveNext()) {
+            if (isEndTagSymbol(ts.currentTokenSequence().token())) {
+                found = true;
+                break;
+            } else if (isEndTagClosingSymbol(ts.currentTokenSequence().token())) {
+                break;
+            }
+        }
+        ts.moveIndex(index);
+        ts.moveNext();
+        return found;
     }
 
     @Override
-    protected boolean isForeignLanguageEndToken(Token<HTMLTokenId> token) {
-        // TODO: should probabaly return <SCRIPT>; will need token context to do that
-        return false;
+    protected boolean isForeignLanguageStartToken(Token<HTMLTokenId> token, JoinedTokenSequence<HTMLTokenId> ts) {
+        return isOpenTagNameToken(token) &&
+                (token.text().toString().toLowerCase().equals("style") ||
+                 token.text().toString().toLowerCase().equals("script")) && isOpeningTag(ts);
+    }
+
+    @Override
+    protected boolean isForeignLanguageEndToken(Token<HTMLTokenId> token, JoinedTokenSequence<HTMLTokenId> ts) {
+        return isCloseTagNameToken(token) &&
+                (token.text().toString().toLowerCase().equals("style") ||
+                 token.text().toString().toLowerCase().equals("script"));
     }
 
 }

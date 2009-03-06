@@ -57,11 +57,10 @@ import org.openide.util.Exceptions;
 
 public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
 
-    private Stack<CssStackItem> stack;
+    private Stack<CssStackItem> stack = null;
 
     public CSSIndenter(Context context) {
         super(CSSTokenId.language(), context);
-        stack = new Stack<CssStackItem>();
     }
 
     private Stack<CssStackItem> getStack() {
@@ -77,6 +76,11 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
     private boolean isCommentToken(Token<CSSTokenId> token) {
         String text = token.text().toString().trim();
         return token.id() == CSSTokenId.S && text.startsWith("/*") && text.endsWith("*/");
+    }
+
+    @Override
+    protected void reset() {
+        stack = new Stack<CssStackItem>();
     }
 
     @Override

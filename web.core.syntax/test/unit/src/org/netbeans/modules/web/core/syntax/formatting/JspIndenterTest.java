@@ -192,6 +192,10 @@ public class JspIndenterTest extends TestBase2 {
         reformatFileContents("FormattingProject/web/case006.jsp",new IndentPrefs(4,4));
     }
 
+    public void testFormattingCase007() throws Exception {
+        reformatFileContents("FormattingProject/web/case007.jsp",new IndentPrefs(4,4));
+    }
+
     public void testFormattingIssue121102() throws Exception {
         reformatFileContents("FormattingProject/web/issue121102.jsp",new IndentPrefs(4,4));
     }
@@ -221,8 +225,8 @@ public class JspIndenterTest extends TestBase2 {
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n^<table>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n\n            ^<table>", null);
 
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n        ^", null);
-        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n^</jsp:useBean>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n\n        ^</jsp:useBean>", null);
-        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>^</jsp:useBean>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        ^</jsp:useBean>", null);
+        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>a\n^</jsp:useBean>", "<jsp:body>\n    <html>\n        <jsp:useBean>a\n\n        ^</jsp:useBean>", null);
+        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>a^</jsp:useBean>", "<jsp:body>\n    <html>\n        <jsp:useBean>a\n        ^</jsp:useBean>", null);
 
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>^", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>\n    ^", null);
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^</html>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    ^</html>", null);

@@ -58,14 +58,13 @@ import org.openide.util.Exceptions;
  */
 abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends AbstractIndenter<T1> {
 
-    private Stack<MarkupItem> stack;
+    private Stack<MarkupItem> stack = null;
     private boolean inOpeningTagAttributes;
     private boolean inUnformattableTagContent;
     private int attributesIndent;
 
     public MarkupAbstractIndenter(Language<T1> language, Context context) {
         super(language, context);
-        stack = new Stack<MarkupItem>();
     }
 
     abstract protected boolean isOpenTagNameToken(Token<T1> token);
@@ -97,12 +96,20 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
     abstract protected boolean isPreservedLine(Token<T1> token, IndenterContextData<T1> context);
 
-    abstract protected boolean isForeignLanguageStartToken(Token<T1> token);
+    abstract protected boolean isForeignLanguageStartToken(Token<T1> token, JoinedTokenSequence<T1> ts);
 
-    abstract protected boolean isForeignLanguageEndToken(Token<T1> token);
+    abstract protected boolean isForeignLanguageEndToken(Token<T1> token, JoinedTokenSequence<T1> ts);
 
     private Stack<MarkupItem> getStack() {
         return stack;
+    }
+
+    @Override
+    protected void reset() {
+        stack = new Stack<MarkupItem>();
+        inOpeningTagAttributes = false;
+        inUnformattableTagContent = false;
+        attributesIndent = 0;
     }
 
     @Override
@@ -118,7 +125,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         // go backwards and find a tag in which reformatting area lies:
         while (ts.movePrevious()) {
             Token<T1> tk = ts.token();
-            if (isForeignLanguageStartToken(tk)) {
+            if (isForeignLanguageStartToken(tk, ts)) {
                 break;
             }
             // if closing tag was found jump to opening one but
@@ -139,7 +146,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         do {
             Token tk = ts.token();
 
-            if (isStartTagSymbol(tk) || isForeignLanguageStartToken(tk)) {
+            if (isStartTagSymbol(tk) || isForeignLanguageStartToken(tk, ts)) {
                 try {
                     int firstNonWhite = Utilities.getRowFirstNonWhite(getDocument(), ts.offset());
                     if (firstNonWhite != -1 && firstNonWhite == ts.offset()) {
@@ -381,11 +388,13 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                         setInUnformattableTagContent(true);
                     }
                 }
-            } else if (isPreservedLine(token, context)) {
+            }
+            if (isPreservedLine(token, context)) {
                 iis.add(new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset()));
-            } else if (isForeignLanguageStartToken(token)) {
+            }
+            if (isForeignLanguageStartToken(token, ts)) {
                 iis.add(new IndentCommand(IndentCommand.Type.BLOCK_START, context.getLineStartOffset()));
-            } else if (isForeignLanguageEndToken(token)) {
+            } else if (isForeignLanguageEndToken(token, ts)) {
                 iis.add(new IndentCommand(IndentCommand.Type.BLOCK_END, context.getLineStartOffset()));
             }
         }

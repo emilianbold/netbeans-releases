@@ -42,6 +42,7 @@ package org.netbeans.modules.web.core.syntax.formatting;
 import java.util.Set;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.css.formatting.api.support.MarkupAbstractIndenter;
@@ -60,7 +61,8 @@ public class JspIndenter extends MarkupAbstractIndenter<JspTokenId> {
 
     @Override
     protected boolean isWhiteSpaceToken(Token<JspTokenId> token) {
-        return token.id() == JspTokenId.WHITESPACE;
+        return token.id() == JspTokenId.WHITESPACE ||
+                (token.id() == JspTokenId.TEXT && token.text().toString().trim().length() == 0);
     }
 
 
@@ -151,7 +153,7 @@ public class JspIndenter extends MarkupAbstractIndenter<JspTokenId> {
     }
 
     @Override
-    protected boolean isForeignLanguageStartToken(Token<JspTokenId> token) {
+    protected boolean isForeignLanguageStartToken(Token<JspTokenId> token, JoinedTokenSequence<JspTokenId> ts) {
         return token.id() == JspTokenId.SYMBOL2 && (
                 token.text().toString().equals("<%") || 
                 token.text().toString().equals("<%=") ||
@@ -159,7 +161,7 @@ public class JspIndenter extends MarkupAbstractIndenter<JspTokenId> {
     }
 
     @Override
-    protected boolean isForeignLanguageEndToken(Token<JspTokenId> token) {
+    protected boolean isForeignLanguageEndToken(Token<JspTokenId> token, JoinedTokenSequence<JspTokenId> ts) {
         return token.id() == JspTokenId.SYMBOL2 && token.text().toString().equals("%>");
     }
 
