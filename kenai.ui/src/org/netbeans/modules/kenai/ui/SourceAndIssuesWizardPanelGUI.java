@@ -69,7 +69,6 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileSystemView;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
@@ -224,11 +223,11 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                     for (Iterator<KenaiService> iter = repoList.iterator(); iter.hasNext();) {
                         KenaiService service = iter.next();
                         String serviceName = service.getName();
-                        if (NewKenaiProjectWizardIterator.SVN_REPO.equals(serviceName)) {
+                        if (Utilities.SVN_REPO.equals(serviceName)) {
                             repoModel.addElement(new KenaiServiceItem(service, SVN_REPO_ITEM));
-                        } else if (NewKenaiProjectWizardIterator.HG_REPO.equals(serviceName)) {
+                        } else if (Utilities.HG_REPO.equals(serviceName)) {
                             repoModel.addElement(new KenaiServiceItem(service, HG_REPO_ITEM));
-                        } else if (NewKenaiProjectWizardIterator.EXT_REPO.equals(serviceName)) {
+                        } else if (Utilities.EXT_REPO.equals(serviceName)) {
                             repoModel.addElement(new KenaiServiceItem(service, EXT_REPO_ITEM));
                         }
                     }
@@ -240,11 +239,11 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                     for (Iterator<KenaiService> iter = issuesList.iterator(); iter.hasNext();) {
                         KenaiService service = iter.next();
                         String serviceName = service.getName();
-                        if (NewKenaiProjectWizardIterator.BGZ_ISSUES.equals(serviceName)) {
+                        if (Utilities.BGZ_ISSUES.equals(serviceName)) {
                             issuesModel.addElement(new KenaiServiceItem(service, BGZ_ISSUES_ITEM));
-                        } else if (NewKenaiProjectWizardIterator.JIRA_ISSUES.equals(serviceName)) {
+                        } else if (Utilities.JIRA_ISSUES.equals(serviceName)) {
                             issuesModel.addElement(new KenaiServiceItem(service, JIRA_ISSUES_ITEM));
-                        } else if (NewKenaiProjectWizardIterator.EXT_ISSUES.equals(serviceName)) {
+                        } else if (Utilities.EXT_ISSUES.equals(serviceName)) {
                             issuesModel.addElement(new KenaiServiceItem(service, EXT_ISSUES_ITEM));
                         }
                     }
@@ -288,9 +287,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private void updateRepoNamePreview() {
         String prjName = (String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
         String repoTypeName;
-        if (NewKenaiProjectWizardIterator.SVN_REPO.equals(getRepoType())) {
+        if (Utilities.SVN_REPO.equals(getRepoType())) {
             repoTypeName = SVN_REPO_NAME;
-        } else if (NewKenaiProjectWizardIterator.HG_REPO.equals(getRepoType())) {
+        } else if (Utilities.HG_REPO.equals(getRepoType())) {
             repoTypeName = HG_REPO_NAME;
         } else {
             return;
@@ -301,10 +300,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
     // XXX should check whether user did some edit in the field also
     private void setDefaultRepoName() {
-        if (NewKenaiProjectWizardIterator.SVN_REPO.equals(getRepoType()) &&
+        if (Utilities.SVN_REPO.equals(getRepoType()) &&
                 (HG_DEFAULT_NAME.equals(getRepoName()) || "".equals(getRepoName()))) {
             setRepoName(SVN_DEFAULT_NAME);
-        } else if (NewKenaiProjectWizardIterator.HG_REPO.equals(getRepoType()) &&
+        } else if (Utilities.HG_REPO.equals(getRepoType()) &&
                 (SVN_DEFAULT_NAME.equals(getRepoName()) || "".equals(getRepoName()))) {
             setRepoName(HG_DEFAULT_NAME);
         }
@@ -609,12 +608,12 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         KenaiServiceItem selObject = (KenaiServiceItem) repoComboBox.getSelectedItem();
 
         if (selObject != null && selObject.getService() != null) {
-            if (NewKenaiProjectWizardIterator.SVN_REPO.equals(selObject.getService().getName()) || 
-                    NewKenaiProjectWizardIterator.HG_REPO.equals(selObject.getService().getName())) {
+            if (Utilities.SVN_REPO.equals(selObject.getService().getName()) ||
+                    Utilities.HG_REPO.equals(selObject.getService().getName())) {
                 showRepoOnKenaiGUI();
                 setDefaultRepoName();
                 updateRepoNamePreview();
-            } else if (NewKenaiProjectWizardIterator.EXT_REPO.equals(selObject.getService().getName())) {
+            } else if (Utilities.EXT_REPO.equals(selObject.getService().getName())) {
                 showExtRepoGUI();
             } 
         } else {
@@ -628,6 +627,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private void localFolderBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_localFolderBrowseButtonActionPerformed
 
         JFileChooser chooser = new JFileChooser();
+        File uFile = new File(localRepoFolderTextField.getText());
+        if (uFile.exists()) {
+            chooser.setCurrentDirectory(FileUtil.normalizeFile(uFile));
+        }
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int returnVal = chooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -644,10 +647,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         KenaiServiceItem selObject = (KenaiServiceItem) issuesComboBox.getSelectedItem();
 
         if (selObject != null && selObject.getService() != null) {
-            if (NewKenaiProjectWizardIterator.BGZ_ISSUES.equals(selObject.getService().getName()) ||
-                    NewKenaiProjectWizardIterator.JIRA_ISSUES.equals(selObject.getService().getName())) {
+            if (Utilities.BGZ_ISSUES.equals(selObject.getService().getName()) ||
+                    Utilities.JIRA_ISSUES.equals(selObject.getService().getName())) {
                 showIssuesOnKenaiGUI();
-            } else if (NewKenaiProjectWizardIterator.EXT_ISSUES.equals(selObject.getService().getName())) {
+            } else if (Utilities.EXT_ISSUES.equals(selObject.getService().getName())) {
                 showExtIssuesGUI();
             } 
         } else {
@@ -739,18 +742,18 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
     private String checkForInfos() {
         String localRepoPath = getRepoLocal();
-        if ((NewKenaiProjectWizardIterator.SVN_REPO.equals(getRepoType()) ||
-                NewKenaiProjectWizardIterator.HG_REPO.equals(getRepoType())) &&
+        if ((Utilities.SVN_REPO.equals(getRepoType()) ||
+                Utilities.HG_REPO.equals(getRepoType())) &&
                 ("".equals(localRepoPath) || localRepoPath == null)) {
             return "Local repository folder path is required";
         }
         String extRepoUrl = getRepoUrl();
-        if (NewKenaiProjectWizardIterator.EXT_REPO.equals(getRepoType()) &&
+        if (Utilities.EXT_REPO.equals(getRepoType()) &&
                 ("".equals(extRepoUrl) || extRepoUrl == null)) {
             return "External repository URL is required";
         }
         String extIssuesUrl = getIssuesUrl();
-        if (NewKenaiProjectWizardIterator.EXT_ISSUES.equals(getIssuesType()) &&
+        if (Utilities.EXT_ISSUES.equals(getIssuesType()) &&
                 ("".equals(extIssuesUrl) || extIssuesUrl == null)) {
             return "External issue tracking URL is required";
         }
@@ -782,7 +785,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         String repoLocal = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_LOCAL);
         if (repoLocal == null || "".equals(repoLocal.trim())) {
             String prjName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
-            setRepoLocal(getDefaultRepoFolder().getPath() + File.separator + MessageFormat.format(DEFAULT_REPO_FOLDER, prjName, getRepoName()));
+            setRepoLocal(Utilities.getDefaultRepoFolder().getPath() + File.separator +
+                    MessageFormat.format(DEFAULT_REPO_FOLDER, prjName, getRepoName()));
         } else {
             setRepoLocal(repoLocal);
         }
@@ -1006,18 +1010,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
     private void _setNoIssuesGUIVisible(boolean show) {
         noIssueTrackingDescLabel.setVisible(show);
-    }
-
-    private static File getDefaultRepoFolder() {
-        File defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
-        if (defaultDir != null && defaultDir.exists() && defaultDir.isDirectory()) {
-            String nbPrjDirName = NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "DIR_NetBeansProjects");
-            File nbPrjDir = new File(defaultDir, nbPrjDirName);
-            if (nbPrjDir.exists() && nbPrjDir.canWrite()) {
-                return nbPrjDir;
-            }
-        }
-        return FileUtil.normalizeFile(new File(System.getProperty("user.home")));
     }
 
 }

@@ -36,37 +36,37 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.kenai.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.kenai.api.KenaiProjectFeature;
+import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 
-public final class OpenKenaiProjectAction implements ActionListener {
+/**
+ *
+ * @author Milan Kubec
+ */
+public class SourceHandleImpl extends SourceHandle {
 
-    private String dialogTitle = NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectWindowTitle");
+    private KenaiProjectFeature feature;
 
-    public void actionPerformed(ActionEvent e) {
-
-        KenaiSearchPanel openPanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.OPEN, true);
-        DialogDescriptor dialogDesc = new DialogDescriptor(openPanel, dialogTitle, true, null);
-
-        Object option = DialogDisplayer.getDefault().notify(dialogDesc);
-
-        if (NotifyDescriptor.OK_OPTION.equals(option)) {
-            KenaiProject selProjects[] = openPanel.getSelectedProjects();
-            if (null != selProjects && selProjects.length > 0) {
-                for (KenaiProject prj : selProjects) {
-                    Dashboard.getDefault().addProject(new ProjectHandleImpl(prj));
-                }
-            }
-        }
-
+    public SourceHandleImpl(KenaiProjectFeature ftr) {
+        feature = ftr;
     }
-    
+
+    @Override
+    public String getDisplayName() {
+        return feature.getDisplayName();
+    }
+
+    @Override
+    public boolean isSupported() {
+        // names of those services are values returned from Kenai WS API !!!
+        if ("subversion".equals(feature.getService()) ||
+            "mercurial".equals(feature.getService())) {
+            return true;
+        }
+        return false;
+    }
+
 }

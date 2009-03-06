@@ -40,15 +40,35 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiProjectFeature;
+import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiPanel.GetSourcesInfo;
+import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
+import org.netbeans.modules.mercurial.api.Mercurial;
+import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public final class GetSourcesFromKenaiAction implements ActionListener {
 
+    private ProjectAndFeature prjAndFeature;
+
     private String dialogTitle = NbBundle.getMessage(GetSourcesFromKenaiAction.class, "GetSourcesFromKenaiTitle");
     private String getOption = NbBundle.getMessage(GetSourcesFromKenaiAction.class, "GetSourcesFromKenaiAction.GetFromKenai.option");
     private String cancelOption = NbBundle.getMessage(GetSourcesFromKenaiAction.class, "GetSourcesFromKenaiAction.Cancel.option");
+
+    public GetSourcesFromKenaiAction(ProjectAndFeature prjFtr) {
+        prjAndFeature = prjFtr;
+    }
+
+    public GetSourcesFromKenaiAction() {
+        this(null);
+    }
 
     public void actionPerformed(ActionEvent e) {
 
@@ -56,16 +76,39 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
         options[0] = getOption;
         options[1] = cancelOption;
 
-        GetSourcesFromKenaiPanel getSourcesPanel = new GetSourcesFromKenaiPanel();
+        GetSourcesFromKenaiPanel getSourcesPanel = new GetSourcesFromKenaiPanel(prjAndFeature);
 
         DialogDescriptor dialogDesc = new DialogDescriptor(getSourcesPanel, dialogTitle,
             true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
 
         Object option = DialogDisplayer.getDefault().notify(dialogDesc);
+        
         if (options[0].equals(option)) {
-            System.out.println("We will checkout the repository.");
-            // run the checkout with progress !!!
+            
+            // Run the checkout with progress !!!
+            PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
+            GetSourcesInfo sourcesInfo = getSourcesPanel.getSelectedSourcesInfo();
+            KenaiProjectFeature feature = sourcesInfo.feature;
 
+            if (Utilities.SVN_REPO.equals(feature.getService())) { // XXX service or name
+                try {
+
+                    Subversion.checkoutRepositoryFolder(feature.getLocation().toExternalForm(), sourcesInfo.relativePaths,
+                            new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), passwdAuth.getPassword().toString(), true);
+
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else if (Utilities.HG_REPO.equals(sourcesInfo.feature.getService())) { // XXX service or name
+                try {
+
+                    Mercurial.cloneRepository(feature.getLocation().toExternalForm(), new File(sourcesInfo.localFolderPath),
+                            "", "", "", passwdAuth.getUserName(), passwdAuth.getPassword().toString());
+
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
             // XXX store the project in preferrences, it will be shown as first for next Get From Kenai
         }
 

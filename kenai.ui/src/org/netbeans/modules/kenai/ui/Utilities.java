@@ -36,37 +36,41 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.kenai.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import java.io.File;
+import javax.swing.filechooser.FileSystemView;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public final class OpenKenaiProjectAction implements ActionListener {
+/**
+ *
+ * @author Milan Kubec
+ */
+public class Utilities {
 
-    private String dialogTitle = NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectWindowTitle");
+    // IMPORTANT !!!
+    // Strings returned by KenaiService.getName()
+    // Must to be treated as API by kenai.com !!!
+    public static final String SVN_REPO = "subversion";
+    public static final String HG_REPO = "mercurial";
+    public static final String GIT_REPO = "git";
+    public static final String EXT_REPO = "external_repository";
+    public static final String BGZ_ISSUES = "issues";
+    public static final String JIRA_ISSUES = "jira";
+    public static final String EXT_ISSUES = "external_issues";
 
-    public void actionPerformed(ActionEvent e) {
-
-        KenaiSearchPanel openPanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.OPEN, true);
-        DialogDescriptor dialogDesc = new DialogDescriptor(openPanel, dialogTitle, true, null);
-
-        Object option = DialogDisplayer.getDefault().notify(dialogDesc);
-
-        if (NotifyDescriptor.OK_OPTION.equals(option)) {
-            KenaiProject selProjects[] = openPanel.getSelectedProjects();
-            if (null != selProjects && selProjects.length > 0) {
-                for (KenaiProject prj : selProjects) {
-                    Dashboard.getDefault().addProject(new ProjectHandleImpl(prj));
-                }
+    public static File getDefaultRepoFolder() {
+        File defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
+        if (defaultDir != null && defaultDir.exists() && defaultDir.isDirectory()) {
+            String nbPrjDirName = NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "DIR_NetBeansProjects");
+            File nbPrjDir = new File(defaultDir, nbPrjDirName);
+            if (nbPrjDir.exists() && nbPrjDir.canWrite()) {
+                return nbPrjDir;
             }
         }
-
+        return FileUtil.normalizeFile(new File(System.getProperty("user.home")));
     }
-    
+
 }

@@ -67,6 +67,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
+import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -95,10 +96,13 @@ public class KenaiSearchPanel extends JPanel {
 
     private ProgressHandle progressHandle;
 
+    private boolean multiSelection;
+
     /** Creates new form KenaiProjectsListPanel */
-    public KenaiSearchPanel(PanelType type) {
+    public KenaiSearchPanel(PanelType type, boolean multiSel) {
 
         panelType = type;
+        multiSelection = multiSel;
         initComponents();
 
         noSearchLabelPanel = createLabelPanel(noSearchResultsLabel);
@@ -114,14 +118,32 @@ public class KenaiSearchPanel extends JPanel {
 
     }
 
-    /**
-     * Returns project selected in search project dialog
-     *
-     * @return selected KenaiProject or null if no project selected or dialog canceled
-     */
+    
     public KenaiProject getSelectedProject() {
         KenaiProjectSearchInfo searchInfo = (KenaiProjectSearchInfo) kenaiProjectsList.getSelectedValue();
         return (searchInfo != null) ? searchInfo.kenaiProject : null;
+    }
+
+    /**
+     * Returns projects selected in search project dialog
+     *
+     * @return selected KenaiProjects or null if no project selected or dialog canceled
+     */
+    public KenaiProject[] getSelectedProjects() {
+        Object searchInfos[] = kenaiProjectsList.getSelectedValues();
+        KenaiProject selPrjs[] = new KenaiProject[searchInfos.length];
+        int i = 0;
+        for (Object searchInfo : searchInfos) {
+            selPrjs[i++] = ((KenaiProjectSearchInfo) searchInfo).kenaiProject;
+        }
+        return (searchInfos.length > 0) ? selPrjs : null;
+    }
+
+    private int getListSelMode() {
+        if (!multiSelection) {
+            return ListSelectionModel.SINGLE_SELECTION;
+        }
+        return ListSelectionModel.MULTIPLE_INTERVAL_SELECTION;
     }
 
     /** This method is called from within the constructor to
@@ -149,6 +171,7 @@ public class KenaiSearchPanel extends JPanel {
         setPreferredSize(new Dimension(700, 500));
         setLayout(new BorderLayout());
 
+        kenaiProjectsList.setSelectionMode(getListSelMode());
         kenaiProjectsList.setCellRenderer(new KenaiProjectsListRenderer());
         scrollPane.setViewportView(kenaiProjectsList);
 
@@ -302,15 +325,16 @@ public class KenaiSearchPanel extends JPanel {
 
     private static class KenaiProjectsListModel extends DefaultListModel {
 
-        public KenaiProjectsListModel(final Iterator<KenaiProject> iter, final String pattern) {
-            Runnable runnable = new Runnable() {
+        public KenaiProjectsListModel(final Iterator<KenaiProject> projects, final String pattern) {
+            RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    while(iter.hasNext()) {
-                        addElement(new KenaiProjectSearchInfo(iter.next(), pattern));
+                    if (projects != null) {
+                        while(projects.hasNext()) {
+                            addElement(new KenaiProjectSearchInfo(projects.next(), pattern));
+                        }
                     }
                 }
-            };
-            new Thread(runnable).start();
+            });
         }
 
     }

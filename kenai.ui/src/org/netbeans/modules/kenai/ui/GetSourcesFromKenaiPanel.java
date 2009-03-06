@@ -47,27 +47,46 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.StringTokenizer;
 import javax.swing.BorderFactory;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiProjectFeature;
+import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.subversion.api.Subversion;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -75,10 +94,32 @@ import org.openide.util.NbBundle;
  */
 public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 
+    private ProjectAndFeature prjAndFeature;
+    private boolean localFolderPathEdited = false;
+
+    public GetSourcesFromKenaiPanel(ProjectAndFeature prjFtr) {
+
+        this.prjAndFeature = prjFtr;
+        initComponents();
+
+        refreshUsername();
+        setupCombo();
+        
+    }
+
     /** Creates new form GetFromKenaiPanel */
     public GetSourcesFromKenaiPanel() {
-        initComponents();
-        refreshUsername();
+        this(null);
+    }
+
+    GetSourcesInfo getSelectedSourcesInfo() {
+        StringTokenizer stok = new StringTokenizer(repoFolderTextField.getText(), ",");
+        ArrayList<String> tokens = new ArrayList<String>();
+        while (stok.hasMoreTokens()) {
+            tokens.add(stok.nextToken());
+        }
+        return new GetSourcesInfo(((KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem()).feature,
+                localFolderTextField.getText(), tokens.toArray(new String[tokens.size()]));
     }
 
     /** This method is called from within the constructor to
@@ -107,21 +148,21 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         browseLocalButton = new JButton();
         proxyConfigButton = new JButton();
 
-        setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
+        setBorder(BorderFactory.createEmptyBorder(10, 12, 0, 12));
         setPreferredSize(new Dimension(700, 350));
         setLayout(new GridBagLayout());
 
         loggedInLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.loggedInLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 0, 4, 4);
+        gridBagConstraints.insets = new Insets(4, 0, 12, 4);
         add(loggedInLabel, gridBagConstraints);
 
         usernameLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetFromKenaiPanel.notLoggedIn")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 4, 4, 0);
+        gridBagConstraints.insets = new Insets(4, 4, 12, 0);
         add(usernameLabel, gridBagConstraints);
 
         loginButton.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.loginButton.text")); // NOI18N
@@ -134,7 +175,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = GridBagConstraints.EAST;
-        gridBagConstraints.insets = new Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new Insets(4, 0, 12, 0);
         add(loginButton, gridBagConstraints);
 
         kenaiRepoLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.kenaiRepoLabel.text")); // NOI18N
@@ -144,6 +185,12 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 0, 4);
         add(kenaiRepoLabel, gridBagConstraints);
+
+        kenaiRepoComboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                kenaiRepoComboBoxActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -169,7 +216,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 6, 16, 0);
         add(projectPreviewLabel, gridBagConstraints);
@@ -203,7 +250,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(browseRepoButton, gridBagConstraints);
 
-        localFolderDescLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderDescLabel.text")); // NOI18N
+        localFolderDescLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderDescLabel.svnText")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -222,6 +269,11 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         add(localFolderLabel, gridBagConstraints);
 
         localFolderTextField.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderTextField.text")); // NOI18N
+        localFolderTextField.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent evt) {
+                localFolderTextFieldKeyTyped(evt);
+            }
+        });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -272,28 +324,55 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 
     private void browseKenaiButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseKenaiButtonActionPerformed
         
-        
+        KenaiSearchPanel browsePanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.BROWSE, false);
+        String title = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
+                "GetSourcesFromKenaiPanel.BrowseKenaiProjectsTitle");
+        DialogDescriptor dialogDesc = new DialogDescriptor(browsePanel, title, true, null);
+
+        Object option = DialogDisplayer.getDefault().notify(dialogDesc);
+
+        if (NotifyDescriptor.OK_OPTION.equals(option)) {
+            KenaiProject selProject[] = browsePanel.getSelectedProjects();
+            if (null != selProject && selProject.length > 0) {
+                KenaiProjectFeature features[] = selProject[0].getFeatures(KenaiFeature.SOURCE);
+                for (KenaiProjectFeature feature : features) {
+                    //kenaiRepoComboBox.getModel()
+                }
+            }
+        }
 
 }//GEN-LAST:event_browseKenaiButtonActionPerformed
 
     private void browseRepoButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseRepoButtonActionPerformed
         
         PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
-        String svnFolders[] = null;
-        try {
-            svnFolders = Subversion.selectRepositoryFolders("Select Repository Folder", "",
-                    passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        System.out.println(Arrays.asList(svnFolders));
 
+        KenaiFeatureListItem featureItem = (KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem();
+        String svnFolders[] = null;
+        if (featureItem != null) {
+            String title = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
+                    "GetSourcesFromKenaiPanel.SelectRepositoryFolderTitle");
+            String repoUrl = featureItem.feature.getLocation().toExternalForm();
+            try {
+                svnFolders = Subversion.selectRepositoryFolders(title, repoUrl,
+                        passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        if (svnFolders != null) {
+            repoFolderTextField.setText(svnFolders[0]);
+        }
+        
     }//GEN-LAST:event_browseRepoButtonActionPerformed
 
     private void browseLocalButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseLocalButtonActionPerformed
 
-        // XXX open the chooser in folder entered in the text field
         JFileChooser chooser = new JFileChooser();
+        File uFile = new File(localFolderTextField.getText());
+        if (uFile.exists()) {
+            chooser.setCurrentDirectory(FileUtil.normalizeFile(uFile));
+        }
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int returnVal = chooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -303,6 +382,107 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         
     }//GEN-LAST:event_browseLocalButtonActionPerformed
 
+    private void kenaiRepoComboBoxActionPerformed(ActionEvent evt) {//GEN-FIRST:event_kenaiRepoComboBoxActionPerformed
+        updatePanelUI();
+        updateRepoPath();
+    }//GEN-LAST:event_kenaiRepoComboBoxActionPerformed
+
+    private void localFolderTextFieldKeyTyped(KeyEvent evt) {//GEN-FIRST:event_localFolderTextFieldKeyTyped
+        localFolderPathEdited = true;
+    }//GEN-LAST:event_localFolderTextFieldKeyTyped
+
+    private class KenaiRepositoriesModel extends DefaultComboBoxModel {
+
+        public KenaiRepositoriesModel(final Iterator<KenaiProject> projects) {
+            if (prjAndFeature != null) {
+                try {
+                    KenaiProject prj = Kenai.getDefault().getProject(prjAndFeature.projectName);
+                    KenaiFeatureListItem item = new KenaiFeatureListItem(prj, prjAndFeature.feature);
+                    addElement(item);
+                    setSelectedItem(item);
+                } catch (KenaiException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    if (projects != null) {
+                        while (projects.hasNext() ) {
+                            KenaiProject project = projects.next();
+                            KenaiProjectFeature features[] = project.getFeatures(KenaiFeature.SOURCE);
+                            for (KenaiProjectFeature feature : features) {
+                                addElement(new KenaiFeatureListItem(project, feature));
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+    }
+
+    static class KenaiFeatureListItem {
+
+        KenaiProject project;
+        KenaiProjectFeature feature;
+
+        public KenaiFeatureListItem(KenaiProject prj, KenaiProjectFeature ftr) {
+            project = prj;
+            feature = ftr;
+        }
+
+        @Override
+        public String toString() {
+            return feature.getLocation().toString();
+        }
+
+    }
+
+    static class GetSourcesInfo {
+
+        public KenaiProjectFeature feature;
+        public String localFolderPath;
+        public String relativePaths[];
+
+        public GetSourcesInfo(KenaiProjectFeature ftr, String lcl, String[] rel) {
+            feature = ftr;
+            localFolderPath = lcl;
+            relativePaths = rel;
+        }
+
+    }
+
+    private void updatePanelUI() {
+        KenaiFeatureListItem featureItem = (KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem();
+        if (featureItem != null) {
+            String serviceName = featureItem.feature.getService(); // XXX service or name
+            String repositoryText = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
+                    "GetSourcesFromKenaiPanel.RepositoryLabel");
+            if (Utilities.SVN_REPO.equals(serviceName)) {
+                enableFolderToGetUI(true);
+                localFolderDescLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
+                        "GetSourcesFromKenaiPanel.localFolderDescLabel.svnText"));
+                projectPreviewLabel.setText("(" + featureItem.project.getDisplayName() +
+                        "; Subversion " + repositoryText + ")"); // NOI18N
+            } else if (Utilities.HG_REPO.equals(serviceName)) {
+                enableFolderToGetUI(false);
+                localFolderDescLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
+                        "GetSourcesFromKenaiPanel.localFolderDescLabel.hgText"));
+                projectPreviewLabel.setText("(" + featureItem.project.getDisplayName() +
+                        "; Mercurial " + repositoryText + ")"); // NOI18N
+            } else {
+                enableFolderToGetUI(false);
+            }
+        }
+    }
+
+    private void updateRepoPath() {
+        if (!localFolderPathEdited) {
+            String urlString = ((KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem()).feature.getLocation().toExternalForm();
+            String repoName = urlString.substring(urlString.lastIndexOf("/") + 1); // NOI18N
+            localFolderTextField.setText(Utilities.getDefaultRepoFolder().getPath() + File.separator + repoName);
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton browseKenaiButton;
@@ -342,6 +522,36 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             usernameLabel.setForeground(Color.BLACK);
             usernameLabel.setEnabled(false);
         }
+    }
+
+    private void setupCombo() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                Iterator<KenaiProject> myProjectsIter = null;
+                try {
+                    myProjectsIter = Kenai.getDefault().getMyProjects().iterator();
+                } catch (KenaiException ex) {
+                    // XXX
+                    Exceptions.printStackTrace(ex);
+                }
+                final ComboBoxModel model = (ComboBoxModel) new KenaiRepositoriesModel(myProjectsIter);
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        kenaiRepoComboBox.setModel(model);
+                        updatePanelUI();
+                        updateRepoPath();
+                    }
+                });
+            }
+        });
+        KenaiFeatureCellRenderer renderer = new KenaiFeatureCellRenderer();
+        kenaiRepoComboBox.setRenderer(renderer);
+    }
+
+    private void enableFolderToGetUI(boolean enable) {
+        repoFolderLabel.setEnabled(enable);
+        repoFolderTextField.setEnabled(enable);
+        browseRepoButton.setEnabled(enable);
     }
 
 }
