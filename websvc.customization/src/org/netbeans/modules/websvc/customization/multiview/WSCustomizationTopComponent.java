@@ -44,7 +44,6 @@ package org.netbeans.modules.websvc.customization.multiview;
 import java.awt.BorderLayout;
 import java.util.Collection;
 import java.util.Set;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -61,19 +60,20 @@ public class WSCustomizationTopComponent extends TopComponent {
     private WSPanelFactory panelFactory = null;
     private Set<WSDLModel> models;
     private Node node;
-    private JaxWsModel jmodel;
+    private boolean isLight;
     private Definitions primaryDefinitions;
     
     public WSCustomizationTopComponent(Node node, Set<WSDLModel> models, 
-            Definitions primaryDefinitions, JaxWsModel jmodel){
+            Definitions primaryDefinitions, boolean isLight) {
         setLayout(new BorderLayout());        
         initialized = false;
         this.node = node;
         this.models = models;
+        this.isLight = isLight;
         this.primaryDefinitions = primaryDefinitions;
-        this.jmodel = jmodel;
     }
     
+    @Override
     protected String preferredID(){
         return "CustomizationComponent";    //NOI18N
     }
@@ -87,13 +87,14 @@ public class WSCustomizationTopComponent extends TopComponent {
         initAccessibility();
 
         ToolBarDesignEditor tb = new ToolBarDesignEditor();
-        panelFactory = new WSPanelFactory(tb, node, primaryDefinitions, jmodel);
-        WSCustomizationView mview = new WSCustomizationView(panelFactory, models, primaryDefinitions); 
+        panelFactory = new WSPanelFactory(tb, node, primaryDefinitions);
+        WSCustomizationView mview = new WSCustomizationView(panelFactory, models, primaryDefinitions, isLight);
         tb.setContentView(mview);
         add(tb);
         setFocusable(true);
     }
 
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
@@ -102,6 +103,7 @@ public class WSCustomizationTopComponent extends TopComponent {
 
     }
      
+    @Override
     public void addNotify() {
         if (!initialized) {
             initialized = true;
@@ -111,6 +113,7 @@ public class WSCustomizationTopComponent extends TopComponent {
     }
     
 
+    @Override
     protected void componentShowing() {
         if (!initialized) {
             initialized = true;

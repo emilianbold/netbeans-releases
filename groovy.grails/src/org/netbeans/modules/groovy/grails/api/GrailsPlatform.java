@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -94,7 +95,9 @@ public final class GrailsPlatform {
 
     private static final Logger LOGGER = Logger.getLogger(GrailsPlatform.class.getName());
 
-    private static ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath(new URL[] {});
+    private static final AtomicLong UNIQUE_MARK = new AtomicLong();
+
+    private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath(new URL[] {});
 
     private static final Set<String> GUARDED_COMMANDS = new HashSet<String>();
 
@@ -687,9 +690,10 @@ public final class GrailsPlatform {
 
             // FIXME fix this hack - needed for proper process tree kill
             // see KillableProcess
+            String mark = "";
             if (Utilities.isWindows() && GUARDED_COMMANDS.contains(descriptor.getName())) {
-                command.append(" ").append("REM NB:" // NOI18N
-                        +  descriptor.getDirectory().getAbsolutePath());
+                mark = UNIQUE_MARK.getAndIncrement() + descriptor.getDirectory().getAbsolutePath();
+                command.append(" ").append("REM NB:" + mark); // NOI18N
             }
 
             LOGGER.log(Level.FINEST, "Command is: {0}", command.toString());
@@ -726,7 +730,7 @@ public final class GrailsPlatform {
             try {
                 process = new KillableProcess(
                         grailsProcessDesc.exec(null, envp, true, descriptor.getDirectory()),
-                        descriptor.getDirectory(), descriptor.getName());
+                        descriptor.getName(), mark);
             } catch (IOException ex) {
                 NotifyDescriptor desc = new NotifyDescriptor.Message(
                         NbBundle.getMessage(GrailsPlatform.class, "MSG_StartFailedIOE",

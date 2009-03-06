@@ -68,8 +68,9 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
     }
 
     public void updated(List<DataRow> data) {
-        DataRow lastRow = data.get(data.size() - 1);
-        String value = lastRow.getStringValue(colName); //TODO: change to Long
-        panel.setValue(Long.parseLong(value));
+        for (DataRow lastRow : data) {
+            String value = lastRow.getStringValue(colName); //TODO: change to Long
+            panel.setValue(Long.parseLong(value));
+        }
     }
 }

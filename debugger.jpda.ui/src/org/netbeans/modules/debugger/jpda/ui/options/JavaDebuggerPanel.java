@@ -53,7 +53,16 @@ final class JavaDebuggerPanel extends StorablePanel {
             new CategoryPanelStepFilters(),
             new CategoryPanelFormatters(),
         };
+        categoriesList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { org.openide.util.NbBundle.getMessage(JavaDebuggerPanel.class, "JavaDebuggerPanel.categoryRadioButtonGeneral.text"),
+                                 org.openide.util.NbBundle.getMessage(JavaDebuggerPanel.class, "JavaDebuggerPanel.categoryRadioButtonStepFilters.text"),
+                                 org.openide.util.NbBundle.getMessage(JavaDebuggerPanel.class, "JavaDebuggerPanel.categoryRadioButtonFormatters.text")
+                               };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
         selectCategory(0);
+        categoriesList.setSelectedIndex(0);
         // TODO listen to changes in form fields and call controller.changed()
     }
 
@@ -66,85 +75,70 @@ final class JavaDebuggerPanel extends StorablePanel {
     private void initComponents() {
 
         categoriesButtonGroup = new javax.swing.ButtonGroup();
-        categoryRadioButtonGeneral = new javax.swing.JRadioButton();
-        categoryRadioButtonStepFilters = new javax.swing.JRadioButton();
-        categoryRadioButtonFormatters = new javax.swing.JRadioButton();
         categoryPanel = new javax.swing.JPanel();
-
-        categoriesButtonGroup.add(categoryRadioButtonGeneral);
-        categoryRadioButtonGeneral.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(categoryRadioButtonGeneral, org.openide.util.NbBundle.getMessage(JavaDebuggerPanel.class, "JavaDebuggerPanel.categoryRadioButtonGeneral.text")); // NOI18N
-        categoryRadioButtonGeneral.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                categoryRadioButtonGeneralActionPerformed(evt);
-            }
-        });
-
-        categoriesButtonGroup.add(categoryRadioButtonStepFilters);
-        org.openide.awt.Mnemonics.setLocalizedText(categoryRadioButtonStepFilters, org.openide.util.NbBundle.getMessage(JavaDebuggerPanel.class, "JavaDebuggerPanel.categoryRadioButtonStepFilters.text")); // NOI18N
-        categoryRadioButtonStepFilters.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                categoryRadioButtonStepFiltersActionPerformed(evt);
-            }
-        });
-
-        categoriesButtonGroup.add(categoryRadioButtonFormatters);
-        org.openide.awt.Mnemonics.setLocalizedText(categoryRadioButtonFormatters, org.openide.util.NbBundle.getMessage(JavaDebuggerPanel.class, "JavaDebuggerPanel.categoryRadioButtonFormatters.text")); // NOI18N
-        categoryRadioButtonFormatters.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                categoryRadioButtonFormattersActionPerformed(evt);
-            }
-        });
+        categoriesPanel = new javax.swing.JPanel();
+        categoriesList = new javax.swing.JList();
+        categoriesLabel = new javax.swing.JLabel();
 
         categoryPanel.setLayout(new javax.swing.BoxLayout(categoryPanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        categoriesPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        categoriesList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "General", "Step Filters", "Variable Formatters" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        categoriesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        categoriesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                categoriesListValueChanged(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout categoriesPanelLayout = new org.jdesktop.layout.GroupLayout(categoriesPanel);
+        categoriesPanel.setLayout(categoriesPanelLayout);
+        categoriesPanelLayout.setHorizontalGroup(
+            categoriesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(categoriesList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        categoriesPanelLayout.setVerticalGroup(
+            categoriesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, categoriesList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        org.openide.awt.Mnemonics.setLocalizedText(categoriesLabel, org.openide.util.NbBundle.getMessage(JavaDebuggerPanel.class, "JavaDebuggerPanel.categoriesLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(categoryRadioButtonGeneral)
-                    .add(categoryRadioButtonStepFilters)
-                    .add(categoryRadioButtonFormatters))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
+                    .add(categoriesLabel)
+                    .add(layout.createSequentialGroup()
+                        .add(categoriesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(categoriesLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(categoryRadioButtonGeneral)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(categoryRadioButtonStepFilters)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(categoryRadioButtonFormatters)))
-                .addContainerGap())
+                    .add(categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
+                    .add(categoriesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void categoryRadioButtonGeneralActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_categoryRadioButtonGeneralActionPerformed
-        if (categoryRadioButtonGeneral.isSelected()) {
-            selectCategory(0);
+    private void categoriesListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_categoriesListValueChanged
+        int c = categoriesList.getSelectedIndex();
+        if (c >= 0 && c <= 3) {
+            selectCategory(c);
         }
-    }//GEN-LAST:event_categoryRadioButtonGeneralActionPerformed
-
-    private void categoryRadioButtonStepFiltersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_categoryRadioButtonStepFiltersActionPerformed
-        if (categoryRadioButtonStepFilters.isSelected()) {
-            selectCategory(1);
-        }
-    }//GEN-LAST:event_categoryRadioButtonStepFiltersActionPerformed
-
-    private void categoryRadioButtonFormattersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_categoryRadioButtonFormattersActionPerformed
-        if (categoryRadioButtonFormatters.isSelected()) {
-            selectCategory(2);
-        }
-    }//GEN-LAST:event_categoryRadioButtonFormattersActionPerformed
+}//GEN-LAST:event_categoriesListValueChanged
 
     private void selectCategory(int c) {
         if (categoryPanel.getComponentCount() > 0) {
@@ -188,10 +182,10 @@ final class JavaDebuggerPanel extends StorablePanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup categoriesButtonGroup;
+    private javax.swing.JLabel categoriesLabel;
+    private javax.swing.JList categoriesList;
+    private javax.swing.JPanel categoriesPanel;
     private javax.swing.JPanel categoryPanel;
-    private javax.swing.JRadioButton categoryRadioButtonFormatters;
-    private javax.swing.JRadioButton categoryRadioButtonGeneral;
-    private javax.swing.JRadioButton categoryRadioButtonStepFilters;
     // End of variables declaration//GEN-END:variables
 
 }

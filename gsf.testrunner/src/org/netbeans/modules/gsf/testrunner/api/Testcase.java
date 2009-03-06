@@ -47,7 +47,7 @@ public class Testcase {
         this.type = type;
     }
 
-    TestSession getSession() {
+    public TestSession getSession() {
         return session;
     }
 

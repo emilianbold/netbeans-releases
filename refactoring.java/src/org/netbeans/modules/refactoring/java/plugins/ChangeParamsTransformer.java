@@ -58,7 +58,7 @@ import javax.lang.model.element.*;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.openide.util.Exceptions;
@@ -232,7 +232,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
 
             //add imports, if necessary
             try {
-                CompilationUnitTree cut = addImports(workingCopy.getCompilationUnit(), imports, make);
+                CompilationUnitTree cut = RetoucheUtils.addImports(workingCopy.getCompilationUnit(), imports, make);
                 workingCopy.rewrite(workingCopy.getCompilationUnit(), cut);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -242,39 +242,6 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         }
     }
 
-    //XXX: copied from SourceUtils.addImports. Ideally, should be on one place only:
-    private static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make)
-        throws IOException {
-        // do not modify the list given by the caller (may be reused or immutable).
-        toImport = new ArrayList<String>(toImport);
-        Collections.sort(toImport);
-
-        List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
-        int currentToImport = toImport.size() - 1;
-        int currentExisting = imports.size() - 1;
-
-        while (currentToImport >= 0 && currentExisting >= 0) {
-            String currentToImportText = toImport.get(currentToImport);
-
-            while (currentExisting >= 0 && (imports.get(currentExisting).isStatic() || imports.get(currentExisting).getQualifiedIdentifier().toString().compareTo(currentToImportText) > 0))
-                currentExisting--;
-
-            if (currentExisting >= 0) {
-                imports.add(currentExisting+1, make.Import(make.Identifier(currentToImportText), false));
-                currentToImport--;
-            }
-        }
-        // we are at the head of import section and we still have some imports
-        // to add, put them to the very beginning
-        while (currentToImport >= 0) {
-            String importText = toImport.get(currentToImport);
-            imports.add(0, make.Import(make.Identifier(importText), false));
-            currentToImport--;
-        }
-        // return a copy of the unit with changed imports section
-        return make.CompilationUnit(cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
-    }
-    
     private boolean isMethodMatch(Element method) {
         if ((method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR) && allMethods !=null) {
             for (ElementHandle<ExecutableElement> mh: allMethods) {

@@ -38,13 +38,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.editor.makefile;
 
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageProvider;
 
@@ -52,21 +52,21 @@ import org.netbeans.spi.lexer.LanguageProvider;
  *
  * @author Jan Jancura
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.lexer.LanguageProvider.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.spi.lexer.LanguageProvider.class)
 public class MakefileLanguageProvider extends LanguageProvider {
-    
-    public Language<MakefileTokenId> findLanguage (String mimeType) {
-        if ("text/x-make".equals (mimeType))
-            return new MakefileLanguageHierarchy ().language ();
+
+    public Language<MakefileTokenId> findLanguage(String mimeType) {
+        if (MIMENames.MAKEFILE_MIME_TYPE.equals(mimeType)) {
+            return new MakefileLanguageHierarchy().language();
+        }
         return null;
     }
 
     @Override
-    public LanguageEmbedding<?> findLanguageEmbedding (
-        Token arg0,
-        LanguagePath arg1,
-        InputAttributes arg2
-    ) {
+    public LanguageEmbedding<?> findLanguageEmbedding(
+            Token arg0,
+            LanguagePath arg1,
+            InputAttributes arg2) {
         return null;
     }
 }

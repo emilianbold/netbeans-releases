@@ -144,7 +144,8 @@ public class JBPluginUtils {
                     "lib/jmx-adaptor-plugin.jar", // NOI18N
                     "lib/jnpserver.jar", // NOI18N
                     "lib/log4j.jar", // NOI18N
-                    "lib/xmlentitymgr.jar", // NOI18N
+                    // not present in 4.0.0
+                    //"lib/xmlentitymgr.jar", // NOI18N
                     "deploy/jmx-invoker-service.xml"); // NOI18N
         }
         return domainRequirements4x;

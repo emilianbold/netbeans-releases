@@ -46,6 +46,7 @@ import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
@@ -259,6 +260,23 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
                         clusterName),
                         e);
             }
+        }
+        // remove cluster/update files /////////////////////////////////////////
+        try {
+            progress.setDetail(ResourceUtils.getString(
+                    NbClusterConfigurationLogic.class,
+                    "NCCL.uninstall.update.files")); // NOI18N
+            for(String cluster : clusterNames) {
+               File updateDir = new File(installLocation, cluster + File.separator + "update");
+               if ( updateDir.exists()) {
+                    FileUtils.deleteFile(updateDir, true);
+               }
+            }
+        } catch (IOException e) {
+            LogManager.log(ResourceUtils.getString(
+                    NbClusterConfigurationLogic.class,
+                    "NCCL.uninstall.error.update.files"), // NOI18N
+                    e);
         }
     }
     

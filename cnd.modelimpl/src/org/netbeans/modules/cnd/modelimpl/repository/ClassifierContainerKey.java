@@ -63,6 +63,12 @@ public final class ClassifierContainerKey extends ProjectNameBasedKey {
         return KeyObjectFactory.KEY_CLASSIFIER_CONTAINER_KEY;
     }
 
+    @Override
+    public int hashCode() {
+        return 37*KeyObjectFactory.KEY_CLASSIFIER_CONTAINER_KEY + super.hashCode();
+    }
+
+
     public int getSecondaryDepth() {
         return 1;
     }

@@ -68,6 +68,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -96,6 +97,7 @@ import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
@@ -111,6 +113,8 @@ abstract public class CsmCompletionQuery {
     private static final String PROJECT_BEEING_PARSED = NbBundle.getMessage(CsmCompletionQuery.class, "completion-project-beeing-parsed");
     private static final boolean TRACE_COMPLETION = Boolean.getBoolean("cnd.completion.trace");
     private static CsmItemFactory itemFactory;
+
+    private static final int MAX_DEPTH = 15;
 
     // the only purpose of this method is that NbJavaCompletionQuery
     // can use it to retrieve baseDocument's fileobject and create correct
@@ -631,24 +635,28 @@ abstract public class CsmCompletionQuery {
         return null;
     }
 
-    private static CsmClassifier getClassifier(CsmType type, CsmFile contextFile, CsmFunction.OperatorKind operator) {
+    private static CsmClassifier getClassifier(CsmType type, CsmFile contextFile, CsmFunction.OperatorKind operator, int level) {
         CsmClassifier cls = type.getClassifier();
         cls = cls != null ? CsmBaseUtilities.getOriginalClassifier(cls, contextFile) : cls;
         if (CsmKindUtilities.isClass(cls)) {
             CsmFunction op = CsmCompletionQuery.getOperator((CsmClass) cls, contextFile, operator);
             if (op != null) {
                 CsmType opType = op.getReturnType();
-                if (operator == CsmFunction.OperatorKind.ARROW) {
-                    // recursion only for ->
-                    CsmClassifier opCls = getClassifier(opType, contextFile, operator);
-                    if (opCls != null) {
-                        cls = opCls;
+                if ((opType != type) && (level != 0)) {
+                    if (operator == CsmFunction.OperatorKind.ARROW) {
+                        // recursion only for ->
+                        CsmClassifier opCls = getClassifier(opType, contextFile, operator, level - 1);
+                        if (opCls != null) {
+                            cls = opCls;
+                        }
+                    } else {
+                        CsmClassifier opCls = getClassifier(opType, contextFile);
+                        if (opCls != null) {
+                            cls = opCls;
+                        }
                     }
                 } else {
-                    CsmClassifier opCls = getClassifier(opType, contextFile);
-                    if (opCls != null) {
-                        cls = opCls;
-                    }
+                    CndUtils.assertTrue(false, "Infinite recursion in file " + type.getContainingFile() + " class " + type, Level.INFO); //NOI18N
                 }
             }
         }
@@ -743,7 +751,7 @@ abstract public class CsmCompletionQuery {
             this.sort = sort;
         }
 
-        public void setFindType(boolean findType) {
+        private void setFindType(boolean findType) {
             this.findType = findType;
         }
 
@@ -830,9 +838,16 @@ abstract public class CsmCompletionQuery {
         private CsmType resolveType(CsmCompletionExpression exp) {
             Context ctx = (Context) clone();
             ctx.setFindType(true);
+            // when resolve type use full scope of search
+            QueryScope old = ctx.compResolver.setResolveScope(QueryScope.GLOBAL_QUERY);
             CsmType typ = null;
-            if (ctx.resolveExp(exp)) {
-                typ = ctx.lastType;
+            try {
+                if (ctx.resolveExp(exp)) {
+                    typ = ctx.lastType;
+                }
+            } finally {
+                // restore old
+                ctx.compResolver.setResolveScope(old);
             }
             return typ;
         }
@@ -921,7 +936,7 @@ abstract public class CsmCompletionQuery {
                 nextKind = extractKind(exp, i + 1, startIdx, lastDot, false);
                 /*resolve arrows*/
                 if ((kind == ExprKind.ARROW) && (i != startIdx) && (i < parmCnt || lastDot || findType) && (lastType != null) && (lastType.getArrayDepth() == 0)) {
-                    CsmClassifier cls = getClassifier(lastType, contextFile, CsmFunction.OperatorKind.ARROW);
+                    CsmClassifier cls = getClassifier(lastType, contextFile, CsmFunction.OperatorKind.ARROW, MAX_DEPTH);
                     if (cls != null) {
                         lastType = CsmCompletion.getType(cls, 0);
                     }
@@ -935,7 +950,7 @@ abstract public class CsmCompletionQuery {
                 kind = extractKind(exp, tokCount + 1, startIdx, true, true);
                 /*resolve arrows*/
                 if ((kind == ExprKind.ARROW) && (lastDot || findType) && (lastType != null) && (lastType.getArrayDepth() == 0)) {
-                    CsmClassifier cls = getClassifier(lastType, contextFile, CsmFunction.OperatorKind.ARROW);
+                    CsmClassifier cls = getClassifier(lastType, contextFile, CsmFunction.OperatorKind.ARROW, MAX_DEPTH);
                     if (cls != null) {
                         lastType = CsmCompletion.getType(cls, 0);
                     }
@@ -1504,7 +1519,7 @@ abstract public class CsmCompletionQuery {
                             }
                         }
                         if (opKind != null) {
-                            CsmClassifier cls = lastType == null ? null : CsmCompletionQuery.getClassifier(lastType, contextFile, opKind);
+                            CsmClassifier cls = lastType == null ? null : CsmCompletionQuery.getClassifier(lastType, contextFile, opKind, MAX_DEPTH);
                             if (cls != null) {
                                 lastType = CsmCompletion.getType(cls, 0);
                             }
@@ -1798,24 +1813,19 @@ abstract public class CsmCompletionQuery {
         }
 
         private CsmObject createInstantiation(CsmTemplate template, CsmCompletionExpression exp) {
-            if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template)) {
-                if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
-                    List<CsmType> params = new ArrayList<CsmType>();
-                    int paramsNumber = (template.getTemplateParameters().size() < exp.getParameterCount() - 1) ? template.getTemplateParameters().size() : exp.getParameterCount() - 1;
-                    for (int i = 0; i < paramsNumber; i++) {
-                        CsmCompletionExpression paramInst = exp.getParameter(i + 1);
-                        if (paramInst != null) {
-                            params.add(resolveType(paramInst));
-                        } else {
-                            break;
-                        }
+            if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
+                List<CsmType> params = new ArrayList<CsmType>();
+                int paramsNumber = (template.getTemplateParameters().size() < exp.getParameterCount() - 1) ? template.getTemplateParameters().size() : exp.getParameterCount() - 1;
+                for (int i = 0; i < paramsNumber; i++) {
+                    CsmCompletionExpression paramInst = exp.getParameter(i + 1);
+                    if (paramInst != null) {
+                        params.add(resolveType(paramInst));
+                    } else {
+                        break;
                     }
-                    CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-                    return ip.instantiate(template, params, getFinder().getCsmFile());
                 }
-            }
-            if (CsmKindUtilities.isClassForwardDeclaration(template)) {
-                return template;
+                CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+                return ip.instantiate(template, params, getFinder().getCsmFile());
             }
             return null;
         }

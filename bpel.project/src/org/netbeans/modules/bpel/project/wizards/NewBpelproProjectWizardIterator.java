@@ -30,7 +30,7 @@ import org.netbeans.modules.compapp.projects.base.ui.wizards.NewIcanproProjectWi
  */
 public class NewBpelproProjectWizardIterator 
         extends NewIcanproProjectWizardIterator 
-        implements org.netbeans.modules.bpel.project.IcanproConstants {
+        implements org.netbeans.modules.bpel.project.ProjectConstants {
     
     private static final long serialVersionUID = 1L;
     

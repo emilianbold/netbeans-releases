@@ -475,6 +475,7 @@ public class Util {
 
     public static void checkMetroLibrary(Project p) {
         WsitProvider wsitProvider = p.getLookup().lookup(WsitProvider.class);
+        if (wsitProvider == null) return;
         if (!wsitProvider.isWsitSupported()) {
             Object button = DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Confirmation(
@@ -523,8 +524,8 @@ public class Util {
             Exceptions.printStackTrace(ex);
         } finally {
             try {
-                r.close();
-                is.close();
+                if (r != null) r.close();
+                if (is != null) is.close();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

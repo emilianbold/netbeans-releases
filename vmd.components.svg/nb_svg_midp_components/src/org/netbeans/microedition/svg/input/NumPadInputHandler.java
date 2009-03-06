@@ -127,6 +127,7 @@ public class NumPadInputHandler extends TextInputHandler {
                         return true;
                     }
                     break;
+                case Canvas.FIRE:
                 case BACKSPACE:
                     if (nCaret > 0) {
                         aText.deleteCharAt(--nCaret);
@@ -141,6 +142,13 @@ public class NumPadInputHandler extends TextInputHandler {
                     break;
 
                 default:
+                    if ((int) ' ' <= nKeyCode && nKeyCode <= (int) '~') {
+                        resetKeyState();
+                        cChar = (char) nKeyCode;
+                        aText.insert(nCaret, cChar);
+                        nCaret++;
+                    }
+
                     break;
             }
         }
