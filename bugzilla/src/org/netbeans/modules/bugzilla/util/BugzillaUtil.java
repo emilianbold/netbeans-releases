@@ -97,7 +97,7 @@ public class BugzillaUtil {
         }       
 
         ResourceBundle bundle = NbBundle.getBundle(BugzillaUtil.class);
-        if (BugzillaUtil.show(kp, bundle.getString("LBL_Keywords"), bundle.getString("LBL_Select"))) { // NOI18N
+        if (BugzillaUtil.show(kp, bundle.getString("LBL_Keywords"), bundle.getString("LBL_Ok"))) { // NOI18N
             String[] values = kp.getSelectedKeywords();
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i < values.length; i++) {
