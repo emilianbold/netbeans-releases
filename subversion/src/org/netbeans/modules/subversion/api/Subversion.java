@@ -173,7 +173,7 @@ public class Subversion {
      * @param  relativePaths  relative paths denoting folder the folder in the
      *                       repository that is to be checked-out; to specify
      *                       that the whole repository folder should be
-     *                       checked-out, use {@code &quot;/&quot;}
+     *                       checked-out, use use a sing arrya containig one empty string
      * @param  localFolder  local folder to store the checked-out files to
      * @param  scanForNewProjects scans the created working copy for netbenas projects
      *                            and presents a dialog to open them eventually
@@ -199,7 +199,7 @@ public class Subversion {
      * @param  relativePaths  relative paths denoting folder the folder in the
      *                       repository that is to be checked-out; to specify
      *                       that the whole repository folder should be
-     *                       checked-out, use {@code &quot;/&quot;}
+     *                       checked-out, use a string array containig one empty string
      * @param  localFolder  local folder to store the checked-out files to
      * @param  username  username for access to the given repository
      * @param  password  password for access to the given repository
@@ -240,17 +240,19 @@ public class Subversion {
             return false;
         }
 
-        RepositoryFile[] repositoryFiles = new RepositoryFile[repoRelativePaths.length];
-        for (int i = 0; i < repoRelativePaths.length; i++) {
-            String repoRelativePath = repoRelativePaths[i];
-
-            repoRelativePath = polishRelativePath(repoRelativePath);
-            SVNUrl repoSvnUrl = isRootRelativePath(repoRelativePath)
-                                     ? svnUrl
-                                     : svnUrl.appendPath(repoRelativePath);
-
-            repositoryFiles[i] = new RepositoryFile(repoSvnUrl, repoRelativePath, svnRevision);
+        RepositoryFile[] repositoryFiles;
+        if(repoRelativePaths.length <= 1 && repoRelativePaths[0].trim().equals("")) {
+            repositoryFiles = new RepositoryFile[1];
+            repositoryFiles[0] = new RepositoryFile(svnUrl, ".", svnRevision);
+        } else {
+            repositoryFiles = new RepositoryFile[repoRelativePaths.length];
+            for (int i = 0; i < repoRelativePaths.length; i++) {
+                String repoRelativePath = repoRelativePaths[i];
+                repoRelativePath = polishRelativePath(repoRelativePath);
+                repositoryFiles[i] = new RepositoryFile(svnUrl, repoRelativePath, svnRevision);
+            }
         }
+
         CheckoutAction.performCheckout(
                 svnUrl,
                 client,
