@@ -71,11 +71,11 @@ public class KenaiProjectTest {
     public void setUp() {
         try {
             System.setProperty("kenai.com.url","http://testkenai.com");
-            BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
-            String username = br.readLine();
-            String password = br.readLine();
-            br.close();
-            Kenai.getDefault().login(username, password.toCharArray());
+//            BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
+//            String username = br.readLine();
+//            String password = br.readLine();
+//            br.close();
+//            Kenai.getDefault().login(username, password.toCharArray());
 
         } catch (Exception ex) {
             throw new RuntimeException(ex);
