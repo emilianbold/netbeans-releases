@@ -62,7 +62,7 @@ public class MessagingAccessorImpl extends MessagingAccessor {
     public ActionListener getOpenMessagesAction(final ProjectHandle project) {
         return new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
-                final ChatTopComponent chatTC = ChatTopComponent.getDefault();
+                final ChatTopComponent chatTC = ChatTopComponent.findInstance();
                 chatTC.open();
                 chatTC.requestActive();
                 chatTC.setActive(project.getId());
