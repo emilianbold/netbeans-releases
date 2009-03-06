@@ -241,7 +241,7 @@ public class Subversion {
         }
 
         RepositoryFile[] repositoryFiles;
-        if(repoRelativePaths.length <= 1 && repoRelativePaths[0].trim().equals("")) {
+        if(repoRelativePaths.length == 0 || (repoRelativePaths.length == 1 && repoRelativePaths[0].trim().equals(""))) {
             repositoryFiles = new RepositoryFile[1];
             repositoryFiles[0] = new RepositoryFile(svnUrl, ".", svnRevision);
         } else {
