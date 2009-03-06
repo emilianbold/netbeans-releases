@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,6 +82,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -126,6 +128,35 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
      */
     public void closed() {
         ToolsPanel.removeCompilerSetModifiedListener(this);
+        for(Item item : getProjectItems()){
+            DataObject dao = item.getDataObject();
+            if (dao != null) {
+                dao.removePropertyChangeListener(item);
+            }
+        }
+        closed(rootFolder);
+    }
+
+    private void closed(Folder folder){
+        if (folder != null){
+            for(Folder f : folder.getAllFolders(false)){
+                closed(f);
+            }
+            folder.detachListener();
+        }
+    }
+
+    public void clean(){
+        Configurations confs = getConfs();
+        if (confs != null) {
+            for(Configuration conf : confs.getConfs()){
+                if (conf != null){
+                    conf.setAuxObjects(Collections.<ConfigurationAuxObject>emptyList());
+                }
+            }
+        }
+        projectItems.clear();
+        rootFolder = null;
     }
 
     public static MakeConfigurationDescriptor getMakeConfigurationDescriptor(Project project) {
