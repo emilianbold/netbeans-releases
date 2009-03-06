@@ -46,7 +46,7 @@ import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescripto
 public class Assembler extends BasicCompiler {
 
     /** Creates a new instance of GNUCCompiler */
-    public Assembler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    private Assembler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path); // NOI18N
     }
 
@@ -55,6 +55,10 @@ public class Assembler extends BasicCompiler {
         Assembler copy = new Assembler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
+    }
+
+    public static Assembler create(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return new Assembler(hkey, flavor, kind, name, displayName, path);
     }
 
     @Override

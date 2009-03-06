@@ -62,7 +62,7 @@ import org.openide.util.Lookup;
 public abstract class CCCCompiler extends BasicCompiler {
     private static File tmpFile = null;
     
-    public CCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    protected CCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
     }
     

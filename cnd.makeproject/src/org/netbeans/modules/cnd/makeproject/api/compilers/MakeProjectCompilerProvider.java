@@ -64,43 +64,43 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
     public Tool createCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         if (flavor.isSunStudioCompiler()) {
             if (kind == Tool.CCompiler) {
-                return new SunCCompiler(hkey, flavor, kind, name, displayName, path);
+                return SunCCompiler.create(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.CCCompiler) {
-                return new SunCCCompiler(hkey, flavor, kind, name, displayName, path);
+                return SunCCCompiler.create(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.FortranCompiler) {
-                return new SunFortranCompiler(hkey, flavor, kind, name, displayName, path);
+                return SunFortranCompiler.create(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.MakeTool) {
-                return new SunMaketool(hkey, flavor, name, displayName, path);
+                return SunMaketool.create(hkey, flavor, name, displayName, path);
             } else if (kind == Tool.DebuggerTool) {
-                return new SunDebuggerTool(hkey, flavor, name, displayName, path);
+                return SunDebuggerTool.create(hkey, flavor, name, displayName, path);
             } else if (kind == Tool.Assembler) {
-                return new Assembler(hkey, flavor, kind, name, displayName, path);
+                return Assembler.create(hkey, flavor, kind, name, displayName, path);
             }
         } else /* if (flavor.isGnuCompiler()) */ { // Assume GNU (makeproject system doesn't handle Unknown)
            if (kind == Tool.CCompiler) {
                if ("MSVC".equals(flavor.toString())) { // NOI18N
-                   return new MsvcCompiler(hkey, flavor, kind, name, displayName, path);
+                   return MsvcCompiler.create(hkey, flavor, kind, name, displayName, path);
                } else {
-                   return new GNUCCompiler(hkey, flavor, kind, name, displayName, path);
+                   return GNUCCompiler.create(hkey, flavor, kind, name, displayName, path);
                }
            } else if (kind == Tool.CCCompiler) {
                if ("MSVC".equals(flavor.toString())) { // NOI18N
                    return new MsvcCompiler(hkey, flavor, kind, name, displayName, path);
                } else {
-                   return new GNUCCCompiler(hkey, flavor, kind, name, displayName, path);
+                   return GNUCCCompiler.create(hkey, flavor, kind, name, displayName, path);
                }
             } else if (kind == Tool.FortranCompiler) {
-                return new GNUFortranCompiler(hkey, flavor, kind, name, displayName, path);
+                return GNUFortranCompiler.create(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.MakeTool) {
-                return new GNUMaketool(hkey, flavor, name, displayName, path);
+                return GNUMaketool.create(hkey, flavor, name, displayName, path);
             } else if (kind == Tool.DebuggerTool) {
-                return new GNUDebuggerTool(hkey, flavor, name, displayName, path);
+                return GNUDebuggerTool.create(hkey, flavor, name, displayName, path);
             } else if (kind == Tool.Assembler) {
-                return new Assembler(hkey, flavor, kind, name, displayName, path);
+                return Assembler.create(hkey, flavor, kind, name, displayName, path);
             }
         }
         if (kind == Tool.CustomTool) {
-            return new CustomTool(hkey);
+            return CustomTool.create(hkey);
         }
         throw new IllegalArgumentException(NbBundle.getMessage(MakeProjectCompilerProvider.class,
                 "ERR_UnrecognizedCompilerType")); // NOI18N

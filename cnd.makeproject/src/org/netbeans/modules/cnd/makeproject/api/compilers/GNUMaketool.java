@@ -44,11 +44,12 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.MakeDescriptor;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 
 public class GNUMaketool extends Tool {
     
-    public GNUMaketool(String hkey, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
-        super(hkey, flavor, MakeTool, name, displayName, path); // NOI18N
+    private GNUMaketool(String hkey, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
+        super(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), flavor, MakeTool, name, displayName, path); // NOI18N
     }
     
     @Override
@@ -56,6 +57,10 @@ public class GNUMaketool extends Tool {
         GNUMaketool copy = new GNUMaketool(getHostKey(), getFlavor(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
+    }
+
+    public static GNUMaketool create(String hkey, CompilerFlavor flavor, String name, String displayName, String path) {
+        return new GNUMaketool(hkey, flavor, name, displayName, path);
     }
 
     @Override

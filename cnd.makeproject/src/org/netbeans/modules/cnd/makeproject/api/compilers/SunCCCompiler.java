@@ -51,8 +51,10 @@ public class SunCCCompiler extends SunCCCCompiler {
     private static final String compilerStderrCommand = " -xdryrun -E"; // NOI18N
     private static final String compilerStderrCommand2 = " -xdumpmacros=defs,sys -E"; // NOI18N
     
-    /** Creates a new instance of SunCCompiler */
-    public SunCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    /** 
+     * Creates a new instance of SunCCompiler
+     */
+    protected SunCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
     }
     
@@ -62,7 +64,11 @@ public class SunCCCompiler extends SunCCCCompiler {
         copy.setName(getName());
         return copy;
     }
-    
+
+    public static SunCCCompiler create(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return new SunCCCompiler(hkey, flavor, kind, name, displayName, path);
+    }
+
     @Override
     public CompilerDescriptor getDescriptor() {
         return getFlavor().getToolchainDescriptor().getC();
