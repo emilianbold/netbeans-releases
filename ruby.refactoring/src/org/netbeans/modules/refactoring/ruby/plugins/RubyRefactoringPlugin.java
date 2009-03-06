@@ -163,7 +163,6 @@ public abstract class RubyRefactoringPlugin extends ProgressProviderAdapter impl
         // Process Ruby files and RHTML files separately - and OTHER files separately
         // TODO - now that I don't need separate RHTML models any more, can
         // I just do a single pass?
-        Set<Source> sources = new HashSet<Source>(2 * files.size());
         Set<Source> rubyFiles = new HashSet<Source>(2 * files.size());
         Set<Source> rhtmlFiles = new HashSet<Source>(2 * files.size());
         for (FileObject file : files) {
@@ -177,6 +176,10 @@ public abstract class RubyRefactoringPlugin extends ProgressProviderAdapter impl
                 rhtmlFiles.add(Source.create(file));
             }
         }
+
+        Set<Source> sources = new HashSet<Source>(rubyFiles.size() + rhtmlFiles.size());
+        sources.addAll(rubyFiles);
+        sources.addAll(rhtmlFiles);
 
         try {
             ParserManager.parse(sources, task);
