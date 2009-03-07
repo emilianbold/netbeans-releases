@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.remote.support;
 import org.netbeans.modules.cnd.remote.support.managers.ScriptManager;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Base class for running a script remotely where the script requires a manager class
@@ -52,8 +53,8 @@ import com.jcraft.jsch.JSchException;
  */
 public class RemoteScriptSupport extends RemoteConnectionSupport {
     
-    public RemoteScriptSupport(String key, ScriptManager manager, int port) {
-        super(key, port);
+    public RemoteScriptSupport(ExecutionEnvironment execEnv, ScriptManager manager) {
+        super(execEnv);
         if (!isFailedOrCancelled()) {
             manager.setSupport(this);
             setChannelCommand(manager.getScript());
@@ -61,11 +62,6 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
         }
     }
 
-    /** TODO: deprecate and remove */
-    public RemoteScriptSupport(String key, ScriptManager manager) {
-        this(key, manager, PORT);
-    }
-    
     private void setChannelCommand(String script) {
         try {
             channel = createChannel();

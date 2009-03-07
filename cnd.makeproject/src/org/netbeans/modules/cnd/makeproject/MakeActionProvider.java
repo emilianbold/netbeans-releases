@@ -84,12 +84,12 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
@@ -103,6 +103,7 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -280,7 +281,7 @@ public class MakeActionProvider implements ActionProvider {
     }
 
     private static void runActionWorker(String hkey, Runnable actionWorker) {
-        if (RemoteUtils.isLocalhost(hkey)) {
+        if (ExecutionEnvironmentFactory.getExecutionEnvironment(hkey).isLocal()) {
             actionWorker.run();
         } else {
             ServerList registry = Lookup.getDefault().lookup(ServerList.class);
@@ -1042,7 +1043,7 @@ public class MakeActionProvider implements ActionProvider {
 
     public boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf, boolean validated) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
-        String hkey = conf.getDevelopmentHost().getName();
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(conf.getDevelopmentHost().getName());
         ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
         String csname;
@@ -1060,7 +1061,7 @@ public class MakeActionProvider implements ActionProvider {
 
         if (!conf.getDevelopmentHost().isLocalhost()) {
             assert serverList != null;
-            ServerRecord record = serverList.get(hkey);
+            ServerRecord record = serverList.get(env);
             assert record != null;
             record.validate(false);
             if (!record.isOnline()) {
@@ -1075,14 +1076,14 @@ public class MakeActionProvider implements ActionProvider {
             // Confiiguration was created with unknown tool set. Use the now default one.
             unknownCompilerSet = true;
             csname = csconf.getOption();
-            cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
+            cs = CompilerSetManager.getDefault(env).getCompilerSet(csname);
             if (cs == null) {
-                cs = CompilerSetManager.getDefault(hkey).getDefaultCompilerSet();
+                cs = CompilerSetManager.getDefault(env).getDefaultCompilerSet();
             }
             runBTA = true;
         } else if (csconf.isValid()) {
             csname = csconf.getOption();
-            cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
+            cs = CompilerSetManager.getDefault(env).getCompilerSet(csname);
         } else {
             csname = csconf.getOldName();
             CompilerFlavor flavor = null;
@@ -1093,7 +1094,7 @@ public class MakeActionProvider implements ActionProvider {
                 flavor = CompilerFlavor.getUnknown(conf.getPlatformInfo().getPlatform());
             }
             cs = CompilerSet.getCustomCompilerSet("", flavor, csconf.getOldName());
-            CompilerSetManager.getDefault(hkey).add(cs);
+            CompilerSetManager.getDefault(env).add(cs);
             csconf.setValid();
         }
 
@@ -1111,7 +1112,7 @@ public class MakeActionProvider implements ActionProvider {
             }
         } else {
             if (serverList != null && !unknownCompilerSet) {
-                if (!serverList.isValidExecutable(hkey, makeTool.getPath())) {
+                if (!serverList.isValidExecutable(env, makeTool.getPath())) {
                     runBTA = true;
                 }
             }
@@ -1147,7 +1148,7 @@ public class MakeActionProvider implements ActionProvider {
                 BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
                 bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N
                 ToolsPanelModel model = new LocalToolsPanelModel();
-                model.setSelectedDevelopmentHost(hkey); // only localhost until BTA becomes more functional for remote sets
+                model.setSelectedDevelopmentHost(ExecutionEnvironmentFactory.getHostKey(env)); // only localhost until BTA becomes more functional for remote sets
                 model.setEnableDevelopmentHostChange(false);
                 model.setCompilerSetName(null); // means don't change
                 model.setSelectedCompilerSetName(csname);

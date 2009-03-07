@@ -45,7 +45,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     }
 
     private static boolean showMe(String hkey, String pathToValidate, String[] hostsList) {
-        JButton btnOK = new JButton(NbBundle.getMessage(AddServerDialog.class, "BTN_OK"));
+        JButton btnOK = new JButton(NbBundle.getMessage(EditPathMapDialog.class, "BTN_OK"));
         EditPathMapDialog dlg = new EditPathMapDialog(hkey, pathToValidate, hostsList, btnOK);
 
         DialogDescriptor dd = new DialogDescriptor(dlg,
