@@ -96,7 +96,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
 
     // we can't store CSM because it's dependent on devHostConfig name which is not persistent
     public CompilerSetManager getCompilerSetManager() {
-        return CompilerSetManager.getDefault(dhconf.getName());
+        return CompilerSetManager.getDefault(dhconf.getExecutionEnvironment());
     }
 
 //
@@ -159,7 +159,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         String s = getCompilerSetName().getValue();
         if (s != null) {
             int i = 0;
-            for (String csname : CompilerSetManager.getDefault(dhconf.getName()).getCompilerSetNames()) {
+            for (String csname : CompilerSetManager.getDefault(dhconf.getExecutionEnvironment()).getCompilerSetNames()) {
                 if (s.equals(csname)) {
                     return i;
                 }

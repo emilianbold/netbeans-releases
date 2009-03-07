@@ -181,7 +181,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         }
 
         if (model.getSelectedDevelopmentHost() != null) {
-            cbDevHost.setSelectedItem(model.getSelectedDevelopmentHost());
+            cbDevHost.setSelectedItem(ExecutionEnvironmentFactory.getHostKey(model.getSelectedDevelopmentHost()));
         } else {
             cbDevHost.setSelectedIndex(cacheManager.getDefaultHostIndex());
         }
@@ -290,7 +290,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             }
             cacheManager.setDefaultIndex(cbDevHost.getSelectedIndex());
             execEnv = getSelectedEnvironment();
-            model.setSelectedDevelopmentHost(ExecutionEnvironmentFactory.getHostKey(execEnv));
+            model.setSelectedDevelopmentHost(execEnv);
             update(true);
         } else {
             update(false);
