@@ -124,7 +124,7 @@ public class Configurations {
         MakeConfiguration active = (MakeConfiguration) getActive();
         if (active != null) {
             DevelopmentHostConfiguration host = active.getDevelopmentHost();
-            CompilerSetManagerEvents.get(host.getName()).runOnCodeModelReadiness(task);
+            CompilerSetManagerEvents.get(host.getExecutionEnvironment()).runOnCodeModelReadiness(task);
         } else {
             if (postpone) {
                 tasks.add(task);

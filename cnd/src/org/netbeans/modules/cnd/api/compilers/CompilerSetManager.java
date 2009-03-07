@@ -217,14 +217,6 @@ public class CompilerSetManager {
         return getDefault(LOCALHOST);
     }
 
-    /**
-     * Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault()
-     * TODO: deprecate and remove
-     */
-    public static CompilerSetManager create(String hkey) {
-        return create(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
-    }
-
     /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
     public static CompilerSetManager create(ExecutionEnvironment env) {
         CompilerSetManager newCsm = new CompilerSetManager(env);
@@ -359,7 +351,7 @@ public class CompilerSetManager {
         this.executionEnvironment = env;
         this.sets = sets;
         this.platform = platform;
-        if(env.isRemote() && isEmpty()) { // if (!LOCALHOST.equals(hkey) && isEmpty()) {
+        if(env.isRemote() && isEmpty()) {
             this.state = State.STATE_UNINITIALIZED;
             log.fine("CSM restoring from pref: Adding empty CS to host " + toString());
             add(CompilerSet.createEmptyCompilerSet(platform));
@@ -1002,29 +994,6 @@ public class CompilerSetManager {
         }
         if (cs.findTool(Tool.MakeTool) == null) {
             autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getMake(), Tool.MakeTool);
-//            Tool other = null;
-//            for (CompilerSet set : sets) {
-//                other = set.findTool(Tool.MakeTool);
-//                if (other != null) {
-//                    break;
-//                }
-//            }
-//            if (other != null) {
-//                cs.addNewTool(hkey, other.getName(), other.getPath(), Tool.MakeTool);
-//            } else {
-//                String path = Path.findCommand("make"); // NOI18N
-//                if (path != null) {
-//                    cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.MakeTool);
-//                } else {
-//                    path = Path.findCommand("gmake"); // NOI18N
-//                    if (path != null) {
-//                        cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.MakeTool);
-//                    }
-//                }
-//            }
-//        }
-//        if (cs.getTool(Tool.MakeTool) == null) {
-//            cs.addTool(hkey, "", "", Tool.MakeTool); // NOI18N
         }
         if (cs.findTool(Tool.DebuggerTool) == null) {
             String path;

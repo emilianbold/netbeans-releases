@@ -41,7 +41,7 @@ package org.netbeans.modules.cnd.api.remote;
 import java.io.File;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
 /**
@@ -54,28 +54,68 @@ public abstract class HostInfoProvider {
 
     /**
      * This function returns path mapper for the host stated by hkey
+     * TODO: deprecate and remove
      */
-    public abstract PathMap getMapper(String hkey);
+    public final PathMap getMapper(String hkey) {
+        return getMapper(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
+    }
+
+    /**
+     * This function returns path mapper for the host stated by hkey
+     */
+    public abstract PathMap getMapper(ExecutionEnvironment execEnv);
+
+    /**
+     * This function returns PlatformTypes constant representing remote host platform
+     * TODO: deprecate and remove
+     */
+    public final int getPlatform(String hkey) {
+        return getPlatform(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
+    }
 
     /**
      * This function returns PlatformTypes constant representing remote host platform
      */
-    public abstract int getPlatform(String hkey);
+    public abstract int getPlatform(ExecutionEnvironment execEnv);
+
+    /**
+     * This function returns system environment for the host stated by hkey
+     * TODO: deprecate and remove
+     */
+    public final Map<String, String> getEnv(String hkey) {
+        return getEnv(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
+    }
 
     /**
      * This function returns system environment for the host stated by hkey
      */
-    public abstract Map<String, String> getEnv(String hkey);
+    public abstract Map<String, String> getEnv(ExecutionEnvironment execEnv);
+
+    /**
+     * Validates file existence
+     * TODO: deprecate and remove
+     */
+    public final boolean fileExists(String hkey, String path) {
+        return fileExists(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), path);
+    }
 
     /**
      * Validates file existence
      */
-    public abstract boolean fileExists(String hkey, String path);
+    public abstract boolean fileExists(ExecutionEnvironment execEnv, String path);
     
     /**
      * Returns dir where libraries are located
+     * TODO: deprecate and remove
      */
-    public abstract String getLibDir(String hkey);
+    public final String getLibDir(String hkey) {
+        return getLibDir(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
+    }
+
+    /**
+     * Returns dir where libraries are located
+     */
+    public abstract String getLibDir(ExecutionEnvironment execEnv);
     
     /** Static method to obtain the provider.
      * @return the resolver
@@ -102,33 +142,33 @@ public abstract class HostInfoProvider {
         }
 
         @Override
-        public PathMap getMapper(String hkey) {
-            if (RemoteUtils.isLocalhost(hkey)) {
+        public PathMap getMapper(ExecutionEnvironment execEnv) {
+            if (execEnv.isLocal()) {
                 return local;
             } else if (provider != null) {
-                return provider.getMapper(hkey);
+                return provider.getMapper(execEnv);
             } else {
                 throw getRE();
             }
         }
 
         @Override
-        public Map<String, String> getEnv(String hkey) {
-            if (RemoteUtils.isLocalhost(hkey)) {
+        public Map<String, String> getEnv(ExecutionEnvironment execEnv) {
+            if (execEnv.isLocal()) {
                 return System.getenv();
             } else if (provider != null) {
-                return provider.getEnv(hkey);
+                return provider.getEnv(execEnv);
             } else {
                 throw getRE();
             }
         }
         
         @Override
-        public String getLibDir(String hkey) {
-            if (RemoteUtils.isLocalhost(hkey)) {
+        public String getLibDir(ExecutionEnvironment execEnv) {
+            if (execEnv.isLocal()) {
                 return null;
             } else if (provider != null) {
-                return provider.getLibDir(hkey);
+                return provider.getLibDir(execEnv);
             } else {
                 throw getRE();
             }
@@ -137,11 +177,11 @@ public abstract class HostInfoProvider {
         private static PathMap local = new LocalPathMap();
 
         @Override
-        public int getPlatform(String hkey) {
-            if (RemoteUtils.isLocalhost(hkey)) {
+        public int getPlatform(ExecutionEnvironment execEnv) {
+            if (execEnv.isLocal()) {
                 return CompilerSetManager.computeLocalPlatform();
             } else if (provider != null) {
-                return provider.getPlatform(hkey);
+                return provider.getPlatform(execEnv);
             } else {
                 throw getRE();
             }
@@ -167,11 +207,11 @@ public abstract class HostInfoProvider {
         }
 
         @Override
-        public boolean fileExists(String hkey, String path) {
-            if (CompilerSetManager.LOCALHOST.equals(hkey)) {
+        public boolean fileExists(ExecutionEnvironment execEnv, String path) {
+            if (execEnv.isLocal()) {
                 return new File(path).exists();
             } else if (provider != null) {
-                return provider.fileExists(hkey, path);
+                return provider.fileExists(execEnv, path);
             } else {
                 throw new IllegalArgumentException();
             }

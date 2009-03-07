@@ -1148,7 +1148,7 @@ public class MakeActionProvider implements ActionProvider {
                 BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
                 bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N
                 ToolsPanelModel model = new LocalToolsPanelModel();
-                model.setSelectedDevelopmentHost(ExecutionEnvironmentFactory.getHostKey(env)); // only localhost until BTA becomes more functional for remote sets
+                model.setSelectedDevelopmentHost(env); // only localhost until BTA becomes more functional for remote sets
                 model.setEnableDevelopmentHostChange(false);
                 model.setCompilerSetName(null); // means don't change
                 model.setSelectedCompilerSetName(csname);
