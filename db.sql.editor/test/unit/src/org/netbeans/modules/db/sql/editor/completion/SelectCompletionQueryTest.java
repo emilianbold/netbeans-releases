@@ -62,16 +62,16 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Andrei Badea
  */
-public class SQLCompletionQueryTest extends NbTestCase {
+public class SelectCompletionQueryTest extends NbTestCase {
 
     private final String testName;
     private final boolean stdout;
 
-    public SQLCompletionQueryTest(String testName) {
+    public SelectCompletionQueryTest(String testName) {
         this(testName, false);
     }
 
-    public SQLCompletionQueryTest(String testName, boolean stdout) {
+    public SelectCompletionQueryTest(String testName, boolean stdout) {
         super("testCompletion");
         this.testName = testName;
         this.stdout = stdout;
@@ -81,50 +81,50 @@ public class SQLCompletionQueryTest extends NbTestCase {
         TestSuite suite = new TestSuite();
         // Find a way to add the tests automatically (java.util.zip?).
 
-        suite.addTest(new SQLCompletionQueryTest("selectAll"));
-        suite.addTest(new SQLCompletionQueryTest("selectAllWhenSyntheticSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectSimple"));
-        suite.addTest(new SQLCompletionQueryTest("selectQualTable"));
-        suite.addTest(new SQLCompletionQueryTest("selectQualColumn"));
-        suite.addTest(new SQLCompletionQueryTest("selectQualColumnWhenTableInDefaultSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectQualColumnWhenTableInNonDefaultSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectQualColumnWhenTableInSyntheticSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectDoubleQualColumn"));
-        suite.addTest(new SQLCompletionQueryTest("selectTripleQualColumn"));
+        suite.addTest(new SelectCompletionQueryTest("selectAll"));
+        suite.addTest(new SelectCompletionQueryTest("selectAllWhenSyntheticSchema"));
+        suite.addTest(new SelectCompletionQueryTest("selectSimple"));
+        suite.addTest(new SelectCompletionQueryTest("selectQualTable"));
+        suite.addTest(new SelectCompletionQueryTest("selectQualColumn"));
+        suite.addTest(new SelectCompletionQueryTest("selectQualColumnWhenTableInDefaultSchema"));
+        suite.addTest(new SelectCompletionQueryTest("selectQualColumnWhenTableInNonDefaultSchema"));
+        suite.addTest(new SelectCompletionQueryTest("selectQualColumnWhenTableInSyntheticSchema"));
+        suite.addTest(new SelectCompletionQueryTest("selectDoubleQualColumn"));
+        suite.addTest(new SelectCompletionQueryTest("selectTripleQualColumn"));
 
-        suite.addTest(new SQLCompletionQueryTest("selectAllFrom"));
-        suite.addTest(new SQLCompletionQueryTest("selectAllWhenFromClauseEmpty"));
-        suite.addTest(new SQLCompletionQueryTest("selectAllFromTableInSyntheticSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectSimpleFrom"));
-        suite.addTest(new SQLCompletionQueryTest("selectQualTableFromNonDefaultSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectQualTableFromTableInSyntheticSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectQualColumnFromTableInNonDefaultSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectQualColumnFromQualTableInDefaultSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectQualColumnFromTableNotInFromClause"));
-        suite.addTest(new SQLCompletionQueryTest("selectQualColumnFromUnqualTableInDefaultSchema"));
-        suite.addTest(new SQLCompletionQueryTest("selectDoubleQualColumnFromQualTableInNonDefaultSchema"));
+        suite.addTest(new SelectCompletionQueryTest("selectAllFrom"));
+        suite.addTest(new SelectCompletionQueryTest("selectAllWhenFromClauseEmpty"));
+        suite.addTest(new SelectCompletionQueryTest("selectAllFromTableInSyntheticSchema"));
+        suite.addTest(new SelectCompletionQueryTest("selectSimpleFrom"));
+        suite.addTest(new SelectCompletionQueryTest("selectQualTableFromNonDefaultSchema"));
+        suite.addTest(new SelectCompletionQueryTest("selectQualTableFromTableInSyntheticSchema"));
+        suite.addTest(new SelectCompletionQueryTest("selectQualColumnFromTableInNonDefaultSchema"));
+        suite.addTest(new SelectCompletionQueryTest("selectQualColumnFromQualTableInDefaultSchema"));
+        suite.addTest(new SelectCompletionQueryTest("selectQualColumnFromTableNotInFromClause"));
+        suite.addTest(new SelectCompletionQueryTest("selectQualColumnFromUnqualTableInDefaultSchema"));
+        suite.addTest(new SelectCompletionQueryTest("selectDoubleQualColumnFromQualTableInNonDefaultSchema"));
 
-        suite.addTest(new SQLCompletionQueryTest("selectQuote"));
-        suite.addTest(new SQLCompletionQueryTest("selectAllFromQuoted"));
-        suite.addTest(new SQLCompletionQueryTest("selectQuotedQualTable"));
-        suite.addTest(new SQLCompletionQueryTest("selectQuotedQualColumn"));
+        suite.addTest(new SelectCompletionQueryTest("selectQuote"));
+        suite.addTest(new SelectCompletionQueryTest("selectAllFromQuoted"));
+        suite.addTest(new SelectCompletionQueryTest("selectQuotedQualTable"));
+        suite.addTest(new SelectCompletionQueryTest("selectQuotedQualColumn"));
 
-        suite.addTest(new SQLCompletionQueryTest("fromAll"));
-        suite.addTest(new SQLCompletionQueryTest("fromSimple"));
-        suite.addTest(new SQLCompletionQueryTest("fromQualTable"));
-        suite.addTest(new SQLCompletionQueryTest("fromJoinCondition"));
-        suite.addTest(new SQLCompletionQueryTest("fromJoinConditionAlias"));
+        suite.addTest(new SelectCompletionQueryTest("fromAll"));
+        suite.addTest(new SelectCompletionQueryTest("fromSimple"));
+        suite.addTest(new SelectCompletionQueryTest("fromQualTable"));
+        suite.addTest(new SelectCompletionQueryTest("fromJoinCondition"));
+        suite.addTest(new SelectCompletionQueryTest("fromJoinConditionAlias"));
 
-        suite.addTest(new SQLCompletionQueryTest("whereAll"));
-        suite.addTest(new SQLCompletionQueryTest("whereSimple"));
-        suite.addTest(new SQLCompletionQueryTest("whereQualTable"));
+        suite.addTest(new SelectCompletionQueryTest("whereAll"));
+        suite.addTest(new SelectCompletionQueryTest("whereSimple"));
+        suite.addTest(new SelectCompletionQueryTest("whereQualTable"));
 
-        suite.addTest(new SQLCompletionQueryTest("groupBySimple"));
-        suite.addTest(new SQLCompletionQueryTest("orderBySimple"));
+        suite.addTest(new SelectCompletionQueryTest("groupBySimple"));
+        suite.addTest(new SelectCompletionQueryTest("orderBySimple"));
 
-        suite.addTest(new SQLCompletionQueryTest("selectSubquery"));
+        suite.addTest(new SelectCompletionQueryTest("selectSubquery"));
 
-        suite.addTest(new SQLCompletionQueryTest("script"));
+        suite.addTest(new SelectCompletionQueryTest("script"));
 
         return suite;
     }
@@ -132,7 +132,7 @@ public class SQLCompletionQueryTest extends NbTestCase {
     public void testCompletion() throws Exception {
         StringBuilder sqlData = new StringBuilder();
         List<String> modelData = new ArrayList<String>();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(SQLCompletionQueryTest.class.getResource(testName + ".test").openStream(), "utf-8"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(SelectCompletionQueryTest.class.getResource(testName + ".test").openStream(), "utf-8"));
         try {
             boolean separatorRead = false;
             for (String line = null ; (line = reader.readLine()) != null;) {
@@ -165,7 +165,7 @@ public class SQLCompletionQueryTest extends NbTestCase {
                 writer.close();
             }
             File pass = new File(getWorkDir(), testName + ".pass");
-            InputStream input = SQLCompletionQueryTest.class.getResource(testName + ".pass").openStream();
+            InputStream input = SelectCompletionQueryTest.class.getResource(testName + ".pass").openStream();
             try {
                 copyStream(input, pass);
             } finally {

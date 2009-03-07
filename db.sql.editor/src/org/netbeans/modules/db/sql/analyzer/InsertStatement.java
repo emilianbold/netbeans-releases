@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,17 +34,71 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.sql.analyzer;
 
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+
 /**
  *
- * @author Andrei Badea
+ * @author Jiri Rechtacek
  */
-public enum SQLStatementKind {
+public class InsertStatement extends SQLStatement {
 
-    SELECT,
-    INSERT
+    private final SQLStatementKind kind;
+    int startOffset, endOffset;
+    private final List<String> columns;
+    private final List<String> values;
+    private final SortedMap<Integer, InsertContext> offset2Context;
+    private final QualIdent table;
+
+    InsertStatement(SQLStatementKind kind, int startOffset, int endOffset, QualIdent table, List<String> columns, List<String> values, SortedMap<Integer, InsertContext> offset2Context) {
+        this.kind = kind;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
+        this.columns = columns;
+        this.values = values;
+        this.offset2Context = offset2Context;
+        this.table = table;
+    }
+
+    public SQLStatementKind getKind() {
+        return kind;
+    }
+
+    public QualIdent getTable () {
+        return table;
+    }
+
+    public List<String> getColumns() {
+        return columns;
+    }
+
+    public List<String> getValues() {
+        return values;
+    }
+
+    public InsertContext getContextAtOffset(int offset) {
+        InsertContext result = null;
+        for (Entry<Integer, InsertContext> entry : offset2Context.entrySet()) {
+            if (offset >= entry.getKey()) {
+                result = entry.getValue();
+            } else {
+                break;
+            }
+        }
+        return result;
+    }
+
+    public enum InsertContext {
+
+        INSERT,
+        INTO,
+        COLUMNS,
+        VALUES,
+    }
 }
