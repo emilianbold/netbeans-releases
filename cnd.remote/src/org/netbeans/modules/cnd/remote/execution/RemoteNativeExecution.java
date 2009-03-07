@@ -44,7 +44,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * This implementation of NativeExecution provides execution on a remote server.
@@ -74,7 +76,8 @@ public class RemoteNativeExecution extends NativeExecution {
             boolean unbuffer) throws IOException, InterruptedException {
         RemoteNativeExecutionSupport support = null;
         if (host != null && host.length() > 0) {
-            support = new RemoteNativeExecutionSupport(host, runDirFile, executable, arguments, envp, out, in);
+            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getExecutionEnvironment(host);
+            support = new RemoteNativeExecutionSupport(execEnv, runDirFile, executable, arguments, envp, out, in);
         }
         return support == null ? -1 : support.getExitStatus();
     }

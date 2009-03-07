@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Run an interactive remote command. This class differs from RemoteCommandSupport in that
@@ -59,19 +60,19 @@ public class RemoteInteractiveCommandSupport extends RemoteConnectionSupport {
     private final String cmd;
     private final Map<String, String> env;
 
-    public RemoteInteractiveCommandSupport(String hkey, String cmd, Map<String, String> env) {
-        this(hkey, cmd, env, null, null);
+    public RemoteInteractiveCommandSupport(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
+        this(execEnv, cmd, env, null, null);
     }
 
-    public RemoteInteractiveCommandSupport(String hkey, String cmd, Map<String, String> env, InputStream in, OutputStream out) {
-        super(hkey, PORT);
+    public RemoteInteractiveCommandSupport(ExecutionEnvironment execEnv, String cmd, Map<String, String> env, InputStream in, OutputStream out) {
+        super(execEnv);
         this.cmd = cmd;
         this.env = env;
         this.in = in;
         this.out = out;
 
         if (!isFailedOrCancelled()) {
-            log.fine("RemoteInteractiveCommandSupport<Init>: Running [" + cmd + "] on " + hkey);
+            log.fine("RemoteInteractiveCommandSupport<Init>: Running [" + cmd + "] on " + execEnv);
             try {
                 channel = createChannel();
             } catch (JSchException jse) {
