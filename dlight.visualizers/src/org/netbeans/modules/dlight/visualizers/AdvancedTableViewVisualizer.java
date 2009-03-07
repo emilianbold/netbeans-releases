@@ -60,10 +60,10 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.AdvancedTableViewVisualizerConfigurationAccessor;
-import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
 import org.openide.explorer.view.OutlineView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -71,14 +71,13 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author mt154047
  */
 final class AdvancedTableViewVisualizer extends JPanel implements
-    Visualizer<AdvancedTableViewVisualizerConfiguration>, OnTimerTask, ComponentListener {
+        Visualizer<AdvancedTableViewVisualizerConfiguration>, OnTimerTask, ComponentListener {
 
     private TableDataProvider provider;
     private AdvancedTableViewVisualizerConfiguration configuration;
@@ -112,7 +111,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             if (!nodeColumnName.equals(columnName)) {
                 final Column c = configuration.getMetadata().getColumnByName(columnName);
                 result.add(new PropertySupport(c.getColumnName(), c.getColumnClass(),
-                    c.getColumnUName(), c.getColumnUName(), true, false) {
+                        c.getColumnUName(), c.getColumnUName(), true, false) {
 
                     @Override
                     public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -360,8 +359,8 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     private void load() {
-        //Set node root fo parent explorer manager
-        RequestProcessor.getDefault().post(new Runnable() {
+        // Set node root fo parent explorer manager
+        DLightExecutorService.submit(new Runnable() {
 
             public void run() {
                 final List<DataRow> list = provider.queryData(configuration.getMetadata());
@@ -378,7 +377,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
                     }
                 });
             }
-        });
+        }, "AdvancedTableViewVisualizer Async data load for " + configuration.getID()); // NOI18N
     }
 
     public AdvancedTableViewVisualizerConfiguration getVisualizerConfiguration() {
@@ -685,7 +684,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
                         if (!columnName.equals(nodeColumnName)) {
                             final Column c = configuration.getMetadata().getColumnByName(columnName);
                             result.add(new PropertySupport(columnName, c.getColumnClass(),
-                                c.getColumnUName(), c.getColumnUName(), true, false) {
+                                    c.getColumnUName(), c.getColumnUName(), true, false) {
 
                                 @Override
                                 public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -738,5 +737,4 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
     }
-
 }

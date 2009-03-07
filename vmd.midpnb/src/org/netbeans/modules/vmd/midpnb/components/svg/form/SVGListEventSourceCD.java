@@ -40,7 +40,11 @@ package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
 import java.awt.Image;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.midpnb.screen.display.SVGListDisplayPresenter;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -50,10 +54,9 @@ import org.openide.util.ImageUtilities;
 public class SVGListEventSourceCD extends SVGComponentEventSourceCD {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, 
-            "#SVGListEventEventSource"); // NOI18
+            "#SVGListEventSource"); // NOI18
     
-    private static final String ICON_PATH = 
-        "org/netbeans/modules/mobility/svgcore/resources/palette/form/list_16.png"; // NOI18N                                                
+    private static final String ICON_PATH = "org/netbeans/modules/mobility/svgcore/resources/palette/form/list_16.png"; // NOI18N                                                
     private static final Image ICON = ImageUtilities.loadImage(ICON_PATH);
     
     /* (non-Javadoc)
@@ -76,6 +79,14 @@ public class SVGListEventSourceCD extends SVGComponentEventSourceCD {
     @Override
     protected TypeID getTypeId() {
         return TYPEID;
+    }
+
+    @Override
+    protected List<? extends Presenter> createPresenters() {
+        List<? extends Presenter> presenters = super.createPresenters();
+        List<Presenter> result = new ArrayList<Presenter>( presenters  );
+        result.add( new SVGListDisplayPresenter() );
+        return result;
     }
 
 }

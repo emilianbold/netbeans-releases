@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.universe;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -85,7 +86,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jesse Glick
  */
-public final class NbPlatform implements SourceRootsProvider {
+public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvider {
     
     private static final String PLATFORM_PREFIX = "nbplatform."; // NOI18N
     private static final String PLATFORM_DEST_DIR_SUFFIX = ".netbeans.dest.dir"; // NOI18N
@@ -99,6 +100,7 @@ public final class NbPlatform implements SourceRootsProvider {
     
     private final PropertyChangeSupport pcs;
     private final SourceRootsSupport srs;
+    private final JavadocRootsSupport jrs;
 
     // should proceed in chronological order so we can do compatibility tests with >=
     /** Unknown version - platform might be invalid, or just predate any 5.0 release version. */
@@ -218,32 +220,6 @@ public final class NbPlatform implements SourceRootsProvider {
     }
     
     /**
-     * Get any sources which should by default be associated with the default platform.
-     */
-    private static URL[] defaultPlatformSources(File loc) {
-        if (loc.getName().equals("netbeans") && loc.getParentFile().getName().equals("nbbuild")) { // NOI18N
-            try {
-                return new URL[] {loc.getParentFile().getParentFile().toURI().toURL()};
-            } catch (MalformedURLException e) {
-                assert false : e;
-            }
-        }
-        return new URL[0];
-    }
-    
-    /**
-     * Get any Javadoc which should by default be associated with the default platform.
-     */
-    private static URL[] defaultPlatformJavadoc() {
-        File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
-        if (apidocsZip != null) {
-            return new URL[] {FileUtil.urlForArchiveOrDir(apidocsZip)};
-        } else {
-            return new URL[0];
-        }
-    }
-    
-    /**
      * Find a platform by its ID.
      * @param id an ID (as in {@link #getID})
      * @return the platform with that ID, or null
@@ -268,6 +244,9 @@ public final class NbPlatform implements SourceRootsProvider {
      */
     public static synchronized NbPlatform getPlatformByDestDir(File destDir) {
         for (NbPlatform p : getPlatformsInternal()) {
+            // DEBUG only
+            int dif = p.getDestDir().compareTo(destDir);
+           
             if (p.getDestDir().equals(destDir)) {
                 return p;
             }
@@ -434,7 +413,20 @@ public final class NbPlatform implements SourceRootsProvider {
         this.harness = harness;
         this.javadocRoots = javadoc;
         pcs = new PropertyChangeSupport(this);
-        srs = new SourceRootsSupport(sources, pcs, this);
+        srs = new SourceRootsSupport(sources, this);
+        srs.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                // re-fire
+                pcs.firePropertyChange(evt);
+            }
+        });
+        jrs = new JavadocRootsSupport(javadoc, this);
+        jrs.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                // re-fire
+                pcs.firePropertyChange(evt);
+            }
+        });
     }
     
     /**
@@ -446,7 +438,7 @@ public final class NbPlatform implements SourceRootsProvider {
     public String getID() {
         return id;
     }
-    
+
     /**
      * Check if this is the default platform.
      * @return true for the one default platform
@@ -492,6 +484,49 @@ public final class NbPlatform implements SourceRootsProvider {
         // XXX write build.properties too
     }
 
+    /**
+     * Get javadoc which should by default be associated with the default platform.
+     */
+    public URL[] getDefaultJavadocRoots() {
+        if (! isDefault())
+            return null;
+        File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
+        if (apidocsZip != null) {
+            return new URL[] {FileUtil.urlForArchiveOrDir(apidocsZip)};
+        }
+        return new URL[0];
+    }
+
+    public void addJavadocRoot(URL root) throws IOException {
+        jrs.addJavadocRoot(root);
+    }
+
+    public URL[] getJavadocRoots() {
+        return jrs.getJavadocRoots();
+    }
+
+    public void moveJavadocRootDown(int indexToDown) throws IOException {
+        jrs.moveJavadocRootDown(indexToDown);
+    }
+
+    public void moveJavadocRootUp(int indexToUp) throws IOException {
+        jrs.moveJavadocRootUp(indexToUp);
+    }
+
+    public void removeJavadocRoots(URL[] urlsToRemove) throws IOException {
+        jrs.removeJavadocRoots(urlsToRemove);
+    }
+
+    public void setJavadocRoots(URL[] roots) throws IOException {
+        putGlobalProperty(
+                PLATFORM_PREFIX + getID() + PLATFORM_JAVADOC_SUFFIX,
+                Util.urlsToAntPath(roots));
+        jrs.setJavadocRoots(roots);
+    }
+
+    /**
+     * Get any sources which should by default be associated with the default platform.
+     */
     public URL[] getDefaultSourceRoots() {
         if (! isDefault())
             return null;
@@ -549,84 +584,6 @@ public final class NbPlatform implements SourceRootsProvider {
     }
     
     /**
-     * Get associated Javadoc roots for this platform.
-     * Each root may contain some Javadoc sets in the usual format as subdirectories,
-     * where the subdirectory is named acc. to the code name base of the module it
-     * is documenting (using '-' in place of '.').
-     * @return a list of Javadoc root URLs (may be empty but not null)
-     */
-    public URL[] getJavadocRoots() {
-        if (javadocRoots.length == 0 && isDefault()) {
-            return defaultPlatformJavadoc();
-        } else {
-            return javadocRoots;
-        }
-    }
-    
-    private void maybeUpdateDefaultPlatformJavadoc() {
-        if (javadocRoots.length == 0 && isDefault()) {
-            javadocRoots = defaultPlatformJavadoc();
-        }
-    }
-    
-    /**
-     * Add given javadoc root to the current javadoc root list and save the
-     * result into the global properties in the <em>userdir</em> (see {@link
-     * PropertyUtils#putGlobalProperties})
-     */
-    public void addJavadocRoot(URL root) throws IOException {
-        maybeUpdateDefaultPlatformJavadoc();
-        URL[] newJavadocRoots = new URL[javadocRoots.length + 1];
-        System.arraycopy(javadocRoots, 0, newJavadocRoots, 0, javadocRoots.length);
-        newJavadocRoots[javadocRoots.length] = root;
-        setJavadocRoots(newJavadocRoots);
-    }
-    
-    /**
-     * Remove given javadoc roots from the current javadoc root list and save
-     * the result into the global properties in the <em>userdir</em> (see
-     * {@link PropertyUtils#putGlobalProperties})
-     */
-    public void removeJavadocRoots(URL[] urlsToRemove) throws IOException {
-        maybeUpdateDefaultPlatformJavadoc();
-        Collection<URL> newJavadocs = new ArrayList<URL>(Arrays.asList(javadocRoots));
-        newJavadocs.removeAll(Arrays.asList(urlsToRemove));
-        URL[] javadocs = new URL[newJavadocs.size()];
-        setJavadocRoots(newJavadocs.toArray(javadocs));
-    }
-    
-    public void moveJavadocRootUp(int indexToUp) throws IOException {
-        maybeUpdateDefaultPlatformJavadoc();
-        if (indexToUp <= 0) {
-            return; // nothing needs to be done
-        }
-        URL[] newJavadocRoots = new URL[javadocRoots.length];
-        System.arraycopy(javadocRoots, 0, newJavadocRoots, 0, javadocRoots.length);
-        newJavadocRoots[indexToUp - 1] = javadocRoots[indexToUp];
-        newJavadocRoots[indexToUp] = javadocRoots[indexToUp - 1];
-        setJavadocRoots(newJavadocRoots);
-    }
-    
-    public void moveJavadocRootDown(int indexToDown) throws IOException {
-        maybeUpdateDefaultPlatformJavadoc();
-        if (indexToDown >= (javadocRoots.length - 1)) {
-            return; // nothing needs to be done
-        }
-        URL[] newJavadocRoots = new URL[javadocRoots.length];
-        System.arraycopy(javadocRoots, 0, newJavadocRoots, 0, javadocRoots.length);
-        newJavadocRoots[indexToDown + 1] = javadocRoots[indexToDown];
-        newJavadocRoots[indexToDown] = javadocRoots[indexToDown + 1];
-        setJavadocRoots(newJavadocRoots);
-    }
-    
-    public void setJavadocRoots(URL[] roots) throws IOException {
-        putGlobalProperty(
-                PLATFORM_PREFIX + getID() + PLATFORM_JAVADOC_SUFFIX,
-                Util.urlsToAntPath(roots));
-        javadocRoots = roots;
-    }
-    
-    /**
      * Test whether this platform is valid or not. See
      * {@link #isPlatformDirectory}
      */
@@ -666,20 +623,32 @@ public final class NbPlatform implements SourceRootsProvider {
      * Returns (naturally sorted) array of all module entries pertaining to
      * <code>this</code> NetBeans platform. This is just a convenient delegate
      * to the {@link ModuleList#findOrCreateModuleListFromBinaries}.
+     *
+     * This may be a time-consuming method, consider using much faster
+     * ModuleList#getModules instead, which doesn't sort the modules. Do not call
+     * from AWT thread (not checked so that it may be used in tests).
      */
-    public ModuleEntry[] getModules() {
+    public ModuleEntry[] getSortedModules() {
+        SortedSet<ModuleEntry> set = new TreeSet<ModuleEntry>(getModules());
+        ModuleEntry[] entries = new ModuleEntry[set.size()];
+        set.toArray(entries);
+        return entries;
+    }
+
+    /**
+     * Returns a set of all module entries pertaining to
+     * <code>this</code> NetBeans platform. This is just a convenient delegate
+     * to the {@link ModuleList#findOrCreateModuleListFromBinaries}.
+     */
+    public Set<ModuleEntry> getModules() {
         try {
-            SortedSet<ModuleEntry> set = new TreeSet<ModuleEntry>(
-                    ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getAllEntriesSoft());
-            ModuleEntry[] entries = new ModuleEntry[set.size()];
-            set.toArray(entries);
-            return entries;
+            return ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getAllEntriesSoft();
         } catch (IOException e) {
             Util.err.notify(e);
-            return new ModuleEntry[0];
+            return Collections.emptySet();
         }
     }
-    
+
     /**
      * Gets a module from the platform by name.
      */

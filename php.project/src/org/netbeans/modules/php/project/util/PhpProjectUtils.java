@@ -39,6 +39,10 @@
 
 package org.netbeans.modules.php.project.util;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -102,5 +106,32 @@ public final class PhpProjectUtils {
         } catch (ParserConfigurationException ex) {
             throw new SAXException("Cannot create SAX parser", ex);
         }
+    }
+
+    public static String implode(List<String> items, String delimiter) {
+        assert items != null;
+        assert delimiter != null;
+
+        if (items.isEmpty()) {
+            return ""; // NOI18N
+        }
+
+        StringBuilder buffer = new StringBuilder(200);
+        boolean first = true;
+        for (String s : items) {
+            if (!first) {
+                buffer.append(delimiter);
+            }
+            buffer.append(s);
+            first = false;
+        }
+        return buffer.toString();
+    }
+
+    public static List<String> explode(String string, String delimiter) {
+        if (!hasText(string)) {
+            return Collections.<String>emptyList();
+        }
+        return Arrays.asList(string.split(Pattern.quote(delimiter)));
     }
 }

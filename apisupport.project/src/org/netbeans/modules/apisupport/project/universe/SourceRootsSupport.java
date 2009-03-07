@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.apisupport.project.universe;
 
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
@@ -70,14 +71,13 @@ public class SourceRootsSupport implements SourceRootsProvider {
      * are passed to delegate. This allows to customize the behavior of SourceRootsSupport.
      *
      * @param sourceRoots Initial source roots.
-     * @param pcs Support to use to fire property changes. May be <tt>null</tt>.
      * @param delegate The delegate for routing calls. May be <tt>null</tt>.
      */
-    public SourceRootsSupport(URL[] sourceRoots, PropertyChangeSupport pcs, SourceRootsProvider delegate) {
+    public SourceRootsSupport(URL[] sourceRoots, SourceRootsProvider delegate) {
         if (sourceRoots == null)
             throw new NullPointerException("sourceRoots must not be null.");
         this.sourceRoots = sourceRoots;
-        this.pcs = pcs;
+        this.pcs = new PropertyChangeSupport(this);
         this.delegate = delegate;
     }
 
@@ -86,8 +86,7 @@ public class SourceRootsSupport implements SourceRootsProvider {
             URL[] defaults = getDefaultSourceRoots();
             if (defaults != null) {
                 sourceRoots = defaults;
-                if (pcs != null)
-                    pcs.firePropertyChange(SourceRootsProvider.PROP_SOURCE_ROOTS, null, null);
+                pcs.firePropertyChange(SourceRootsProvider.PROP_SOURCE_ROOTS, null, null);
             }
         }
     }
@@ -174,8 +173,7 @@ public class SourceRootsSupport implements SourceRootsProvider {
     
     public void setSourceRoots(URL[] roots) throws IOException {
         sourceRoots = roots;
-        if (pcs != null)
-            pcs.firePropertyChange(SourceRootsProvider.PROP_SOURCE_ROOTS, null, null);
+        pcs.firePropertyChange(SourceRootsProvider.PROP_SOURCE_ROOTS, null, null);
         listsForSources = null;
     }
 
@@ -202,5 +200,12 @@ public class SourceRootsSupport implements SourceRootsProvider {
         newSourceRoots[indexToDown] = sourceRoots[indexToDown + 1];
         setSourceRootsInternal(newSourceRoots);
     }
-    
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
 }

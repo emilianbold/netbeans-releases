@@ -41,12 +41,13 @@
 
 package org.netbeans.modules.junit.output;
 
-import java.util.Collection;
 import javax.swing.Action;
-import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
+import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.junit.wizards.Utils;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /**
@@ -60,33 +61,31 @@ final class OutputUtils {
     private OutputUtils() {
     }
 
-    /**
-     */
-    static void openCallstackFrame(Node node,
-                                   String frameInfo) {
-        Report report = getTestsuiteNode(node).getReport();
-        Collection<FileObject> srcRoots = report.classpathSourceRoots;
-        if ((srcRoots == null) || srcRoots.isEmpty()) {
-            return;
+    static void openTestsuite(TestsuiteNode node) {
+        Children childrens  = node.getChildren();
+        if (childrens != null){
+            Node child = childrens.getNodeAt(0);
+            if ((child != null) && (child instanceof JUnitTestMethodNode)){
+                JUnitTestcase testcase = ((JUnitTestMethodNode)child).getTestcase();
+                Utils.openFile(testcase.getTestSuite().getSuiteFO(), 1);
+            }
         }
-
-        FileObject[] srcRootsArr = new FileObject[srcRoots.size()];
-        srcRoots.toArray(srcRootsArr);
-        ClassPath srcClassPath = ClassPathSupport.createClassPath(srcRootsArr);
-
-        final int[] lineNumStorage = new int[1];
-        FileObject file = getFile(frameInfo, lineNumStorage, srcClassPath);
-        Utils.openFile(file, lineNumStorage[0]);
     }
 
-    /**
-     */
-    static void openCallstackFrame(Node node,
-                                   Report.Trouble trouble) {
-        String frameInfo = determineStackFrame(trouble);
-        if (frameInfo != null) {
-            openCallstackFrame(node, frameInfo);
-        }
+    static void openCallstackFrame(Node node, String frameInfo) {
+            JUnitTestMethodNode methodNode = getTestMethodNode(node);
+            FileLocator locator =  methodNode.getTestcase().getSession().getFileLocator();
+            if (locator == null){
+                return;
+            }
+            final int[] lineNumStorage = new int[1];
+            FileObject file = getFile(frameInfo, lineNumStorage, locator);
+            if ((file == null) && (methodNode.getTestcase().getTrouble() != null)){
+                String[] st = methodNode.getTestcase().getTrouble().getStackTrace();
+                if ((st != null) && (st.length > 0))
+                file = getFile(st[st.length - 1], lineNumStorage, locator);
+            }
+            Utils.openFile(file, lineNumStorage[0]);
     }
 
     /**
@@ -98,29 +97,20 @@ final class OutputUtils {
      * @return  string describing the chosen call-stack frame,
      *          or {@code null} if no frame has been chosen
      */
-    static String determineStackFrame(Report.Trouble trouble) {
-        String[] frames = trouble.stackTrace;
+    static String determineStackFrame(Trouble trouble) {
+        String[] frames = trouble.getStackTrace();
         return ((frames != null) && (frames.length != 0))
                ? frames[frames.length - 1]
                : null;
     }
 
     /**
-     * Returns a {@code Report} for the given node.
-     * @param  node  node to find {@code Report} for
-     * @return  found report
      */
-    static Report getReport(Node node) {
-        return getTestsuiteNode(node).getReport();
-    }
-        
-    /**
-     */
-    private static TestsuiteNode getTestsuiteNode(Node node) {
-        while (!(node instanceof TestsuiteNode)) {
+    private static JUnitTestMethodNode getTestMethodNode(Node node) {
+        while (!(node instanceof JUnitTestMethodNode)) {
             node = node.getParentNode();
         }
-        return (TestsuiteNode) node;
+        return (JUnitTestMethodNode) node;
     }
     
     /**
@@ -131,19 +121,26 @@ final class OutputUtils {
      */
     private static FileObject getFile(final String callstackLine,
                                       final int[] lineNumStorage,
-                                      final ClassPath classPath) {
+                                      final FileLocator locator) {
+        String line = RegexpUtils.specialTrim(callstackLine);
+        if (line.startsWith(RegexpUtils.CALLSTACK_LINE_PREFIX_CATCH)) {
+            line = line.substring(RegexpUtils.CALLSTACK_LINE_PREFIX_CATCH.length());
+        }
+        if (line.startsWith(RegexpUtils.CALLSTACK_LINE_PREFIX)) {
+            line = line.substring(RegexpUtils.CALLSTACK_LINE_PREFIX.length());
+        }
 
         /* Get the part before brackets (if any brackets present): */
-        int bracketIndex = callstackLine.indexOf('(');
+        int bracketIndex = line.indexOf('(');
         String beforeBrackets = (bracketIndex == -1)
-                                ? callstackLine
-                                : callstackLine.substring(0, bracketIndex)
+                                ? line
+                                : line.substring(0, bracketIndex)
                                   .trim();
         String inBrackets = (bracketIndex == -1)
                             ? (String) null
-                            : callstackLine.substring(
+                            : line.substring(
                                     bracketIndex + 1,
-                                    callstackLine.lastIndexOf(')'));
+                                    line.lastIndexOf(')'));
 
         /* Get the method name and the class name: */
         int lastDotIndex = beforeBrackets.lastIndexOf('.');
@@ -199,17 +196,17 @@ final class OutputUtils {
                         : clsNameSlash;
             ending = '/' + fileName;
         }
-        file = classPath.findResource(thePath = (slashName + ending));
+        file = locator.find(thePath = (slashName + ending));
         while ((file == null) && (lastSlashIndex != -1)) {
             slashName = slashName.substring(0, lastSlashIndex);
-            file = classPath.findResource(thePath = (slashName + ending));
+            file = locator.find(thePath = (slashName + ending));
             if (file == null) {
                 lastSlashIndex = slashName.lastIndexOf(
                                                 '/', lastSlashIndex - 1);
             }
         }
         if ((file == null) && (fileName != null)) {
-            file = classPath.findResource(thePath = fileName);
+            file = locator.find(thePath = fileName);
         }
 
         /* Return the file (or null if no matching file was found): */

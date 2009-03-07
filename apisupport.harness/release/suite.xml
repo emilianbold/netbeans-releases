@@ -210,7 +210,16 @@ made subject to such option by the copyright holder.
             <property name="${nbm.target.cluster.name}" value="${help.target.cluster}" />
             <property name="cluster.path.evaluated" value="${cluster.path.evaluated}"/> <!-- Just for speed of pre-7.0 projects -->
         </subant>
-        <makeupdatedesc desc="${build.updates.dir}/updates.xml" distbase="." automaticgrouping="true">
+
+        <condition property="use.license.url.in.catalog" value="true" else="false">
+            <available resource="org/netbeans/updater/resources/autoupdate-catalog-2_6.dtd">
+                <classpath>
+                    <resources refid="updater.jar"/>
+                </classpath>
+            </available>
+        </condition>
+
+        <makeupdatedesc desc="${build.updates.dir}/updates.xml" distbase="." automaticgrouping="true" uselicenseurl="${use.license.url.in.catalog}">
             <fileset dir="${build.updates.dir}">
                 <include name="*.nbm"/>
             </fileset>

@@ -50,6 +50,7 @@ import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
@@ -57,6 +58,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.ChangeSupport;
@@ -111,15 +113,27 @@ public class RemoteServerList implements ServerList {
 
     /**
      * Get a ServerRecord pertaining to hkey. If needed, create the record.
+     *
+     * @param hkey The host key (either "localhost" or "user@host")
+     * @return A RemoteServerRecord for hkey
+     *
+     * TODO: deprecate and remove
+     */
+    public synchronized ServerRecord get(String hkey) {
+        return get(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
+    }
+
+    /**
+     * Get a ServerRecord pertaining to hkey. If needed, create the record.
      * 
      * @param hkey The host key (either "localhost" or "user@host")
      * @return A RemoteServerRecord for hkey
      */
-    public synchronized ServerRecord get(String hkey) {
+    public synchronized ServerRecord get(ExecutionEnvironment env) {
 
         // Search the active server list
 	for (RemoteServerRecord record : items) {
-            if (hkey.equals(record.getName())) {
+            if (env.equals(record.getExecutionEnvironment())) {
                 return record;
             }
 	}
@@ -127,13 +141,13 @@ public class RemoteServerList implements ServerList {
         // Search the unlisted servers list. These are records created by Tools->Options
         // which haven't been added yet (and won't until/unless OK is pressed in T->O).
 	for (RemoteServerRecord record : unlisted) {
-            if (hkey.equals(record.getName())) {
+            if (env.equals(record.getExecutionEnvironment())) {
                 return record;
             }
 	}
         
         // Create a new unlisted record and return it
-        RemoteServerRecord record = new RemoteServerRecord(hkey);
+        RemoteServerRecord record = new RemoteServerRecord(env);
         unlisted.add(record);
         return record;
     }

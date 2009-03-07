@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.cnd.utils.cache;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * cache entry
  * @author Vladimir Voskresensky
@@ -53,9 +57,18 @@ public class FilePathCache {
     }
     
     public static CharSequence getString(CharSequence text) {
+        text = CharSequenceKey.create(text);
         return instance.getString(text);
     }
-    
+
+    public static List<CharSequence> asList(Collection<? extends CharSequence> paths) {
+        List<CharSequence> out = new ArrayList<CharSequence>(paths.size());
+        for (CharSequence path : paths) {
+            out.add(getString(path));
+        }
+        return out;
+    }
+
     public static void dispose() {
         instance.dispose();
     }

@@ -147,16 +147,22 @@ public final class ClusterUtils {
         }
 
         Map<File, String> srcRootsMap = new HashMap<File, String>();
+        Map<File, String> jRootsMap = new HashMap<File, String>();
         Map<String, String> props = eval.getProperties();
         for (Map.Entry<String, String> entry : props.entrySet()) {
             String key = entry.getKey();
-            if (key.startsWith(SuiteProperties.CLUSTER_SRC_PREFIX) &&
-                    key.endsWith(NbPlatform.PLATFORM_SOURCES_SUFFIX)) {
-                String cd = key.substring(SuiteProperties.CLUSTER_SRC_PREFIX.length(),
-                        key.length() - NbPlatform.PLATFORM_SOURCES_SUFFIX.length());
-                File cf = PropertyUtils.resolveFile(root, cd);
-                srcRootsMap.put(cf, entry.getValue());
-                // TODO C.P javadoc for external clusters
+            if (key.startsWith(SuiteProperties.CLUSTER_SRC_PREFIX)) {
+                if (key.endsWith(NbPlatform.PLATFORM_SOURCES_SUFFIX)) {
+                    String cd = key.substring(SuiteProperties.CLUSTER_SRC_PREFIX.length(),
+                            key.length() - NbPlatform.PLATFORM_SOURCES_SUFFIX.length());
+                    File cf = PropertyUtils.resolveFile(root, cd);
+                    srcRootsMap.put(cf, entry.getValue());
+                } else if (key.endsWith(NbPlatform.PLATFORM_JAVADOC_SUFFIX)) {
+                    String cd = key.substring(SuiteProperties.CLUSTER_SRC_PREFIX.length(),
+                            key.length() - NbPlatform.PLATFORM_JAVADOC_SUFFIX.length());
+                    File cf = PropertyUtils.resolveFile(root, cd);
+                    jRootsMap.put(cf, entry.getValue());
+                }
             }
         }
 
@@ -190,7 +196,11 @@ public final class ClusterUtils {
             if (srcRootsMap.containsKey(cd)) {
                 srcRoots = Util.findURLs(srcRootsMap.get(cd));
             }
-            clusterPath.add(ClusterInfo.createFromCP(cd, prj, isPlaf, srcRoots, enabled));
+            URL[] jRoots = null;
+            if (jRootsMap.containsKey(cd)) {
+                jRoots = Util.findURLs(jRootsMap.get(cd));
+            }
+            clusterPath.add(ClusterInfo.createFromCP(cd, prj, isPlaf, srcRoots, jRoots, enabled));
         }
         return clusterPath;
     }

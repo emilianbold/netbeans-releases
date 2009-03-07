@@ -128,7 +128,7 @@ public final class LibraryManager {
      * If search is false then method creates artificial library or returns base project.
      */
     public ProjectBase resolveFileProjectOnInclude(ProjectBase baseProject, FileImpl curFile, ResolvedPath resolvedPath) {
-        String absPath = resolvedPath.getPath();
+        String absPath = resolvedPath.getPath().toString();
         File searchFor = new File(absPath);
         ProjectBase res = searchInProjectFiles(baseProject, searchFor);
         if (res != null) {
@@ -137,8 +137,8 @@ public final class LibraryManager {
             }
             return res;
         }
-        String folder = FileUtil.normalizeFile(new File(resolvedPath.getFolder())).getAbsolutePath();
-        res = searchInProjectRoots(baseProject, getPathToFolder(folder, resolvedPath.getPath()));
+        String folder = FileUtil.normalizeFile(new File(resolvedPath.getFolder().toString())).getAbsolutePath();
+        res = searchInProjectRoots(baseProject, getPathToFolder(folder, absPath));
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Projects roots", curFile, resolvedPath, res, baseProject);//NOI18N
@@ -152,7 +152,7 @@ public final class LibraryManager {
             }
             return res;
         }
-        res = searchInProjectRootsArtificial(baseProject, getPathToFolder(folder, resolvedPath.getPath()));
+        res = searchInProjectRootsArtificial(baseProject, getPathToFolder(folder, absPath));
         if (res == null) {
             if (resolvedPath.isDefaultSearchPath()) {
                 res = curFile.getProjectImpl(true);

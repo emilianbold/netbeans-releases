@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.test.BaseTestCase;
 
@@ -78,7 +79,7 @@ public abstract class RemoteTestBase extends BaseTestCase {
             private List<String> fakeIncludes = new ArrayList<String>();
 
             private FakeTool() {
-                super("fake", CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
+                super(ExecutionEnvironmentFactory.getExecutionEnvironment("fake"), CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
                 fakeIncludes.add("/usr/include"); //NOI18N
                 fakeIncludes.add("/usr/local/include"); //NOI18N
                 fakeIncludes.add("/usr/sfw/include"); //NOI18N
@@ -86,7 +87,7 @@ public abstract class RemoteTestBase extends BaseTestCase {
             }
 
             @Override
-            public List getSystemIncludeDirectories() {
+            public List<String> getSystemIncludeDirectories() {
                 return fakeIncludes;
             }
 

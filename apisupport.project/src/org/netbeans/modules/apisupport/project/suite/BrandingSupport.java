@@ -359,7 +359,7 @@ public final class BrandingSupport {
         }
     }
     
-    private  void scanModulesInBrandingDir(final File srcDir, final ModuleEntry[] platformModules) throws IOException  {
+    private  void scanModulesInBrandingDir(final File srcDir, final Set<ModuleEntry> platformModules) throws IOException  {
         if (srcDir.getName().endsWith(".jar")) {//NOI18N
             ModuleEntry foundEntry = null;
             for (ModuleEntry platformModule : platformModules) {

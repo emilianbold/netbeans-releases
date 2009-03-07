@@ -60,6 +60,7 @@ public final class ClusterInfo {
 
     private boolean enabled;
     private URL[] sourceRoots;
+    private URL[] javadocRoots;
 
     @Override
     public boolean equals(Object obj) {
@@ -85,6 +86,9 @@ public final class ClusterInfo {
         if (! Arrays.deepEquals(this.sourceRoots, other.sourceRoots)) {
             return false;
         }
+        if (! Arrays.deepEquals(this.javadocRoots, other.javadocRoots)) {
+            return false;
+        }
         return true;
     }
 
@@ -96,6 +100,7 @@ public final class ClusterInfo {
         hash = 47 * hash + (this.project != null ? this.project.hashCode() : 0);
         hash = 47 * hash + (this.enabled ? 1 : 0);
         hash = 47 * hash + Arrays.deepHashCode(this.sourceRoots);
+        hash = 47 * hash + Arrays.deepHashCode(this.javadocRoots);
         return hash;
     }
 
@@ -124,19 +129,19 @@ public final class ClusterInfo {
     public File getClusterDir() {
         return clusterDir;
     }
-    // TODO C.P sources & javadoc
     
     private ClusterInfo(File clusterDir) {
         this.clusterDir = clusterDir;
     }
 
     public static ClusterInfo createFromCP(File evaluatedPath, Project prj, 
-            boolean isPlatformCluster, URL[] sourceRoots, boolean enabled) {
+            boolean isPlatformCluster, URL[] sourceRoots, URL[] javadocRoots, boolean enabled) {
         ClusterInfo ret = new ClusterInfo(evaluatedPath);
         ret.isPlatformCluster = isPlatformCluster;
         ret.project = prj;
         ret.enabled = enabled;
         ret.sourceRoots = sourceRoots;
+        ret.javadocRoots = javadocRoots;
         return ret;
     }
 
@@ -147,11 +152,12 @@ public final class ClusterInfo {
         return ret;
     }
 
-    public static ClusterInfo createExternal(File clusterDir, URL[] sourceRoots, boolean enabled) {
+    public static ClusterInfo createExternal(File clusterDir, URL[] sourceRoots, URL[] javadocRoots, boolean enabled) {
         ClusterInfo ret = new ClusterInfo(clusterDir);
         ret.isPlatformCluster = false;
         ret.enabled = enabled;
         ret.sourceRoots = sourceRoots;
+        ret.javadocRoots = javadocRoots;
         return ret;
     }
 
@@ -184,4 +190,9 @@ public final class ClusterInfo {
     public URL[] getSourceRoots() {
         return sourceRoots;
     }
+
+    public URL[] getJavadocRoots() {
+        return javadocRoots;
+    }
+
 }

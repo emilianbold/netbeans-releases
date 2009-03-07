@@ -60,7 +60,8 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
             manager.runScript(); 
         }
     }
-    
+
+    /** TODO: deprecate and remove */
     public RemoteScriptSupport(String key, ScriptManager manager) {
         this(key, manager, PORT);
     }

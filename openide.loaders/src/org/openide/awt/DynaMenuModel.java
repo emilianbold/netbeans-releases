@@ -59,7 +59,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
-import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.Presenter;
 
 /**
