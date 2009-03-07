@@ -137,12 +137,6 @@ public class SvnHookImpl extends SvnHook {
             return;
         }
         
-        Repository repo = (Repository) panel.repositoryComboBox.getSelectedItem();
-        if(repo == null) {
-            LOG.log(Level.FINE, " could not get repository for " + file);      // NOI18N
-            return;
-        }
-
         String msg = context.getMessage();
         if(!panel.addCommentCheckBox.isSelected() || msg == null || msg.trim().equals("")) {
             msg = null;

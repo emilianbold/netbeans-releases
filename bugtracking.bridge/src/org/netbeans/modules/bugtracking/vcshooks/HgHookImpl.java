@@ -137,12 +137,6 @@ public class HgHookImpl extends HgHook {
             LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
             return;
         }
-        
-        Repository repo = (Repository) panel.repositoryComboBox.getSelectedItem();
-        if(repo == null) {
-            LOG.log(Level.FINE, " could not get repository for " + file);      // NOI18N
-            return;
-        }
 
         String msg = context.getMessage();
         if(!panel.addCommentCheckBox.isSelected() || msg == null || msg.trim().equals("")) {
