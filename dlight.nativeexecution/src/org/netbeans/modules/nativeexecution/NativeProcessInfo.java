@@ -58,7 +58,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroE
 public final class NativeProcessInfo {
 
     private final ExecutionEnvironment execEnv;
-    private final Map<String, List<String>> envVariables = new HashMap<String, List<String>>();
+    private final Map<String, String> envVariables = new HashMap<String, String>();
     private final String command;
     private final List<String> arguments = new ArrayList<String>();
     private String workingDirectory;
@@ -100,19 +100,11 @@ public final class NativeProcessInfo {
      * @param value
      */
     public void addEnvironmentVariable(final String name, final String value) {
-        /*
-         * Here just accumulate all variables set history.
-         * This is required for delayed/later macro expansion.
-         */
-        List<String> varChangeHistory = envVariables.get(name);
-
-        if (varChangeHistory == null) {
-            varChangeHistory = new ArrayList<String>();
-            envVariables.put(name, varChangeHistory);
+        try {
+            envVariables.put(name, macroExpander.expandMacros(value, envVariables));
+        } catch (ParseException ex) {
+            envVariables.put(name, value);
         }
-
-        varChangeHistory.add(value);
-
     }
 
     public void addEnvironmentVariables(Map<String, String> envs) {
@@ -191,18 +183,17 @@ public final class NativeProcessInfo {
         Map<String, String> result = new HashMap<String, String>(prependMap);
 
         for (String varName : envVariables.keySet()) {
-            List<String> varHistory = envVariables.get(varName);
-            String varValue = null;
-            for (String histItem : varHistory) {
-                try {
-                    varValue = macroExpander.expandMacros(histItem, result);
-                    varValue = macroExpander.expandPredefinedMacros(varValue);
-                    result.put(varName, varValue);
-                } catch (ParseException ex) {
-                }
+            String varValue = envVariables.get(varName);
+            try {
+                varValue = macroExpander.expandMacros(varValue, result);
+                varValue = macroExpander.expandPredefinedMacros(varValue);
+            } catch (ParseException ex) {
+            }
+
+            if (varValue != null) {
+                result.put(varName, varValue);
             }
         }
-
 
         return result;
     }
