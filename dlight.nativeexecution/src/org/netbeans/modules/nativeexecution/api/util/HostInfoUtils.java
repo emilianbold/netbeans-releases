@@ -24,7 +24,6 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.util.Exceptions;
-import org.openide.util.NotImplementedException;
 import org.openide.util.Utilities;
 
 /**
