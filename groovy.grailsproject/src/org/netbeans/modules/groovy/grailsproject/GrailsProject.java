@@ -65,6 +65,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.groovy.grails.api.GrailsConstants;
 import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandSupport;
 import org.netbeans.modules.groovy.grailsproject.completion.ControllerCompletionProvider;
@@ -77,6 +79,9 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.openide.nodes.Node;
+import org.openide.util.Utilities;
+import org.openide.windows.WindowManager;
 import org.w3c.dom.Element;
 
 
@@ -106,7 +111,6 @@ public final class GrailsProject implements Project {
 
     private Lookup lookup;
 
-
     public GrailsProject(FileObject projectDir, ProjectState projectState) {
         this.projectDir = projectDir;
         this.projectState = projectState;
@@ -114,6 +118,74 @@ public final class GrailsProject implements Project {
         this.cpProvider = new ClassPathProviderImpl(getSourceRoots(), getTestSourceRoots(), FileUtil.toFile(projectDir), this);
         this.commandSupport = new GrailsCommandSupport(this);
         this.buildConfig = new BuildConfig(this);
+    }
+
+    // copied from ruby.project Utils
+    public static GrailsProject inferGrailsProject() {
+        // try current context firstly
+        Node[] activatedNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+
+        if (activatedNodes != null) {
+            for (Node n : activatedNodes) {
+                GrailsProject result = lookupGrailsProject(n.getLookup());
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+
+        Lookup globalContext = Utilities.actionsGlobalContext();
+        GrailsProject result = lookupGrailsProject(globalContext);
+        if (result != null) {
+            return result;
+        }
+        FileObject fo = globalContext.lookup(FileObject.class);
+        if (fo != null) {
+            result = lookupGrailsProject(FileOwnerQuery.getOwner(fo));
+            if (result != null) {
+                return result;
+            }
+        }
+
+        // next try main project
+        OpenProjects projects = OpenProjects.getDefault();
+        result = lookupGrailsProject(projects.getMainProject());
+        if (result != null) {
+            return result;
+        }
+
+        // next try other opened projects
+        for (Project project : projects.getOpenProjects()) {
+            result = lookupGrailsProject(project);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    private static GrailsProject lookupGrailsProject(Project project) {
+        if (project != null) {
+            return lookupGrailsProject(project.getLookup());
+        }
+        return null;
+    }
+
+    private static GrailsProject lookupGrailsProject(Lookup lookup) {
+        // try directly
+        GrailsProject result = lookup.lookup(GrailsProject.class);
+        if (result != null) {
+            return result;
+        }
+        // try through Project instance
+        Project project = lookup.lookup(Project.class);
+        if (project != null) {
+            result = project.getLookup().lookup(GrailsProject.class);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
     }
 
     public FileObject getProjectDirectory() {
