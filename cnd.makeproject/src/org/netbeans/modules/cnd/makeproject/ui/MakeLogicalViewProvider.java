@@ -582,18 +582,21 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean context) {
+            MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
+
             // TODO: not clear if we need to call the following method at all
             // but we need to remove remembering the output to prevent memory leak;
             // I think it could be removed
-            if (gotMakeConfigurationDescriptor()) {
-                getMakeConfigurationDescriptor().getLogicalFolders();
+            if (descriptor != null) {
+                descriptor.getLogicalFolders();
             }
 
             List<Action> actions = new ArrayList<Action>();
             // Add standard actions
             Action[] standardActions;
-            MakeConfiguration active = (MakeConfiguration) getMakeConfigurationDescriptor().getConfs().getActive();
-            if (active.isMakefileConfiguration()) { // FIXUP: need better check
+            MakeConfiguration active = (descriptor == null)?
+                null : (MakeConfiguration) descriptor.getConfs().getActive();
+            if (descriptor == null || active == null || active.isMakefileConfiguration()) { // FIXUP: need better check
                 standardActions = getAdditionalDiskFolderActions();
             } else {
                 standardActions = getAdditionalLogicalFolderActions();

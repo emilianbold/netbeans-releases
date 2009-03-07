@@ -142,11 +142,11 @@ public final class DLightToolkitManagement {
   public Future<DLightSessionHandler> createSession(
           final DLightTarget target,
           final String configurationName) {
-      return DLightExecutorService.service.submit(new Callable<DLightSessionHandler>() {
+      return DLightExecutorService.submit(new Callable<DLightSessionHandler>() {
             public DLightSessionHandler call() throws Exception {
                 return toolkitManager.createSession(target, configurationName);
             }
-        });
+        }, "DLight [" + configurationName + "] Session Creation for " + target); // NOI18N
   }
 
 

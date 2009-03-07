@@ -39,11 +39,7 @@
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
 import javax.microedition.m2g.SVGImage;
-import org.netbeans.modules.mobility.svgcore.util.Util;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGLabelCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGRadioButtonCD;
-import org.w3c.dom.svg.SVGElement;
 
 /**
  *
@@ -61,32 +57,8 @@ public class SVGCheckBoxDisplayPresenter extends UpdatableSVGComponentDisplayPre
     protected void reloadSVGComponent(SVGImage svgImage,
             DesignComponent svgComponent, String componentId) {
 
-        updateTitle(svgImage, svgComponent, componentId);
-        updateMark(svgImage, svgComponent, componentId);
-    }
-
-
-    private void updateTitle(SVGImage svgImage, DesignComponent svgComponent,
-            String componentId) {
-        String value = (String) svgComponent.readProperty(SVGLabelCD.PROP_TEXT).getPrimitiveValue();
-        String id = componentId + TITLE_SUFFIX; // NOI18N
-
-        SVGElement element = Util.getElementById(svgImage, id);
-
-        if (element != null){
-            element.setTrait(TRAIT_TEXT, value);
-        }
-    }
-
-    private void updateMark(SVGImage svgImage, DesignComponent svgComponent,
-            String componentId) {
-        Boolean value = (Boolean) svgComponent.readProperty(SVGRadioButtonCD.PROP_SELECTED).getPrimitiveValue();
-        String id = componentId + MARK_SUFFIX; // NOI18N
-
-        SVGElement element = Util.getElementById(svgImage, id);
-        if (element != null){
-            element.setTrait( TRAIT_VISIBILITY, value ? TR_VALUE_VISIBLE : TR_VALUE_HIDDEN);
-        }
+        updateText(svgImage, svgComponent, componentId, TITLE_SUFFIX);
+        updateSelected(svgImage, svgComponent, componentId, MARK_SUFFIX);
     }
 
 }

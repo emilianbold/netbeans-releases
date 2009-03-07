@@ -39,10 +39,7 @@
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
 import javax.microedition.m2g.SVGImage;
-import org.netbeans.modules.mobility.svgcore.util.Util;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGLabelCD;
-import org.w3c.dom.svg.SVGElement;
 
 /**
  *
@@ -58,19 +55,7 @@ public class SVGLabelDisplayPresenter extends UpdatableSVGComponentDisplayPresen
     protected void reloadSVGComponent(SVGImage svgImage,
             DesignComponent svgComponent, String componentId) {
 
-        updateTitle(svgImage, svgComponent, componentId);
-    }
-
-    private void updateTitle(SVGImage svgImage, DesignComponent svgComponent,
-            String componentId) {
-        String value = (String) svgComponent.readProperty(SVGLabelCD.PROP_TEXT).getPrimitiveValue();
-        String id = componentId + TITLE_SUFFIX; // NOI18N
-
-        SVGElement element = Util.getElementById(svgImage, id);
-
-        if (element != null){
-            element.setTrait(TRAIT_TEXT, value);
-        }
+        updateText(svgImage, svgComponent, componentId, TITLE_SUFFIX);
     }
 
 }

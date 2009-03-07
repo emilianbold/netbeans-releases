@@ -145,7 +145,7 @@ public final class CheckoutAction extends SystemAction {
         } else {
             cmd.setResetStickyOnes(true);
         }
-        cmd.setPruneDirectories(true);
+        cmd.setPruneDirectories(CvsModuleConfig.getDefault().getAutoPruneDirectories());
         cmd.setRecursive(true);
 
         File workingFolder = new File(workingDir);

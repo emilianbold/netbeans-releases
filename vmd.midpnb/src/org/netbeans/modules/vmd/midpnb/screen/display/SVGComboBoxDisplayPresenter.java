@@ -38,10 +38,37 @@
  */
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
+import javax.microedition.m2g.SVGImage;
+import org.netbeans.modules.mobility.svgcore.util.Util;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.w3c.dom.svg.SVGElement;
+
 /**
  *
  * @author akorostelev
  */
-public class SVGComboBoxDisplayPresenter extends SVGComponentDisplayPresenter {
+public class SVGComboBoxDisplayPresenter extends UpdatableSVGComponentDisplayPresenter {
+
+    private static final String TITLE = "editor_text";            // NOI18N
+    private static final String TITLE_SUFFIX = DASH + TITLE;
+
+    @Override
+    protected void reloadSVGComponent(SVGImage svgImage, DesignComponent svgComponent,
+            String componentId) {
+        updateTitle(svgImage, svgComponent, componentId);
+    }
+
+    private void updateTitle(SVGImage svgImage, DesignComponent svgComponent,
+            String componentId) {
+        String id = componentId + TITLE_SUFFIX; // NOI18N
+
+        String value = getFirstListModelElement(svgComponent); //NOI18N
+
+        SVGElement element = Util.getElementById(svgImage, id);
+
+        if (element != null) {
+            element.setTrait(TRAIT_TEXT, value);
+        }
+    }
 
 }

@@ -53,6 +53,7 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -350,8 +351,7 @@ public final class Erprint {
                         }
                     };
 
-                    Thread promptReaderThread = new Thread(onStart, "Prompt Thread Reader");
-                    promptReaderThread.start();
+                    DLightExecutorService.submit(onStart, "ER_PRINT Prompt Thread Reader"); // NOI18N
 
                     break;
                 case ERROR:
