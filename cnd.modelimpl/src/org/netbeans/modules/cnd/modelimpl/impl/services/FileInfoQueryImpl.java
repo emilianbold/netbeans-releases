@@ -301,7 +301,7 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
             StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
             ProjectBase startProject = ProjectBase.getStartProject(startEntry);
             if (startProject != null) {
-                CsmFile startFile = startProject.getFile(new File(startEntry.getStartFile()));
+                CsmFile startFile = startProject.getFile(new File(startEntry.getStartFile().toString()));
                 if (startFile != null) {
                     List<CsmInclude> res = new ArrayList<CsmInclude>();
                     for(APTIncludeHandler.IncludeInfo info : reverseInclStack){

@@ -1023,6 +1023,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 case DOT:
                                 case ARROW:
                                 case SCOPE:
+                                case MEMBER_POINTER:
                                     popExp(); // pop the top expression
                                     CsmCompletionExpression genExp = createTokenExp(GENERIC_TYPE_OPEN);
                                     genExp.addParameter(top);
@@ -1103,8 +1104,29 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                             gen.addParameter(popExp());
                                         }
                                         gen.setExpID(GENERIC_TYPE);
+
                                         top = gen;
                                         genericType = true;
+
+                                        // IZ#159068 : Unresolved ids in instantiations after &
+                                        // IZ#159054 : Unresolved id in case of reference to template as return type
+                                        if (gen.getParameterCount() > 0) {
+                                            CsmCompletionExpression param = gen.getParameter(0);
+                                            if (param.getParameterCount() > 0) {
+                                                switch (param.getExpID()) {
+                                                    case MEMBER_POINTER: // check for "&List<...>" case
+                                                        CsmCompletionExpression newMemPointer = createTokenExp(param.getExpID());
+                                                        CsmCompletionExpression newGen = createTokenExp(GENERIC_TYPE);
+                                                        newGen.addParameter(param.getParameter(0));
+                                                        for (int i = 1; i < gen.getParameterCount(); i++) {
+                                                            newGen.addParameter(gen.getParameter(i));
+                                                        }
+                                                        newMemPointer.addParameter(newGen);
+                                                        top = newMemPointer;
+                                                    default:
+                                                }
+                                            }
+                                        }
                                     }
                                     break;
 

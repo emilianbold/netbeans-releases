@@ -41,8 +41,10 @@ package org.netbeans.modules.vmd.midpnb.components.svg.form;
 import java.awt.Image;
 
 import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.midpnb.screen.display.SVGCheckBoxDisplayPresenter;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -84,8 +86,15 @@ public class SVGCheckBoxEventSourceCD extends SVGComponentEventSourceCD {
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         removeActions(presenters);
         super.gatherPresenters(presenters);
+        //DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
     }
 
-
+    @Override
+    protected List<? extends Presenter> createPresenters() {
+        List<? extends Presenter> presenters = super.createPresenters();
+        List<Presenter> result = new ArrayList<Presenter>( presenters  );
+        result.add(new SVGCheckBoxDisplayPresenter());
+        return result;
+    }
 
 }

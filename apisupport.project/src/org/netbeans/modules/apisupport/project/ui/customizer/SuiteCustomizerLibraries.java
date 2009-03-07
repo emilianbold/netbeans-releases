@@ -343,7 +343,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private void refreshModules() {
-        platformModules = getProperties().getActivePlatform().getModules();
+        platformModules = getProperties().getActivePlatform().getSortedModules();
         createPlatformModulesChildren();
 //       XXX  synchronized (this) {
 //            universe = null;
@@ -603,7 +603,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
     private void addProjectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addProjectButtonActionPerformed
         Project project = UIUtil.chooseProject(this);
-        addProjectCluster(ClusterInfo.create(project, true),true);
+        if (project != null)
+            addProjectCluster(ClusterInfo.create(project, true),true);
     }//GEN-LAST:event_addProjectButtonActionPerformed
 
     private void addClusterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addClusterButtonActionPerformed
@@ -970,7 +971,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             super.setEnabled(s);
             if (ci != null && ci.isEnabled() != s) {
                 ci = ClusterInfo.createFromCP(ci.getClusterDir(), ci.getProject(),
-                        ci.isPlatformCluster(), ci.getSourceRoots(), s);
+                        ci.isPlatformCluster(), ci.getSourceRoots(), ci.getJavadocRoots(), s);
             }
         }
 

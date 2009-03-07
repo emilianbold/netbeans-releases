@@ -41,14 +41,13 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 
 /**
  *
  * @author gorrus
  */
-public class APTCommentToken extends APTTokenAbstact {
+public final class APTCommentToken extends APTTokenAbstact {
     /** Creates a new instance of APTCommentToken */
     public APTCommentToken() {
     }
@@ -60,58 +59,72 @@ public class APTCommentToken extends APTTokenAbstact {
     protected int column;
     protected int endLine;
 
+    @Override
     public String getText() {
         return "<comment text skipped>"; // NOI18N
     }
     
+    @Override
     public int getEndOffset() {
         return offset + length;
     }
 
+    @Override
     public void setOffset(int o) {
         offset = o;
     }
 
+    @Override
     public int getOffset() {
         return offset;
     }
 
+    @Override
     public void setType(int t) {
         type = t;
     }
 
+    @Override
     public int getType() {
         return type;
     }
 
+    @Override
     public void setColumn(int c) {
         column = c;
     }
 
+    @Override
     public void setLine(int l) {
         line = l;
     }
 
+    @Override
     public int getLine() {
         return line;
     }
 
+    @Override
     public int getColumn() {
         return column;
     }
 
+    @Override
     public void setEndLine(int l) {
         this.endLine = l;
     }
     
+    @Override
     public int getEndLine() {
         return endLine;
     }
     
+    @Override
     public int getEndColumn() {
         return getColumn() + length;
     }
 
+    @Override
     public void setText(String t) {
         length = t.length();
     }

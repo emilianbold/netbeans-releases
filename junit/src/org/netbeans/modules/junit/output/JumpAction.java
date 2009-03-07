@@ -43,7 +43,10 @@ package org.netbeans.modules.junit.output;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -55,20 +58,11 @@ final class JumpAction extends AbstractAction {
     private final Node node;
     /** */
     private final String callstackFrameInfo;
-    /** */
-    private final Report.Trouble trouble;
 
     /** Creates a new instance of JumpAction */
     public JumpAction(Node node, String callstackFrameInfo) {
         this.node = node;
         this.callstackFrameInfo = callstackFrameInfo;
-        this.trouble = null;
-    }
-
-    public JumpAction(Node node, Report.Trouble trouble) {
-        this.node = node;
-        this.callstackFrameInfo = null;
-        this.trouble = trouble;
     }
 
     /**
@@ -76,11 +70,19 @@ final class JumpAction extends AbstractAction {
      * tries to jump to the callstack frame source code. Otherwise does nothing.
      */
     public void actionPerformed(ActionEvent e) {
-        if (callstackFrameInfo != null) {
-            OutputUtils.openCallstackFrame(node, callstackFrameInfo);
+        if (node instanceof TestsuiteNode){
+            OutputUtils.openTestsuite((TestsuiteNode)node);
         } else {
-            assert trouble != null;
-            OutputUtils.openCallstackFrame(node, trouble);
+            OutputUtils.openCallstackFrame(node, callstackFrameInfo);
+        }
+    }
+
+    @Override
+    public Object getValue(String key) {
+        if (key.equals(Action.NAME)) {
+            return NbBundle.getMessage(JumpAction.class, "LBL_GotoSource"); //NOI18N
+        }else{
+            return super.getValue(key);
         }
     }
 

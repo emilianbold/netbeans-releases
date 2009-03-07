@@ -47,10 +47,10 @@ import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
-import org.netbeans.modules.php.project.connections.RemoteSettings;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.TransferInfo;
 import org.netbeans.modules.php.project.connections.ui.TransferFilter;
@@ -121,7 +121,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
                 }
             }
 
-            forUpload = TransferFilter.showUploadDialog(forUpload, RemoteSettings.getLastUpload(getProject()));
+            forUpload = TransferFilter.showUploadDialog(forUpload, ProjectSettings.getLastUpload(getProject()));
             if (forUpload.size() == 0) {
                 return;
             }
@@ -163,7 +163,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
     private void rememberLastUpload(FileObject sources, FileObject[] selectedFiles) {
         for (FileObject fo : selectedFiles) {
             if (sources.equals(fo)) {
-                RemoteSettings.setLastUpload(getProject(), TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
+                ProjectSettings.setLastUpload(getProject(), TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
                 return;
             }
         }

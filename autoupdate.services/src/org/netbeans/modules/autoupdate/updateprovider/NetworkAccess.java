@@ -31,6 +31,8 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -46,6 +48,7 @@ import org.openide.util.RequestProcessor;
  * @author Jirka Rechtacek
  */
 public class NetworkAccess {
+    private static final Logger err = Logger.getLogger(NetworkAccess.class.getName());
 
     private NetworkAccess () {}
     
@@ -75,7 +78,7 @@ public class NetworkAccess {
         }
         
         private void postTask () {
-            final SizedConnection<InputStream> connectTask = createCallableNetwork (url, timeout);
+            final SizedConnection connectTask = createCallableNetwork (url, timeout);
             rpTask = RequestProcessor.getDefault ().post (new Runnable () {
                 public void run () {
                     connect = es.submit (connectTask);
@@ -103,8 +106,8 @@ public class NetworkAccess {
             rpTask.waitFinished ();
         }
         
-        private SizedConnection<InputStream> createCallableNetwork (final URL url, final int timeout) {
-            return new SizedConnection<InputStream> () {
+        private SizedConnection createCallableNetwork (final URL url, final int timeout) {
+            return new SizedConnection () {
                 private int contentLength = -1;
 
                 public int getContentLength() {
@@ -116,6 +119,14 @@ public class NetworkAccess {
                     conn.setConnectTimeout (timeout);
                     InputStream is = conn.getInputStream ();
                     contentLength = conn.getContentLength();
+                    Map <String, List <String>> map = conn.getHeaderFields();
+                    StringBuilder sb = new StringBuilder("Connection opened for:\n");
+                       sb.append("    Url: " + conn.getURL() + "\n");
+                    for(String field : map.keySet()) {
+                       sb.append("    " + (field==null ? "Status" : field )+ ": " + map.get(field) + "\n");
+                    }
+                    sb.append("\n");
+                    err.log(Level.INFO, sb.toString());
                     return new BufferedInputStream (is);
                 }
             };
@@ -126,7 +137,7 @@ public class NetworkAccess {
         }
         
     }
-    private interface SizedConnection<V> extends Callable {
+    private interface SizedConnection extends Callable<InputStream> {
         public int getContentLength();
     }
     public interface NetworkListener {

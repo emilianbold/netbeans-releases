@@ -393,7 +393,7 @@ public final class DtraceDataCollector
                     }
                 };
 
-        return DLightExecutorService.service.submit(valiationTask);
+        return DLightExecutorService.submit(valiationTask, "Validation of DTraceDataCollector " + configuration.getID()); // NOI18N
     }
 
     public void invalidate() {

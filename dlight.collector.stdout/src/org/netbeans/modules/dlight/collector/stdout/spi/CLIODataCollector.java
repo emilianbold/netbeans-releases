@@ -282,7 +282,8 @@ public final class CLIODataCollector
                     }
                 };
 
-        return DLightExecutorService.service.submit(validationTask);
+        return DLightExecutorService.submit(
+                validationTask, "Validate CLIODataCollector " + command); // NOI18N
     }
 
     public void invalidate() {

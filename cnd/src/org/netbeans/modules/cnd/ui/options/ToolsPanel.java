@@ -88,6 +88,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 import org.openide.windows.WindowManager;
 
 /** Display the "Tools Default" panel */
@@ -823,39 +824,51 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         }
     }
 
-    static Set<ChangeListener> listenerModified = new HashSet<ChangeListener>();
+    private final static Set<ChangeListener> listenerModified = new WeakSet<ChangeListener>();
 
     public static void addCompilerSetModifiedListener(ChangeListener l) {
-        listenerModified.add(l);
+        synchronized (listenerModified){
+            listenerModified.add(l);
+        }
     }
 
     public static void removeCompilerSetModifiedListener(ChangeListener l) {
-        listenerModified.remove(l);
+        synchronized (listenerModified){
+            listenerModified.remove(l);
+        }
     }
 
     public void fireCompilerSetModified() {
         ChangeEvent ev = new ChangeEvent(currentCompilerSet);
-        for (ChangeListener l : listenerModified) {
-            l.stateChanged(ev);
+        synchronized (listenerModified){
+            for (ChangeListener l : listenerModified) {
+                l.stateChanged(ev);
+            }
         }
     }
 
-    static Set<IsChangedListener> listenerIsChanged = new HashSet<IsChangedListener>();
+    private static final Set<IsChangedListener> listenerIsChanged = new WeakSet<IsChangedListener>();
 
     public static void addIsChangedListener(IsChangedListener l) {
-        listenerIsChanged.add(l);
+        synchronized (listenerIsChanged){
+            listenerIsChanged.add(l);
+        }
     }
 
     public static void removeIsChangedListener(IsChangedListener l) {
-        listenerIsChanged.remove(l);
+        synchronized (listenerIsChanged){
+            listenerIsChanged.remove(l);
+        }
     }
 
     private boolean isChangedInOtherPanels() {
         boolean isChanged = false;
-        for (IsChangedListener l : listenerIsChanged) {
-            if (l.isChanged()) {
-                isChanged = true;
-                break;
+        synchronized (listenerIsChanged){
+            for (IsChangedListener l : listenerIsChanged) {
+                if (l.isChanged()) {
+                    isChanged = true;
+                    break;
+                }
             }
         }
         return isChanged;

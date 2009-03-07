@@ -214,7 +214,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
     private static final MultiTokenInclude EMPTY_INCLUDE = new MultiTokenInclude(null);
 
     //TODO: what about Serializable
-    private static class MultiTokenInclude extends APTTokenAbstact {
+    private static final class MultiTokenInclude extends APTTokenAbstact {
 
         private List<APTToken> origTokens;
 

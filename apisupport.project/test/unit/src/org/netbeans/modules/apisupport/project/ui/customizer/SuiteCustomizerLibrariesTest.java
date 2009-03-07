@@ -159,7 +159,7 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
     
     public void testUniverseModules() throws Exception { // #65924
         Map<String,SuiteCustomizerLibraries.UniverseModule> modulesByName = new HashMap<String,SuiteCustomizerLibraries.UniverseModule>();
-        Set<SuiteCustomizerLibraries.UniverseModule> modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getModules(), 
+        Set<SuiteCustomizerLibraries.UniverseModule> modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getSortedModules(),
                 SuiteUtils.getSubProjects(suite), Collections.<ModuleEntry>emptySet());
         for (SuiteCustomizerLibraries.UniverseModule m : modules) {
             modulesByName.put(m.getCodeNameBase(), m);
@@ -212,7 +212,7 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         Category cat = Category.create("dummy", "dummy", null);
         SuiteCustomizerLibraries scl = new SuiteCustomizerLibraries(suiteProps, cat);
 
-        Set<SuiteCustomizerLibraries.UniverseModule> modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getModules(), SuiteUtils.getSubProjects(suite), Collections.<ModuleEntry>emptySet());
+        Set<SuiteCustomizerLibraries.UniverseModule> modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getSortedModules(), SuiteUtils.getSubProjects(suite), Collections.<ModuleEntry>emptySet());
         Set<File> allClusters = new HashSet<File>(Arrays.asList(
                 new File(install, "somecluster"), new File(install, "anothercluster"), ClusterUtils.getClusterDirectory(suite)));
         assertEquals(null, join(scl.findWarning(modules, allClusters, Collections.<String>emptySet())));
