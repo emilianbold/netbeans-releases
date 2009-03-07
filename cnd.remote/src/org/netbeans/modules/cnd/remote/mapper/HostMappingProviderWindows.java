@@ -49,7 +49,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 
 /**
@@ -58,12 +58,12 @@ import org.openide.util.Exceptions;
  */
 public class HostMappingProviderWindows implements HostMappingProvider {
 
-    public Map<String, String> findMappings(String hkey, String otherHkey) {
+    public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
         Map<String, String> mappings = null;
         try {
             Process process = Runtime.getRuntime().exec("net use"); //NOI18N
             InputStream output = process.getInputStream();
-            mappings = parseNetUseOutput(RemoteUtils.getHostName(otherHkey), new InputStreamReader(output));
+            mappings = parseNetUseOutput(otherExecEnv.getHost(), new InputStreamReader(output));
             return mappings;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
