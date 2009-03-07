@@ -52,7 +52,6 @@ import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
 import org.netbeans.modules.hudson.ui.actions.ShowChanges;
 import org.netbeans.modules.hudson.ui.actions.ShowFailures;
-import org.netbeans.modules.hudson.ui.actions.ShowJobDetailAction;
 import org.netbeans.modules.hudson.ui.actions.StartJobAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
@@ -114,7 +113,6 @@ public class HudsonJobNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(SystemAction.get(ShowJobDetailAction.class));
         actions.add(SystemAction.get(StartJobAction.class));
         int last = job.getLastBuild();
         if (last >= 0) {
@@ -130,11 +128,6 @@ public class HudsonJobNode extends AbstractNode {
         actions.add(null);
         actions.add(SystemAction.get(PropertiesAction.class));
         return actions.toArray(new Action[actions.size()]);
-    }
-    
-    @Override
-    public Action getPreferredAction() {
-        return SystemAction.get(ShowJobDetailAction.class);
     }
     
     @Override

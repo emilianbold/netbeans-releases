@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonChangeAdapter;
@@ -63,10 +62,8 @@ import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
-import org.netbeans.modules.hudson.ui.HudsonJobView;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.ui.notification.ProblemNotificationController;
-import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -134,33 +131,12 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                 for (final HudsonJob job : getJobs()) {
                     if (job.getColor().equals(Color.red) || job.getColor().equals(Color.red_anime))
                         failedJobs.add(job);
-                    
-                    Utilities.invokeInAWTThread(new Runnable() {
-                        public void run() {
-                            // Updates jobs views in the cache
-                            HudsonJobView.getInstanceFromCache(job);
-                        }
-                    }, true);
                 }
 
                 if (problemNotificationController == null) {
                     problemNotificationController = new ProblemNotificationController(instance);
                 }
                 problemNotificationController.updateNotifications();
-
-                // When job detail is opened and job was removed, close view
-                for (final HudsonJobView v : HudsonJobView.getCachedInstances()) {
-                    if (instance.equals(v.getJob().getLookup().lookup(HudsonInstance.class))) {
-                        if (!getJobs().contains(v.getJob())) {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    if (v.isOpened())
-                                        v.close();
-                                }
-                            });
-                        }
-                    }
-                }
             }
         });
     }

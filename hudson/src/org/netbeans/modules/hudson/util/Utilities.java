@@ -41,26 +41,12 @@
 
 package org.netbeans.modules.hudson.util;
 
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.RenderingHints;
-import java.awt.Toolkit;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.netbeans.modules.hudson.api.HudsonVersion;
-import org.openide.util.Exceptions;
 
 /**
  * Helper utility class
- *
- * @author Michal Mocnak
  */
 public class Utilities {
     
@@ -76,65 +62,6 @@ public class Utilities {
             return false;
         
         return true;
-    }
-    
-    public static Graphics2D prepareGraphics(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        Map rhints = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
-        if( rhints == null && Boolean.getBoolean("swing.aatext") ) { //NOI18N
-            g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
-        } else if( rhints != null ) {
-            g2.addRenderingHints( rhints );
-        }
-        return g2;
-    }
-    
-    public static int getDefaultFontSize() {
-        Integer customFontSize = (Integer)UIManager.get("customFontSize"); // NOI18N
-        if (customFontSize != null) {
-            return customFontSize.intValue();
-        } else {
-            Font systemDefaultFont = UIManager.getFont("TextField.font"); // NOI18N
-            return (systemDefaultFont != null)
-                    ? systemDefaultFont.getSize()
-                    : 12;
-        }
-    }
-    
-    public static void invokeInAWTThread(Runnable runnable, boolean wait) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            runnable.run();
-        } else {
-            if (wait) {
-                try {
-                    SwingUtilities.invokeAndWait(runnable);
-                } catch (InterruptedException e) {
-                    Exceptions.printStackTrace(e);
-                } catch (InvocationTargetException e) {
-                    Exceptions.printStackTrace(e);
-                }
-            } else {
-                SwingUtilities.invokeLater(runnable);
-            }
-        }
-    }
-    
-    public static GridBagConstraints getGridBagConstraints(int gridx, int gridy,
-            double weightx, double weighty, int anchor, int fill, int itop,
-            int ileft, int ibottom, int iright) {
-        // Create a new instance of GridBagConstraints
-        GridBagConstraints gbc = new GridBagConstraints();
-        
-        // Set constraints
-        gbc.gridx = gridx;
-        gbc.gridy = gridy;
-        gbc.weightx = weightx;
-        gbc.weighty = weighty;
-        gbc.anchor = anchor;
-        gbc.fill = fill;
-        gbc.insets = new Insets(itop, ileft, ibottom, iright);
-        
-        return gbc;
     }
 
     /**
