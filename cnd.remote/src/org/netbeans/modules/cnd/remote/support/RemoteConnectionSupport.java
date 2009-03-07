@@ -71,7 +71,8 @@ public abstract class RemoteConnectionSupport {
     private Integer timeout = Integer.getInteger("cnd.remote.timeout"); // NOI18N
     protected static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     protected static final int PORT = Integer.getInteger("cnd.remote.port", 22); //NOI18N
-    
+
+    /** TODO: deprecate and remove */
     public RemoteConnectionSupport(String key, int port) {
         this.key = key;
         int pos = key.indexOf('@');

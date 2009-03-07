@@ -47,8 +47,8 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory;
-import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 
 /**
  *

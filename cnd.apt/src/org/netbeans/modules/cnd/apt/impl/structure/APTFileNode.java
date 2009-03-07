@@ -45,6 +45,7 @@ import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
  * implementation of APTFile
@@ -53,7 +54,7 @@ import org.netbeans.modules.cnd.apt.support.APTWalker;
 public final class APTFileNode extends APTContainerNode 
                                 implements APTFile, Serializable {
     private static final long serialVersionUID = -6182803432699849825L;
-    private String path;
+    private final CharSequence path;
     transient private boolean tokenized;
     
     /** Copy constructor */
@@ -63,14 +64,9 @@ public final class APTFileNode extends APTContainerNode
         this.tokenized = false;
     }
     
-    /** Constructor for serialization */
-    protected APTFileNode() {
-        tokenized = false;
-    }
-    
     /** Creates a new instance of APTFileNode */
-    public APTFileNode(String path) {
-        this.path = path;
+    public APTFileNode(CharSequence path) {
+        this.path = FilePathCache.getString(path);
         tokenized = true;
     }
     
@@ -95,7 +91,7 @@ public final class APTFileNode extends APTContainerNode
         return "FILE:{" + getPath() + "}"; // NOI18N
     }
 
-    public String getPath() {
+    public CharSequence getPath() {
         return path;
     }
 
@@ -109,7 +105,30 @@ public final class APTFileNode extends APTContainerNode
 
     public boolean isTokenized() {
         return tokenized;
-    }    
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof APTFileNode)) {
+            return false;
+        }
+        final APTFileNode other = (APTFileNode) obj;
+        if (!this.path.equals(other.path)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 41 * hash + this.path.hashCode();
+        return hash;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
     

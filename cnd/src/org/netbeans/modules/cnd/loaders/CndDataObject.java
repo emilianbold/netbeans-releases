@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.execution.BinaryExecSupport;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.Lookup;
+import org.openide.util.WeakSet;
 
 /**
  *  Abstract superclass of a C/C++/Fortran DataObject.
@@ -227,7 +228,7 @@ public abstract class CndDataObject extends MultiDataObject {
     }
 
     private static class MyNativeFileItemSet implements NativeFileItemSet {
-        private List<NativeFileItem> items = new ArrayList<NativeFileItem>(1);
+        private Set<NativeFileItem> items = new WeakSet<NativeFileItem>(1);
 
         public synchronized Collection<NativeFileItem> getItems() {
             return new ArrayList<NativeFileItem>(items);
@@ -236,9 +237,7 @@ public abstract class CndDataObject extends MultiDataObject {
             if (item == null) {
                 return;
             }
-            if (!items.contains(item)) {
-                items.add(item);
-            }
+            items.add(item);
         }
         public synchronized void remove(NativeFileItem item){
             if (item == null) {
@@ -250,5 +249,4 @@ public abstract class CndDataObject extends MultiDataObject {
             return items.isEmpty();
         }
     }
-
 }

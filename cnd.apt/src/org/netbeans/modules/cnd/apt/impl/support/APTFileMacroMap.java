@@ -44,7 +44,14 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
@@ -58,7 +65,7 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
  * requests about macros if not found in own macro map
  * @author Vladimir Voskresensky
  */
-public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
+public class APTFileMacroMap extends APTBaseMacroMap {
     private APTMacroMap sysMacroMap;
     private Map<String,APTMacro> macroCache = new HashMap<String,APTMacro>();
 
@@ -123,7 +130,23 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
     }
 
     protected APTMacro createMacro(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
-        return new APTMacroImpl(file, name, params, value, macroType);
+        APTMacro macro = new APTMacroImpl(file, name, params, value, macroType);
+        APTMacro prev = null;
+        if (APTTraceFlags.APT_SHARE_MACROS) {
+            ConcurrentMap<APTMacro, APTMacro> sharedMap = getSharedMap();
+            prev = sharedMap.get(macro);
+            if (prev == null) {
+                prev = sharedMap.putIfAbsent(macro, macro);
+                if (TRACE_HITS && prev != null) {
+                    cacheCollisionsHits++;
+                }
+            }
+            if (TRACE_HITS && prev != null) {
+                cacheHits++;
+                traceHits(sharedMap.size());
+            }
+        }
+        return prev != null ? prev : macro;
     }
 
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
@@ -253,4 +276,34 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
         retValue.append(sysMacroMap);
         return retValue.toString();
     }
+
+    private static ConcurrentMap<APTMacro, APTMacro> getSharedMap() {
+        ConcurrentMap<APTMacro, APTMacro> map = mapRef.get();
+        if (map == null) {
+            try {
+                maRefLock.lock();
+                map = mapRef.get();
+                if (map == null) {
+                    cacheHits = 0;
+                    cacheCollisionsHits = 0;
+                    map = new ConcurrentHashMap<APTMacro, APTMacro>();
+                    mapRef = new SoftReference<ConcurrentMap<APTMacro, APTMacro>>(map);
+                }
+            } finally {
+                maRefLock.unlock();
+            }
+        }
+        return map;
+    }
+
+    private static void traceHits(int size) {
+        if (cacheHits % 5000 == 0) {
+            System.err.printf("%s hits with %s collisions, map size %s\n", cacheHits, cacheCollisionsHits, size);
+        }
+    }
+    private static final Lock maRefLock = new ReentrantLock();
+    private static Reference<ConcurrentMap<APTMacro, APTMacro>> mapRef = new SoftReference<ConcurrentMap<APTMacro, APTMacro>>(new ConcurrentHashMap<APTMacro, APTMacro>());
+    private static volatile long cacheHits = 0; // we can unsync a little, but it's fine
+    private static volatile long cacheCollisionsHits = 0; // we can unsync a little, but it's fine
+    private static final boolean TRACE_HITS = false;
 }

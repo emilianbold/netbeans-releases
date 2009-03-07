@@ -150,7 +150,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
      * @return false if tool cannot be validated
      */
     public final Future<Boolean> enable(final DLightTarget target) {
-        return DLightExecutorService.service.submit(new Callable<Boolean>() {
+        return DLightExecutorService.submit(new Callable<Boolean>() {
 
             public Boolean call() throws Exception {
                 if (!validationStatus.isKnown()) {
@@ -160,7 +160,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
                 enabled = validationStatus.isValid();
                 return enabled == true;
             }
-        });
+        }, "Validate DLight Tool " + toolName); // NOI18N
     }
 
     /**
@@ -231,7 +231,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
     }
 
     public final Future<ValidationStatus> validate(final DLightTarget target) {
-        return DLightExecutorService.service.submit(new Callable<ValidationStatus>() {
+        return DLightExecutorService.submit(new Callable<ValidationStatus>() {
 
             public ValidationStatus call() throws Exception {
                 if (validationStatus.isValid()) {
@@ -246,7 +246,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
                 validationStatus = newStatus;
                 return newStatus;
             }
-        });
+        }, "Validate DLight tool " + toolName); // NOI18N
     }
 
     public final void invalidate() {

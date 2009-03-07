@@ -65,7 +65,7 @@ public class TimerTaskExecutionServiceTest {
 
             public void run() {
                 for (Worker worker : workers) {
-                    tasks.add(service.scheduleAtFixedRate(worker, r.nextInt(4) + 1, TimeUnit.SECONDS));
+                    tasks.add(service.scheduleAtFixedRate(worker, r.nextInt(4) + 1, TimeUnit.SECONDS, "testRegisterTimerTask"));
                 }
             }
         };

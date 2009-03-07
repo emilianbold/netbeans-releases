@@ -51,6 +51,7 @@ import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.DebugUrl;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
@@ -127,24 +128,33 @@ class ConfigActionLocal extends ConfigAction {
 
     @Override
     public void debugProject() {
+        final URL[] urlToShow = new URL[1];
+        try {
+            urlToShow[0] = getUrlToShow(CommandUtils.urlForDebugProject(project), CommandUtils.urlForProject(project));
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (StopDebuggingException exc) {
+            return;
+        }
+
         Runnable runnable = new Runnable() {
             public void run() {
-                    try {
-                        URL debugUrl = CommandUtils.urlForDebugProject(project);
-                        assert debugUrl != null;
+                try {
+                    if (urlToShow[0] != null) {
                         if (CommandUtils.getDebugInfo(project).debugClient) {
                             try {
-                                launchJavaScriptDebugger(debugUrl);
+                                launchJavaScriptDebugger(urlToShow[0]);
                             } catch (URISyntaxException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
                         } else {
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(debugUrl);
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(urlToShow[0]);
                         }
-                    } catch (MalformedURLException ex) {
-                        Exceptions.printStackTrace(ex);
                     }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
+            }
         };
 
         boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
@@ -203,36 +213,65 @@ class ConfigActionLocal extends ConfigAction {
         // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
         URL url = null;
         try {
-            url = CommandUtils.urlForDebugContext(project, context);
+            url = getUrlToShow(CommandUtils.urlForDebugContext(project, context), CommandUtils.urlForContext(project, context));
         } catch (MalformedURLException ex) {
             //TODO improve error handling
             Exceptions.printStackTrace(ex);
+            return;
+        } catch (StopDebuggingException exc) {
             return;
         }
         debugFile(CommandUtils.fileForContextOrSelectedNodes(context, webRoot), url);
     }
 
+    URL getUrlToShow(URL defaultDebugUrl, URL defaultRunUrl) throws MalformedURLException, StopDebuggingException {
+        URL urlToShow = null;
+        DebugUrl debugUrl = ProjectPropertiesSupport.getDebugUrl(project);
+        switch (debugUrl) {
+            case DEFAULT_URL:
+                urlToShow = defaultDebugUrl;
+                assert urlToShow != null;
+                break;
+            case ASK_FOR_URL:
+                AskForUrlPanel askForUrlPanel = new AskForUrlPanel(project, defaultRunUrl);
+                if (!askForUrlPanel.open()) {
+                    throw new StopDebuggingException();
+                }
+                urlToShow = askForUrlPanel.getUrl();
+                assert urlToShow != null;
+                urlToShow = CommandUtils.createDebugUrl(urlToShow);
+                break;
+            case DO_NOT_OPEN_BROWSER:
+                // noop
+                break;
+            default:
+                throw new IllegalStateException("Unknown state for debug URL: " + debugUrl);
+        }
+        return urlToShow;
+    }
+
     void debugFile(final FileObject selectedFile, final URL debugUrl) {
         assert selectedFile != null;
-        assert debugUrl != null;
 
         preShowUrl();
 
         Runnable runnable = new Runnable() {
             public void run() {
-                try {
-                    if (CommandUtils.getDebugInfo(project).debugClient) {
-                        try {
-                            launchJavaScriptDebugger(debugUrl);
-                        } catch (URISyntaxException ex) {
-                            Exceptions.printStackTrace(ex);
+                if (debugUrl != null) {
+                    try {
+                        if (CommandUtils.getDebugInfo(project).debugClient) {
+                            try {
+                                launchJavaScriptDebugger(debugUrl);
+                            } catch (URISyntaxException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        } else {
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(debugUrl);
                         }
-                    } else {
-                        HtmlBrowser.URLDisplayer.getDefault().showURL(debugUrl);
+                    } catch (MalformedURLException ex) {
+                        //TODO improve error handling
+                        Exceptions.printStackTrace(ex);
                     }
-                } catch (MalformedURLException ex) {
-                    //TODO improve error handling
-                    Exceptions.printStackTrace(ex);
                 }
             }
         };
@@ -311,5 +350,9 @@ class ConfigActionLocal extends ConfigAction {
                 Exceptions.printStackTrace(ex);
             }
         }
+    }
+
+    private static final class StopDebuggingException extends Exception {
+        private static final long serialVersionUID = -22807171434417714L;
     }
 }

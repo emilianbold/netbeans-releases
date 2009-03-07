@@ -56,9 +56,8 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 
@@ -206,12 +205,12 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         for (ExecutionContext c : contexts) {
             final DLightTarget target = c.getTarget();
             target.removeTargetListener(this);
-            RequestProcessor.getDefault().post(new Runnable() {
+            DLightExecutorService.submit(new Runnable() {
 
                 public void run() {
                     DLightTargetAccessor.getDefault().getDLightTargetExecution(target).terminate(target);
                 }
-            });
+            }, "Stop DLight session's target " + target.toString()); // NOI18N
         }
     }
 
@@ -338,11 +337,18 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 
         for (DLightTool tool : validTools) {
             // Try to subscribe every IndicatorDataProvider to every Indicator
+            //there can be the situation when IndicatorDataProvider is collector
+            //and not attacheble
             List<IndicatorDataProvider> idps = DLightToolAccessor.getDefault().getIndicatorDataProviders(tool);
             if (idps != null) {
                 for (IndicatorDataProvider idp : idps) {
                     if (idp instanceof DLightTarget.ExecutionEnvVariablesProvider) {
                         context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) idp);
+                    }
+                    if (idp instanceof DataCollector){
+                        if (notAttachableDataCollector == null && !((DataCollector)idp).isAttachable()) {
+                            notAttachableDataCollector = ((DataCollector)idp);
+                        }
                     }
                     List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
                     for (Indicator i : indicators) {

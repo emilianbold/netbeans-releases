@@ -43,19 +43,24 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public class SunFortranCompiler extends BasicCompiler {
     
     /** Creates a new instance of SunCCompiler */
-    public SunFortranCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(hkey, flavor, kind, name, displayName, path);
+    private SunFortranCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(env, flavor, kind, name, displayName, path);
     }
     
     @Override
     public SunFortranCompiler createCopy() {
-        SunFortranCompiler copy = new SunFortranCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
+        SunFortranCompiler copy = new SunFortranCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
+    }
+
+    public static SunFortranCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return new SunFortranCompiler(env, flavor, kind, name, displayName, path);
     }
 
     @Override

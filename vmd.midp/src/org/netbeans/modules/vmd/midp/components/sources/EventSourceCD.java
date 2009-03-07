@@ -101,7 +101,7 @@ public final class EventSourceCD extends ComponentDescriptor {
 
     private InspectorPositionController[] createPositionControllers() {
         return new InspectorPositionController[]{ new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_COMMANDS),
-                                                  new ChildrenByTypePC(PointCD.TYPEID, MobileDeviceCD.TYPEID, ListElementEventSourceCD.TYPEID),
+                                                  new ChildrenByTypePC(PointCD.TYPEID, MobileDeviceCD.TYPEID, ListElementEventSourceCD.TYPEID)
                                                 };
     }
 

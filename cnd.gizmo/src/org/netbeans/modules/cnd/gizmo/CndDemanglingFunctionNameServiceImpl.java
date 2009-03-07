@@ -128,7 +128,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         final String nameToDemangle = functionName;
         final CharSequence nameToDemangleSeq = nameToDemangle.subSequence(0, nameToDemangle.length());
 
-        return DLightExecutorService.service.submit(new Callable<String>() {
+        return DLightExecutorService.submit(new Callable<String>() {
 
             public String call() {
                 if (demangled_functions.containsKey(nameToDemangleSeq)) {
@@ -136,17 +136,17 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
                 }
                 NativeProcessBuilder npb = new NativeProcessBuilder(env, dem_util_path + " " + nameToDemangle); //NOI18N
                 ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                    InputOutput.NULL).outLineBased(true);
+                        InputOutput.NULL).outLineBased(true);
                 StringWriter result = new StringWriter();
                 descriptor = descriptor.outProcessorFactory(new InputRedirectorFactory(result));
                 ExecutionService execService = ExecutionService.newService(
-                    npb, descriptor, "Demangling function " + nameToDemangle); // NOI18N
+                        npb, descriptor, "Demangling function " + nameToDemangle); // NOI18N
                 Future<Integer> res = execService.run();
                 try {
                     res.get();
                     String demanled = result.toString();
                     demangled_functions.put(nameToDemangleSeq,
-                        demanled.subSequence(0, demanled.length()));
+                            demanled.subSequence(0, demanled.length()));
                     return demanled;
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
@@ -156,8 +156,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
                 demangled_functions.put(nameToDemangleSeq, nameToDemangleSeq);
                 return nameToDemangle;
             }
-        });
-
+        }, "Demangle function " + nameToDemangle); // NOI18N
     }
 
     private static class InputRedirectorFactory implements ExecutionDescriptor.InputProcessorFactory {
@@ -172,5 +171,4 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
             return InputProcessors.copying(writer);
         }
     }
-
 }

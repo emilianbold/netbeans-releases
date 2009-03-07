@@ -65,6 +65,7 @@ public class CvsModuleConfig {
     public static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles";  // NOI18N
     public static final String ROOTS_CONFIG = "rootsConfig";  // NOI18N
     public static final String PROP_ANNOTATIONS_FORMAT = "annotationsFormat";  // NOI18N
+    public static final String PROP_PRUNE_DIRECTORIES = "autoPruneDirectories";  // NOI18N
     private static final String PROP_WRAP_COMMIT_MESSAGE_LENGTH = "wrapCommitMessageLength";  // NOI18N
     
     public static final String DEFAULT_ANNOTATIONS_FORMAT = "[{status}; {tag}]";
@@ -100,6 +101,14 @@ public class CvsModuleConfig {
     public void setWrapCommitMessagelength(int length) {
         if (length < 0) throw new IllegalArgumentException();
         getPreferences().putInt(PROP_WRAP_COMMIT_MESSAGE_LENGTH, length);
+    }
+
+    public void setAutoPruneDirectories (boolean b) {
+        getPreferences().putBoolean(PROP_PRUNE_DIRECTORIES, b);
+    }
+
+    public boolean getAutoPruneDirectories () {
+        return getPreferences().getBoolean(PROP_PRUNE_DIRECTORIES, true);
     }
 
     public Pattern [] getIgnoredFilePatterns() {

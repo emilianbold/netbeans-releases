@@ -79,7 +79,6 @@ import org.netbeans.modules.vmd.midp.components.general.ClassSupport;
 import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerSupport;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
-import org.netbeans.modules.vmd.midpnb.screen.display.SVGComponentDisplayPresenter;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -139,9 +138,7 @@ public abstract class SVGComponentEventSourceCD extends ComponentDescriptor {
                 // delete
                 DeleteDependencyPresenter.createDependentOnParentComponentPresenter(),
                 //inspector
-                new SVGComponentInspectorFolderPresenter(),
-                //screen
-                new SVGComponentDisplayPresenter()
+                new SVGComponentInspectorFolderPresenter()
                 );
 
     }

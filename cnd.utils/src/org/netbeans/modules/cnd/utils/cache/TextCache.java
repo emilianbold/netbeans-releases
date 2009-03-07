@@ -57,7 +57,8 @@ public class TextCache {
     public static CharSequence getString(CharSequence text) {
         if (text == null) {
             throw new NullPointerException("null string is illegal to share"); // NOI18N
-        }        
+        }
+        text = CharSequenceKey.create(text);
         return instance.getString(text);
     }
     

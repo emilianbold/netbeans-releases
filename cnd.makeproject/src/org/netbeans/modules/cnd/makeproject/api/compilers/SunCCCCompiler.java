@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -55,8 +56,8 @@ public abstract class SunCCCCompiler extends CCCCompiler {
     protected PersistentList<String> systemIncludeDirectoriesList = null;
     protected PersistentList<String> systemPreprocessorSymbolsList = null;
     
-    public SunCCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(hkey, flavor, kind, name, displayName, path);
+    protected SunCCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(env, flavor, kind, name, displayName, path);
     }
     
     

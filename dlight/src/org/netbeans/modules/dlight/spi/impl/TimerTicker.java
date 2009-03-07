@@ -76,7 +76,7 @@ public final class TimerTicker
     private void targetStarted(DLightTarget target) {
         synchronized (lock) {
             resetIndicators();
-            tickerTask = service.scheduleAtFixedRate(this, 1, TimeUnit.SECONDS);
+            tickerTask = service.scheduleAtFixedRate(this, 1, TimeUnit.SECONDS, "TimerTicker"); // NOI18N
             startTime = System.currentTimeMillis();
         }
     }

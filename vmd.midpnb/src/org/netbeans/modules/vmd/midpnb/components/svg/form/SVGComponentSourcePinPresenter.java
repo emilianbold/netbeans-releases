@@ -77,8 +77,6 @@ class SVGComponentSourcePinPresenter extends FlowEventSourcePinPresenter {
         button.writeProperty(ClassCD.PROP_INSTANCE_NAME, MidpTypes.createStringValue(name));
     }
 
-
-
     @Override
     protected DesignEventFilter getEventFilter() {
         return new DesignEventFilter().setGlobal(true);

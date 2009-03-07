@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.api.remote;
 
 import java.util.Collection;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * This is a place holder for a RemoteServerList which will be implemented in cnd.remote.
@@ -60,7 +61,10 @@ public interface ServerList {
     /** A String[] containing the names of all currently defined development servers */
     public String[] getServerNames();
 
+    /** TODO: deprecate and remove */
     public ServerRecord get(String key);
+
+    public ServerRecord get(ExecutionEnvironment env);
     
     public ServerRecord getDefaultRecord();
     

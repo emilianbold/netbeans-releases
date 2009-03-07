@@ -100,6 +100,10 @@ do
 	then
 	    line="SunStudioExpress;$f"
 	    flavor="SunStudioExpress;"
+	elif [ -d "$inv/v17n1" ]
+	then
+	    line="SunStudio_12.1;$f"
+	    flavor="SunStudio_12.1;"
 	elif [ -d "$inv/v16n1" ]
 	then
 	    line="SunStudio_12;$f"

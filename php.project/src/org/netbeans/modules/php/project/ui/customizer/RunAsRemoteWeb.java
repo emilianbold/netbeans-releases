@@ -69,6 +69,7 @@ import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
+import org.netbeans.modules.php.project.util.Pair;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -350,6 +351,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadFilesHintLabel = new JLabel();
         preservePermissionsCheckBox = new JCheckBox();
         preservePermissionsLabel = new JLabel();
+        advancedButton = new JButton();
 
         setFocusTraversalPolicy(null);
 
@@ -409,6 +411,12 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         preservePermissionsLabel.setLabelFor(preservePermissionsCheckBox);
         Mnemonics.setLocalizedText(preservePermissionsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsLabel.text")); // NOI18N
         preservePermissionsLabel.setEnabled(false);
+        Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.text"));
+        advancedButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                advancedButtonActionPerformed(evt);
+            }
+        });
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -445,7 +453,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                             .add(GroupLayout.LEADING, uploadDirectoryTextField, GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
                             .add(GroupLayout.LEADING, uploadFilesComboBox, 0, 322, Short.MAX_VALUE)
                             .add(GroupLayout.LEADING, runAsComboBox, 0, 322, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, urlHintLabel, GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE))
+                            .add(GroupLayout.LEADING, urlHintLabel, GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                            .add(advancedButton))
                         .add(0, 0, 0))))
             .add(layout.createSequentialGroup()
                 .add(preservePermissionsCheckBox)
@@ -500,6 +509,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .add(preservePermissionsCheckBox)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(preservePermissionsLabel)
+                .add(18, 18, 18)
+                .add(advancedButton)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -556,7 +567,23 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         Utils.browseFolderFile(getWebRoot(), indexFileTextField);
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
+    private void advancedButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_advancedButtonActionPerformed
+        RunAsWebAdvanced advanced = new RunAsWebAdvanced(
+                project,
+                getValue(PhpProjectProperties.DEBUG_URL),
+                urlHintLabel.getText(),
+                getValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE),
+                getValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL));
+        if (advanced.open()) {
+            Pair<String, String> pathMapping = advanced.getPathMapping();
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_URL, advanced.getDebugUrl().name());
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, pathMapping.first);
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, pathMapping.second);
+        }
+    }//GEN-LAST:event_advancedButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JButton advancedButton;
     private JLabel argsLabel;
     private JTextField argsTextField;
     private JButton indexFileBrowseButton;
