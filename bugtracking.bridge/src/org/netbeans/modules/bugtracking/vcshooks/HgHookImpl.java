@@ -68,11 +68,9 @@ public class HgHookImpl extends HgHook {
     private HookPanel panel;
     private final String name;
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HgHook");   // NOI18N
-    private BugtrackingOwnerSupport support;
 
     public HgHookImpl() {
         this.name = NbBundle.getMessage(HgHookImpl.class, "LBL_VCSHook");       // NOI18N
-        support = BugtrackingOwnerSupport.getInstance();
     }
 
     @Override
@@ -140,9 +138,9 @@ public class HgHookImpl extends HgHook {
             return;
         }
         
-        Repository repo = support.getRepository(file, issue.getID());
+        Repository repo = (Repository) panel.repositoryComboBox.getSelectedItem();
         if(repo == null) {
-            LOG.log(Level.FINE, " could not find repository for " + file);      // NOI18N
+            LOG.log(Level.FINE, " could not get repository for " + file);      // NOI18N
             return;
         }
 
@@ -193,7 +191,7 @@ public class HgHookImpl extends HgHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "push hook start for " + file);
 
-        Repository repo = support.getRepository(file);
+        Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file);
         if(repo == null) {
             LOG.log(Level.FINE, " could not find repository for " + file);      // NOI18N
             return;
@@ -226,7 +224,7 @@ public class HgHookImpl extends HgHook {
             panel = new HookPanel(repos, null);
         } else {
             File file = context.getFiles()[0];
-            Repository repoToSelect = support.getRepository(file);
+            Repository repoToSelect = BugtrackingOwnerSupport.getInstance().getRepository(file);
             if(repoToSelect == null) {
                 LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
             }

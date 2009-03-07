@@ -67,10 +67,8 @@ public class SvnHookImpl extends SvnHook {
     private HookPanel panel;
     private final String name;
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.SvnHook");  // NOI18N
-    private BugtrackingOwnerSupport support;
 
     public SvnHookImpl() {
-        this.support = BugtrackingOwnerSupport.getInstance();
         this.name = NbBundle.getMessage(SvnHookImpl.class, "LBL_VCSHook");                              // NOI18N
     }
 
@@ -139,9 +137,9 @@ public class SvnHookImpl extends SvnHook {
             return;
         }
         
-        Repository repo = support.getRepository(file, issue.getID());
+        Repository repo = (Repository) panel.repositoryComboBox.getSelectedItem();
         if(repo == null) {
-            LOG.log(Level.FINE, " could not find repository for " + file);      // NOI18N
+            LOG.log(Level.FINE, " could not get repository for " + file);      // NOI18N
             return;
         }
 
@@ -185,7 +183,7 @@ public class SvnHookImpl extends SvnHook {
             panel = new HookPanel(repos, null);
         } else {
             File file = context.getFiles()[0];
-            Repository repoToSelect = support.getRepository(file);
+            Repository repoToSelect = BugtrackingOwnerSupport.getInstance().getRepository(file);
             if(repoToSelect == null) {
                 LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
             }
