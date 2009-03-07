@@ -66,8 +66,9 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
     private String nameOfBits;
 
     public static enum DownloadState { AVAILABLE, DOWNLOADING, COMPLETED };
-    
-    private static final String V3_DOWNLOAD_PREFIX = "http://java.net/download/"; // NOI18N
+
+    // expose for qa-functional tests
+    public static final String V3_DOWNLOAD_PREFIX = "http://java.net/download/"; // NOI18N
     
     private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     private Retriever retriever;

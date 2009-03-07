@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * An interface to allow cnd modules to run a RemoteCommandSupport from cnd.remote.
@@ -53,13 +54,25 @@ public interface InteractiveCommandProvider {
 
     /**
      * Run a remote commane via cnd.remote's RemoteInteractiveCommandSupport.
-     * 
+     *
      * @param hkey The user and remote host (user@host)
      * @param cmd The command to run
      * @param env The (possibly null) environment to send to the remote command
      * @return true if the command started, otherwise false
+     *
+     * TODO: depreceta and remove
      */
     public boolean run(String hkey, String cmd, Map<String, String> env);
+
+    /**
+     * Run a remote commane via cnd.remote's RemoteInteractiveCommandSupport.
+     *
+     * @param execEnv The user and remote host (user@host)
+     * @param cmd The command to run
+     * @param env The (possibly null) environment to send to the remote command
+     * @return true if the command started, otherwise false
+     */
+    public boolean run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env);
 
     public boolean run(List<String> commandAndArgs, String workingDirectory, Map<String, String> env);
 

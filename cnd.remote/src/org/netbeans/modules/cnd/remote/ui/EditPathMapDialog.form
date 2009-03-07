@@ -19,15 +19,15 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jScrollPane3" alignment="0" pref="427" max="32767" attributes="0"/>
-                  <Component id="jPanel1" alignment="0" pref="427" max="32767" attributes="0"/>
-                  <Component id="jScrollPane2" alignment="0" pref="427" max="32767" attributes="0"/>
+                  <Component id="jScrollPane3" alignment="0" pref="436" max="32767" attributes="0"/>
+                  <Component id="jPanel1" alignment="0" pref="436" max="32767" attributes="0"/>
+                  <Component id="jScrollPane2" alignment="0" pref="436" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="lblHostName" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="cbHostsList" pref="391" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="jScrollPane1" alignment="0" pref="427" max="32767" attributes="2"/>
+                  <Component id="jScrollPane1" alignment="0" pref="436" max="32767" attributes="2"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -153,9 +153,6 @@
               </Border>
             </Property>
             <Property name="focusable" type="boolean" value="false"/>
-            <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-              <Insets value="[0, 0, 0, 0]"/>
-            </Property>
           </Properties>
         </Component>
       </SubComponents>

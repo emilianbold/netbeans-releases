@@ -44,8 +44,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
-import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Run a remote command which requires interactive I/O. The caller is responsible for setting up the
@@ -56,31 +57,36 @@ import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 public class RemoteInteractiveCommandProvider implements InteractiveCommandProvider {
 
     public RemoteInteractiveCommandProvider(String hkey) {
-        this.hkey = hkey;
+        executionEnvironment = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
     }
     
     private RemoteInteractiveCommandSupport support;
-    private String hkey;
+    private ExecutionEnvironment executionEnvironment;
 
+    /** TODO: deprecate and remove */
     public boolean run(String hkey, String cmd, Map<String, String> env) {
-        support = new RemoteInteractiveCommandSupport(hkey, cmd, env);
+        return run(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), cmd, env);
+    }
+
+    public boolean run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
+        support = new RemoteInteractiveCommandSupport(execEnv, cmd, env);
         return !support.isFailedOrCancelled();
     }
 
     public boolean run(List<String> commandAndArgs, String workingDirectory, Map<String, String> env) {
-        assert hkey != null;
+        assert executionEnvironment != null;
         StringBuilder plainCommand = new StringBuilder();
         
         for (String arg : commandAndArgs) {
             plainCommand.append(arg);
             plainCommand.append(' ');
         }
-        support = new RemoteInteractiveCommandSupport(hkey, plainCommand.toString(), env);
+        support = new RemoteInteractiveCommandSupport(executionEnvironment, plainCommand.toString(), env);
         return !support.isFailedOrCancelled();
     }
 
     public boolean connect(String hkey, String cmd, Map<String, String> env) {
-        support = new RemoteInteractiveCommandSupport(hkey, cmd, env);
+        support = new RemoteInteractiveCommandSupport(executionEnvironment, cmd, env);
         return !support.isFailedOrCancelled();
     }
 

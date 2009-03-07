@@ -42,7 +42,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 
 /**
@@ -53,10 +54,15 @@ import org.openide.util.Exceptions;
 public abstract class RunFacade {
 
     public static RunFacade getInstance(String hkey) {
-        if (RemoteUtils.isLocalhost(hkey)) {
+        return getInstance(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
+    }
+
+    /** TODO: deprecate and remove */
+    public static RunFacade getInstance(ExecutionEnvironment env) {
+        if (env.isLocal()) {
             return new RunFacadeLocal();
         } else {
-            return new RunFacadeRemote(hkey);
+            return new RunFacadeRemote(env);
         }
     }
 
@@ -104,15 +110,15 @@ public abstract class RunFacade {
 
     private static class RunFacadeRemote extends RunFacade {
 
-        private String hkey;
+        private ExecutionEnvironment executionEnvironment;
 
-        public RunFacadeRemote(String hkey) {
-            this.hkey = hkey;
+        public RunFacadeRemote(ExecutionEnvironment env) {
+            this.executionEnvironment = env;
         }
 
         @Override
         public int doRun(String command) {
-            RemoteCommandSupport support = new RemoteCommandSupport(hkey, command);
+            RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, command);
             int result = support.run();
             output = support.getOutput();
             return result;
