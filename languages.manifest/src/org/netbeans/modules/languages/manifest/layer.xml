@@ -75,6 +75,7 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="MfDataLoader.instance">
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.languages.manifest.MfDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/manifest/manifest_file_16.png"/>
                         <attr name="mimeType" stringvalue="text/x-manifest"/>
                     </file>
                 </folder>

@@ -69,7 +69,7 @@ public class APTSelfWalker extends APTAbstractWalker {
     protected void include(ResolvedPath resolvedPath, APTInclude aptInclude) {
         if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude.getToken().getLine(), resolvedPath.getIndex())) {
             try {
-                APTFile apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(new File(resolvedPath.getPath())));
+                APTFile apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(new File(resolvedPath.getPath().toString())));
                 createIncludeWalker(apt, this, resolvedPath.getPath()).visit();
             } catch (FileNotFoundException ex) {
                 APTUtils.LOG.log(Level.WARNING, "APTSelfWalker: file {0} not found", new Object[] {resolvedPath.getPath()});// NOI18N
@@ -83,7 +83,7 @@ public class APTSelfWalker extends APTAbstractWalker {
         }
     }
     
-    protected APTWalker createIncludeWalker(APTFile apt, APTSelfWalker parent, String includePath) {
+    protected APTWalker createIncludeWalker(APTFile apt, APTSelfWalker parent, CharSequence includePath) {
         return new APTSelfWalker(apt, parent);
     }
 }

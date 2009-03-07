@@ -145,7 +145,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 // try external clusters
                 URL[] sourceRoots = ModuleList.getSourceRootsForExternalModule(binaryRootF);
                 if (sourceRoots.length > 0)
-                    return new ExtClusterResult(new SourceRootsSupport(sourceRoots, null, null),
+                    return new ExtClusterResult(new SourceRootsSupport(sourceRoots, null),
                             binaryRoot, fo.getName().replace('-', '.'));
                 return null;    // TODO C.P library wrapper sources support? probably not
             }

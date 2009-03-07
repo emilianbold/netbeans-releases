@@ -83,6 +83,7 @@ class MakefileLexer implements Lexer<MakefileTokenId> {
         this.info = info;
     }
 
+    @SuppressWarnings("fallthrough")
     public Token<MakefileTokenId> nextToken() {
         LexerInput input = info.input();
         int i = input.read();
@@ -126,6 +127,7 @@ class MakefileLexer implements Lexer<MakefileTokenId> {
                 } else {
                     //string
                 }
+                // no break
             case '\n':
                 return info.tokenFactory().createToken(MakefileTokenId.NEW_LINE);
             case '\t':

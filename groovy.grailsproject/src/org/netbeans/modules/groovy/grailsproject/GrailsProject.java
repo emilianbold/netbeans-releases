@@ -68,6 +68,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.groovy.grails.api.GrailsConstants;
 import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandSupport;
 import org.netbeans.modules.groovy.grailsproject.completion.ControllerCompletionProvider;
+import org.netbeans.modules.groovy.grailsproject.completion.DomainCompletionProvider;
 import org.netbeans.modules.groovy.grailsproject.config.BuildConfig;
 import org.netbeans.modules.groovy.grailsproject.ui.TemplatesImpl;
 import org.netbeans.modules.groovy.support.spi.GroovyFeature;
@@ -149,6 +150,7 @@ public final class GrailsProject implements Project {
                 new GroovyFeatureImpl(),
                 // FIXME check this
                 new ControllerCompletionProvider(),
+                new DomainCompletionProvider(),
                 logicalView, //Logical view of project implementation
                 cpProvider
             );

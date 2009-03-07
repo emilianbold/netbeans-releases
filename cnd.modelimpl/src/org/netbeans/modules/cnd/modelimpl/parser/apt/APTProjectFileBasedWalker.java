@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.LibraryManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -80,10 +81,12 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     protected void include(ResolvedPath resolvedPath, APTInclude apt) {
         FileImpl included = null;
         if (resolvedPath != null) {
-            String path = resolvedPath.getPath();
-            if (path.indexOf("..") > 0 || path.indexOf("./") > 0) { // NOI18N
-                path = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
-                resolvedPath = new ResolvedPath(resolvedPath.getFolder(), path, resolvedPath.isDefaultSearchPath(), resolvedPath.getIndex());
+            CharSequence path = resolvedPath.getPath();
+            if (CharSequenceKey.indexOf(path, "..") > 0 || CharSequenceKey.indexOf(path, "./") > 0) { // NOI18N
+                String normalized = FileUtil.normalizeFile(new File(path.toString())).getAbsolutePath();
+                resolvedPath = new ResolvedPath(resolvedPath.getFolder(), normalized, resolvedPath.isDefaultSearchPath(), resolvedPath.getIndex());
+                // obtain new cached string
+                path = resolvedPath.getPath();
             }
             if (getIncludeHandler().pushInclude(path, apt.getToken().getLine(), resolvedPath.getIndex())) {
                 ProjectBase aStartProject = this.getStartProject();
@@ -107,7 +110,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
 	postInclude(apt, included);
     }
     
-    abstract protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, int mode, APTInclude apt) throws IOException;
+    abstract protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt) throws IOException;
 
     protected void postInclude(APTInclude apt, FileImpl included) {
     }

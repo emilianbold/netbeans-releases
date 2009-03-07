@@ -54,6 +54,8 @@ public class TimerTaskExecutionService {
     private final static TimerTaskExecutionService instance;
     private final static ScheduledExecutorService service;
     private final static Logger log;
+    private static String threadName;
+    private static final Object lock = new String(TimerTaskExecutionService.class.getName());
 
 
     static {
@@ -75,8 +77,11 @@ public class TimerTaskExecutionService {
         return instance;
     }
 
-    public Future scheduleAtFixedRate(Runnable task, long period, TimeUnit unit) {
-        return service.scheduleAtFixedRate(task, 0, period, unit);
+    public Future scheduleAtFixedRate(Runnable task, long period, TimeUnit unit, String descr) {
+        synchronized (lock) {
+            threadName = descr;
+            return service.scheduleAtFixedRate(task, 0, period, unit);
+        }
     }
 
     static class TaskThreadFactory implements ThreadFactory {
@@ -84,26 +89,26 @@ public class TimerTaskExecutionService {
         static final AtomicInteger poolNumber = new AtomicInteger(1);
         final ThreadGroup group;
         final AtomicInteger threadNumber = new AtomicInteger(1);
-        final String namePrefix;
+        final String namePrefix = "DLIGHT: TimerTaskExecutionService Task No. "; // NOI18N
 
         TaskThreadFactory() {
             SecurityManager s = System.getSecurityManager();
             group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-            namePrefix = "D-Light TimerTaskExecutionService Task No. " + // NOI18N
-                    poolNumber.getAndIncrement();
         }
 
         public Thread newThread(Runnable r) {
-            Thread t = new Thread(group, r,
-                    namePrefix + threadNumber.getAndIncrement(),
-                    0);
-            if (t.isDaemon()) {
-                t.setDaemon(false);
+            synchronized (lock) {
+                Thread t = new Thread(group, r,
+                        namePrefix + threadNumber.getAndIncrement() + " [ " + threadName + " ]", // NOI18N
+                        0);
+                if (t.isDaemon()) {
+                    t.setDaemon(false);
+                }
+                if (t.getPriority() != Thread.NORM_PRIORITY) {
+                    t.setPriority(Thread.NORM_PRIORITY);
+                }
+                return t;
             }
-            if (t.getPriority() != Thread.NORM_PRIORITY) {
-                t.setPriority(Thread.NORM_PRIORITY);
-            }
-            return t;
         }
     }
 }

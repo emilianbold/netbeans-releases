@@ -97,12 +97,12 @@ public final class APTSystemStorage {
         }
     }
     
-    // it's preferable to use getIncludes(String configID, List sysIncludes)
-    public List<String> getIncludes(List<String> sysIncludes) {
-        return includesStorage.get(sysIncludes);
-    }    
+//    // it's preferable to use getIncludes(String configID, List sysIncludes)
+//    public List<CharSequence> getIncludes(List<CharSequence> sysIncludes) {
+//        return includesStorage.get(sysIncludes);
+//    }
     
-    public List<String> getIncludes(String configID, List<String> sysIncludes) {
+    public List<CharSequence> getIncludes(CharSequence configID, List<? extends CharSequence> sysIncludes) {
         return includesStorage.get(configID, sysIncludes);
     }   
     

@@ -51,7 +51,7 @@ import org.openide.util.Lookup;
  *
  * @author mt154047
  */
-public final class MangledNameType implements Comparable<MangledNameType> {
+public final class MangledNameType {//implements Comparable<MangledNameType> {
 
     
     private static final DemanglingFunctionNameService demanglingService;
@@ -115,31 +115,31 @@ public final class MangledNameType implements Comparable<MangledNameType> {
         return buf.toString();
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof MangledNameType) {
-            String nameWithoutOffset = mangled_name.indexOf("+") == -1 ? mangled_name : mangled_name.substring(0, mangled_name.indexOf("+"));
-            MangledNameType that = (MangledNameType) obj;
-            String thatNameWithoutOffset = that.mangled_name.indexOf("+") == -1 ? that.mangled_name : that.mangled_name.substring(0, mangled_name.indexOf("+"));
-            return nameWithoutOffset.equals(thatNameWithoutOffset);
-        } else {
-            return false;
-        }
-    }
+//    @Override
+//    public boolean equals(Object obj) {
+//        if (obj instanceof MangledNameType) {
+//            String nameWithoutOffset = mangled_name.indexOf("+") == -1 ? mangled_name : mangled_name.substring(0, mangled_name.indexOf("+"));
+//            MangledNameType that = (MangledNameType) obj;
+//            String thatNameWithoutOffset = that.mangled_name.indexOf("+") == -1 ? that.mangled_name : that.mangled_name.substring(0, mangled_name.indexOf("+"));
+//            return nameWithoutOffset.equals(thatNameWithoutOffset);
+//        } else {
+//            return false;
+//        }
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        String nameWithoutOffset = mangled_name.indexOf("+") == -1 ? mangled_name : mangled_name.substring(0, mangled_name.indexOf("+"));
+//        return nameWithoutOffset.hashCode();
+//    }
 
-    @Override
-    public int hashCode() {
-        String nameWithoutOffset = mangled_name.indexOf("+") == -1 ? mangled_name : mangled_name.substring(0, mangled_name.indexOf("+"));
-        return nameWithoutOffset.hashCode();
-    }
-
-    public int compareTo(MangledNameType that) {
-        String nameWithoutOffset = mangled_name.indexOf("+") == -1 ? mangled_name : mangled_name.substring(0, mangled_name.indexOf("+"));
-        String thatNameWithoutOffset = that.mangled_name.indexOf("+") == -1 ? that.mangled_name : that.mangled_name.substring(0, mangled_name.indexOf("+"));
-        return nameWithoutOffset.compareTo(thatNameWithoutOffset);
-
-
-    }
+//    public int compareTo(MangledNameType that) {
+//        String nameWithoutOffset = mangled_name.indexOf("+") == -1 ? mangled_name : mangled_name.substring(0, mangled_name.indexOf("+"));
+//        String thatNameWithoutOffset = that.mangled_name.indexOf("+") == -1 ? that.mangled_name : that.mangled_name.substring(0, mangled_name.indexOf("+"));
+//        return nameWithoutOffset.compareTo(thatNameWithoutOffset);
+//
+//
+//    }
 
 
     static {

@@ -62,9 +62,9 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -226,12 +226,13 @@ public abstract class SQLDataStorage extends DataStorage {
     logger.info("Table " + tableName + " created");
 
     tables.put(tableName, metadata);
-    RequestProcessor.getDefault().post(new Runnable() {
+
+    DLightExecutorService.submit(new Runnable() {
 
       public void run() {
         getPreparedInsertStatement(metadata);
       }
-    });
+    }, "SQL: Prepare Insert Statement for " + metadata.getName()); // NOI18N
     return true;
   }
 
@@ -448,7 +449,7 @@ public abstract class SQLDataStorage extends DataStorage {
 
     public AsyncThread() {
       setDaemon(true);
-      setName("SQL Storage AsyncThread");
+      setName("DLIGHT: SQL Storage AsyncThread"); // NOI18N
     }
 
     @Override
@@ -510,7 +511,7 @@ public abstract class SQLDataStorage extends DataStorage {
 
     public AsyncReadThread() {
       setDaemon(true);
-      setName("SQL Storage AsyncFillModelThread");
+      setName("DLIGHT: SQL Storage AsyncFillModelThread"); // NOI18N
     }
 
     @Override

@@ -138,7 +138,8 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-netbeans-modules-java-hints-EqualsMethodHint.instance"/>
                     <file name="org-netbeans-modules-java-hints-SyncOnNonFinal.instance"/>
-                </folder>    
+                    <file name="org-netbeans-modules-java-hints-CollectionRemove.instance"/>
+                </folder>
 
                 <folder name="errors">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
@@ -240,6 +241,9 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="DivisionByZero.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createDivisionByZero"/>
+                    </file>
+                    <file name="RawTypes.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createRawTypes"/>
                     </file>
                 </folder>
 

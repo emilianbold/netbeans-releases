@@ -116,6 +116,7 @@ public final class SunStudioDCConfiguration
          */
         MEMORY,
         SYNCSUMMARY,
+        MEMSUMMARY,
     }
     private final List<CollectedInfo> collectedInfoList = new ArrayList<CollectedInfo>();
 

@@ -72,6 +72,10 @@ final class BinaryClusterEntry  extends AbstractBinaryEntry {
         return sourceRoots;
     }
 
+    public URL[] getJavadocRoots() {
+        return javadocRoots;
+    }
+
     public String toString() {
 //        File source = getSourceLocation();
         return "BinaryClusterEntry[" + getJarLocation() + /*(source != null ? "," + source : "") +*/ "]"; // NOI18N
