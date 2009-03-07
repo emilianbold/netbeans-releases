@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.test;
 
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
 /**
@@ -53,7 +54,7 @@ public abstract class RemoteUserInfoAccessor {
     protected RemoteUserInfoAccessor() {
     }
 
-    public abstract RemoteUserInfo get(String hkey);
+    public abstract RemoteUserInfo get(ExecutionEnvironment env);
 
     /** default instance */
     private static RemoteUserInfoAccessor defaultOne;
@@ -72,7 +73,7 @@ public abstract class RemoteUserInfoAccessor {
         }
 
         @Override
-        public RemoteUserInfo get(String hkey) {
+        public RemoteUserInfo get(ExecutionEnvironment env) {
             return null;
         }
 

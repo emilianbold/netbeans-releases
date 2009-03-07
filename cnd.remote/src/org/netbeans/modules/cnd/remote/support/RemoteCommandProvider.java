@@ -41,6 +41,8 @@ package org.netbeans.modules.cnd.remote.support;
 
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Run a non-interactive command. Output from the command will be available via the toString() method.
@@ -52,8 +54,13 @@ public class RemoteCommandProvider implements CommandProvider {
     
     private RemoteCommandSupport support;
 
+    /** TODO: deprecate and remove */
     public int run(String hkey, String cmd, Map<String, String> env) {
-        support = new RemoteCommandSupport(hkey, cmd, env);
+        return run(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), cmd, env);
+    }
+
+    public int run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
+        support = new RemoteCommandSupport(execEnv, cmd, env);
         return support.run();
     }
     

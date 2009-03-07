@@ -158,7 +158,7 @@ public class RemoteServerRecord implements ServerRecord {
         assert !SwingUtilities.isEventDispatchThread() : "RemoteServer initialization must be done out of EDT"; // NOI18N
         Object ostate = state;
         state = State.INITIALIZING;
-        RemoteServerSetup rss = new RemoteServerSetup(getName());
+        RemoteServerSetup rss = new RemoteServerSetup(getExecutionEnvironment());
         if (rss.needsSetupOrUpdate()) {
             rss.setup();
         }

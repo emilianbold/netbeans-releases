@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,67 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.actions;
+package org.netbeans.modules.glassfish.javaee.test;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.JButton;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.remote.ui.AddServerDialog;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbModuleSuite.Configuration;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 
 /**
  *
- * @author gordonp
+ * @author vkraemer
  */
-public class AddNewServerAction extends NodeAction implements PropertyChangeListener {
-    
-    protected JButton ok;
-    
-    public String getName() {
-        return NbBundle.getMessage(AddNewServerAction.class, "LBL_AddNewServer");
+public class ServerTest extends NbTestCase {
+
+    private final int SLEEP = 10000;
+
+    public ServerTest(String testName) {
+        super(testName);
     }
 
-    public void performAction(Node[] nodes) {
-        AddServerDialog dlg = new AddServerDialog();
-        if (dlg.createNewRecord()) {
-            String entry = dlg.getLoginName() + '@' + dlg.getServerName();
-            ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-            if (!registry.getRecords().contains(entry)) {
-                registry.addServer(entry, false, true);
-            }
+    public void testBogus() {
+
+    }
+
+    public static Test suite() {
+        Configuration conf = NbModuleSuite.createConfiguration(ServerTest.class).
+        addTest(AddRemovePreludeInstanceMethods.class, "addPreludeInstance").
+        addTest(AddRemovePreludeInstanceMethods.class, "removePreludeInstance");
+        if (null != GlassfishInstanceProvider.getEe6()) {
+            return NbModuleSuite.create(conf.addTest(AddRemoveV3InstanceMethods.class, "addV3Instance").
+            addTest(AddRemoveV3InstanceMethods.class, "removeV3Instance"));
+        } else {
+            return NbModuleSuite.create(conf);
         }
     }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(AddServerDialog.PROP_VALID)) {
-            AddServerDialog dlg = (AddServerDialog) evt.getSource();
-            ok.setEnabled(dlg.isOkValid());
-        }
-    }
-
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
     
-    @Override
-    public boolean asynchronous() {
-        return false;
-    }
 }

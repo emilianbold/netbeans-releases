@@ -65,7 +65,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     public void init(ExecutionEnvironment env) {
         this.env = env;
         manager = new CompilerSetScriptManager();
-        new RemoteScriptSupport(ExecutionEnvironmentFactory.getHostKey(env), manager);
+        new RemoteScriptSupport(env, manager);
 
     }
     
@@ -97,11 +97,11 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     }
 
     public Runnable createCompilerSetDataLoader(List<CompilerSet> sets) {
-        return SystemIncludesUtils.createLoader(ExecutionEnvironmentFactory.getHostKey(env), sets);
+        return SystemIncludesUtils.createLoader(env, sets);
     }
 
     public String[] getCompilerSetData(ExecutionEnvironment env, String path) {
-        RemoteCommandSupport rcs = new RemoteCommandSupport(ExecutionEnvironmentFactory.getHostKey(env),
+        RemoteCommandSupport rcs = new RemoteCommandSupport(env,
                 CompilerSetScriptManager.SCRIPT + " " + path); //NOI18N
         if (rcs.run() == 0) {
             return rcs.getOutput().split("\n"); // NOI18N
