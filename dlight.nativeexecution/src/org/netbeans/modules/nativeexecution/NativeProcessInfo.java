@@ -126,6 +126,23 @@ public final class NativeProcessInfo {
         this.arguments.addAll(Arrays.asList(arguments));
     }
 
+    public String[] getCommand() {
+        String cmd;
+
+        try {
+            cmd = macroExpander.expandPredefinedMacros(command);
+        } catch (ParseException ex) {
+            cmd = command;
+        }
+
+        List<String> result = new ArrayList<String>();
+        result.add(cmd);
+        if (!arguments.isEmpty()) {
+            result.addAll(arguments);
+        }
+        return result.toArray(new String[0]);
+    }
+
     public String getCommandLine() {
         String cmd;
 
@@ -139,7 +156,7 @@ public final class NativeProcessInfo {
 
         if (!arguments.isEmpty()) {
             for (String arg : arguments) {
-                sb.append(' ').append(arg);
+                sb.append(" '").append(arg).append('\'');
             }
         }
 
