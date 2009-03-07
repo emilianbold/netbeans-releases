@@ -583,7 +583,7 @@ public class BugzillaIssue extends Issue {
     }
 
 
-    void addAttachment(File f, String comment, String desc, String contentType) throws HttpException, IOException, CoreException  {
+    void addAttachment(File f, String comment, String desc, String contentType, boolean patch) throws HttpException, IOException, CoreException  {
         assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(f);
         attachmentSource.setContentType(contentType);
@@ -595,7 +595,7 @@ public class BugzillaIssue extends Issue {
                     comment,
                     desc,
                     attachmentSource.getContentType(), 
-                    false, 
+                    patch,
                     source, 
                     new NullProgressMonitor());
 //        } catch (HttpException ex) {
@@ -645,6 +645,19 @@ public class BugzillaIssue extends Issue {
         if(comment != null) {
             TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
             ta.setValue(comment);
+        }
+    }
+
+    @Override
+    public void attachPatch(File file, String description) {
+        refresh();
+        try {
+            addAttachment(file, null, description, null, true);
+            refresh();
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
     }
 
