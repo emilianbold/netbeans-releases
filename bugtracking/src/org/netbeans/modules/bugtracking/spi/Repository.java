@@ -123,6 +123,10 @@ public abstract class Repository {
      */
     public abstract Issue[] simpleSearch(String criteria);
 
+    /**
+     * Returns the {@link IssueCache} for the repository
+     * @return
+     */
     protected abstract IssueCache getIssueCache();
 
     IssueCache getCache() {
