@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,60 +31,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.db.sql.editor.completion;
 
-package org.netbeans.modules.db.sql.editor;
-import org.netbeans.editor.LocaleSupport;
-import org.openide.modules.ModuleInstall;
-import org.openide.util.NbBundle;
-
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.db.sql.analyzer.SQLStatementKind;
+import org.netbeans.modules.db.sql.editor.StringUtils;
+import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
 /**
- * Instalation class of module properties syntax.
  *
- * @author Jesse Beaumont based on code by
- * Petr Jiricka, Libor Kramolis, Jesse Glick
+ * @author Jiri Rechtacek
  */
-public class RestoreColoring extends ModuleInstall {
+public class SQLStatementAnalyzer {
 
-    /**
-     * <code>Localizer</code> passed to editor.
-     */
-    private static LocaleSupport.Localizer localizer;
-
-    /**
-     * Registers properties editor, installs options and copies settings. 
-     * Overrides superclass method.  
-     */
-    public void restored() {
-        installOptions();
+    public static SQLStatementKind analyzeKind (TokenSequence<SQLTokenId> seq) {
+        seq.moveStart ();
+        if ( ! seq.moveNext ()) {
+            return null;
+        }
+        if (isKeyword ("SELECT", seq)) { // NOI18N
+            return SQLStatementKind.SELECT;
+        } else if (isKeyword ("INSERT", seq)) {
+            return SQLStatementKind.INSERT;
+        }
+        return null;
     }
 
-    /** 
-     * Uninstalls properties options. 
-     * And cleans up editor settings copy. 
-     * Overrides superclass method. 
-     */
-    public void uninstalled() {
-        uninstallOptions();
+    public static boolean isKeyword (CharSequence keyword, TokenSequence<SQLTokenId> seq) {
+        return seq.token ().id () == SQLTokenId.KEYWORD && StringUtils.textEqualsIgnoreCase (seq.token ().text (), keyword);
     }
-
-    /** 
-     * Installs properties editor and print options. 
-     */
-    public void installOptions() {
-        // Adds localizer.
-        LocaleSupport.addLocalizer(localizer = new LocaleSupport.Localizer() {
-            public String getString(String key) {
-                return NbBundle.getMessage(RestoreColoring.class, key);
-            }
-        });
-    }
-
-    /** Uninstalls properties editor and print options. */
-    public void uninstallOptions() {
-        // remove localizer
-        LocaleSupport.removeLocalizer(localizer);
-    }
-    
 }
