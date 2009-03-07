@@ -55,14 +55,24 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     public LocalNativeProcess(NativeProcessInfo info) throws IOException {
         super(info);
 
-        final String commandLine = info.getCommandLine();
         final String workingDirectory = info.getWorkingDirectory(true);
         final File wdir =
                 workingDirectory == null ? null : new File(workingDirectory);
 
-        ProcessBuilder pb = new ProcessBuilder(
-                HostInfoUtils.getShell(info.getExecutionEnvironment()), "-c", // NOI18N
-                "/bin/echo $$ && exec " + commandLine); // NOI18N
+        final String shell =
+                HostInfoUtils.getShell(info.getExecutionEnvironment());
+
+        ProcessBuilder pb;
+        if (shell != null) {
+            // TODO: do it only when nessesary (replaceAll)
+            String commandLine = info.getCommandLine().replaceAll("\\\\", "/"); //NOI18N
+            pb = new ProcessBuilder(shell, "-c", // NOI18N
+                    "/bin/echo $$ && exec " + commandLine);
+        } else {
+            String[] cmd = info.getCommand();
+            cmd[0] = wdir.getAbsolutePath() + File.separator + cmd[0];
+            pb = new ProcessBuilder(cmd);
+        }
 
         pb.environment().putAll(info.getEnvVariables(pb.environment()));
         pb.directory(wdir);
@@ -72,8 +82,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         try {
             pr = pb.start();
         } catch (IOException ex) {
-            Logger.getInstance().warning("Unable to start process [" + // NOI18N
-                    commandLine + "]! " + ex.getMessage()); // NOI18N
+            Logger.getInstance().warning(ex.getMessage());
             throw ex;
         }
 
@@ -83,7 +92,9 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         processError = process.getErrorStream();
         processInput = process.getOutputStream();
 
-        readPID(processOutput);
+        if (shell != null) {
+            readPID(processOutput);
+        }
     }
 
     @Override
