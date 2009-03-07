@@ -314,13 +314,13 @@ public class RemoteServerList implements ServerList {
 
     //TODO: why this is here?
     //TODO: deprecate and remove
-    public boolean isValidExecutable(ExecutionEnvironment env, String path) {
-        return isValidExecutable(ExecutionEnvironmentFactory.getHostKey(env), path);
+    public boolean isValidExecutable(String hkey, String path) {
+        return isValidExecutable(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), path);
     }
 
     //TODO: why this is here?
     //TODO: deprecate and remove
-    public boolean isValidExecutable(String hkey, String path) {
+    public boolean isValidExecutable(ExecutionEnvironment env, String path) {
         if (path == null || path.length() == 0) {
             return false;
         }
@@ -328,11 +328,11 @@ public class RemoteServerList implements ServerList {
             log.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
         }
         String cmd = "test -x " + path; // NOI18N
-        int exit_status = RemoteCommandSupport.run(hkey, cmd);
+        int exit_status = RemoteCommandSupport.run(env, cmd);
         if (exit_status != 0 && !IpeUtils.isPathAbsolute(path)) {
             // Validate 'path' against user's PATH.
             cmd = "test -x " + "`which " + path + "`"; // NOI18N
-            exit_status = RemoteCommandSupport.run(hkey, cmd);
+            exit_status = RemoteCommandSupport.run(env, cmd);
         }
         return exit_status == 0;
     }

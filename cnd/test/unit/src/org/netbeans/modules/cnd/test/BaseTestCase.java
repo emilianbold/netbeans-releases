@@ -207,19 +207,20 @@ public abstract class BaseTestCase extends NbTestCase {
     ////////////////////////////////////////////////////////////////////////////
     // <editor-fold defaultstate="collapsed" desc="Remote tests support">
 
-    private static Boolean isRemoteSupported = null;
-    private static String remoteHKey = null;
+    private ExecutionEnvironment execEnv;
+    private final boolean isRemoteSupported = initRemoteUserInfo();
 
     protected boolean canTestRemote()  {
-        if (isRemoteSupported == null) {
-            isRemoteSupported = new Boolean(initRemoteUserInfo());
-        }
-        return isRemoteSupported.booleanValue();
+        return isRemoteSupported;
     }
 
     protected String getHKey(){
-        assert isRemoteSupported != null : "Run canTestRemote() before any remote development tests logic."; //NOI18N
-        return remoteHKey;
+        assert execEnv != null : "Run canTestRemote() before any remote development tests logic."; //NOI18N
+        return ExecutionEnvironmentFactory.getHostKey(execEnv);
+    }
+
+    protected ExecutionEnvironment getExecutionEnvironment() {
+        return execEnv;
     }
 
     /*
@@ -236,9 +237,9 @@ public abstract class BaseTestCase extends NbTestCase {
             if (m>-1) {
                 int n = ui.indexOf('@');
                 String remotePassword = ui.substring(m+1, n);
-                remoteHKey = ui.substring(0,m) + ui.substring(n);
-                ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(remoteHKey);
-                RemoteUserInfo rui = RemoteUserInfoAccessor.getDefault().get(env);
+                String remoteHKey = ui.substring(0,m) + ui.substring(n);
+                execEnv = ExecutionEnvironmentFactory.getExecutionEnvironment(remoteHKey);
+                RemoteUserInfo rui = RemoteUserInfoAccessor.getDefault().get(execEnv);
                 if (rui == null) {
                     System.err.println("There is no valid RemoteUserInfoAccessor.");
                     return false;
@@ -246,8 +247,9 @@ public abstract class BaseTestCase extends NbTestCase {
                 rui.setPassword(remotePassword, false);
                 System.err.println("mode 0. hkey: " + remoteHKey + ", pkey: " + remotePassword);
             } else {
-                remoteHKey = ui;
+                String remoteHKey = ui;
                 System.err.println("mode 1. hkey: " + remoteHKey );
+                execEnv = ExecutionEnvironmentFactory.getExecutionEnvironment(remoteHKey);
             }
             return true;
         }

@@ -47,10 +47,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.ui.EditPathMapDialog;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbPreferences;
 
 /**
@@ -272,7 +274,8 @@ public class RemotePathMap implements PathMap {
                         String validationLine = Double.toString(Math.random());
                         out.write(validationLine);
                         out.close();
-                        if (0 == RemoteCommandSupport.run(hkey, "cat " + rpath + "/" + validationFile.getName() + " | grep " + validationLine)) { // NOI18N
+                        ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
+                        if (0 == RemoteCommandSupport.run(env, "cat " + rpath + "/" + validationFile.getName() + " | grep " + validationLine)) { // NOI18N
                             return true;
                         }
                     }

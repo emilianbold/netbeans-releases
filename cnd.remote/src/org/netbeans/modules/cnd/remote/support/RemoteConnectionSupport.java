@@ -61,11 +61,11 @@ import org.openide.util.NbBundle;
 public abstract class RemoteConnectionSupport {
 
     private JSch jsch;
+    /** TODO: deprecate and remove */
     protected final String key;
+    private final ExecutionEnvironment executionEnvironment;
     protected Session session;
     protected Channel channel;
-    private final String user;
-    private final String host;
     private int exit_status;
     private boolean cancelled = false;
     private boolean failed = false;
@@ -74,16 +74,9 @@ public abstract class RemoteConnectionSupport {
     protected static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     protected static final int PORT = Integer.getInteger("cnd.remote.port", 22); //NOI18N
 
-    /** TODO: deprecate and remove */
-    public RemoteConnectionSupport(String key, int port) {
-//        this(ExecutionEnvironmentFactory.getExecutionEnvironment(key), port);
-//    }
-//
-//    public RemoteConnectionSupport(ExecutionEnvironment env, int port) {
-        this.key = key;
-        int pos = key.indexOf('@');
-        user = key.substring(0, pos);
-        host = key.substring(pos + 1);
+    public RemoteConnectionSupport(ExecutionEnvironment env) {
+        this.key = ExecutionEnvironmentFactory.getHostKey(env);
+        this.executionEnvironment = env;
         exit_status = -1; // this is what JSch initializes it to...
         failureReason = "";
         boolean retry = false;
@@ -93,7 +86,7 @@ public abstract class RemoteConnectionSupport {
             try {
                 jsch = new JSch();
                 jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts"); // NOI18N
-                session = jsch.getSession(user, host, port);
+                session = jsch.getSession(env.getUser(), env.getHost(), env.getSSHPort());
 
                 RemoteUserInfo ui = RemoteUserInfo.getUserInfo(ExecutionEnvironmentFactory.getExecutionEnvironment(key), retry);
                 retry = false;
@@ -184,10 +177,10 @@ public abstract class RemoteConnectionSupport {
     }
     
     public String getUser() {
-        return user;
+        return executionEnvironment.getUser();
     }
 
     public String getHost() {
-        return host;
+        return executionEnvironment.getHost();
     }
 }
