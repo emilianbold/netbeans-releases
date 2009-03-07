@@ -55,6 +55,9 @@ import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
  */
 public class TransportTestCase extends RemoteTestBase {
 
+    static {
+        System.setProperty("CND_REMOTE_TESTUSERINFO", "rdtest:tester33@endif.russia");
+    }
     public TransportTestCase(String testName) {
         super(testName);
     }
@@ -62,7 +65,7 @@ public class TransportTestCase extends RemoteTestBase {
     public void testRun() throws Exception {
         if (canTestRemote()) {
             final String randomString = "i am just a random string, it does not matter that I mean";
-            RemoteCommandSupport rcs = new RemoteCommandSupport(getHKey(), "echo " + randomString);
+            RemoteCommandSupport rcs = new RemoteCommandSupport(getExecutionEnvironment(), "echo " + randomString);
             rcs.run();
             rcs.disconnect();
             assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getHKey() + "' returned " + rcs.getExitStatus();
@@ -116,15 +119,15 @@ public class TransportTestCase extends RemoteTestBase {
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(sb.toString());
             out.close();
-            RemoteCopySupport rcs = new RemoteCopySupport(getHKey());
+            RemoteCopySupport rcs = new RemoteCopySupport(getExecutionEnvironment());
             String remoteFile = "/tmp/" + localFile.getName(); //NOI18N
             rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
             HostInfoProvider hip = HostInfoProvider.getDefault();
             assert hip.fileExists(getHKey(), remoteFile);
-            RemoteCommandSupport rcs2 = new RemoteCommandSupport(getHKey(), "cat " + remoteFile);
+            RemoteCommandSupport rcs2 = new RemoteCommandSupport(getExecutionEnvironment(), "cat " + remoteFile);
             assert rcs2.run() == 0;
             assert rcs2.getOutput().equals(sb.toString());
-            assert RemoteCommandSupport.run(getHKey(), "rm " + remoteFile) == 0;
+            assert RemoteCommandSupport.run(getExecutionEnvironment(), "rm " + remoteFile) == 0;
         }
     }
     

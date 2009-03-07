@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import org.netbeans.modules.cnd.test.RemoteUserInfoAccessor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 /**
  *
  * @author sg155630
@@ -48,8 +49,8 @@ import org.netbeans.modules.cnd.test.RemoteUserInfoAccessor;
 public class RemoteUserInfoAccessorImpl extends RemoteUserInfoAccessor {
 
     @Override
-    public RemoteUserInfo get(String hkey) {
-        return RemoteUserInfo.getTestUserInfo(hkey);
+    public RemoteUserInfo get(ExecutionEnvironment env) {
+        return RemoteUserInfo.getTestUserInfo(env);
     }
 
 }

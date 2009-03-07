@@ -51,7 +51,7 @@ import java.net.UnknownHostException;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * This support is intended to work with RemoteNativeExecution and provide input (and eventually
@@ -61,8 +61,8 @@ import org.openide.util.Exceptions;
  */
 public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
-    public RemoteNativeExecutionSupport(String key, int port, File dirf, String exe, String args, String[] envp, PrintWriter out, Reader userInput) {
-        super(key, port);
+    public RemoteNativeExecutionSupport(ExecutionEnvironment execEnv, File dirf, String exe, String args, String[] envp, PrintWriter out, Reader userInput) {
+        super(execEnv);
 
         log.fine("RNES<Init>: Running [" + exe + "] on " + key);
         try {
@@ -98,10 +98,6 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             log.finest("RNES return value: " + getExitStatus());
             disconnect();
         }
-    }
-
-    public RemoteNativeExecutionSupport(String key, File dirf, String exe, String args, String[] envp, PrintWriter out, Reader userInput) {
-        this(key, PORT, dirf, exe, args, envp, out, userInput);
     }
 
     private void setChannelCommand(File dirf, String exe, String args, String[] envp) throws JSchException {

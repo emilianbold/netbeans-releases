@@ -339,8 +339,9 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "   ");
         return true;
     }
-    
-    void setDomainLocation(String absolutePath) {
+
+    // expose for qa-functional tests
+    public void setDomainLocation(String absolutePath) {
         int dex = absolutePath.lastIndexOf(File.separator);
         this.domainsDir = absolutePath.substring(0,dex);
         this.domainName = absolutePath.substring(dex+1);

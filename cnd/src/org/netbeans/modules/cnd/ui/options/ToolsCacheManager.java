@@ -44,9 +44,11 @@ import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
 /**
@@ -57,7 +59,8 @@ public final class ToolsCacheManager {
 
     private final ServerList serverList;
     private ServerUpdateCache serverUpdateCache;
-    private HashMap<String, CompilerSetManager> copiedManagers = new HashMap<String, CompilerSetManager>();
+    private HashMap<ExecutionEnvironment, CompilerSetManager> copiedManagers =
+            new HashMap<ExecutionEnvironment, CompilerSetManager>();
 
     public ToolsCacheManager() {
         serverList = Lookup.getDefault().lookup(ServerList.class);
@@ -104,7 +107,7 @@ public final class ToolsCacheManager {
 
     private void saveCompileSetManagers(List<String> liveServers) {
         Collection<CompilerSetManager> allCSMs = new ArrayList<CompilerSetManager>();
-        for (String copiedServer : copiedManagers.keySet()) {
+        for (ExecutionEnvironment copiedServer : copiedManagers.keySet()) {
             if (liveServers == null || liveServers.contains(copiedServer)) {
                 allCSMs.add(copiedManagers.get(copiedServer));
             }
@@ -149,15 +152,15 @@ public final class ToolsCacheManager {
     }
 
     //TODO: we should be ensured already....check
-    public void ensureHostSetup(String hkey) {
-        if (hkey != null) {
-            serverList.get(hkey); // this will ensure the remote host is setup
+    public void ensureHostSetup(ExecutionEnvironment env) {
+        if (env != null) {
+            serverList.get(env); // this will ensure the remote host is setup
         }
     }
 
-    public boolean isDevHostValid(String hkey) {
+    public boolean isDevHostValid(ExecutionEnvironment env) {
         if (isRemoteAvailable()) {
-            ServerRecord record = serverList.get(hkey);
+            ServerRecord record = serverList.get(env);
             return record != null && record.isOnline();
         } else {
             return false;
@@ -168,23 +171,33 @@ public final class ToolsCacheManager {
         return serverList != null;
     }
 
+    /** TODO: deprecate and remove */
     public String getDefaultHostKey() {
         return serverList.getDefaultRecord().getName();
     }
 
-    public synchronized CompilerSetManager getCompilerSetManagerCopy(String hKey) {
-        CompilerSetManager out = copiedManagers.get(hKey);
+    public ExecutionEnvironment getDefaultHostEnvironment() {
+        return serverList.getDefaultRecord().getExecutionEnvironment();
+    }
+
+    public synchronized CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env) {
+        CompilerSetManager out = copiedManagers.get(env);
         if (out == null) {
-            out = CompilerSetManager.getDefault(hKey, false).deepCopy();
+            out = CompilerSetManager.getDefault(env, false).deepCopy();
             if (out.getCompilerSets().size() == 1 && out.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
                 out.remove(out.getCompilerSets().get(0));
             }
-            copiedManagers.put(hKey, out);
+            copiedManagers.put(env, out);
         }
         return out;
     }
 
+    /** TODO: deprecate and remove */
+    public synchronized CompilerSetManager getCompilerSetManagerCopy(String hKey) {
+        return getCompilerSetManagerCopy(ExecutionEnvironmentFactory.getExecutionEnvironment(hKey));
+    }
+
     public void addCompilerSetManager(CompilerSetManager newCsm) {
-        copiedManagers.put(newCsm.getHost(), newCsm);
+        copiedManagers.put(newCsm.getExecutionEnvironment(), newCsm);
     }
 }

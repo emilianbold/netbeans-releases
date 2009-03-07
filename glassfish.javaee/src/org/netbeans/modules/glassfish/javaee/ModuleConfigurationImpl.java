@@ -50,6 +50,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.eecommon.api.DomainEditor;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -190,8 +191,10 @@ public class ModuleConfigurationImpl implements
                         GlassfishModule commonSupport = ((Hk2DeploymentManager) dm).getCommonServerSupport();
                         String gfdir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR); 
                         String domain = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
-                        DomainEditor de = new DomainEditor(gfdir, domain, false);
-                        de.createSampleDatasource();
+                        if (commonSupport.getServerState() != ServerState.RUNNING) {
+                            DomainEditor de = new DomainEditor(gfdir, domain, false);
+                            de.createSampleDatasource();
+                        }
                     }
                 }
             } else {

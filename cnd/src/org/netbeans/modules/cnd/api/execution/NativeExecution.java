@@ -45,7 +45,6 @@ import java.io.Reader;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.execution.LocalNativeExecution;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.openide.util.Lookup;
 
 /**
