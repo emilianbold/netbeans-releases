@@ -41,10 +41,12 @@ package org.netbeans.modules.cnd.remote.mapper;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.server.RemoteServerSetup;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
@@ -56,20 +58,20 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
 
     public static class RemoteHostInfo {
 
-        private final String hkey;
+        private final ExecutionEnvironment executionEnvironment;
         private String home = null;
         private PathMap mapper;
         private Map<String, String> envCache = null;
         private Boolean isCshShell;
         private Integer platform;
 
-        private RemoteHostInfo(String hkey) {
-            this.hkey = hkey;
+        private RemoteHostInfo(ExecutionEnvironment executionEnvironment) {
+            this.executionEnvironment = executionEnvironment;
         }
 
         public String getHome() {
             if (home == null) {
-                RemoteCommandSupport support = new RemoteCommandSupport(hkey, "pwd"); // NOI18N
+                RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "pwd"); // NOI18N
                 if (support.run() == 0) {
                     home = support.getOutput().trim();
                 }
@@ -79,7 +81,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
 
         public synchronized PathMap getMapper() {
             if (mapper == null) {
-                mapper = RemotePathMap.getPathMap(hkey);
+                mapper = RemotePathMap.getPathMap(ExecutionEnvironmentFactory.getHostKey(executionEnvironment));
             }
             return mapper;
         }
@@ -87,7 +89,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
         public synchronized Map<String, String> getEnv() {
             if (envCache == null) {
                 envCache = new HashMap<String, String>();
-                RemoteCommandSupport support = new RemoteCommandSupport(hkey, "env"); // NOI18N
+                RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "env"); // NOI18N
                 if (support.run() == 0) {
                     String val = support.getOutput();
                     String[] lines = val.split("\n"); // NOI18N
@@ -105,7 +107,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
         public boolean isCshShell() {
             if (isCshShell == null) {
                 //N.B.: this is only place where RemoteCommandSupport should take PATH= !!
-                RemoteCommandSupport support = new RemoteCommandSupport(hkey, "PATH=/bin:/usr/bin export"); // NOI18N
+                RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "PATH=/bin:/usr/bin export"); // NOI18N
                 support.setPreserveCommand(true); // to avoid endless loop
                 isCshShell = Boolean.valueOf(support.run() != 0);
             }
@@ -114,7 +116,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
 
         public int getPlatform() {
             if (platform == null) {
-                RemoteCommandSupport support = new RemoteCommandSupport(hkey, "uname -sm"); //NOI18N
+                RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "uname -sm"); //NOI18N
                 int result;
                 if (support.run() == 0) {
                     result = recognizePlatform(support.getOutput());
@@ -145,7 +147,8 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
     public static synchronized RemoteHostInfo getHostInfo(String hkey) {
         RemoteHostInfo hi = hkey2hostInfo.get(hkey);
         if (hi == null) {
-            hi = new RemoteHostInfo(hkey);
+            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
+            hi = new RemoteHostInfo(execEnv);
             hkey2hostInfo.put(hkey, hi);
         }
         return hi;
@@ -172,7 +175,8 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
 
     @Override
     public boolean fileExists(String key, String path) {
-        RemoteCommandSupport support = new RemoteCommandSupport(key,
+        RemoteCommandSupport support = new RemoteCommandSupport(
+                ExecutionEnvironmentFactory.getExecutionEnvironment(key),
                 "test -d \"" + path + "\" -o -f \"" + path + "\""); // NOI18N
         return support.run() == 0;
     }

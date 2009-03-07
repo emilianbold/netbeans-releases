@@ -52,11 +52,12 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetReporter;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -238,22 +239,22 @@ public final class CreateHostVisualPanel2 extends JPanel {
     private String hostFound = null;
     private Runnable runOnFinish = null;
 
-    private String getHostKey() {
-        return getLoginName() + '@' + hostname;
+    private ExecutionEnvironment getExecutionEnvironment() {
+        return ExecutionEnvironmentFactory.getExecutionEnvironment(getLoginName(), hostname);
     }
 
     private void revalidateRecord(String password, boolean rememberPassword) {
-        final String hostKey = getHostKey();
-        final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(hostKey);
+        final ExecutionEnvironment env = getExecutionEnvironment();
+        final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(env);
         final boolean alreadyOnline = record.isOnline();
         enableButtons(false);
         if (alreadyOnline) {
             String message = NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected1");
-            message = String.format(message, hostKey);
+            message = String.format(message, env.toString());
             tpOutput.setText(message);
         } else {
             record.resetOfflineState(); // this is a do-over
-            RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(hostKey, true);
+            RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(env, true);
             userInfo.setPassword(password, rememberPassword);
             tpOutput.setText("");
         }
@@ -268,7 +269,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
             public void run() {
                 if (!alreadyOnline) {
                     addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgConnectingTo",
-                            RemoteUtils.getHostName(hostKey)));
+                            env.getHost()));
                     record.init(null);                    
                 }
                 if (record.isOnline()) {
@@ -291,7 +292,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
                         public void close() throws IOException {
                         }
                     });
-                    final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(hostKey);
+                    final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env);
                    csm.initialize(false, false);
                     runOnFinish = new Runnable() {
                         public void run() {
