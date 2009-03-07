@@ -45,6 +45,7 @@ import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
  * implementation of APTFile
@@ -53,7 +54,7 @@ import org.netbeans.modules.cnd.apt.support.APTWalker;
 public final class APTFileNode extends APTContainerNode 
                                 implements APTFile, Serializable {
     private static final long serialVersionUID = -6182803432699849825L;
-    private final String path;
+    private final CharSequence path;
     transient private boolean tokenized;
     
     /** Copy constructor */
@@ -64,8 +65,8 @@ public final class APTFileNode extends APTContainerNode
     }
     
     /** Creates a new instance of APTFileNode */
-    public APTFileNode(String path) {
-        this.path = path;
+    public APTFileNode(CharSequence path) {
+        this.path = FilePathCache.getString(path);
         tokenized = true;
     }
     
@@ -90,7 +91,7 @@ public final class APTFileNode extends APTContainerNode
         return "FILE:{" + getPath() + "}"; // NOI18N
     }
 
-    public String getPath() {
+    public CharSequence getPath() {
         return path;
     }
 

@@ -481,6 +481,7 @@ public class SQLStackStorage {
         private final LinkedBlockingQueue<Object> queue;
 
         public ExecutorThread() {
+            setName("DLIGTH: SQLStackStorage executor thread"); // NOI18N
             queue = new LinkedBlockingQueue<Object>();
         }
 

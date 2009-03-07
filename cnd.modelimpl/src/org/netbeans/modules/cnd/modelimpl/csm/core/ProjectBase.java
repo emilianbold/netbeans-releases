@@ -92,6 +92,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 
@@ -945,9 +946,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (!isSourceFile(nativeFile)) {
             nativeFile = DefaultFileItem.toDefault(nativeFile);
         }
-        List<String> userIncludePaths = nativeFile.getUserIncludePaths();
-        List<String> sysIncludePaths = nativeFile.getSystemIncludePaths();
-        sysIncludePaths = sysAPTData.getIncludes(sysIncludePaths.toString(), sysIncludePaths);
+        List<String> origUserIncludePaths = nativeFile.getUserIncludePaths();
+        List<String> origSysIncludePaths = nativeFile.getSystemIncludePaths();
+        List<CharSequence> userIncludePaths = FilePathCache.asList(origUserIncludePaths);
+        List<CharSequence> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
         StartEntry startEntry = new StartEntry(FileContainer.getFileKey(nativeFile.getFile(), true),
                 RepositoryUtils.UIDtoKey(getUID()));
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths);
@@ -1109,13 +1111,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @return true if it's first time of file including
      *          false if file was included before
      */
-    public final FileImpl onFileIncluded(ProjectBase base, String file, APTPreprocHandler preprocHandler, int mode) throws IOException {
+    public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, int mode) throws IOException {
         try {
             disposeLock.readLock().lock();
             if (disposing) {
                 return null;
             }
-            FileImpl csmFile = findFile(new File(file), FileImpl.HEADER_FILE, preprocHandler, false, null, null);
+            FileImpl csmFile = findFile(new File(file.toString()), FileImpl.HEADER_FILE, preprocHandler, false, null, null);
 
             APTFile aptLight = getAPTLight(csmFile);
 
@@ -2042,7 +2044,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private StartEntryInfo getStartEntryInfo(APTPreprocHandler preprocHandler, APTPreprocHandler.State state) {
         StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
         ProjectBase startProject = getStartProject(startEntry);
-        FileImpl csmFile = startProject == null ? null : startProject.getFile(new File(startEntry.getStartFile()));
+        FileImpl csmFile = startProject == null ? null : startProject.getFile(new File(startEntry.getStartFile().toString()));
         if (csmFile != null) {
             NativeFileItem nativeFile = csmFile.getNativeFileItem();
             if (nativeFile != null && nativeFile.getFile() != null) {
@@ -2295,7 +2297,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public static FileImpl getStartFile(final APTPreprocHandler.State state) {
         StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
         ProjectBase startProject = getStartProject(startEntry);
-        FileImpl csmFile = startProject == null ? null : startProject.getFile(new File(startEntry.getStartFile()));
+        FileImpl csmFile = startProject == null ? null : startProject.getFile(new File(startEntry.getStartFile().toString()));
         return csmFile;
     }
 

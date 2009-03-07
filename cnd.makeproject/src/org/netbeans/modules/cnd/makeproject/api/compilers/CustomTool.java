@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
@@ -52,11 +51,6 @@ public final class CustomTool extends Tool {
 
     private CustomTool(ExecutionEnvironment env) {
         super(env, CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), CustomTool, "", NbBundle.getMessage(CustomTool.class, "LBL_CustomTool"), null); // NOI18N
-    }
-
-    /** TODO: deprecate and remove */
-    public static CustomTool create(String hkey) {
-        return create(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
     }
 
     public static CustomTool create(ExecutionEnvironment env) {

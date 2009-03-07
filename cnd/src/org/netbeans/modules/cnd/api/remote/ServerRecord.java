@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+
 /**
  *
  * @author gordonp
@@ -48,8 +50,11 @@ public interface ServerRecord {
     public String getServerName();
     
     public String getUserName();
-    
+
+    /** TODO: deprcate and remove */
     public String getName();
+
+    public ExecutionEnvironment getExecutionEnvironment();
 
     public boolean isRemote();
     

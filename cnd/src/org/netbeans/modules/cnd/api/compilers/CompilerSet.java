@@ -47,8 +47,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
-import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -396,11 +397,11 @@ public class CompilerSet {
         return displayName;
     }
     
-    public Tool addTool(String hkey, String name, String path, int kind) {
+    public Tool addTool(ExecutionEnvironment env, String name, String path, int kind) {
         if (findTool(kind) != null) {
             return null;
         }
-        Tool tool = compilerProvider.createCompiler(hkey, flavor, kind, name, Tool.getToolDisplayName(kind), path);
+        Tool tool = compilerProvider.createCompiler(env, flavor, kind, name, Tool.getToolDisplayName(kind), path);
         if (!tools.contains(tool)) {
             tools.add(tool);
         }
@@ -413,8 +414,8 @@ public class CompilerSet {
         tool.setCompilerSet(this);
     }
     
-    public Tool addNewTool(String hkey, String name, String path, int kind) {
-        Tool tool = compilerProvider.createCompiler(hkey, flavor, kind, name, Tool.getToolDisplayName(kind), path);
+    public Tool addNewTool(ExecutionEnvironment env, String name, String path, int kind) {
+        Tool tool = compilerProvider.createCompiler(env, flavor, kind, name, Tool.getToolDisplayName(kind), path);
         tools.add(tool);
         tool.setCompilerSet(this);
         return tool;
@@ -475,7 +476,8 @@ public class CompilerSet {
                 return tool;
             }
         }
-        return compilerProvider.createCompiler(CompilerSetManager.LOCALHOST, CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
+        return compilerProvider.createCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(),
+                CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
     }
     
     /**
@@ -492,7 +494,8 @@ public class CompilerSet {
         }
         Tool t;
         // Fixup: all tools should go here ....
-        t = compilerProvider.createCompiler(CompilerSetManager.LOCALHOST, getCompilerFlavor(), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
+        t = compilerProvider.createCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(),
+                getCompilerFlavor(), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
         t.setCompilerSet(this);
         synchronized( tools ) { // synchronize this only unpredictable tools modification
             tools.add(t);

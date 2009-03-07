@@ -58,6 +58,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
+import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -119,7 +120,8 @@ public class Folder implements FileChangeListener, ChangeListener {
         File folderFile = new File(AbsRootPath);
 
         // Folders to be removed
-        if (!folderFile.exists() || !folderFile.isDirectory() || !VisibilityQuery.getDefault().isVisible(folderFile)) {
+        if (!folderFile.exists() || !folderFile.isDirectory() ||
+            !VisibilityQuery.getDefault().isVisible(folderFile)) {
             // Remove it plus all subfolders and items from project
             if (log.isLoggable(Level.FINE)) {
                 log.fine("------------removing folder " + getPath() + " in " + getParent().getPath()); // NOI18N
@@ -129,7 +131,10 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         // Items to be removed
         for (Item item : getItemsAsArray()) {
-            if (!item.getFile().exists() || !VisibilityQuery.getDefault().isVisible(item.getFile())) {
+            File file = item.getFile();
+            if (!file.exists() ||
+                !VisibilityQuery.getDefault().isVisible(file) ||
+                !CndVisibilityQuery.getDefault().isVisible(file)) {
                 if (log.isLoggable(Level.FINE)) {
                     log.fine("------------removing item " + item.getPath() + " in " + getPath()); // NOI18N
                 }
@@ -144,7 +149,8 @@ public class Folder implements FileChangeListener, ChangeListener {
         List<File> fileList = new ArrayList<File>();
         for (int i = 0; i < files.length; i++) {
             if (VisibilityQuery.getDefault().isVisible(files[i]) &&
-                    !files[i].getName().equals("nbproject")) { // NOI18N
+                CndVisibilityQuery.getDefault().isVisible(files[i]) &&
+                !files[i].getName().equals("nbproject")) { // NOI18N
                 fileList.add(files[i]);
             }
         }
@@ -189,6 +195,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
         if (isDiskFolder() && getRoot() != null) {
             VisibilityQuery.getDefault().addChangeListener(this);
+            CndVisibilityQuery.getDefault().addChangeListener(this);
             if (log.isLoggable(Level.FINER)) {
                 log.finer("-----------attachFilterListener " + getPath()); // NOI18N
             }
@@ -220,6 +227,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         FileUtil.removeFileChangeListener(this);
         if (isDiskFolder() && getRoot() != null) {
             VisibilityQuery.getDefault().removeChangeListener(this);
+            CndVisibilityQuery.getDefault().removeChangeListener(this);
             if (log.isLoggable(Level.FINER)) {
                 log.finer("-----------detachFilterListener " + getPath()); // NOI18N
             }

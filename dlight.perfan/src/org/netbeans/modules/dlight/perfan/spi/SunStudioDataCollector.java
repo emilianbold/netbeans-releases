@@ -171,7 +171,7 @@ public class SunStudioDataCollector
     }
 
     public Future<ValidationStatus> validate(final DLightTarget targetToValidate) {
-        return DLightExecutorService.service.submit(new Callable<ValidationStatus>() {
+        return DLightExecutorService.submit(new Callable<ValidationStatus>() {
 
             public ValidationStatus call() throws Exception {
                 if (validationStatus.isValid()) {
@@ -186,7 +186,7 @@ public class SunStudioDataCollector
                 validationStatus = newStatus;
                 return newStatus;
             }
-        });
+        }, "Validate SunStudioDataCollector on " + targetToValidate.getExecEnv()); // NOI18N
     }
 
     public String getName() {
@@ -372,14 +372,14 @@ public class SunStudioDataCollector
                 TimerTaskExecutionService service =
                     TimerTaskExecutionService.getInstance();
                 statisticsTask = service.scheduleAtFixedRate(
-                    new SummaryDataFetchingTask(), 1, TimeUnit.SECONDS);
+                    new SummaryDataFetchingTask(), 1, TimeUnit.SECONDS, "SYNCSUMMARY"); // NOI18N
             }
             if (collectedInfoList.contains(SunStudioDCConfiguration.CollectedInfo.MEMSUMMARY)) {
                 resetIndicators();
                 TimerTaskExecutionService service =
                     TimerTaskExecutionService.getInstance();
                 memoryStatisticsTask = service.scheduleAtFixedRate(
-                    new SummaryLeaksDataFetchingTask(), 1, TimeUnit.SECONDS);
+                    new SummaryLeaksDataFetchingTask(), 1, TimeUnit.SECONDS, "MEMSUMMARY"); // NOI18N
             }
 
         }

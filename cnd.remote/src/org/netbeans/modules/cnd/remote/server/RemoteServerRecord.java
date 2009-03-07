@@ -45,8 +45,10 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
@@ -62,10 +64,8 @@ public class RemoteServerRecord implements ServerRecord {
     }
     
     public static final String PROP_STATE_CHANGED = "stateChanged"; // NOI18N
-    
-    private final String user;
-    private final String server;
-    private final String name;
+
+    private final ExecutionEnvironment executionEnvironment;
     private final boolean editable;
     private boolean deleted;
     private State state;
@@ -80,26 +80,38 @@ public class RemoteServerRecord implements ServerRecord {
      * thread if called during startup from cached information.
      * 
      * @param name
+     *
+     * TODO: deprecate and remove
      */
     protected RemoteServerRecord(final String name) {
         this(name, false);
     }
-    
+
+    /** TODO: deprecate and remove */
     protected RemoteServerRecord(final String name, boolean connect) {
-        this.name = name;
-        int pos = name.indexOf('@');
-        if (pos != -1) {
-            user = name.substring(0, pos);
-            server = name.substring(pos + 1);
-        } else {
-            user="";
-            server = name;
-        }
-        stateLock = new String("RemoteServerRecord state lock for " + name); // NOI18N
+        this(ExecutionEnvironmentFactory.getExecutionEnvironment(name), connect);
+//        this.name = name;
+//        int pos = name.indexOf('@');
+//        if (pos != -1) {
+//            user = name.substring(0, pos);
+//            server = name.substring(pos + 1);
+//        } else {
+//            user="";
+//            server = name;
+//        }
+    }
+
+    protected RemoteServerRecord(ExecutionEnvironment env) {
+        this(env, false);
+    }
+
+    protected RemoteServerRecord(final ExecutionEnvironment env, boolean connect) {
+        this.executionEnvironment = env;
+        stateLock = new String("RemoteServerRecord state lock for " + toString()); // NOI18N
         reason = null;
         deleted = false;
         
-        if (name.equals(CompilerSetManager.LOCALHOST)) {
+        if (env.isLocal()) {
             editable = false;
             state = State.ONLINE;
         } else {
@@ -107,23 +119,33 @@ public class RemoteServerRecord implements ServerRecord {
             state = connect ? State.UNINITIALIZED : State.OFFLINE;
         }
     }
-    
+
+    @Override
+    public ExecutionEnvironment getExecutionEnvironment() {
+        return executionEnvironment;
+    }
+
+    @Override
+    public String toString() {
+        return executionEnvironment.toString();
+    }
+
     public synchronized void validate(final boolean force) {
         if (isOnline()) {
             return;
         }
-        log.fine("RSR.validate2: Validating " + name);
+        log.fine("RSR.validate2: Validating " + toString());
         if (force) {
-            ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name)); // NOI18N
+            ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", getName())); // NOI18N
             ph.start();
             init(null);
             ph.finish();
         }
         String msg;
         if (isOnline()) {
-            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_OK", name);// NOI18N
+            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_OK", getName());// NOI18N
         } else {
-            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_ERR", name, getStateAsText(), getReason());// NOI18N
+            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_ERR", getName(), getStateAsText(), getReason());// NOI18N
         }
         StatusDisplayer.getDefault().setStatusText(msg);        
     }
@@ -136,7 +158,7 @@ public class RemoteServerRecord implements ServerRecord {
         assert !SwingUtilities.isEventDispatchThread() : "RemoteServer initialization must be done out of EDT"; // NOI18N
         Object ostate = state;
         state = State.INITIALIZING;
-        RemoteServerSetup rss = new RemoteServerSetup(name);
+        RemoteServerSetup rss = new RemoteServerSetup(getName());
         if (rss.needsSetupOrUpdate()) {
             rss.setup();
         }
@@ -148,7 +170,7 @@ public class RemoteServerRecord implements ServerRecord {
                 state = State.OFFLINE;
                 reason = rss.getReason();
             } else {
-                RemotePathMap.getRemotePathMapInstance(name).init();
+                RemotePathMap.getRemotePathMapInstance(getName()).init();
                 state = State.ONLINE;
             }
         }
@@ -193,19 +215,20 @@ public class RemoteServerRecord implements ServerRecord {
     }
 
     public boolean isRemote() {
-        return !name.equals(CompilerSetManager.LOCALHOST);
+        return executionEnvironment.isRemote();
     }
 
+    /** TODO: deprcate and remove */
     public String getName() {
-        return name;
+        return ExecutionEnvironmentFactory.getHostKey(executionEnvironment);
     }
 
     public String getServerName() {
-        return server;
+        return executionEnvironment.getHost();
     }
 
     public String getUserName() {
-        return user;
+        return executionEnvironment.getUser();
     }
     
     public String getReason() {

@@ -264,7 +264,7 @@ public class LLDataCollector
                 return newStatus;
             }
         };
-        return DLightExecutorService.service.submit(validationTask);
+        return DLightExecutorService.submit(validationTask, "Validation of LLDataCollector "); // NOI18N
     }
 
     public void invalidate() {

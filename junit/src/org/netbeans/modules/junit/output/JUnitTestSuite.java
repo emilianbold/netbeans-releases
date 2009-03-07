@@ -61,7 +61,7 @@ public class JUnitTestSuite extends TestSuite{
         if (suiteFO == null){
             FileLocator locator = session.getFileLocator();
             if (locator != null){
-                suiteFO = locator.find(getName() + ".java"); //NOI18N
+                suiteFO = locator.find(getName().replace('.', '/') + ".java"); //NOI18N
             }
         }
         return suiteFO;

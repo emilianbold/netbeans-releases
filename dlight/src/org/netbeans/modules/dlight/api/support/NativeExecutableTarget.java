@@ -53,10 +53,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.openide.util.RequestProcessor;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 
@@ -213,7 +213,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         };
 
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(r);
+            DLightExecutorService.submit(r, "Start target " + toString()); // NOI18N
         } else {
             r.run();
         }

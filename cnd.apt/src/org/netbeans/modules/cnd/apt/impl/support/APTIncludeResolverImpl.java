@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import java.io.File;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
@@ -49,6 +48,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
 import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
  * implementation of include resolver
@@ -56,14 +56,14 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
  */
 public class APTIncludeResolverImpl implements APTIncludeResolver {
     private final int baseFileIncludeDirIndex;
-    private final String baseFile;
-    private final List<String> systemIncludePaths;
-    private final List<String> userIncludePaths;  
+    private final CharSequence baseFile;
+    private final List<CharSequence> systemIncludePaths;
+    private final List<CharSequence> userIncludePaths;
     
-    public APTIncludeResolverImpl(String path, int baseFileIncludeDirIndex, 
-                                    List<String> systemIncludePaths,
-                                    List<String> userIncludePaths) {
-        this.baseFile = path;
+    public APTIncludeResolverImpl(CharSequence path, int baseFileIncludeDirIndex,
+                                    List<CharSequence> systemIncludePaths,
+                                    List<CharSequence> userIncludePaths) {
+        this.baseFile = FilePathCache.getString(path);
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
         this.baseFileIncludeDirIndex = baseFileIncludeDirIndex;
@@ -77,7 +77,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
         return resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), true);
     }
 
-    public String getBasePath() {
+    public CharSequence getBasePath() {
         return baseFile;
     }
     

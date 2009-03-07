@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -75,6 +76,21 @@ public class ExecutionEnvironmentFactory {
 
     public static ExecutionEnvironment getExecutionEnvironment(String user, String host, int port) {
         return new ExecutionEnvironment(user, host, port);
+    }
+
+    /**
+     * A method that returns a legacy string that contains
+     * either user@host or "localhost"
+     * TODO: deprecate and remove
+     */
+    public static String getHostKey(ExecutionEnvironment executionEnvironment) {
+        if (executionEnvironment.isLocal()) {
+            return CompilerSetManager.LOCALHOST;
+        } else if (executionEnvironment.getUser() == null || executionEnvironment.getUser().length() == 0) {
+            return executionEnvironment.getHost();
+        } else {
+            return executionEnvironment.getUser() + '@' + executionEnvironment.getHost();
+        }
     }
 
     /**
