@@ -62,7 +62,6 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
@@ -79,13 +78,26 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     /**
      * Creates new {@code IssueTopComponent}.
      */
-    public IssueTopComponent(Repository toSelect) {
+    public IssueTopComponent() {
         initComponents();
 
+        
+    }
+
+    /**
+     * Returns issue displayed by this top-component.
+     *
+     * @return issue displayed by this top-component.
+     */
+    public Issue getIssue() {
+        return issue;
+    }
+
+    public void initNewIssue(Repository toSelect) {
         Font f = new JLabel().getFont();
         int s = f.getSize();
         findIssuesLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
-        
+
         newButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onNewClick();
@@ -134,15 +146,6 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             }
         });
         setNameAndTooltip();
-    }
-
-    /**
-     * Returns issue displayed by this top-component.
-     *
-     * @return issue displayed by this top-component.
-     */
-    public Issue getIssue() {
-        return issue;
     }
 
     /**
@@ -326,7 +329,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 return tc;
             }
         }
-        IssueTopComponent tc = new IssueTopComponent(null);
+        IssueTopComponent tc = new IssueTopComponent();
         tc.setIssue(issue);
         return tc;
     }

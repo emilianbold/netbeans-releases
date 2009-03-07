@@ -82,12 +82,15 @@ public class IssueAction extends SystemAction {
     public static void openIssue(final Issue issue, final Repository repository) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                TopComponent tc = null;
+                IssueTopComponent tc = null;
                 if(issue != null) {
                     tc = IssueTopComponent.find(issue);
                 }
                 if(tc == null) {
-                    tc = new IssueTopComponent(repository);
+                    tc = new IssueTopComponent();
+                }
+                if(repository != null) {
+                    tc.initNewIssue(repository);
                 }
                 if(!tc.isOpened()) {
                     tc.open();
