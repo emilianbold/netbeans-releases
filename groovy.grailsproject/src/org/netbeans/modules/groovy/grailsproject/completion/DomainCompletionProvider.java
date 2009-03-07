@@ -210,7 +210,7 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         }
 
         Project project = FileOwnerQuery.getOwner(context.getSourceFile());
-        if (context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
+        if (context.isLeaf() && project.getLookup().lookup(DomainCompletionProvider.class) != null) {
 
             if (isDomain(context.getSourceFile(), project)) {
                 Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
