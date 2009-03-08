@@ -49,16 +49,16 @@ import junit.framework.TestCase;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.db.explorer.test.api.SQLIdentifiersTestUtilities;
-import org.netbeans.modules.db.sql.analyzer.SQLStatement.SelectContext;
+import org.netbeans.modules.db.sql.analyzer.SelectStatement.SelectContext;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
 /**
  *
  * @author Andrei Badea
  */
-public class SQLStatementAnalyzerTest extends TestCase {
+public class SelectStatementAnalyzerTest extends TestCase {
 
-    public SQLStatementAnalyzerTest(String testName) {
+    public SelectStatementAnalyzerTest(String testName) {
         super(testName);
     }
 
@@ -75,7 +75,7 @@ public class SQLStatementAnalyzerTest extends TestCase {
     }
 
     public void testAnalyzeSimple() throws Exception {
-        SQLStatement statement = doAnalyze("select f.bar as bingo, count(*), max(id) + 1 themax, cat.sch.foo.baz from foo f inner join bar");
+        SelectStatement statement = doAnalyze("select f.bar as bingo, count(*), max(id) + 1 themax, cat.sch.foo.baz from foo f inner join bar");
         List<List<String>> selectValues = statement.getSelectValues();
         assertEquals(3, selectValues.size());
         assertEquals(Arrays.asList("bingo"), selectValues.get(0));
@@ -87,13 +87,13 @@ public class SQLStatementAnalyzerTest extends TestCase {
     }
 
     public void testAnalyzeFromCommaDelimitedTableNames() throws Exception {
-        SQLStatement statement = doAnalyze("select * from foo, bar b");
+        SelectStatement statement = doAnalyze("select * from foo, bar b");
         assertEquals(Collections.singleton(new QualIdent("foo")), statement.getFromClause().getUnaliasedTableNames());
         assertEquals(Collections.singletonMap("b", new QualIdent("bar")), statement.getFromClause().getAliasedTableNames());
     }
 
     public void testAnalyzeFromJoinTableNames() throws Exception {
-        SQLStatement statement = doAnalyze("select * from foo f inner join bar on f.");
+        SelectStatement statement = doAnalyze("select * from foo f inner join bar on f.");
         assertEquals(Collections.singleton(new QualIdent("bar")), statement.getFromClause().getUnaliasedTableNames());
         assertEquals(Collections.singletonMap("f", new QualIdent("foo")), statement.getFromClause().getAliasedTableNames());
     }
@@ -107,7 +107,7 @@ public class SQLStatementAnalyzerTest extends TestCase {
     }
 
     public void testFromClause() throws Exception {
-        SQLStatement statement = doAnalyze("select foo");
+        SelectStatement statement = doAnalyze("select foo");
         assertNull(statement.getFromClause());
 
         statement = doAnalyze("select foo from");
@@ -115,7 +115,7 @@ public class SQLStatementAnalyzerTest extends TestCase {
     }
 
     public void testUnquote() throws Exception {
-        SQLStatement statement = doAnalyze("select * from \"foo\".\"bar\"");
+        SelectStatement statement = doAnalyze("select * from \"foo\".\"bar\"");
         assertEquals(Collections.singleton(new QualIdent("foo", "bar")), statement.getFromClause().getUnaliasedTableNames());
 
         statement = doAnalyze("select * from \"foo\".\"\" inner join \"baz\"");
@@ -128,7 +128,7 @@ public class SQLStatementAnalyzerTest extends TestCase {
     public void testUnknownIdentifiers() throws Exception {
         // SQL generated from embedded code may have __UNKNOWN__ flags in it -
         // make sure these are handled correctly
-        SQLStatement stmt = doAnalyze("SELECT __UNKNOWN__");
+        SelectStatement stmt = doAnalyze("SELECT __UNKNOWN__");
         List<List<String>> selectValues = stmt.getSelectValues();
         assertEquals(1, selectValues.size());
         assertEquals(Arrays.asList("__UNKNOWN__"), selectValues.get(0));
@@ -157,13 +157,13 @@ public class SQLStatementAnalyzerTest extends TestCase {
         int secondSubStart = sql.indexOf("(select", firstSubStart) + 1;
         int secondSubEnd = sql.indexOf(" = 1", secondSubStart) - 1;
 
-        SQLStatement statement = doAnalyze(sql);
+        SelectStatement statement = doAnalyze(sql);
         assertEquals(0, statement.startOffset);
         assertEquals(sql.length(), statement.endOffset);
         assertTrue(statement.getFromClause().getUnaliasedTableNames().contains(new QualIdent("foo")));
         assertEquals(1, statement.getSubqueries().size());
 
-        SQLStatement subquery = statement.getSubqueries().get(0);
+        SelectStatement subquery = statement.getSubqueries().get(0);
         assertEquals(firstSubStart, subquery.startOffset);
         assertEquals(firstSubEnd, subquery.endOffset);
         assertEquals(sql.length(), statement.endOffset);
@@ -180,7 +180,7 @@ public class SQLStatementAnalyzerTest extends TestCase {
     public void testContext() throws Exception {
         String sql = "select customer_id from customer inner join invoice on customer.id = invoice.customer_id, foobar " +
                 "where vip = 1 group by customer_id having count(items) < 2 order by customer_id asc";
-        SQLStatement statement = doAnalyze(sql);
+        SelectStatement statement = doAnalyze(sql);
         assertNull(statement.getContextAtOffset(0));
         assertEquals(SelectContext.SELECT, statement.getContextAtOffset(sql.indexOf(" customer_id")));
         assertEquals(SelectContext.FROM, statement.getContextAtOffset(sql.indexOf("customer ")));
@@ -198,15 +198,15 @@ public class SQLStatementAnalyzerTest extends TestCase {
         assertEquals(SQLStatementKind.SELECT, doDetectKind("select * from foo"));
     }
 
-    private static SQLStatement doAnalyze(String sql) {
+    private static SelectStatement doAnalyze(String sql) {
         TokenHierarchy<String> hi = TokenHierarchy.create(sql, SQLTokenId.language());
         Quoter quoter = SQLIdentifiersTestUtilities.createNonASCIIQuoter("\"");
-        return SQLStatementAnalyzer.analyze(hi.tokenSequence(SQLTokenId.language()), quoter);
+        return SelectStatementAnalyzer.analyze(hi.tokenSequence(SQLTokenId.language()), quoter);
     }
 
     private static SQLStatementKind doDetectKind(String sql) {
         TokenHierarchy<String> hi = TokenHierarchy.create(sql, SQLTokenId.language());
-        return SQLStatementAnalyzer.detectKind(hi.tokenSequence(SQLTokenId.language()));
+        return SelectStatementAnalyzer.detectKind(hi.tokenSequence(SQLTokenId.language()));
     }
 
     public static void assertCanAnalyze(String sql) throws IOException {
