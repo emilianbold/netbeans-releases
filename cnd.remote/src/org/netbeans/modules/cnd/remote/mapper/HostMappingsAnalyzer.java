@@ -82,11 +82,13 @@ public class HostMappingsAnalyzer {
 
         for (HostMappingProvider provider : singularProviders) {
             if (provider.isApplicable(secondPI, firstPI)) {
-                Map<String, String> map = provider.findMappings(secondPI.getHkey(), firstPI.getHkey());
+                Map<String, String> map = provider.findMappings(
+                        secondPI.getExecutionEnvironment(), firstPI.getExecutionEnvironment());
                 mappingsFirst2Second.putAll(map);
             }
             if (provider.isApplicable(firstPI, secondPI)) {
-                Map<String, String> map = provider.findMappings(firstPI.getHkey(), secondPI.getHkey());
+                Map<String, String> map = provider.findMappings(
+                        firstPI.getExecutionEnvironment(), secondPI.getExecutionEnvironment());
                 mappingsFirst2Second.putAll(map);
             }
         }
@@ -100,7 +102,8 @@ public class HostMappingsAnalyzer {
         Map<String, String> map = new HashMap<String, String>();
         for (HostMappingProvider prov : pairedProviders) {
             if (prov.isApplicable(hostPlatformInfo, otherPlatformInfo)) {
-                map.putAll( prov.findMappings(hostPlatformInfo.getHkey(), otherPlatformInfo.getHkey())  );
+                map.putAll(prov.findMappings(
+                        hostPlatformInfo.getExecutionEnvironment(), otherPlatformInfo.getExecutionEnvironment())  );
             }
         }
         return map;
