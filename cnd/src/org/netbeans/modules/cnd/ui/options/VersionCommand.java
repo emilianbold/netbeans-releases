@@ -51,6 +51,7 @@ import java.io.StringReader;
 import java.util.Collections;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.execution.LinkSupport;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.openide.util.Lookup;
 
@@ -62,7 +63,7 @@ import org.openide.util.Lookup;
 /*package-local*/ final class VersionCommand {
 
     private final Tool tool;
-    private final String path;
+    private String path;
     private boolean alreadyRun;
     private String version;
 
@@ -85,6 +86,13 @@ import org.openide.util.Lookup;
         if (CompilerSetManager.LOCALHOST.equals(tool.getHostKey())) {
             // we're dealing with a local toolchain
             File file = new File(path);
+            if (!file.exists() && new File(path+".lnk").exists()){
+                String resolved = LinkSupport.getOriginalFile(path+".lnk");
+                if (resolved != null) {
+                    path = resolved;
+                    file = new File(path);
+                }
+            }
             if (file.exists()) {
                 ProcessBuilder pb = new ProcessBuilder(path, getVersionFlags());
                 pb.redirectErrorStream(true);
