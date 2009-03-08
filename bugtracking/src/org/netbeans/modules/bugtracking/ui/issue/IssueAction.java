@@ -89,9 +89,7 @@ public class IssueAction extends SystemAction {
                 if(tc == null) {
                     tc = new IssueTopComponent();
                 }
-                if(repository != null) {
-                    tc.initNewIssue(repository);
-                }
+                tc.initNewIssue(repository);
                 if(!tc.isOpened()) {
                     tc.open();
                 }

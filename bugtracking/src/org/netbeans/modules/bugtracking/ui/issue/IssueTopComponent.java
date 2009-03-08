@@ -62,6 +62,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
@@ -80,8 +81,6 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      */
     public IssueTopComponent() {
         initComponents();
-
-        
     }
 
     /**
@@ -337,8 +336,13 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private void setNameAndTooltip() throws MissingResourceException {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                setName(issue.getDisplayName());
-                setToolTipText(issue.getTooltip());
+                if(issue != null) {
+                    setName(issue.getDisplayName());
+                    setToolTipText(issue.getTooltip());
+                } else {
+                    setName(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent"));
+                    setToolTipText(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent"));
+                }
             }
         });
     }
