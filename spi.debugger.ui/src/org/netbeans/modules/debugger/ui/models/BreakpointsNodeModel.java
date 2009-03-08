@@ -41,20 +41,33 @@
 
 package org.netbeans.modules.debugger.ui.models;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.spi.viewmodel.CheckNodeModel;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author   Jan Jancura
  */
-public class BreakpointsNodeModel implements NodeModel {
+public class BreakpointsNodeModel implements CheckNodeModel  {
 
     public static final String BREAKPOINT_GROUP =
         "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint";
 
+    private final Map<Breakpoint, Boolean> breakpointsBeingEnabled = new HashMap<Breakpoint, Boolean>();
+    private RequestProcessor rp;
+    private final Collection modelListeners = new ArrayList();
 
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
@@ -86,9 +99,143 @@ public class BreakpointsNodeModel implements NodeModel {
         throw new UnknownTypeException (o);
     }
 
+    /**
+     * Registers given listener.
+     *
+     * @param l the listener to add
+     */
     public void addModelListener (ModelListener l) {
+        synchronized (modelListeners) {
+            modelListeners.add(l);
+        }
     }
 
+    /**
+     * Unregisters given listener.
+     *
+     * @param l the listener to remove
+     */
     public void removeModelListener (ModelListener l) {
+        synchronized (modelListeners) {
+            modelListeners.remove(l);
+        }
     }
+
+    private void fireModelEvent(ModelEvent ev) {
+        Collection listeners;
+        synchronized (modelListeners) {
+            listeners = new ArrayList(modelListeners);
+        }
+        for (Iterator it = listeners.iterator(); it.hasNext(); ) {
+            ModelListener l = (ModelListener) it.next();
+            l.modelChanged(ev);
+        }
+    }
+
+    public boolean isCheckable(Object node) throws UnknownTypeException {
+        return true;
+    }
+
+    public boolean isCheckEnabled(Object node) throws UnknownTypeException {
+        return true;
+    }
+
+    public Boolean isSelected(Object node) throws UnknownTypeException {
+        if (node instanceof Breakpoint) {
+            return ((Breakpoint) node).isEnabled();
+        } else if (node instanceof String) {
+            String groupName = (String) node;
+            Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
+                getBreakpoints ();
+            Boolean enabled = null;
+            for (int i = 0; i < bs.length; i++) {
+                if (bs [i].getGroupName ().equals (groupName)) {
+                    if (enabled == null) {
+                        enabled = Boolean.valueOf (bs[i].isEnabled ());
+                    } else {
+                        if (enabled.booleanValue() != bs[i].isEnabled ()) {
+                            return null; // Some are enabled, some disabled
+                        }
+                    }
+                }
+            }
+            return enabled;
+        }
+        throw new UnknownTypeException (node);
+    }
+
+    public void setSelected(Object node, Boolean selected) throws UnknownTypeException {
+        if (selected != null) {
+            if (node instanceof Breakpoint) {
+                Breakpoint bp = (Breakpoint) node;
+                synchronized (breakpointsBeingEnabled) {
+                    // Keep the original value until we change the BP state...
+                    breakpointsBeingEnabled.put(bp, Boolean.valueOf(bp.isEnabled()));
+                    if (rp == null) {
+                        rp = new RequestProcessor("Enable Breakpoints RP", 1); // NOI18N
+                    }
+                }
+                rp.post(new BreakpointEnabler(bp, selected.booleanValue ()));
+            } else if (node instanceof String) {
+                String groupName = (String) node;
+                Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
+                    getBreakpoints ();
+                ArrayList breakpoints = new ArrayList();
+                for (int i = 0; i < bs.length; i++) {
+                    if (bs [i].getGroupName ().equals (groupName)) {
+                        breakpoints.add(bs[i]);
+                    }
+                }
+                if (breakpoints.size() > 0) {
+                    synchronized (breakpointsBeingEnabled) {
+                        // Keep the original value until we change the BP state...
+                        for (Iterator it = breakpoints.iterator(); it.hasNext(); ) {
+                            Breakpoint bp = (Breakpoint) it.next();
+                            breakpointsBeingEnabled.put(bp, Boolean.valueOf(bp.isEnabled()));
+                        }
+                        if (rp == null) {
+                            rp = new RequestProcessor("Enable Breakpoints RP", 1); // NOI18N
+                        }
+                        for (Iterator it = breakpoints.iterator(); it.hasNext(); ) {
+                            Breakpoint bp = (Breakpoint) it.next();
+                            rp.post(new BreakpointEnabler(bp, selected.booleanValue ()));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+
+    private class BreakpointEnabler extends Object implements Runnable {
+
+        private Breakpoint bp;
+        private boolean enable;
+
+        public BreakpointEnabler(Breakpoint bp, boolean enable) {
+            this.bp = bp;
+            this.enable = enable;
+        }
+
+        public void run() {
+            if (enable)
+                bp.enable ();
+            else
+                bp.disable ();
+            synchronized (breakpointsBeingEnabled) {
+                breakpointsBeingEnabled.remove(bp);
+            }
+            fireModelEvent(new ModelEvent.NodeChanged(
+                    BreakpointsNodeModel.this,
+                    bp));
+            // re-calculate the enabled state of the BP group
+            String groupName = bp.getGroupName();
+            if (groupName != null) {
+                fireModelEvent(new ModelEvent.NodeChanged(
+                    BreakpointsNodeModel.this,
+                    groupName));
+            }
+        }
+    }
+
 }
