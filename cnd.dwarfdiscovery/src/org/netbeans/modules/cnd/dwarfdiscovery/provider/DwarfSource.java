@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.api.execution.LinkSupport;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
@@ -251,13 +252,9 @@ public class DwarfSource implements SourceFileProperties{
             if (!new File(name).exists()){
                 String link = name+".lnk"; // NOI18N
                 if (new File(link).exists()){
-                    try {
-                        LinkReader linkReader = new LinkReader(link);
-                        if (linkReader.getSource() != null){
-                            name = linkReader.getSource();
-                        }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+                    String resolve = LinkSupport.getOriginalFile(link);
+                    if (resolve != null){
+                        name = resolve;
                     }
                 } else {
                     StringTokenizer st = new StringTokenizer(name,"\\/"); // NOI18N
@@ -273,13 +270,10 @@ public class DwarfSource implements SourceFileProperties{
                             if (!new File(path).exists()){
                                 link = path+".lnk"; // NOI18N
                                 if (new File(link).exists()){
-                                    try {
-                                        LinkReader linkReader = new LinkReader(link);
-                                        if (linkReader.getSource() != null){
-                                            buf = new StringBuilder(linkReader.getSource());
-                                        }
-                                    } catch (Exception ex) {
-                                        ex.printStackTrace();
+                                    String resolve = LinkSupport.getOriginalFile(link);
+                                    if (resolve != null){
+                                        buf = new StringBuilder(resolve);
+                                    } else {
                                         return name;
                                     }
                                 } else {
