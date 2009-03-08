@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.groovy.grailsproject.classpath;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileAttributeEvent;
@@ -67,8 +68,9 @@ import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginsManager;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
-final class ProjectClassPathImplementation implements ClassPathImplementation {
+final class ProjectClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -88,8 +90,10 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
     }
 
     public static ProjectClassPathImplementation forProject(Project project) {
-        ProjectClassPathImplementation impl = new ProjectClassPathImplementation(
-                GrailsProjectConfig.forProject(project));
+        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+        ProjectClassPathImplementation impl = new ProjectClassPathImplementation(config);
+
+        config.addPropertyChangeListener(WeakListeners.propertyChange(impl, config));
 
         return impl;
     }
@@ -99,6 +103,15 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
             this.resources = this.getPath();
         }
         return this.resources;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+//        if (GrailsProjectConfig.GRAILS_JAVA_PLATFORM_PROPERTY.equals(evt.getPropertyName())) {
+//            synchronized (this) {
+//                this.resources = null;
+//            }
+//            this.support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
+//        }
     }
 
     private List<PathResourceImplementation> getPath() {

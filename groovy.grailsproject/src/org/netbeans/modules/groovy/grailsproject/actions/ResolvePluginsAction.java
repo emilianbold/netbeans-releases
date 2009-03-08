@@ -52,5 +52,6 @@ public class ResolvePluginsAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent e) {
         // FIXME
+        
     }
 }

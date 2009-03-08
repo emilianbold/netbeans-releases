@@ -52,17 +52,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -74,67 +68,75 @@ public class BuildConfig {
 
     private final GrailsProject project;
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-
     private Object buildSettingsInstance;
 
     private File projectRoot;
 
-    private FileChangeListener listener = new BuildConfigListener();
+    private List<GrailsPlugin> localPlugins;
 
-    private boolean initialized;
+    private File projectPluginsDir;
 
+    private File globalPluginsDir;
+    
     public BuildConfig(GrailsProject project) {
         this.project = project;
+
+        loadLocalPluginsDefault();
+        loadProjectPluginsDirDefault();
+        loadGlobalPluginsDirDefault();
     }
 
-    public synchronized void load() {
-        if (!initialized) {
-            reload();
-            initialized = true;
+    private synchronized void loadProjectPluginsDirDefault() {
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
+            // TODO - load from cache
         }
+        projectPluginsDir = getProjectPluginsDir10();
     }
 
-    private synchronized void reload() {
+    private synchronized void loadGlobalPluginsDirDefault() {
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
+            // TODO load from cache
+        }
+        globalPluginsDir = getGlobalPluginsDir10();
+    }
+
+    private synchronized void loadLocalPluginsDefault() {
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
+            // TODO cache
+        }
+        localPlugins = Collections.emptyList();
+    }
+
+    public synchronized void reload() {
         long start = System.currentTimeMillis();
 
         File newProjectRoot = FileUtil.toFile(project.getProjectDirectory());
         assert newProjectRoot != null;
 
         if (!newProjectRoot.equals(projectRoot)) {
-            String buildConfig = "grails-app" + File.separator + "conf"
-                    + File.separator + "BuildConfig.groovy"; // NOI18N
-
-            if (listener != null && projectRoot != null) {
-                FileUtil.removeFileChangeListener(listener, new File(projectRoot, buildConfig));
-            }
-            FileUtil.addFileChangeListener(listener, new File(newProjectRoot, buildConfig));
             projectRoot = newProjectRoot;
         }
-
 
         buildSettingsInstance = loadBuildSettings();
         LOGGER.log(Level.INFO, "Took {0} ms to load BuildSettings for {1}",
                 new Object[] {(System.currentTimeMillis() - start), project.getProjectDirectory().getNameExt()});
-    }
 
-    public void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
-    }
-
-    public void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
+        loadLocalPlugins();
+        loadProjectPluginsDir();
+        loadGlobalPluginsDir();
     }
 
     public synchronized File getProjectPluginsDir() {
-        load();
-
-        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
-            return getProjectPluginsDir11();
-        }
-        return getProjectPluginsDir10();
+        return projectPluginsDir;
     }
 
+    private synchronized void loadProjectPluginsDir() {
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
+            projectPluginsDir = getProjectPluginsDir11();
+        }
+        projectPluginsDir = getProjectPluginsDir10();
+    }
+    
     private File getProjectPluginsDir10() {
         assert Thread.holdsLock(this);
         return new File(projectRoot, "plugins"); // NOI18N
@@ -174,15 +176,17 @@ public class BuildConfig {
         return null;
     }
 
-    public synchronized File getGlobalPluginsDir() {
-        load();
-
-        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
-            return getGlobalPluginsDir11();
-        }
-        return getGlobalPluginsDir10();
+    public synchronized File getGlobalPluginDir() {
+        return globalPluginsDir;
     }
 
+    private synchronized void loadGlobalPluginsDir() {
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
+            globalPluginsDir = getGlobalPluginsDir11();
+        }
+        globalPluginsDir = getGlobalPluginsDir10();
+    }
+    
     private File getGlobalPluginsDir10() {
         assert Thread.holdsLock(this);
         return null;
@@ -222,12 +226,14 @@ public class BuildConfig {
     }
 
     public synchronized List<GrailsPlugin> getLocalPlugins() {
-        load();
+        return Collections.unmodifiableList(localPlugins);
+    }
 
+    private synchronized void loadLocalPlugins() {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
-            return getLocalPlugins11();
+            localPlugins = getLocalPlugins11();
         }
-        return getLocalPlugins10();
+        localPlugins = getLocalPlugins10();
     }
 
     private List<GrailsPlugin> getLocalPlugins10() {
@@ -309,38 +315,5 @@ public class BuildConfig {
             LOGGER.log(Level.FINE, null, ex);
         }
         return null;
-    }
-
-    private class BuildConfigListener implements FileChangeListener {
-
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-            // noop
-        }
-
-        public void fileChanged(FileEvent fe) {
-            fireChange();
-        }
-
-        public void fileDataCreated(FileEvent fe) {
-            fireChange();
-        }
-
-        public void fileDeleted(FileEvent fe) {
-            fireChange();
-        }
-
-        public void fileFolderCreated(FileEvent fe) {
-            fireChange();
-        }
-
-        public void fileRenamed(FileRenameEvent fe) {
-            fireChange();
-        }
-
-        public void fireChange() {
-            reload();
-            changeSupport.fireChange();
-        }
-
     }
 }

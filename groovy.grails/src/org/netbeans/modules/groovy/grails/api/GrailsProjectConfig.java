@@ -41,14 +41,10 @@ package org.netbeans.modules.groovy.grails.api;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
-import java.util.Map;
-import java.util.WeakHashMap;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.grails.RuntimeHelper;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 
 
@@ -82,11 +78,11 @@ public final class GrailsProjectConfig {
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-    private static final Map<Project, GrailsProjectConfig> CONFIG_CACHE = new WeakHashMap<Project, GrailsProjectConfig>();
+    //private static final Map<Project, GrailsProjectConfig> CONFIG_CACHE = new WeakHashMap<Project, GrailsProjectConfig>();
 
     private static final JavaPlatformManager PLATFORM_MANAGER  = JavaPlatformManager.getDefault();
 
-    private GrailsProjectConfig(Project prj) {
+    public GrailsProjectConfig(Project prj) {
         this.prj = prj;
     }
 
@@ -97,12 +93,16 @@ public final class GrailsProjectConfig {
      * @return the configuration of the given project
      */
     public static synchronized GrailsProjectConfig forProject(Project project) {
-        GrailsProjectConfig config = CONFIG_CACHE.get(project);
-        if (config == null) {
-            config = new GrailsProjectConfig(project);
-            CONFIG_CACHE.put(project, config);
-        }
+        GrailsProjectConfig config = project.getLookup().lookup(GrailsProjectConfig.class);
+
         return config;
+
+//        GrailsProjectConfig config = CONFIG_CACHE.get(project);
+//        if (config == null) {
+//            config = new GrailsProjectConfig(project);
+//            CONFIG_CACHE.put(project, config);
+//        }
+//        return config;
     }
 
     /**
