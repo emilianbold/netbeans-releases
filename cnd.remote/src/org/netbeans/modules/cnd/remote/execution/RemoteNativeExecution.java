@@ -75,8 +75,7 @@ public class RemoteNativeExecution extends NativeExecution {
             Reader in,
             boolean unbuffer) throws IOException, InterruptedException {
         RemoteNativeExecutionSupport support = null;
-        if (host != null && host.length() > 0) {
-            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getExecutionEnvironment(host);
+        if (execEnv != null ) {
             support = new RemoteNativeExecutionSupport(execEnv, runDirFile, executable, arguments, envp, out, in);
         }
         return support == null ? -1 : support.getExitStatus();

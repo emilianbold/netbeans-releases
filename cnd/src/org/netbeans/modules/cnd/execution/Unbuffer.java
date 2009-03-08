@@ -44,12 +44,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.dwarfdump.FileMagic;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -63,12 +63,12 @@ public class Unbuffer {
     private Unbuffer() {
     }
 
-    public static Collection<String> getUnbufferEnvironment(String hkey, String executable) {
+    public static Collection<String> getUnbufferEnvironment(ExecutionEnvironment execEnv, String executable) {
         ArrayList<String> res = new ArrayList<String>(2);
         boolean is64bits = Unbuffer.is64BitExecutable(executable);
-        String unbufferPath = Unbuffer.getPath(hkey, is64bits);
+        String unbufferPath = Unbuffer.getPath(execEnv, is64bits);
         if (unbufferPath != null) {
-            int platformType  = (hkey == null) ? PlatformInfo.localhost().getPlatform() : PlatformInfo.getDefault(hkey).getPlatform();
+            int platformType  = (execEnv == null) ? PlatformInfo.localhost().getPlatform() : PlatformInfo.getDefault(execEnv).getPlatform();
             switch (platformType) {
                 case PlatformTypes.PLATFORM_MACOSX:
                     res.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
@@ -88,14 +88,14 @@ public class Unbuffer {
         return res;
     }
 
-    private static String getPath(String hkey, boolean is64bits) {
+    private static String getPath(ExecutionEnvironment execEnv, boolean is64bits) {
         if (disabled) {
             return null;
         }
-        if (hkey == null || CompilerSetManager.LOCALHOST.equals(hkey)) {
+        if (execEnv == null || execEnv.isLocal()) {
             return Unbuffer.getLocalPath(is64bits);
         } else {
-            return Unbuffer.getRemotePath(hkey, is64bits);
+            return Unbuffer.getRemotePath(execEnv, is64bits);
         }
     }
 
@@ -125,16 +125,16 @@ public class Unbuffer {
         }
     }
 
-    private static String getRemotePath(String host, boolean is64bits) {
-        String path = HostInfoProvider.getDefault().getLibDir(host);
+    private static String getRemotePath(ExecutionEnvironment execEnv, boolean is64bits) {
+        String path = HostInfoProvider.getDefault().getLibDir(execEnv);
         if (path == null) {
             return null;
         }
-        String unbufferName = getLibName(PlatformInfo.getDefault(host).getPlatform(), is64bits);
+        String unbufferName = getLibName(PlatformInfo.getDefault(execEnv).getPlatform(), is64bits);
         if (unbufferName != null) {
             path += unbufferName;
             // check file existence
-            if (HostInfoProvider.getDefault().fileExists(host, path)) {
+            if (HostInfoProvider.getDefault().fileExists(execEnv, path)) {
                 return path;
             } else {
                 log.warning("unbuffer: " + path + " does not exist");

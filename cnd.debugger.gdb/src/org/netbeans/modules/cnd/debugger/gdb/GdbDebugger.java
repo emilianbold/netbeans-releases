@@ -71,6 +71,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
@@ -351,7 +352,7 @@ public class GdbDebugger implements PropertyChangeListener {
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    for (String envEntry : Unbuffer.getUnbufferEnvironment(hkey, pae.getExecutable())) {
+                    for (String envEntry : Unbuffer.getUnbufferEnvironment(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), pae.getExecutable())) {
                         gdb.gdb_set("environment", envEntry); // NOI18N
                     }
                     // disabled on windows because of the issue 148204

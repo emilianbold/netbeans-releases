@@ -1150,15 +1150,18 @@ public class CompilerSetManager {
         return null;
     }
 
+    /** TODO: deprecate and remove */
     public static String getDefaultDevelopmentHost() {
+        return ExecutionEnvironmentFactory.getHostKey(getDefaultExecutionEnvironment());
+    }
+
+    public static ExecutionEnvironment getDefaultExecutionEnvironment() {
         ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-        String host;
         if (registry == null) {
-            host = CompilerSetManager.LOCALHOST;
+            return ExecutionEnvironmentFactory.getLocalExecutionEnvironment();
         } else {
-            host = registry.getDefaultRecord().getName();
+            return registry.getDefaultRecord().getExecutionEnvironment();
         }
-        return host;
     }
 
     /**
