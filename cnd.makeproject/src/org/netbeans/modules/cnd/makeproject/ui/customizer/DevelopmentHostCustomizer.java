@@ -98,7 +98,7 @@ public class DevelopmentHostCustomizer extends JOptionPane implements VetoableCh
      */
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         if (!dhconf.isOnline()) {
-            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getExecutionEnvironment(dhconf.getName());
+            ExecutionEnvironment execEnv = dhconf.getExecutionEnvironment();
             ServerList registry = Lookup.getDefault().lookup(ServerList.class);
             assert registry != null;
             final ServerRecord record = registry.get(execEnv);

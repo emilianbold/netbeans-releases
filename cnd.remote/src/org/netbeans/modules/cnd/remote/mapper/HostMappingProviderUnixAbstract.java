@@ -49,8 +49,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.remote.support.RunFacade;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 
 /**
@@ -63,14 +63,14 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
 
     protected abstract String fetchPath(String[] values);
 
-    public Map<String, String> findMappings(String hkey, String otherHkey) {
+    public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
         Map<String, String> mappings = new HashMap<String, String>();
-        boolean localhost = RemoteUtils.isLocalhost(hkey);
-        String hostName = localhost ? getLocalHostName() : RemoteUtils.getHostName(hkey);
+        boolean localhost = execEnv.isLocal();
+        String hostName = localhost ? getLocalHostName() : execEnv.getHost();
         if (hostName != null) {
-            RunFacade runner = RunFacade.getInstance(hkey);
+            RunFacade runner = RunFacade.getInstance(execEnv);
             if (runner.run(getShareCommand())) { //NOI18N
-                List<String> paths = parseOutput(hkey, new StringReader(runner.getOutput()));
+                List<String> paths = parseOutput(execEnv, new StringReader(runner.getOutput()));
                 for (String path : paths) {
                     assert path != null && path.length() > 0 && path.charAt(0) == '/';
                     String netPath = NET + hostName + path;
@@ -95,13 +95,13 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
      * @param outputReader
      * @return
      */
-    private List<String> parseOutput(String hkey, Reader outputReader) {
+    private List<String> parseOutput(ExecutionEnvironment execEnv, Reader outputReader) {
         List<String> paths = new ArrayList<String>();
         try {
             BufferedReader reader = new BufferedReader(outputReader);
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 String path = fetchPath(pattern.split(line));
-                if (path != null && HostInfoProvider.getDefault().fileExists(hkey, path)) {
+                if (path != null && HostInfoProvider.getDefault().fileExists(execEnv, path)) {
                     paths.add(path); // NOI18N
                 }
             }

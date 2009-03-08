@@ -41,7 +41,9 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -77,6 +79,10 @@ public class DevelopmentHostConfiguration {
         return names[value];
     }
 
+    public ExecutionEnvironment getExecutionEnvironment() {
+        return ExecutionEnvironmentFactory.getExecutionEnvironment(getName());
+    }
+
     public String getDisplayName(boolean displayIfNotFound) {
         String out = names[value];
         if (displayIfNotFound && !isOnline()) {
@@ -88,7 +94,7 @@ public class DevelopmentHostConfiguration {
     public boolean isOnline() {
         // localhost is always STATE_COMPLETE so isLocalhost() is assumed
         // keeping track of online status takes more efforts and can miss sometimes
-        return !CompilerSetManager.getDefault(getName()).isUninitialized();
+        return !CompilerSetManager.getDefault(getExecutionEnvironment()).isUninitialized();
     }
 
     public int getValue() {
@@ -193,6 +199,6 @@ public class DevelopmentHostConfiguration {
     }
 
     public boolean isLocalhost() {
-        return CompilerSetManager.LOCALHOST.equals(getName());
+        return getExecutionEnvironment().isLocal();
     }
 }
