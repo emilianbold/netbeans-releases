@@ -70,6 +70,9 @@ public interface Constants {
     /**
      * Breakpoint Enabled column id.
      *
+     * @deprecated Do not use any more, enabled column was removed from Breakpoints view.
+     * Replaced with {@link org.netbeans.spi.viewmodel.CheckNodeModel}
+     *
      * @see org.netbeans.spi.viewmodel.ColumnModel#getID
      * @see org.netbeans.spi.viewmodel.ColumnModel#getPreviuosColumnID
      * @see org.netbeans.spi.viewmodel.ColumnModel#getNextColumnID
