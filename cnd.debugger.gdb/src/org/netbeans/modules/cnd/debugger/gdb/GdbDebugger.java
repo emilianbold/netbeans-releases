@@ -96,6 +96,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -193,7 +194,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private int shareToken;
     private final Disassembly disassembly;
     private GdbBreakpoint currentBreakpoint = null;
-    private String hkey;
+    private ExecutionEnvironment execEnv;
     private int platform;
     private PathMap pathMap;
     private Map<String, ShareInfo> shareTab;
@@ -222,7 +223,7 @@ public class GdbDebugger implements PropertyChangeListener {
         threadsViewInit();
         this.disassembly = new Disassembly(this);
         shareTab = null;
-        hkey = CompilerSetManager.LOCALHOST;
+        execEnv = ExecutionEnvironmentFactory.getLocalExecutionEnvironment();
     }
 
     public ContextProvider getLookup() {
@@ -240,8 +241,8 @@ public class GdbDebugger implements PropertyChangeListener {
         setStarting();
         try {
             pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
-            hkey = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getName();
-            pathMap = HostInfoProvider.getDefault().getMapper(hkey);
+            execEnv = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getExecutionEnvironment();
+            pathMap = HostInfoProvider.getDefault().getMapper(execEnv);
             iotab = lookupProvider.lookupFirst(null, InputOutput.class);
             if (iotab != null) {
                 iotab.setErrSeparated(false);
@@ -249,7 +250,7 @@ public class GdbDebugger implements PropertyChangeListener {
             runDirectory = pathMap.getRemotePath(pae.getProfile().getRunDirectory().replace("\\", "/") + "/");  // NOI18N
             baseDir = pae.getConfiguration().getBaseDir().replace("\\", "/");  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
-            conType = hkey.equals(CompilerSetManager.LOCALHOST) ? pae.getProfile().getConsoleType().getValue() : RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+            conType = execEnv.isLocal() ? pae.getProfile().getConsoleType().getValue() : RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
             platform = ((MakeConfiguration) pae.getConfiguration()).getPlatform().getValue();
             if (platform != PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW && pae.getType() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
@@ -352,12 +353,12 @@ public class GdbDebugger implements PropertyChangeListener {
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    for (String envEntry : Unbuffer.getUnbufferEnvironment(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), pae.getExecutable())) {
+                    for (String envEntry : Unbuffer.getUnbufferEnvironment(execEnv, pae.getExecutable())) {
                         gdb.gdb_set("environment", envEntry); // NOI18N
                     }
                     // disabled on windows because of the issue 148204
                     if (platform != PlatformTypes.PLATFORM_WINDOWS) {
-                        ioProxy = IOProxy.create(hkey, iotab);
+                        ioProxy = IOProxy.create(execEnv, iotab);
                     }
                 }
 
@@ -389,7 +390,7 @@ public class GdbDebugger implements PropertyChangeListener {
                             inRedir = " < " + inFile + " > " + outFile + " 2> " + outFile; // NOI18N
                         } else {
                             // csh (tcsh also) does not support 2>&1 stream redirection, see issue 147872
-                            String shell = HostInfoProvider.getDefault().getEnv(hkey).get("SHELL"); // NOI18N
+                            String shell = HostInfoProvider.getDefault().getEnv(execEnv).get("SHELL"); // NOI18N
                             if (shell != null && shell.endsWith("csh")) { // NOI18N
                                 inRedir = " < " + inFile + " >& " + outFile; // NOI18N
                             } else {
@@ -489,8 +490,8 @@ public class GdbDebugger implements PropertyChangeListener {
         return res.replace('\\', '/');
     }
 
-    public String getHostKey() {
-        return hkey;
+    public ExecutionEnvironment getHostExecutionEnvironment() {
+        return execEnv;
     }
 
     public int getPlatform() {

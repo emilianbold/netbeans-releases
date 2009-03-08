@@ -561,7 +561,7 @@ public class MakeActionProvider implements ActionProvider {
                         }
                         String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
                         if (userPath == null) {
-                            userPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get(pi.getPathName());
+                            userPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
                         }
                         path = path + ";" + userPath; // NOI18N
                         runProfile.getEnvironment().putenv(pi.getPathName(), path);
@@ -592,7 +592,7 @@ public class MakeActionProvider implements ActionProvider {
                             runProfile = conf.getProfile().clone();
                             String extPath = runProfile.getEnvironment().getenv("DYLD_LIBRARY_PATH"); // NOI18N
                             if (extPath == null) {
-                                extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DYLD_LIBRARY_PATH"); // NOI18N
+                                extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
                             }
                             if (extPath != null) {
                                 path.append(":" + extPath); // NOI18N
@@ -617,7 +617,7 @@ public class MakeActionProvider implements ActionProvider {
                             runProfile = conf.getProfile().clone();
                             String extPath = runProfile.getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
                             if (extPath == null) {
-                                extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("LD_LIBRARY_PATH"); // NOI18N
+                                extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
                             }
                             if (extPath != null) {
                                 path.append(":" + extPath); // NOI18N
@@ -631,7 +631,7 @@ public class MakeActionProvider implements ActionProvider {
                             platform == Platform.PLATFORM_SOLARIS_SPARC ||
                             platform == Platform.PLATFORM_LINUX) {
                         // Make sure DISPLAY variable has been set
-                        if (HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
+                        if (HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null) {
                                 runProfile = conf.getProfile().clone();

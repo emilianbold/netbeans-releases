@@ -54,37 +54,13 @@ public abstract class HostInfoProvider {
 
     /**
      * This function returns path mapper for the host stated by hkey
-     * TODO: deprecate and remove
-     */
-    public final PathMap getMapper(String hkey) {
-        return getMapper(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
-    }
-
-    /**
-     * This function returns path mapper for the host stated by hkey
      */
     public abstract PathMap getMapper(ExecutionEnvironment execEnv);
 
     /**
      * This function returns PlatformTypes constant representing remote host platform
-     * TODO: deprecate and remove
-     */
-    public final int getPlatform(String hkey) {
-        return getPlatform(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
-    }
-
-    /**
-     * This function returns PlatformTypes constant representing remote host platform
      */
     public abstract int getPlatform(ExecutionEnvironment execEnv);
-
-    /**
-     * This function returns system environment for the host stated by hkey
-     * TODO: deprecate and remove
-     */
-    public final Map<String, String> getEnv(String hkey) {
-        return getEnv(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
-    }
 
     /**
      * This function returns system environment for the host stated by hkey
@@ -104,14 +80,6 @@ public abstract class HostInfoProvider {
      */
     public abstract boolean fileExists(ExecutionEnvironment execEnv, String path);
     
-    /**
-     * Returns dir where libraries are located
-     * TODO: deprecate and remove
-     */
-    public final String getLibDir(String hkey) {
-        return getLibDir(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
-    }
-
     /**
      * Returns dir where libraries are located
      */
