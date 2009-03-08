@@ -327,9 +327,9 @@ public class BugzillaRepository extends Repository {
 
         public boolean isValid() {
             return !panel.nameField.getText().trim().equals("") &&
-                   !panel.urlField.getText().trim().equals("") &&
+                   !panel.urlField.getText().trim().equals(""); /* &&
                    !panel.userField.getText().trim().equals("") &&
-                   !new String(panel.psswdField.getPassword()).equals("");
+                   !new String(panel.psswdField.getPassword()).equals("");*/
         }
 
         @Override
