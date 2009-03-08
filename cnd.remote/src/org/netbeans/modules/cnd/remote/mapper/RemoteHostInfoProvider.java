@@ -143,14 +143,14 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
         }
     }
 
-    private final static Map<ExecutionEnvironment, RemoteHostInfo> hkey2hostInfo =
+    private final static Map<ExecutionEnvironment, RemoteHostInfo> env2hostinfo =
             new HashMap<ExecutionEnvironment, RemoteHostInfo>();
 
     public static synchronized RemoteHostInfo getHostInfo(ExecutionEnvironment execEnv) {
-        RemoteHostInfo hi = hkey2hostInfo.get(execEnv);
+        RemoteHostInfo hi = env2hostinfo.get(execEnv);
         if (hi == null) {
             hi = new RemoteHostInfo(execEnv);
-            hkey2hostInfo.put(execEnv, hi);
+            env2hostinfo.put(execEnv, hi);
         }
         return hi;
     }
