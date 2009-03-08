@@ -44,10 +44,8 @@ package org.netbeans.modules.bugtracking.ui.selectors;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,14 +61,9 @@ public class RepositorySelector {
     }
 
     public Repository create() {
-            String title = NbBundle.getMessage(ConnectorPanel.class, "CTL_ConnectorTitle");
-            String cont = NbBundle.getMessage(ConnectorPanel.class, "CTL_OK");
-            if (!BugtrackingUtil.show(connectorPanel, title, cont)) {
-                return null;
-            }
-            BugtrackingConnector c = (BugtrackingConnector) connectorPanel.connectorCbo.getSelectedItem();
-            Repository repo = connectorPanel.getRepository();
-            // XXX check for duplicate repositories
+        connectorPanel.open();
+        Repository repo = connectorPanel.getRepository();
+        // XXX check for duplicate repositories
         try {
             repo.getController().applyChanges();
         } catch (IOException ex) {
