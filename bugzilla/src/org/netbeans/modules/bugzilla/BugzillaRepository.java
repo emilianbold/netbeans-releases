@@ -72,6 +72,8 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.IssueCache;
+import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
+import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.Cancellable;
@@ -91,6 +93,7 @@ public class BugzillaRepository extends Repository {
     private Controller controller;
     private Set<Query> queries = null;
     private IssueCache cache;
+    private BugzillaExecutor executor;
 
     BugzillaRepository() { }
 
@@ -286,7 +289,14 @@ public class BugzillaRepository extends Repository {
     public Image getIcon() {
         return null;
     }
-    
+
+    public BugzillaExecutor getExecutor() {
+        if(executor == null) {
+            executor = new BugzillaExecutor(this);
+        }
+        return executor;
+    }
+
     private class Controller extends BugtrackingController implements DocumentListener, ActionListener {
         private RepositoryPanel panel = new RepositoryPanel();
 
@@ -381,14 +391,8 @@ public class BugzillaRepository extends Repository {
                                 panel.urlField.getText(),
                                 panel.userField.getText(),
                                 new String(panel.psswdField.getPassword()));
-                        try {
-                            BugzillaClient client = Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(taskRepo, new NullProgressMonitor());
-                            client.validate(new NullProgressMonitor());
-                        } catch (IOException ex) {
-                            Bugzilla.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
-                        } catch (CoreException ex) {
-                            Bugzilla.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
-                        }
+                        ValidateCommand cmd = new ValidateCommand(taskRepo);
+                        getExecutor().execute(cmd);
                     } finally {
                         handle.finish();
                         panel.progressPanel.setVisible(false);
