@@ -86,8 +86,8 @@ import org.openide.util.Lookup;
         if (CompilerSetManager.LOCALHOST.equals(tool.getHostKey())) {
             // we're dealing with a local toolchain
             File file = new File(path);
-            if (!file.exists() && new File(path+".lnk").exists()){
-                String resolved = LinkSupport.getOriginalFile(path+".lnk");
+            if (!file.exists() && new File(path+".lnk").exists()){ // NOI18N
+                String resolved = LinkSupport.getOriginalFile(path+".lnk"); // NOI18N
                 if (resolved != null) {
                     path = resolved;
                     file = new File(path);

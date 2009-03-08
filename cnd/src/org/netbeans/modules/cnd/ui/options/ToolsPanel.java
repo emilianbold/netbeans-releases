@@ -413,7 +413,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             File file = new File(txt);
             boolean ok = false;
             if (Utilities.isWindows()){
-                if (txt.endsWith(".lnk")) {
+                if (txt.endsWith(".lnk")) { // NOI18N
                     ok = false;
                 } else {
                     ok = (file.exists() || new File(txt+".lnk").exists() )&& !file.isDirectory(); // NOI18N
@@ -1688,7 +1688,7 @@ private boolean selectCompiler(JTextField tf, Tool tool) {
     }
     String aPath = fileChooser.getSelectedFile().getPath();
     if (Utilities.isWindows()){
-        if (aPath.endsWith(".lnk")) {
+        if (aPath.endsWith(".lnk")) { // NOI18N
             aPath = aPath.substring(0, aPath.length()-4);
         }
     }
@@ -1708,7 +1708,7 @@ private boolean selectTool(JTextField tf) {
     }
     String aPath = fileChooser.getSelectedFile().getPath();
     if (Utilities.isWindows()){
-        if (aPath.endsWith(".lnk")) {
+        if (aPath.endsWith(".lnk")) { // NOI18N
             aPath = aPath.substring(0, aPath.length()-4);
         }
     }

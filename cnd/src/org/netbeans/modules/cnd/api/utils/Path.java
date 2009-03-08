@@ -193,7 +193,7 @@ public final class Path {
                 if (file.exists()) {
                     return file.getAbsolutePath();
                 } else {
-                    if (Utilities.isWindows() && cmd.endsWith(".exe")){
+                    if (Utilities.isWindows() && cmd.endsWith(".exe")){ // NOI18N
                         File file2 = new File(dir, cmd+".lnk"); // NOI18N
                         if (file2.exists()) {
                             return file.getAbsolutePath();
