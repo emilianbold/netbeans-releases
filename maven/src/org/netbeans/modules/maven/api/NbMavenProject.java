@@ -341,7 +341,7 @@ public final class NbMavenProject {
                 for (int i = 0; i < arts.size(); i++) {
                     contribs[i] = AggregateProgressFactory.createProgressContributor("multi-" + i); //NOI18N
                 }
-                String label = javadoc ? NbBundle.getMessage(DependenciesNode.class, "Progress_Javadoc") : NbBundle.getMessage(DependenciesNode.class, "Progress_Source");
+                String label = javadoc ? NbBundle.getMessage(NbMavenProject.class, "Progress_Javadoc") : NbBundle.getMessage(NbMavenProject.class, "Progress_Source");
                 AggregateProgressHandle handle = AggregateProgressFactory.createHandle(label,
                         contribs, null, null);
                 handle.start();
@@ -381,7 +381,7 @@ public final class NbMavenProject {
                     art.getVersion(),
                     art.getType(),
                     "javadoc"); //NOI18N
-                progress.progress(NbBundle.getMessage(DependencyNode.class, "MSG_Checking_Javadoc", art.getId()), 1);
+                progress.progress(NbBundle.getMessage(NbMavenProject.class, "MSG_Checking_Javadoc", art.getId()), 1);
                 online.resolve(javadoc, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
             } else {
                 Artifact sources = project.getEmbedder().createArtifactWithClassifier(
@@ -390,7 +390,7 @@ public final class NbMavenProject {
                     art.getVersion(),
                     art.getType(),
                     "sources"); //NOI18N
-                progress.progress(NbBundle.getMessage(DependencyNode.class, "MSG_Checking_Sources",art.getId()), 1);
+                progress.progress(NbBundle.getMessage(NbMavenProject.class, "MSG_Checking_Sources",art.getId()), 1);
                 online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
             }
         } catch (ArtifactNotFoundException ex) {
