@@ -96,22 +96,22 @@ public class ExecutionEnvironmentFactory {
     /**
      * That's for transition period only
      * TODO: deprecate, then remove as soone as switching to o.n.m.nativeexecution is complete
-     * @param hkey key in the form user@host
+     * @param hostKey key in the form user@host
      */
-    public static ExecutionEnvironment getExecutionEnvironment(String hkey) {
+    public static ExecutionEnvironment getExecutionEnvironment(String hostKey) {
         // TODO: remove this check and refactor clients to use getLocal() instead
-        if ("localhost".equals(hkey) || "127.0.0.1".equals(hkey)) { //NOI18N
+        if ("localhost".equals(hostKey) || "127.0.0.1".equals(hostKey)) { //NOI18N
             return LOCAL;
         }
         String user;
         String host;
-        int pos = hkey.indexOf('@', 0); //NOI18N
+        int pos = hostKey.indexOf('@', 0); //NOI18N
         if (pos < 0) {
             user = "";
-            host = hkey;
+            host = hostKey;
         } else {
-            user = hkey.substring(0, pos);
-            host = hkey.substring(pos + 1);
+            user = hostKey.substring(0, pos);
+            host = hostKey.substring(pos + 1);
         }
         return getExecutionEnvironment(user, host);
     }
