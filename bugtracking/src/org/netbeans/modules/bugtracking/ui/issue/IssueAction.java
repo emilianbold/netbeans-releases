@@ -100,13 +100,10 @@ public class IssueAction extends SystemAction {
         });
     }
 
-    public static void closeQuery(final Query query) {
+    public static void closeIssue(final Issue issue) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                TopComponent tc = null;
-                if(query != null) {
-                    tc = WindowManager.getDefault().findTopComponent(query.getDisplayName());
-                }
+                IssueTopComponent tc = IssueTopComponent.find(issue);
                 if(tc != null) {
                     tc.close();
                 }
