@@ -19,10 +19,8 @@
 
 package org.netbeans.modules.bpel.debugger.ui.breakpoint;
 
-import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.bpel.debugger.api.breakpoints.BpelBreakpoint;
 
@@ -30,7 +28,7 @@ import org.netbeans.modules.bpel.debugger.api.breakpoints.BpelBreakpoint;
  * @author Vladimir Yaroslavskiy
  * @author Alexander Zgursky
  */
-abstract class BpelBreakpointView implements NodeModel, TableModel, Constants {
+abstract class BpelBreakpointView implements NodeModel {
     
     public static final String BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpoint";
@@ -65,47 +63,4 @@ abstract class BpelBreakpointView implements NodeModel, TableModel, Constants {
     public void addModelListener(ModelListener listener) {}
     public void removeModelListener(ModelListener listener) {}
     
-    // TableModel ---------------------------------------------------
-    
-    public Object getValueAt(Object object, String column)
-    throws UnknownTypeException {
-        if ( !(object instanceof BpelBreakpoint)) {
-            throw new UnknownTypeException(object);
-        }
-        BpelBreakpoint breakpoint = (BpelBreakpoint) object;
-        
-        if (column.equals(BREAKPOINT_ENABLED_COLUMN_ID)) {
-            return Boolean.valueOf(breakpoint.isEnabled());
-        }
-        throw new UnknownTypeException(object);
-    }
-    
-    public void setValueAt(Object object, String column, Object value)
-    throws UnknownTypeException {
-        if ( !(object instanceof BpelBreakpoint)) {
-            throw new UnknownTypeException(object);
-        }
-        BpelBreakpoint breakpoint = (BpelBreakpoint) object;
-        
-        if (column.equals(BREAKPOINT_ENABLED_COLUMN_ID)) {
-            if (((Boolean) value).equals(Boolean.TRUE)) {
-                breakpoint.enable();
-            } else {
-                breakpoint.disable();
-            }
-        }
-        throw new UnknownTypeException(object);
-    }
-    
-    public boolean isReadOnly(Object object, String column)
-            throws UnknownTypeException
-    {
-        if ( !(object instanceof BpelBreakpoint)) {
-            throw new UnknownTypeException(object);
-        }
-        if (column.equals(BREAKPOINT_ENABLED_COLUMN_ID)) {
-            return false;
-        }
-        throw new UnknownTypeException(object);
-    }
 }

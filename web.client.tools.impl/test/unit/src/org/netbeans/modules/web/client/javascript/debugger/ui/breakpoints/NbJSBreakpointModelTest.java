@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.web.client.javascript.debugger.ui.NbJSDUITestBase;
-import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -194,7 +193,9 @@ public class NbJSBreakpointModelTest extends NbJSDUITestBase {
         NbJSBreakpoint breakpoint = NbJSBreakpointManager.addBreakpoint(line);
         
         
-        /* Testing Breakpoint Enabled Column ID */
+        // TODO: Instead of BREAKPOINT_ENABLED_COLUMN_ID, which was removed,
+        //       write test for RESOLVED_LOCATION_COLUMN_ID instead
+        /* Testing Breakpoint Enabled Column ID *
         String columnID = Constants.BREAKPOINT_ENABLED_COLUMN_ID;
         NbJSBreakpointModel instance = new NbJSBreakpointModel();
         Object expResult = Boolean.valueOf(true);
@@ -205,7 +206,7 @@ public class NbJSBreakpointModelTest extends NbJSDUITestBase {
         Object expResult2 = Boolean.valueOf(false);
         Object result2 = instance.getValueAt(breakpoint, columnID);
         assertEquals(expResult2, result2);
-        
+        */
     }
 
     /**
@@ -218,12 +219,15 @@ public class NbJSBreakpointModelTest extends NbJSDUITestBase {
         Line line = createDummyLine(jsFO, 4);
         NbJSBreakpoint breakpoint = NbJSBreakpointManager.addBreakpoint(line);
         
-        /* Testing Breakpoint Enabled Column ID */
+        // TODO: Instead of BREAKPOINT_ENABLED_COLUMN_ID, which was removed,
+        //       write test for RESOLVED_LOCATION_COLUMN_ID instead
+        /* Testing Breakpoint Enabled Column ID *
         String columnID = Constants.BREAKPOINT_ENABLED_COLUMN_ID;
         NbJSBreakpointModel instance = new NbJSBreakpointModel();
         boolean expResult = false;
         boolean result = instance.isReadOnly(breakpoint, columnID);
         assertEquals(expResult, result);
+         */
     }
 
     /**
@@ -237,7 +241,9 @@ public class NbJSBreakpointModelTest extends NbJSDUITestBase {
         Line line = createDummyLine(jsFO, 4);
         NbJSBreakpoint breakpoint = NbJSBreakpointManager.addBreakpoint(line);
         
-        /* Testing Breakpoint Enabled Column ID */
+        // TODO: Instead of BREAKPOINT_ENABLED_COLUMN_ID, which was removed,
+        //       write test for RESOLVED_LOCATION_COLUMN_ID instead
+        /* Testing Breakpoint Enabled Column ID *
         String columnID = Constants.BREAKPOINT_ENABLED_COLUMN_ID;
         NbJSBreakpointModel instance = new NbJSBreakpointModel();
         
@@ -265,7 +271,7 @@ public class NbJSBreakpointModelTest extends NbJSDUITestBase {
            hasException = true;
         }
         assertTrue(hasException);
-        
+        */
     }
     
     
