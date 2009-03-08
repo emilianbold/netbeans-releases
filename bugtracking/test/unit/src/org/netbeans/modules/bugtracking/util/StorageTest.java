@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugtracking.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
@@ -177,6 +178,26 @@ public class StorageTest extends NbTestCase {
 
         @Override
         public String getRecentChanges() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getDisplayName() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getTooltip() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void attachPatch(File file, String description) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public BugtrackingController getController() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
