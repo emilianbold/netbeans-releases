@@ -142,31 +142,32 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
             }
         }
     }
-    private final static Map<String, RemoteHostInfo> hkey2hostInfo = new HashMap<String, RemoteHostInfo>();
 
-    public static synchronized RemoteHostInfo getHostInfo(String hkey) {
-        RemoteHostInfo hi = hkey2hostInfo.get(hkey);
+    private final static Map<ExecutionEnvironment, RemoteHostInfo> env2hostinfo =
+            new HashMap<ExecutionEnvironment, RemoteHostInfo>();
+
+    public static synchronized RemoteHostInfo getHostInfo(ExecutionEnvironment execEnv) {
+        RemoteHostInfo hi = env2hostinfo.get(execEnv);
         if (hi == null) {
-            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
             hi = new RemoteHostInfo(execEnv);
-            hkey2hostInfo.put(hkey, hi);
+            env2hostinfo.put(execEnv, hi);
         }
         return hi;
     }
 
     @Override
-    public PathMap getMapper(String hkey) {
-        return getHostInfo(hkey).getMapper();
+    public PathMap getMapper(ExecutionEnvironment execEnv) {
+        return getHostInfo(execEnv).getMapper();
     }
 
     @Override
-    public Map<String, String> getEnv(String hkey) {
-        return getHostInfo(hkey).getEnv();
+    public Map<String, String> getEnv(ExecutionEnvironment execEnv) {
+        return getHostInfo(execEnv).getEnv();
     }
 
     @Override
-    public String getLibDir(String key) {
-        String home = getHostInfo(key).getHome();
+    public String getLibDir(ExecutionEnvironment execEnv) {
+        String home = getHostInfo(execEnv).getHome();
         if (home == null) {
             return null;
         }
@@ -174,15 +175,14 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
     }
 
     @Override
-    public boolean fileExists(String key, String path) {
-        RemoteCommandSupport support = new RemoteCommandSupport(
-                ExecutionEnvironmentFactory.getExecutionEnvironment(key),
+    public boolean fileExists(ExecutionEnvironment execEnv, String path) {
+        RemoteCommandSupport support = new RemoteCommandSupport(execEnv,
                 "test -d \"" + path + "\" -o -f \"" + path + "\""); // NOI18N
         return support.run() == 0;
     }
 
     @Override
-    public int getPlatform(String hkey) {
-        return getHostInfo(hkey).getPlatform();
+    public int getPlatform(ExecutionEnvironment execEnv) {
+        return getHostInfo(execEnv).getPlatform();
     }
 }

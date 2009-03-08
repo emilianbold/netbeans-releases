@@ -52,7 +52,6 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
@@ -96,9 +95,9 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         }
         String binDir = compilerSet.getDirectory();
         //String baseDir = new File(binDir).getParent();
-        String userAndHost = conf.getDevelopmentHost().getName();
-        if (!RemoteUtils.isLocalhost(userAndHost)) {
-            env = new ExecutionEnvironment(RemoteUtils.getUserName(userAndHost), RemoteUtils.getHostName(userAndHost));
+        ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+        if (execEnv.isRemote()) {
+            env = new ExecutionEnvironment(execEnv.getUser(), execEnv.getHost());
         } else {
             env = new ExecutionEnvironment();
         }

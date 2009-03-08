@@ -68,8 +68,8 @@ public class TransportTestCase extends RemoteTestBase {
             RemoteCommandSupport rcs = new RemoteCommandSupport(getExecutionEnvironment(), "echo " + randomString);
             rcs.run();
             rcs.disconnect();
-            assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getHKey() + "' returned " + rcs.getExitStatus();
-            assert randomString.equals( rcs.getOutput().trim()) : "echo command on remote server '" + getHKey() + "' produced unexpected output: " + rcs.getOutput();
+            assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getExecutionEnvironment() + "' returned " + rcs.getExitStatus();
+            assert randomString.equals( rcs.getOutput().trim()) : "echo command on remote server '" + getExecutionEnvironment() + "' produced unexpected output: " + rcs.getOutput();
         } else {
             System.err.println("Remote tests are not configured."); // to test remote runs
         }
@@ -91,14 +91,14 @@ public class TransportTestCase extends RemoteTestBase {
     public void testFileExistst() throws Exception {
         if (canTestRemote()) {
             HostInfoProvider hip = HostInfoProvider.getDefault();
-            assert hip.fileExists(getHKey(), "/etc/passwd");
-            assert !hip.fileExists(getHKey(), "/etc/passwd/noway");
+            assert hip.fileExists(getExecutionEnvironment(), "/etc/passwd");
+            assert !hip.fileExists(getExecutionEnvironment(), "/etc/passwd/noway");
         }
     }
 
     public void testGetEnv() throws Exception {
         if (canTestRemote()) {
-            Map<String, String> env = RemoteHostInfoProvider.getDefault().getEnv(getHKey());
+            Map<String, String> env = RemoteHostInfoProvider.getDefault().getEnv(getExecutionEnvironment());
             System.err.println("Environment: " + env);
             assert env != null && env.size() > 0;
             assert env.containsKey("PATH") || env.containsKey("Path") || env.containsKey("path");
@@ -123,7 +123,7 @@ public class TransportTestCase extends RemoteTestBase {
             String remoteFile = "/tmp/" + localFile.getName(); //NOI18N
             rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
             HostInfoProvider hip = HostInfoProvider.getDefault();
-            assert hip.fileExists(getHKey(), remoteFile);
+            assert hip.fileExists(getExecutionEnvironment(), remoteFile);
             RemoteCommandSupport rcs2 = new RemoteCommandSupport(getExecutionEnvironment(), "cat " + remoteFile);
             assert rcs2.run() == 0;
             assert rcs2.getOutput().equals(sb.toString());

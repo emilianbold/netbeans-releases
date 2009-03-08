@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -77,7 +77,7 @@ import org.openide.windows.OutputWriter;
 
 public class OutputWindowWriter extends Writer {
 
-    private final String hkey;
+    private final ExecutionEnvironment execEnv;
     private final OutputWriter delegate;
     private final StringBuffer buffer;
     private final boolean parseOutputForErrors;
@@ -92,17 +92,17 @@ public class OutputWindowWriter extends Writer {
     private static final Pattern SS_OF_3 = Pattern.compile("\\(.*\\).*:");// NOI18N
     private static final Pattern[] SunStudioOutputFilters = new Pattern[] {SS_OF_1, SS_OF_2, SS_OF_3};
     
-    public OutputWindowWriter(String hkey, OutputWriter delegate, FileObject relativeTo, boolean parseOutputForErrors) {
-        this.hkey = hkey;
+    public OutputWindowWriter(ExecutionEnvironment execEnv, OutputWriter delegate, FileObject relativeTo, boolean parseOutputForErrors) {
+        this.execEnv = execEnv;
         this.delegate = delegate;
 //        this.relativeTo = relativeTo;
         this.parseOutputForErrors = parseOutputForErrors;
         this.buffer = new StringBuffer();
         this.parsers = new ErrorParser[] {
-            new GCCErrorParser(hkey, relativeTo),
-            new SUNErrorParser(hkey, relativeTo),
-            new MSVCErrorParser(hkey, relativeTo),
-            new CWErrorParser(hkey, relativeTo),
+            new GCCErrorParser(execEnv, relativeTo),
+            new SUNErrorParser(execEnv, relativeTo),
+            new MSVCErrorParser(execEnv, relativeTo),
+            new CWErrorParser(execEnv, relativeTo),
         };
         
         ErrorAnnotation.getInstance().detach(null);
@@ -224,11 +224,11 @@ public class OutputWindowWriter extends Writer {
     private static abstract class ErrorParser {
 
         protected FileObject relativeTo;
-        protected final String hkey;
+        protected final ExecutionEnvironment execEnv;
 
-        public ErrorParser(String hkey, FileObject relativeTo) {
+        public ErrorParser(ExecutionEnvironment execEnv, FileObject relativeTo) {
             this.relativeTo = relativeTo;
-            this.hkey = hkey;
+            this.execEnv = execEnv;
         }
         
         public abstract boolean handleLine(OutputWriter delegate, String line, Matcher m) throws IOException;
@@ -244,14 +244,14 @@ public class OutputWindowWriter extends Writer {
                     fileName = fileName.replace('/', '\\');
                 }
             }
-            fileName = HostInfoProvider.getDefault().getMapper(hkey).getLocalPath(fileName);
+            fileName = HostInfoProvider.getDefault().getMapper(execEnv).getLocalPath(fileName);
             File file = FileUtil.normalizeFile(new File(fileName));
             return FileUtil.toFileObject(file);
         }
 
         protected FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {
             if (IpeUtils.isPathAbsolute(relativePath)){ // NOI18N
-                if (!RemoteUtils.isLocalhost(hkey) || Utilities.isWindows()) {
+                if (execEnv.isRemote() || Utilities.isWindows()) {
                     // See IZ 106841 for details.
                     // On Windows the file path for system header files comes in as /usr/lib/abc/def.h
                     // but the real path is something like D:/cygwin/lib/abc/def.h (for Cygwin installed
@@ -267,7 +267,7 @@ public class OutputWindowWriter extends Writer {
                     if (absPath1.startsWith("/usr/lib")) { // NOI18N
                         absPath2 = absPath1.substring(4);
                     }
-                    List<CompilerSet> compilerSets = CompilerSetManager.getDefault(hkey).getCompilerSets();
+                    List<CompilerSet> compilerSets = CompilerSetManager.getDefault(execEnv).getCompilerSets();
                     for (CompilerSet set : compilerSets) {
                         Tool cCompiler = set.getTool(Tool.CCompiler);
                         if (cCompiler != null) {
@@ -330,8 +330,8 @@ public class OutputWindowWriter extends Writer {
         
         private boolean failed;
         
-        public CWErrorParser( String hkey, FileObject relativeTo ) {
-            super(hkey, relativeTo);
+        public CWErrorParser(ExecutionEnvironment execEnv, FileObject relativeTo ) {
+            super(execEnv, relativeTo);
         }
         
         public boolean handleLine( OutputWriter delegate, String line, Matcher m ) throws IOException {
@@ -373,8 +373,8 @@ public class OutputWindowWriter extends Writer {
 
         private boolean failed;
 
-        public MSVCErrorParser( String hkey, FileObject relativeTo ) {
-            super(hkey, relativeTo);
+        public MSVCErrorParser(ExecutionEnvironment execEnv, FileObject relativeTo ) {
+            super(execEnv, relativeTo);
         }
 
         public boolean handleLine(OutputWriter delegate, String line, Matcher m) throws IOException {
@@ -446,8 +446,8 @@ public class OutputWindowWriter extends Writer {
         private boolean failed;
         private boolean isEntered;
         
-        public GCCErrorParser( String hkey, FileObject relativeTo ) {
-            super(hkey, relativeTo);
+        public GCCErrorParser(ExecutionEnvironment execEnv, FileObject relativeTo ) {
+            super(execEnv, relativeTo);
             this.relativesTo.push(relativeTo);
             this.relativesLevel.push(0);
             this.isEntered = false;
@@ -637,8 +637,8 @@ public class OutputWindowWriter extends Writer {
 
     private static final class SUNErrorParser extends ErrorParser {
         
-        public SUNErrorParser( String hkey, FileObject relativeTo ) {
-            super(hkey, relativeTo);
+        public SUNErrorParser(ExecutionEnvironment execEnv, FileObject relativeTo ) {
+            super(execEnv, relativeTo);
         }
         
         public boolean handleLine(OutputWriter delegate, String line, Matcher m) throws IOException {

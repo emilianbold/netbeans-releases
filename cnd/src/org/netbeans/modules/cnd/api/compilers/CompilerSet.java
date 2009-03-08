@@ -310,8 +310,8 @@ public class CompilerSet {
      * @param name The name of the compiler set we want
      * @returns The best fitting compiler set (may be an empty CompilerSet)
      */
-    public static CompilerSet getCompilerSet(String hkey, String name, int platform) {
-        CompilerSet cs = CompilerSetManager.getDefault(hkey).getCompilerSet(CompilerFlavor.toFlavor(name, platform));
+    public static CompilerSet getCompilerSet(ExecutionEnvironment env, String name, int platform) {
+        CompilerSet cs = CompilerSetManager.getDefault(env).getCompilerSet(CompilerFlavor.toFlavor(name, platform));
         if (cs == null) {
             CompilerFlavor flavor = CompilerFlavor.toFlavor(name, platform);
             flavor = flavor == null ? CompilerFlavor.getUnknown(platform) : flavor;
