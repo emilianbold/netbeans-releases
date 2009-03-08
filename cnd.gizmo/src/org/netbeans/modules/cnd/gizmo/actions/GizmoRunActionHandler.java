@@ -59,6 +59,7 @@ import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightS
 import org.netbeans.modules.dlight.api.support.NativeExecutableTarget;
 import org.netbeans.modules.dlight.api.support.NativeExecutableTargetConfiguration;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
@@ -87,10 +88,10 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
                 pae.getProfile().getArgsArray(),
                 createMap(pae.getProfile().getEnvironment().getenvAsPairs()));
         MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
-        String userAndHost = conf.getDevelopmentHost().getName();
-        if (!RemoteUtils.isLocalhost(userAndHost)) {
-            targetConf.setHost(RemoteUtils.getHostName(userAndHost));
-            targetConf.setUser(RemoteUtils.getUserName(userAndHost));
+        ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+        if (execEnv.isRemote()) {
+            targetConf.setHost(execEnv.getHost());
+            targetConf.setUser(execEnv.getUser());
         }
         targetConf.setWorkingDirectory(pae.getProfile().getRunDirectory());
         int consoleType = pae.getProfile().getConsoleType().getValue();

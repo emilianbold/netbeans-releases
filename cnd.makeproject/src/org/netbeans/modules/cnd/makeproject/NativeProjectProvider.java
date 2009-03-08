@@ -375,7 +375,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
         // Check compiler collection. Fire if different (IZ 131825)
         if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName()) ||
-                !oldMConf.getDevelopmentHost().getName().equals(newMConf.getDevelopmentHost().getName())) {
+                !oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
             fireFilesPropertiesChanged(); // firePropertiesChanged(getAllFiles(), true);
             MakeLogicalViewProvider.checkForChangedItems(getMakeConfigurationDescriptor().getProject(), null, null);
             return;

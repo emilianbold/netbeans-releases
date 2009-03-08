@@ -51,7 +51,9 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -66,11 +68,11 @@ public final class PlatformInfo {
 
     private ArrayList<String> list = new ArrayList<String>();
     private String pathName = null;
-    private final String hkey;
+    private final ExecutionEnvironment executionEnvironment;
     private final int platform;
 
-    private PlatformInfo(String hkey, int platform) {
-        this.hkey = hkey;
+    private PlatformInfo(ExecutionEnvironment execEnv, int platform) {
+        this.executionEnvironment = execEnv;
         this.platform = platform;
 
         String path = getEnv().get(getPathName());
@@ -97,13 +99,18 @@ public final class PlatformInfo {
                 list.add("C:/WINDOWS"); // NOI18N
                 list.add("C:/WINDOWS/System32/WBem"); // NOI18N
             } else {
-                System.err.println("PlatformInfo: Path is empty for host " + hkey);
+                System.err.println("PlatformInfo: Path is empty for host " + executionEnvironment);
             }
         }
     }
 
+    /** TODO: deprecate and  */
     public String getHkey() {
-        return hkey;
+        return ExecutionEnvironmentFactory.getHostKey(executionEnvironment);
+    }
+
+    public ExecutionEnvironment getExecutionEnvironment() {
+        return executionEnvironment;
     }
 
     /**
@@ -247,24 +254,24 @@ public final class PlatformInfo {
     }
 
     public boolean isLocalhost() {
-        return RemoteUtils.isLocalhost(hkey);
+        return executionEnvironment.isLocal();
     }
 
     public Map<String, String> getEnv() {
-        return HostInfoProvider.getDefault().getEnv(hkey);
+        return HostInfoProvider.getDefault().getEnv(executionEnvironment);
     }
 
     public boolean fileExists(String path) {
-        return HostInfoProvider.getDefault().fileExists(hkey, path);
+        return HostInfoProvider.getDefault().fileExists(executionEnvironment, path);
     }
 
     public File[] listFiles(File file) {
         //TODO: till API review
-        if (RemoteUtils.isLocalhost(hkey)) {
+        if (executionEnvironment.isLocal()) {
             return file.listFiles();
         } else {
             CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-            if (provider.run(hkey, "ls -A1", null) == 0) { //NOI18N
+            if (provider.run(executionEnvironment, "ls -A1", null) == 0) { //NOI18N
                 String files = provider.getOutput();
                 if (files != null) {
                     BufferedReader bufferedReader = new BufferedReader(new StringReader(files));
@@ -289,42 +296,47 @@ public final class PlatformInfo {
 
     public boolean fileIsDirectory(File file) {
         //TODO: till API review
-        if (RemoteUtils.isLocalhost(hkey)) {
+        if (executionEnvironment.isLocal()) {
             return file.isDirectory();
         } else {
             CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-            return provider.run(hkey, "test -d \"" + file.getPath() + "\"", null) == 0; //NOI18N
+            return provider.run(executionEnvironment, "test -d \"" + file.getPath() + "\"", null) == 0; //NOI18N
         }
     }
 
     public boolean fileIsFile(File file) {
         //TODO: till API review
-        if (RemoteUtils.isLocalhost(hkey)) {
+        if (executionEnvironment.isLocal()) {
             return file.isFile();
         } else {
             CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-            return provider.run(hkey, "test -f \"" + file.getPath() + "\"", null) == 0; //NOI18N
+            return provider.run(executionEnvironment, "test -f \"" + file.getPath() + "\"", null) == 0; //NOI18N
         }
     }
 
     public boolean fileCanRead(File file) {
         //TODO: till API review
-        if (RemoteUtils.isLocalhost(hkey)) {
+        if (executionEnvironment.isLocal()) {
             return file.canRead();
         } else {
             CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-            return provider.run(hkey, "test -r \"" + file.getPath() + "\"", null) == 0; //NOI18N
+            return provider.run(executionEnvironment, "test -r \"" + file.getPath() + "\"", null) == 0; //NOI18N
         }
 
     }
-    private static Map<String, PlatformInfo> map = new HashMap<String, PlatformInfo>();
+    private static Map<ExecutionEnvironment, PlatformInfo> map =
+            new HashMap<ExecutionEnvironment, PlatformInfo>();
 
-    public static synchronized PlatformInfo getDefault(String hkey) {
-        PlatformInfo pi = map.get(hkey);
+    public static PlatformInfo getDefault(String hkey) {
+        return getDefault(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
+    }
+
+    public static synchronized PlatformInfo getDefault(ExecutionEnvironment execEnv) {
+        PlatformInfo pi = map.get(execEnv);
         if (pi == null) {
-            int thePlatform = HostInfoProvider.getDefault().getPlatform(hkey);
-            pi = new PlatformInfo(hkey, thePlatform);
-            map.put(hkey, pi);
+            int thePlatform = HostInfoProvider.getDefault().getPlatform(execEnv);
+            pi = new PlatformInfo(execEnv, thePlatform);
+            map.put(execEnv, pi);
         }
         return pi;
     }

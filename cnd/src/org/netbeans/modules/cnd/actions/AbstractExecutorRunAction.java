@@ -53,11 +53,13 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -94,17 +96,22 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
 
     protected abstract boolean accept(DataObject object);
 
+    /** TODO: deprecate and remove */
     protected static String getDevelopmentHost(FileObject fileObject, Project project) {
+        return ExecutionEnvironmentFactory.getHostKey(getExecutionEnvironment(fileObject, project));
+    }
+
+    protected static ExecutionEnvironment getExecutionEnvironment(FileObject fileObject, Project project) {
         if (project == null) {
             project = findInOpenedProject(fileObject);
         }
-        String developmentHost = CompilerSetManager.getDefaultDevelopmentHost();
+        ExecutionEnvironment developmentHost = CompilerSetManager.getDefaultExecutionEnvironment();
         if (project != null) {
             RemoteProject info = project.getLookup().lookup(RemoteProject.class);
             if (info != null) {
                 String dh = info.getDevelopmentHost();
                 if (dh != null) {
-                    developmentHost = dh;
+                    developmentHost = ExecutionEnvironmentFactory.getExecutionEnvironment(dh);
                 }
             }
         }
@@ -189,13 +196,13 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return buildDir;
     }
 
-    protected static String[] prepareEnv(String developmentHost) {
+    protected static String[] prepareEnv(ExecutionEnvironment execEnv) {
         CompilerSet cs = null;
         String csdirs = ""; // NOI18N
         String dcsn = CppSettings.getDefault().getCompilerSetName();
-        PlatformInfo pi = PlatformInfo.getDefault(developmentHost);
+        PlatformInfo pi = PlatformInfo.getDefault(execEnv);
         if (dcsn != null && dcsn.length() > 0) {
-            cs = CompilerSetManager.getDefault(developmentHost).getCompilerSet(dcsn);
+            cs = CompilerSetManager.getDefault(execEnv).getCompilerSet(dcsn);
             if (cs != null) {
                 csdirs = cs.getDirectory();
                 // TODO Provide platform info
