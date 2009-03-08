@@ -44,6 +44,8 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -77,6 +79,7 @@ import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -299,6 +302,7 @@ public class BugzillaRepository extends Repository {
 
     private class Controller extends BugtrackingController implements DocumentListener, ActionListener {
         private RepositoryPanel panel = new RepositoryPanel();
+        private String errorMessage;
 
         private Controller() {
             if(taskRepository != null) {
@@ -326,10 +330,28 @@ public class BugzillaRepository extends Repository {
         }
 
         public boolean isValid() {
-            return !panel.nameField.getText().trim().equals("") &&
-                   !panel.urlField.getText().trim().equals(""); /* &&
-                   !panel.userField.getText().trim().equals("") &&
-                   !new String(panel.psswdField.getPassword()).equals("");*/
+            errorMessage = null;
+            if(panel.nameField.getText().trim().equals("")) {
+                errorMessage = "Missing name";
+                return false;
+            }
+            String url = panel.urlField.getText().trim();
+            if(url.equals("")) {
+                errorMessage = "Missing URL";
+                return false;
+            }
+            try {
+                new URL(url);
+            } catch (MalformedURLException ex) {
+                errorMessage = "Wrong URL format";
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String getErrorMessage() {
+            return errorMessage;
         }
 
         @Override
