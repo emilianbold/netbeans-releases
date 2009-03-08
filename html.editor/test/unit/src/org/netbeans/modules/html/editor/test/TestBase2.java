@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,43 +37,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.gsf;
+package org.netbeans.modules.html.editor.test;
 
-import org.netbeans.modules.css.editor.test.TestBase;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.modules.gsf.GsfTestBase;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 
 /**
+ * Common ancestor for all test classes.
  */
-public class CSSFormatterTest extends TestBase {
+public class TestBase2 extends GsfTestBase {
 
-    public CSSFormatterTest(String name) {
+
+    public TestBase2(String name) {
         super(name);
     }
 
     @Override
-    protected boolean runInEQ() {
-        return true;
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new HtmlLanguage();
     }
 
-    public void testFormatting() throws Exception {
-        format("a{\nbackground: red;\n  }\n",
-               "a{\n    background: red;\n}\n", null);
+    @Override
+    protected String getPreferredMimeType() {
+        return "text/html";
     }
 
-    public void XXXtestIndentation() throws Exception {
-
-        // TODO: CSS indentation has to be fixed before these tests can be enabled
-        
-        insertNewline("a{^background: red;\n  }\n", "a{\n    ^background: red;\n  }\n", null);
-        insertNewline("a{\n    background:^red;\n  }\n", "a{\n    background:\n        ^red;\n  }\n", null);
-        insertNewline("a{\n    background: red;^\n  }\n", "a{\n    background: red;\n    ^\n  }\n", null);
-        insertNewline("a{\n    background: red;\n  }^", "a{\n    background: red;\n  }\n  ^", null);
+    @Override
+    public Formatter getFormatter(IndentPrefs preferences) {
+        return null;
     }
 
+    @Override
+    protected BaseKit getEditorKit(String mimeType) {
+        return new HTMLKit();
+    }
 
 }

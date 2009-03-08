@@ -60,7 +60,6 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedDocument;
-import org.netbeans.editor.MarkBlockChain;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
@@ -68,6 +67,7 @@ import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Indentation and code reformatting services for a swing text document.
@@ -98,11 +98,17 @@ public final class TaskHandler {
     private Position caretPos;
     
     private final Set<Object> existingFactories = new HashSet<Object>();
+
+    private Lookup lookup = null;
     
 
     TaskHandler(boolean indent, Document doc) {
         this.indent = indent;
         this.doc = doc;
+    }
+
+    public Lookup getLookup() {
+        return lookup;
     }
 
     public boolean isIndent() {
@@ -200,22 +206,41 @@ public final class TaskHandler {
                     newItems.add(item);
                 }
             }
-            
+
             if (htmlItem != null) {
                 newItems.add(0, htmlItem);
             }
-            
+
             if (jspItem != null) {
                 newItems.add(0, jspItem);
             }
-            
+
             items = newItems;
+        }
+
+        if (items != null) {
+            List<Lookup> lookups = new ArrayList<Lookup>();
+            for (MimeItem mi : items) {
+                Lookup l = mi.getLookup();
+                if (l != null) {
+                    lookups.add(l);
+                }
+            }
+            if (lookups.size() > 0) {
+                lookup = new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
+            }
+        }
+
+        if (lookup == null) {
+            lookup = Lookup.EMPTY;
         }
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Collected items: "); //NOI18N
-            for (MimeItem mi : items) {
-                LOG.fine("  Item: " + mi); //NOI18N
+            if (items != null) {
+                for (MimeItem mi : items) {
+                    LOG.fine("  Item: " + mi); //NOI18N
+                }
             }
             LOG.fine("-----------------"); //NOI18N
         }
@@ -340,7 +365,7 @@ public final class TaskHandler {
         private ExtraLock extraLock;
         
         private Context context;
-        
+
         MimeItem(TaskHandler handler, MimePath mimePath, LanguagePath languagePath) {
             this.handler = handler;
             this.mimePath = mimePath;
@@ -354,7 +379,7 @@ public final class TaskHandler {
         public LanguagePath languagePath() {
             return languagePath;
         }
-        
+
         public Context context() {
             if (context == null) {
                 context = IndentSpiPackageAccessor.get().createContext(this);
@@ -512,6 +537,16 @@ public final class TaskHandler {
         
         public @Override String toString() {
             return mimePath + ": " + ((indentTask != null) ? "IT: " + indentTask : "RT: " + reformatTask); //NOI18N
+        }
+
+        private Lookup getLookup() {
+            if (indentTask != null && indentTask instanceof Lookup.Provider) {
+                return ((Lookup.Provider)indentTask).getLookup();
+            } else if (reformatTask != null && reformatTask instanceof Lookup.Provider) {
+                return ((Lookup.Provider)reformatTask).getLookup();
+            } else {
+                return null;
+            }
         }
     }
     
