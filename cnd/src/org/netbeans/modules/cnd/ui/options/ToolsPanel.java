@@ -90,6 +90,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 import org.openide.windows.WindowManager;
 
@@ -411,7 +412,15 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         if (execEnv.isLocal()) {
             File file = new File(txt);
             boolean ok = false;
-            ok = file.exists() && !file.isDirectory();
+            if (Utilities.isWindows()){
+                if (txt.endsWith(".lnk")) { // NOI18N
+                    ok = false;
+                } else {
+                    ok = (file.exists() || new File(txt+".lnk").exists() )&& !file.isDirectory(); // NOI18N
+                }
+            } else {
+                ok = file.exists() && !file.isDirectory();
+            }
             if (!ok) {
                 // try users path
                 ArrayList<String> paths = Path.getPath();
@@ -1677,7 +1686,13 @@ private boolean selectCompiler(JTextField tf, Tool tool) {
         DialogDisplayer.getDefault().notify(nb);
         return false;
     }
-    tf.setText(fileChooser.getSelectedFile().getPath());
+    String aPath = fileChooser.getSelectedFile().getPath();
+    if (Utilities.isWindows()){
+        if (aPath.endsWith(".lnk")) { // NOI18N
+            aPath = aPath.substring(0, aPath.length()-4);
+        }
+    }
+    tf.setText(aPath);
     tool.setPath(tf.getText());
     fireCompilerSetChange();
     fireCompilerSetModified();
@@ -1691,7 +1706,13 @@ private boolean selectTool(JTextField tf) {
     if (ret == JFileChooser.CANCEL_OPTION) {
         return false;
     }
-    tf.setText(fileChooser.getSelectedFile().getPath());
+    String aPath = fileChooser.getSelectedFile().getPath();
+    if (Utilities.isWindows()){
+        if (aPath.endsWith(".lnk")) { // NOI18N
+            aPath = aPath.substring(0, aPath.length()-4);
+        }
+    }
+    tf.setText(aPath);
     return true;
 }
 

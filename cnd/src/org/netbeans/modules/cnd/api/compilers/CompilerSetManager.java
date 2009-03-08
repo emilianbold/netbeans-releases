@@ -789,6 +789,11 @@ public class CompilerSetManager {
                 cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind);
                 return;
             }
+            File file2 = new File(dir, name + ".exe.lnk"); // NOI18N
+            if (file2.exists() && !file2.isDirectory()) {
+                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind);
+                return;
+            }
         }
     }
 
@@ -967,10 +972,21 @@ public class CompilerSetManager {
             file = new File(dir, cmd);
             if (file.exists()) {
                 return file.getAbsolutePath();
+            } else {
+                if (Utilities.isWindows() && cmd.endsWith(".exe")){// NOI18N
+                    File file2 = new File(dir, cmd+".lnk");// NOI18N
+                    if (file2.exists()) {
+                        return file.getAbsolutePath();
+                    }
+                }
             }
             if (cmd2 != null) {
                 file = new File(dir, cmd2);
                 if (file.exists()) {
+                    return file.getAbsolutePath();
+                }
+                File file2 = new File(dir, cmd2+".lnk");// NOI18N
+                if (file2.exists()) {
                     return file.getAbsolutePath();
                 }
             }

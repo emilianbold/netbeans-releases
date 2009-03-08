@@ -1104,10 +1104,11 @@ public class MakeActionProvider implements ActionProvider {
         Tool asTool = cs.getTool(Tool.Assembler);
         Tool makeTool = cs.getTool(Tool.MakeTool);
 
+        PlatformInfo pi = conf.getPlatformInfo();
         // Check for a valid make program
         if (conf.getDevelopmentHost().isLocalhost()) {
             file = new File(makeTool.getPath());
-            if ((!file.exists() && Path.findCommand(makeTool.getPath()) == null) || !ToolsPanel.supportedMake(file.getPath())) {
+            if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || !ToolsPanel.supportedMake(file.getPath())) {
                 runBTA = true;
             }
         } else {
@@ -1119,9 +1120,6 @@ public class MakeActionProvider implements ActionProvider {
         }
 
         // Check compilers
-
-        PlatformInfo pi = conf.getPlatformInfo();
-
         if (cRequired && !exists(cTool.getPath(), pi)) {
             errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCCompiler", csname, cTool.getDisplayName())); // NOI18N
             runBTA = true;
@@ -1235,7 +1233,7 @@ public class MakeActionProvider implements ActionProvider {
     }
 
     private static boolean exists(String path, PlatformInfo pi) {
-        return pi.fileExists(path) || pi.findCommand(path) != null;
+        return pi.fileExists(path) || pi.isWindows() && pi.fileExists(path+".lnk") || pi.findCommand(path) != null; // NOI18N
     }
 
     private static String getExePath(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {
