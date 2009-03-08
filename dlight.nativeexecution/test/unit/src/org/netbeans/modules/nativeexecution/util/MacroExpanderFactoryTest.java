@@ -115,8 +115,8 @@ public class MacroExpanderFactoryTest {
     public void testPath() {
         ExecutionEnvironment execEnv = new ExecutionEnvironment("test", "localhost");
         NativeProcessBuilder npb = new NativeProcessBuilder(
-                execEnv, "/bin/echo").setArguments("$PATH").addEnvironmentVariable(
-                "PATH", "/firstPath:$PATH:${ZZZ}_${platform}").addEnvironmentVariable("PATH", "$PATH:/secondPath");
+                execEnv, "/bin/env").addEnvironmentVariable(
+                "PATH", "/firstPath:$PATH:${ZZZ}_${platform}").addEnvironmentVariable("PATH", "$PATH:/secondPath").addEnvironmentVariable("XXX", "It WORKS!");
 
         StringWriter result = new StringWriter();
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));

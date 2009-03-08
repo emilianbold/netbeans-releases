@@ -58,8 +58,6 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
 
 /**
  * This class represents D-Light Session.
@@ -75,7 +73,6 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private List<DataCollector> collectors = null;
     private List<Visualizer> visualizers = null;
     private SessionState state;
-    private Task sessionTask;
     private final int sessionID;
     private String description = null;
     private List<ExecutionContextListener> contextListeners;
@@ -217,8 +214,6 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     void start() {
         Runnable sessionRunnable = new Runnable() {
 
-            boolean hasValidContext = true;
-
             public void run() {
                 DataStorageManager.getInstance().clearActiveStorages();
 
@@ -231,13 +226,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 }
 
                 for (ExecutionContext context : contexts) {
-                    boolean result = prepareContext(context);
-                    hasValidContext &= result;
-                }
-
-                if (!hasValidContext) {
-//                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("No tool passed validation... ")); // NOI18N
-                    return;
+                    prepareContext(context);
                 }
 
                 setState(SessionState.STARTING);
@@ -247,7 +236,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 boolean f = false;
 
                 final DLightTargetAccessor targetAccess =
-                    DLightTargetAccessor.getDefault();
+                        DLightTargetAccessor.getDefault();
 
                 for (ExecutionContext context : contexts) {
                     DLightTarget target = context.getTarget();
@@ -258,14 +247,14 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                     }
 
                     DLightTarget.ExecutionEnvVariablesProvider envProvider =
-                        context.getDLightTargetExecutionEnvProvider();
+                            context.getDLightTargetExecutionEnvProvider();
 
                     targetAccess.getDLightTargetExecution(target).start(target, envProvider);
                 }
             }
         };
 
-        sessionTask = RequestProcessor.getDefault().post(sessionRunnable);
+        DLightExecutorService.submit(sessionRunnable, "DLight session"); // NOI18N
     }
 
     private boolean prepareContext(ExecutionContext context) {
@@ -345,9 +334,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                     if (idp instanceof DLightTarget.ExecutionEnvVariablesProvider) {
                         context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) idp);
                     }
-                    if (idp instanceof DataCollector){
-                        if (notAttachableDataCollector == null && !((DataCollector)idp).isAttachable()) {
-                            notAttachableDataCollector = ((DataCollector)idp);
+                    if (idp instanceof DataCollector) {
+                        if (notAttachableDataCollector == null && !((DataCollector) idp).isAttachable()) {
+                            notAttachableDataCollector = ((DataCollector) idp);
                         }
                     }
                     List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
