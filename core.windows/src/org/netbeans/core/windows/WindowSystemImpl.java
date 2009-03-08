@@ -43,9 +43,11 @@
 package org.netbeans.core.windows;
 
 
+import java.awt.EventQueue;
 import org.netbeans.core.NbTopManager;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.core.windows.services.DialogDisplayerImpl;
+import org.netbeans.core.windows.view.ui.MainWindow;
 
 
 /**
@@ -60,6 +62,11 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
     public WindowSystemImpl() {
     }
 
+
+    public void init() {
+        assert !EventQueue.isDispatchThread();
+        MainWindow.init();
+    }
 
     // Persistence
     /** Implements <code>NbTopManager.WindowSystem</code> interface method.

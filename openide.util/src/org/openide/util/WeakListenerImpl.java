@@ -584,13 +584,16 @@ abstract class WeakListenerImpl implements java.util.EventListener {
             try {
                 remove.invoke(src, params);
             } catch (Exception ex) { // from invoke(), should not happen
-                String errMessage = "Problem encountered while calling " + methodClass + "." + methodName + "(...) on " + src; // NOI18N
-                LOG.warning( errMessage );
-                //detailed logging needed in some cases
-                boolean showErrMessage = ex instanceof InvocationTargetException
-                        || "object is not an instance of declaring class".equals(ex.getMessage());
+                // #151415 - ignore exception from AbstractPreferences if node has been removed
+                if (!"removePreferenceChangeListener".equals(methodName) && !"removeNodeChangeListener".equals(methodName)) {  //NOI18N
+                    String errMessage = "Problem encountered while calling " + methodClass + "." + methodName + "(...) on " + src; // NOI18N
+                    LOG.warning( errMessage );
+                    //detailed logging needed in some cases
+                    boolean showErrMessage = ex instanceof InvocationTargetException
+                            || "object is not an instance of declaring class".equals(ex.getMessage());
 
-                LOG.log(Level.WARNING, showErrMessage ? errMessage : null, ex);
+                    LOG.log(Level.WARNING, showErrMessage ? errMessage : null, ex);
+                }
             }
         }
 

@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.loaders.ShellDataObject;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.LifecycleManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -117,11 +118,11 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         }
         String[] args = bes.getArguments(); // from properties
 
-        String developmentHost = getDevelopmentHost(fileObject, project);
+        ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         // Windows: The command is usually of the from "/bin/sh", but this
         // doesn't work here, so extract the 'sh' part and use that instead. 
         // FIXUP: This is not entirely correct though.
-        if (PlatformInfo.getDefault(developmentHost).isWindows() && shellCommand.length() > 0) {
+        if (PlatformInfo.getDefault(execEnv).isWindows() && shellCommand.length() > 0) {
             int i = shellCommand.lastIndexOf("/"); // UNIX PATH // NOI18N
             if (i >= 0) {
                 shellCommand = shellCommand.substring(i+1);
@@ -144,11 +145,11 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         // Execute the shellfile
 
         NativeExecutor nativeExecutor = new NativeExecutor(
-            developmentHost,
+            execEnv,
             buildDir.getPath(),
             shellCommand,
             argsFlat.toString(),
-            prepareEnv(developmentHost),
+            prepareEnv(execEnv),
             tabName,
             "Run", // NOI18N
             false,

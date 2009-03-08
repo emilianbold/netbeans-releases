@@ -50,6 +50,6 @@ public abstract class ProjectSpecificTransport {
 
     protected Project project;
     
-    public abstract void setTCPUrl(Service s, boolean tomcat);
+    public abstract void setTCPUrl(String name, String serviceName, String implClass, boolean tomcat);
     
 }

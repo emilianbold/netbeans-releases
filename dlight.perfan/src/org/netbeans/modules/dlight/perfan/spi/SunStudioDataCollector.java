@@ -55,6 +55,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
@@ -69,8 +71,10 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
+import org.netbeans.modules.dlight.perfan.storage.impl.Metrics;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
-import org.netbeans.modules.dlight.perfan.util.SunStudioLocator;
+import org.netbeans.modules.dlight.spi.SunStudioLocator.SunStudioDescription;
+import org.netbeans.modules.dlight.spi.SunStudioLocatorFactory;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -85,6 +89,7 @@ import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
 /**
@@ -92,15 +97,17 @@ import org.openide.windows.InputOutput;
  * which will be used as DataCollector
  */
 public class SunStudioDataCollector
-        extends IndicatorDataProvider<SunStudioDCConfiguration>
-        implements DataCollector<SunStudioDCConfiguration> {
+    extends IndicatorDataProvider<SunStudioDCConfiguration>
+    implements DataCollector<SunStudioDCConfiguration> {
 
     private static final String ID = "PerfanDataStorage"; // NOI18N
+    private static Pattern lineStartsWithIntegerPattern = Pattern.compile("^ *([0-9]+).*$");
     // Below are FULL DataTableMetadata objects...
     private static final DataTableMetadata cpuInfoTable;
     private static final DataTableMetadata syncInfoTable;
     private static final DataTableMetadata memInfoTable;
     private static final DataTableMetadata summaryInfoTable;
+    private static final DataTableMetadata memSummaryInfoTable;
     private static final List<DataStorageType> supportedStorageTypes;
     private static final Logger log = DLightLogger.getLogger(SunStudioDataCollector.class);
     private final Object lock = new String(SunStudioDataCollector.class.getName());
@@ -115,33 +122,38 @@ public class SunStudioDataCollector
     private String sproHome;
     private DLightTarget target = null;
     private FutureTask<Boolean> warmUpTask = null;
-    private Future summaryInfoTask = null;
+    private Future statisticsTask = null;
+    private Future memoryStatisticsTask = null;
 
 
     static {
         supportedStorageTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(ID));
 
         cpuInfoTable = new DataTableMetadata(
-                "SunStudioCPUDetailedData", // NOI18N
-                Arrays.asList(SunStudioDCConfiguration.c_name,
-                SunStudioDCConfiguration.c_iUser,
-                SunStudioDCConfiguration.c_eUser));
+            "SunStudioCPUDetailedData", // NOI18N
+            Arrays.asList(SunStudioDCConfiguration.c_name,
+            SunStudioDCConfiguration.c_iUser,
+            SunStudioDCConfiguration.c_eUser));
 
 
         syncInfoTable = new DataTableMetadata(
-                "SunStudioSyncDetailedData", // NOI18N
-                Arrays.asList(SunStudioDCConfiguration.c_name,
-                SunStudioDCConfiguration.c_iSync,
-                SunStudioDCConfiguration.c_iSyncn));
+            "SunStudioSyncDetailedData", // NOI18N
+            Arrays.asList(SunStudioDCConfiguration.c_name,
+            SunStudioDCConfiguration.c_iSync,
+            SunStudioDCConfiguration.c_iSyncn));
 
         memInfoTable = new DataTableMetadata("SunStudioMemDetailedData",
-                Arrays.asList(SunStudioDCConfiguration.c_name,
-                SunStudioDCConfiguration.c_leakCount,
-                SunStudioDCConfiguration.c_leakSize));
+            Arrays.asList(SunStudioDCConfiguration.c_name,
+            SunStudioDCConfiguration.c_leakCount,
+            SunStudioDCConfiguration.c_leakSize));
 
         summaryInfoTable = new DataTableMetadata(
-                "SunStudioSummaryData", // NOI18N
-                Arrays.asList(SunStudioDCConfiguration.c_ulockSummary));
+            "SunStudioSummaryData", // NOI18N
+            Arrays.asList(SunStudioDCConfiguration.c_ulockSummary));
+
+        memSummaryInfoTable = new DataTableMetadata(
+            "SunStudioMemorySummaryData", // NOI18N
+            Arrays.asList(SunStudioDCConfiguration.c_leakSize));
     }
 
     //
@@ -152,14 +164,14 @@ public class SunStudioDataCollector
     //
     SunStudioDataCollector(List<CollectedInfo> collectedInfoList) {
         this.collectedInfoList = Collections.synchronizedList(
-                new ArrayList<CollectedInfo>(collectedInfoList));
+            new ArrayList<CollectedInfo>(collectedInfoList));
 
         this.validationListeners = Collections.synchronizedList(
-                new ArrayList<ValidationListener>());
+            new ArrayList<ValidationListener>());
     }
 
     public Future<ValidationStatus> validate(final DLightTarget targetToValidate) {
-        return DLightExecutorService.service.submit(new Callable<ValidationStatus>() {
+        return DLightExecutorService.submit(new Callable<ValidationStatus>() {
 
             public ValidationStatus call() throws Exception {
                 if (validationStatus.isValid()) {
@@ -174,13 +186,12 @@ public class SunStudioDataCollector
                 validationStatus = newStatus;
                 return newStatus;
             }
-        });
+        }, "Validate SunStudioDataCollector on " + targetToValidate.getExecEnv()); // NOI18N
     }
 
     public String getName() {
         return "SunStudio";//NOI18N
     }
-
 
     public void invalidate() {
         validationStatus = ValidationStatus.initialStatus();
@@ -201,10 +212,26 @@ public class SunStudioDataCollector
                 return ValidationStatus.invalidStatus("SunStudioDataCollector works on SunOS only."); // NOI18N
             }
 
-            sproHome = SunStudioLocator.getInstance().getSproHome(execEnv);
-            collectCmd = sproHome + "/bin/collect"; // NOI18N
+            Collection<? extends SunStudioLocatorFactory> factories = Lookup.getDefault().lookupAll(SunStudioLocatorFactory.class);
+            if (factories.isEmpty()) {
+                return ValidationStatus.invalidStatus("No SunStudio Found"); //NOI18N
+            }
+            //we will get first we have
+            boolean notFound = true;
+            for (SunStudioLocatorFactory factory : factories) {
+                Collection<SunStudioDescription> ssDescriptions = factory.getInstance(execEnv).getSunStudioLocations();
+                for (SunStudioDescription ss : ssDescriptions) {
+                    sproHome = ss.getPath();
+                    //SunStudioLocator.getInstance().getSproHome(execEnv);
+                    collectCmd = sproHome + "/bin/collect"; // NOI18N
+                    if (HostInfoUtils.fileExists(execEnv, collectCmd)) {
+                        notFound = false;
+                        break;
+                    }
+                }
+            }
 
-            if (!HostInfoUtils.fileExists(execEnv, collectCmd)) {
+            if (notFound) {
                 return ValidationStatus.invalidStatus(collectCmd + " not found");
             }
 
@@ -220,7 +247,7 @@ public class SunStudioDataCollector
             AsynchronousAction connectAction = mgr.getConnectToAction(execEnv, onConnect);
 
             return ValidationStatus.unknownStatus("Host is not connected...", // NOI18N
-                    connectAction);
+                connectAction);
         }
 
         return ValidationStatus.validStatus();
@@ -271,11 +298,11 @@ public class SunStudioDataCollector
     public void init(DataStorage dataStorage, DLightTarget target) {
         if (!(dataStorage instanceof PerfanDataStorage)) {
             throw new IllegalArgumentException("You can not use storage " +
-                    dataStorage + " for PerfanDataCollector!"); // NOI18N
+                dataStorage + " for PerfanDataCollector!"); // NOI18N
         }
 
         DLightLogger.assertTrue(execEnv.equals(target.getExecEnv()),
-                "Verification was performed against another execEnv"); // NOI18N
+            "Verification was performed against another execEnv"); // NOI18N
 
         this.storage = (PerfanDataStorage) dataStorage;
         this.target = target;
@@ -305,13 +332,13 @@ public class SunStudioDataCollector
                 warmUpStatus = warmUpTask.get().booleanValue();
             } catch (CancellationException ex) {
                 log.fine("Will not start SunStudioDataCollector because of " // NOI18N
-                        + ex.getMessage());
+                    + ex.getMessage());
             } catch (InterruptedException ex) {
                 log.fine("Will not start SunStudioDataCollector because of " // NOI18N
-                        + ex.getMessage());
+                    + ex.getMessage());
             } catch (ExecutionException ex) {
                 log.fine("Will not start SunStudioDataCollector because of " // NOI18N
-                        + ex.getMessage());
+                    + ex.getMessage());
             }
 
             // Make it null, to start it again on restart ...
@@ -343,9 +370,16 @@ public class SunStudioDataCollector
             if (collectedInfoList.contains(SunStudioDCConfiguration.CollectedInfo.SYNCSUMMARY)) {
                 resetIndicators();
                 TimerTaskExecutionService service =
-                        TimerTaskExecutionService.getInstance();
-                summaryInfoTask = service.scheduleAtFixedRate(
-                        new SummaryDataFetchingTask(), 1, TimeUnit.SECONDS);
+                    TimerTaskExecutionService.getInstance();
+                statisticsTask = service.scheduleAtFixedRate(
+                    new SummaryDataFetchingTask(), 1, TimeUnit.SECONDS, "SYNCSUMMARY"); // NOI18N
+            }
+            if (collectedInfoList.contains(SunStudioDCConfiguration.CollectedInfo.MEMSUMMARY)) {
+                resetIndicators();
+                TimerTaskExecutionService service =
+                    TimerTaskExecutionService.getInstance();
+                memoryStatisticsTask = service.scheduleAtFixedRate(
+                    new SummaryLeaksDataFetchingTask(), 1, TimeUnit.SECONDS, "MEMSUMMARY"); // NOI18N
             }
 
         }
@@ -372,9 +406,13 @@ public class SunStudioDataCollector
 
             collectTask = null;
 
-            if (summaryInfoTask != null) {
-                summaryInfoTask.cancel(true);
-                summaryInfoTask = null;
+            if (statisticsTask != null) {
+                statisticsTask.cancel(true);
+                statisticsTask = null;
+            }
+            if (memoryStatisticsTask != null) {
+                memoryStatisticsTask.cancel(true);
+                memoryStatisticsTask = null;
             }
         }
 
@@ -402,13 +440,18 @@ public class SunStudioDataCollector
         if (collectedInfoList.contains(CollectedInfo.SYNCSUMMARY)) {
             result.add(summaryInfoTable);
         }
+        if (collectedInfoList.contains(CollectedInfo.MEMSUMMARY)) {
+            result.add(memSummaryInfoTable);
+        }
 
         return result;
     }
 
     public boolean isAttachable() {
         if (collectedInfoList.contains(CollectedInfo.SYNCHRONIZARION) ||
-                collectedInfoList.contains(CollectedInfo.MEMORY)) {
+            collectedInfoList.contains(CollectedInfo.MEMORY) ||
+            collectedInfoList.contains(CollectedInfo.SYNCSUMMARY) ||
+            collectedInfoList.contains(CollectedInfo.MEMSUMMARY)) {
             return false;
         }
         return true;
@@ -429,16 +472,18 @@ public class SunStudioDataCollector
         // ..
         // Add this arguments to allow indicator provider based on
         // mmonitor to coexist with collect
-        
+
         args.add("-l"); // NOI18N
         args.add("USR1"); // NOI18N
 
-        if (collectedInfoList.contains(CollectedInfo.SYNCHRONIZARION)) {
+        if (collectedInfoList.contains(CollectedInfo.SYNCHRONIZARION) ||
+            collectedInfoList.contains(CollectedInfo.SYNCSUMMARY)) {
             args.add("-s"); // NOI18N
             args.add("30"); // NOI18N
         }
 
-        if (collectedInfoList.contains(CollectedInfo.MEMORY)) {
+        if (collectedInfoList.contains(CollectedInfo.MEMORY) ||
+            collectedInfoList.contains(CollectedInfo.MEMSUMMARY)) {
             args.add("-H"); // NOI18N
             args.add("on"); // NOI18N
         }
@@ -483,7 +528,7 @@ public class SunStudioDataCollector
     }
 
     private static class StdErrRedirectorFactory
-            implements InputProcessorFactory {
+        implements InputProcessorFactory {
 
         public InputProcessor newInputProcessor(InputProcessor p) {
             return InputProcessors.copying(new OutputStreamWriter(System.err) {
@@ -534,7 +579,7 @@ public class SunStudioDataCollector
 
             if (rmResult == null || rmResult.intValue() != 0) {
                 log.info("SunStudioDataCollector: unable to delete directory " // NOI18N
-                        + execEnv.toString() + ":" + dirName); // NOI18N
+                    + execEnv.toString() + ":" + dirName); // NOI18N
                 status = false;
             }
 
@@ -578,4 +623,35 @@ public class SunStudioDataCollector
             SunStudioDataCollector.this.notifyIndicators(Arrays.asList(new DataRow(colNames, data)));
         }
     }
+
+    private final class SummaryLeaksDataFetchingTask implements Runnable {
+
+        public SummaryLeaksDataFetchingTask() {
+        }
+
+        public void run() {
+            System.out.println("))))))))))0START SummaryLeaksDataFetchingTask ");
+            String[] result =
+                storage.getTopFunctions(Metrics.constructFrom(Arrays.asList(SunStudioDCConfiguration.c_leakSize), Arrays.asList(SunStudioDCConfiguration.c_leakSize)), 1);
+            if (result == null || result.length == 0) {
+                return;
+            }
+            Matcher m = lineStartsWithIntegerPattern.matcher(result[0]);
+            if (!m.matches()) {
+                return;
+            }
+            try {
+
+                String value = m.group(1);
+                System.out.println("result[0]=" + result[0] + " value=" + value);
+                if (value != null){
+                    SunStudioDataCollector.this.notifyIndicators(Arrays.asList(new DataRow(Arrays.asList(SunStudioDCConfiguration.c_leakSize.getColumnName()), Arrays.asList(Long.valueOf(value)))));
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+        
+    }
+
 }

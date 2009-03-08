@@ -73,16 +73,6 @@ public class FindEditorTest extends NbTestCase {
         assertFind ((new String[] { "" }).getClass (), org.netbeans.beaninfo.editors.StringArrayEditor.class);
     }
 
-    public void testFindDataObjectEditor () throws Exception {
-        assertFind (org.openide.loaders.DataObject.class, org.netbeans.beaninfo.editors.DataObjectEditor.class);
-    }
-
-    public void testFindDataObjectArrayEditor () throws Exception {
-        org.openide.filesystems.FileObject fo = FileUtil.getConfigRoot ();
-        Object obj = new org.openide.loaders.DataObject[] { org.openide.loaders.DataObject.find (fo) };
-        assertFind (obj.getClass (), org.netbeans.beaninfo.editors.DataObjectArrayEditor.class);
-    }
-    
     private void assertFind (Class propertyTypeClass, Class editorClass) {
         assertNotNull ("PropertyEditor for " + propertyTypeClass + " found.", PropertyEditorManager.findEditor (propertyTypeClass));
         assertEquals ("Editor is instance of ", editorClass, PropertyEditorManager.findEditor (propertyTypeClass).getClass ());

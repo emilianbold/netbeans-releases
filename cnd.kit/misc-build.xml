@@ -47,8 +47,21 @@ made subject to such option by the copyright holder.
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
     <property name="cluster.config" value="cnd"/>
 
-    <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
-    <property name="submodules" value="../cnd.lexer, ../asm, ../cnd, ../cnd.makeproject, ../cnd.api.model, ../cnd.api.project, ../cnd.modelimpl, ../cnd.classview, ../cnd.completion, ../cnd.debugger.gdb, ../cnd.modelutil, ../cnd.antlr, ../cnd.modelui, ../cnd.highlight, ../cnd.gotodeclaration, ../cnd.apt, ../cnd.folding, ../cnd.dwarfdump, ../cnd.repository, ../cnd.discovery, ../cnd.dwarfdiscovery, ../cnd.modeldiscovery, ../cnd.navigation, ../cnd.qnavigator, ../cnd.remote, ../cnd.repository.api, ../cnd.utils"/>
+    <!-- Plain <subant> is unusable in Ant 1.7.1: https://issues.apache.org/bugzilla/show_bug.cgi?id=30569 -->
+    <taskdef  name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="${nbext_root}/nbantext.jar"/>
+    <taskdef  name="sortsuitemodules" classname="org.netbeans.nbbuild.SortSuiteModules" classpath="${nbext_root}/nbantext.jar"/>
+    <property name="submodules" value="cnd.lexer,asm,cnd,cnd.makeproject,cnd.api.model,
+        cnd.antlr,cnd.api.project,cnd.modelimpl,cnd.classview,cnd.completion,cnd.debugger.gdb,cnd.modelutil,
+        cnd.modelui,cnd.highlight,cnd.gotodeclaration,cnd.apt,cnd.folding,cnd.dwarfdump,
+        cnd.repository,cnd.discovery,cnd.dwarfdiscovery,cnd.modeldiscovery,cnd.navigation,
+        cnd.qnavigator,cnd.remote,cnd.repository.api,cnd.utils"/>
+    <pathconvert property="modules.fullpath">
+        <path>
+            <dirset dir="${nbroot}" includes="${submodules}"/>
+        </path>
+        <mapper type="identity"/>
+    </pathconvert>
+    <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted"/>
 
     <property name="build.compiler.debug" value="on"/>
 
@@ -59,57 +72,47 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="compile">
-        <for-each locations="${submodules}"/>
+        <subant-junit failonerror="true" target="compile"><buildpath path="${modules.sorted}"/></subant-junit>
     </target>
 
     <target name="jars" depends="init,compile">
-        <for-each locations="${submodules}"/>
+        <subant-junit failonerror="true" target="jars"><buildpath path="${modules.sorted}"/></subant-junit>
     </target>
 
     <target name="release">
-        <for-each locations="${submodules}"/>
+        <subant-junit failonerror="true" target="release"><buildpath path="${modules.sorted}"/></subant-junit>
     </target>
 
     <target name="javahelp">
-        <for-each locations="${submodules}"/>
+        <subant-junit failonerror="true" target="javahelp"><buildpath path="${modules.sorted}"/></subant-junit>
     </target>
 
-    <target name="netbeans" depends="jars,release,javahelp">
-        <for-each locations="${submodules}"/>
+    <target name="netbeans">
+        <subant-junit failonerror="true" target="netbeans"><buildpath path="${modules.sorted}"/></subant-junit>
     </target>
 
     <target name="nbm" depends="netbeans">
-        <for-each locations="${submodules}"/>
+        <subant-junit failonerror="true" target="nbm"><buildpath path="${modules.sorted}"/></subant-junit>
     </target>
 
     <target name="clean">
         <delete file="cnd-nbms.zip"/>
 
-        <for-each locations="${submodules}"/>
+        <subant-junit failonerror="true" target="clean"><buildpath path="${modules.sorted}"/></subant-junit>
     </target>
 
     <target name="real-clean" depends="clean">
         <delete dir="javadoc"/>
 
-        <for-each locations="${submodules}"/>
+        <subant-junit failonerror="true" target="real-clean"><buildpath path="${modules.sorted}"/></subant-junit>
     </target>
 
     <target name="all" depends="clean,nbm">
-        <for-each locations="${submodules}"/>
+        <subant-junit failonerror="true" target="all"><buildpath path="${modules.sorted}"/></subant-junit>
     </target>
 
     <target name="javadoc">
-        <for-each locations="${submodules}"/>
-    </target>
-
-
-    <!-- Build cnd module and all modules which is depend on. -->
-    <target name="all-cnd" depends="all-depend,clean,netbeans"/>
-
-    <target name="all-depend">
-        <property name="modules" value="../openide, ../core, ../editor"/>
-        <for-each locations="${modules}" target="clean"/>
-        <for-each locations="${modules}" target="jars"/>
+        <subant-junit failonerror="true" target="javadoc"><buildpath path="${modules.sorted}"/></subant-junit>
     </target>
 
 

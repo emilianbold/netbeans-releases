@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.j2ee.weblogic9;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -48,7 +47,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.jar.JarInputStream;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -198,7 +197,6 @@ public class WLPluginProperties {
     
     static {
         fileColl.add("common");        // NOI18N
-        fileColl.add("javelin");       // NOI18N
         fileColl.add("uninstall");     // NOI18N
         fileColl.add("common/bin");    // NOI18N
         fileColl.add("server/lib/weblogic.jar"); // NOI18N
@@ -224,10 +222,10 @@ public class WLPluginProperties {
             return false;
         }
         try {
-            JarInputStream jarInputStream = new JarInputStream(new BufferedInputStream(
-                    new FileInputStream(weblogicJar)));
+            // JarInputStream cannot be used due to problem in weblogic.jar ib Oracle Weblogic Server 10.3
+            JarFile jar = new JarFile(weblogicJar);
             try {
-                Manifest manifest = jarInputStream.getManifest();
+                Manifest manifest = jar.getManifest();
                 String implementationVersion = null;
                 if (manifest != null) {
                     implementationVersion = manifest.getMainAttributes()
@@ -239,7 +237,7 @@ public class WLPluginProperties {
                 }
             } finally {
                 try {
-                    jarInputStream.close();
+                    jar.close();
                 } catch (IOException ex) {
                     LOGGER.log(Level.FINEST, null, ex);
                 }

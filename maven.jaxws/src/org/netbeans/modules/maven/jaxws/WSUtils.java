@@ -51,6 +51,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -58,8 +59,10 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
@@ -75,6 +78,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoints;
 import org.netbeans.modules.websvc.api.jaxws.project.config.EndpointsProvider;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.Retriever;
@@ -628,5 +632,105 @@ public class WSUtils {
         return null;
     }
 
+
+    public static void updateClients(Project prj, JAXWSLightSupport jaxWsSupport) {
+        // get old clients
+        List<JaxWsService> oldClients = new ArrayList<JaxWsService>();
+        Set<String> oldNames = new HashSet<String>();
+        for (JaxWsService s : jaxWsSupport.getServices()) {
+            if (!s.isServiceProvider()) {
+                oldClients.add(s);
+                oldNames.add(s.getLocalWsdl());
+            }
+        }
+        FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
+        if (wsdlFolder != null) {
+            List<JaxWsService> newClients = getJaxWsClients(prj, jaxWsSupport, wsdlFolder);
+            Set<String> commonNames = new HashSet<String>();
+            for (JaxWsService client : newClients) {
+                String localWsdl = client.getLocalWsdl();
+                if (oldNames.contains(localWsdl)) {
+                    commonNames.add(localWsdl);
+                }
+            }
+            // removing old clients
+            for (JaxWsService oldClient : oldClients) {
+                if (!commonNames.contains(oldClient.getLocalWsdl())) {
+                    jaxWsSupport.removeService(oldClient);
+                }
+            }
+            // add new clients
+            for (JaxWsService newClient : newClients) {
+                if (!commonNames.contains(newClient.getLocalWsdl())) {
+                    jaxWsSupport.addService(newClient);
+                }
+            }
+        } else {
+            // removing all clients
+            for (JaxWsService client : oldClients) {
+                jaxWsSupport.removeService(client);
+            }
+        }
+
+    }
+
+    public static void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder)  {
+        List<WsimportPomInfo> candidates = MavenModelUtils.getWsdlFiles(prj);
+        if (candidates.size() > 0) {
+            for (WsimportPomInfo candidate : candidates) {
+                String wsdlPath = candidate.getWsdlPath();
+                if (isClient(prj, jaxWsSupport, wsdlPath)) {
+                    JaxWsService client = new JaxWsService(wsdlPath, false);
+                    if (candidate.getHandlerFile() != null) {
+                        client.setHandlerBindingFile(candidate.getHandlerFile());
+                    }
+                    jaxWsSupport.addService(client);
+                }
+            }
+        } else {
+            // look for wsdl in wsdl folder
+        }
+    }
+
+    private static List<JaxWsService> getJaxWsClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder) {
+        List<WsimportPomInfo> canditates = MavenModelUtils.getWsdlFiles(prj);
+        List<JaxWsService> clients = new ArrayList<JaxWsService>();
+        for (WsimportPomInfo candidate : canditates) {
+            String wsdlPath = candidate.getWsdlPath();
+            if (isClient(prj, jaxWsSupport, wsdlPath)) {
+                JaxWsService client = new JaxWsService(wsdlPath, false);
+                if (candidate.getHandlerFile() != null) {
+                    client.setHandlerBindingFile(candidate.getHandlerFile());
+                }
+                clients.add(client);
+            }
+        }
+        return clients;
+    }
+
+    private static boolean isClient(Project prj, JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
+        Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class,true);
+        if (prefs != null) {
+            FileObject wsdlFo = getLocalWsdl(jaxWsSupport, localWsdlPath);
+            if (wsdlFo != null) {
+                // if client exists return true
+                if (prefs.get(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), null) != null) {
+                    return true;
+                // if service doesn't exist return true
+                } else if (prefs.get(MavenWebService.SERVICE_PREFIX+wsdlFo.getName(), null) == null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static FileObject getLocalWsdl(JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
+        FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
+        if (wsdlFolder!=null) {
+            return wsdlFolder.getFileObject(localWsdlPath);
+        }
+        return null;
+    }
     
 }

@@ -427,6 +427,7 @@ public abstract class NbTopManager {
     /** Interface describing basic control over window system. 
      * @since 1.15 */
     public interface WindowSystem {
+        void init();
         void show();
         void hide();
         void load();

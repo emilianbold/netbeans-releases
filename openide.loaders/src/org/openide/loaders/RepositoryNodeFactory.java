@@ -41,6 +41,8 @@
 
 package org.openide.loaders;
 
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -57,7 +59,11 @@ public abstract class RepositoryNodeFactory {
      * @return the default instance from lookup
      */
     public static RepositoryNodeFactory getDefault() {
-        return (RepositoryNodeFactory)Lookup.getDefault().lookup(RepositoryNodeFactory.class);
+        RepositoryNodeFactory rnf = Lookup.getDefault().lookup(RepositoryNodeFactory.class);
+        if (rnf == null) {
+            rnf = new Trivial();
+        }
+        return rnf;
     }
 
     /** Subclass constructor. */
@@ -72,5 +78,13 @@ public abstract class RepositoryNodeFactory {
      * @return a node showing part of the repository
      */
     public abstract Node repository(DataFilter f);
+
+    private static final class Trivial extends RepositoryNodeFactory {
+
+        public Node repository(DataFilter f) {
+            return new AbstractNode(Children.LEAF);
+        }
+
+    }
 
 }

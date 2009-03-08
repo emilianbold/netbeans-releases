@@ -46,8 +46,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.*;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-
-import org.netbeans.modules.bpel.project.IcanproConstants;
+import org.netbeans.modules.bpel.project.ProjectConstants;
 
 class BpelproActionProvider implements ActionProvider {
 
@@ -57,7 +56,7 @@ class BpelproActionProvider implements ActionProvider {
         COMMAND_CLEAN,
         COMMAND_REBUILD,
         COMMAND_DELETE, 
-        IcanproConstants.POPULATE_CATALOG,
+        ProjectConstants.POPULATE_CATALOG,
         COMMAND_DELETE,
         COMMAND_COPY,
         COMMAND_MOVE,
@@ -79,9 +78,9 @@ class BpelproActionProvider implements ActionProvider {
         commands.put(COMMAND_BUILD, new String[] {"dist_se"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
         commands.put(COMMAND_REBUILD, new String[] {"clean", "dist_se"}); // NOI18N
-        commands.put(IcanproConstants.POPULATE_CATALOG, new String[] {"populate"});
-        //commands.put(IcanproConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
-        //commands.put(IcanproConstants.COMMAND_DEPLOY, new String[] {"run"}); // NOI18N
+        commands.put(ProjectConstants.POPULATE_CATALOG, new String[] {"populate"});
+        //commands.put(ProjectConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
+        //commands.put(ProjectConstants.COMMAND_DEPLOY, new String[] {"run"}); // NOI18N
 
         this.antProjectHelper = antProjectHelper;
         this.project = project;
@@ -122,7 +121,7 @@ class BpelproActionProvider implements ActionProvider {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return ;
         }
-        if (command.equals(IcanproConstants.POPULATE_CATALOG)) {
+        if (command.equals(ProjectConstants.POPULATE_CATALOG)) {
             BpelProjectRetriever bpRetriever = new BpelProjectRetriever(project.getProjectDirectory());
             bpRetriever.execute();
             return;
@@ -130,7 +129,7 @@ class BpelproActionProvider implements ActionProvider {
         Properties p = null;
         String[] targetNames = (String[])commands.get(command);
         //EXECUTION PART    
-////        if (command.equals (IcanproConstants.COMMAND_DEPLOY) || command.equals (IcanproConstants.COMMAND_REDEPLOY)) {
+////        if (command.equals (ProjectConstants.COMMAND_DEPLOY) || command.equals (ProjectConstants.COMMAND_REDEPLOY)) {
 ////            if (!isSelectedServer ()) {
 ////                return;
 ////            }

@@ -50,13 +50,14 @@ import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.ChangeSupport;
@@ -111,15 +112,27 @@ public class RemoteServerList implements ServerList {
 
     /**
      * Get a ServerRecord pertaining to hkey. If needed, create the record.
+     *
+     * @param hkey The host key (either "localhost" or "user@host")
+     * @return A RemoteServerRecord for hkey
+     *
+     * TODO: deprecate and remove
+     */
+    public synchronized ServerRecord get(String hkey) {
+        return get(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
+    }
+
+    /**
+     * Get a ServerRecord pertaining to hkey. If needed, create the record.
      * 
      * @param hkey The host key (either "localhost" or "user@host")
      * @return A RemoteServerRecord for hkey
      */
-    public synchronized ServerRecord get(String hkey) {
+    public synchronized ServerRecord get(ExecutionEnvironment env) {
 
         // Search the active server list
 	for (RemoteServerRecord record : items) {
-            if (hkey.equals(record.getName())) {
+            if (env.equals(record.getExecutionEnvironment())) {
                 return record;
             }
 	}
@@ -127,13 +140,13 @@ public class RemoteServerList implements ServerList {
         // Search the unlisted servers list. These are records created by Tools->Options
         // which haven't been added yet (and won't until/unless OK is pressed in T->O).
 	for (RemoteServerRecord record : unlisted) {
-            if (hkey.equals(record.getName())) {
+            if (env.equals(record.getExecutionEnvironment())) {
                 return record;
             }
 	}
         
         // Create a new unlisted record and return it
-        RemoteServerRecord record = new RemoteServerRecord(hkey);
+        RemoteServerRecord record = new RemoteServerRecord(env);
         unlisted.add(record);
         return record;
     }
@@ -158,6 +171,14 @@ public class RemoteServerList implements ServerList {
             sa[i] = items.get(i).getName();
         }
         return sa;
+    }
+
+    public Collection<ExecutionEnvironment> getEnvironments() {
+        Collection<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(items.size());
+        for (RemoteServerRecord item : items) {
+            result.add(item.getExecutionEnvironment());
+        }
+        return result;
     }
     
     private void addServer(final String name, boolean asDefault, RemoteServerRecord.State state) {
@@ -256,26 +277,6 @@ public class RemoteServerList implements ServerList {
         getPreferences().put(REMOTE_SERVERS, sb.substring(0, sb.length() - 1));
     }
 
-    @Deprecated
-    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache) {
-        EditServerListDialog dlg = new EditServerListDialog(serverUpdateCache);
-        
-        DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_EditServerList"), true, 
-                    DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
-        dlg.setDialogDescriptor(dd);
-        dd.addPropertyChangeListener(dlg);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            ServerUpdateCache serverUpdateCache2 = new ServerUpdateCache();
-            serverUpdateCache2.setHostKeyList(dlg.getHostKeyList());
-            serverUpdateCache2.setDefaultIndex(dlg.getDefaultIndex());
-            return serverUpdateCache2;
-        } else {
-            return null;
-        }
-    }
-
     public boolean show(ToolsCacheManager cacheManager) {
         EditServerListDialog dlg = new EditServerListDialog(cacheManager);
         DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_EditServerList"), true,
@@ -312,7 +313,14 @@ public class RemoteServerList implements ServerList {
     }
 
     //TODO: why this is here?
+    //TODO: deprecate and remove
     public boolean isValidExecutable(String hkey, String path) {
+        return isValidExecutable(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), path);
+    }
+
+    //TODO: why this is here?
+    //TODO: deprecate and remove
+    public boolean isValidExecutable(ExecutionEnvironment env, String path) {
         if (path == null || path.length() == 0) {
             return false;
         }
@@ -320,11 +328,11 @@ public class RemoteServerList implements ServerList {
             log.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
         }
         String cmd = "test -x " + path; // NOI18N
-        int exit_status = RemoteCommandSupport.run(hkey, cmd);
+        int exit_status = RemoteCommandSupport.run(env, cmd);
         if (exit_status != 0 && !IpeUtils.isPathAbsolute(path)) {
             // Validate 'path' against user's PATH.
             cmd = "test -x " + "`which " + path + "`"; // NOI18N
-            exit_status = RemoteCommandSupport.run(hkey, cmd);
+            exit_status = RemoteCommandSupport.run(env, cmd);
         }
         return exit_status == 0;
     }

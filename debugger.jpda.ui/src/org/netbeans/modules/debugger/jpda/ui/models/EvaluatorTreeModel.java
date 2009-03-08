@@ -83,6 +83,7 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
             return ((SpecialNode)node).isLeaf();
         }
         return true;
+        //throw new UnknownTypeException(node.toString());
     }
 
     @Override
@@ -180,7 +181,7 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
 
     }
 
-    private static class HistoryNode extends SpecialNode {
+    static class HistoryNode extends SpecialNode {
 
         @Override
         Object [] getChildren(int from, int to) {
@@ -193,12 +194,16 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
             return vals;
         }
 
-//        @Override
-//        public boolean equals(Object o) {
-//            if (this == o) return true;
-//            if (!(o instanceof SpecialNode)) return false;
-//            return object.equals(((SpecialNode) o).object);
-//        }
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof HistoryNode;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            return hash;
+        }
 
         @Override
         String getDisplayName() {
@@ -229,9 +234,10 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel {
         String getValueAt(String columnID) {
             return ""; // NOI18N
         }
+
     }
 
-    private static class ItemNode extends SpecialNode {
+    static class ItemNode extends SpecialNode {
 
         HistoryPanel.Item item;
 

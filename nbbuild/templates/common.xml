@@ -257,7 +257,10 @@ made subject to such option by the copyright holder.
         </verifyclasslinkage>
     </target>
 
-    <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,module-xml-eager,javahelp,module-auto-deps,release,verify-class-linkage">
+    <target name="-verify-apichanges"/><!-- just for overriding -->
+
+    <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,
+            module-xml-eager,javahelp,module-auto-deps,release,verify-class-linkage,-verify-apichanges">
         <property name="module.files.toString" refid="module.files"/>
         <echo level="verbose">Basic matching module files: ${module.files.toString}</echo>
         <genlist outputfiledir="${cluster}" module="${module.jar}">

@@ -51,10 +51,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.execution.OutputWindowWriter;
 import org.netbeans.modules.cnd.execution.Unbuffer;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutionEngine;
@@ -78,7 +79,7 @@ public class NativeExecutor implements Runnable {
     private final String actionName;
     private final boolean parseOutputForErrors;
     private final boolean showInput;
-    private final String hkey;
+    private final ExecutionEnvironment execEnv;
     private final boolean unbuffer;
     
     private String rcfile;
@@ -96,7 +97,7 @@ public class NativeExecutor implements Runnable {
      * The real constructor. This class is used to manage native execution, but run and build.
      */
     public NativeExecutor(
-	    String hkey,
+	    ExecutionEnvironment execEnv,
             String runDir,
             String executable,
             String arguments,
@@ -106,8 +107,14 @@ public class NativeExecutor implements Runnable {
             boolean parseOutputForErrors,
             boolean showInput,
             boolean unbuffer) {
-        this.hkey = hkey;
+        this.execEnv = execEnv;
         this.runDir = runDir;
+        if (!new File(executable).exists() && new File(executable+".lnk").exists()) {
+            String resolved = LinkSupport.getOriginalFile(executable+".lnk");
+            if (resolved != null){
+                executable = resolved;
+            }
+        }
         this.executable = executable;
         this.arguments = arguments;
         this.envp = envp;
@@ -129,7 +136,8 @@ public class NativeExecutor implements Runnable {
             String actionName,
             boolean parseOutputForErrors,
             boolean showInput) {
-        this(CompilerSetManager.LOCALHOST, runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, showInput, false);
+        this(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), runDir, executable,
+                arguments, envp, tabName, actionName, parseOutputForErrors, showInput, false);
     }
     
     /** targets may be null to indicate default target */
@@ -204,7 +212,7 @@ public class NativeExecutor implements Runnable {
                     //try to resolve from the root
                     exeFile = new File(executable);
                 }
-                for (String envEntry : Unbuffer.getUnbufferEnvironment(hkey, exeFile.getAbsolutePath())) {
+                for (String envEntry : Unbuffer.getUnbufferEnvironment(execEnv, exeFile.getAbsolutePath())) {
                     envpList.add(envEntry);
                 }
             } catch (Exception ex) {
@@ -231,7 +239,7 @@ public class NativeExecutor implements Runnable {
             originalWriter = new OutputWriterProxy(originalWriter, outputListener);
         }
         if (parseOutputForErrors) {
-            out = new PrintWriter(new OutputWindowWriter(hkey, originalWriter, FileUtil.toFileObject(runDirFile), parseOutputForErrors));
+            out = new PrintWriter(new OutputWindowWriter(execEnv, originalWriter, FileUtil.toFileObject(runDirFile), parseOutputForErrors));
         } else {
             out = originalWriter;
         }
@@ -244,7 +252,7 @@ public class NativeExecutor implements Runnable {
         
         try {
             // Execute the selected command
-            nativeExecution = NativeExecution.getDefault(hkey).getNativeExecution();
+            nativeExecution = NativeExecution.getDefault(execEnv).getNativeExecution();
             rc = nativeExecution.executeCommand(
                     runDirFile,
                     executable,
@@ -322,8 +330,8 @@ public class NativeExecutor implements Runnable {
     
     private void executionStarted() {
         if(showHeader) {
-            String runDirToShow = CompilerSetManager.LOCALHOST.equals(hkey) ?
-                runDir : HostInfoProvider.getDefault().getMapper(hkey).getRemotePath(runDir);
+            String runDirToShow = execEnv.isLocal() ?
+                runDir : HostInfoProvider.getDefault().getMapper(execEnv).getRemotePath(runDir);
             
             String preText = MessageFormat.format(getString("PRETEXT"),
 		    exePlusArgsQuoted(executable, arguments), runDirToShow);

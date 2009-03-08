@@ -91,7 +91,7 @@ public final class EventSourceCD extends ComponentDescriptor {
         );
     }
 
-    public DefaultPropertiesPresenter createPropertiesPresenter () {
+    public Presenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_ACTION_PROPERTIES)
                 .addProperty(NbBundle.getMessage(EventSourceCD.class, "DISP_EventSource_Action"), PropertyEditorEventHandler.createInstance(), PROP_EVENT_HANDLER) // NOI18N
@@ -101,7 +101,7 @@ public final class EventSourceCD extends ComponentDescriptor {
 
     private InspectorPositionController[] createPositionControllers() {
         return new InspectorPositionController[]{ new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_COMMANDS),
-                                                  new ChildrenByTypePC(PointCD.TYPEID, MobileDeviceCD.TYPEID, ListElementEventSourceCD.TYPEID),
+                                                  new ChildrenByTypePC(PointCD.TYPEID, MobileDeviceCD.TYPEID, ListElementEventSourceCD.TYPEID)
                                                 };
     }
 

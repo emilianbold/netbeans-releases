@@ -45,16 +45,20 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Set;
 import javax.lang.model.element.*;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.WhereUsedElement;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.SourceUtilsEx;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
@@ -184,14 +188,21 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         return set;
     }
     
-    private static Set<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
-        Set<FileObject> set = new HashSet<FileObject>();
-        for (ElementHandle<TypeElement> e : RetoucheUtils.getImplementorsAsHandles(idx, cpInfo, el)) {
-            FileObject fo = SourceUtils.getFile(e, cpInfo);
-            assert fo != null : "issue 90196, Cannot find file for " + e + ". cpInfo=" + cpInfo;
-            set.add(fo);
+    private static Collection<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
+        Set<?> implementorsAsHandles = RetoucheUtils.getImplementorsAsHandles(idx, cpInfo, el);
+
+        @SuppressWarnings("unchecked")
+        Collection<FileObject> set = SourceUtilsEx.getFiles((Collection<ElementHandle<? extends Element>>) implementorsAsHandles, cpInfo);
+
+        // filter out files that are not on source path
+        ClassPath source = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+        Collection<FileObject> set2 = new ArrayList<FileObject>(set.size());
+        for (FileObject fo : set) {
+            if (source.contains(fo)) {
+                set2.add(fo);
+            }
         }
-        return set;
+        return set2;
     }
     
     //@Override

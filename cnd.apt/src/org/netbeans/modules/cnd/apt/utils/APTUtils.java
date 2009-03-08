@@ -203,16 +203,16 @@ public class APTUtils {
         return retValue.toString();
     }
     
-    public static String includes2String(List<String> includePaths) {
+    public static CharSequence includes2String(List<? extends CharSequence> includePaths) {
         StringBuilder retValue = new StringBuilder();
-        for (Iterator<String> it = includePaths.iterator(); it.hasNext();) {
-            String path = it.next();
+        for (Iterator<? extends CharSequence> it = includePaths.iterator(); it.hasNext();) {
+            CharSequence path = it.next();
             retValue.append(path);
             if (it.hasNext()) {
                 retValue.append('\n'); // NOI18N
             }
         }
-        return retValue.toString();
+        return retValue;
     }
     
     public static boolean isPreprocessorToken(Token token) {
@@ -517,7 +517,7 @@ public class APTUtils {
         }
     };
     
-    private static class APTEOFToken extends APTTokenAbstact {
+    private static final class APTEOFToken extends APTTokenAbstact {
         public APTEOFToken() {
         }
         
@@ -575,5 +575,17 @@ public class APTUtils {
         public int getType() {
             return APTTokenTypes.EOF;
         }
+
+        @Override
+        public int hashCode() {
+            return 1;
+        }
+
+        @Override
+        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+        public boolean equals(Object obj) {
+            return this == obj;
+        }
+
     }
 }

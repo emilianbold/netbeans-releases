@@ -235,23 +235,6 @@ public class LogRecordsTest extends NbTestCase {
         
     }
     
-    public void testCanReadEmpty() throws Exception {
-        InputStream is = getClass().getResourceAsStream("Empty.xml");
-        int cnt = 0;
-        TestHandler records = new TestHandler(is);
-        for (;;) {
-            LOG.log(Level.INFO, "Reading {0}th record", cnt);
-            LogRecord r = records.read();
-            if (r == null) {
-                break;
-            }
-            LOG.log(Level.INFO, "Read {0}th record", cnt);
-            cnt++;
-        }
-        is.close();
-        
-        assertEquals("No records", 0, cnt);
-    }
     public void testMakeSureItIsScannable() throws Exception {
         InputStream is = getClass().getResourceAsStream("NB1216449736.xml");
         int cnt = 0;
@@ -453,7 +436,12 @@ public class LogRecordsTest extends NbTestCase {
         
         H h = new H();
         is = getClass().getResourceAsStream(what);
-        LogRecords.scan(is, h);
+        try{
+            LogRecords.scan(is, h);
+            fail("IO Exception should be thrown");
+        }catch(IOException notif){
+            // OK
+        }
         is.close();
         
         assertEquals("The same amount of records", expectRecords, h.cnt);

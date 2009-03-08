@@ -45,10 +45,13 @@ import java.awt.Component;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.logging.Level;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.awt.MenuBarTest.MyAction;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -75,10 +78,11 @@ public class ToolbarPoolTest extends NbTestCase {
         return 30000;
     }
     
+    @Override
     protected Level logLevel() {
         return Level.FINE;
     }
-    
+
     protected void setUp() throws Exception {
         FileObject root = FileUtil.getConfigRoot();
         toolbars = FileUtil.createFolder (root, "Toolbars");
@@ -150,6 +154,39 @@ public class ToolbarPoolTest extends NbTestCase {
         
         assertLabels ("Now there are two", 2, myTlbs[0]);
     }
+
+    public void testWhoCreatesConstructor() throws Exception {
+        FileObject root = FileUtil.getConfigRoot();
+        FileObject fo = FileUtil.createFolder (root, "ToolbarsWhoCreates");
+        final DataFolder df = DataFolder.findFolder(fo);
+        ToolbarPool pool = new ToolbarPool(df);
+
+        assertEquals("No children now", 0, pool.getToolbars().length);
+
+        class Atom implements FileSystem.AtomicAction {
+
+            FileObject m1, m2;
+
+            public void run() throws IOException {
+                m1 = FileUtil.createFolder(df.getPrimaryFile(), "m1");
+                DataFolder f1 = DataFolder.findFolder(m1);
+                InstanceDataObject.create(f1, "X", MyAction.class);
+            }
+        }
+        Atom atom = new Atom();
+        df.getPrimaryFile().getFileSystem().runAtomicAction(atom);
+        pool.waitFinished();
+
+        assertEquals("One toolbar is there", 1, pool.getToolbars().length);
+        Toolbar tb = pool.getToolbars()[0];
+        assertEquals("Pool name", "m1", tb.getName());
+        assertEquals("Has one subcomponent", 1, tb.getComponents().length);
+        Object o1 = tb.getComponent(0);
+        if (!(o1 instanceof JButton)) {
+            fail("Need JPanel " + o1);
+        }
+        assertEquals("And now the action is created", 1, MyAction.counter);
+    }
     
     private static Object writeInstance (final FileObject folder, final String name, final Object inst) throws IOException {
         class W implements FileSystem.AtomicAction {
@@ -164,9 +201,7 @@ public class ToolbarPoolTest extends NbTestCase {
                 lock.releaseLock ();
                 
                 DataObject obj = DataObject.find (fo);
-                InstanceCookie ic =     
-                    (InstanceCookie)
-                    obj.getCookie (InstanceCookie.class);
+                InstanceCookie ic = obj.getCookie(InstanceCookie.class);
                 
                 assertNotNull ("Cookie created", ic);
                 try {

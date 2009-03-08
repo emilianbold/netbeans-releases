@@ -67,6 +67,7 @@ import org.netbeans.modules.dlight.api.impl.TreeTableNode;
 import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
@@ -89,7 +90,7 @@ import org.openide.util.datatransfer.PasteType;
  * @author mt154047
  */
 class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
-    Visualizer<TreeTableVisualizerConfiguration>, OnTimerTask, ComponentListener {
+        Visualizer<TreeTableVisualizerConfiguration>, OnTimerTask, ComponentListener {
 
     //public static final String IS_CALLS = "TopTenFunctionsIsCalls"; // NOI18N
     private boolean isShown = true;
@@ -108,8 +109,8 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     protected boolean isEmptyContent;
 
     TreeTableVisualizer(TreeTableVisualizerConfiguration configuration,
-        TreeTableDataProvider<T> dataProvider) {
-        timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
+            TreeTableDataProvider<T> dataProvider) {
+        //timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.configuration = configuration;
         this.dataProvider = dataProvider;
         treeModel = new DefaultTreeModel(TREE_ROOT);
@@ -167,7 +168,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
         asyncFillModel(configuration.getMetadata().getColumns());
 
-        if (timerHandler.isSessionRunning()) {
+        if (timerHandler != null && timerHandler.isSessionRunning()) {
             timerHandler.startTimer();
             return;
 
@@ -183,7 +184,9 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     @Override
     public void removeNotify() {
         super.removeNotify();
-        timerHandler.stopTimer();
+        if (timerHandler != null) {
+            timerHandler.stopTimer();
+        }
         removeComponentListener(this);
         VisualizerTopComponentTopComponent.findInstance().removeComponentListener(this);
     }
@@ -230,9 +233,9 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         this.removeAll();
         setLayout(new BorderLayout());
         buttonsToolbar =
-            new JToolBar();
+                new JToolBar();
         refresh =
-            new JButton();
+                new JButton();
 
         buttonsToolbar.setFloatable(false);
         buttonsToolbar.setOrientation(1);
@@ -255,7 +258,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
         add(buttonsToolbar, BorderLayout.LINE_START);
         mainPanel =
-            new JPanel();
+                new JPanel();
         mainPanel.removeAll();
         add(mainPanel, BorderLayout.CENTER);
 
@@ -399,11 +402,11 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         });
         List<Model> models = new ArrayList<Model>();
         treeModelImpl =
-            new TreeModelImpl();
+                new TreeModelImpl();
 
         models.add(treeModelImpl);//tree model
         tableModelImpl =
-            new TableModelImpl();
+                new TableModelImpl();
         models.add(tableModelImpl);
         models.addAll(columns);
         models.add(new NodeModelImpl());
@@ -411,9 +414,9 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             models.add(TreeTableVisualizerConfigurationAccessor.getDefault().getNodesActionProvider(configuration));
         }
         compoundModel =
-            Models.createCompoundModel(models);
+                Models.createCompoundModel(models);
         treeTableView =
-            Models.createView(compoundModel);
+                Models.createView(compoundModel);
         mainPanel.setLayout(new BorderLayout());
         mainPanel.add(treeTableView, BorderLayout.CENTER);
 
@@ -428,12 +431,12 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     }
 
     protected final void asyncFillModel(final List<Column> columns) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        DLightExecutorService.submit(new Runnable() {
 
             public void run() {
                 syncFillModel(columns);
             }
-        });
+        }, "Async TreeTableVisualizer model fill " + configuration.getID()); // NOI18N
 
     }
 
@@ -486,23 +489,33 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     }
 
     protected void loadTree(final DefaultMutableTreeNode rootNode,
-        final List<T> path) {
+            final List<T> path) {
         //we should show Loading Node
         //this.functionsCallTreeModel.get
-        //go away from AWT Thread
-        RequestProcessor.getDefault().post(new Runnable() {
+        Runnable r = new Runnable() {
 
             public void run() {
-                List<T> result = null;
-                result =
-                    dataProvider.getChildren(path);
-                updateTree(rootNode, result);
+                final List<T> result = dataProvider.getChildren(path);
+                UIThread.invoke(new Runnable() {
+
+                    public void run() {
+                        updateTree(rootNode, result);
+                    }
+                });
             }
-        });
+        };
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            DLightExecutorService.submit(r,
+                    "Loading data for TreeTableVisualizer " + configuration.getID()); // NOI18N
+        } else {
+            r.run();
+        }
+
     }
 
     protected void updateTree(final DefaultMutableTreeNode rootNode,
-        List<T> result) {
+            List<T> result) {
         //add them all as a children to rootNode
         rootNode.removeAllChildren();
         if (result != null) {
@@ -630,7 +643,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             if (TreeTableVisualizerConfigurationAccessor.getDefault().isTableView(configuration)) {
                 return true;
             }
-            return timerHandler.isSessionRunning();
+            return timerHandler != null && timerHandler.isSessionRunning();
         }
 
         public int getChildrenCount(Object node) throws UnknownTypeException {
@@ -757,10 +770,12 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
                             return nodes.get(value + "");
                         }
                     }
-                    if (TreeTableVisualizerConfigurationAccessor.getDefault().getTreeColumn(configuration).getColumnClass() == String.class){
-                        return  value + "";
+                    if (TreeTableVisualizerConfigurationAccessor.getDefault().getTreeColumn(configuration).getColumnClass() == String.class) {
+                        return value + "";
                     }
-                    RequestProcessor.getDefault().post(new Runnable() {
+
+                    DLightExecutorService.submit(new Runnable() {
+
                         public void run() {
                             PropertyEditor editor = PropertyEditorManager.findEditor(TreeTableVisualizerConfigurationAccessor.getDefault().getTreeColumn(configuration).getColumnClass());
                             if (editor != null) {
@@ -771,7 +786,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
                                 fireNodeModelChanged(finalNodeObject);
                             }
                         }
-                    });
+                    }, "insight getDisplayName.. "); // NOI18N
                     return "...";
 
                 } else {
@@ -873,6 +888,5 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             return null;
         }
     }
-
 }
 

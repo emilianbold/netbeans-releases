@@ -159,34 +159,25 @@ public class SVGDefaultListCellRenderer extends TextRenderer
             }
         }
         
-        /*list.getForm().invokeLaterSafely(new Runnable() {
-            public void run() {*/
-                content.appendChild(textElement);
-            /*}
-        });*/
+        
+        content.appendChild(textElement);
         
         return new SVGLabel( list.getForm() ,textElement );
     }
     
     private void showSelection( final SVGList list, final int index , 
             boolean focused) 
-    {
-        /*list.getForm().invokeLaterSafely(new Runnable() {
+ {
 
-            public void run() {*/
-                SVGLocatableElement selection = list.getSelection();
-                
-                if ( selection == null ){
-                    throw new IllegalArgumentException("List argument "
-                            + "doesn't contain nested 'selection' element"
-                            + ". Unable render any value.");        // NOI18N
-                }
-                
-                selection = createSelection( list , selection , index , focused);
-                list.getCurrentSelection().appendChild( selection );
-                
-            /*}
-        });*/
+        SVGLocatableElement selection = list.getSelection();
+
+        if (selection == null) {
+            throw new IllegalArgumentException("List argument " + "doesn't contain nested 'selection' element" + ". Unable render any value.");        // NOI18N
+        }
+
+        selection = createSelection(list, selection, index, focused);
+        list.getCurrentSelection().appendChild(selection);
+
     }
     
     private SVGLocatableElement createSelection( final SVGList list, 

@@ -115,7 +115,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.ShortCircuitProgressObject;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.DomainEditor;
+import org.netbeans.modules.glassfish.eecommon.api.DomainEditor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -1560,23 +1560,25 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     }
     
     public HashMap getSunDatasourcesFromXml(){
-        DomainEditor dEditor = new DomainEditor(this);
-        return dEditor.getSunDatasourcesFromXml();
+        return getDomainEditor().getSunDatasourcesFromXml();
     }
     
     public HashMap getConnPoolsFromXml(){
-        DomainEditor dEditor = new DomainEditor(this);
-        return dEditor.getConnPoolsFromXml();
+        return getDomainEditor().getConnPoolsFromXml();
     }
     
     public HashMap getAdminObjectResourcesFromXml(){
-        DomainEditor dEditor = new DomainEditor(this);
-        return dEditor.getAdminObjectResourcesFromXml();
+        return getDomainEditor().getAdminObjectResourcesFromXml();
     }
     
     public void createSampleDataSourceinDomain(){
-        DomainEditor dEditor = new DomainEditor(this);
-        dEditor.createSampleDatasource();
+        getDomainEditor().createSampleDatasource();
+    }
+
+    private DomainEditor getDomainEditor(){
+         DeploymentManagerProperties dmProps = new DeploymentManagerProperties(this);
+         DomainEditor de = new DomainEditor(dmProps.getLocation(), dmProps.getDomainName(), true);
+         return de;
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {

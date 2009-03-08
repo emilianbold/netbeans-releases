@@ -47,7 +47,6 @@
 
 package org.netbeans.modules.websvc.customization.multiview;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -55,14 +54,12 @@ import java.awt.event.ItemListener;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
-import org.netbeans.modules.websvc.customization.model.JavaMethod;
-import org.netbeans.modules.websvc.customization.model.PortCustomization;
-import org.netbeans.modules.websvc.customization.model.Provider;
-import org.netbeans.modules.websvc.customization.model.JAXWSQName;
+import org.netbeans.modules.websvc.api.customization.model.JavaMethod;
+import org.netbeans.modules.websvc.api.customization.model.PortCustomization;
+import org.netbeans.modules.websvc.api.customization.model.Provider;
+import org.netbeans.modules.websvc.api.customization.model.JAXWSQName;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
@@ -98,13 +95,13 @@ public class PortPanel extends SaveableSectionInnerPanel {
         sync();
         
         defaultListener = new DefaultItemListener();
-        ItemListener itemListener = (ItemListener)WeakListeners.create(ItemListener.class, defaultListener,
+        ItemListener itemListener = WeakListeners.create(ItemListener.class, defaultListener,
                 defaultMethodCB);
         defaultMethodCB.addItemListener(itemListener);
         
-        if(!isClient()){
+        if(!isClient(node)){
             providerActionListener = new ProviderActionListener();
-            ActionListener providerListener = (ActionListener)WeakListeners.create(ActionListener.class,
+            ActionListener providerListener = WeakListeners.create(ActionListener.class,
                     providerActionListener, providerCB);
             providerCB.addActionListener(providerListener);
         } else{
@@ -144,11 +141,6 @@ public class PortPanel extends SaveableSectionInnerPanel {
                 setValue(providerCB, null);
             }
         }
-    }
-    
-    private boolean isClient(){
-        Client client = (Client)node.getLookup().lookup(Client.class);
-        return client != null;
     }
     
     private String getParentOfPort(Port port){

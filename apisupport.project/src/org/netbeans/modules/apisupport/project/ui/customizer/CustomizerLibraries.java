@@ -52,6 +52,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionListener;
@@ -59,6 +60,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.DependencyListModel;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -69,6 +71,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
+import org.openide.util.RequestProcessor;
 
 /**
  * Represents <em>Libraries</em> panel in NetBeans Module customizer.
@@ -114,9 +117,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     // set new platform
                     getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
-                    // refresh dependencies list
-                    dependencyList.setModel(getProperties().getDependenciesListModel());
-                    updateEnabled();
+                    runDependenciesListModelRefresh();
                 }
             }
         });
@@ -143,7 +144,27 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
             }
         });
     }
-    
+
+    private DependencyListModel newModel;
+
+    private void runDependenciesListModelRefresh() {
+        dependencyList.setModel(CustomizerComponentFactory.createListWaitModel());
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                // generate fresh dependencies list
+                newModel = getProperties().getDependenciesListModel();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        dependencyList.setModel(newModel);
+                        newModel = null;
+                        updateEnabled();
+                    }
+                });
+            }
+        });
+        updateEnabled();
+    }
+
     private void refreshJavaPlatforms() {
         javaPlatformCombo.setModel(JavaPlatformComponentFactory.javaPlatformListModel());
         javaPlatformCombo.setSelectedItem(getProperties().getActiveJavaPlatform());
@@ -155,12 +176,17 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     }
     
     private void updateEnabled() {
+        // add and OK is disabled in waitmodel
+        // TODO C.P how to disable OK?
+        boolean okEnabled = ! CustomizerComponentFactory.isWaitModel(dependencyList.getModel());
         // if there is no selection disable edit/remove buttons
-        boolean enabled = dependencyList.getModel().getSize() > 0 &&
-                getProperties().isActivePlatformValid() && dependencyList.getSelectedIndex() != -1;
+        boolean enabled = dependencyList.getModel().getSize() > 0 
+                && okEnabled
+                && getProperties().isActivePlatformValid()
+                && dependencyList.getSelectedIndex() != -1;
         editDepButton.setEnabled(enabled);
         removeDepButton.setEnabled(enabled);
-        addDepButton.setEnabled(getProperties().isActivePlatformValid());
+        addDepButton.setEnabled(okEnabled && getProperties().isActivePlatformValid());
         boolean javaEnabled = getProperties().isNetBeansOrg() ||
                 (getProperties().isStandalone() &&
                 /* #71631 */ ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1);

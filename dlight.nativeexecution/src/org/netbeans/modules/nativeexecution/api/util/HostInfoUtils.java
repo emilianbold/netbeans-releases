@@ -19,9 +19,12 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * Utility class that provides information about particual host.
@@ -197,6 +200,12 @@ public final class HostInfoUtils {
         return result;
     }
 
+    public static String getShell(ExecutionEnvironment execEnv)
+            throws ConnectException {
+        HostInfo info = getHostInfo(execEnv);
+        return info.shell;
+    }
+
     static synchronized void updateHostInfo(ExecutionEnvironment execEnv) {
         if (execEnv.isLocal()) {
             hostInfo.put(execEnv, getLocalHostInfo());
@@ -223,10 +232,58 @@ public final class HostInfoUtils {
 
     private static HostInfo getLocalHostInfo() {
         HostInfo info = new HostInfo();
-        info.os = System.getProperty("os.name");
-        info.platform = System.getProperty("os.arch");
-        info.instructionSet = System.getProperty("sun.cpu.isalist").contains("amd64") ? "64" : "32";
+        info.os = System.getProperty("os.name"); // NOI18N
+        info.platform = System.getProperty("os.arch"); // NOI18N
+        info.instructionSet = System.getProperty("sun.cpu.isalist").contains("amd64") ? "64" : "32"; // NOI18N
+
+        if (Utilities.isWindows()) {
+            String cygwinRoot = queryWindowsRegistry(
+                    "HKLM\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/", // NOI18N
+                    "native", // NOI18N
+                    ".*native.*REG_SZ(.*)"); // NOI18N
+
+            if (cygwinRoot != null) {
+                info.shell = cygwinRoot + "\\bin\\sh"; // NOI18N
+            } else {
+                // TODO: mingGW, no *nix emulator...
+                info.shell = null;
+            }
+            
+        } else {
+            info.shell = "/bin/sh"; // NOI18N
+        }
+
         return info;
+    }
+
+    private static String queryWindowsRegistry(String key, String param, String regExpr) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                    "c:\\windows\\system32\\reg.exe", // NOI18N
+                    "query", key, "/v", param); // NOI18N
+            Process p = pb.start();
+            String s;
+            Pattern pattern = Pattern.compile(regExpr);
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            try {
+                p.waitFor();
+            } catch (InterruptedException ex) {
+            }
+
+            while (true) {
+                s = br.readLine();
+                if (s == null) {
+                    break;
+                }
+                Matcher m = pattern.matcher(s);
+                if (m.matches()) {
+                    return m.group(1).trim();
+                }
+            }
+        } catch (IOException e) {
+        }
+
+        return null;
     }
 
     private static HostInfo getRemoteHostInfo(Session session) {
@@ -236,7 +293,8 @@ public final class HostInfoUtils {
         command.append("U=/bin/uname &&"); // NOI18N
         command.append("O=`$U -s` && /bin/echo $O &&"); // NOI18N
         command.append("P=`$U -p` && test 'unknown' = $P && $U -m || echo $P &&"); // NOI18N
-        command.append("test 'SunOS' = $O && /bin/isainfo -b || $U -a | grep x86_64 || echo 32"); // NOI18N
+        command.append("test 'SunOS' = $O && /bin/isainfo -b || $U -a | grep x86_64 || echo 32 &&"); // NOI18N
+        command.append("/bin/ls /bin/sh 2>/dev/null || /bin/ls /usr/bin/sh 2>/dev/null"); // NOI18N
 
         try {
             echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
@@ -271,6 +329,8 @@ public final class HostInfoUtils {
                     case 2:
                         info.instructionSet = str.trim().toLowerCase();
                         break;
+                    case 3:
+                        info.shell = str.trim().toLowerCase();
                 }
                 lineno++;
             }
@@ -286,6 +346,7 @@ public final class HostInfoUtils {
         String os;
         String platform;
         String instructionSet;
+        String shell;
 
         @Override
         public String toString() {

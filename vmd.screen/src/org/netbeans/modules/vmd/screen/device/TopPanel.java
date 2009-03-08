@@ -311,10 +311,13 @@ public class TopPanel extends JPanel {
         ScreenDisplayPresenter presenter = component != null ? component.getPresenter(ScreenDisplayPresenter.class) : null;
         if (presenter == null)
             return;
-        if (devicePanel.getController().getDocument().getSelectedComponents().contains(component)) {
+        Collection<DesignComponent> selectedComponents =
+                devicePanel.getController().getDocument().getSelectedComponents();
+        if (selectedComponents.contains(component)) {
             Shape shape = presenter.getSelectionShape();
             if (shape != null) {
-                Point point = devicePanel.calculateTranslation(presenter.getView());
+                Point point = devicePanel.calculateTranslation(
+                        presenter.getView(), presenter.getLocation());
                 boolean containsInjector = false;
                 for (ScreenInjectorPresenter injector : component.getPresenters(ScreenInjectorPresenter.class)) {
                     if (injector.isEnabled()) {
@@ -344,14 +347,14 @@ public class TopPanel extends JPanel {
                         document.setSelectedComponents(ScreenViewController.SCREEN_ID, list);
                     }
                 } else {
-                    if (component == null)
+                    if (component == null) {
                         document.setSelectedComponents(ScreenViewController.SCREEN_ID, Collections.<DesignComponent>emptySet());
-                    else if (! document.getSelectedComponents().contains(component)){
-                        if ( component.getPresenter( ScreenDisplayPresenter.class) != null ){
-                            component.getPresenter( ScreenDisplayPresenter.class).
+                    } else if (!document.getSelectedComponents().contains(component)) {
+                        if (component.getPresenter(ScreenDisplayPresenter.class) != null) {
+                            component.getPresenter(ScreenDisplayPresenter.class).
                                     getView().requestFocusInWindow();
                         }
-                        document.setSelectedComponents(ScreenViewController.SCREEN_ID, 
+                        document.setSelectedComponents(ScreenViewController.SCREEN_ID,
                                 Collections.singleton(component));
                     }
                 }
@@ -371,12 +374,19 @@ public class TopPanel extends JPanel {
                     if (properties == null)
                         return;
                     for (ScreenPropertyDescriptor property : properties) {
-                        Point editorOrigin = devicePanel.calculateTranslation(property.getRelatedView());
+                        Point editorOrigin = devicePanel.calculateTranslation(property.getRelatedView(), property.getViewLocation());
                         Shape shape = property.getSelectionShape();
                         if (shape.contains(new Point(point.x - editorOrigin.x, point.y - editorOrigin.y))) {
                             hoverShape = new SelectionShape(editorOrigin.x, editorOrigin.y, shape, Long.MIN_VALUE, false);
                             return;
                         }
+                    }
+                    // added to show hover even if there is no screen properties.
+                    // Useful for SVG components
+                    if (presenter != null){
+                        Point point = devicePanel.calculateTranslation(presenter.getView(), presenter.getLocation());
+                        hoverShape = new SelectionShape(point.x, point.y, presenter.getSelectionShape(), component.getComponentID(), false);
+                        return;
                     }
                     hoverShape = null;
                 }
@@ -392,9 +402,9 @@ public class TopPanel extends JPanel {
                 public void run() {
                     DesignComponent component = devicePanel.getDesignComponentAt(lastHoverPoint);
                     ScreenDisplayPresenter presenter = component != null ? component.getPresenter(ScreenDisplayPresenter.class) : null;
-                    Point editorOrigin = devicePanel.calculateTranslation(presenter.getView());
+                    Point editorOrigin = devicePanel.calculateTranslation(presenter.getView(), presenter.getLocation());
                     Shape shape = presenter.getSelectionShape();
-                    if (shape.contains(new Point(point.x - editorOrigin.x, point.y - editorOrigin.y))) {
+                    if (shape != null && shape.contains(new Point(point.x - editorOrigin.x, point.y - editorOrigin.y))) {
                         hoverShape = new SelectionShape(editorOrigin.x, editorOrigin.y, shape, Long.MIN_VALUE, false);
                         return;
                     }
@@ -415,7 +425,7 @@ public class TopPanel extends JPanel {
                     ScreenDisplayPresenter presenter = component != null ? component.getPresenter(ScreenDisplayPresenter.class) : null;
                     if (presenter == null)
                         return;
-                    Point editorOrigin = devicePanel.calculateTranslation(presenter.getView());
+                    Point editorOrigin = devicePanel.calculateTranslation(presenter.getView(), presenter.getLocation());
                     double halfVertical = presenter.getView().getHeight() / 2;
                     double halfHorizontal = presenter.getView().getWidth() / 2;
                     if ((editorOrigin.getY() + halfVertical) > point.getY())
@@ -534,8 +544,9 @@ public class TopPanel extends JPanel {
                     return;
                 for (ScreenPropertyDescriptor property : properties) {
                     JComponent relatedView = property.getRelatedView();
+                    Point viewLocation = property.getViewLocation();
                     Shape shape = property.getSelectionShape();
-                    Point editorOrigin = devicePanel.calculateTranslation(relatedView);
+                    Point editorOrigin = devicePanel.calculateTranslation(relatedView, viewLocation);
                     if (shape.contains(new Point(e.getX() - editorOrigin.x, e.getY() - editorOrigin.y))) {
                         Rectangle bounds = shape.getBounds();
                         JComponent editorView = property.getEditor().createEditorComponent(property);

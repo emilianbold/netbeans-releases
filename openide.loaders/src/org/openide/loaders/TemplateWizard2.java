@@ -43,11 +43,12 @@ package org.openide.loaders;
 
 import java.awt.event.KeyEvent;
 import java.beans.PropertyDescriptor;
+import java.io.File;
 import java.io.IOException;
-import java.lang.ref.*;
 import java.lang.reflect.Method;
 import javax.swing.*;
 import javax.swing.event.*;
+import org.openide.WizardDescriptor;
 import org.openide.explorer.propertysheet.*;
 import org.openide.filesystems.*;
 import org.openide.util.*;
@@ -62,8 +63,7 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
     private ChangeListener listener;
     
     private static final String PROP_LOCATION_FOLDER = "locationFolder"; // NOI18N
-    private DataFolder locationFolder;
-    private Reference<FileSystem> fileSystemRef = new WeakReference<FileSystem>(null);
+    private File locationFolder;
     private DefaultPropertyModel locationFolderModel;
 
     /** File extension of the template and of the created file -
@@ -93,9 +93,11 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
         try {
             Method getterMethod = this.getClass ().getDeclaredMethod("getLocationFolder", new Class[] {}); // NOI18N
             getterMethod.setAccessible (true);
-            Method setterMethod = this.getClass ().getDeclaredMethod("setLocationFolder", new Class[] {DataFolder.class}); // NOI18N
+            Method setterMethod = this.getClass ().getDeclaredMethod("setLocationFolder", new Class[] {File.class}); // NOI18N
             setterMethod.setAccessible (true);
             pd = new PropertyDescriptor (PROP_LOCATION_FOLDER, getterMethod, setterMethod);
+            pd.setValue("directories", true); // NOI18N
+            pd.setValue("files", false); // NOI18N
         } catch (java.beans.IntrospectionException ie) {
             Exceptions.printStackTrace(ie);
         } catch (NoSuchMethodException nsme) {
@@ -203,7 +205,7 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
         setNewObjectName (wizard.getTargetName ());
 
         try {
-            setLocationFolder (wizard.getTargetFolder ());
+            setLocationDataFolder(wizard.getTargetFolder());
         } catch (IOException ioe) {
             setLocationFolder (null);
         }
@@ -235,7 +237,7 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
     void implStoreSettings(Object settings) {
         TemplateWizard wizard = (TemplateWizard)settings;
 
-        wizard.setTargetFolder (locationFolder);
+        wizard.setTargetFolder(getLocationDataFolder());
 
         String name = newObjectName.getText ();
         if (name.equals (defaultNewObjectName ())) {
@@ -252,33 +254,20 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
     */
     String implIsValid () {
         // test whether the selected folder on selected filesystem already exists
-        FileSystem fs = fileSystemRef.get();
-        if (locationFolder == null || fs == null)
+        DataFolder lF = getLocationDataFolder();
+        if (lF == null)
             return NbBundle.getMessage(TemplateWizard2.class, "MSG_fs_or_folder_does_not_exist"); // NOI18N
         
         // target filesystem should be writable
-        if (fileSystemRef.get().isReadOnly())
+        if (!lF.getPrimaryFile().canWrite())
             return NbBundle.getMessage(TemplateWizard2.class, "MSG_fs_is_readonly"); // NOI18N
         
-        if (locationFolder == null) locationFolder = DataFolder.findFolder (fs.getRoot());
-        
-        // test whether the selected name already exists
-        StringBuffer sb = new StringBuffer ();
-        sb.append (locationFolder.getPrimaryFile ().getPath ());
-        sb.append ("/");
-        sb.append (newObjectName.getText ());
-        if ("" != extension) { // NOI18N
-            sb.append ('.');
-            sb.append (extension);
-        }
-        
-        FileObject f = fs.findResource (sb.toString ());
-        if (f != null) {
-            return NbBundle.getMessage(TemplateWizard2.class, "MSG_file_already_exist", sb.toString()); // NOI18N
+        if (locationFolder.exists()) {
+            return NbBundle.getMessage(TemplateWizard2.class, "MSG_file_already_exist", locationFolder.getAbsolutePath()); // NOI18N
         }
 
         if ((Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2))) {
-            if (TemplateWizard.checkCaseInsensitiveName (locationFolder.getPrimaryFile (), newObjectName.getText (), extension)) {
+            if (TemplateWizard.checkCaseInsensitiveName(lF.getPrimaryFile(), newObjectName.getText(), extension)) {
                 return NbBundle.getMessage(TemplateWizard2.class, "MSG_file_already_exist", newObjectName.getText ()); // NOI18N
             }
         }
@@ -376,26 +365,31 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
     private javax.swing.JTextField newObjectName;
     // End of variables declaration//GEN-END:variables
 
-    public void setLocationFolder (DataFolder fd) {
+    public void setLocationFolder(File fd) {
         if (locationFolder == fd)
             return ;
         if (locationFolder != null && locationFolder.equals (fd))
             return ;
-        DataFolder oldLocation = locationFolder;
+        File oldLocation = locationFolder;
         locationFolder = fd;
         firePropertyChange (PROP_LOCATION_FOLDER, oldLocation, locationFolder);
-        if (fd != null) {
-            try {
-                fileSystemRef = new WeakReference<FileSystem>(fd.getPrimaryFile().getFileSystem());
-            } catch (org.openide.filesystems.FileStateInvalidException fsie) {
-                fileSystemRef = new WeakReference<FileSystem>(null);
-            }
-        }
         fireStateChanged ();
     }
+    private void setLocationDataFolder(DataFolder fd) {
+        setLocationFolder(fd != null ? FileUtil.toFile(fd.getPrimaryFile()) : null);
+    }
     
-    public DataFolder getLocationFolder () {
+    public File getLocationFolder() {
         return locationFolder;
+    }
+    private DataFolder getLocationDataFolder() {
+        if (locationFolder != null) {
+            FileObject f = FileUtil.toFileObject(locationFolder);
+            if (f != null && f.isFolder()) {
+                return DataFolder.findFolder(f);
+            }
+        }
+        return null;
     }
     
 }

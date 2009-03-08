@@ -560,8 +560,8 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         EQUALS_PATTERNS = new EnumMap<KindOfType, String>(KindOfType.class);
 
         EQUALS_PATTERNS.put(KindOfType.PRIMITIVE, "this.{VAR} != other.{VAR}");
-        EQUALS_PATTERNS.put(KindOfType.ARRAY_PRIMITIVE, "java.util.Arrays.equals(this.{VAR}, other.{VAR}");
-        EQUALS_PATTERNS.put(KindOfType.ARRAY, "java.util.Arrays.deepEquals(this.{VAR}, other.{VAR}");
+        EQUALS_PATTERNS.put(KindOfType.ARRAY_PRIMITIVE, "! java.util.Arrays.equals(this.{VAR}, other.{VAR}");
+        EQUALS_PATTERNS.put(KindOfType.ARRAY, "! java.util.Arrays.deepEquals(this.{VAR}, other.{VAR}");
         EQUALS_PATTERNS.put(KindOfType.STRING, "(this.{VAR} == null) ? (other.{VAR} != null) : !this.{VAR}.equals(other.{VAR})");
         EQUALS_PATTERNS.put(KindOfType.OTHER, "this.{VAR} != other.{VAR} && (this.{VAR} == null || !this.{VAR}.equals(other.{VAR}))");
 

@@ -43,9 +43,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.execution.LocalNativeExecution;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
 /**
@@ -58,14 +57,14 @@ public abstract class NativeExecution /*extends ExecutionSupport*/ implements Na
 
     protected static final Logger log = Logger.getLogger("cnd.execution.logger"); // NOI18N
     private static NativeExecution instance;
-    protected String host;
+    protected ExecutionEnvironment execEnv;
 
     /**
      * Since NativeExecution is abstract, we can't instantiate it. So we instantiate
      * a SimpleNativeExecution instead, who's whole purpose is to provide the implementation
      * of NativeExecutionProvider.getNativeExecution().
      */
-    public static NativeExecution getDefault(String host) {
+    public static NativeExecution getDefault(ExecutionEnvironment host) {
         if (instance == null) {
             instance = new SimpleNativeExecution();
         }
@@ -74,11 +73,11 @@ public abstract class NativeExecution /*extends ExecutionSupport*/ implements Na
     }
 
     public NativeExecution getNativeExecution() {
-        if (host != null && !host.equals(CompilerSetManager.LOCALHOST)) {
+        if (execEnv != null && execEnv.isRemote()) {
             NativeExecutionProvider provider = Lookup.getDefault().lookup(NativeExecutionProvider.class);
 
             if (provider != null) {
-                provider.setHost(host);
+                provider.setHost(execEnv);
                 return provider.getNativeExecution();
             }
         }
@@ -89,8 +88,8 @@ public abstract class NativeExecution /*extends ExecutionSupport*/ implements Na
 //        super(null);
 //    }
 
-    public void setHost(String host) {
-        this.host = host;
+    public void setHost(ExecutionEnvironment host) {
+        this.execEnv = host;
     }
 
     /**

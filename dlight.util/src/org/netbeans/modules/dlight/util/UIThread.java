@@ -36,31 +36,17 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.util;
 
-import java.lang.reflect.InvocationTargetException;
-import javax.swing.SwingUtilities;
-import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 public class UIThread {
-  public static final void invoke(Runnable r) {
-    if (SwingUtilities.isEventDispatchThread()) {
-      r.run();
-    } else {
-      SwingUtilities.invokeLater(r);
-    }
-  }
 
-  public static final void invokeAndWait(Runnable r) throws InterruptedException {
-    if (SwingUtilities.isEventDispatchThread()) {
-      r.run();
-    } else {
-      try {
-        SwingUtilities.invokeAndWait(r);
-      } catch (InvocationTargetException ex) {
-        Exceptions.printStackTrace(ex);
-      }
+    public static final void invoke(Runnable r) {
+        Mutex.EVENT.postReadRequest(r);
     }
-  }
+
+    public static final void invokeAndWait(Runnable r) throws InterruptedException {
+        Mutex.EVENT.readAccess(r);
+    }
 }

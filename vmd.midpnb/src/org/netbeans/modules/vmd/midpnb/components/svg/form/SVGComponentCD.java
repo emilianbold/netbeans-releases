@@ -135,7 +135,7 @@ public class SVGComponentCD extends ComponentDescriptor {
                         }
                         ArraySupport.remove (svgForm, SVGFormCD.PROP_COMPONENTS, getComponent());
                     }
-                    
+
                 });
     }
     

@@ -39,9 +39,14 @@
 
 package org.netbeans.modules.websvc.customization.core.ui;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -50,19 +55,32 @@ import org.openide.util.Lookup;
  * @author rico
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider.class)
-public class JaxwsSettingsProvider implements WSEditorProvider{
+public class JaxwsSettingsProvider implements WSEditorProvider {
 
     public boolean enable(Node node) {
-        Lookup lookup = node.getLookup();
-        Service service = lookup.lookup(Service.class);
-        if(service != null){
-            return service.getWsdlUrl() != null;
+        Client client = node.getLookup().lookup(Client.class);
+        boolean doEnable = false;
+        if (client != null) {
+            doEnable = true;
+        } else {
+            Service service = node.getLookup().lookup(Service.class);
+            if (service != null && service.getWsdlUrl() != null) {
+                doEnable = true;
+            }
         }
-        return true;
+        return doEnable;
     }
 
-    public WSEditor createWSEditor() {
-        return new JaxwsSettingsEditor();
+    public WSEditor createWSEditor(Lookup nodeLookup) {
+        FileObject srcRoot = nodeLookup.lookup(FileObject.class);
+        if (srcRoot != null) {
+            Project prj = FileOwnerQuery.getOwner(srcRoot);
+            JaxWsModel jaxWsModel = prj.getLookup().lookup(JaxWsModel.class);
+            if (jaxWsModel != null) {
+                return new JaxwsSettingsEditor(jaxWsModel);
+            }
+        }
+        return null;
     }
 
 }

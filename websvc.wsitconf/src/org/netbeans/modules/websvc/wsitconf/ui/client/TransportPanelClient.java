@@ -44,6 +44,7 @@ import javax.swing.JCheckBox;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.TransportModelHelper;
@@ -76,6 +77,9 @@ public class TransportPanelClient extends SectionInnerPanel {
         FileObject fo = node.getLookup().lookup(FileObject.class);
         if (fo != null) {
             project = FileOwnerQuery.getOwner(fo);
+        } else {
+            JAXWSLightSupport supp = node.getLookup().lookup(JAXWSLightSupport.class);
+            project = FileOwnerQuery.getOwner(supp.getWsdlFolder(true));
         }
 
         initComponents();

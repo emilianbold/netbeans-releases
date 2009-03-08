@@ -77,17 +77,21 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
+import org.openide.util.WeakSet;
 import org.openide.windows.WindowManager;
 
 /** Display the "Tools Default" panel */
@@ -112,7 +116,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     private ToolsPanelModel model = null;
     private Color tfColor = null;
     private boolean gdbEnabled;
-    private String hkey;
+    private ExecutionEnvironment execEnv;
     private static ToolsPanel instance = null;
     private CompilerSetManager csm;
     private CompilerSet currentCompilerSet;
@@ -132,11 +136,11 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         instance = this;
         currentCompilerSet = null;
         if (cacheManager.isRemoteAvailable()) {
-            hkey = cacheManager.getDefaultHostKey();
+            execEnv = cacheManager.getDefaultHostEnvironment();
             btEditDevHost.setEnabled(true);
             cbDevHost.setEnabled(true);
         } else {
-            hkey = CompilerSetManager.LOCALHOST;
+            execEnv = ExecutionEnvironmentFactory.getLocalExecutionEnvironment();
         }
 
         lstDirlist.setCellRenderer(new MyCellRenderer());
@@ -178,7 +182,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         }
 
         if (model.getSelectedDevelopmentHost() != null) {
-            cbDevHost.setSelectedItem(model.getSelectedDevelopmentHost());
+            cbDevHost.setSelectedItem(ExecutionEnvironmentFactory.getHostKey(model.getSelectedDevelopmentHost()));
         } else {
             cbDevHost.setSelectedIndex(cacheManager.getDefaultHostIndex());
         }
@@ -187,7 +191,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         cbDevHost.addItemListener(this);
         cbDevHost.setEnabled(model.getEnableDevelopmentHostChange());
         btEditDevHost.setEnabled(model.getEnableDevelopmentHostChange());
-        hkey = (String) cbDevHost.getSelectedItem();
+        execEnv =  getSelectedEnvironment();
 
         btBaseDirectory.setEnabled(false);
         btCBrowse.setEnabled(false);
@@ -212,7 +216,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             cbFortranRequired.setEnabled(false);
             cbAsRequired.setEnabled(false);
         }
-        csm = cacheManager.getCompilerSetManagerCopy(hkey);
+        csm = cacheManager.getCompilerSetManagerCopy(execEnv);
 
         gdbEnabled = !IpeUtils.isDbxguiEnabled();
 
@@ -275,7 +279,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     }
 
     private void onNewDevHostSelected() {
-        if (!hkey.equals((String) cbDevHost.getSelectedItem())) {
+        if (!execEnv.equals(getSelectedEnvironment())) {
             log.fine("TP.itemStateChanged: About to update");
             changed = true;
             if (!cacheManager.hasCache()) {
@@ -286,8 +290,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 cacheManager.setHostKeyList(nulist);
             }
             cacheManager.setDefaultIndex(cbDevHost.getSelectedIndex());
-            hkey = (String) cbDevHost.getSelectedItem();
-            model.setSelectedDevelopmentHost(hkey);
+            execEnv = getSelectedEnvironment();
+            model.setSelectedDevelopmentHost(execEnv);
             update(true);
         } else {
             update(false);
@@ -405,10 +409,18 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             return false;
         }
 
-        if (hkey.equals(CompilerSetManager.LOCALHOST)) {
+        if (execEnv.isLocal()) {
             File file = new File(txt);
             boolean ok = false;
-            ok = file.exists() && !file.isDirectory();
+            if (Utilities.isWindows()){
+                if (txt.endsWith(".lnk")) {
+                    ok = false;
+                } else {
+                    ok = (file.exists() || new File(txt+".lnk").exists() )&& !file.isDirectory(); // NOI18N
+                }
+            } else {
+                ok = file.exists() && !file.isDirectory();
+            }
             if (!ok) {
                 // try users path
                 ArrayList<String> paths = Path.getPath();
@@ -517,6 +529,10 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         return !RemoteUtils.isLocalhost((String)cbDevHost.getSelectedItem());
     }
 
+    private ExecutionEnvironment getSelectedEnvironment() {
+        return ExecutionEnvironmentFactory.getExecutionEnvironment((String) cbDevHost.getSelectedItem());
+    }
+
     private boolean isHostValidForEditing() {
         return true; //serverList == null ? true : serverList.get((String)cbDevHost.getSelectedItem()).isOnline();
     }
@@ -529,8 +545,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         } else {
             lbFamilyValue.setText(""); // NOI18N
             String errorMsg = "";
-            if (!cacheManager.isDevHostValid(hkey)) {
-                errorMsg = NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey);
+            if (!cacheManager.isDevHostValid(execEnv)) {
+                errorMsg = NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", execEnv.toString());
             }
             lblErrors.setText("<html>" + errorMsg + "</html>"); //NOI18N
             updateToolsControls(false, false, false, true);
@@ -677,7 +693,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             boolean fortranValid = cbFortranRequired.isSelected() ? isPathFieldValid(tfFortranPath) : true;
             boolean asValid = cbAsRequired.isSelected() ? isPathFieldValid(tfAsPath) : true;
 
-            boolean devhostValid = cacheManager.isDevHostValid(hkey);
+            boolean devhostValid = cacheManager.isDevHostValid(execEnv);
 
             if (!initialized) {
                 valid = !(csmValid && makeValid && gdbValid && cValid && cppValid && fortranValid && asValid && devhostValid);
@@ -693,7 +709,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             if (!valid) {
                 ArrayList<String> errors = new ArrayList<String>();
                 if (!devhostValid) {
-                    errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey));
+                    errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", execEnv.toString()));
                 }
                 if (cbMakeRequired.isSelected() && !makeValid) {
                     if (!isPathFieldValid(tfMakePath)) {
@@ -823,39 +839,51 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         }
     }
 
-    static Set<ChangeListener> listenerModified = new HashSet<ChangeListener>();
+    private final static Set<ChangeListener> listenerModified = new WeakSet<ChangeListener>();
 
     public static void addCompilerSetModifiedListener(ChangeListener l) {
-        listenerModified.add(l);
+        synchronized (listenerModified){
+            listenerModified.add(l);
+        }
     }
 
     public static void removeCompilerSetModifiedListener(ChangeListener l) {
-        listenerModified.remove(l);
+        synchronized (listenerModified){
+            listenerModified.remove(l);
+        }
     }
 
     public void fireCompilerSetModified() {
         ChangeEvent ev = new ChangeEvent(currentCompilerSet);
-        for (ChangeListener l : listenerModified) {
-            l.stateChanged(ev);
+        synchronized (listenerModified){
+            for (ChangeListener l : listenerModified) {
+                l.stateChanged(ev);
+            }
         }
     }
 
-    static Set<IsChangedListener> listenerIsChanged = new HashSet<IsChangedListener>();
+    private static final Set<IsChangedListener> listenerIsChanged = new WeakSet<IsChangedListener>();
 
     public static void addIsChangedListener(IsChangedListener l) {
-        listenerIsChanged.add(l);
+        synchronized (listenerIsChanged){
+            listenerIsChanged.add(l);
+        }
     }
 
     public static void removeIsChangedListener(IsChangedListener l) {
-        listenerIsChanged.remove(l);
+        synchronized (listenerIsChanged){
+            listenerIsChanged.remove(l);
+        }
     }
 
     private boolean isChangedInOtherPanels() {
         boolean isChanged = false;
-        for (IsChangedListener l : listenerIsChanged) {
-            if (l.isChanged()) {
-                isChanged = true;
-                break;
+        synchronized (listenerIsChanged){
+            for (IsChangedListener l : listenerIsChanged) {
+                if (l.isChanged()) {
+                    isChanged = true;
+                    break;
+                }
             }
         }
         return isChanged;
@@ -957,7 +985,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             log.fine("TP.editDevHosts: cbDevHost has " + cbDevHost.getItemCount() + " items");
             log.fine("TP.editDevHosts: getDefaultIndex returns " + cacheManager.getDefaultHostIndex());
             cbDevHost.setSelectedIndex(cacheManager.getDefaultHostIndex());
-            cacheManager.ensureHostSetup( (String) cbDevHost.getSelectedItem() );
+            cacheManager.ensureHostSetup(getSelectedEnvironment());
             cbDevHost.addItemListener(this);
             onNewDevHostSelected();
         }
@@ -1658,7 +1686,13 @@ private boolean selectCompiler(JTextField tf, Tool tool) {
         DialogDisplayer.getDefault().notify(nb);
         return false;
     }
-    tf.setText(fileChooser.getSelectedFile().getPath());
+    String aPath = fileChooser.getSelectedFile().getPath();
+    if (Utilities.isWindows()){
+        if (aPath.endsWith(".lnk")) {
+            aPath = aPath.substring(0, aPath.length()-4);
+        }
+    }
+    tf.setText(aPath);
     tool.setPath(tf.getText());
     fireCompilerSetChange();
     fireCompilerSetModified();
@@ -1672,7 +1706,13 @@ private boolean selectTool(JTextField tf) {
     if (ret == JFileChooser.CANCEL_OPTION) {
         return false;
     }
-    tf.setText(fileChooser.getSelectedFile().getPath());
+    String aPath = fileChooser.getSelectedFile().getPath();
+    if (Utilities.isWindows()){
+        if (aPath.endsWith(".lnk")) {
+            aPath = aPath.substring(0, aPath.length()-4);
+        }
+    }
+    tf.setText(aPath);
     return true;
 }
 
@@ -1732,7 +1772,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     final CompilerSet selectedCS[] = new CompilerSet[] {(CompilerSet)lstDirlist.getSelectedValue()};
     Runnable longTask = new Runnable() {
         public void run() {
-            CompilerSetManager newCsm = CompilerSetManager.create(hkey);
+            CompilerSetManager newCsm = CompilerSetManager.create(execEnv);
             newCsm.initialize(false, true);
             cacheManager.addCompilerSetManager(newCsm);
             List<CompilerSet> list = csm.getCompilerSets();
@@ -1778,7 +1818,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     };
     final Frame mainWindow = WindowManager.getDefault().getMainWindow();
     String title = getString("TITLE_Configure");
-    String msg = getString("MSG_Configure_Compiler_Sets", hkey);
+    String msg = getString("MSG_Configure_Compiler_Sets", execEnv.toString());
     ModalMessageDlg.runLongTask(mainWindow, longTask, postWork, title, msg);
 }//GEN-LAST:event_btRestoreActionPerformed
 

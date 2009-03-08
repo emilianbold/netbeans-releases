@@ -42,10 +42,29 @@ made subject to such option by the copyright holder.
  -->
 
 <html>
-  <head>
-    <title></title>
-  </head>
   <body>
-    Error Stripe SPI description.
+    <h1>Error Stripe Provider How To</h1>
+
+    <h2>Introduction</h2>
+
+    <p>First of all, decide which information should be shown in the Error Stripe:</p>
+    <ul>
+        <li><strong>Error-like annotation</strong>, for example compile errors, warnings, etc.</li>
+        <li><strong>Up-to-date status</strong> used to switch off the global status if the file is currently
+            not parsed.</li>
+    </ul>
+
+    <h2>Error Like Annotation</h2>
+
+    <p>Extend the particular annotation type with <code>severity</code>, <code>custom_sidebar_color</code>
+       and <code>priority</code> attributes as described in
+       <a href="@org-openide-text@/org/openide/text/doc-files/api.html#auto-ann">the Editor API</a>.</p>
+
+    <h2>Up-to-date Status</h2>
+
+    <p>To influence the global status type (up-to-date/processing/dirty), implement
+       <a href="UpToDateStatusProvider.html">UpToDateStatusProvider</a> returning the <a href="UpToDateStatus.html">UpToDateStatus</a>
+       and firing change events, and <a href="UpToDateStatusProviderFactory.html">UpToDateStatusProviderFactory</a>.</p>
+
   </body>
 </html>

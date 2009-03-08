@@ -58,7 +58,7 @@ made subject to such option by the copyright holder.
         Settings of <code>showDropShadow</code>, <code>showText</code> and <code>tickStyle</code>
         are now preserved between sessions in NBPreferences of the same corresponding names.
       </description>
-      <class package="org.openide.actions" name="HeapView"/>
+      <class package="org.openide.actions" name="HeapView" link="no"/>
       <issue number="135104"/>
 </change>
 <change id="jump-prev-next">
@@ -94,7 +94,7 @@ made subject to such option by the copyright holder.
         org.openide.loadersDataNode.getDefaultAction() does not return this action
         on templates anymore.
      </description>
-     <class package="org.openide.actions" name="InstantiateAction"/>
+     <class package="org.openide.actions" name="InstantiateAction" link="no"/>
      <issue number="27135"/>
     </change>
 <change>
@@ -124,7 +124,7 @@ made subject to such option by the copyright holder.
         <class package="org.openide.actions" name="CopyAction"/>
         <class package="org.openide.actions" name="DeleteAction"/>
         <class package="org.openide.actions" name="PasteAction"/>
-        <class package="org.openide.actions" name="FileSystemAction"/>
+        <class package="org.openide.actions" name="FileSystemAction" link="no"/>
         <class package="org.openide.actions" name="ToolsAction"/>
         <issue number="27868"/>
     </change>
@@ -155,7 +155,7 @@ made subject to such option by the copyright holder.
       </description>
       <class package="org.openide.actions" name="ActionManager"/>
     </change>
-<change>
+<change id="ActionManager">
       <api name="actions"/>
       <summary>
 <code>ActionManager</code> added</summary>
@@ -176,7 +176,7 @@ made subject to such option by the copyright holder.
       <class package="org.openide.actions" name="ActionManager"/>
       <class package="org.openide.actions" name="ToolsAction"/>
     </change>
-<change>
+<change id="SaveAsTemplateAction.iconResource">
       <api name="actions"/>
       <summary>
 <code>SaveAsTemplateAction.iconResource</code> removed</summary>
@@ -191,7 +191,7 @@ made subject to such option by the copyright holder.
         should have been calling this method as public, as it was protected in the
         superclass <code>SystemAction</code>.
       </description>
-      <class package="org.openide.actions" name="SaveAsTemplateAction"/>
+      <class package="org.openide.actions" name="SaveAsTemplateAction" link="no"/>
     </change>
 </changes>
 <htmlcontents>

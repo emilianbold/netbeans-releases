@@ -58,6 +58,10 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.openide.awt.Actions;
 import org.openide.awt.DropDownButtonFactory;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -125,13 +129,14 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
             }
         });
         try {
-            final ConnectAction ca = (ConnectAction) Lookups.forPath("Actions/Debug").lookup(
-                    new Lookup.Template(Action.class, "Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction", null)) // NOI18N
-                    .allInstances().iterator().next();
+            FileObject fo = FileUtil.getConfigFile("Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance");
+            DataObject obj = DataObject.find(fo);
+            InstanceCookie ic = obj.getLookup().lookup(InstanceCookie.class);
+            ConnectAction ca = (ConnectAction) ic.instanceCreate();
             item = new JMenuItem(Actions.cutAmpersand((String) ca.getValue(NAME)));
             Actions.connect(item, ca);
             menu.add(item);
-        } catch (java.util.NoSuchElementException nsee) {
+        } catch (Exception nsee) {
             Exceptions.printStackTrace(nsee);
         }
         Actions.connect(button, this);
