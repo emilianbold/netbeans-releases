@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -62,7 +63,10 @@ public class JavaIndex {
     }
 
     public static File getIndex(URL url) throws IOException {
-        return new File(FileUtil.toFile(CacheFolder.getDataFolder(url)), NAME + '/' + VERSION);
+        FileObject indexBaseFolder = CacheFolder.getDataFolder(url);
+        String path = SPIAccessor.getInstance().getIndexerPath(NAME, VERSION);
+        FileObject indexFolder = FileUtil.createFolder(indexBaseFolder, path);
+        return FileUtil.toFile(indexFolder);
     }
 
     public static File getClassFolder(Context c) {
