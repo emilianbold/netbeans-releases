@@ -60,7 +60,7 @@ public class RemoteFileTestCase extends BaseTestCase {
         if (canTestRemote()) {
             CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
             final String tmpFile = getTempName();
-            assert cmd.run(getHKey(), "rm "+ tmpFile + "; touch " + tmpFile, null) == 0;
+            assert cmd.run(getExecutionEnvironment(), "rm "+ tmpFile + "; touch " + tmpFile, null) == 0;
             File remoteFile = RemoteFile.create(getHKey(), tmpFile);
             assert remoteFile instanceof RemoteFile;
             assert remoteFile.exists();
@@ -79,7 +79,7 @@ public class RemoteFileTestCase extends BaseTestCase {
         if (canTestRemote()) {
             final String tempDir = getTempName();
             CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
-            assert cmd.run(getHKey(), String.format("rm -rf %1$s; mkdir %1$s; touch %1$s/1; touch %1$s/2; touch %1$s/3; ", tempDir), null) == 0;
+            assert cmd.run(getExecutionEnvironment(), String.format("rm -rf %1$s; mkdir %1$s; touch %1$s/1; touch %1$s/2; touch %1$s/3; ", tempDir), null) == 0;
             File remoteFile = RemoteFile.create(getHKey(), tempDir);
             assert remoteFile instanceof RemoteFile;
             assert !remoteFile.isFile();
@@ -102,7 +102,7 @@ public class RemoteFileTestCase extends BaseTestCase {
         if (canTestRemote()) {
             final String tempFile = getTempName();
             CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
-            assert cmd.run(getHKey(), String.format("rm -rf %1$s; echo 1 > %1$s; echo 2 >> %1$s; echo 3 >> %1$s; echo 4 >> %1$s", tempFile), null) == 0;
+            assert cmd.run(getExecutionEnvironment(), String.format("rm -rf %1$s; echo 1 > %1$s; echo 2 >> %1$s; echo 3 >> %1$s; echo 4 >> %1$s", tempFile), null) == 0;
             BufferedReader in = new BufferedReader(RemoteFile.createReader( RemoteFile.create(getHKey(), tempFile) ));
             int i = 1;
             while (true) {
@@ -119,6 +119,6 @@ public class RemoteFileTestCase extends BaseTestCase {
 
     private void clean(String path) {
         CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
-        cmd.run(getHKey(), "rm -rf " + path, null);
+        cmd.run(getExecutionEnvironment(), "rm -rf " + path, null);
     }
 }

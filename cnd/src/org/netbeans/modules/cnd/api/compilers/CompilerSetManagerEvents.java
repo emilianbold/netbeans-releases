@@ -58,11 +58,6 @@ public class CompilerSetManagerEvents {
     private static final Map<ExecutionEnvironment, CompilerSetManagerEvents> map =
             new HashMap<ExecutionEnvironment, CompilerSetManagerEvents>();
 
-    /** TODO: deprecate and remove */
-    public static synchronized CompilerSetManagerEvents get(String hkey) {
-        return get(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
-    }
-
     public static synchronized CompilerSetManagerEvents get(ExecutionEnvironment env) {
         CompilerSetManagerEvents instance = map.get(env);
         if (instance == null) {

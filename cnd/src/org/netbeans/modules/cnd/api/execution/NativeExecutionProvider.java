@@ -39,11 +39,13 @@
 
 package org.netbeans.modules.cnd.api.execution;
 
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+
 /**
  *
  * @author gordonp
  */
 public interface NativeExecutionProvider {
     public NativeExecution getNativeExecution();
-    public void setHost(String host);
+    public void setHost(ExecutionEnvironment host);
 }

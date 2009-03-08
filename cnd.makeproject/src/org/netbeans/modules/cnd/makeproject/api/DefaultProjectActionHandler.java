@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
@@ -84,7 +85,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             String[] env = pae.getProfile().getEnvironment().getenv();
             boolean showInput = pae.getType() == ProjectActionEvent.Type.RUN;
             MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
-            String key = conf.getDevelopmentHost().getName();
+            ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
 
             String runDirectory = pae.getProfile().getRunDirectory();
 
@@ -98,7 +99,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
 
                 } else {
-                    PathMap mapper = HostInfoProvider.getDefault().getMapper(key);
+                    PathMap mapper = HostInfoProvider.getDefault().getMapper(execEnv);
                     if (!mapper.isRemote(basedir, true)) {
 //                        mapper.showUI();
 //                        if (!mapper.isRemote(basedir)) {
@@ -131,7 +132,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
                 }
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    if (HostInfoProvider.getDefault().getPlatform(key) == PlatformTypes.PLATFORM_WINDOWS) {
+                    if (HostInfoProvider.getDefault().getPlatform(execEnv) == PlatformTypes.PLATFORM_WINDOWS) {
                         // we need to run the application under cmd on windows
                         exe = "cmd.exe"; // NOI18N
                         // exe path naturalization is needed for cmd on windows, see issue 149404
@@ -168,7 +169,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                         }
                         if (pae.getType() == ProjectActionEvent.Type.RUN &&
                                 ((MakeConfiguration)pae.getConfiguration()).isApplicationConfiguration() &&
-                                HostInfoProvider.getDefault().getPlatform(key) == PlatformTypes.PLATFORM_WINDOWS &&
+                                HostInfoProvider.getDefault().getPlatform(execEnv) == PlatformTypes.PLATFORM_WINDOWS &&
                                 !exe.endsWith(".exe")) { // NOI18N
                             exe = exe + ".exe"; // NOI18N
                         }
@@ -228,7 +229,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 env = env1;
             }
             NativeExecutor projectExecutor = new NativeExecutor(
-                    key,
+                    execEnv,
                     runDirectory,
                     exe, args, env,
                     pae.getTabName(),

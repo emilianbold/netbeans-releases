@@ -141,7 +141,7 @@ public abstract class QtInfoProvider {
         }
 
         private String queryQtIncludeDir(MakeConfiguration conf) {
-            if (CompilerSetManager.LOCALHOST.equals(conf.getDevelopmentHost().getName())) {
+            if (conf.getDevelopmentHost().getExecutionEnvironment().isLocal()) {
                 try {
                     Process process = Runtime.getRuntime().exec("qmake -query QT_INSTALL_HEADERS"); // NOI18N
                     BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
