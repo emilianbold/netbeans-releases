@@ -323,7 +323,7 @@ public final class CreateTestsAction extends NodeAction {
         String relativeSourcePath = FileUtil.getRelativePath(sourcesDirectory, source.getParent());
         assert relativeSourcePath != null : String.format("Relative path must be found for sources %s and folder %s", sourcesDirectory, source.getParent());
 
-        File relativeTestDirectory = new File(getTestDirectory(project), relativeSourcePath.replaceAll("/", File.separator)); // NOI18N
+        File relativeTestDirectory = new File(getTestDirectory(project), relativeSourcePath.replace('/', File.separatorChar)); // NOI18N
 
         return new File(relativeTestDirectory, className + PhpUnit.TEST_FILE_SUFFIX);
     }
