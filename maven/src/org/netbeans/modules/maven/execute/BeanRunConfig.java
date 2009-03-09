@@ -50,7 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.options.MavenExecutionSettings;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -68,8 +68,8 @@ public class BeanRunConfig implements RunConfig {
     private List<String> goals;
     private String executionName;
     private Properties properties;
-    private boolean showDebug = MavenExecutionSettings.getDefault().isShowDebug();
-    private boolean showError = MavenExecutionSettings.getDefault().isShowErrors();
+    private boolean showDebug = MavenSettings.getDefault().isShowDebug();
+    private boolean showError = MavenSettings.getDefault().isShowErrors();
     private Boolean offline;
     private List<String> activate;
     private boolean updateSnapshots = false;
