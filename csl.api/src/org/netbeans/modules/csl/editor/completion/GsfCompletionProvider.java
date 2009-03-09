@@ -138,6 +138,15 @@ public class GsfCompletionProvider implements CompletionProvider {
 
         return null;
     }
+
+    public static CodeCompletionHandler getCompletable(ParserResult result) {
+        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(result.getSnapshot().getMimeType());
+        if(l != null) {
+            return l.getCompletionProvider();
+        } else {
+            return null;
+        }
+    }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         if (!autoPopup) {
@@ -618,19 +627,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                     }
                 }
 
-                // Go into embedded results. NOT allowed to recurse!!
-                Set<String> embeddedTypes = result.embeddedTypes();
-                if (embeddedTypes != null) {
-                    for (String mimeType : embeddedTypes) {
-                        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-                        if (language != null) {
-                            CodeCompletionHandler handler = language.getCompletionProvider();
-                            if (handler != null) {
-                                addCodeCompletionItems(controller, handler, offset, prefix);
-                            }
-                        }
-                    }
-                }
+                
             }
         }
 
@@ -696,7 +693,7 @@ public class GsfCompletionProvider implements CompletionProvider {
             // Look at the parse tree, and find the corresponding end node
             // offset...
             
-            CodeCompletionHandler completer = getCompletable(doc, offset);
+            CodeCompletionHandler completer = getCompletable(controller);
             try {
                 // TODO: use the completion helper to get the contxt
                 if (completer != null) {
