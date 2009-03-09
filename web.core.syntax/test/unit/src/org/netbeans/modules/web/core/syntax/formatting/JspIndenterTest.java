@@ -118,7 +118,7 @@ public class JspIndenterTest extends TestBase2 {
         JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HTMLKit("text/x-jsp"));
+        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HTMLKit("text/html"));
         Reformatter.Factory factory = new Reformatter.Factory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, new JavacParserFactory(), new ClassParserFactory());
     }
