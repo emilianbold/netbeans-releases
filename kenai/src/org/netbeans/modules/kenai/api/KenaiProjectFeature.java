@@ -41,6 +41,8 @@ package org.netbeans.modules.kenai.api;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.kenai.FeatureData;
 
 /**
@@ -60,7 +62,7 @@ public final class KenaiProjectFeature {
             this.webL = featureData.web_url==null?null:new URL(featureData.web_url);
             this.loc = featureData.url==null?null:new URL(featureData.url);
         } catch (MalformedURLException malformedURLException) {
-            throw new IllegalArgumentException(malformedURLException);
+            Logger.getLogger(KenaiProjectFeature.class.getName()).log(Level.SEVERE, malformedURLException.getMessage(), malformedURLException);
         }
     }
 
