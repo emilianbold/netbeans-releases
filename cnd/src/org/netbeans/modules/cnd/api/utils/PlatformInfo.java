@@ -197,6 +197,10 @@ public final class PlatformInfo {
 
     public String findCommand(String cmd) {
         if (cmd != null && cmd.length() > 0) {
+            int i = cmd.replace('\\', '/').lastIndexOf('/');
+            if (i >= 0) {
+                return null;
+            }
             String cmd2 = null;
             ArrayList<String> dirlist = getPath();
 
@@ -208,10 +212,21 @@ public final class PlatformInfo {
                 String path = dir + separator() + cmd;
                 if (fileExists(path)) {
                     return path;
+                } else {
+                    if (isWindows() && cmd.endsWith(".exe")){ // NOI18N
+                        String path2 = dir + separator() + cmd + ".lnk"; // NOI18N
+                        if (fileExists(path2)) {
+                            return path;
+                        }
+                    }
                 }
                 if (cmd2 != null) {
-                    path = dir + separator() + cmd;
+                    path = dir + separator() + cmd2;
                     if (fileExists(path)) {
+                        return path;
+                    }
+                    String path2 = dir + separator() + cmd + ".lnk"; // NOI18N
+                    if (fileExists(path2)) {
                         return path;
                     }
                 }

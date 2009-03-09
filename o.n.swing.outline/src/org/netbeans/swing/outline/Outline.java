@@ -549,13 +549,64 @@ public class Outline extends ETable {
                     return false;
                 }
             }
+            // It may be a request to check/uncheck a check-box
+            if (checkAt(row, column, me)) {
+                return false;
+            }
         }
             
         boolean res = super.editCellAt(row, column, e);
         if( res && isTreeColumnIndex(column) && null != getEditorComponent() ) {
             configureTreeCellEditor(getEditorComponent(), row, column);
         }
+        if (e == null && !res && isTreeColumnIndex(column)) {
+            // Handle SPACE
+            checkAt(row, column, null);
+        }
         return res;
+    }
+
+    private boolean checkAt(int row, int column, MouseEvent me) {
+        RenderDataProvider render = getRenderDataProvider();
+        TableCellRenderer tcr = getDefaultRenderer(Object.class);
+        if (render instanceof CheckRenderDataProvider && tcr instanceof DefaultOutlineCellRenderer) {
+            CheckRenderDataProvider crender = (CheckRenderDataProvider) render;
+            DefaultOutlineCellRenderer ocr = (DefaultOutlineCellRenderer) tcr;
+            Object value = getValueAt(row, column);
+            if (crender.isCheckable(value) && crender.isCheckEnabled(value)) {
+                boolean chBoxPosition;
+                if (me == null) {
+                    chBoxPosition = true;
+                } else {
+                    int handleWidth = DefaultOutlineCellRenderer.getExpansionHandleWidth();
+                    int chWidth = ocr.getTheCheckBoxWidth();
+                    Insets ins = getInsets();
+                    TreePath path = getLayoutCache().getPathForRow(convertRowIndexToModel(row));
+                    int nd = path.getPathCount() - (isRootVisible() ? 1 : 2);
+                    if (nd < 0) {
+                        nd = 0;
+                    }
+                    int chStart = ins.left + (nd * DefaultOutlineCellRenderer.getNestingWidth()) + handleWidth;
+                    int chEnd = chStart + chWidth;
+                    //TODO: Translate x/y to position of column if non-0
+
+                    chBoxPosition = (me.getX() > ins.left && me.getX() >= chStart && me.getX() <= chEnd) &&
+                                    me.getClickCount() == 1;
+                }
+                if (chBoxPosition) {
+                    Boolean selected = crender.isSelected(value);
+                    if (selected == null || Boolean.TRUE.equals(selected)) {
+                        crender.setSelected(value, Boolean.FALSE);
+                    } else {
+                        crender.setSelected(value, Boolean.TRUE);
+                    }
+                    Rectangle r = getCellRect(row, column, true);
+                    repaint (r.x, r.y, r.width, r.height);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     protected void configureTreeCellEditor( Component editor, int row, int column ) {

@@ -46,11 +46,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import static org.netbeans.spi.debugger.ui.Constants.BREAKPOINT_ENABLED_COLUMN_ID;
 
-public final class BreakpointModel implements NodeModel, TableModel {
+public final class BreakpointModel implements NodeModel {
     
     public static final String BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpoint"; // NOI18N
@@ -111,47 +109,6 @@ public final class BreakpointModel implements NodeModel, TableModel {
     public void removeModelListener(ModelListener l) {
         listeners.remove(l);
     }
-    
-    // TableModel implementation ......................................
-    
-    public Object getValueAt(Object node, String columnID) throws
-            UnknownTypeException {
-        if (node instanceof RubyBreakpoint) {
-            if (BREAKPOINT_ENABLED_COLUMN_ID.equals(columnID)) {
-                return Boolean.valueOf(((RubyBreakpoint) node).isEnabled());
-            } else {
-                return null;
-            }
-        }
-        throw new UnknownTypeException(node);
-    }
-    
-    public boolean isReadOnly(Object node, String columnID) throws
-            UnknownTypeException {
-        if (node instanceof RubyBreakpoint) {
-            if (BREAKPOINT_ENABLED_COLUMN_ID.equals(columnID)) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-        throw new UnknownTypeException(node);
-    }
-    
-    public void setValueAt(Object node, String columnID, Object value)
-            throws UnknownTypeException {
-        if (node instanceof RubyBreakpoint && BREAKPOINT_ENABLED_COLUMN_ID.equals(columnID)) {
-            if (((Boolean) value)) {
-                ((RubyBreakpoint) node).enable();
-            } else {
-                ((RubyBreakpoint) node).disable();
-            }
-        } else {
-            throw new UnknownTypeException(node);
-        }
-    }
-    
-    // TableModel implementation ......................................
     
     public void fireChanges() {
         for (ModelListener ml : listeners) {

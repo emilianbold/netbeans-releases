@@ -299,6 +299,26 @@ made subject to such option by the copyright holder.
         <class package="org.netbeans.spi.viewmodel" name="Models" />
         <issue number="136099"/>
     </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>Check extension to NodeModel.</summary>
+        <version major="1" minor="17"/>
+        <date day="8" month="3" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deletion="no" addition="yes" modification="no"/>
+        <description>
+            This API change allows to display check-boxes next to the node icons
+            in the tree column.
+            <p>
+                Added classes:<br/>
+                <code>org.netbeans.spi.viewmodel.CheckNodeModel</code>,
+                <code>org.netbeans.spi.viewmodel.CheckNodeModelFilter</code>
+            </p>
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="CheckNodeModel" />
+        <class package="org.netbeans.spi.viewmodel" name="CheckNodeModelFilter" />
+        <issue number="159545"/>
+    </change>
     
 
 </changes>
