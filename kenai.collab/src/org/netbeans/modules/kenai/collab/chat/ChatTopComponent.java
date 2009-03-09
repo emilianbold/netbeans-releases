@@ -261,21 +261,17 @@ public class ChatTopComponent extends TopComponent {
         open.add(chatPanel.getName());
         chats.setSelectedComponent(chatPanel);
         validate();
-        StringBuffer b= new StringBuffer();
-        Iterator<String> it = open.iterator();
-        while (it.hasNext()) {
-            b.append(it.next());
-            if (it.hasNext())
-                b.append(",");
-        }
-        prefs.put("kenai.open.chats." + Kenai.getDefault().getPasswordAuthentication().getUserName(),b.toString());
+        storeOpenChats();
     }
 
     void removeChat(Component chatPanel) {
         int index = chats.indexOfComponent(chatPanel);
         assert index>=0: "Component not found in CloseButtonTabbedPane " + chatPanel;
-        open.remove(chats.getTitleAt(index));
+        open.remove(chats.getTitleAt(index).trim());
         chats.remove(chatPanel);
+        kec.leave(chatPanel.getName());
+        validate();
+        storeOpenChats();
     }
 
     void setModified(ChatPanel panel) {
@@ -304,8 +300,7 @@ public class ChatTopComponent extends TopComponent {
     }
 
     private void putChats() {
-        final KenaiConnection cc = kec;
-        final Collection<MultiUserChat> chs = cc.getChats();
+        final Collection<MultiUserChat> chs = kec.getChats();
         if (chs.size()==1) {
             final MultiUserChat next = chs.iterator().next();
             ChatPanel chatPanel = new ChatPanel(next);
@@ -314,7 +309,7 @@ public class ChatTopComponent extends TopComponent {
             String s = prefs.get("kenai.open.chats." + Kenai.getDefault().getPasswordAuthentication().getUserName(),"");
             if (s.length() > 1) {
                 for (String chat : s.split(",")) {
-                    MultiUserChat muc = cc.getChat(chat);
+                    MultiUserChat muc = kec.getChat(chat);
                     if (muc != null) {
                         ChatPanel chatPanel = new ChatPanel(muc);
                         addChat(chatPanel);
@@ -591,6 +586,18 @@ public class ChatTopComponent extends TopComponent {
             return ChatTopComponent.getDefault();
         }
 
+    }
+
+    private void storeOpenChats() {
+        StringBuffer b = new StringBuffer();
+        Iterator<String> it = open.iterator();
+        while (it.hasNext()) {
+            b.append(it.next());
+            if (it.hasNext()) {
+                b.append(",");
+            }
+        }
+        prefs.put("kenai.open.chats." + Kenai.getDefault().getPasswordAuthentication().getUserName(), b.toString());
     }
 
     final class KenaiL implements PropertyChangeListener {

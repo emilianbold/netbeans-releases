@@ -108,6 +108,10 @@ public class KenaiConnection implements PropertyChangeListener {
     private KenaiConnection() {
     }
 
+    void leave(String name) {
+        listeners.remove(name);
+    }
+
     private MultiUserChat createChat(KenaiProject prj) {
         MultiUserChat multiUserChat = new MultiUserChat(connection, getChatroomName(prj));
         chats.put(prj.getName(), multiUserChat);
