@@ -68,6 +68,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
 
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 
@@ -87,14 +88,14 @@ public class WatchesModel implements TreeModel {
     private ContextProvider     lookupProvider;
     // Watch to Expression or Exception
     private final Map<Watch, JPDAWatchEvaluating>  watchToValue = new WeakHashMap<Watch, JPDAWatchEvaluating>(); // <node (expression), JPDAWatch>
-    //private final JPDAWatch EMPTY_WATCH;
+    private final JPDAWatch EMPTY_WATCH;
 
     
     public WatchesModel (ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.
             lookupFirst (null, JPDADebugger.class);
         this.lookupProvider = lookupProvider;
-        //EMPTY_WATCH = new EmptyWatch();
+        EMPTY_WATCH = new EmptyWatch();
     }
     
     /** 
@@ -113,7 +114,7 @@ public class WatchesModel implements TreeModel {
     throws UnknownTypeException {
         if (parent == ROOT) {
             
-            // 1) ger Watches
+            // 1) get Watches
             Watch[] ws = DebuggerManager.getDebuggerManager ().
                 getWatches ();
             to = Math.min(ws.length, to);
@@ -123,9 +124,8 @@ public class WatchesModel implements TreeModel {
             
             // 2) create JPDAWatches for Watches
             int i, k = fws.length;
-            JPDAWatch[] jws = new JPDAWatch [k];// + 1];
+            JPDAWatch[] jws = new JPDAWatch [k + 1];
             for (i = 0; i < k; i++) {
-                
                 
                 JPDAWatchEvaluating jw = watchToValue.get(fws[i]);
                 if (jw == null) {
@@ -136,7 +136,7 @@ public class WatchesModel implements TreeModel {
                 
                 // The actual expressions are computed on demand in JPDAWatchEvaluating
             }
-            //jws[k] = EMPTY_WATCH;
+            jws[k] = EMPTY_WATCH;
             
             if (listener == null)
                 listener = new Listener (this, debugger);
@@ -180,7 +180,7 @@ public class WatchesModel implements TreeModel {
                 return ((JPDAWatchImpl) jw).isPrimitive ();
             }
         }
-        //if (node == EMPTY_WATCH) return true;
+        if (node == EMPTY_WATCH) return true;
         return getLocalsTreeModel ().isLeaf (node);
     }
 
@@ -600,18 +600,23 @@ public class WatchesModel implements TreeModel {
         }
     }
     
-    /*
+    /**
      * The last empty watch, that can be used to enter new watch expressions.
-     *
+     */
     private final class EmptyWatch implements JPDAWatch {
         
     
         public String getExpression() {
-            return "";
+            return ""; // NOI18N
         }
 
-        public void setExpression(String expression) {
-            DebuggerManager.getDebuggerManager().createWatch(expression);
+        public void setExpression(String expr) {
+            String infoStr = NbBundle.getBundle (WatchesModel.class).getString("CTL_WatchesModel_Empty_Watch_Hint");
+            infoStr = "<" + infoStr + ">";
+            if (expr == null || expr.trim().length() == 0 || infoStr.equals(expr)) {
+                return; // cancel action
+            }
+            DebuggerManager.getDebuggerManager().createWatch(expr);
             
             Vector v = (Vector) listeners.clone ();
             int i, k = v.size ();
@@ -626,11 +631,11 @@ public class WatchesModel implements TreeModel {
         }
 
         public String getType() {
-            return "";
+            return ""; // NOI18N
         }
 
         public String getValue() {
-            return "";
+            return ""; // NOI18N
         }
 
         public String getExceptionDescription() {
@@ -642,8 +647,7 @@ public class WatchesModel implements TreeModel {
         }
 
         public String getToStringValue() throws InvalidExpressionException {
-            return "";
+            return ""; // NOI18N
         }
     }
-     */
 }
