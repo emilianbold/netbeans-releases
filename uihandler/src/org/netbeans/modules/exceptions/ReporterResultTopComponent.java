@@ -39,6 +39,7 @@
 package org.netbeans.modules.exceptions;
 
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -54,6 +55,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.netbeans.modules.uihandler.Installer;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -68,7 +70,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
     private static final Logger LOG = Logger.getLogger(ReporterResultTopComponent.class.getName());
     private static boolean showUpload = false;
     /** path to the icon used by the component and its open action */
-//    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
+    private static final String ICON_PATH = "org/netbeans/modules/exceptions/reporter.png";
     private static final String PREFERRED_ID = "ReporterResultTopComponent";
 
     private ReporterResultTopComponent() {
@@ -77,8 +79,8 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         setToolTipText(NbBundle.getMessage(ReporterResultTopComponent.class, "HINT_ReporterResultTopComponent"));
         dataDisplayer.addHyperlinkListener(this);
         dataDisplayer.setContentType("text/html");
-//        setIcon(Utilities.loadImage(ICON_PATH, true));
-
+        Image img = ImageUtilities.loadImage(ICON_PATH, true);
+        setIcon(img);
     }
 
     /** This method is called from within the constructor to
