@@ -52,8 +52,8 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.awt.event.AWTEventListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -65,7 +65,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
-import javax.swing.JWindow;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -81,9 +82,6 @@ import org.netbeans.modules.versioning.util.HyperlinkProvider;
  */
 class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListener {
 
-    private static final int SCREEN_BORDER = 20;
-
-    private JWindow contentWindow;
     /**
      * Full displayed message
      */
@@ -111,20 +109,18 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
      */
     private LinkedList<Linker> linkers;
 
+    /**
+     * Currently showing popup
+     */
+    private Popup popup;
+
     public TooltipWindow(AnnotationBar master, final AnnotateLine al) {
         this.annotateLine = al;
         this.master = master;
-        Window w = SwingUtilities.windowForComponent(master.getTextComponent());
-        contentWindow = new JWindow(w);
     }
 
     public void show(Point location) {
         prepareMessage();
-        TooltipContentPanel cp = new TooltipContentPanel(master.getTextComponent());
-        contentWindow.add(cp);
-        contentWindow.pack();
-        Dimension dim = contentWindow.getSize();
-
         Rectangle screenBounds = null;
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gds = ge.getScreenDevices();
@@ -135,23 +131,17 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 break;
             }
         }
-
-        if (location.y + dim.height + SCREEN_BORDER > screenBounds.y + screenBounds.height) {
-            dim.height = (screenBounds.y + screenBounds.height) - (location.y + SCREEN_BORDER);
-        }
-        if (location.x + dim.width + SCREEN_BORDER > screenBounds.x + screenBounds.width) {
-            dim.width = (screenBounds.x + screenBounds.width) - (location.x + SCREEN_BORDER);
-        }
-
-        contentWindow.setSize(dim);
-        contentWindow.setLocation(location.x, location.y);  // slight visual adjustment
-        contentWindow.setVisible(true);
-
-        Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);
+        
+        // showing the popup tooltip
+        TooltipContentPanel cp = new TooltipContentPanel(master.getTextComponent());
+        popup = PopupFactory.getSharedInstance().getPopup(SwingUtilities.windowForComponent(master.getTextComponent()),
+                cp, (int)location.getX(), (int)location.getY());
+        popup.show();
+        Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK | AWTEvent.KEY_EVENT_MASK);
     }
 
     public void eventDispatched(AWTEvent event) {
-        if (event.getID() == MouseEvent.MOUSE_PRESSED) {
+        if (event.getID() == MouseEvent.MOUSE_PRESSED || event.getID() == KeyEvent.KEY_PRESSED) {
             onClick(event);
         }
     }
@@ -201,8 +191,27 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
 
     private void onClick(AWTEvent event) {
         Component component = (Component) event.getSource();
-        Window w = SwingUtilities.windowForComponent(component);
-        if (contentWindow == null || w != contentWindow) shutdown();
+        if (outsideOfTooltipWindow(component)) {
+            // hide the tooltip if event occurs outside of the tooltip
+            shutdown();
+        }
+    }
+
+    /**
+     *
+     * @param component
+     * @return <code>true</code> if the <code>component</code> is not part of the tooltip window descendants, <code>false</code> otherwise
+     */
+    private boolean outsideOfTooltipWindow (Component component) {
+        boolean retval = true;
+        while (component != null) {
+            if (component instanceof TooltipContentPanel) {
+                retval = false;
+                break;
+            }
+            component = component.getParent();
+        }
+        return retval;
     }
 
     /**
@@ -210,7 +219,8 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
      */
     void shutdown() {
         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
-        if (contentWindow != null) contentWindow.dispose();
+        popup.hide();
+        popup = null;
     }
 
     /**
