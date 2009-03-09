@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,45 +31,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.project;
+package org.netbeans.modules.ide.ergonomics.ant;
 
-import java.io.File;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
-import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.web.project.test.TestUtil;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileUtil;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import javax.imageio.ImageIO;
+import org.apache.tools.ant.types.Resource;
+import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Andrei Badea
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ProjectWebModuleTest extends NbTestCase {
+final class IconResource extends Resource {
+    private Resource r;
+    private BufferedImage badgeIcon;
 
-    private Project project;
-    private AntProjectHelper helper;
-
-    public ProjectWebModuleTest(String testName) {
-        super(testName);
+    public IconResource(Resource r, BufferedImage badgeIcon) {
+        super(r.getName(), r.isExists(), r.getLastModified(), r.isDirectory(), r.getSize());
+        this.r = r;
+        this.badgeIcon = badgeIcon;
     }
 
-    /**
-     * Tests that the metadata models are returned correctly.
-     */
-    public void testMetadataModel() throws Exception {
-        TestUtil.setLookup();
-        File f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication1");
-        project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
-        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        J2eeModule j2eeModule = provider.getJ2eeModule();
-        assertNotNull(j2eeModule.getMetadataModel(WebAppMetadata.class));
-        assertNotNull(j2eeModule.getMetadataModel(WebservicesMetadata.class));
+    @Override
+    public InputStream getInputStream() throws IOException {
+        if (getName().endsWith(".html")) {
+            return r.getInputStream();
+        }
+        try {
+            InputStream is = r.getInputStream();
+            BufferedImage img = ImageIO.read(is);
+            if (img == null) {
+                return r.getInputStream();
+            }
+            Image merge = ImageUtilities.mergeImages(img, badgeIcon, 0, 0);
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ImageIO.write((BufferedImage)merge, "png", os);
+            return new ByteArrayInputStream(os.toByteArray());
+        } catch (IOException ex) {
+            return r.getInputStream();
+        }
     }
 }
