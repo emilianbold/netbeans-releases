@@ -41,20 +41,26 @@
 
 package org.netbeans.modules.hudson.ui.nodes;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
+import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
-import org.netbeans.modules.hudson.impl.HudsonJobImpl;
-import org.netbeans.modules.hudson.impl.HudsonViewImpl;
 import org.netbeans.modules.hudson.ui.actions.CreateJob;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.PersistInstanceAction;
@@ -62,11 +68,13 @@ import org.netbeans.modules.hudson.ui.actions.RemoveInstanceAction;
 import org.netbeans.modules.hudson.ui.actions.SynchronizeAction;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.actions.PropertiesAction;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -87,10 +95,6 @@ public class HudsonInstanceNode extends AbstractNode {
     private boolean alive = false;
     private boolean version = false;
     
-    /**
-     *
-     * @param instance
-     */
     public HudsonInstanceNode(final HudsonInstanceImpl instance) {
         super(new Children.Array(), Lookups.singleton(instance));
         
@@ -134,16 +138,19 @@ public class HudsonInstanceNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
+        if (instance.getViews().size() > 1) {
+            actions.add(new ViewSwitcher());
+            actions.add(null);
+        }
+        actions.add(new CreateJob(instance));
+        actions.add(null);
         actions.add(SystemAction.get(SynchronizeAction.class));
         actions.add(SystemAction.get(OpenUrlAction.class));
-        actions.add(null);
         if (!instance.isPersisted()) {
             actions.add(SystemAction.get(PersistInstanceAction.class));
         } else {
             actions.add(SystemAction.get(RemoveInstanceAction.class));
         }
-        actions.add(null);
-        actions.add(new CreateJob(instance));
         actions.add(null);
         actions.add(SystemAction.get(PropertiesAction.class));
         return actions.toArray(new Action[0]);
@@ -200,24 +207,28 @@ public class HudsonInstanceNode extends AbstractNode {
         // Fire changes if any
         fireDisplayNameChange(oldHtmlName, getHtmlDisplayName());
     }
+
+    /**
+     * Preferences key for currently display view.
+     */
+    private static final String SELECTED_VIEW = "view"; // NOI18N
     
-    private static class InstanceNodeChildren extends Children.Keys<Node> implements HudsonChangeListener {
+    private static class InstanceNodeChildren extends Children.Keys<HudsonJob> implements HudsonChangeListener {
         
-        private HudsonInstanceImpl instance;
-        private HudsonQueueNode queue;
+        private final HudsonInstance instance;
         
-        private java.util.Map<String, HudsonViewNode> cache = new HashMap<String, HudsonViewNode>();
-        
-        public InstanceNodeChildren(HudsonInstanceImpl instance) {
+        public InstanceNodeChildren(HudsonInstance instance) {
             this.instance = instance;
-            this.queue = new HudsonQueueNode(instance);
-            
-            // Add HudsonChangeListener into instance
             instance.addHudsonChangeListener(this);
+            instance.prefs().addPreferenceChangeListener(new PreferenceChangeListener() {
+                public void preferenceChange(PreferenceChangeEvent evt) {
+                    refreshKeys();
+                }
+            });
         }
         
-        protected Node[] createNodes(Node node) {
-            return new Node[] {node};
+        protected Node[] createNodes(HudsonJob job) {
+            return new Node[] {new HudsonJobNode(job)};
         }
         
         @Override
@@ -228,32 +239,29 @@ public class HudsonInstanceNode extends AbstractNode {
         
         @Override
         protected void removeNotify() {
-            setKeys(Collections.<Node>emptySet());
+            setKeys(Collections.<HudsonJob>emptySet());
             super.removeNotify();
         }
         
         private void refreshKeys() {
-            List<Node> l = new ArrayList<Node>();
-
-            for (HudsonJob jb : instance.getPreferredJobs()) {
-                l.add(HudsonNodesFactory.getDefault().getHudsonJobNode(this, (HudsonJobImpl)jb));
+            List<HudsonJob> jobs = new ArrayList<HudsonJob>();
+            HudsonView view = null;
+            String selectedView = instance.prefs().get(SELECTED_VIEW, null);
+            if (selectedView != null) {
+                for (HudsonView v : instance.getViews()) {
+                    if (v.getName().equals(selectedView)) {
+                        view = v;
+                        break;
+                    }
+                }
             }
-
-            l.add(queue);
-
-            for (Node n : getKeys())
-                l.add(n);
-            
-            setKeys(l);
-        }
-        
-        private Collection<Node> getKeys() {
-            List<Node> l = new ArrayList<Node>();
-            
-            for (HudsonView v : instance.getViews())
-                l.add(HudsonNodesFactory.getDefault().getHudsonViewNode(this, (HudsonViewImpl) v));
-            
-            return l;
+            for (HudsonJob job : instance.getJobs()) {
+                if (view != null && !job.getViews().contains(view)) {
+                    continue;
+                }
+                jobs.add(job);
+            }
+            setKeys(jobs);
         }
         
         public void stateChanged() {}
@@ -262,4 +270,44 @@ public class HudsonInstanceNode extends AbstractNode {
             refreshKeys();
         }
     }
+
+    private class ViewSwitcher extends AbstractAction implements Presenter.Popup {
+
+        public void actionPerformed(ActionEvent e) {
+            assert false;
+        }
+
+        public JMenuItem getPopupPresenter() {
+            class Menu extends JMenu implements DynamicMenuContent {
+                {
+                    setText("View"); // XXX I18N
+                }
+                public JComponent[] getMenuPresenters() {
+                    removeAll();
+                    String selectedView = instance.prefs().get(SELECTED_VIEW, HudsonView.ALL_VIEW);
+                    for (final HudsonView view : instance.getViews()) {
+                        JRadioButtonMenuItem item = new JRadioButtonMenuItem(view.getName());
+                        item.setSelected(view.getName().equals(selectedView));
+                        item.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                if (view.getName().equals(HudsonView.ALL_VIEW)) {
+                                    instance.prefs().remove(SELECTED_VIEW);
+                                } else {
+                                    instance.prefs().put(SELECTED_VIEW, view.getName());
+                                }
+                            }
+                        });
+                        add(item);
+                    }
+                    return new JComponent[] {this};
+                }
+                public JComponent[] synchMenuPresenters(JComponent[] items) {
+                    return getMenuPresenters();
+                }
+            }
+            return new Menu();
+        }
+
+    }
+
 }

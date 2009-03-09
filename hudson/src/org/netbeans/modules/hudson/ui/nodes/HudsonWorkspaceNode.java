@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.hudson.ui.nodes;
 
-import org.netbeans.modules.hudson.impl.HudsonJobImpl;
+import org.netbeans.modules.hudson.api.HudsonJob;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
@@ -50,7 +50,7 @@ import org.openide.nodes.AbstractNode;
  */
 class HudsonWorkspaceNode extends AbstractNode {
 
-    HudsonWorkspaceNode(HudsonJobImpl job) {
+    HudsonWorkspaceNode(HudsonJob job) {
         super(DataFolder.findFolder(job.getRemoteWorkspace().getRoot()).createNodeChildren(DataFilter.ALL));
         setName("ws"); // NOI18N
         setIconBaseWithExtension("org/netbeans/modules/hudson/ui/resources/document_edit.gif"); // XXX pick a better icon

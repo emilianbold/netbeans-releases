@@ -42,6 +42,7 @@
 package org.netbeans.modules.hudson.api;
 
 import java.util.Collection;
+import java.util.prefs.Preferences;
 
 /**
  * Instance of the the Hudson Server
@@ -118,4 +119,11 @@ public interface HudsonInstance extends Comparable<HudsonInstance> {
      * @return
      */
     boolean isPersisted();
+
+    /**
+     * Per-instance preferences.
+     * @return preferences for various customizations
+     */
+    Preferences prefs();
+
 }
