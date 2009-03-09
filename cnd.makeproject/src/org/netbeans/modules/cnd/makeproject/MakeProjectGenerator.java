@@ -57,6 +57,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
@@ -243,19 +244,19 @@ public class MakeProjectGenerator {
         } else {
             mainFilePath = null;
         }
-
+        Runnable task = new Runnable() {
+            public void run() {
+                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems, mainFilePath); // FIXUP: need a better check whether logical folder should be ccreated or not.
+                projectDescriptor.save();
+                projectDescriptor.closed();
+                projectDescriptor.clean();
+            }
+        };
         if (project instanceof MakeProject && !saveNow) { // How can it not be an instance of MakeProject???
             MakeProject makeProject = (MakeProject) project;
-            makeProject.addOpenedTask(new Runnable() {
-
-                public void run() {
-                    projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems, mainFilePath); // FIXUP: need a better check whether logical folder should be ccreated or not.
-                    projectDescriptor.save();
-                }
-            });
+            makeProject.addOpenedTask(task);
         } else {
-            projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems, mainFilePath); // FIXUP: need a better check whether logical folder should be ccreated or not.
-            projectDescriptor.save();
+            task.run();
         }
         // create Makefile
         copyURLFile("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile", // NOI18N

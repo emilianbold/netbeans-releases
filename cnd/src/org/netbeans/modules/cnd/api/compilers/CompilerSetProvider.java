@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.api.compilers;
 
 import java.util.List;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
@@ -47,7 +48,7 @@ import java.util.List;
  */
 public interface CompilerSetProvider {
     
-    public void init(String user_and_host);
+    public void init(ExecutionEnvironment env);
     
     public int getPlatform();
 
@@ -55,7 +56,7 @@ public interface CompilerSetProvider {
     
     public String getNextCompilerSetData();
 
-    public String[] getCompilerSetData(String hkey, String path);
+    public String[] getCompilerSetData(ExecutionEnvironment env, String path);
 
     public Runnable createCompilerSetDataLoader(List<CompilerSet> sets);
 }

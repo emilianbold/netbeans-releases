@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
@@ -56,13 +57,13 @@ public class ExtProcessRemoteCommandSupport extends RemoteConnectionSupport {
     private final String cmd;
     private final Map<String, String> env;
 
-    public ExtProcessRemoteCommandSupport(String hkey, String cmd, Map<String, String> env) {
-        super(hkey, PORT);
+    public ExtProcessRemoteCommandSupport(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
+        super(execEnv);
         this.cmd = cmd;
         this.env = env;
 
         if (!isFailedOrCancelled()) {
-            log.fine("ExtProcessRemoteCommandSupport<Init>: Running [" + cmd + "] on " + hkey);
+            log.fine("ExtProcessRemoteCommandSupport<Init>: Running [" + cmd + "] on " + env);
             try {
                 channel = createChannel();
             } catch (JSchException jse) {

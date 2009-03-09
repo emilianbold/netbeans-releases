@@ -97,6 +97,9 @@ public class ParentVersionError implements POMErrorFixProvider {
     public List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj) {
         assert model != null;
         List<ErrorDescription> toRet = new ArrayList<ErrorDescription>();
+        if (prj == null) {
+            return null;
+        }
         Parent par = model.getProject().getPomParent();
         if (par == null) {
             return toRet;

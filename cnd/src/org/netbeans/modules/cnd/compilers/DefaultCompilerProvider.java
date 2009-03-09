@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.compilers;
 import org.netbeans.modules.cnd.api.compilers.CompilerProvider;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
@@ -51,7 +52,7 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
  */
 public class DefaultCompilerProvider extends CompilerProvider {
     
-    public Tool createCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        return new Tool(hkey, flavor, kind, name, displayName, path);
+    public Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return Tool.createTool(env, flavor, kind, name, displayName, path);
     }
 }

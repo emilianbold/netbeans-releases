@@ -97,17 +97,6 @@ STATUS="nbbuild/build/build-info"
 curl $pop_job/buildStatus -D "$STATUS"
 cat "$STATUS"
 
-if grep "Location:.*blue[_anime]*.gif.*" "$STATUS"; then
-    echo Build seems to be stable
-    testresult "$TESTDIR" "check.build.stable" "`cat $STATUS`"
-else
-    echo Build is not stable, exiting
-    testresult "$TESTDIR" "check.build.stable" "`cat $STATUS`" "1"
-    echo >"nbbuild/downstream-builder-not-stable-no-push.zip"
-    exit 0
-fi
-
-
 echo Getting Build Info
 HGINFO=`curl $pop_job/lastStableBuild/artifact/$pop_build_info`
 echo Build info: $HGINFO
@@ -142,6 +131,14 @@ if [ "$OUT_COUNT" -gt 0 ]; then
 else
     echo "No outgoing changes. No reason to do build."
     echo >"nbbuild/no-outgoing-changes-no-build.zip"
+    if grep "Location:.*blue[_anime]*.gif.*" "$STATUS"; then
+        echo Build seems to be stable
+        testresult "$TESTDIR" "check.build.stable" "`cat $STATUS`"
+    else
+        echo Build is not stable
+        testresult "$TESTDIR" "check.build.stable" "`cat $STATUS`" "1"
+        echo >"nbbuild/downstream-builder-not-stable-no-push.zip"
+    fi
     exit 0
 fi
 

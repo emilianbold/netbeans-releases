@@ -50,6 +50,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.logging.Logger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 
 /**
@@ -60,15 +61,11 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
 
     private static final Logger LOG = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
-    public RemoteCopySupport(String key, int port) {
-        super(key, port);
+    public RemoteCopySupport(ExecutionEnvironment execEnv) {
+        super(execEnv);
         revitalize();
 
     // copy(remote, local);
-    }
-
-    public RemoteCopySupport(String key) {
-        this(key, PORT);
     }
 
     private void setChannelCommand(String cmd) {
@@ -85,8 +82,8 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
         }
     }
     
-    public static boolean copyFrom(String key, String remoteName, String localName) {
-        RemoteCopySupport support = new RemoteCopySupport(key);
+    public static boolean copyFrom(ExecutionEnvironment execEnv, String remoteName, String localName) {
+        RemoteCopySupport support = new RemoteCopySupport(execEnv);
         return support.copyFrom(remoteName, localName);
     }
 
@@ -213,8 +210,8 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
         return getExitStatus() == 0;
     }
     
-    public static boolean copyTo(String key, String localFile, String remotePath) {
-        RemoteCopySupport support = new RemoteCopySupport(key);
+    public static boolean copyTo(ExecutionEnvironment execEnv, String localFile, String remotePath) {
+        RemoteCopySupport support = new RemoteCopySupport(execEnv);
         return support.copyTo(localFile, remotePath);
     }
 

@@ -102,8 +102,8 @@ public class CsmDeclarationResolver {
     
     public static CsmDeclaration findTopFileDeclaration(CsmFile file, int offset) {
         assert (file != null) : "can't be null file in findTopFileDeclaration";
-        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(offset);
-        for (Iterator it = CsmSelect.getDefault().getDeclarations(file, filter); it.hasNext();) {
+        CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(offset);
+        for (Iterator it = CsmSelect.getDeclarations(file, filter); it.hasNext();) {
             CsmDeclaration decl = (CsmDeclaration) it.next();
             assert (decl != null) : "can't be null declaration";
             if (CsmOffsetUtilities.isInObject(decl, offset)) {
@@ -133,17 +133,17 @@ public class CsmDeclarationResolver {
             }
         }
         // check file declarations
-        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(offset);
-        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(file, filter);
+        CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(offset);
+        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(file, filter);
         lastObject = findInnerDeclaration(it, context, offset);
         // check includes if needed
         if (lastObject == null) {
-            Iterator<CsmInclude> it1 = CsmSelect.getDefault().getIncludes(file, filter);
+            Iterator<CsmInclude> it1 = CsmSelect.getIncludes(file, filter);
             lastObject = CsmOffsetUtilities.findObject(it1, context, offset);
         }
         // check macros if needed
         if (lastObject == null) {
-            Iterator<CsmMacro> it1 = CsmSelect.getDefault().getMacros(file, filter);
+            Iterator<CsmMacro> it1 = CsmSelect.getMacros(file, filter);
             lastObject = CsmOffsetUtilities.findObject(it1, context, offset);
         }
         return lastObject;

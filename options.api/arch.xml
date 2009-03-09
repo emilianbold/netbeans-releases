@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 ]>
 
 <api-answers
-  question-version="1.26"
+  question-version="1.29"
   author="jan.jancura@sun.com"
 >
 
@@ -1099,6 +1099,32 @@ made subject to such option by the copyright holder.
         your implementation of AdvancedCategory there (*.instance file). Standard
         file systems sorting mechanism is used.
    </api>
+   <api name="OptionsExportLayers"
+        group="layer"
+        type="export"
+        category="devel"
+        url="">
+        Use OptionsExport/&lt;MyCategory&gt; folder for registration of items for export/import
+        of options. Registration in layers looks as follows
+ <pre style="background-color: rgb(255, 255, 153);">
+ &lt;folder name="OptionsExport"&gt;
+     &lt;!-- category --&gt;
+     &lt;folder name="MyCategory"&gt;
+         &lt;!-- category display name --&gt;
+         &lt;attr name="displayName"
+          bundlevalue="org.netbeans.modules.mymodule.options.Bundle#Category_Display_Name"/&gt;
+         &lt;!-- item --&gt;
+         &lt;file name="MyItem"&gt;
+             &lt;attr name="displayName" stringvalue="org.netbeans.modules.mymodule.options.Bundle#Item_Display_Name"/&gt;
+             &lt;!-- include regex pattern rooted to userdir --&gt;
+             &lt;attr name="include" stringvalue="config/Preferences/org/netbeans/modules/mymodule/.*|config/mymodule/.*"/&gt;
+             &lt;!-- exclude regex pattern rooted to userdir --&gt;
+             &lt;attr name="exclude" stringvalue="config/mymodule/obsolete/.*"/&gt;
+         &lt;/file&gt;
+     &lt;/folder&gt;
+ &lt;/folder&gt;
+ </pre>
+   </api>
   </p>
  </answer>
 
@@ -1134,6 +1160,51 @@ made subject to such option by the copyright holder.
  <answer id="security-policy">
   <p>
    No.
+  </p>
+ </answer>
+
+
+
+
+<!--
+        <question id="compat-deprecation" when="init">
+            How the introduction of your project influences functionality
+            provided by previous version of the product?
+            <hint>
+            If you are planning to deprecate/remove/change any existing APIs,
+            list them here accompanied with the reason explaining why you
+            are doing so.
+            </hint>
+        </question>
+-->
+ <answer id="compat-deprecation">
+  <p>
+   No deprecation.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="resources-preferences" when="final">
+            Does your module uses preferences via Preferences API? Does your module use NbPreferences or
+            or regular JDK Preferences ? Does it read, write or both ? 
+            Does it share preferences with other modules ? If so, then why ?
+            <hint>
+                You may use
+                    &lt;api type="export" group="preferences"
+                    name="preference node name" category="private"&gt;
+                    description of individual keys, where it is used, what it
+                    influences, whether the module reads/write it, etc.
+                    &lt;/api&gt;
+                Due to XML ID restrictions, rather than /org/netbeans/modules/foo give the "name" as org.netbeans.modules.foo.
+                Note that if you use NbPreferences this name will then be the same as the code name base of the module.
+            </hint>
+        </question>
+-->
+ <answer id="resources-preferences">
+  <p>
+      Uses org.netbeans.modules.options.api.OptionsHeight and OptionsWidth properties.
   </p>
  </answer>
 

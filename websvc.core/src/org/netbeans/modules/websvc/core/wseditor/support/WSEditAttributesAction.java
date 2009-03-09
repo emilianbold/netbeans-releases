@@ -41,10 +41,11 @@
 
 package org.netbeans.modules.websvc.core.wseditor.support;
 
+import org.netbeans.modules.websvc.api.support.EditWSAttributesCookie;
 import java.util.Collection;
 import java.util.Set;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProviderRegistry;
+import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
+import org.netbeans.modules.websvc.api.wseditor.WSEditorProviderRegistry;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;

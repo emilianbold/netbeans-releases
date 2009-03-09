@@ -573,11 +573,12 @@ public final class ModuleUpdater extends Thread {
         int count = 0;
 
         int c;
+        byte [] bytes = new byte [8192];
 
         try {
-            while( ( c = bsrc.read() ) != -1 ) {
-                bdest.write( c );
-                count++;
+            while( ( c = bsrc.read(bytes) ) != -1 ) {
+                bdest.write(bytes, 0, c);
+                count+=c;
                 if ( count > 8500 ) {
                     if (progressVal >= 0) {
                         progressVal += count;

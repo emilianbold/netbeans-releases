@@ -546,6 +546,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
             | CodeVariable.EXPLICIT_DECLARATION) : modifiers | CodeVariable.FIELD;
         formModel.getCodeStructure().setDefaultVariableType(type);
 
+        // Update code vartiables
+        for (RADComponent comp : formModel.getAllComponents()) {
+            JavaCodeGenerator.setupComponentFromAuxValues(comp);
+        }
+
         if (bindingProperties != null) {
             setBindingProperties();
             bindingProperties = null;
@@ -3003,7 +3008,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     if (autoResSetting instanceof Integer && ((Integer)autoResSetting).intValue() == ResourceSupport.AUTO_OFF) {
                         formSettings.set(ResourceSupport.PROP_AUTO_RESOURCING, ResourceSupport.AUTO_I18N);
                     }                    
-                }
+                    }
             } else {
                 // we have a valid name / value pair
                 comp.setAuxValue(name, value);
@@ -3026,8 +3031,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
         }
-
-        JavaCodeGenerator.setupComponentFromAuxValues(comp);
     }
 
     // -----------

@@ -90,7 +90,8 @@ public class XMLDocumentModelTest extends TestBase {
         suite.addTest(new XMLDocumentModelTest("testCreateAndUpdateCommentElement"));
         suite.addTest(new XMLDocumentModelTest("testDoTwoModificationsOnVariousPlaces"));
         suite.addTest(new XMLDocumentModelTest("testDocumentModelStateListener"));
-        //suite.addTest(new XMLDocumentModelTest("testEditElementWithOneCharContent_71596"));
+//        suite.addTest(new XMLDocumentModelTest("testEditElementWithOneCharContent_71596")); //fails - bug
+        suite.addTest(new XMLDocumentModelTest("testZeroLengthErrorSE_159284"));
         suite.addTest(new XMLDocumentModelTest("testElementAttributes"));
         suite.addTest(new XMLDocumentModelTest("testInvalidateTagElement"));
         suite.addTest(new XMLDocumentModelTest("testMergeTwoElementsIntoOne"));
@@ -1385,6 +1386,57 @@ public class XMLDocumentModelTest extends TestBase {
         assertEquals(0, elementChanges.size());
     }
 
+    //http://www.netbeans.org/issues/show_bug.cgi?id=159284
+    public void testZeroLengthErrorSE_159284() throws DocumentModelException, BadLocationException, InterruptedException {
+        //initialize documents used in tests
+        initDoc6();
+        //set the document content
+        DocumentModel model = DocumentModel.getDocumentModel(doc);
+        DocumentElement root = model.getRootElement();
+
+        final DocumentElement rootTag = root.getElement(0); //get <root> element
+        assertNotNull(rootTag.getName());
+
+        //listen to model
+        final Vector modelChanges = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+
+            public void documentElementAdded(DocumentElement de) {
+                modelChanges.add(de);
+            }
+        });
+
+        //listen to element
+        final Vector elementChanges = new Vector();
+        rootTag.addDocumentElementListener(new DocumentElementListenerAdapter() {
+
+            public void elementAdded(DocumentElementEvent e) {
+                elementChanges.add(e.getChangedChild());
+            }
+        });
+
+        final Object lock = new Object();
+        model.addDocumentModelStateListener(new DocumentModelStateListenerAdapter() {
+
+            public void updateFinished() {
+                synchronized (lock) {
+                    lock.notifyAll();
+                }
+            }
+        });
+
+        doc.insertString(6, "\n<m ", null);
+        model.forceUpdate();
+
+        synchronized (lock) {
+            lock.wait(2000);
+        }
+
+        //assert "no exception thrown";
+
+    }
+
+
     public void testModelLocking() throws DocumentModelException, BadLocationException, InterruptedException {
         //initialize documents used in tests
         initDoc1();
@@ -1604,8 +1656,8 @@ public class XMLDocumentModelTest extends TestBase {
         doc.putProperty("mimeType", "text/xml");
 
         doc.insertString(0, "<root>X</root>", null);
-        //                  0123456789012345
-        //                  0         1
+        //                   0123456789012345
+        //                   0         1
     }
 
     private static class DocumentModelListenerAdapter implements DocumentModelListener {

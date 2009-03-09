@@ -44,9 +44,7 @@ package org.netbeans.modules.cnd.api.model.services;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -129,9 +127,7 @@ public abstract class CsmUsingResolver {
      * @param namespace  namespace of interest
      * @return unmodifiable collection of namespaces visible in given namespace though "using" directives
      */
-    public Collection<CsmNamespace> findVisibleNamespaces(CsmNamespace namespace) {
-        return extractNamespaces(findUsingDirectives(namespace));
-    }
+    public abstract Collection<CsmNamespace> findVisibleNamespaces(CsmNamespace namespace, CsmProject startPrj);
 
 //    /**
 //     * Finds all direct visible namespace definitions.
@@ -152,82 +148,6 @@ public abstract class CsmUsingResolver {
      * @return sorted unmodifiable collection of namespace aliases visible for input offsetable element
      */
     public abstract Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject);
-    
-    /**
-     * converts collection of using declarations into ordered list of namespaces
-     * each namespace occurs only once according it's first using directive in 'decls' list
-     */
-    public static Collection<CsmNamespace> extractNamespaces(Collection<CsmUsingDirective> decls) {
-        // TODO check the correctness of order
-        Collection<Pair> namespaces = new LinkedHashSet<Pair>();
-        for (CsmUsingDirective decl : decls) {
-            CsmNamespace ref = decl.getReferencedNamespace();
-            if (ref != null) {
-                CsmFile file = decl.getContainingFile();
-                if(file != null) {
-                    CsmProject proj = file.getProject();
-                    if(proj != null) {
-                        Pair p = new Pair(ref,proj);
-                        namespaces.remove(p);
-                        namespaces.add(p);
-                    }
-                }
-            }
-        }
-        Collection<CsmNamespace> out = new LinkedHashSet<CsmNamespace>();
-        for(Pair p : namespaces){
-            for(CsmNamespace ns : findNamespacesInProject(p.proj, p.fqn)){
-                out.remove(ns);
-                out.add(ns);
-            }
-        }
-        return out;
-    }
-
-    /**
-     * Finds namespace in project and it's libraries
-     * 
-     * @param project - project
-     * @param namespaceQualifiedName - namespace name
-     * @return collection of namespaces
-     */
-    private static Collection<CsmNamespace> findNamespacesInProject(CsmProject project, CharSequence namespaceQualifiedName) {
-        HashSet<CsmProject> scannedProjects = new HashSet<CsmProject>();
-        Collection<CsmNamespace> out = new ArrayList<CsmNamespace>();
-        CsmNamespace namespace = project.findNamespace(namespaceQualifiedName);
-        if(namespace != null) {                
-            out.add(namespace);
-        }
-        scannedProjects.add(project);
-        out.addAll(findNamespacesInProjects(project.getLibraries(), namespaceQualifiedName, scannedProjects));
-        return out;        
-    }
-    
-    /**
-     * Finds namespace in projects and libraries
-     * 
-     * @param project - project
-     * @param namespaceQualifiedName - namespace name
-     * @param scannedProjects - set of already scanned projects
-     * @return collection of namespaces
-     */
-    private static Collection<CsmNamespace> findNamespacesInProjects(Collection<CsmProject> projects, CharSequence namespaceQualifiedName, HashSet<CsmProject> scannedProjects) {
-        Collection<CsmNamespace> out = new ArrayList<CsmNamespace>();
-        for (CsmProject proj : projects) {
-            if(!scannedProjects.contains(proj)) {
-                CsmNamespace namespace = proj.findNamespace(namespaceQualifiedName);
-                if (namespace != null) {
-                    out.add(namespace);
-                }
-                scannedProjects.add(proj);
-                Collection<CsmProject> libs = proj.getLibraries();
-                if (!libs.isEmpty()) {
-                    out.addAll(findNamespacesInProjects(libs, namespaceQualifiedName, scannedProjects));
-                }
-            }
-        }        
-        return out;
-    }    
     
     /**
      * converts collection of using declarations into ordered list of namespaces
@@ -277,29 +197,10 @@ public abstract class CsmUsingResolver {
     
         public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject) {
             return Collections.<CsmNamespaceAlias>emptyList();
-        }        
+        }
+
+        public Collection<CsmNamespace> findVisibleNamespaces(CsmNamespace namespace, CsmProject prj) {
+            return Collections.<CsmNamespace>emptyList();
+        }
     }    
-
-    private static class Pair {
-        private final CharSequence fqn;
-        private CsmProject proj;
-        private Pair(CsmNamespace ref, CsmProject proj){
-            this.fqn = ref.getQualifiedName();
-            this.proj = proj;
-        }
-
-        @Override
-        public int hashCode() {
-            return fqn.hashCode()+proj.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof Pair) {
-                Pair p = (Pair)obj;
-                return fqn.equals(p.fqn) && proj.equals(p.proj);
-            }
-            return false;
-        }
-    }
 }

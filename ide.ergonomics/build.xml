@@ -6,6 +6,7 @@
     <target name="-release.dir" depends="-disable-kits,projectized-common.-release.dir"/>
     <target name="basic-init" depends="-compile-ant,projectized-common.basic-init"/>
     <target name="jar-prep" depends="-generate-proxies,projectized-common.jar-prep"/>
+    <target name="clean" depends="-clean-release,projectized-common.clean"/>
 
     <!--
     -
@@ -34,22 +35,49 @@
     </target>
 
     <target name="-init-clusters">
-        <dirset id="ergonomic.clusters" dir="${netbeans.dest.dir}">
-            <include name="*"/>
+        <taskdef name="resolvelist"
+             classname="org.netbeans.nbbuild.ResolveList"
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <resolvelist
+            name="ergonomic.clusters.includes"
+            list="${nb.clusters.list}"
+        >
+            <mapper type="glob" from="*" to="*.dir"/>
+        </resolvelist>
+        <dirset 
+            id="ergonomic.clusters"
+            dir="${netbeans.dest.dir}"
+            includes="${ergonomic.clusters.includes}"
+        >
             <exclude name="harness*"/>
             <exclude name="ide1*"/>
             <exclude name="platform*"/>
             <exclude name="ergonomics*"/>
             <exclude name="extra*"/>
             <exclude name="nb*.*"/>
-            <exclude name="bin"/>
-            <exclude name="etc"/>
         </dirset>
     </target>
 
-
-    <target name="-disable-kits" depends="-init-clusters">
+    <target name="-clean-release">
         <property name="build.release.dir" location="build/release"/>
+        <delete dir="${build.release.dir}"/>
+    </target>
+    <target name="-init-static-analysis">
+        <property name="build.release.dir" location="build/release"/>
+        <condition property="skip.static.analysis">
+            <and>
+                <equals arg1="${static.analysis}" arg2="false"/>
+                <available file="${build.release.dir}"/>
+            </and>
+        </condition>
+    </target>
+
+
+    <target 
+        name="-disable-kits"
+        depends="-init-clusters,-init-static-analysis"
+        unless="skip.static.analysis"
+    >
         <mkdir dir="${build.release.dir}/config/Modules"/>
         <subant genericantfile="build.xml" target="-disable-one-cluster">
             <property name="xmldir" value="${build.release.dir}/config/Modules"/>
@@ -74,7 +102,11 @@
         </copy>
     </target>
 
-    <target name="-generate-proxies" depends="-init-clusters">
+    <target 
+        name="-generate-proxies"
+        depends="-init-clusters,-init-static-analysis"
+        unless="skip.static.analysis"
+    >
         <subant genericantfile="build.xml" target="-proxy-one-cluster">
             <property name="ergonomicsdir" location="${basedir}"/>
             <dirset refid="ergonomic.clusters"/>

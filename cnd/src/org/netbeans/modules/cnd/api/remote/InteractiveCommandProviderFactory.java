@@ -45,6 +45,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -132,7 +133,12 @@ public abstract class InteractiveCommandProviderFactory {
             return exitStatus;
         }
 
+
         public boolean run(String hkey, String cmd, Map<String, String> env) {
+            return run(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), cmd, env);
+        }
+
+        public boolean run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
             throw new UnsupportedOperationException("deprecated."); // NOI18N
         }
     }

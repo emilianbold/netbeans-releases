@@ -186,7 +186,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
         if(dm instanceof Hk2DeploymentManager) {
             result = new Hk2ServerInstanceDescriptor((Hk2DeploymentManager) dm);
         } else {
-            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "Invalid deployment manager: " + dm); // NOI18N
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "Invalid deployment manager: " + dm); // NOI18N
         }
         return result;
     }

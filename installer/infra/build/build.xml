@@ -387,8 +387,8 @@
 	</if>
 
 	<if property="gf.ml.build.type" value="ml">
-	        <set property="glassfish.build.number" value="20080515"/>
-	        <set property="sjsas.build.number" value="20080515"/>
+	        <set property="glassfish.build.number" value="20090114"/>
+	        <set property="sjsas.build.number" value="20090114"/>
 	</if>
 
         <get

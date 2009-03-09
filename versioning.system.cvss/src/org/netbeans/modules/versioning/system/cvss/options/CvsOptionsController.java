@@ -62,6 +62,7 @@ class CvsOptionsController extends OptionsPanelController {
         int wrapLength = CvsModuleConfig.getDefault().getWrapCommitMessagelength();
         panel.getWrapCommitMessages().setSelected(wrapLength > 0);
         panel.getWrapCharCount().setText(wrapLength > 0 ? Integer.toString(wrapLength) : "");
+        panel.getPruneDirectories().setSelected(CvsModuleConfig.getDefault().getAutoPruneDirectories());
     }
 
     public void applyChanges() {
@@ -70,6 +71,7 @@ class CvsOptionsController extends OptionsPanelController {
         CvsModuleConfig.getDefault().getPreferences().put(CvsModuleConfig.PROP_ANNOTATIONS_FORMAT, panel.getStatusLabelFormat().getText());
         int wrapLength = panel.getWrapCommitMessages().isSelected() ? Integer.parseInt(panel.getWrapCharCount().getText().trim()) : 0;
         CvsModuleConfig.getDefault().setWrapCommitMessagelength(wrapLength);
+        CvsModuleConfig.getDefault().setAutoPruneDirectories(panel.getPruneDirectories().isSelected());
     }
 
     public void cancel() {
@@ -91,6 +93,7 @@ class CvsOptionsController extends OptionsPanelController {
         boolean originalWrapMessages = originalWrapLength > 0;
         if (panel.getWrapCommitMessages().isSelected() != originalWrapMessages) return true;
         if (originalWrapMessages && !panel.getWrapCharCount().getText().equals(Integer.toString(originalWrapLength))) return true;
+        if (panel.getPruneDirectories().isSelected() != CvsModuleConfig.getDefault().getAutoPruneDirectories()) return true;
         return false;
     }
 

@@ -645,7 +645,7 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                 String name = service.getName();
                 ExecutorTask wsimportTask =
                     ActionUtils.runTarget(buildImplFo,
-                        new String[]{"wsimport-service-clean-"+name,"wsimport-service-"+name},null); //NOI18N
+                        new String[]{"wsimport-service-clean-"+name,"wsimport-service-generate"},null); //NOI18N
                 wsimportTask.waitFinished();
             } catch (IOException ex) {
                 ErrorManager.getDefault().log(ex.getLocalizedMessage());

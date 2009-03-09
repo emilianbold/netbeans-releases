@@ -66,7 +66,7 @@ public class DtraceParser {
         }
     }
 
-    protected List<String> parse(String line) {
+    private List<String> parse(String line) {
         return parse(line, metadata.getColumnsCount());
     }
 
@@ -129,7 +129,10 @@ public class DtraceParser {
 
     public DataRow process(String line) {
         List<String> data = parse(line);
-        DataRow result = new DataRow(colnames, data);
-        return result;
+        if (data == null) {
+            return null;
+        } else {
+            return new DataRow(colnames, data);
+        }
     }
 }

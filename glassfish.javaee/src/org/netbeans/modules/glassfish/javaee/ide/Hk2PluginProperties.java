@@ -160,7 +160,7 @@ public class Hk2PluginProperties {
         try {
             File javaEEJar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), 
                     "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER);
-            Logger.getLogger("glassfish.javaee").log(Level.FINER,
+            Logger.getLogger("glassfish-javaee").log(Level.FINER,
                     "JavaEE jar is " + (javaEEJar != null ? javaEEJar.getAbsolutePath() : "null"));
             if(javaEEJar != null && javaEEJar.exists()) {
                 jars.add("web/jsf-connector-10.0"); // NOI18N -- watchout for builds older than b25
@@ -169,7 +169,7 @@ public class Hk2PluginProperties {
                 if(manifest != null) {
                     Attributes attrs = manifest.getMainAttributes();
                     String cp = attrs.getValue("Class-Path");
-                    Logger.getLogger("glassfish.javaee").log(Level.FINER,
+                    Logger.getLogger("glassfish-javaee").log(Level.FINER,
                             "JavaEE jar classpath is \"" + cp + "\"");
                     if(cp != null && cp.length() > 0) {
                         File parent = javaEEJar.getParentFile();
@@ -181,7 +181,7 @@ public class Hk2PluginProperties {
 
                 // Older V3 install that doesn't use Class-Path, so assume it's all in javax.javaee
                 if(list.size() == 0) {
-                    Logger.getLogger("glassfish.javaee").log(Level.FINER,
+                    Logger.getLogger("glassfish-javaee").log(Level.FINER,
                             javaEEJar.getAbsolutePath() + " contains null classpath or subjars not found.  Using directly.");
                     list.add(fileToUrl(javaEEJar));
                 }
@@ -199,8 +199,12 @@ public class Hk2PluginProperties {
             //
             // these aren't caught by the filterByManifest method, so we add it 'by hand'
             //
+            // for Prelude support
             jars.add("web/jstl-impl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
             jars.add("web/jsf-impl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            // for v3 support
+            jars.add("jstl-impl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("jsf-impl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
             jars.add("jsf-api"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
 
             for (String jarStr : jars) {
@@ -388,19 +392,15 @@ public class Hk2PluginProperties {
      * @param port
      * @return
      */
-    public static boolean isRunning(String host, int port) {
+    private static boolean isRunning(String host, int port) throws IOException {
         if (null == host) {
             return false;
         }
-        try {
-            InetSocketAddress isa = new InetSocketAddress(host, port);
-            Socket socket = new Socket();
-            socket.connect(isa, 1);
-            socket.close();
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
+        InetSocketAddress isa = new InetSocketAddress(host, port);
+        Socket socket = new Socket();
+        socket.connect(isa, 1);
+        socket.close();
+        return true;
     }
 
     /**
@@ -413,7 +413,8 @@ public class Hk2PluginProperties {
         try {
             return isRunning(host, Integer.parseInt(port));
         } catch (NumberFormatException e) {
-
+            return false;
+        } catch (IOException ioe) {
             return false;
         }
     }

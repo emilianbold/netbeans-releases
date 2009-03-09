@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  *
  * @author Vladimir Voskresensky
  */
-public class APTSystemMacroMap extends APTBaseMacroMap implements APTMacroMap {
+public class APTSystemMacroMap extends APTBaseMacroMap {
     
     private APTMacroMap preMacroMap;
     

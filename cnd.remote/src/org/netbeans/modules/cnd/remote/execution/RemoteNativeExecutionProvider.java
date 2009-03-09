@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.execution;
 
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
 import org.netbeans.modules.cnd.api.execution.NativeExecutionProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
@@ -49,7 +50,7 @@ import org.netbeans.modules.cnd.api.execution.NativeExecutionProvider;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.execution.NativeExecutionProvider.class)
 public class RemoteNativeExecutionProvider implements NativeExecutionProvider {
     
-    protected String host = null;
+    protected ExecutionEnvironment host = null;
     
     public NativeExecution getNativeExecution() {
         NativeExecution ne = new RemoteNativeExecution();
@@ -57,7 +58,7 @@ public class RemoteNativeExecutionProvider implements NativeExecutionProvider {
         return ne;
     }
     
-    public void setHost(String host) {
+    public void setHost(ExecutionEnvironment host) {
         this.host = host;
     }
 }

@@ -51,8 +51,8 @@ public class FunctionCallImpl extends FunctionCall {
     private final Map<FunctionMetric, Object> metrics;
 
     public FunctionCallImpl(
-            final Function function,
-            final Map<FunctionMetric, Object> metrics) {
+        final Function function,
+        final Map<FunctionMetric, Object> metrics) {
         super(function);
         this.metrics = metrics;
     }
@@ -74,6 +74,16 @@ public class FunctionCallImpl extends FunctionCall {
         sb.append("]"); // NOI18N
 
         return sb.toString();
+    }
+
+    @Override
+    public boolean hasMetric(String metric_id) {
+        for (FunctionMetric metric : metrics.keySet()) {
+            if (metric.getMetricID().equals(metric_id)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

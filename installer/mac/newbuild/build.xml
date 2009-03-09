@@ -88,7 +88,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>        
 
     <target name="unzip-nb" description="Unzip clusters to modules" >                                                  
-        <property name="clusters" value="cnd(cpp),
+        <property name="clusters" value="cnd(cpp), dlight(cpp),
                                          apisupport(javase), profiler(javase), java(javase), harness(javase),
                                          soa(soa),
                                          ruby(ruby),                                       

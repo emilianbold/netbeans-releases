@@ -252,7 +252,7 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
                 String name = client.getName();
                 ExecutorTask wsimportTask =
                         ActionUtils.runTarget(buildImplFo,
-                        new String[]{"wsimport-client-clean-" + name, "wsimport-client-" + name}, null); //NOI18N
+                        new String[]{"wsimport-client-clean-" + name, "wsimport-client-generate"}, null); //NOI18N
                 wsimportTask.waitFinished();
             } catch (IOException ex) {
                 ErrorManager.getDefault().log(ex.getLocalizedMessage());

@@ -41,7 +41,6 @@ package org.netbeans.modules.maven.graph;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.netbeans.api.visual.widget.Widget;
 
 /**
  *
@@ -53,6 +52,10 @@ public class ArtifactGraphNode {
     public static final int MANAGED = 1;
     public static final int OVERRIDES_MANAGED = 2;
 
+    public static final int NO_CONFLICT = 0;
+    public static final int POTENTIAL_CONFLICT = 1;
+    public static final int CONFLICT = 2;
+
     private DependencyNode artifact;
     //for the layout
     double locX;
@@ -60,12 +63,12 @@ public class ArtifactGraphNode {
     double dispX;
     double dispY;
     private boolean fixed;
-    private Widget widget;
+    private ArtifactWidget widget;
     
     private boolean root;
     private HashSet<DependencyNode> dupl;
     private int level;
-    private int managedState;
+    private int managedState = UNMANAGED;
 
     /** Creates a new instance of ArtifactGraphNode */
     public ArtifactGraphNode(DependencyNode art) {
@@ -102,8 +105,21 @@ public class ArtifactGraphNode {
         return false;
     }
 
-    
-    
+    int getConflictType () {
+        int ret = NO_CONFLICT;
+        String includedVersion = getArtifact().getArtifact().getVersion();
+        for (DependencyNode curDepN : getDuplicatesOrConflicts()) {
+            if (curDepN.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+                //if (compareVersions(includedVersion, curDepN.getArtifact().getVersion()) < 0) {
+                if (includedVersion.compareTo(curDepN.getArtifact().getVersion()) < 0) {
+                    return CONFLICT;
+                }
+                ret = POTENTIAL_CONFLICT;
+            }
+        }
+        return ret;
+    }
+
     public boolean isRoot() {
         return level == 0;
     }
@@ -128,8 +144,12 @@ public class ArtifactGraphNode {
         return level;
     }
     
-    void setWidget(Widget wid) {
+    void setWidget(ArtifactWidget wid) {
         widget = wid;
+    }
+
+    ArtifactWidget getWidget() {
+        return widget;
     }
 
     public int getManagedState() {
@@ -138,6 +158,18 @@ public class ArtifactGraphNode {
 
     public void setManagedState(int state) {
         this.managedState = state;
+    }
+
+    static int compareVersions (String v1, String v2) {
+        String[] v1Elems = v1.split("\\.");
+        String[] v2Elems = v2.split("\\.");
+        for (int i = 0; i < Math.min(v1Elems.length, v2Elems.length); i++) {
+            int res = v1Elems[i].compareTo(v2Elems[i]);
+            if (res != 0) {
+                return res;
+            }
+        }
+        return v1Elems.length - v2Elems.length;
     }
 
 }

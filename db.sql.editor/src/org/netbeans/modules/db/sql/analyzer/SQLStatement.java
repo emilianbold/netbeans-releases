@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,120 +34,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.sql.analyzer;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedMap;
-
 /**
  *
- * @author Andrei Badea
+ * @author Jiri Rechtacek
  */
-public class SQLStatement {
-
-    // This should be renamed to SelectStatement.
-
-    private final SQLStatementKind kind;
-    int startOffset, endOffset;
-    private final List<List<String>> selectValues;
-    private final FromClause fromClause;
-    private final List<SQLStatement> subqueries;
-    private final SortedMap<Integer, SelectContext> offset2Context;
-
-    SQLStatement(SQLStatementKind kind, int startOffset, int endOffset, List<List<String>> selectValues, FromClause fromClause, List<SQLStatement> subqueries, SortedMap<Integer, SelectContext> offset2Context) {
-        this.kind = kind;
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
-        this.selectValues = selectValues;
-        this.fromClause = fromClause;
-        this.subqueries = subqueries;
-        this.offset2Context = offset2Context;
-    }
-
-    public SQLStatementKind getKind() {
-        return kind;
-    }
-
-    public FromClause getFromClause() {
-        return fromClause;
-    }
-
-    public FromClause getTablesInEffect(int offset) {
-        List<SQLStatement> statementPath = new ArrayList<SQLStatement>();
-        fillStatementPath(offset, statementPath);
-        if (statementPath.size() == 0) {
-            return null;
-        }
-        if (statementPath.size() == 1) {
-            return statementPath.get(0).getFromClause();
-        }
-        Collections.reverse(statementPath);
-        Set<QualIdent> unaliasedTableNames = new HashSet<QualIdent>();
-        Map<String, QualIdent> aliasedTableNames = new HashMap<String, QualIdent>();
-        for (SQLStatement statement : statementPath) {
-            FromClause statementFromClause = statement.getFromClause();
-            if (statementFromClause != null) {
-                unaliasedTableNames.addAll(statementFromClause.getUnaliasedTableNames());
-                for (Entry<String, QualIdent> entry : statementFromClause.getAliasedTableNames().entrySet()) {
-                    String alias = entry.getKey();
-                    QualIdent tableName = entry.getValue();
-                    if (!aliasedTableNames.containsKey(alias)) {
-                        aliasedTableNames.put(alias, tableName);
-                    }
-                }
-            }
-        }
-        return new FromClause(Collections.unmodifiableSet(unaliasedTableNames), Collections.unmodifiableMap(aliasedTableNames));
-    }
-
-    public List<List<String>> getSelectValues() {
-        return selectValues;
-    }
-
-    public List<SQLStatement> getSubqueries() {
-        return subqueries;
-    }
-
-    public SelectContext getContextAtOffset(int offset) {
-        SelectContext result = null;
-        for (Entry<Integer, SelectContext> entry : offset2Context.entrySet()) {
-            if (offset >= entry.getKey()) {
-                result = entry.getValue();
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
-    private void fillStatementPath(int offset, List<SQLStatement> path) {
-        if (offset >= startOffset && offset <= endOffset) {
-            path.add(this);
-            for (SQLStatement subquery : subqueries) {
-                subquery.fillStatementPath(offset, path);
-            }
-        }
-    }
-
-    public enum SelectContext {
-
-        SELECT,
-        FROM,
-        JOIN_CONDITION,
-        WHERE,
-        GROUP_BY,
-        HAVING,
-        ORDER_BY
-    }
+public abstract class SQLStatement {
+    public abstract SQLStatementKind getKind ();
 }

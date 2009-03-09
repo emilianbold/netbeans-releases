@@ -58,6 +58,7 @@ import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.spi.completion.CompletionContext;
 import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -209,7 +210,7 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         }
 
         Project project = FileOwnerQuery.getOwner(context.getSourceFile());
-        if (context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
+        if (context.isLeaf() && project.getLookup().lookup(DomainCompletionProvider.class) != null) {
 
             if (isDomain(context.getSourceFile(), project)) {
                 Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
@@ -453,10 +454,16 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
     }
 
     private boolean isDomain(FileObject source, Project project) {
-        return source != null
-                    && source.getParent().getName().equals("domain") // NOI18N
-                    && source.getParent().getParent().getName().equals("grails-app") // NOI18N
-                    && source.getParent().getParent().getParent().equals(project.getProjectDirectory());
+        if (source == null) {
+            return false;
+        }
+
+        FileObject domainDir = project.getProjectDirectory().getFileObject("grails-app/domain"); // NOI18N
+        if (domainDir == null || !domainDir.isFolder()) {
+            return false;
+        }
+
+        return FileUtil.isParentOf(domainDir, source);
     }
 
     private String capitalise(String property) {

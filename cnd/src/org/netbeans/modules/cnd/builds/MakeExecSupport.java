@@ -178,15 +178,15 @@ public class MakeExecSupport extends ExecutionSupport {
     /**
      *  Set the build directory
      *
-     *  @param target the build directory
+     *  @param dir the build directory
      */
     public void setBuildDirectory(String dir) {
         try {
             getEntry().getFile().setAttribute(PROP_BUILD_DIRECTORY, dir);
         } catch (IOException ex) {
-            String msg = MessageFormat.format(
-                    getString("MSG_CANT_SET_BUILD_DIRECTORY"), // NOI18N
-                    new Object[]{FileUtil.toFile(getEntry().getFile()).getPath()});
+            //String msg = MessageFormat.format(
+            //        getString("MSG_CANT_SET_BUILD_DIRECTORY"), // NOI18N
+            //        new Object[]{FileUtil.toFile(getEntry().getFile()).getPath()});
 
             if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
                 ex.printStackTrace();
@@ -254,9 +254,9 @@ public class MakeExecSupport extends ExecutionSupport {
         try {
             getEntry().getFile().setAttribute(PROP_MAKE_COMMAND, make);
         } catch (IOException ex) {
-            String msg = MessageFormat.format(
-                    getString("MSG_CANT_SET_MAKE_COMMAND"), // NOI18N
-                    new Object[]{FileUtil.toFile(getEntry().getFile()).getPath()});
+            //String msg = MessageFormat.format(
+            //        getString("MSG_CANT_SET_MAKE_COMMAND"), // NOI18N
+            //        new Object[]{FileUtil.toFile(getEntry().getFile()).getPath()});
 
             if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
                 ex.printStackTrace();
@@ -341,9 +341,9 @@ public class MakeExecSupport extends ExecutionSupport {
         try {
             fo.setAttribute(PROP_MAKE_OPTIONS, options);
         } catch (IOException ex) {
-            String msg = MessageFormat.format(
-                    getString("MSG_CANT_SET_MAKE_OPTIONS"), // NOI18N
-                    new Object[]{FileUtil.toFile(fo).getPath()});
+            //String msg = MessageFormat.format(
+            //        getString("MSG_CANT_SET_MAKE_OPTIONS"), // NOI18N
+            //        new Object[]{FileUtil.toFile(fo).getPath()});
 
             if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
                 ex.printStackTrace();
@@ -462,8 +462,8 @@ public class MakeExecSupport extends ExecutionSupport {
             }
         // End hack
         } catch (IOException ex) {
-            String msg = MessageFormat.format(getString("MSG_CANT_SET_MAKE_TARGETS"), // NOI18N
-                    new Object[]{FileUtil.toFile(fo).getPath()});
+            //String msg = MessageFormat.format(getString("MSG_CANT_SET_MAKE_TARGETS"), // NOI18N
+            //        new Object[]{FileUtil.toFile(fo).getPath()});
 
             if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
                 ex.printStackTrace();
@@ -474,7 +474,7 @@ public class MakeExecSupport extends ExecutionSupport {
     /**
      *  Add a space separated list of targts to the target list
      *
-     *  @param newtarget the (space separated) target list
+     *  @param newtargets the (space separated) target list
      */
     public void addMakeTargets(String newtargets) {
         String targets = (String) getEntry().getFile().getAttribute(PROP_MAKE_TARGETS);
@@ -505,12 +505,12 @@ public class MakeExecSupport extends ExecutionSupport {
 
         @Override
         public java.awt.Component getCustomEditor() {
-            String val = null;
+            String val;
             try {
                 val = (String) prop.getValue();
             } catch (Exception e) {
+                val = "";
             }
-
             return new TargetEditor(tokenizeTargets(val), this, env);
         }
 

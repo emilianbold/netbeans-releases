@@ -66,7 +66,6 @@ import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
@@ -90,14 +89,12 @@ public class ExternalBindingTablePanel extends DefaultTablePanel{
     private String previousDirectory = "";
     private static final FileFilter XML_FILE_FILTER = new XmlFileFilter();
     private Node node;
-    private JaxWsModel jmodel;
     private Map<String, FileObject> addedBindings;
     private RemoveActionListener removeActionListener;
     private AddActionListener addActionListener;
     
     /** Creates a new instance of ExternalBindingTablePanel */
-    public ExternalBindingTablePanel(EBTableModel model,
-            Node node, JaxWsModel jmodel) {
+    public ExternalBindingTablePanel(EBTableModel model, Node node) {
         super(model);
         getTable().getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExternalBindingTablePanel.class,
             "TITLE_CUSTOMIZATION_FILES"));
@@ -105,7 +102,6 @@ public class ExternalBindingTablePanel extends DefaultTablePanel{
             "TITLE_CUSTOMIZATION_FILES"));
         this.model = model;
         this.node = node;
-        this.jmodel = jmodel;
         this.editButton.setVisible(false); //can't edit an entry
         addedBindings = new HashMap<String, FileObject>();
         

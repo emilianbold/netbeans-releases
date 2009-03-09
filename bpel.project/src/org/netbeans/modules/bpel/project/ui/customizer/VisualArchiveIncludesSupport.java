@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.bpel.project.ui.customizer;
 
-import org.netbeans.modules.bpel.project.IcanproConstants;
+import org.netbeans.modules.bpel.project.ProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 
@@ -418,7 +418,7 @@ final class VisualArchiveIncludesSupport {
             
             if (source == addArtifactButton) {
                 AntArtifact[] artifacts = AntArtifactChooser.showDialog(
-                        IcanproConstants.ARTIFACT_TYPE_EJB_WS, master
+                        ProjectConstants.ARTIFACT_TYPE_EJB_WS, master
                         );
                 
                 if (artifacts != null) {

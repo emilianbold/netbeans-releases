@@ -87,7 +87,7 @@ import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.spi.project.support.LookupProviderSupport;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -123,6 +123,12 @@ import org.w3c.dom.Text;
  *
  * @author vince kraemer
  */
+@AntBasedProjectRegistration(
+    iconResource="org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif",
+    type=EarProjectType.TYPE,
+    sharedNamespace=EarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+    privateNamespace=EarProjectType.PRIVATE_CONFIGURATION_NAMESPACE
+)
 public final class EarProject implements Project, AntProjectListener {
     
     private static final Icon EAR_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif", false); // NOI18N
@@ -135,7 +141,6 @@ public final class EarProject implements Project, AntProjectListener {
     private final Lookup lookup;
     private final ProjectEar appModule;
     private final Ear ear;
-    private final AntBasedProjectType abpt;
     private final UpdateHelper updateHelper;
     private final UpdateProjectImpl updateProject;
     private final ClassPathProviderImpl cpProvider;
@@ -144,9 +149,8 @@ public final class EarProject implements Project, AntProjectListener {
     private AntBuildExtender buildExtender;
     public ClassPathSupport cs;
             
-    EarProject(final AntProjectHelper helper, AntBasedProjectType abpt) throws IOException {
+    public EarProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
-        this.abpt = abpt;
         eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator());
@@ -222,9 +226,9 @@ public final class EarProject implements Project, AntProjectListener {
             new ProjectEarProvider(),
             appModule, //implements J2eeModuleProvider
             new EarActionProvider(this, updateHelper),
-            new J2eeArchiveLogicalViewProvider(this, updateHelper, evaluator(), refHelper, abpt),
+            new J2eeArchiveLogicalViewProvider(this, updateHelper, evaluator(), refHelper),
             new MyIconBaseProvider(),
-            new CustomizerProviderImpl(this, helper, refHelper, abpt),
+            new CustomizerProviderImpl(this, helper, refHelper),
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),

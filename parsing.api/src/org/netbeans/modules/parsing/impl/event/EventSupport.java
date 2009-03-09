@@ -86,7 +86,7 @@ public final class EventSupport {
     private static final Logger LOGGER = Logger.getLogger(EventSupport.class.getName());
     
     private final Source source;
-    private boolean initialized;
+    private volatile boolean initialized;
     private volatile boolean k24;
     private DocListener docListener;
     private FileChangeListener fileChangeListener;
@@ -109,7 +109,11 @@ public final class EventSupport {
     }
     
     public void init () {
-        synchronized (source) {
+        if (initialized) {
+            return;
+        }
+        final Parser parser = SourceAccessor.getINSTANCE ().getCache (source).getParser ();
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             if (!initialized) {
                 final FileObject fo = source.getFileObject();
                 if (fo != null) {
@@ -119,8 +123,7 @@ public final class EventSupport {
                         DataObject dObj = DataObject.find(fo);
                         assignDocumentListener (dObj);
                         dobjListener = new DataObjectListener(dObj);
-                        parserListener = new ParserListener();
-                        final Parser parser = SourceAccessor.getINSTANCE ().getCache (source).getParser ();
+                        parserListener = new ParserListener();                        
                         if (parser != null) {
                             parser.addChangeListener(parserListener);
                         }

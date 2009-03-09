@@ -37,7 +37,7 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */   
+ */
 /*
  * Util.java
  *
@@ -49,6 +49,8 @@
 
 package org.netbeans.modules.mobility.svgcore.util;
 
+import com.sun.perseus.j2d.Transform;
+import java.awt.Rectangle;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +62,8 @@ import javax.microedition.m2g.ScalableImage;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
+import org.netbeans.modules.mobility.svgcore.composer.SVGObjectOutline;
 import org.netbeans.modules.mobility.svgcore.options.SvgcoreSettings;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -71,12 +75,17 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.w3c.dom.svg.SVGElement;
+import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGMatrix;
+import org.w3c.dom.svg.SVGRect;
+import org.w3c.dom.svg.SVGSVGElement;
 
 /**
  * Utility class for derived SVG support components. It provides external editor lunching facility and SVG image loading
  * @author suchys
  */
-public class Util {  
+public class Util {
     //public static final String UNIQUE_NODE_ID = "unid";
 
     private static final int MAX_WORKUNITS = 300;
@@ -86,8 +95,8 @@ public class Util {
     // * <br> no Exception is thrown but warning dialog is displayed.
     // * @param fo SVG file to be lunched in external editor
     // 
-    
-    
+
+
     public static void launchExternalEditor(final FileObject fo){
         assert fo != null : "File object is null";
         final InputOutput io = IOProvider.getDefault().getIO(NbBundle.getMessage(Util.class, "LBL_EditedSvgFile", fo.getName()), false); //NOI18N
@@ -110,7 +119,7 @@ public class Util {
                         path, '\"' + FileUtil.toFile(fo).getAbsoluteFile().toString() + '\"'); //NOI18N
                 try {
                     Process p = descriptor.exec();
-                    p.waitFor();                
+                    p.waitFor();
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
                 } catch (InterruptedException ex) {
@@ -119,7 +128,7 @@ public class Util {
                     if (io != null){
                         io.closeInputOutput();
                     }
-                }               
+                }
             }
         }, io);
     }
@@ -131,7 +140,7 @@ public class Util {
      * @return SVGImage created SVG image
      * @throws IOException if loading failed
      */
-    
+
     public static SVGImage createSVGImage (FileObject fo, boolean showProgress) throws IOException {
         assert fo != null : "File object is null";
         if (!showProgress){
@@ -143,46 +152,46 @@ public class Util {
 
     /*
     public static SVGImage createSVGImage (InputStream in) throws IOException {
-        return (SVGImage) ScalableImage.createImage(in, null);
+    return (SVGImage) ScalableImage.createImage(in, null);
     }*/
-    
+
     /**
      * Loads SVG image from the FileObject in other thread
      * @param fo from which to create SVG image
      * @param loadedListener where the events should be dispached
      */
-/*    
+    /*
     public static void createSVGImageAsync (final FileObject fo, final boolean showProgress, final SVGImageLoadedListener loadedListener ){
-        assert fo != null : "File object is null";
-        assert loadedListener != null : "Listener is null";
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                SVGImage image = null;
-                Exception e = null;
-                try {
-                    if (!showProgress){
-                        image = loadImage(fo.getURL().toString());
-                    } else {
-                        image = loadImageWithProgress(fo);
-                    }
-                } catch (FileStateInvalidException ex) {
-                    e = ex;
-                } catch (IOException ex) {
-                    e = ex;
-                } finally {
-                    loadedListener.svgImageLoaded(image, e);
-                }
-            }
-        });
+    assert fo != null : "File object is null";
+    assert loadedListener != null : "Listener is null";
+    RequestProcessor.getDefault().post(new Runnable() {
+    public void run() {
+    SVGImage image = null;
+    Exception e = null;
+    try {
+    if (!showProgress){
+    image = loadImage(fo.getURL().toString());
+    } else {
+    image = loadImageWithProgress(fo);
     }
-*/    
-    
+    } catch (FileStateInvalidException ex) {
+    e = ex;
+    } catch (IOException ex) {
+    e = ex;
+    } finally {
+    loadedListener.svgImageLoaded(image, e);
+    }
+    }
+    });
+    }
+     */
+
     private static SVGImage loadImage(String url) throws IOException {
         return (SVGImage) ScalableImage.createImage(url, null);
     }
-    
-    
-    
+
+
+
     private static SVGImage loadImageWithProgress(FileObject fo) throws IOException {
         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Util.class, "MSG_Loading", fo.getNameExt()));
         handle.start(MAX_WORKUNITS);
@@ -215,11 +224,11 @@ public class Util {
                     // discard
                 }
             }
-        }        
-    } 
-    
+        }
+    }
 
-            
+
+
     public static interface SVGImageLoadedListener extends EventListener {
         ///**
         // * Notify about loaded SVG image or report Exception if loading failed
@@ -228,14 +237,14 @@ public class Util {
         // 
         public void svgImageLoaded(SVGImage image, Exception e);
     }
-    
-            
+
+
     private static class ProgressInputStream extends BufferedInputStream {
         private ProgressHandle handle;
         private long expectedSize;
         private long alreadyRead;
         private int lastProgress;
-        
+
         // **
         // * Creates a <code>BufferedInputStream</code>
         // * and saves its  argument, the input stream
@@ -250,7 +259,8 @@ public class Util {
             this.expectedSize = expectedSize;
             this.lastProgress = 0;
         }
-     
+
+        @Override
         public synchronized int read() throws IOException {
             int i = super.read();
             alreadyRead += i;
@@ -258,13 +268,14 @@ public class Util {
             return i;
         }
 
+        @Override
         public synchronized int read(byte b[], int off, int len) throws IOException {
             int i = super.read(b, off, len);
             alreadyRead += i;
             updateProgress();
             return i;
         }
-        
+
         private void updateProgress() throws IOException {
             double current = ((double)alreadyRead / (double)expectedSize) * 100.0;
             if (current >= MAX_WORKUNITS) {
@@ -273,10 +284,10 @@ public class Util {
             if (lastProgress < (int)current){
                 lastProgress = (int)current;
             }
-            handle.progress(lastProgress);  
+            handle.progress(lastProgress);
         }
     }
-    
+
     //TODO make more robust
     public static String getPropertyValue(String text, String propName) {
         if (text != null) {
@@ -293,5 +304,46 @@ public class Util {
             }
         }
         return null;
-    }    
+    }
+
+    public static SVGElement getElementById(SVGImage svgImage, String elementId) {
+        if (svgImage != null && elementId != null) {
+            SVGSVGElement svg = (SVGSVGElement) svgImage.getDocument().getDocumentElement();
+            return PerseusController.findElementById(svg, elementId);
+        }
+        return null;
+    }
+
+    public static Rectangle getElementRectangle(SVGImage svgImage, String elementId) {
+        Rectangle boundRect = null;
+        if (svgImage != null && elementId != null) {
+            SVGSVGElement svg = (SVGSVGElement) svgImage.getDocument().getDocumentElement();
+            SVGElement elem = PerseusController.findElementById(svg, elementId);
+            if (elem != null && elem instanceof SVGLocatableElement) {
+                SVGLocatableElement svgElement = (SVGLocatableElement) elem;
+                SVGRect bBox = PerseusController.getSafeBBox(svgElement);
+
+                // svg -> screen
+                SVGMatrix svgCTM = svg.getScreenCTM();
+
+                // element -> svg -> screen
+                SVGMatrix eltCTM = svgElement.getScreenCTM();
+
+                // screen -> svg
+                SVGMatrix svgICTM = svgCTM.inverse();
+
+                // elt-> svg matrix
+                SVGMatrix eltToSvg = svgICTM.mMultiply(eltCTM);
+
+                float[][] coords = SVGObjectOutline.transformRectangle(bBox,
+                        (Transform) eltToSvg, new float[4][2]);
+                Rectangle rect2 = SVGObjectOutline.getShapeBoundingBox(coords);
+
+                boundRect = new Rectangle(
+                        (int) rect2.getX(), (int) rect2.getY(),
+                        (int) rect2.getWidth(), (int) rect2.getHeight());
+            }
+        }
+        return boundRect;
+    }
 }

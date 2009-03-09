@@ -57,6 +57,7 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.impl.TableVisualizerConfigurationAccessor;
 
@@ -65,7 +66,7 @@ import org.netbeans.modules.dlight.visualizers.api.impl.TableVisualizerConfigura
  * @author ak119685
  */
 class TableVisualizer extends JPanel implements
-    Visualizer<TableVisualizerConfiguration>, OnTimerTask, ComponentListener {
+        Visualizer<TableVisualizerConfiguration>, OnTimerTask, ComponentListener {
 
     private TableDataProvider provider;
     private volatile boolean isShown = true;
@@ -80,7 +81,7 @@ class TableVisualizer extends JPanel implements
     private boolean isEmptyContent;
 
     TableVisualizer(TableDataProvider provider, final TableVisualizerConfiguration configuration) {
-        timerHandler = new OnTimerRefreshVisualizerHandler(this, 5);
+        //timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.provider = provider;
         this.configuration = configuration;
         setEmptyContent();
@@ -91,22 +92,26 @@ class TableVisualizer extends JPanel implements
         super.addNotify();
         addComponentListener(this);
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
-        onTimer();
-        if (timerHandler.isSessionRunning()) {
+        asyncFillModel();
+
+        if (timerHandler != null && timerHandler.isSessionRunning()) {
             timerHandler.startTimer();
             return;
         }
 
-        if (timerHandler.isSessionAnalyzed() ||
-            timerHandler.isSessionPaused()) {
-            onTimer();
-        }
+// AK: Do we really need this for the second time?
+//        if (timerHandler.isSessionAnalyzed() ||
+//            timerHandler.isSessionPaused()) {
+//            onTimer();
+//        }
     }
 
     @Override
     public void removeNotify() {
         super.removeNotify();
-        timerHandler.stopTimer();
+        if (timerHandler != null) {
+            timerHandler.stopTimer();
+        }
         removeComponentListener(this);
         VisualizerTopComponentTopComponent.findInstance().removeComponentListener(this);
 
@@ -121,7 +126,7 @@ class TableVisualizer extends JPanel implements
 //            tableSorterModel.removeTableModelListener(this);
             tableSorterModel = null;
         }
-        JLabel label = new JLabel(timerHandler.isSessionAnalyzed() ? TableVisualizerConfigurationAccessor.getDefault().getEmptyAnalyzeMessage(configuration) : TableVisualizerConfigurationAccessor.getDefault().getEmptyRunningMessage(configuration)); // NOI18N
+        JLabel label = new JLabel(timerHandler != null && timerHandler.isSessionAnalyzed() ? TableVisualizerConfigurationAccessor.getDefault().getEmptyAnalyzeMessage(configuration) : TableVisualizerConfigurationAccessor.getDefault().getEmptyRunningMessage(configuration)); // NOI18N
         label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         this.add(label);
         repaint();
@@ -194,7 +199,7 @@ class TableVisualizer extends JPanel implements
         refresh.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                load();
+                asyncFillModel();
             }
         });
 
@@ -216,11 +221,21 @@ class TableVisualizer extends JPanel implements
         if (!isShown || !isShowing()) {
             return 0;
         }
-        load();
+        syncFillModel();
         return 0;
     }
 
-    private void load() {
+    protected final void asyncFillModel() {
+        DLightExecutorService.submit(new Runnable() {
+
+            public void run() {
+                syncFillModel();
+            }
+        }, "Async TableVisualizer model fill " + configuration.getID()); // NOI18N
+
+    }
+
+    private void syncFillModel() {
         List<DataRow> dataRow = provider.queryData(configuration.getMetadata());
         boolean isEmpty;
         synchronized (data) {
@@ -233,7 +248,7 @@ class TableVisualizer extends JPanel implements
         UIThread.invoke(new Runnable() {
 
             public void run() {
-                if (tableModel != null){
+                if (tableModel != null) {
                     tableModel.fireTableDataChanged();
                 }
                 setContent(isEmptyConent);
@@ -268,7 +283,7 @@ class TableVisualizer extends JPanel implements
         }
         isShown = isShowing();
         if (isShown) {
-            onTimer();
+            asyncFillModel();
         }
 
     }

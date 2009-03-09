@@ -547,6 +547,34 @@ public class HgUtils {
         }
     }
 
+    /**
+     * Removes parts of the pattern denoting commentaries
+     * @param line initial pattern
+     * @return pattern with comments removed.
+     */
+    private static String removeCommentsInIgnore(String line) {
+        int indexOfHash = -1;
+        boolean cont;
+        do {
+            cont = false;
+            indexOfHash = line.indexOf("#", indexOfHash);   // NOI18N
+            // do not consider \# as a comment, skip that character and try to find the next comment
+            if (indexOfHash > 0 && line.charAt(indexOfHash - 1) == '\\') {   // NOI18N
+                ++indexOfHash;
+                cont = true;
+            }
+        } while (cont);
+        if (indexOfHash != -1) {
+            if (indexOfHash == 0) {
+                line = "";
+            } else {
+                line = line.substring(0, indexOfHash).trim();
+            }
+        }
+
+        return line;
+    }
+
     private static Boolean ignoreContainsSyntax(File directory) throws IOException {
         File hgIgnore = new File(directory, FILENAME_HGIGNORE);
         Boolean val = false;
@@ -559,12 +587,8 @@ public class HgUtils {
             r = new BufferedReader(new FileReader(hgIgnore));
             while ((s = r.readLine()) != null) {
                 String line = s.trim();
-                int indexOfHash = line.indexOf("#");
-                if (indexOfHash != -1) {
-                    if (indexOfHash == 0)
-                        continue;
-                    line = line.substring(0, indexOfHash -1); 
-                }
+                line = removeCommentsInIgnore(line);
+                if (line.length() == 0) continue;
                 String [] array = line.split(" ");
                 if (array[0].equals("syntax:")) {
                     val = true;
@@ -589,13 +613,8 @@ public class HgUtils {
             r = new BufferedReader(new FileReader(hgIgnore));
             while ((s = r.readLine()) != null) {
                 String line = s.trim();
+                line = removeCommentsInIgnore(line);
                 if (line.length() == 0) continue;
-                int indexOfHash = line.indexOf("#");
-                if (indexOfHash != -1) {
-                    if (indexOfHash == 0)
-                        continue;
-                    line = line.substring(0, indexOfHash -1); 
-                }
                 String [] array = line.split(" ");
                 if (array[0].equals("syntax:")) continue;
                 entries.addAll(Arrays.asList(array));
@@ -608,7 +627,7 @@ public class HgUtils {
 
     private static String computePatternToIgnore(File directory, File file) {
         String name = file.getAbsolutePath().substring(directory.getAbsolutePath().length()+1);
-        return name.replace(' ', '?').replace(File.separatorChar, '/');
+        return name.replace(' ', '?').replace(File.separatorChar, '/').replace("#", "\\#");
     }
 
     private static void writeIgnoreEntries(File directory, Set entries) throws IOException {

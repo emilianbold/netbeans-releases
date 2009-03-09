@@ -126,11 +126,10 @@ public class Hk2DeploymentManager implements DeploymentManager {
         // compute the ModuleID
         String t =  moduleArchive.getName();
         final String moduleName = t.substring(0, t.length() - 4);
-        String contextRoot = null; // "/bogusCR";
-        Hk2TargetModuleID moduleId = new Hk2TargetModuleID((Hk2Target) targetList[0], moduleName,
-                contextRoot, moduleArchive.getAbsolutePath());
-        MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId);
-        MonitorProgressObject returnProgress = new MonitorProgressObject(this, moduleId);
+        Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) targetList[0], moduleName,
+                null, moduleArchive.getAbsolutePath());
+        MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId, false);
+        MonitorProgressObject returnProgress = new MonitorProgressObject(this, moduleId, false);
         GlassfishModule commonSupport = this.getCommonServerSupport();
         deployProgress.addProgressListener(new UpdateContextRoot(returnProgress,moduleId, getServerInstance()));
 
@@ -144,9 +143,9 @@ public class Hk2DeploymentManager implements DeploymentManager {
                 commonSupport.restartServer(deployProgress);
             }
         } catch (IOException ex) {
-            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         } catch (SAXException ex) {
-            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         }
         commonSupport.deploy(deployProgress, moduleArchive, moduleName);
 
@@ -195,8 +194,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
             throws UnsupportedOperationException, IllegalStateException {
         final Hk2TargetModuleID moduleId = (Hk2TargetModuleID) moduleIDList[0];
         final String moduleName = moduleId.getModuleID();
-        MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId);
-        MonitorProgressObject returnProgress = new MonitorProgressObject(this, moduleId);
+        MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId, false);
+        MonitorProgressObject returnProgress = new MonitorProgressObject(this, moduleId, false);
         GlassfishModule commonSupport = this.getCommonServerSupport();
         deployProgress.addProgressListener(new UpdateContextRoot(returnProgress,moduleId,getServerInstance()));
         try {
@@ -209,9 +208,9 @@ public class Hk2DeploymentManager implements DeploymentManager {
                 commonSupport.restartServer(deployProgress);
             }
         } catch (IOException ex) {
-            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         } catch (SAXException ex) {
-            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         }
         commonSupport.deploy(deployProgress, moduleArchive, moduleName);
 
@@ -245,7 +244,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
         if(targetModuleIDs != null && targetModuleIDs.length > 0) {
             GlassfishModule commonSupport = getCommonServerSupport();
             MonitorProgressObject progressObject = new MonitorProgressObject(
-                    this, targetModuleIDs[0], CommandType.UNDEPLOY);
+                    this, (Hk2TargetModuleID) targetModuleIDs[0], CommandType.UNDEPLOY, false);
             commonSupport.undeploy(progressObject, targetModuleIDs[0].getModuleID());
             return progressObject;
         } else {
@@ -314,7 +313,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      */
     public TargetModuleID [] getNonRunningModules(ModuleType moduleType, Target [] targetList) 
             throws TargetException, IllegalStateException {
-        Logger.getLogger("glassfish.javaee").log(Level.WARNING, 
+        Logger.getLogger("glassfish-javaee").log(Level.WARNING,
                 "Hk2DeploymentManager.getNonRunningModules() not supported yet.");
         return new TargetModuleID[0];
     }
@@ -342,8 +341,9 @@ public class Hk2DeploymentManager implements DeploymentManager {
                 if(targetList[0] instanceof Hk2Target) {
                     Hk2Target target = (Hk2Target) targetList[0];
                     for(AppDesc app: appList) {
-                        moduleList.add(new Hk2TargetModuleID(target, app.getName(),
-                                app.getContextRoot(), app.getPath()));
+                        moduleList.add(Hk2TargetModuleID.get(target, app.getName(),
+                                "".equals(app.getContextRoot()) ? null : app.getContextRoot(),
+                                app.getPath()));
                     }
                 } else {
                     String targetDesc = targetList[0] != null ? targetList[0].toString() : "(null)";
@@ -416,7 +416,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return 
      */
     public java.util.Locale[] getSupportedLocales() {
-        return null;
+        return new java.util.Locale[] { java.util.Locale.getDefault() };
     }
 
     /**

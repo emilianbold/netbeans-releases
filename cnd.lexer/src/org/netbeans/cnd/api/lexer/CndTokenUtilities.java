@@ -90,7 +90,7 @@ public class CndTokenUtilities {
             TokenSequence<?> ts = hi.tokenSequence();
             if (ts != null) {
                 if (CndLexerUtilities.isCppLanguage(ts.language(), true)) {
-                    tp.start(startOffset, startOffset);
+                    tp.start(startOffset, startOffset, lastOffset);
                     // just emulate finish
                     tp.end(lastOffset, lastOffset);
                     return;
@@ -99,7 +99,7 @@ public class CndTokenUtilities {
             return;
         }
         int shift = cppTokenSequence.move(startOffset);
-        tp.start(startOffset, startOffset - shift);
+        tp.start(startOffset, startOffset - shift, lastOffset);
         if (processTokensImpl(tp, cppTokenSequence, startOffset, lastOffset, shift != 0)) {
             tp.end(lastOffset, cppTokenSequence.offset());
         } else {

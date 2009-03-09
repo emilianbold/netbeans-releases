@@ -367,6 +367,8 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
         rightPanel.add(evaluateButton, gridBagConstraints);
+
+        emptyPanel.setPreferredSize(new java.awt.Dimension(0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -409,6 +411,12 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         CodeEvaluator evaluator = getInstance();
         evaluator.open ();
         evaluator.requestActive ();
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        codePane.requestFocusInWindow(); // [TODO}
+        return super.requestFocusInWindow();
     }
 
     @Override

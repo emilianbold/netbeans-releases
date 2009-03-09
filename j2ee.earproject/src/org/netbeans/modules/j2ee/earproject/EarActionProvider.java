@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
@@ -65,7 +66,6 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -79,6 +79,8 @@ import org.openide.util.NbBundle;
  * Action provider of the Enterprise Application project.
  */
 public class EarActionProvider implements ActionProvider {
+
+    private static final String DIRECTORY_DEPLOYMENT_SUPPORTED = "directory.deployment.supported"; // NOI18N
     
     // Definition of commands
     private static final String COMMAND_COMPILE = "compile"; //NOI18N
@@ -223,6 +225,7 @@ public class EarActionProvider implements ActionProvider {
             } else {
                 p.setProperty("forceRedeploy", "false"); //NOI18N
             }
+            setDirectoryDeploymentProperty(p);
         //DEBUGGING PART
         } else if (command.equals (COMMAND_DEBUG)) {
             if (!isSelectedServer ()) {
@@ -233,6 +236,7 @@ public class EarActionProvider implements ActionProvider {
                         new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
                 return null;
             }
+            setDirectoryDeploymentProperty(p);
             
             //see issue 83056
             if (project.evaluator().getProperty("app.client") != null) { //MOI18N
@@ -280,7 +284,20 @@ public class EarActionProvider implements ActionProvider {
 
         return targetNames;
     }
-        
+
+     private void setDirectoryDeploymentProperty(Properties p) {
+        String instance = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(EarProjectProperties.J2EE_SERVER_INSTANCE);
+        if (instance != null) {
+            J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
+            String sdi = jmp.getServerInstanceID();
+            J2eeModule mod = jmp.getJ2eeModule();
+            if (sdi != null && mod != null) {
+                boolean cFD = Deployment.getDefault().canFileDeploy(instance, mod);
+                p.setProperty(DIRECTORY_DEPLOYMENT_SUPPORTED, "" + cFD); // NOI18N
+            }
+        }
+    }
+
     public boolean isActionEnabled( String command, Lookup context ) {
         if ( findBuildXml() == null ) {
             return false;

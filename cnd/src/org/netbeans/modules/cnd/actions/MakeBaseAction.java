@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.netbeans.modules.cnd.settings.MakeSettings;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -93,14 +94,14 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             tabName += " " + target; // NOI18N
         } // NOI18N
 
-        String developmentHost = getDevelopmentHost(fileObject, project);
+        ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         // Execute the makefile
         NativeExecutor nativeExecutor = new NativeExecutor(
-                developmentHost,
+                execEnv,
                 buildDir.getPath(),
                 executable,
                 arguments,
-                prepareEnv(developmentHost),
+                prepareEnv(execEnv),
                 tabName,
                 "make", // NOI18N
                 false,

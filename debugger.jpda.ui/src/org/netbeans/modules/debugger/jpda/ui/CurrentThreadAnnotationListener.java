@@ -103,13 +103,14 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             updateCurrentThread ((JPDAThread) e.getNewValue());
             annotate ();
         } else
-        /*if (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propertyName)) {
-            updateCurrentThread ();
-            annotate ();
-        } else*/
+        if (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propertyName)) {
+            //updateCurrentThread ();
+            //annotate ();
+            showCurrentFrame((CallStackFrame) e.getNewValue());
+        } else
         if (JPDADebugger.PROP_STATE.equals(propertyName)) {
             annotate ();
-        }
+        } else
         if (JPDADebugger.PROP_THREAD_STARTED.equals(propertyName)) {
             synchronized (this) {
                 if (allThreadsAnnotator != null) {
@@ -285,6 +286,30 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             }
         });
         annotateCallStack (stack, sourcePath);
+    }
+
+    private void showCurrentFrame(final CallStackFrame frame) {
+        if (frame == null) return ;
+        final SourcePath sp;
+        JPDADebugger dbg;
+        synchronized (this) {
+            sp = currentSourcePath;
+            dbg = currentDebugger;
+        }
+        if (sp != null && dbg != null) {
+            final Session s;
+            try {
+                s = (Session) dbg.getClass().getMethod("getSession").invoke(dbg);
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+                return ;
+            }
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    sp.showSource(frame, s.getCurrentLanguage());
+                }
+            });
+        }
     }
 
 

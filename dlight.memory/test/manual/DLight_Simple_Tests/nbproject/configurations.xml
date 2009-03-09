@@ -86,35 +86,13 @@
       <compileType>
         <cTool>
           <developmentMode>5</developmentMode>
-          <architecture>2</architecture>
         </cTool>
         <ccTool>
           <developmentMode>5</developmentMode>
-          <architecture>2</architecture>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>
         </fortranCompilerTool>
-        <linkerTool>
-          <linkerLibItems>
-          </linkerLibItems>
-          <commandLine>-lmalloc</commandLine>
-        </linkerTool>
-      </compileType>
-    </conf>
-    <conf name="GNU-64" type="1">
-      <toolsSet>
-        <developmentServer>localhost</developmentServer>
-        <compilerSet>GNU|GNU</compilerSet>
-        <platform>1</platform>
-      </toolsSet>
-      <compileType>
-        <cTool>
-          <architecture>2</architecture>
-        </cTool>
-        <ccTool>
-          <architecture>2</architecture>
-        </ccTool>
         <linkerTool>
           <linkerLibItems>
           </linkerLibItems>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -84,6 +84,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
     protected void actionPerformed(SQLExecution sqlExecution) {
     }
 
+    @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         return new ConnectionContextAwareDelegate(this, actionContext);
     }
@@ -96,12 +97,14 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             super(parent, actionContext);
         }
 
+        @Override
         public Component getToolbarPresenter() {
             toolbarPresenter = new ToolbarPresenter();
             toolbarPresenter.setSQLExecution(getSQLExecution());
             return toolbarPresenter;
         }
 
+        @Override
         public void setEnabled(boolean enabled) {
             if (toolbarPresenter != null) {
                 toolbarPresenter.setEnabled(enabled);
@@ -109,6 +112,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             super.setEnabled(enabled);
         }
 
+        @Override
         protected void setSQLExecution(final SQLExecution sqlExecution) {
             Mutex.EVENT.readAccess(new Runnable() {
                 public void run() {
@@ -133,6 +137,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             initComponents();
         }
 
+        @Override
         public Dimension getMinimumSize() {
             Dimension dim = super.getMinimumSize();
             return new Dimension(0, dim.height);
@@ -171,6 +176,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             add(comboLabel, BorderLayout.WEST);
         }
 
+        @Override
         public void setEnabled(boolean enabled) {
             combo.setEnabled(enabled);
             super.setEnabled(enabled);
@@ -184,7 +190,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
         private SQLExecution sqlExecution;
 
         public DatabaseConnectionModel() {
-            listener = (ConnectionListener)WeakListeners.create(ConnectionListener.class, this, ConnectionManager.getDefault());
+            listener = WeakListeners.create (ConnectionListener.class, this, ConnectionManager.getDefault ());
             ConnectionManager.getDefault().addConnectionListener(listener);
             connectionList = new ArrayList<DatabaseConnection>();
             connectionList.addAll(Arrays.asList(ConnectionManager.getDefault().getConnections()));
@@ -248,6 +254,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
 
     private static final class DatabaseConnectionRenderer extends DefaultListCellRenderer {
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Object displayName = null;
             String tooltipText = null;

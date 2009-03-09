@@ -109,9 +109,11 @@ import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.ui.ModuleActions;
 import org.netbeans.modules.apisupport.project.ui.ModuleLogicalView;
 import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.LookupProviderSupport;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.modules.SpecificationVersion;
@@ -121,6 +123,14 @@ import org.openide.util.Exceptions;
  * A NetBeans module project.
  * @author Jesse Glick
  */
+@AntBasedProjectRegistration(
+    type=NbModuleProjectType.TYPE,
+    iconResource="org/netbeans/modules/apisupport/project/resources/module.png", // NOI18N
+    sharedName=NbModuleProjectType.NAME_SHARED,
+    sharedNamespace= NbModuleProjectType.NAMESPACE_SHARED,
+    privateName=NbModuleProjectType.NAME_PRIVATE,
+    privateNamespace= NbModuleProjectType.NAMESPACE_PRIVATE
+)
 public final class NbModuleProject implements Project {
     
     public static final String NB_PROJECT_ICON_PATH =
@@ -138,7 +148,7 @@ public final class NbModuleProject implements Project {
     private final GeneratedFilesHelper genFilesHelper;
     private final NbModuleProviderImpl typeProvider;
     
-    NbModuleProject(AntProjectHelper helper) throws IOException {
+    public NbModuleProject(AntProjectHelper helper) throws IOException {
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         for (int v = 4; v < 10; v++) {
             if (aux.getConfigurationFragment("data", "http://www.netbeans.org/ns/nb-module-project/" + v, true) != null) { // NOI18N
@@ -211,7 +221,7 @@ public final class NbModuleProject implements Project {
     }
 
     private Lookup createLookup(ProjectInformation info, AuxiliaryConfiguration aux, AntProjectHelper helper, FileBuiltQueryImplementation fileBuilt, final SourcesHelper sourcesHelper) {
-        Lookup baseLookup = Lookups.fixed(
+        Object[] basicContent = new Object[] {
             this,
             info,
             aux,
@@ -236,7 +246,6 @@ public final class NbModuleProject implements Project {
             sourcesHelper.createSources(),
             new AntArtifactProviderImpl(this, helper, evaluator()),
             new CustomizerProviderImpl(this, getHelper(), evaluator()),
-            new SuiteProviderImpl(),
             typeProvider,
             new PrivilegedTemplatesImpl(),
             new ModuleProjectClassPathExtender(this),
@@ -246,7 +255,15 @@ public final class NbModuleProject implements Project {
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             new TemplateAttributesProvider(getHelper(), getModuleType() == NbModuleType.NETBEANS_ORG),
-            new FileEncodingQueryImpl());
+            new FileEncodingQueryImpl()
+        };
+        Object[] lookupContent = basicContent;
+        if (getModuleType() == NbModuleType.SUITE_COMPONENT) {
+            lookupContent = new Object[basicContent.length + 1];
+            System.arraycopy(basicContent, 0, lookupContent, 0, basicContent.length);
+            lookupContent[basicContent.length] = new SuiteProviderImpl();
+        }
+        Lookup baseLookup = Lookups.fixed(lookupContent);
         return  LookupProviderSupport.createCompositeLookup(baseLookup, "Projects/org-netbeans-modules-apisupport-project/Lookup"); //NOI18N
     }
 
@@ -471,8 +488,14 @@ public final class NbModuleProject implements Project {
     
     public ModuleList getModuleList() throws IOException {
         NbPlatform p = getPlatform(false);
-        if (p == null) {
+        if (p == null || ! p.isValid()) {
             // #67148: have to use something... (and getEntry(codeNameBase) will certainly fail!)
+
+            // TODO dealing with nonexistent platforms probably not complete / 100% correct yet,
+            // see #61227; but project with unresolved platform may also load as result
+            // of suite-chaining; perhaps resolve already in loadProject
+            Util.err.log(ErrorManager.WARNING, "Project in " + FileUtil.getFileDisplayName(getProjectDirectory()) // NOI18N
+                    + " is missing its platform '" + evaluator().getProperty("nbplatform.active") + "', switching to default platform");    // NOI18N
             NbPlatform p2 = NbPlatform.getDefaultPlatform();
             return ModuleList.getModuleList(getProjectDirectoryFile(), p2 != null ? p2.getDestDir() : null);
         }
@@ -754,10 +777,18 @@ public final class NbModuleProject implements Project {
         
     }
     
-    private void refreshBuildScripts(boolean checkForProjectXmlModified) throws IOException {
+    public void refreshBuildScripts(boolean checkForProjectXmlModified) throws IOException {
+        refreshBuildScripts(checkForProjectXmlModified, getPlatform(true));
+    }
+    
+    public void refreshBuildScripts(boolean checkForProjectXmlModified, NbPlatform customPlatform) throws IOException {
+        String buildImplPath =
+                    customPlatform.getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
+                    && eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
+                    ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
         genFilesHelper.refreshBuildScript(
                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                NbModuleProject.class.getResource("resources/build-impl.xsl"), // NOI18N
+                NbModuleProject.class.getResource("resources/" + buildImplPath), // NOI18N
                 checkForProjectXmlModified);
         genFilesHelper.refreshBuildScript(
                 GeneratedFilesHelper.BUILD_XML_PATH,
@@ -770,6 +801,10 @@ public final class NbModuleProject implements Project {
         public File getSuiteDirectory() {
             String suiteDir = evaluator().getProperty("suite.dir"); // NOI18N
             return suiteDir == null ? null : helper.resolveFile(suiteDir);
+        }
+
+        public File getClusterDirectory() {
+            return getModuleJarLocation().getParentFile().getParentFile().getAbsoluteFile();
         }
         
     }
@@ -844,6 +879,9 @@ public final class NbModuleProject implements Project {
             return NbModuleProject.this.getPlatformFile();
         }
 
+        public File getModuleJarLocation() {
+            return NbModuleProject.this.getModuleJarLocation();
+        }
         
     }
     

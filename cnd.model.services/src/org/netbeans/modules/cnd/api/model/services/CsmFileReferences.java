@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.model.services;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Lookup;
 
 /**
@@ -207,12 +209,12 @@ public abstract class CsmFileReferences {
    private static boolean hasTemplateBasedAncestors(CsmType type, int level) {
        if( type != null) {
            if (level == 0) {
-               assert false : "Infinite recursion in file "+type.getContainingFile()+" class "+type;
+               CndUtils.assertTrue(false, "Infinite recursion in file " + type.getContainingFile() + " class " + type, Level.INFO); //NOI18N
                return false;
            }
            CsmClassifier cls = type.getClassifier();
            if (CsmKindUtilities.isClass(cls)) {
-               return hasTemplateBasedAncestors((CsmClass) cls, level -1);
+               return hasTemplateBasedAncestors((CsmClass) cls, level - 1);
            }
        }
        return false;
@@ -221,7 +223,7 @@ public abstract class CsmFileReferences {
    private static boolean hasTemplateBasedAncestors(CsmClass cls, int level) {
        if (cls != null) {
            if (level == 0) {
-               assert false : "Infinite recursion in file "+cls.getContainingFile()+" class "+cls;
+               CndUtils.assertTrue(false, "Infinite recursion in file " + cls.getContainingFile() + " class " + cls, Level.INFO); //NOI18N
                return false;
            }
            if (isActualInstantiation(cls)) {

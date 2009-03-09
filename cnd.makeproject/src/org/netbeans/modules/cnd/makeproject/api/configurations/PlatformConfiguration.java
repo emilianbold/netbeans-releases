@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.PlatformNodeProp;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public class PlatformConfiguration extends IntConfiguration implements PropertyChangeListener {
     
@@ -77,8 +78,8 @@ public class PlatformConfiguration extends IntConfiguration implements PropertyC
 
     public void propertyChange(PropertyChangeEvent evt) {
         dhconf = (DevelopmentHostConfiguration) evt.getNewValue();
-        String hkey = dhconf.getName();
-        int platform = CompilerSetManager.getDefault(hkey).getPlatform();
+        ExecutionEnvironment execEnv = dhconf.getExecutionEnvironment();
+        int platform = CompilerSetManager.getDefault(execEnv).getPlatform();
         if (platform == -1) {
             // TODO: CompilerSet is not reliable about platform; it must be.
             platform = PlatformTypes.PLATFORM_NONE;

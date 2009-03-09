@@ -69,7 +69,7 @@ import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
  */
 public final class NativeProcessBuilder implements Callable<Process> {
 
-    private NativeProcessInfo info = null;
+    private final NativeProcessInfo info;
     private ExternalTerminal externalTerminal = null;
     private NativeProcess process = null;
 

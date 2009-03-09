@@ -44,18 +44,23 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.MakeDescriptor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-public class SunMaketool extends Tool {
+public final class SunMaketool extends Tool {
 
-    public SunMaketool(String hkey, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
-        super(hkey, flavor, MakeTool, name, displayName, path); // NOI18N
+    private SunMaketool(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
+        super(env, flavor, MakeTool, name, displayName, path); // NOI18N
     }
 
     @Override
     public SunMaketool createCopy() {
-        SunMaketool copy = new SunMaketool(getHostKey(), getFlavor(), "", getDisplayName(), getPath());
+        SunMaketool copy = new SunMaketool(getExecutionEnvironment(), getFlavor(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
+    }
+
+    public static SunMaketool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {
+        return new SunMaketool(env, flavor, name, displayName, path);
     }
 
     @Override

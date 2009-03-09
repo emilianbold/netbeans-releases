@@ -35,6 +35,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -556,8 +557,8 @@ public class TraceModelBase {
         return Collections.unmodifiableList(files);
     }
 
-    public List<String> getQuoteIncludePaths() {
-        return Collections.unmodifiableList(quoteIncludePaths);
+    public List<CharSequence> getQuoteIncludePaths() {
+        return FilePathCache.asList(quoteIncludePaths);
     }
 
     public void setUseCSysDefines(boolean set) {

@@ -41,6 +41,8 @@
 
 package org.openide.awt;
 
+import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
@@ -52,6 +54,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.actions.OpenAction;
@@ -65,6 +68,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.Presenter;
 
 /**
  *
@@ -91,6 +95,8 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         CreateOnlyOnceAction.instancesCount = 0;
         CreateOnlyOnceAction.w = new StringWriter();
         CreateOnlyOnceAction.pw = new PrintWriter(CreateOnlyOnceAction.w);
+
+        MyAction.counter = 0;
 
         FileObject fo = FileUtil.createFolder(
             FileUtil.getConfigRoot(),
@@ -300,10 +306,12 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         remove++;
     }
     
-    public static final class MyAction extends CallbackSystemAction {
+    public static final class MyAction extends CallbackSystemAction
+    implements Presenter.Menu, Presenter.Toolbar {
         public static int counter;
         
         public MyAction() {
+            assertFalse("Not initialized in AWT thread", EventQueue.isDispatchThread());
             counter++;
         }
 
@@ -313,6 +321,18 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
 
         public HelpCtx getHelpCtx() {
             return HelpCtx.DEFAULT_HELP;
+        }
+
+        @Override
+        public Component getToolbarPresenter() {
+            assertTrue("Presenters created only in AWT", EventQueue.isDispatchThread());
+            return super.getToolbarPresenter();
+        }
+
+        @Override
+        public JMenuItem getMenuPresenter() {
+            assertTrue("Presenters created only in AWT", EventQueue.isDispatchThread());
+            return super.getMenuPresenter();
         }
     }
 
@@ -346,6 +366,7 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         public CreateOnlyOnceAction() {
             new Exception("created for " + (++instancesCount) + " time").printStackTrace(pw);
             putValue(NAME, "TestAction");
+            assertFalse("Not initialized in AWT thread", EventQueue.isDispatchThread());
         }
 
     }
