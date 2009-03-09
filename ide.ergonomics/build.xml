@@ -4,7 +4,6 @@
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="-release.dir" depends="-disable-kits,projectized-common.-release.dir"/>
-    <target name="basic-init" depends="-compile-ant,projectized-common.basic-init"/>
     <target name="jar-prep" depends="-generate-proxies,projectized-common.jar-prep"/>
     <target name="clean" depends="-clean-release,projectized-common.clean"/>
 
@@ -105,7 +104,7 @@
 
     <target 
         name="-generate-proxies"
-        depends="-init-clusters,-init-static-analysis"
+        depends="-init-clusters,-init-static-analysis,-compile-ant"
         unless="skip.static.analysis"
     >
         <subant genericantfile="build.xml" target="-proxy-one-cluster">
