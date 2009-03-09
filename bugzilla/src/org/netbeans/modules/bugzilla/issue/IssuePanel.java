@@ -80,6 +80,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
     private BugzillaIssue issue;
     private CommentsPanel commentsPanel;
+    private AttachmentsPanel attachmentsPanel;
     private int resolvedIndex;
     private Map<BugzillaIssue.IssueField,String> initialValues = new HashMap<BugzillaIssue.IssueField,String>();
     private boolean reloading;
@@ -104,7 +105,10 @@ public class IssuePanel extends javax.swing.JPanel {
                 scrollRectToVisible(scrollPane1.getBounds());
             }
         });
-        ((GroupLayout)getLayout()).replace(dummyCommentsPanel, commentsPanel);
+        attachmentsPanel = new AttachmentsPanel();
+        GroupLayout layout = (GroupLayout)getLayout();
+        layout.replace(dummyCommentsPanel, commentsPanel);
+        layout.replace(dummyAttachmentsPanel, attachmentsPanel);
     }
 
     void reloadFormInAWT(final boolean force) {
@@ -176,6 +180,7 @@ public class IssuePanel extends javax.swing.JPanel {
         reloadField(force, dependsField, BugzillaIssue.IssueField.DEPENDS_ON);
         reloadField(force, blocksField, BugzillaIssue.IssueField.BLOCKS);
         commentsPanel.setIssue(issue);
+        attachmentsPanel.setIssue(issue);
         if (force) {
             addCommentArea.setText(""); // NOI18N
         }
@@ -399,7 +404,7 @@ public class IssuePanel extends javax.swing.JPanel {
         cancelButton = new javax.swing.JButton();
         dummyCommentsPanel = new javax.swing.JPanel();
         attachmentsLabel = new javax.swing.JLabel();
-        attachmentsPanel = new javax.swing.JPanel();
+        dummyAttachmentsPanel = new javax.swing.JPanel();
         jSeparator1 = new javax.swing.JSeparator();
         headerLabel = new javax.swing.JLabel();
         refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
@@ -506,14 +511,14 @@ public class IssuePanel extends javax.swing.JPanel {
 
         attachmentsLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachmentsLabel.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout attachmentsPanelLayout = new org.jdesktop.layout.GroupLayout(attachmentsPanel);
-        attachmentsPanel.setLayout(attachmentsPanelLayout);
-        attachmentsPanelLayout.setHorizontalGroup(
-            attachmentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 0, Short.MAX_VALUE)
+        org.jdesktop.layout.GroupLayout dummyAttachmentsPanelLayout = new org.jdesktop.layout.GroupLayout(dummyAttachmentsPanel);
+        dummyAttachmentsPanel.setLayout(dummyAttachmentsPanelLayout);
+        dummyAttachmentsPanelLayout.setHorizontalGroup(
+            dummyAttachmentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 386, Short.MAX_VALUE)
         );
-        attachmentsPanelLayout.setVerticalGroup(
-            attachmentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+        dummyAttachmentsPanelLayout.setVerticalGroup(
+            dummyAttachmentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(0, 0, Short.MAX_VALUE)
         );
 
@@ -545,9 +550,17 @@ public class IssuePanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
-            .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
+            .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(headerLabel)
+                .addContainerGap(494, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(454, Short.MAX_VALUE)
+                .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(attachmentsLabel)
@@ -567,12 +580,13 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(addCommentLabel)
                     .add(osLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, dummyAttachmentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(submitButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(cancelButton))
-                    .add(layout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(osCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
@@ -616,16 +630,7 @@ public class IssuePanel extends javax.swing.JPanel {
                                 .add(modifiedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .add(qaContactField)
                                 .add(duplicateField))))
-                    .add(scrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-                    .add(attachmentsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(headerLabel)
-                .addContainerGap(488, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(448, Short.MAX_VALUE)
-                .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, scrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 386, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -716,7 +721,7 @@ public class IssuePanel extends javax.swing.JPanel {
                         .add(attachmentsLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(dummyLabel2))
-                    .add(attachmentsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(dummyAttachmentsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(addCommentLabel)
@@ -728,12 +733,12 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 11, Short.MAX_VALUE))
+                .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 19, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {dummyLabel1, dummyLabel2, targetMilestoneCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
-        layout.linkSize(new java.awt.Component[] {assignedLabel, attachmentsLabel, blocksLabel, ccLabel, componentLabel, dependsLabel, keywordsLabel, osLabel, platformLabel, priorityLabel, productLabel, qaContactLabel, resolutionLabel, severityLabel, statusCombo, statusLabel, targetMilestoneLabel, urlLabel, versionLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {assignedLabel, blocksLabel, ccLabel, componentLabel, dependsLabel, keywordsLabel, osLabel, platformLabel, priorityLabel, productLabel, qaContactLabel, resolutionLabel, severityLabel, statusCombo, statusLabel, targetMilestoneLabel, urlLabel, versionLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
     }
 
@@ -993,7 +998,6 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JTextField assignedField;
     private javax.swing.JLabel assignedLabel;
     private javax.swing.JLabel attachmentsLabel;
-    private javax.swing.JPanel attachmentsPanel;
     private javax.swing.JButton blocksButton;
     private javax.swing.JTextField blocksField;
     private javax.swing.JLabel blocksLabel;
@@ -1005,6 +1009,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JTextField dependsField;
     private javax.swing.JLabel dependsLabel;
     private javax.swing.JButton dependsOnButton;
+    private javax.swing.JPanel dummyAttachmentsPanel;
     private javax.swing.JPanel dummyCommentsPanel;
     private javax.swing.JLabel dummyLabel1;
     private javax.swing.JLabel dummyLabel2;
