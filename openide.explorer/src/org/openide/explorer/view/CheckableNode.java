@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,38 +31,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.editor.makefile;
 
-import org.netbeans.api.lexer.TokenId;
+package org.openide.explorer.view;
 
 /**
+ * Node service that can be registered into Node's lookup,
+ * which adds a possibility to display a check box
+ * next to the node display name in the views that support it.
  *
- * @author Jan Jancura
+ * @author Martin Entlicher
+ * @since 6.18
  */
-public enum MakefileTokenId implements TokenId {
+public interface CheckableNode {
 
-    WHITESPACE("whitespace"),// NOI18N
-    NEW_LINE("newline"),// NOI18N
-    TAB("tab"),// NOI18N
-    LINE_COMMENT("line_comment"),// NOI18N
-    MACRO("macro"),// NOI18N
-    MACRO_OPERATOR("macro_operator"),// NOI18N
-    RULE_OPERATOR("rule_operator"),// NOI18N
-    SEPARATOR("separator"),// NOI18N
-    KEYWORD("keyword"),// NOI18N
-    SPECIAL_TARGET("special_target"),// NOI18N
-    STRING_LITERAL("string_literal"),// NOI18N
-    IDENTIFIER("identifier"),// NOI18N
-    ERROR("error");// NOI18N
-    private String name;
+    /**
+     * Tell the view to display a check-box for this node.
+     *
+     * @return <code>true</code> if the check-box should be displayed, <code>false</code> otherwise.
+     */
+    boolean isCheckable();
 
-    MakefileTokenId(
-            String name) {
-        this.name = name;
-    }
+    /**
+     * Provide the enabled state of the check-box.
+     *
+     * @return <code>true</code> if the check-box should be enabled, <code>false</code> otherwise.
+     */
+    boolean isCheckEnabled();
 
-    public String primaryCategory() {
-        return name;
-    }
+    /**
+     * Provide the selected state of the check-box.
+     *
+     * @return <code>true</code> if the check-box should be selected,
+     *         <code>false</code> if it should be unselected and
+     *         <code>null</code> if the state is unknown.
+     */
+    Boolean isSelected();
+
+    /**
+     * Called by the view when the check-box gets selected/unselected
+     *
+     * @param selected <code>true</code> if the check-box was selected,
+     *                 <code>false</code> if the check-box was unselected.
+     */
+    void setSelected(Boolean selected);
+
 }

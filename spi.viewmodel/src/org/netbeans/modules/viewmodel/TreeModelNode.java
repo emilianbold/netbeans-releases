@@ -68,7 +68,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.ErrorManager;
 
 import org.openide.awt.Actions;
-import org.openide.explorer.view.CheckNodeCookie;
+import org.openide.explorer.view.CheckableNode;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -705,7 +705,7 @@ public class TreeModelNode extends AbstractNode {
 
     // innerclasses ............................................................
 
-    private static final class CheckNodeCookieImpl implements CheckNodeCookie {
+    private static final class CheckNodeCookieImpl implements CheckableNode {
 
         private final Models.CompoundModel model;
         private final Object object;

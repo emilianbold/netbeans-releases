@@ -120,26 +120,26 @@ class NodeRenderDataProvider implements CheckRenderDataProvider {
         return false;
     }
 
-    private CheckNodeCookie getCheckCookie(Object o) {
+    private CheckableNode getCheckCookie(Object o) {
         Node n = Visualizer.findNode(o);
         if (n == null) {
             throw new IllegalStateException("TreeNode must be VisualizerNode but was: " + o + " of class " + o.getClass().getName());
         }
-        return n.getCookie(CheckNodeCookie.class);
+        return n.getLookup().lookup(CheckableNode.class);
     }
 
     public boolean isCheckable(Object o) {
-        CheckNodeCookie c = getCheckCookie(o);
+        CheckableNode c = getCheckCookie(o);
         return c != null && c.isCheckable();
     }
 
     public boolean isCheckEnabled(Object o) {
-        CheckNodeCookie c = getCheckCookie(o);
+        CheckableNode c = getCheckCookie(o);
         return c != null && c.isCheckEnabled();
     }
 
     public Boolean isSelected(Object o) {
-        CheckNodeCookie c = getCheckCookie(o);
+        CheckableNode c = getCheckCookie(o);
         if (c != null) {
             return c.isSelected();
         } else {
@@ -148,7 +148,7 @@ class NodeRenderDataProvider implements CheckRenderDataProvider {
     }
 
     public void setSelected(Object o, Boolean selected) {
-        CheckNodeCookie c = getCheckCookie(o);
+        CheckableNode c = getCheckCookie(o);
         if (c != null) {
             c.setSelected(selected);
         }
