@@ -108,6 +108,15 @@ public class KenaiConnection implements PropertyChangeListener {
     private KenaiConnection() {
     }
 
+    private MultiUserChat createChat(KenaiProject prj) {
+        MultiUserChat multiUserChat = new MultiUserChat(connection, getChatroomName(prj));
+        chats.put(prj.getName(), multiUserChat);
+        messageQueue.put(prj.getName(), new LinkedList<Message>());
+        multiUserChat.addMessageListener(new MessageL());
+        join(multiUserChat);
+        return multiUserChat;
+    }
+
 
     private void join(MultiUserChat chat) {
         try {
@@ -210,11 +219,7 @@ public class KenaiConnection implements PropertyChangeListener {
             return;
         }
         for (KenaiProject prj : KenaiConnection.getDefault().getMyProjects()) {
-            final MultiUserChat multiUserChat = new MultiUserChat(connection, getChatroomName(prj));
-            chats.put(prj.getName(), multiUserChat);
-            messageQueue.put(prj.getName(), new LinkedList<Message>());
-            multiUserChat.addMessageListener(new MessageL());
-            join(multiUserChat);
+            createChat(prj);
         }
     }
 
@@ -228,7 +233,11 @@ public class KenaiConnection implements PropertyChangeListener {
      * @return
      */
     public MultiUserChat getChat(KenaiProject prj) {
-        return chats.get(prj.getName());
+        MultiUserChat multiUserChat = chats.get(prj.getName());
+        if (multiUserChat==null) {
+            multiUserChat=createChat(prj);
+        }
+        return multiUserChat;
     }
 
     /**

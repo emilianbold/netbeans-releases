@@ -59,10 +59,15 @@ public final class KenaiProjectFeature {
     KenaiProjectFeature(FeatureData data) {
         this.featureData = data;
         try {
-            this.webL = featureData.web_url==null?null:new URL(featureData.web_url);
             this.loc = featureData.url==null?null:new URL(featureData.url);
+            this.webL = featureData.web_url==null?null:new URL(featureData.web_url);
         } catch (MalformedURLException malformedURLException) {
-            Logger.getLogger(KenaiProjectFeature.class.getName()).log(Level.SEVERE, malformedURLException.getMessage(), malformedURLException);
+            try {
+                this.webL = featureData.web_url == null ? null : new URL(System.getProperty("kenai.com.url") + "/" + featureData.web_url);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(KenaiProjectFeature.class.getName()).log(Level.SEVERE, malformedURLException.getMessage(), ex);
+            }
+            Logger.getLogger(KenaiProjectFeature.class.getName()).log(Level.FINE, malformedURLException.getMessage(), malformedURLException);
         }
     }
 
