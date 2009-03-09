@@ -39,20 +39,15 @@
 
 package org.netbeans.modules.languages.yaml;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.ParseEvent;
-import org.netbeans.modules.gsf.api.ParseListener;
-import org.netbeans.modules.gsf.api.Parser.Job;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.SourceFileReader;
-import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -82,62 +77,45 @@ public class YamlParserTest extends YamlTestBase {
             sb.append(s);
         }
         String huge = sb.toString();
-        String relFilePath = "generated-huge.yml";
-        GsfTestCompilationInfo info = getInfoForText(huge, relFilePath);
-        String text = info.getText();
-        assertNotNull(text);
+        final String relFilePath = "generated-huge.yml";
+        FileObject workDir = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
+        createFile(workDir, relFilePath, huge);
 
-        ParserResult pr = info.getEmbeddedResult(info.getPreferredMimeType(), 0);
-        assertNotNull(pr);
+        FileObject f = workDir.getFileObject(relFilePath);
+        Source source = Source.create(f);
 
-        List<Error> diagnostics = pr.getDiagnostics();
-        String annotatedSource = annotateErrors(text, diagnostics);
-        assertDescriptionMatches("testfiles/" + relFilePath, annotatedSource, false, ".errors", false);
-        // Make sure we actually skipped parsing this large document!
-        assertTrue(((YamlParserResult)pr).getRootNodes().size() == 0);
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                YamlParserResult result = (YamlParserResult) resultIterator.getParserResult();
+
+                assertNotNull(result);
+
+                String text = result.getSnapshot().getText().toString();
+                assertNotNull(text);
+
+                List<? extends org.netbeans.modules.csl.api.Error> diagnostics = result.getDiagnostics();
+                String annotatedSource = annotateErrors(diagnostics);
+                assertDescriptionMatches("testfiles/" + relFilePath, annotatedSource, false, ".errors", false);
+                // Make sure we actually skipped parsing this large document!
+                assertTrue(result.getRootNodes().size() == 0);
+            }
+        });
     }
 
     public void testValidResult() throws Exception {
         // Make sure we get a valid parse result out of an aborted parse
         FileObject fo = getTestFile("testfiles/error3.yaml");
-        ParserFile file = new DefaultParserFile(fo, null, false);
-        List<ParserFile> files = Collections.<ParserFile>singletonList(file);
-        final ParserResult[] resultHolder = new ParserResult[1];
-        final Exception[] exceptionHolder = new Exception[1];
 
-        ParseListener listener = new ParseListener() {
+        Source source = Source.create(fo);
 
-            public void started(ParseEvent e) {
+        YamlParser parser = new YamlParser() {
+            YamlParserResult parse(String source, Snapshot snapshot) {
+                throw new RuntimeException("Very bad thing");
             }
-
-            public void finished(ParseEvent e) {
-                resultHolder[0] = e.getResult();
-            }
-
-            public void error(Error e) {
-            }
-
-            public void exception(Exception e) {
-                exceptionHolder[0] = e;
-            }
-
         };
-        TranslatedSource ts = null;
-        SourceFileReader reader = new SourceFileReader() {
 
-            public CharSequence read(ParserFile file) throws IOException {
-                throw new IOException("Simulate failure");
-            }
+        parser.parse(source.createSnapshot(), null, null);
 
-            public int getCaretOffset(ParserFile file) {
-                return -1;
-            }
-
-        };
-        Job job = new Job(files, listener, reader, ts);
-        new YamlParser().parseFiles(job);
-
-        assertNotNull("Parser result must be nonnull", resultHolder[0]);
-        assertNotNull("Expected to have the listener notified of a failure", exceptionHolder[0]);
+        assertNotNull("Parser result must be nonnull", parser.getResult(null));
     }
 }

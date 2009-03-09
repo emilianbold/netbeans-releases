@@ -44,18 +44,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-
 import org.jruby.nb.ast.CallNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.EditorOptions;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -63,12 +58,15 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.EditorOptions;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
-
 
 /** 
  * Provide bracket completion for Ruby.
@@ -113,7 +111,8 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.KeystrokeHandler {
+public class RubyKeystrokeHandler implements KeystrokeHandler {
+    
     /** When true, automatically reflows comments that are being edited according to the rdoc
      * conventions as well as the right hand side margin
      */
@@ -1769,7 +1768,7 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
         }
     }
 
-    public List<OffsetRange> findLogicalRanges(CompilationInfo info, int caretOffset) {
+    public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         Node root = AstUtilities.getRoot(info);
 
         if (root == null) {
@@ -1794,7 +1793,7 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
         // Check if the caret is within a comment, and if so insert a new
         // leaf "node" which contains the comment line and then comment block
         try {
-            BaseDocument doc = (BaseDocument)info.getDocument();
+            BaseDocument doc = RubyUtils.getDocument(info);
             if (doc == null) {
                 return ranges;
             }

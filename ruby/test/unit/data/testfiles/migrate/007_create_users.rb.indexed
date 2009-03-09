@@ -8,6 +8,7 @@ Searchable Keys:
   fqn : CreateUsers
   method : down|STATIC|
   method : up|STATIC|
+  require : 007_create_users
 
 Not Searchable Keys:
   attrs : |DOCUMENTED|;1429
@@ -16,6 +17,8 @@ Not Searchable Keys:
 Document 1
 Searchable Keys:
   dbtable : users
+  require : 007_create_users
+
 
 Not Searchable Keys:
   dbcolumn : hashed_password;string

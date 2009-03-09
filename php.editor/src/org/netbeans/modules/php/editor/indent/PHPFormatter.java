@@ -40,11 +40,10 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import java.util.Set;
@@ -59,13 +58,15 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -101,7 +102,7 @@ end
  *
  * @author Tor Norbye
  */
-public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
+public class PHPFormatter implements Formatter {
 
     private static final Logger LOG = Logger.getLogger(PHPFormatter.class.getName());
     private static final Set<PHPTokenId> IGNORE_BREAK_IN = new HashSet<PHPTokenId>(Arrays.asList(
@@ -120,7 +121,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         reindent(context, null, true);
     }
 
-    public void reformat(Context context, CompilationInfo info) {
+    public void reformat(Context context, ParserResult info) {
         prettyPrint(context);
         reindent(context, info, false);
     }
@@ -446,17 +447,15 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
             public void run() {
                 final WSTransformer wsTransformer = new WSTransformer(context);
                 FileObject file = NavUtils.getFile(doc);
+                Source source = Source.create(file);
                 try {
-                    SourceModelFactory.getInstance().getModel(file).runUserActionTask(new CancellableTask<CompilationInfo>() {
-
-                        public void cancel() {}
-
-                        public void run(CompilationInfo parameter) throws Exception {
-                            PHPParseResult result = (PHPParseResult) parameter.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
+                    ParserManager.parse(Collections.singleton(source), new UserTask() {
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            PHPParseResult result = (PHPParseResult) resultIterator.getParserResult();
                             result.getProgram().accept(wsTransformer);
                         }
-                    }, true);
-                } catch (IOException ex) {
+                    });
+                } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
 
@@ -481,7 +480,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         });
     }
 
-    private void reindent(final Context context, CompilationInfo info, final boolean indentOnly) {
+    private void reindent(final Context context, ParserResult info, final boolean indentOnly) {
         Document document = context.document();
         int startOffset = context.startOffset();
         int endOffset = context.endOffset();
@@ -592,7 +591,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         }
     }
 
-    public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, CompilationInfo info,
+    public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, ParserResult info,
             List<Integer> offsets,
             List<Integer> indents,
             boolean indentEmptyLines, boolean includeEnd, boolean indentOnly

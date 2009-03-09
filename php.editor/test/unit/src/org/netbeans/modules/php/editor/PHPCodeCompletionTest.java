@@ -41,6 +41,11 @@
 
 package org.netbeans.modules.php.editor;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+
 /**
  *
  * @author tomslot
@@ -657,6 +662,16 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testVarTypeCommentType02() throws Exception {
         checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $hello VarTypeComment^", false);
     }
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        //just test them as standalone files (just PHP Platform in index)
+        List<String> asList = Arrays.asList("testPhpContextWithPrefix", "testVarScope2", "testSanitizedCode");//NOI18N
+        if (asList.contains(getName())) {
+            return null;
+        }
+        return super.createClassPathsForTest();
+    }
+
     /* doesn't work properly yet
     public void testTypeInInstanceof() throws Exception {
         checkCompletion("testfiles/completion/lib/catchinstanceof.php", "$vInstanceof->^", false);

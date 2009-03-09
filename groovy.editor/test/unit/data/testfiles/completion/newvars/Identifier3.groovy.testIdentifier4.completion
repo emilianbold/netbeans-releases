@@ -1,6 +1,6 @@
 Code completion result for source line:
 StringBuffer |
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 VARIABLE   s                                          null
 VARIABLE   sb                                         null

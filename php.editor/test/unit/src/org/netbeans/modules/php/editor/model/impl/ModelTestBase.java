@@ -39,13 +39,18 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.php.editor.model.*;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.nav.TestBase;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -58,9 +63,10 @@ public class ModelTestBase extends TestBase {
 
     public Model getModel(String code) throws Exception {
         final Model[] globals = new Model[1];
-        super.performTest(new String[] {code}, new CancellableTask<CompilationInfo>() {
-            public void cancel() {}
-            public void run(CompilationInfo parameter) throws Exception {
+        super.performTest(new String[] {code}, new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                PHPParseResult parameter = (PHPParseResult) resultIterator.getParserResult();
                 Model model = ModelFactory.getModel(parameter);
                 globals[0] = model;
             }
@@ -70,9 +76,10 @@ public class ModelTestBase extends TestBase {
     
     public Occurence underCaret(final Model model,String code, final int offset) throws Exception {
         final List<Occurence> occurences = new ArrayList<Occurence>();
-        super.performTest(new String[] {code}, new CancellableTask<CompilationInfo>() {
-            public void cancel() {}
-            public void run(CompilationInfo parameter) throws Exception {
+        super.performTest(new String[] {code}, new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                PHPParseResult parameter = (PHPParseResult) resultIterator.getParserResult();
                 Model mod = model != null ? model : ModelFactory.getModel(parameter);
                 OccurencesSupport occurencesSupport = mod.getOccurencesSupport(offset);
                 Occurence underCaret = occurencesSupport.getOccurence();
@@ -80,5 +87,16 @@ public class ModelTestBase extends TestBase {
             }
         });
         return occurences.get(0);
+    }
+
+    @Override
+    protected FileObject[] createSourceClassPathsForTest() {
+        FileObject dataDir = FileUtil.toFileObject(getDataDir());
+        try {
+            return new FileObject[]{toFileObject(dataDir, "testfiles/model", true)}; //NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 }

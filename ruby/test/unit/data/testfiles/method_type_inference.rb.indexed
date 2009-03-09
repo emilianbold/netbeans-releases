@@ -11,6 +11,7 @@ Searchable Keys:
   method : method_as_exit_point
   method : simple_array;;Fixnum;
   method : simple_int;;Fixnum;
+  require : method_type_inference
 
 Not Searchable Keys:
   attrs : |CLASS|

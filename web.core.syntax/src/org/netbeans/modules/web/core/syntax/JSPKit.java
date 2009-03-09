@@ -46,16 +46,15 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.html.HtmlIndenter;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
+import org.netbeans.modules.csl.core.SelectCodeElementAction;
+import org.netbeans.modules.csl.editor.InstantRenameAction;
+import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.gsfret.InstantRenameAction;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
-import org.netbeans.modules.gsf.SelectCodeElementAction;
-import org.netbeans.modules.gsf.ToggleBlockCommentAction;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.html.editor.HTMLAutoCompletion;
-import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 import java.awt.event.ActionEvent;
@@ -307,7 +306,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         LanguagePath jspLP = LanguagePath.get(JspTokenId.language());
         LanguagePath htmlLP = LanguagePath.get(jspLP, HTMLTokenId.language());
 
-        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
+//        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
         //initialize JSP embedding updater
         //just a prototype - better disable it for 6.0
         //JspColoringUpdater.init(doc);
