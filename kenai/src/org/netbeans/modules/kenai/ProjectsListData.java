@@ -36,13 +36,15 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.kenai;
+
+import org.codeviation.pojson.Pojson.IgnoreNonExisting;
 
 /**
  *
  * @author Jan Becicka
  */
+@IgnoreNonExisting
 public class ProjectsListData extends ListData {
 
     public ProjectListItem projects[];
@@ -52,6 +54,7 @@ public class ProjectsListData extends ListData {
         return projects.length;
     }
 
+    @IgnoreNonExisting
     public static class ProjectListItem {
 
         public String href;
@@ -59,5 +62,6 @@ public class ProjectsListData extends ListData {
         public String display_name;
         public String image;
         public String web_url;
+        public String tags;
     }
 }
