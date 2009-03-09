@@ -61,6 +61,7 @@ import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JSeparator;
@@ -432,25 +433,29 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
                 if (repo == null) {
                     return;
                 }
+
+                final BugtrackingController removeController = query != null ? query.getController() : null;
                 if(query != null) {
-                    BugtrackingController c = query.getController();
-                    panel.remove(c.getComponent());
                     query.removePropertyChangeListener(QueryTopComponent.this);
                 }
+
                 query = repo.createQuery();
                 if (query == null) {
                     return;
                 }
+                query.addPropertyChangeListener(QueryTopComponent.this);
 
                 updateSavedQueries(repo);
 
-                final BugtrackingController c = query.getController();
+                final BugtrackingController addController = query.getController();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        panel.add(c.getComponent());
-                        query.addPropertyChangeListener(QueryTopComponent.this);
-                        revalidate();
-                        repaint();
+                        if(removeController != null) {
+                            panel.remove(removeController.getComponent());
+                        }
+                        panel.add(addController.getComponent());
+                        panel.revalidate();
+                        panel.repaint();
                     }
                 });
             }
