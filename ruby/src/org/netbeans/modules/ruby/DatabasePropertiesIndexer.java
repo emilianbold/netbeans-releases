@@ -268,7 +268,7 @@ final class DatabasePropertiesIndexer {
             }
             // XXX: what's this needed for?
             String column = finder.getColumn();
-            String fileUrl = fileUrls.get(column);
+            FileObject fileUrl = fileUrls.get(column);
 
             String clz = classFqn;
             String require = null;
