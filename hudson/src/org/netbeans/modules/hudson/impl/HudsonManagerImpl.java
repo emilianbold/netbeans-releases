@@ -58,7 +58,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonManager;
-import org.netbeans.modules.hudson.constants.HudsonInstanceConstants;
+import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -224,7 +224,7 @@ public class HudsonManagerImpl extends HudsonManager {
             ((HudsonInstanceImpl) instance).terminate();
     }
 
-    private Preferences instancePrefs() {
+    static Preferences instancePrefs() {
         return NbPreferences.forModule(HudsonManagerImpl.class).node("instances"); // NOI18N
     }
     
@@ -232,7 +232,7 @@ public class HudsonManagerImpl extends HudsonManager {
         if (!instance.isPersisted()) {
             return;
         }
-        Preferences node = instancePrefs().node(simplifyServerLocation(instance.getName(), true));
+        Preferences node = instance.prefs();
         for (Map.Entry<String,String> entry : instance.getProperties().entrySet()) {
             node.put(entry.getKey(), entry.getValue());
         }
@@ -246,7 +246,7 @@ public class HudsonManagerImpl extends HudsonManager {
     
     private void removeInstanceDefinition(HudsonInstanceImpl instance) {
         try {
-            instancePrefs().node(simplifyServerLocation(instance.getName(), true)).removeNode();
+            instance.prefs().removeNode();
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -273,6 +273,9 @@ public class HudsonManagerImpl extends HudsonManager {
                             Map<String, String> m = new HashMap<String, String>();
                             for (String k : node.keys()) {
                                 m.put(k, node.get(k, null));
+                            }
+                            if (!m.containsKey(INSTANCE_NAME) || !m.containsKey(INSTANCE_URL) || !m.containsKey(INSTANCE_SYNC)) {
+                                continue;
                             }
                             HudsonInstanceImpl.createHudsonInstance(new HudsonInstanceProperties(m));
                         }
@@ -311,7 +314,7 @@ public class HudsonManagerImpl extends HudsonManager {
                         ProjectHIP props = new ProjectHIP();
                         props.addProvider(project);
                         addInstance(HudsonInstanceImpl.createHudsonInstance(props));
-                        HudsonInstanceImpl impl = (HudsonInstanceImpl) getInstance(props.get(HudsonInstanceConstants.INSTANCE_URL));
+                        HudsonInstanceImpl impl = (HudsonInstanceImpl) getInstance(props.get(INSTANCE_URL));
                         projectInstances.put(project, impl);
                     }
                 } else if (assoc == null && exists) {

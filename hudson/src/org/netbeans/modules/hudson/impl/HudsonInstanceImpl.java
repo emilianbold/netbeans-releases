@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
+import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonChangeAdapter;
@@ -170,6 +171,10 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         //will this make the propes to get persisted reliably?
         properties.put(INSTANCE_URL, url);
         fireContentChanges();
+    }
+
+    public Preferences prefs() {
+        return HudsonManagerImpl.instancePrefs().node(HudsonManagerImpl.simplifyServerLocation(getName(), true));
     }
     
     /**

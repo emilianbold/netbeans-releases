@@ -70,7 +70,7 @@ public class CreateJob extends AbstractAction {
     private final HudsonInstanceImpl instance;
 
     public CreateJob(HudsonInstanceImpl instance) {
-        super("Create Job..."); // XXX I18N
+        super("New Build..."); // XXX I18N
         this.instance = instance;
     }
 

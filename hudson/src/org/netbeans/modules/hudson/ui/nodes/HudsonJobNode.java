@@ -41,11 +41,12 @@
 
 package org.netbeans.modules.hudson.ui.nodes;
 
-import java.awt.datatransfer.Transferable;
-import java.io.IOException;
+import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.hudson.api.HudsonInstance;
+import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
@@ -58,11 +59,10 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeTransfer;
 import org.openide.nodes.Sheet;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
+import org.openide.xml.XMLUtil;
 
 /**
  * Describes HudsonJob in the RuntimeTab
@@ -78,19 +78,17 @@ public class HudsonJobNode extends AbstractNode {
     private static final String ICON_BASE_YELLOW = "org/netbeans/modules/hudson/ui/resources/yellow.png";
     private static final String ICON_BASE_YELLOW_RUN = "org/netbeans/modules/hudson/ui/resources/yellow_run.png";
     private static final String ICON_BASE_GREY = "org/netbeans/modules/hudson/ui/resources/grey.png";
-    private static final String ICON_BASE_GREY_RUN = "org/netbeans/modules/hudson/ui/resources/grey_run.png";
     
     private String htmlDisplayName;
-    private Color color;
-    private HudsonJobImpl job;
+    private HudsonJob job;
     
-    public HudsonJobNode(HudsonJobImpl job) {
+    public HudsonJobNode(HudsonJob job) {
         super(makeChildren(job), Lookups.singleton(job));
         setName(job.getName());
         setHudsonJob(job);
     }
 
-    private static Children makeChildren(final HudsonJobImpl job) {
+    private static Children makeChildren(final HudsonJob job) {
         return Children.create(new ChildFactory<Object>() {
             @Override
             protected boolean createKeys(List<Object> toPopulate) {
@@ -114,6 +112,7 @@ public class HudsonJobNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
         actions.add(SystemAction.get(StartJobAction.class));
+        actions.add(null);
         int last = job.getLastBuild();
         if (last >= 0) {
             actions.add(new ShowChanges(job, last));
@@ -125,19 +124,8 @@ public class HudsonJobNode extends AbstractNode {
         }
         actions.add(null);
         actions.add(SystemAction.get(OpenUrlAction.class));
-        actions.add(null);
         actions.add(SystemAction.get(PropertiesAction.class));
         return actions.toArray(new Action[actions.size()]);
-    }
-    
-    @Override
-    public Transferable drag() throws IOException {
-        return NodeTransfer.transferable(this, NodeTransfer.DND_COPY);
-    }
-    
-    @Override
-    public PasteType getDropType(Transferable arg0, int arg1, int arg2) {
-        return super.getDropType(arg0, arg1, arg2);
     }
     
     @Override
@@ -146,64 +134,72 @@ public class HudsonJobNode extends AbstractNode {
         Sheet s = super.createSheet();
         
         // Put properties in
-        s.put(job.getSheetSet());
+        s.put(((HudsonJobImpl) job).getSheetSet()); // XXX is cast necessary?
         
         return s;
     }
     
-    private void refreshState() {
-        // Store old html name
-        String oldHtmlDisplayName = getHtmlDisplayName();
-        
-        // Set new node data
-        htmlDisplayName = job.getDisplayName();
-        color = job.getColor();
+    private void setHudsonJob(HudsonJob job) {
+        this.job = job;
+        Color color = job.getColor();
         setShortDescription(job.getUrl());
-        
-        // Decorate node
+
         switch(color) {
         case red:
+            // XXX #159836: tooltips
             setIconBaseWithExtension(ICON_BASE_RED);
-            htmlDisplayName = "<font color=\"#A40000\">"+job.getDisplayName()+"</font>";
             break;
         case red_anime:
             setIconBaseWithExtension(ICON_BASE_RED_RUN);
-            htmlDisplayName = "<b><font color=\"#A40000\">"+job.getDisplayName()+"</font></b>";
             break;
         case blue:
             setIconBaseWithExtension(ICON_BASE_BLUE);
             break;
         case blue_anime:
             setIconBaseWithExtension(ICON_BASE_BLUE_RUN);
-            htmlDisplayName = "<b>"+job.getDisplayName()+"</b>";
             break;
         case yellow:
             setIconBaseWithExtension(ICON_BASE_YELLOW);
             break;
         case yellow_anime:
             setIconBaseWithExtension(ICON_BASE_YELLOW_RUN);
-            htmlDisplayName = "<b>"+job.getDisplayName()+"</b>";
-            break;
-        case grey_anime:
-            setIconBaseWithExtension(ICON_BASE_GREY_RUN);
-            htmlDisplayName = "<b>"+job.getDisplayName()+"</b>";
             break;
         default: // grey, disabled, aborted
             setIconBaseWithExtension(ICON_BASE_GREY);
         }
-        
-        // Fire changes if any
-        fireDisplayNameChange(oldHtmlDisplayName, getHtmlDisplayName());
+
+        String oldHtmlDisplayName = getHtmlDisplayName();
+        try {
+            htmlDisplayName = XMLUtil.toElementContent(job.getDisplayName());
+        } catch (CharConversionException ex) {
+            assert false : ex;
+            return;
+        }
+        if (job.getLookup().lookup(HudsonInstance.class).getPreferredJobs().contains(job)) {
+            htmlDisplayName = "<b>" + htmlDisplayName + "</b>"; // NOI18N
+        }
+        switch (color) {
+        case red:
+        case red_anime:
+            htmlDisplayName = "<font color='#A40000'>" + htmlDisplayName + "</font>"; // NOI18N
+            break;
+        case yellow:
+        case yellow_anime:
+            htmlDisplayName = "<font color='#989800'>" + htmlDisplayName + "</font>"; // NOI18N
+            break;
+        }
+        switch (color) {
+        case red_anime:
+        case yellow_anime:
+        case blue_anime:
+        case grey_anime:
+        case aborted_anime:
+            htmlDisplayName += " <font color='!controlShadow'>(running)</font>"; // XXX I18N
+        }
+        if (job.isInQueue()) {
+            htmlDisplayName += " <font color='!controlShadow'>(in queue)</font>"; // XXX I18N
+        }
+        fireDisplayNameChange(oldHtmlDisplayName, htmlDisplayName);
     }
-    
-    public void setHudsonJob(HudsonJobImpl job) {
-        this.job = job;
-        
-        // Refresh
-        refreshState();
-    }
-    
-    public HudsonJobImpl getJob() {
-        return job;
-    }
+
 }
