@@ -47,7 +47,8 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-
+import java.util.ResourceBundle;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 
 /**
  *
@@ -57,22 +58,33 @@ public class Hk2ResourceContainers extends Children.Keys<Object> implements Refr
 
     private Lookup lookup;
     private final static Node WAIT_NODE = Hk2ItemNode.createWaitNode();
-
+    ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.glassfish.common.wizards.Bundle"); //NOI18n
+    
     Hk2ResourceContainers(Lookup lookup) {
         this.lookup = lookup;
     }
 
     public void updateKeys(){
         Vector<Hk2ItemNode> keys = new Vector<Hk2ItemNode>();
-        String[] childTypes = NodeTypes.getChildTypes(NodeTypes.RESOURCES);
-        if(childTypes != null) {
-            for(int i = 0; i < childTypes.length; i++) {
-                String type = childTypes[i];
-                keys.add(new Hk2ItemNode(lookup,
-                    new Hk2ResourcesChildren(lookup, type),
-                    NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_"+type), 
-                    DecoratorManager.findDecorator(type, null)));
+        GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
+        if ((commonSupport != null)
+                && (commonSupport.getInstanceProvider().getNameOfBits().equals(bundle.getString("V3_EE6_NAME")))) { //NOI18N
+            String[] childTypes = NodeTypes.getChildTypes(NodeTypes.RESOURCES);
+            if (childTypes != null) {
+                for (int i = 0; i < childTypes.length; i++) {
+                    String type = childTypes[i];
+                    keys.add(new Hk2ItemNode(lookup,
+                            new Hk2ResourcesChildren(lookup, type),
+                            NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_" + type),
+                            DecoratorManager.findDecorator(type, null)));
+                }
             }
+        } else {
+            String type = GlassfishModule.JDBC;
+            keys.add(new Hk2ItemNode(lookup,
+                            new Hk2ResourcesChildren(lookup, type),
+                            NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_" + type),
+                            DecoratorManager.findDecorator(type, null)));
         }
         setKeys(keys);
     }
