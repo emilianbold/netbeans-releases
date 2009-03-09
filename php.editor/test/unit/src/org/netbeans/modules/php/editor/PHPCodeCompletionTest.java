@@ -156,16 +156,6 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
     }
 
-    //disabled this tests because although the original purpose make sense (never really worked except this test)
-    //to enable this test:
-    // - either rewrite the test to get PHPParserResult instead of HTML one (not use the offset variant  resultIterator.getParserResult(caretOffset))
-    // to get it to the same state as it was till now
-    // - or rewrite the code in HtmlGsfCompletionHandler to use DefaultCompletionResult.setEmbeddedTypes(Collections.singleton(PHP_MIME_TYPE))
-    // to really offer <?= php open tags inside html code in php file (consult with mfukala)
-    /*public void testHTML() throws Exception {
-        checkCompletion("testfiles/completion/lib/nowdoc02.php", "<title>^</title>", false);
-    }*/
-
     public void test145138_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue145138.php", "echo $param^", false);
     }

@@ -109,7 +109,7 @@ public class HtmlLanguage extends DefaultLanguageConfig {
 
     @Override
     public CodeCompletionHandler getCompletionHandler() {
-        return new HtmlGsfCompletionHandler();
+        return null;
     }
 
     public KeystrokeHandler getKeystrokeHandler() {

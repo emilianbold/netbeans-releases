@@ -40,7 +40,6 @@
 package org.netbeans.modules.csl.spi;
 
 import java.util.List;
-import java.util.Set;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
 
@@ -55,7 +54,6 @@ public class DefaultCompletionResult extends CodeCompletionResult {
     protected boolean truncated;
     protected List<CompletionProposal> list;
     protected boolean filterable = true;
-    protected Set<String> embeddedTypes;
     
     public DefaultCompletionResult(List<CompletionProposal> list, boolean truncated) {
         this.list = list;
@@ -87,12 +85,4 @@ public class DefaultCompletionResult extends CodeCompletionResult {
         this.filterable = filterable;
     }
 
-    public void setEmbeddedTypes(Set<String> embeddedTypes) {
-        this.embeddedTypes = embeddedTypes;
-    }
-
-    @Override
-    public Set<String> embeddedTypes() {
-        return embeddedTypes;
-    }
 }
