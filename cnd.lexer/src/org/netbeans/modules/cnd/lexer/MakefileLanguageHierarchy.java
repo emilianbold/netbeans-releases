@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,47 +37,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.util;
+package org.netbeans.modules.cnd.lexer;
 
-public final class Pair<P, K> {
+import org.netbeans.cnd.api.lexer.MakefileTokenId;
+import java.util.Collection;
 
-    public final P first;
-    public final K second;
+import java.util.EnumSet;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
-    private Pair(P first, K second) {
-        this.first = first;
-        this.second = second;
+/**
+ *
+ * @author Jan Jancura
+ */
+public class MakefileLanguageHierarchy extends LanguageHierarchy<MakefileTokenId> {
+
+    protected synchronized Collection<MakefileTokenId> createTokenIds() {
+        return EnumSet.allOf(MakefileTokenId.class);
     }
 
-    public static <P, K> Pair<P, K> of(P first, K second) {
-        return new Pair<P, K>(first, second);
+    protected Lexer<MakefileTokenId> createLexer(LexerRestartInfo<MakefileTokenId> info) {
+        return new MakefileLexer(info);
     }
 
-    @Override
-    public int hashCode() {
-        int hashCode  = 0;
-        hashCode ^= first == null ? 0 : first.hashCode();
-        hashCode ^= second == null ? 0 : second.hashCode();
-        return hashCode;
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        if (other instanceof Pair) {
-            Pair otherPair = (Pair) other;
-            return (this.first == null ? otherPair.first == null : this.first.equals(otherPair.first))
-                    && (this.second == null ? otherPair.second == null : this.second.equals(otherPair.second));
-        }
-        return false;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Pair [%s, %s]", first, second);
+    protected String mimeType() {
+        return MIMENames.MAKEFILE_MIME_TYPE;
     }
 }
+
+
+

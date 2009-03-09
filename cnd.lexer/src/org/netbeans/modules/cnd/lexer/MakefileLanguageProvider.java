@@ -38,8 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.editor.makefile;
+package org.netbeans.modules.cnd.lexer;
 
+import org.netbeans.cnd.api.lexer.MakefileTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;

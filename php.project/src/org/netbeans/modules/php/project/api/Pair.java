@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,38 +31,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.editor.makefile;
-
-import org.netbeans.api.lexer.TokenId;
+package org.netbeans.modules.php.project.api;
 
 /**
- *
- * @author Jan Jancura
+ * @since 2.11
  */
-public enum MakefileTokenId implements TokenId {
+public final class Pair<P, K> {
 
-    WHITESPACE("whitespace"),// NOI18N
-    NEW_LINE("newline"),// NOI18N
-    TAB("tab"),// NOI18N
-    LINE_COMMENT("line_comment"),// NOI18N
-    MACRO("macro"),// NOI18N
-    MACRO_OPERATOR("macro_operator"),// NOI18N
-    RULE_OPERATOR("rule_operator"),// NOI18N
-    SEPARATOR("separator"),// NOI18N
-    KEYWORD("keyword"),// NOI18N
-    SPECIAL_TARGET("special_target"),// NOI18N
-    STRING_LITERAL("string_literal"),// NOI18N
-    IDENTIFIER("identifier"),// NOI18N
-    ERROR("error");// NOI18N
-    private String name;
+    public final P first;
+    public final K second;
 
-    MakefileTokenId(
-            String name) {
-        this.name = name;
+    private Pair(P first, K second) {
+        this.first = first;
+        this.second = second;
     }
 
-    public String primaryCategory() {
-        return name;
+    public static <P, K> Pair<P, K> of(P first, K second) {
+        return new Pair<P, K>(first, second);
+    }
+
+    @Override
+    public int hashCode() {
+        int hashCode  = 0;
+        hashCode ^= first == null ? 0 : first.hashCode();
+        hashCode ^= second == null ? 0 : second.hashCode();
+        return hashCode;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other instanceof Pair) {
+            Pair otherPair = (Pair) other;
+            return (this.first == null ? otherPair.first == null : this.first.equals(otherPair.first))
+                    && (this.second == null ? otherPair.second == null : this.second.equals(otherPair.second));
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Pair [%s, %s]", first, second);
     }
 }

@@ -69,7 +69,7 @@ public class URIMapperTest extends NbTestCase {
         sourceFolderBase = getWorkDir();
         webServerURIBase = URI.create("file:///var/www/dbgtest2/");//NOI18N
 
-        basesMapper = URIMapper.createBasedInstance(webServerURIBase, sourceFolderBase);
+        basesMapper = URIMapper.createBasedInstance(webServerURIBase, sourceFolderBase, true);
         allMappers = new URIMapper[]{basesMapper, oneToOneMapper};
     }
 

@@ -23,8 +23,8 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lblHint1" alignment="0" pref="578" max="32767" attributes="0"/>
-                  <Component id="lblHint2" alignment="0" pref="578" max="32767" attributes="0"/>
+                  <Component id="lblHint1" alignment="0" pref="564" max="32767" attributes="0"/>
+                  <Component id="lblHint2" alignment="0" pref="564" max="32767" attributes="0"/>
                   <Component id="cbDebug" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cbDeprecate" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
@@ -34,14 +34,14 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="comJavaPlatform" pref="266" max="32767" attributes="2"/>
-                          <Component id="comCompileOnSave" alignment="0" pref="266" max="32767" attributes="2"/>
+                          <Component id="comJavaPlatform" pref="252" max="32767" attributes="2"/>
+                          <Component id="comCompileOnSave" alignment="0" pref="252" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
                       <Component id="btnMngPlatform" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="lblWarnPlatform" pref="369" max="32767" attributes="0"/>
+                      <Component id="lblWarnPlatform" pref="355" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnSetupHome" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -71,7 +71,7 @@
               <Component id="cbDebug" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="cbDeprecate" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="72" max="32767" attributes="0"/>
+              <EmptySpace pref="64" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="btnSetupHome" min="-2" max="-2" attributes="0"/>
                   <Component id="lblWarnPlatform" min="-2" max="-2" attributes="0"/>
