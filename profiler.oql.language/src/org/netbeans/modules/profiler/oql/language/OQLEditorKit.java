@@ -36,58 +36,20 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.heapwalk.oql.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import javax.swing.BorderFactory;
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
-import org.netbeans.modules.profiler.heapwalk.oql.OQLEngine;
-import org.netbeans.modules.profiler.spi.OQLEditorImpl;
-import org.openide.util.Lookup;
+package org.netbeans.modules.profiler.oql.language;
+
+import org.netbeans.modules.editor.NbEditorKit;
+
 /**
  *
- * @author Jaroslav Bachorik
+ * @author hanz
  */
-public class OQLEditor extends JPanel {
+public class OQLEditorKit extends NbEditorKit {
 
-    private JEditorPane queryEditor = null;
-    final private OQLEngine engine;
 
-    public OQLEditor(OQLEngine engine) {
-        super(new BorderLayout());
-        this.engine = engine;
-        init();
-    }
-
-    private void init() {
-        HTMLTextArea queryHeaderArea = new HTMLTextArea();
-
-        queryHeaderArea.setText("<b><img border='0' align='bottom' src='nbresloc:/org/netbeans/modules/profiler/heapwalk/ui/resources/rules.png'>&nbsp;&nbsp;" + "OQL Query:" + "</b><br><hr>"); // NOI18N
-
-        add(queryHeaderArea, BorderLayout.NORTH);
-
-        queryEditor = null;
-        OQLEditorImpl impl = Lookup.getDefault().lookup(OQLEditorImpl.class);
-        if (impl != null) {
-            queryEditor = impl.getEditorPane();
-            queryEditor.getDocument().putProperty(OQLEngine.class, engine);
-        } else {
-            queryEditor = new JEditorPane("text/x-oql", ""); // NOI18N
-        }
-        
-        queryEditor.setBackground(queryHeaderArea.getBackground());
-        queryEditor.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, Color.GRAY));
-
-        add(queryEditor, BorderLayout.CENTER);
-        
-        setBackground(queryHeaderArea.getBackground());
-        setOpaque(false);
-    }
-
-    public String getScript() {
-        return queryEditor.getText();
+    @Override
+    public String getContentType () {
+        return "text/x-oql";
     }
 }
