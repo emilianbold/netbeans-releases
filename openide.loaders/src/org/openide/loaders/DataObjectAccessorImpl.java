@@ -47,7 +47,9 @@ import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.openide.nodes.CookieSet;
 
 /**
- * API trampoline to access package private methods in DataObject class.
+ * API trampoline to access package private methods in org.openide.loaders
+ * package.
+ * 
  * @since 6.3
  * @author S. Aubrecht
  */
@@ -59,5 +61,15 @@ final class DataObjectAccessorImpl extends DataObjectAccessor {
     
     public CookieSet getCookieSet(MultiDataObject dob) {
         return dob.getCookieSet();
+    }
+
+    @Override
+    public boolean isInstancesThread() {
+        return FolderInstance.PROCESSOR.isRequestProcessorThread() || FolderList.isFolderRecognizerThread();
+    }
+
+    @Override
+    public void precreateInstances(FolderInstance fi) {
+        fi.precreateInstances();
     }
 }

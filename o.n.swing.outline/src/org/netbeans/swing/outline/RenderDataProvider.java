@@ -46,10 +46,7 @@ import javax.swing.Icon;
 /** A class which can provide rendering data for the tree portion an Outline,
  * such as converting values to text, providing tooltip text and icons.
  * Makes it possible to provide most of the interesting data that affects
- * display without needing to provide a custom cell renderer.  An Outline
- * will use its RenderDataProvider to fetch data for <strong>all</strong>
- * its columns, so it is possible to affect the display of both property
- * columns and the tree column via this interface.
+ * display without needing to provide a custom cell renderer.
  *
  * @author  Tim Boudreau
  */

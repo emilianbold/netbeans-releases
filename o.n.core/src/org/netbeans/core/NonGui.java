@@ -161,7 +161,13 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         // Starts GUI components to be created and shown on screen.
         // I.e. main window + current workspace components.
 
+
+
         // Access winsys from AWT thread only. In this case main thread wouldn't harm, just to be kosher.
+        final NbTopManager.WindowSystem windowSystem = Lookup.getDefault().lookup(NbTopManager.WindowSystem.class);
+        if (windowSystem != null) {
+            windowSystem.init();
+        }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 StartLog.logProgress("Window system initialization");
@@ -174,7 +180,6 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
                         }
                     });
                 }
-                NbTopManager.WindowSystem windowSystem = Lookup.getDefault().lookup(NbTopManager.WindowSystem.class);
                 if (windowSystem != null) {
                     windowSystem.load();
                     StartLog.logProgress("Window system loaded");

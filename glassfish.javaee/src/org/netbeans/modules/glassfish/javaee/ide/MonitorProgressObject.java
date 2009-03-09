@@ -39,7 +39,17 @@
 
 package org.netbeans.modules.glassfish.javaee.ide;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -53,6 +63,12 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
+import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
+import org.netbeans.modules.j2ee.dd.api.application.Application;
+import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.application.Module;
+import org.netbeans.modules.j2ee.dd.api.application.Web;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Progress object that monitors events from GlassFish Common and translates
@@ -63,27 +79,45 @@ import org.netbeans.modules.glassfish.spi.OperationStateListener;
 public class MonitorProgressObject implements ProgressObject, OperationStateListener {
 
     private final Hk2DeploymentManager dm;
-    private final TargetModuleID moduleId;
+    private final Hk2TargetModuleID moduleId;
     private final CommandType commandType;
+    private final boolean isEar;
 
-    public MonitorProgressObject(Hk2DeploymentManager dm, TargetModuleID moduleId) {
-        this(dm, moduleId, CommandType.DISTRIBUTE);
+    public MonitorProgressObject(Hk2DeploymentManager dm, Hk2TargetModuleID moduleId, boolean isEar) {
+        this(dm, moduleId, CommandType.DISTRIBUTE, isEar);
     }
     
-    public MonitorProgressObject(Hk2DeploymentManager dm, TargetModuleID moduleId, CommandType commandType) {
+    public MonitorProgressObject(Hk2DeploymentManager dm, Hk2TargetModuleID moduleId, CommandType commandType, boolean isEar) {
         this.dm = dm;
         this.moduleId = moduleId;
         this.commandType = commandType;
         this.operationStatus = new Hk2DeploymentStatus(commandType, 
                 StateType.RUNNING, ActionType.EXECUTE, "Initializing...");
+        this.isEar = isEar;
     }
 
     public DeploymentStatus getDeploymentStatus() {
         return operationStatus;
     }
 
-    public TargetModuleID [] getResultTargetModuleIDs() {
-        return new TargetModuleID [] { moduleId };
+    public TargetModuleID[] getResultTargetModuleIDs() {
+        synchronized (moduleId) {
+            TargetModuleID[] retVal = new TargetModuleID[]{moduleId};
+            if (!isEar) {
+                return retVal;
+            } else {
+                try {
+                    retVal = createModuleIdTree(moduleId);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
+                } catch (ExecutionException ex) {
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
+                } catch (TimeoutException ex) {
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
+                }
+                return retVal;
+            }
+        }
     }
 
     public ClientConfiguration getClientConfiguration(TargetModuleID moduleId) {
@@ -143,11 +177,80 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
     }  
 
     public void fireHandleProgressEvent(DeploymentStatus status) {
-        operationStatus = status;
-        ProgressEvent event = new ProgressEvent(dm, moduleId, status);
-        for(ProgressListener target: listeners) {
-            target.handleProgressEvent(event);
+        synchronized(moduleId) {
+            operationStatus = status;
+            ProgressEvent event = new ProgressEvent(dm, moduleId, status);
+            for(ProgressListener target: listeners) {
+                target.handleProgressEvent(event);
+            }
         }
     }
 
+    static final private String[] TYPES = {"web", "ejb"};
+
+    private TargetModuleID[] createModuleIdTree(Hk2TargetModuleID moduleId) throws InterruptedException, ExecutionException, TimeoutException {
+        synchronized (moduleId) {
+            // this should only get called in the ear deploy case...
+            Hk2TargetModuleID r = (Hk2TargetModuleID) moduleId;
+            Hk2TargetModuleID root = Hk2TargetModuleID.get((Hk2Target) r.getTarget(),
+                    r.getModuleID(), null, r.getLocation(), true);
+            // build the tree of submodule
+            GetPropertyCommand gpc = new GetPropertyCommand("*." + moduleId.getModuleID() + ".*");
+            Future<OperationState> result =
+                    dm.getCommonServerSupport().execute(gpc);
+            if (result.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+                Map<String, String> data = gpc.getData();
+                for (Entry<String, String> e : data.entrySet()) {
+                    String k = e.getKey();
+                    int dex1 = k.lastIndexOf(".module."); // NOI18N
+                    int dex2 = k.lastIndexOf(".name"); // NOI18N
+                    if (dex2 > dex1 && dex1 > 0) {
+                        String moduleName = e.getValue();
+                        for (String guess : TYPES) {
+                            String type = data.get("applications.application." + moduleId.getModuleID() + ".module." + moduleName + ".engine." + guess + ".sniffer"); // NOI18N
+                            if (null != type) {
+                                Hk2TargetModuleID kid = Hk2TargetModuleID.get(
+                                        (Hk2Target) r.getTarget(), moduleName,
+                                        "web".equals(guess) ? determineContextRoot(root,moduleName) : null,
+                                        r.getLocation() + File.separator +
+                                        FastDeploy.transform(moduleName));
+                                root.addChild(kid);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return new TargetModuleID[]{root};
+        }
+    }
+
+    private String determineContextRoot(Hk2TargetModuleID root, String moduleName) {
+        String retVal = "/" + moduleName;  // incorrect falback
+        int dex = moduleName.lastIndexOf('.');
+        if (dex > -1) {
+            retVal = "/" + moduleName.substring(0, dex);
+        }
+        // look for the application.xml
+        File appxml = new File(root.getLocation(), "META-INF"+File.separator+"application.xml");
+        if (appxml.exists()) {
+            try {
+                // TODO read the entries
+                DDProvider ddp = DDProvider.getDefault();
+                Application app = ddp.getDDRoot(FileUtil.createData(FileUtil.normalizeFile(appxml)));
+                // TODO build a map
+                Module[] mods = app.getModule();
+                for (Module m : mods) {
+                    Web w = m.getWeb();
+                    if (null != w && moduleName.equals(w.getWebUri())) {
+                        retVal = w.getContextRoot();
+                        break;
+                    }
+                }
+            } catch (IOException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, null, ex);
+            }
+        }
+        return retVal;
+    }
 }

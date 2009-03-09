@@ -71,14 +71,14 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private Integer pid = null;
 
     public AbstractNativeProcess(NativeProcessInfo info) {
-        this.id = info.getCommandLine(true);
+        this.id = info.getCommandLine();
         this.listeners = info.getListeners() == null
                 ? Collections.synchronizedList(new ArrayList<ChangeListener>())
                 : info.getListeners();
         setState(State.STARTING);
     }
 
-    public final int getPID() {
+    public final synchronized int getPID() {
         if (pid == null) {
             throw new IllegalStateException("Process was not started"); // NOI18N
         }
@@ -228,24 +228,21 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         }
     }
 
-    protected final void readPID(final InputStream is) {
+    protected synchronized final void readPID(final InputStream is) {
         Callable<Integer> pidReaderTask = new Callable<Integer>() {
 
             public Integer call() throws Exception {
-                BufferedReader pidReader =
-                        new BufferedReader(new InputStreamReader(is));
+                int i;
+                StringBuilder sb = new StringBuilder();
 
-                while (!pidReader.ready()) {
-                    Thread.yield();
+                while ((i = is.read()) != (int) '\n') {
+                    sb.append((char) i);
                 }
-
-                String pidLine = "-1"; // NOI18N
-                pidLine = pidReader.readLine();
 
                 Integer result = null;
 
                 try {
-                    result = Integer.parseInt(pidLine);
+                    result = Integer.parseInt(sb.toString());
                 } catch (NumberFormatException e) {
                 }
 
@@ -255,7 +252,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
 
         Future<Integer> futurePID =
-                NativeTaskExecutorService.submit(pidReaderTask);
+                NativeTaskExecutorService.submit(pidReaderTask, "Read PID of " + id); // NOI18N
 
         try {
             pid = futurePID.get(PID_TIMEOUT, TimeUnit.SECONDS);
@@ -290,7 +287,8 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 };
 
                 Future<Integer> result =
-                        NativeTaskExecutorService.submit(readErrorTask);
+                        NativeTaskExecutorService.submit(readErrorTask,
+                        "Read error from " + id); // NOI18N
                 try {
                     result.get(3, TimeUnit.SECONDS);
                 } catch (InterruptedException ex) {

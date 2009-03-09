@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -87,7 +88,7 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
  * @author Sergey Grinev
  */
 public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
-    protected final Map<String, CsmFile> macro2file = new HashMap<String, CsmFile>();
+    protected final Map<CharSequence, CsmFile> macro2file = new HashMap<CharSequence, CsmFile>();
 
     public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler) {
         super(apt, csmFile, preprocHandler);
@@ -329,9 +330,14 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         private CsmFile getTargetFile() {
             CsmFile current = UIDCsmConverter.UIDtoFile(mi.targetFile);
             if (current != null && mi.includePath != null) {
-                ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(mi.includePath);
+                File searchFile = new File(mi.includePath.toString());
+                ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(searchFile.getAbsolutePath());
+                if (targetPrj == null) {
+                    searchFile = FileUtil.normalizeFile(searchFile);
+                    targetPrj = ((ProjectBase) current.getProject()).findFileProject(searchFile.getAbsolutePath());
+                }
                 if (targetPrj != null) {
-                    current = targetPrj.getFile(new File(mi.includePath));
+                    current = targetPrj.getFile(searchFile);
                     // if file belongs to project, it should be not null
                     // but info could be obsolete
                 }
@@ -360,12 +366,12 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
     private CsmFile getMacroFile(APTMacro m) {
         CsmFile out = null;
         if (m.getFile() != null) {
-            String path = m.getFile().getPath();
+            CharSequence path = m.getFile().getPath();
             out = macro2file.get(path);
             if (out == null) {
                 ProjectBase targetPrj = ((ProjectBase) csmFile.getProject()).findFileProject(path);
                 if (targetPrj != null) {
-                    out = targetPrj.getFile(new File(path));
+                    out = targetPrj.getFile(new File(path.toString()));
                     // if file belongs to project, it should be not null
                     // but info could be obsolete
                 }

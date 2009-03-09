@@ -191,9 +191,9 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     }
     
     private void makeCurrent (final CallStackFrame frame) {
-        if (debugger.getCurrentCallStackFrame () != frame)
+        if (debugger.getCurrentCallStackFrame () != frame) {
             frame.makeCurrent ();
-        else
+        } else {
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     String language = DebuggerManager.getDebuggerManager ().
@@ -202,5 +202,6 @@ public class CallStackActionsProvider implements NodeActionsProvider {
                     sp.showSource (frame, language);
                 }
             });
+        }
     }
 }

@@ -44,10 +44,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 
 /**
@@ -60,24 +59,11 @@ public abstract class ObservableAction<T>
         extends AbstractAction
         implements AsynchronousAction {
 
-    private static ExecutorService executorService =
-            Executors.newCachedThreadPool();
     private final List<ObservableActionListener<T>> listeners =
             Collections.synchronizedList(new ArrayList<ObservableActionListener<T>>());
     private volatile Future<T> taskFutureResult = null;
     private final Object lock = new String(ObservableAction.class.getName());
 
-
-    static {
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-
-            public void run() {
-                if (executorService != null) {
-                    executorService.shutdown();
-                }
-            }
-        }));
-    }
 
     /**
      * Constructor
@@ -143,7 +129,7 @@ public abstract class ObservableAction<T>
 
             if (taskFutureResult == null || taskFutureResult.isDone()) {
                 // Will execute task unsynchronously ... Post the task
-                taskFutureResult = executorService.submit(new Callable<T>() {
+                taskFutureResult = NativeTaskExecutorService.submit(new Callable<T>() {
 
                     public T call() throws Exception {
                         fireStarted();
@@ -152,7 +138,7 @@ public abstract class ObservableAction<T>
 
                         return result;
                     }
-                });
+                }, "Performing observable action " + getValue(Action.NAME)); // NOI18N
             }
         }
     }

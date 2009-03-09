@@ -86,7 +86,7 @@ public abstract class HighlighterBase implements PhaseRunner, CsmFontColorManage
     protected abstract void updateFontColors(FontColorProvider provider);
 
     protected boolean isCancelled() {
-        return Thread.interrupted();
+        return Thread.currentThread().isInterrupted();
     }
 
     private final Collection<Cancellable> listeners = new HashSet<Cancellable>();

@@ -497,7 +497,7 @@ public class ModelSupport implements PropertyChangeListener {
                 set = findCanonicalSet(curObj);
             }
 
-            if (set != null && !set.getItems().isEmpty()) {
+            if (set != null && !set.isEmpty()) {
 
                 EditorCookie editor = curObj.getCookie(EditorCookie.class);
                 Document doc = editor != null ? editor.getDocument() : null;

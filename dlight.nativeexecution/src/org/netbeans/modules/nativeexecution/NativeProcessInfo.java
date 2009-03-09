@@ -47,22 +47,23 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory;
-import org.netbeans.modules.nativeexecution.support.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 
 /**
  *
  */
-public class NativeProcessInfo {
+// @NotThreadSafe
+// This class is always used in a thread-safe manner ...
+public final class NativeProcessInfo {
 
     private final ExecutionEnvironment execEnv;
+    private final Map<String, String> envVariables = new HashMap<String, String>();
     private final String command;
     private final List<String> arguments = new ArrayList<String>();
-    private final Map<String, String> envVariables =
-            new HashMap<String, String>();
     private String workingDirectory;
-    private Collection<ChangeListener> listeners = null;
     protected final MacroExpander macroExpander;
+    private Collection<ChangeListener> listeners = null;
 
     public NativeProcessInfo(NativeProcessInfo info) {
         this(info.execEnv, info.command);
@@ -93,12 +94,23 @@ public class NativeProcessInfo {
         this.workingDirectory = workingDirectory;
     }
 
-    public void addEnvironmentVariable(String name, String value) {
-        envVariables.put(name, value);
+    /**
+     *
+     * @param name
+     * @param value
+     */
+    public void addEnvironmentVariable(final String name, final String value) {
+        try {
+            envVariables.put(name, macroExpander.expandMacros(value, envVariables));
+        } catch (ParseException ex) {
+            envVariables.put(name, value);
+        }
     }
 
     public void addEnvironmentVariables(Map<String, String> envs) {
-        envVariables.putAll(envs);
+        for (String key : envs.keySet()) {
+            addEnvironmentVariable(key, envs.get(key));
+        }
     }
 
     public void setArguments(String... arguments) {
@@ -106,23 +118,37 @@ public class NativeProcessInfo {
         this.arguments.addAll(Arrays.asList(arguments));
     }
 
-    public String getCommandLine(boolean expandMacros) {
+    public String[] getCommand() {
         String cmd;
-        if (expandMacros && macroExpander != null) {
-            try {
-                cmd = macroExpander.expandMacros(command);
-            } catch (ParseException ex) {
-                cmd = command;
-            }
-        } else {
+
+        try {
+            cmd = macroExpander.expandPredefinedMacros(command);
+        } catch (ParseException ex) {
             cmd = command;
         }
-        
+
+        List<String> result = new ArrayList<String>();
+        result.add(cmd);
+        if (!arguments.isEmpty()) {
+            result.addAll(arguments);
+        }
+        return result.toArray(new String[0]);
+    }
+
+    public String getCommandLine() {
+        String cmd;
+
+        try {
+            cmd = macroExpander.expandPredefinedMacros(command);
+        } catch (ParseException ex) {
+            cmd = command;
+        }
+
         StringBuilder sb = new StringBuilder(cmd);
 
         if (!arguments.isEmpty()) {
             for (String arg : arguments) {
-                sb.append(' ').append(arg);
+                sb.append(" '").append(arg).append('\'');
             }
         }
 
@@ -140,29 +166,35 @@ public class NativeProcessInfo {
     public String getWorkingDirectory(boolean expandMacros) {
         if (expandMacros && macroExpander != null) {
             try {
-                return macroExpander.expandMacros(workingDirectory);
+                return macroExpander.expandPredefinedMacros(workingDirectory);
             } catch (ParseException ex) {
                 return workingDirectory;
             }
         }
-        
+
         return workingDirectory;
     }
 
-    public Map<String, String> getEnvVariables(boolean expandMacros) {
-        if (expandMacros && macroExpander != null) {
-            Map<String, String> result = new HashMap<String, String>();
-            for (String var : envVariables.keySet()) {
-                try {
-                result.put(var,
-                        macroExpander.expandMacros(envVariables.get(var)));
-                } catch (ParseException ex) {
-                result.put(var, envVariables.get(var));
-                }
+    public Map<String, String> getEnvVariables() {
+        return getEnvVariables(new HashMap<String, String>());
+    }
+
+    public Map<String, String> getEnvVariables(Map<String, String> prependMap) {
+        Map<String, String> result = new HashMap<String, String>(prependMap);
+
+        for (String varName : envVariables.keySet()) {
+            String varValue = envVariables.get(varName);
+            try {
+                varValue = macroExpander.expandMacros(varValue, result);
+                varValue = macroExpander.expandPredefinedMacros(varValue);
+            } catch (ParseException ex) {
             }
-            return result;
-        } else {
-            return envVariables;
+
+            if (varValue != null) {
+                result.put(varName, varValue);
+            }
         }
+
+        return result;
     }
 }

@@ -48,7 +48,7 @@ import org.netbeans.api.lexer.Token;
  * @author Vladimir Voskresensky
  */
 public interface CndTokenProcessor<T extends Token> {
-    void start(int startOffset, int firstTokenOffset);
+    void start(int startOffset, int firstTokenOffset, int lastOffset);
     void end(int offset, int lastTokenOffset);
     boolean isStopped();
     /**

@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.glassfish.javaee.ide;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
@@ -59,16 +62,41 @@ public class Hk2TargetModuleID implements TargetModuleID {
     private final String location;
     private TargetModuleID parent;
     private final Vector<TargetModuleID> children;
+    final static private Map<String,Hk2TargetModuleID> knownModules =
+            new HashMap<String,Hk2TargetModuleID>();
     
-    public Hk2TargetModuleID(Hk2Target target, String docBaseURI, String path, String location) {
+    private Hk2TargetModuleID(Hk2Target target, String docBaseURI, String path, String location) {
         this.target = target;
         this.docBaseURI = docBaseURI;
         this.path = path;
         this.location = location;
         this.parent = null;
         this.children = new Vector<TargetModuleID>();
-    }    
-    
+    }
+
+    public static Hk2TargetModuleID get(Hk2Target target, String docBaseURI, String path, String location) {
+        return get(target,docBaseURI, path, location, false);
+    }
+
+    public static Hk2TargetModuleID get(Hk2Target target, String docBaseURI, String path, String location, boolean clearChildren) {
+        synchronized(knownModules) {
+            String key = path+location;
+            Hk2TargetModuleID retVal = knownModules.get(key);
+            if (null == retVal) {
+                if (!location.endsWith(File.separator)) {
+                    location += File.separator;
+                }
+                retVal = new Hk2TargetModuleID(target, docBaseURI, path, location);
+                knownModules.put(key,retVal);
+            }
+            if (clearChildren) {
+                retVal.children.clear();
+            }
+            return retVal;
+
+        }
+    }
+
     // Retrieve the identifier of the parent object of this deployed module.
     public Target getTarget() {
         return target;

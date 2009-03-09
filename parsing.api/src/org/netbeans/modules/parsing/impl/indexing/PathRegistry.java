@@ -150,8 +150,11 @@ public class PathRegistry implements Runnable {
                 return null;
             }
             else {
+                result = new URL[unknownRes.size()];
                 synchronized (this) {
+                    int i = 0;
                     for (URL u : unknownRes) {
+                        result[i++] = u;
                         unknownRoots.put(u,new WeakValue(definingClassPath,u));
                     }
                 }

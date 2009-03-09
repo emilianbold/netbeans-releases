@@ -159,6 +159,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.support.LookupProviderSupport;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -175,6 +176,12 @@ import org.openide.util.Exceptions;
  * Represents one ejb module project
  * @author Chris Webster
  */
+@AntBasedProjectRegistration(
+    iconResource="org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif",
+    type=EjbJarProjectType.TYPE,
+    sharedNamespace=EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+    privateNamespace=EjbJarProjectType.PRIVATE_CONFIGURATION_NAMESPACE
+)
 public class EjbJarProject implements Project, AntProjectListener, FileChangeListener {
     
     private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif", false); // NOI18N
@@ -268,7 +275,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         }
     };*/
     
-    EjbJarProject(final AntProjectHelper helper) throws IOException {
+    public EjbJarProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();

@@ -48,7 +48,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.project.config.WsimportOption;
 import org.netbeans.modules.websvc.api.jaxws.project.config.WsimportOptions;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.customization.jaxwssettings.panel.WsimportOptionsPanel;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
@@ -63,8 +63,13 @@ public class JaxwsSettingsEditor implements WSEditor {
     private Service service;
     private Client client;
     private WsimportOptionsPanel panel;
+    private JaxWsModel jaxWsModel;
 
-    public JComponent createWSEditorComponent(Node node, JaxWsModel jaxWsModel) {
+    JaxwsSettingsEditor(JaxWsModel jaxWsModel) {
+        this.jaxWsModel = jaxWsModel;
+    }
+
+    public JComponent createWSEditorComponent(Node node) {
         service = node.getLookup().lookup(Service.class);
         client = node.getLookup().lookup(Client.class);
         WsimportOptions wsimportOptions = null;
@@ -95,7 +100,7 @@ public class JaxwsSettingsEditor implements WSEditor {
         return NbBundle.getMessage(JaxwsSettingsEditor.class, "JAXWS_SETTINGS_TITLE");
     }
 
-    public void save(Node node, JaxWsModel jaxWsModel) {
+    public void save(Node node) {
         try {           
             WsimportOptions wsimportOptions = null;
             if (service != null) {
@@ -129,7 +134,7 @@ public class JaxwsSettingsEditor implements WSEditor {
         }
     }
 
-    public void cancel(Node node, JaxWsModel jaxWsModel) {
+    public void cancel(Node node) {
     }
 
     public String getDescription() {

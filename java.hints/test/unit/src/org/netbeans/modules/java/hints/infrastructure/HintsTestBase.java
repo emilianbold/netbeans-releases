@@ -113,6 +113,7 @@ public class HintsTestBase extends NbTestCase {
     
     private CancellableTask<CompilationInfo> task;
     
+    @Override
     protected void setUp() throws Exception {
         doSetUp(layer());
     }

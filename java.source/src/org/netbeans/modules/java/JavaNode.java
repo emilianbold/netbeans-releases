@@ -146,7 +146,8 @@ public final class JavaNode extends DataNode implements ChangeListener {
             this.isExecutable = null;
         }
     }
-    
+
+    @Override
     public void setName(String name) {
         RenameHandler handler = getRenameHandler();
         if (handler == null) {

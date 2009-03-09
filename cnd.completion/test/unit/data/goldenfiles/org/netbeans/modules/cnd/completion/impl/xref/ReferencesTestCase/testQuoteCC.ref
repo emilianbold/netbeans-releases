@@ -230,7 +230,7 @@
 --OWNER:
     STMT EXPRESSION text='customers.push_back(Customer("John", 10))'
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
+    FUNCTION Customer(const string,int)  [51:9/2228-51:59/2278] ReferencesTestCase/customer.h
 ==============================================================
 'customers', tokenID=identifier, offset=2883 [71:9/2883-71:18/2892]
 --OWNER:
@@ -248,7 +248,7 @@
 --OWNER:
     STMT EXPRESSION text='customers.push_back(Customer("Mike", 0))'
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
+    FUNCTION Customer(const string,int)  [51:9/2228-51:59/2278] ReferencesTestCase/customer.h
 ==============================================================
 'customers', tokenID=identifier, offset=2933 [72:9/2933-72:18/2942]
 --OWNER:
@@ -266,7 +266,7 @@
 --OWNER:
     STMT EXPRESSION text='customers.push_back(Customer("Peter", 13))'
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
+    FUNCTION Customer(const string,int)  [51:9/2228-51:59/2278] ReferencesTestCase/customer.h
 ==============================================================
 'customers', tokenID=identifier, offset=2985 [73:9/2985-73:18/2994]
 --OWNER:
@@ -284,7 +284,7 @@
 --OWNER:
     STMT EXPRESSION text='customers.push_back(Customer("Ann", 11))'
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
+    FUNCTION Customer(const string,int)  [51:9/2228-51:59/2278] ReferencesTestCase/customer.h
 ==============================================================
 'customers', tokenID=identifier, offset=3035 [74:9/3035-74:18/3044]
 --OWNER:
@@ -302,7 +302,7 @@
 --OWNER:
     STMT EXPRESSION text='customers.push_back(Customer("Tom", 9))'
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
+    FUNCTION Customer(const string,int)  [51:9/2228-51:59/2278] ReferencesTestCase/customer.h
 ==============================================================
 'getDiscountFor', tokenID=identifier, offset=3091 [77:9/3091-77:23/3105]
 --OWNER:

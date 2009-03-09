@@ -42,8 +42,10 @@
 package org.openide.awt;
 
 
+import org.netbeans.modules.openide.loaders.AWTTask;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -65,11 +67,13 @@ import javax.swing.JComponent.AccessibleJComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
+import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderInstance;
+import org.openide.util.Exceptions;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 
@@ -187,7 +191,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
     /** Allows to wait till the content of the pool is initialized. */
     public final void waitFinished () {
-        instance.instanceFinished ();
+        instance.waitFinished();
     }
 
     /** Initialization of new values.
@@ -394,6 +398,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
         public Folder (DataFolder f) {
             super (f);
+            DataObjectAccessor.DEFAULT.precreateInstances(this);
         }
 
         /**
@@ -457,6 +462,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
          */
         protected Object createInstance (InstanceCookie[] cookies)
         throws java.io.IOException, ClassNotFoundException {
+            assert EventQueue.isDispatchThread() : Thread.currentThread().getName();
             final int length = cookies.length;
 
             final Map<String, Toolbar> toolbars = new TreeMap<String, Toolbar> ();

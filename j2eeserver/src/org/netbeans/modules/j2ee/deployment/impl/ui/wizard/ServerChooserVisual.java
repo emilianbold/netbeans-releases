@@ -325,7 +325,11 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
                 if (factory != null && factory.getAddInstanceIterator() != null) {
                     ServerAdapter serverAdapter = new ServerAdapter(server);
                     servers.add(serverAdapter);
-                    if ("J2EE".equals(server.getShortName())) { // NOI18N
+                    String n = server.getShortName();
+                    if (null != n && n.startsWith("gfv3")) {
+                        selected = serverAdapter;
+                    }
+                    if (null == selected && "J2EE".equals(n)) { // NOI18N
                         selected = serverAdapter;
                     }
                 }

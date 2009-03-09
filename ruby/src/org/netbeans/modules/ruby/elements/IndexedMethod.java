@@ -69,7 +69,7 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     /** Deprecated? */
     /** Parenthesis or space delimited? */
 
-    public static enum MethodType { METHOD, ATTRIBUTE, DBCOLUMN };
+    public static enum MethodType { METHOD, ATTRIBUTE, DBCOLUMN, DYNAMIC_FINDER };
     
     protected final String signature;
     private String[] args;

@@ -85,8 +85,11 @@ public class SourceIndexer {
     }
 
     protected void index(Iterable<? extends Indexable> files, Collection<? extends Indexable> deleted, final List<Context> transactionContexts) throws IOException {
-        //todo: Replace with multi source when done
-        deleted (deleted);
+        if (deleted != null && deleted.size() > 0) {
+            deleted (deleted);
+        }
+        
+        // XXX: Replace with multi source when done
         for (final Indexable dirty : files) {
             try {
                 final FileObject fileObject = URLMapper.findFileObject(dirty.getURL());

@@ -80,6 +80,8 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
+import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -148,6 +150,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         PathRegistry.getDefault().removePathRegistryListener(this);
         FileUtil.removeFileChangeListener(this);
         EditorRegistry.removePropertyChangeListener(this);
+
+        getWorker().cancelAll();
     }
 
     public boolean isScanInProgress() {
@@ -291,6 +295,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     public void fileDeleted(FileEvent fe) {
         final FileObject fo = fe.getFile();
+        if (fo.isFolder()) {
+            // filtering out deleted folders
+            return;
+        }
+
         final URL root = getOwningSourceRoot (fo);
 
         if (LOGGER.isLoggable(Level.FINE)) {
@@ -591,8 +600,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                             supportsEmbeddings &= b;
                             final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob);
                             transactionContexts.add(ctx);
+
+                            if (deleted != null && deleted.size() > 0) {
+                                factory.filesDeleted(deleted, ctx);
+                            }
                             
-                            factory.filesDeleted(deleted, ctx);
                             final Collection<? extends Indexable> indexables = resources.get(mimeType);
                             if (indexables != null && indexables.size() > 0) {
                                 final CustomIndexer indexer = factory.createIndexer();
@@ -695,7 +707,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     final Map<String,Collection<Indexable>> resources = crawler.getResources();
                     index (resources, Collections.<Indexable>emptyList(), root);
                 } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+                    LOGGER.log(Level.WARNING, null, ioe);
                 }
             }
             TEST_LOGGER.log(Level.FINEST, "filelist"); //NOI18N
@@ -731,7 +743,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 index(Collections.<String,Collection<Indexable>>emptyMap(), indexables, root);
                 TEST_LOGGER.log(Level.FINEST, "delete"); //NOI18N
             } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+                LOGGER.log(Level.WARNING, null, ioe);
             }
         }
 
@@ -765,12 +777,17 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     }
                 }
                 ctx.newBinaries.removeAll(ctx.oldBinaries);
+                newRoots.addAll(PathRegistry.getDefault().getUnknownRoots());
+
                 final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();
 
                 for (URL url : newRoots) {
                     findDependencies (url, depGraph, ctx, PathRecognizerRegistry.getDefault().getLibraryIds(), PathRecognizerRegistry.getDefault().getBinaryLibraryIds());
                 }
+                
                 ctx.newRoots.addAll(org.openide.util.Utilities.topologicalSort(depGraph.keySet(), depGraph));
+                Collections.reverse(ctx.newRoots);
+
                 scanBinaries(ctx);
                 scanSources(ctx);
                 ctx.scannedRoots.removeAll(ctx.oldRoots);
@@ -867,15 +884,55 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private void scanBinaries (final DependenciesContext ctx) {
             assert ctx != null;
             for (URL binary : ctx.newBinaries) {
-                updateProgress(binary);
-                scanBinary (binary);
-                ctx.scannedBinaries.add(binary);
+                try {
+                    updateProgress(binary);
+                    scanBinary (binary);
+                    ctx.scannedBinaries.add(binary);
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.WARNING, null, ioe);
+                }
             }
             TEST_LOGGER.log(Level.FINEST, "scanBinary", ctx.newBinaries);       //NOI18N
         }
 
-        private void scanBinary (URL root) {
+        private void scanBinary(URL root) throws IOException {
             LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
+
+            List<Context> transactionContexts = new LinkedList<Context>();
+            try {
+                final FileObject rootFo = URLMapper.findFileObject(root);
+                if (rootFo != null) {
+                    final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+                    final File archiveOrDir = FileUtil.archiveOrDirForURL(root);
+                    assert archiveOrDir != null;
+                    final FileObject archiveOrDirFo = FileUtil.toFileObject(archiveOrDir);
+                    assert archiveOrDirFo != null;
+
+                    String mimeType = archiveOrDirFo.isFolder() ? "" : archiveOrDirFo.getMIMEType(); //NOI18N
+                    final Collection<? extends BinaryIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(BinaryIndexerFactory.class);
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.fine("Using CustomIndexerFactories(" + mimeType + "): " + factories); //NOI18N
+                    }
+
+                    for(BinaryIndexerFactory f : factories) {
+                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false);
+                        transactionContexts.add(ctx);
+
+                        final BinaryIndexer indexer = f.createIndexer();
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine("Indexing binary " + root + " using " + indexer); //NOI18N
+                        }
+                        SPIAccessor.getInstance().index(indexer, ctx);
+                    }
+                }
+            } finally {
+                for(Context ctx : transactionContexts) {
+                    IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx);
+                    if (support != null) {
+                        SupportAccessor.getInstance().store(support);
+                    }
+                }
+            }
         }
 
         private void scanSources  (final DependenciesContext ctx) {
@@ -886,7 +943,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     scanSource (source);
                     ctx.scannedRoots.add(source);
                 } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+                    LOGGER.log(Level.WARNING, null, ioe);
                 }
 
             }

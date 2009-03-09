@@ -232,10 +232,11 @@ public final class SourceCache {
                             embeddingProviderToEmbedings = new HashMap<EmbeddingProvider,List<Embedding>> ();
     
     public Iterable<Embedding> getAllEmbeddings () {
+        Collection<SchedulerTask> tsks = createTasks();
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             if (this.embeddings == null) {
                 this.embeddings = new ArrayList<Embedding> ();
-                for (SchedulerTask schedulerTask : createTasks ()) {
+                for (SchedulerTask schedulerTask : tsks) {
                     if (schedulerTask instanceof EmbeddingProvider) {
                         EmbeddingProvider embeddingProvider = (EmbeddingProvider) schedulerTask;
                         if (upToDateEmbeddingProviders.contains (embeddingProvider)) {
@@ -337,23 +338,35 @@ public final class SourceCache {
     private Set<SchedulerTask> 
                             pendingTasks;
     
-    //@NotThreadSafe - has to be called in GuardedBy(this)
     private Collection<SchedulerTask> createTasks () {
+        List<SchedulerTask> tasks1 = null;
+        Set<SchedulerTask> pendingTasks1 = null;
         if (tasks == null) {
-            tasks = new ArrayList<SchedulerTask> ();
-            pendingTasks = new HashSet<SchedulerTask> ();
+            tasks1 = new ArrayList<SchedulerTask> ();
+            pendingTasks1 = new HashSet<SchedulerTask> ();
             Lookup lookup = MimeLookup.getLookup (mimeType);
             for (TaskFactory factory : lookup.lookupAll (TaskFactory.class)) {
                 Collection<? extends SchedulerTask> newTasks = factory.create (getSnapshot());
                 if (newTasks != null) {
-                    tasks.addAll (newTasks);
-                    pendingTasks.addAll (newTasks);
+                    tasks1.addAll (newTasks);
+                    pendingTasks1.addAll (newTasks);
 //                    for (SchedulerTask task : newTasks)
 //                        System.out.println("  createTask " + task);
                 }
             }
         }
-        return tasks;
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
+            if ((tasks == null) && (tasks1 != null)) {
+                tasks = tasks1;
+                pendingTasks = pendingTasks1;
+            }
+            if (tasks != null) {
+                // this should be normal return in most cases
+                return tasks;
+            }
+        }
+        // recurse and hope
+        return createTasks();
     }
 
     //tzezula: probably has race condition
@@ -361,10 +374,9 @@ public final class SourceCache {
         //S ystem.out.println("scheduleTasks " + schedulerType);
         final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
         final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
+        Collection<SchedulerTask> tsks = createTasks();
         synchronized (TaskProcessor.INTERNAL_LOCK) {
-            if (tasks == null)
-                createTasks ();
-            for (SchedulerTask task : tasks) {
+            for (SchedulerTask task : tsks) {
                 if (schedulerType == null ||
                     task.getSchedulerClass () == schedulerType ||
                     task instanceof EmbeddingProvider
@@ -389,6 +401,8 @@ public final class SourceCache {
     //jjancura: probably has race condition too
     public void sourceModified () {
         SourceModificationEvent sourceModificationEvent = SourceAccessor.getINSTANCE ().getSourceModificationEvent (source);
+        if (sourceModificationEvent == null)
+            return;
         Map<Class<? extends Scheduler>,SchedulerEvent> schedulerEvents = new HashMap<Class<? extends Scheduler>, SchedulerEvent> ();
         for (Scheduler scheduler : Schedulers.getSchedulers ()) {
             SchedulerEvent schedulerEvent = SchedulerAccessor.get ().createSchedulerEvent (scheduler, sourceModificationEvent);
@@ -400,10 +414,9 @@ public final class SourceCache {
             return;
         final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
         final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
+        Collection<SchedulerTask> tsks = createTasks();
         synchronized (TaskProcessor.INTERNAL_LOCK) {
-            if (tasks == null)
-                createTasks ();
-            for (SchedulerTask task : tasks) {
+            for (SchedulerTask task : tsks) {
                 Class<? extends Scheduler> schedulerClass = task.getSchedulerClass ();
                 if (schedulerClass != null &&
                     !schedulerEvents.containsKey (schedulerClass)

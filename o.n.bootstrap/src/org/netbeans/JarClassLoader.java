@@ -77,7 +77,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
-import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * A ProxyClassLoader capable of loading classes from a set of jar files
@@ -379,21 +379,23 @@ public class JarClassLoader extends ProxyClassLoader {
             return file.getPath();
         }
 
-        private static String toURI(File file) {
-            String sp = slashify(file.getPath(), false);
-            if (sp.startsWith("//")) // NOI18N
-                sp = "//" + sp; // NOI18N
-            return "jar:file:"+ sp +"!/"; // NOI18N
-        }
-        private static String slashify(String path, boolean isDirectory) {
-            String p = path;
-            if (File.separatorChar != '/')
-                p = p.replace(File.separatorChar, '/');
-            if (!p.startsWith("/"))
-                p = "/" + p;
-            if (!p.endsWith("/") && isDirectory)
-                p = p + "/";
-            return p;
+        private static String toURI(final File file) {
+            class VFile extends File {
+                public VFile() {
+                    super(file.getPath());
+                }
+
+                @Override
+                public boolean isDirectory() {
+                    return false;
+                }
+
+                @Override
+                public File getAbsoluteFile() {
+                    return this;
+                }
+            }
+            return "jar:" + new VFile().toURI() + "!/"; // NOI18N
         }
 
         @Override
@@ -741,11 +743,11 @@ public class JarClassLoader extends ProxyClassLoader {
             }
             int from;
             if (url.startsWith("file:")) {
-                from = 5;
+                from = Utilities.isWindows() ? 6 : 5;
             } else {
                 from = 0;
             }
-            String jar = url.substring(from, bang);
+            String jar = url.substring(from, bang).replace('/', File.separatorChar);
             String _name = url.substring(bang+2);
             Source _src = Source.sources.get(jar);
             if (_src == null) {

@@ -53,7 +53,7 @@ public class SetDefaultAction extends AbstractAction {
     private RemoteServerRecord record;
     
     public SetDefaultAction(RemoteServerRecord record) {
-        super(NbBundle.getMessage(AddNewServerAction.class, "LBL_SetDefaultAction"));
+        super(NbBundle.getMessage(SetDefaultAction.class, "LBL_SetDefaultAction"));
         this.record = record;
     }
 

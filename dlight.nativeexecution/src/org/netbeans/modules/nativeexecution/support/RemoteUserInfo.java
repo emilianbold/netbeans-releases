@@ -54,9 +54,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.support.ui.PasswordDlg;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.windows.WindowManager;
@@ -181,7 +181,7 @@ public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                 if (result) {
                     char[] clearPassword = pwdDlg.getPassword();
                     setPassword(clearPassword, pwdDlg.isRememberPassword());
-                    Arrays.fill(clearPassword, (char)0);
+                    Arrays.fill(clearPassword, (char) 0);
                     pwdDlg.clearPassword();
                     return true;
                 } else {
@@ -275,19 +275,15 @@ public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     }
 
     private static void setParentComponent(final RemoteUserInfo info) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            info.parent = WindowManager.getDefault().getMainWindow();
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
+        Mutex.EVENT.postReadRequest(new Runnable() {
 
-                public void run() {
-                    info.parent = WindowManager.getDefault().getMainWindow();
-                }
-            });
-        }
+            public void run() {
+                info.parent = WindowManager.getDefault().getMainWindow();
+            }
+        });
     }
 
-    private static String loc(String key, Object... params) {
+    private static String loc(String key, String... params) {
         return NbBundle.getMessage(RemoteUserInfo.class, key, params);
     }
 }

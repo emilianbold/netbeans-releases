@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,13 +69,13 @@ import org.openide.util.NbBundle;
 public class SystemIncludesUtils {
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
-    public static Runnable createLoader(final String hkey, final List<CompilerSet> csList) {
+    public static Runnable createLoader(final ExecutionEnvironment execEnv, final List<CompilerSet> csList) {
         return new Runnable() {
 
             public void run() {
-                ProgressHandle handle = ProgressHandleFactory.createHandle(getMessage("SIU_ProgressTitle") + " " + RemoteUtils.getHostName(hkey)); //NOI18N
+                ProgressHandle handle = ProgressHandleFactory.createHandle(getMessage("SIU_ProgressTitle") + " " + execEnv.getHost()); //NOI18N
                 handle.start();
-                log.fine("SystemIncludesUtils.load for " + hkey); // NOI18N
+                log.fine("SystemIncludesUtils.load for " + execEnv); // NOI18N
                 String storagePrefix = null;
                 try {
                     Set<String> paths = new HashSet<String>();
@@ -95,7 +96,7 @@ public class SystemIncludesUtils {
                         }
                     }
                     if (storagePrefix != null) {
-                        doLoad(hkey, storagePrefix, paths, handle);
+                        doLoad(execEnv, storagePrefix, paths, handle);
                     }
                 } finally {
                     handle.finish();
@@ -104,7 +105,7 @@ public class SystemIncludesUtils {
         };
     }
 
-    private static boolean doLoad(final String hkey, String storagePrefix, Collection<String> paths, ProgressHandle handle) {
+    private static boolean doLoad(final ExecutionEnvironment execEnv, String storagePrefix, Collection<String> paths, ProgressHandle handle) {
         File includesStorageFolder = new File(storagePrefix);
         File tempIncludesStorageFolder = new File(includesStorageFolder.getParent(), includesStorageFolder.getName() + ".download"); //NOI18N
 
@@ -121,7 +122,7 @@ public class SystemIncludesUtils {
         }
         boolean success = false;
         try {
-            RemoteCopySupport rcs = new RemoteCopySupport(hkey);
+            RemoteCopySupport rcs = new RemoteCopySupport(execEnv);
             success = load(tempIncludesStorageFolder.getAbsolutePath(), rcs, paths, handle);
             log.fine("SystemIncludesUtils.doLoad for " + tempIncludesStorageFolder + " finished " + success); // NOI18N
             if (success) {

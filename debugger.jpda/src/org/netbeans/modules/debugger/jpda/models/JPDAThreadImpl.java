@@ -612,13 +612,6 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NativeMethodPop")));
         } catch (InternalExceptionWrapper iex) {
             cleanCachedFrames();
-            if (iex.getCause().errorCode() == 32) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(iex,
-                            NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NativeMethodPop")));
-            } else {
-                //throw iex;
-            }
         } catch (VMDisconnectedExceptionWrapper ex) {
             // Ignore
         } finally {

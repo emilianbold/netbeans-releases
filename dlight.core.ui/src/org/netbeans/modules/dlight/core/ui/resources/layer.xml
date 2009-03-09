@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <!--
     <folder name="Actions">
         <folder name="DLight">
 
@@ -30,6 +31,7 @@
         </folder>
 
     </folder>
+    -->
     <folder name="Windows2">
         <folder name="Components">
             <file name="DLightIndicatorsTopComponent.settings" url="DLightIndicatorsTopComponentSettings.xml"/>
@@ -38,11 +40,17 @@
         </folder>
         <folder name="Modes">
             <folder name="explorer">
-                <file name="DLightToolsTopComponent.wstcref" url="DLightToolsTopComponentWstcref.xml"/>
-                <file name="DLightIndicatorsTopComponent.wstcref" url="DLightIndicatorsTopComponentWstcref.xml"/>
+                <file name="DLightToolsTopComponent.wstcref" url="DLightToolsTopComponentWstcref.xml">
+                    <attr name="position" intvalue="3100"/>
+                </file>
+                <file name="DLightIndicatorsTopComponent.wstcref" url="DLightIndicatorsTopComponentWstcref.xml">
+                    <attr name="position" intvalue="3150"/>
+                </file>
             </folder>
             <folder name="rightSlidingSide">
-                <file name="DLightSessionsTopComponent.wstcref" url="DLightSessionsTopComponentWstcref.xml"/>
+                <file name="DLightSessionsTopComponent.wstcref" url="DLightSessionsTopComponentWstcref.xml">
+                    <attr name="position" intvalue="1500"/>
+                 </file>
             </folder>
 <!--            <folder name="explorer">
 
@@ -50,6 +58,7 @@
         </folder>
     </folder>
     <folder name="Menu">
+        <!--
         <folder name="Window">
             <file name="DLightIndicatorsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-dlight-core-ui-actions-DLightIndicatorsAction.instance"/>
@@ -65,5 +74,6 @@
                 <attr name="position" intvalue="0"/>
             </file>
         </folder>
+        -->
     </folder>
 </filesystem>

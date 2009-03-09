@@ -67,10 +67,10 @@ public class APTIncludeUtils {
      * caller must check that resolved path is not the same as base file
      * to prevent recursive inclusions 
      */
-    public static ResolvedPath resolveFilePath(String file, String baseFile) {           
+    public static ResolvedPath resolveFilePath(String inclString, CharSequence baseFile) {
         if (baseFile != null) {
-            String folder = new File(baseFile).getParent();
-            File fileFromBasePath = new File(folder, file);
+            String folder = new File(baseFile.toString()).getParent();
+            File fileFromBasePath = new File(folder, inclString);
             if (!isDirectory(fileFromBasePath) && exists(fileFromBasePath)) {
                 //return fileFromBasePath.getAbsolutePath();
                 return new ResolvedPath(folder, fileFromBasePath.getAbsolutePath(), true, 0);
@@ -94,10 +94,10 @@ public class APTIncludeUtils {
         mapFoldersRef.clear();
     }
     
-    public static ResolvedPath resolveFilePath(Iterator<String> it, String file, int dirOffset) {
+    public static ResolvedPath resolveFilePath(Iterator<CharSequence> it, String file, int dirOffset) {
         while( it.hasNext() ) {
-            String sysPrefix = it.next();
-            File fileFromPath = new File(new File(sysPrefix), file);
+            CharSequence sysPrefix = it.next();
+            File fileFromPath = new File(new File(sysPrefix.toString()), file);
             if (!isDirectory(fileFromPath) && exists(fileFromPath)) {
                 return new ResolvedPath(sysPrefix, fileFromPath.getAbsolutePath(), false, dirOffset);
             }

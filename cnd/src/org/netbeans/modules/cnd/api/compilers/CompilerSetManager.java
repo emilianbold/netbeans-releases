@@ -57,13 +57,14 @@ import org.netbeans.modules.cnd.api.compilers.ToolchainManager.AlternativePath;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolDescriptor;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
@@ -92,6 +93,8 @@ public class CompilerSetManager {
         STATE_COMPLETE,
         STATE_UNINITIALIZED
     }
+
+    /** TODO: deprecate and remove */
     public static final String LOCALHOST = "localhost"; // NOI18N
 
     /* Persistance information */
@@ -111,7 +114,7 @@ public class CompilerSetManager {
     private static final String TOOL_KIND = ".toolKind."; // NOI18N
     private static final String TOOL_PATH = ".toolPath."; // NOI18N
     private static final String TOOL_FLAVOR = ".toolFlavor."; // NOI18N
-    private static HashMap<String, CompilerSetManager> managers = new HashMap<String, CompilerSetManager>();
+    private static HashMap<ExecutionEnvironment, CompilerSetManager> managers = new HashMap<ExecutionEnvironment, CompilerSetManager>();
     private final static Object MASTER_LOCK = new Object();
     private static CompilerProvider compilerProvider = null;
     private static String cygwinBase;
@@ -124,14 +127,19 @@ public class CompilerSetManager {
     public static final String Sun = "SunStudio"; // NOI18N
     public static final String GNU = "GNU"; // NOI18N
     private List<CompilerSet> sets = new ArrayList<CompilerSet>();
-    private final String hkey;
+    private final ExecutionEnvironment executionEnvironment;
     private State state;
     private int platform = -1;
     private Task remoteInitialization;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
+    /** TODO: deprecate and remove */
     public static CompilerSetManager getDefault(String key) {
-        return getDefault(key, true);
+        return getDefault(ExecutionEnvironmentFactory.getExecutionEnvironment(key), true);
+    }
+
+    public static CompilerSetManager getDefault(ExecutionEnvironment env) {
+        return getDefault(env, true);
     }
 
     /**
@@ -145,22 +153,40 @@ public class CompilerSetManager {
      *
      * @param key Either user@host or localhost
      * @return A default CompilerSetManager for the given key
+     *
+     * TODO: deprecate and remove
      */
-   public static CompilerSetManager getDefault(String key, boolean runCompilerSetDataLoader) {
+    public static CompilerSetManager getDefault(String key, boolean runCompilerSetDataLoader) {
+        return getDefault(ExecutionEnvironmentFactory.getExecutionEnvironment(key), runCompilerSetDataLoader);
+    }
+
+    /**
+     * Find or create a default CompilerSetManager for the given key. A default
+     * CSM is one which is active in the system. A non-default is one which gets
+     * created but has no affect unless its made default.
+     *
+     * For instance, the Build Tools tab (on C/C++ Tools->Options) creates a non-Default
+     * CSM and only makes it default if the OK button is pressed. If Cancel is pressed,
+     * it never becomes default.
+     *
+     * @param key env specifies execution environment (user/host/port)
+     * @return A default CompilerSetManager for the given key
+     */
+   public static CompilerSetManager getDefault(ExecutionEnvironment env, boolean runCompilerSetDataLoader) {
         CompilerSetManager csm = null;
         boolean no_compilers = false;
 
         synchronized (MASTER_LOCK) {
-            csm = managers.get(key);
+            csm = managers.get(env);
             if (csm == null) {
-                csm = restoreFromDisk(key);
+                csm = restoreFromDisk(env);
                 if (csm != null && csm.getDefaultCompilerSet() == null) {
                     csm.initDefaltCompilerSet();
                     csm.saveToDisk();
                 }
             }
             if (csm == null) {
-                csm = new CompilerSetManager(key, runCompilerSetDataLoader);
+                csm = new CompilerSetManager(env, runCompilerSetDataLoader);
                 if (csm.isValid()) {
                     csm.saveToDisk();
                 } else if (!csm.isPending() && !csm.isUninitialized()) {
@@ -168,7 +194,7 @@ public class CompilerSetManager {
                 }
             }
             if (csm != null) {
-                managers.put(key, csm);
+                managers.put(env, csm);
             }
         }
 
@@ -192,8 +218,8 @@ public class CompilerSetManager {
     }
 
     /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
-    public static CompilerSetManager create(String hkey) {
-        CompilerSetManager newCsm = new CompilerSetManager(hkey);
+    public static CompilerSetManager create(ExecutionEnvironment env) {
+        CompilerSetManager newCsm = new CompilerSetManager(env);
         if (newCsm.getCompilerSets().size() == 1 && newCsm.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
             newCsm.remove(newCsm.getCompilerSets().get(0));
         }
@@ -214,7 +240,7 @@ public class CompilerSetManager {
                     csm.add(CompilerSet.createEmptyCompilerSet(csm.getPlatform()));
                 }
                 csm.saveToDisk();
-                managers.put(csm.hkey, csm);
+                managers.put(csm.executionEnvironment, csm);
             }
         }
     }
@@ -311,23 +337,23 @@ public class CompilerSetManager {
         return msysBase;
     }
 
-    private CompilerSetManager(String key) {
-        this(key, true);
+    private CompilerSetManager(ExecutionEnvironment env) {
+        this(env, true);
     }
 
-    private CompilerSetManager(String key, boolean runCompilerSetDataLoader) {
-        hkey = key;
+    private CompilerSetManager(ExecutionEnvironment env, boolean runCompilerSetDataLoader) {
+        executionEnvironment = env;
         state = State.STATE_PENDING;
         init(runCompilerSetDataLoader);
     }
 
-    private CompilerSetManager(String hkey, List<CompilerSet> sets, int platform) {
-        this.hkey = hkey;
+    private CompilerSetManager(ExecutionEnvironment env, List<CompilerSet> sets, int platform) {
+        this.executionEnvironment = env;
         this.sets = sets;
         this.platform = platform;
-        if (!LOCALHOST.equals(hkey) && isEmpty()) {
+        if(env.isRemote() && isEmpty()) {
             this.state = State.STATE_UNINITIALIZED;
-            log.fine("CSM restoring from pref: Adding empty CS to host " + hkey);
+            log.fine("CSM restoring from pref: Adding empty CS to host " + toString());
             add(CompilerSet.createEmptyCompilerSet(platform));
         } else {
             this.state = State.STATE_COMPLETE;
@@ -335,13 +361,13 @@ public class CompilerSetManager {
     }
 
     private void init(boolean runCompilerSetDataLoader) {
-        if (hkey.equals(LOCALHOST)) {
+        if (executionEnvironment.isLocal()) {
             platform = computeLocalPlatform();
             initCompilerSets(Path.getPath());
             state = State.STATE_COMPLETE;
         } else {
-            log.fine("CSM.init: initializing remote compiler set for: " + hkey);
-            initRemoteCompilerSets(hkey, false, runCompilerSetDataLoader);
+            log.fine("CSM.init: initializing remote compiler set for: " + toString());
+            initRemoteCompilerSets(false, runCompilerSetDataLoader);
         }
     }
 
@@ -365,7 +391,7 @@ public class CompilerSetManager {
         if (isUninitialized()) {
             log.fine("CSM.getDefault: Doing remote setup from EDT?" + SwingUtilities.isEventDispatchThread());
             this.sets.clear();
-            initRemoteCompilerSets(this.hkey, true, runCompilerSetDataLoader);
+            initRemoteCompilerSets(true, runCompilerSetDataLoader);
             if (remoteInitialization != null) {
                 remoteInitialization.waitFinished();
                 remoteInitialization = null;
@@ -380,7 +406,7 @@ public class CompilerSetManager {
 
     public int getPlatform() {
         if (platform < 0) {
-            if (hkey.equals(LOCALHOST)) {
+            if (executionEnvironment.isLocal()) {
                 platform = computeLocalPlatform();
             } else {
                 waitForCompletion();
@@ -437,7 +463,7 @@ public class CompilerSetManager {
         for (CompilerSet set : getCompilerSets()) {
             setsCopy.add(set.createCopy());
         }
-        CompilerSetManager copy = new CompilerSetManager(this.hkey, setsCopy, this.platform);
+        CompilerSetManager copy = new CompilerSetManager(executionEnvironment, setsCopy, this.platform);
         return copy;
     }
 
@@ -539,12 +565,12 @@ public class CompilerSetManager {
 
     public List<CompilerSet> findRemoteCompilerSets(String path) {
         final CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
-        String[] arData = provider.getCompilerSetData(hkey, path);
+        String[] arData = provider.getCompilerSetData(executionEnvironment, path);
         List<CompilerSet> css = new ArrayList<CompilerSet>();
         if (arData != null) {
             for (String data : arData) {
                 if (data != null && data.length() > 0) {
-                    CompilerSet cs = parseCompilerSetString(hkey, platform, data);
+                    CompilerSet cs = parseCompilerSetString(platform, data);
                     if (cs != null) {
                         css.add(cs);
                     }
@@ -554,7 +580,7 @@ public class CompilerSetManager {
         return css;
     }
 
-    private CompilerSet parseCompilerSetString(String hkey, int platform, String data) {
+    private CompilerSet parseCompilerSetString(int platform, String data) {
         log.fine("CSM.initRemoteCompileSets: line = [" + data + "]");
         int i1 = data.indexOf(';');
         int i2 = data.indexOf(';', i1 + 1);
@@ -612,15 +638,14 @@ public class CompilerSetManager {
                 }
             }
             if (kind != -1) {
-                cs.addTool(hkey, name, p, kind);
+                cs.addTool(executionEnvironment, name, p, kind);
             }
         }
         return cs;
     }
 
     /** Initialize remote CompilerSets */
-    private synchronized void initRemoteCompilerSets(final String key, boolean connect,
-            final boolean runCompilerSetDataLoader) {
+    private synchronized void initRemoteCompilerSets(boolean connect, final boolean runCompilerSetDataLoader) {
         if (state == State.STATE_COMPLETE) {
             return;
         }
@@ -631,13 +656,13 @@ public class CompilerSetManager {
         ServerList registry = Lookup.getDefault().lookup(ServerList.class);
         assert registry != null;
         assert provider != null;
-        ServerRecord record = registry.get(key);
+        ServerRecord record = registry.get(executionEnvironment);
         assert record != null;
 
-        log.fine("CSM.initRemoteCompilerSets for " + key + " [" + state + "]");
+        log.fine("CSM.initRemoteCompilerSets for " + executionEnvironment + " [" + state + "]");
         final boolean wasOffline = record.isOffline();
         if (wasOffline) {
-            CompilerSetReporter.report("CSM_Conn", false, RemoteUtils.getHostName(key)); //NOI18N
+            CompilerSetReporter.report("CSM_Conn", false, executionEnvironment.getHost()); //NOI18N
         }
         record.validate(connect);
         if (record.isOnline()) {
@@ -649,15 +674,16 @@ public class CompilerSetManager {
                 @SuppressWarnings("unchecked")
                 public void run() {
                     CompilerSetReporter.report("CSM_ConfHost");//NOI18N
-                    provider.init(key); //NOI18N
+                    provider.init(executionEnvironment); //NOI18N
                     platform = provider.getPlatform();
                     CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform)); //NOI18N
                     CompilerSetReporter.report("CSM_LFTC"); //NOI18N
                     log.fine("CSM.initRemoteCompileSets: platform = " + platform);
-                    getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
+                    getPreferences().putInt(CSM + ExecutionEnvironmentFactory.getHostKey(executionEnvironment) +
+                            SET_PLATFORM, platform);
                     while (provider.hasMoreCompilerSets()) {
                         String data = provider.getNextCompilerSetData();
-                        CompilerSet cs = parseCompilerSetString(key, platform, data);
+                        CompilerSet cs = parseCompilerSetString(platform, data);
                         if (cs != null) {
                             CompilerSetReporter.report("CSM_Found", true, cs.getDisplayName(), cs.getDirectory());//NOI18N
                             add(cs);
@@ -684,7 +710,7 @@ public class CompilerSetManager {
         } else {
             CompilerSetReporter.report("CSM_Fail");//NOI18N
             // create empty CSM
-            log.fine("CSM.initRemoteCompilerSets: Adding empty CS to OFFLINE host " + key);
+            log.fine("CSM.initRemoteCompilerSets: Adding empty CS to OFFLINE host " + executionEnvironment);
             add(CompilerSet.createEmptyCompilerSet(PlatformTypes.PLATFORM_NONE));
             state = State.STATE_UNINITIALIZED;
         }
@@ -700,7 +726,7 @@ public class CompilerSetManager {
             task.addTaskListener(new TaskListener() {
                 public void taskFinished(org.openide.util.Task task) {
                     log.fine("Code Model Ready for " + CompilerSetManager.this.toString());
-                    CompilerSetManagerEvents.get(hkey).runTasks();
+                    CompilerSetManagerEvents.get(executionEnvironment).runTasks();
                 }
             });
             task.schedule(0);
@@ -709,7 +735,7 @@ public class CompilerSetManager {
 
     public void initCompilerSet(CompilerSet cs) {
         initCompilerSet(cs.getDirectory(), cs, false);
-        completeCompilerSet(hkey, cs, sets);
+        completeCompilerSet(executionEnvironment, cs, sets);
     }
 
     public void reInitCompilerSet(CompilerSet cs, String path) {
@@ -755,12 +781,17 @@ public class CompilerSetManager {
         for (String name : names) {
             File file = new File(dir, name);
             if (file.exists() && !file.isDirectory()) {
-                cs.addTool(hkey, name, file.getAbsolutePath(), kind);
+                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind);
                 return;
             }
             file = new File(dir, name + ".exe"); // NOI18N
             if (file.exists() && !file.isDirectory()) {
-                cs.addTool(hkey, name, file.getAbsolutePath(), kind);
+                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind);
+                return;
+            }
+            File file2 = new File(dir, name + ".exe.lnk"); // NOI18N
+            if (file2.exists() && !file2.isDirectory()) {
+                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind);
                 return;
             }
         }
@@ -772,7 +803,7 @@ public class CompilerSetManager {
      */
     private void completeCompilerSets() {
         for (CompilerSet cs : sets) {
-            completeCompilerSet(hkey, cs, sets);
+            completeCompilerSet(executionEnvironment, cs, sets);
         }
         if (sets.size() == 0) { // No compilers found
             add(CompilerSet.createEmptyCompilerSet(getPlatform()));
@@ -790,7 +821,7 @@ public class CompilerSetManager {
             // find 'best' Sun set and copy it
             sun = getCompilerSet("SunStudioExpress"); // NOI18N
             if (sun == null) {
-                sun = getCompilerSet("SunStudio_13"); // NOI18N
+                sun = getCompilerSet("SunStudio_12.1"); // NOI18N
             }
             if (sun == null) {
                 sun = getCompilerSet("SunStudio_12"); // NOI18N
@@ -820,7 +851,7 @@ public class CompilerSetManager {
         }
     }
 
-    private static Tool autoComplete(String hkey, CompilerSet cs, List<CompilerSet> sets, ToolDescriptor descriptor, int tool){
+    private static Tool autoComplete(ExecutionEnvironment env, CompilerSet cs, List<CompilerSet> sets, ToolDescriptor descriptor, int tool){
         if (descriptor != null) {
             AlternativePath[] paths = descriptor.getAlternativePath();
             if (paths != null && paths.length > 0) {
@@ -836,7 +867,7 @@ public class CompilerSetManager {
                                         String path = findCommand(name);
                                         if (path != null) {
                                             if (notSkipedName(cs, descriptor, path, name)) {
-                                                return cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, tool);
+                                                return cs.addNewTool(env, IpeUtils.getBaseName(path), path, tool);
                                             }
                                         }
                                     }
@@ -847,7 +878,7 @@ public class CompilerSetManager {
                                             String path = findCommand(name, dir+"/bin"); // NOI18N
                                             if (path != null) {
                                                 if (notSkipedName(cs, descriptor, path, name)) {
-                                                    return cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, tool);
+                                                    return cs.addNewTool(env, IpeUtils.getBaseName(path), path, tool);
                                                 }
                                             }
                                         }
@@ -856,7 +887,7 @@ public class CompilerSetManager {
                                     for(String name : descriptor.getNames()){
                                         String path = findCommand(name, method);
                                         if (path != null) {
-                                            return cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, tool);
+                                            return cs.addNewTool(env, IpeUtils.getBaseName(path), path, tool);
                                         }
                                     }
                                 }
@@ -874,7 +905,7 @@ public class CompilerSetManager {
                                             if (family.equals(method)){
                                                 Tool other = s.findTool(tool);
                                                 if (other != null){
-                                                    return cs.addNewTool(hkey, other.getName(), other.getPath(), tool);
+                                                    return cs.addNewTool(env, other.getName(), other.getPath(), tool);
                                                 }
                                             }
                                         }
@@ -894,7 +925,7 @@ public class CompilerSetManager {
                                         if (name.equals(method) || "*".equals(method)){ // NOI18N
                                             Tool other = s.findTool(tool);
                                             if (other != null){
-                                                return cs.addNewTool(hkey, other.getName(), other.getPath(), tool);
+                                                return cs.addNewTool(env, other.getName(), other.getPath(), tool);
                                             }
                                         }
                                     }
@@ -906,7 +937,7 @@ public class CompilerSetManager {
                 }
             }
         }
-        return cs.addTool(hkey, "", "", tool); // NOI18N
+        return cs.addTool(env, "", "", tool); // NOI18N
     }
 
     private static boolean notSkipedName(CompilerSet cs, ToolDescriptor descriptor, String path, String name){
@@ -941,10 +972,21 @@ public class CompilerSetManager {
             file = new File(dir, cmd);
             if (file.exists()) {
                 return file.getAbsolutePath();
+            } else {
+                if (Utilities.isWindows() && cmd.endsWith(".exe")){// NOI18N
+                    File file2 = new File(dir, cmd+".lnk");// NOI18N
+                    if (file2.exists()) {
+                        return file.getAbsolutePath();
+                    }
+                }
             }
             if (cmd2 != null) {
                 file = new File(dir, cmd2);
                 if (file.exists()) {
+                    return file.getAbsolutePath();
+                }
+                File file2 = new File(dir, cmd2+".lnk");// NOI18N
+                if (file2.exists()) {
                     return file.getAbsolutePath();
                 }
             }
@@ -952,44 +994,22 @@ public class CompilerSetManager {
         return null;
     }
 
-    private static void completeCompilerSet(String hkey, CompilerSet cs, List<CompilerSet> sets) {
+    /** TODO: deprecate and remove */
+    private static void completeCompilerSet(ExecutionEnvironment env, CompilerSet cs, List<CompilerSet> sets) {
         if (cs.findTool(Tool.CCompiler) == null) {
-            autoComplete(hkey, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getC(), Tool.CCompiler);
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getC(), Tool.CCompiler);
         }
         if (cs.findTool(Tool.CCCompiler) == null) {
-            autoComplete(hkey, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getCpp(), Tool.CCCompiler);
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getCpp(), Tool.CCCompiler);
         }
         if (cs.findTool(Tool.FortranCompiler) == null) {
-            autoComplete(hkey, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getFortran(), Tool.FortranCompiler);
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getFortran(), Tool.FortranCompiler);
         }
         if (cs.findTool(Tool.Assembler) == null) {
-            autoComplete(hkey, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getAssembler(), Tool.Assembler);
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getAssembler(), Tool.Assembler);
         }
         if (cs.findTool(Tool.MakeTool) == null) {
-            autoComplete(hkey, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getMake(), Tool.MakeTool);
-//            Tool other = null;
-//            for (CompilerSet set : sets) {
-//                other = set.findTool(Tool.MakeTool);
-//                if (other != null) {
-//                    break;
-//                }
-//            }
-//            if (other != null) {
-//                cs.addNewTool(hkey, other.getName(), other.getPath(), Tool.MakeTool);
-//            } else {
-//                String path = Path.findCommand("make"); // NOI18N
-//                if (path != null) {
-//                    cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.MakeTool);
-//                } else {
-//                    path = Path.findCommand("gmake"); // NOI18N
-//                    if (path != null) {
-//                        cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.MakeTool);
-//                    }
-//                }
-//            }
-//        }
-//        if (cs.getTool(Tool.MakeTool) == null) {
-//            cs.addTool(hkey, "", "", Tool.MakeTool); // NOI18N
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getMake(), Tool.MakeTool);
         }
         if (cs.findTool(Tool.DebuggerTool) == null) {
             String path;
@@ -999,11 +1019,11 @@ public class CompilerSetManager {
                 path = Path.findCommand("dbx"); // NOI18N
             }
             if (path != null) {
-                cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.DebuggerTool);
+                cs.addNewTool(env, IpeUtils.getBaseName(path), path, Tool.DebuggerTool);
             }
         }
         if (cs.findTool(Tool.DebuggerTool) == null) {
-            autoComplete(hkey, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getDebugger(), Tool.DebuggerTool);
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getDebugger(), Tool.DebuggerTool);
         }
 
     }
@@ -1146,15 +1166,18 @@ public class CompilerSetManager {
         return null;
     }
 
+    /** TODO: deprecate and remove */
     public static String getDefaultDevelopmentHost() {
+        return ExecutionEnvironmentFactory.getHostKey(getDefaultExecutionEnvironment());
+    }
+
+    public static ExecutionEnvironment getDefaultExecutionEnvironment() {
         ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-        String host;
         if (registry == null) {
-            host = CompilerSetManager.LOCALHOST;
+            return ExecutionEnvironmentFactory.getLocalExecutionEnvironment();
         } else {
-            host = registry.getDefaultRecord().getName();
+            return registry.getDefaultRecord().getExecutionEnvironment();
         }
-        return host;
     }
 
     /**
@@ -1192,24 +1215,25 @@ public class CompilerSetManager {
     public void saveToDisk() {
         if (!sets.isEmpty() && getPlatform() != PlatformTypes.PLATFORM_GENERIC) {
             getPreferences().putDouble(CSM + VERSION, csm_version);
-            getPreferences().putInt(CSM + hkey + NO_SETS, sets.size());
-            getPreferences().putInt(CSM + hkey + SET_PLATFORM, getPlatform());
+            String executionEnvironmentKey = ExecutionEnvironmentFactory.getHostKey(executionEnvironment);
+            getPreferences().putInt(CSM + executionEnvironmentKey + NO_SETS, sets.size());
+            getPreferences().putInt(CSM + executionEnvironmentKey + SET_PLATFORM, getPlatform());
             int setCount = 0;
             for (CompilerSet cs : getCompilerSets()) {
-                getPreferences().put(CSM + hkey + SET_NAME + setCount, cs.getName());
-                getPreferences().put(CSM + hkey + SET_FLAVOR + setCount, cs.getCompilerFlavor().toString());
-                getPreferences().put(CSM + hkey + SET_DIRECTORY + setCount, cs.getDirectory());
-                getPreferences().putBoolean(CSM + hkey + SET_AUTO + setCount, cs.isAutoGenerated());
-                getPreferences().putBoolean(CSM + hkey + SET_DEFAULT + setCount, cs.isDefault());
+                getPreferences().put(CSM + executionEnvironmentKey + SET_NAME + setCount, cs.getName());
+                getPreferences().put(CSM + executionEnvironmentKey + SET_FLAVOR + setCount, cs.getCompilerFlavor().toString());
+                getPreferences().put(CSM + executionEnvironmentKey + SET_DIRECTORY + setCount, cs.getDirectory());
+                getPreferences().putBoolean(CSM + executionEnvironmentKey + SET_AUTO + setCount, cs.isAutoGenerated());
+                getPreferences().putBoolean(CSM + executionEnvironmentKey + SET_DEFAULT + setCount, cs.isDefault());
                 List<Tool> tools = cs.getTools();
-                getPreferences().putInt(CSM + hkey + NO_TOOLS + setCount, tools.size());
+                getPreferences().putInt(CSM + executionEnvironmentKey + NO_TOOLS + setCount, tools.size());
                 int toolCount = 0;
                 for (Tool tool : tools) {
-                    getPreferences().put(CSM + hkey + TOOL_NAME + setCount + '.' + toolCount, tool.getName());
-                    getPreferences().put(CSM + hkey + TOOL_DISPLAYNAME + '-' + setCount + '.' + toolCount, tool.getDisplayName());
-                    getPreferences().putInt(CSM + hkey + TOOL_KIND + setCount + '.' + toolCount, tool.getKind());
-                    getPreferences().put(CSM + hkey + TOOL_PATH + setCount + '.' + toolCount, tool.getPath());
-                    getPreferences().put(CSM + hkey + TOOL_FLAVOR + setCount + '.' + toolCount, tool.getFlavor().toString());
+                    getPreferences().put(CSM + executionEnvironmentKey + TOOL_NAME + setCount + '.' + toolCount, tool.getName());
+                    getPreferences().put(CSM + executionEnvironmentKey + TOOL_DISPLAYNAME + '-' + setCount + '.' + toolCount, tool.getDisplayName());
+                    getPreferences().putInt(CSM + executionEnvironmentKey + TOOL_KIND + setCount + '.' + toolCount, tool.getKind());
+                    getPreferences().put(CSM + executionEnvironmentKey + TOOL_PATH + setCount + '.' + toolCount, tool.getPath());
+                    getPreferences().put(CSM + executionEnvironmentKey + TOOL_FLAVOR + setCount + '.' + toolCount, tool.getFlavor().toString());
                     toolCount++;
                 }
                 setCount++;
@@ -1217,61 +1241,61 @@ public class CompilerSetManager {
         }
     }
 
-    public static CompilerSetManager restoreFromDisk(String hkey) {
+    public static CompilerSetManager restoreFromDisk(ExecutionEnvironment env) {
         double version = getPreferences().getDouble(CSM + VERSION, 1.0);
-        if (version == 1.0 && hkey.equals(LOCALHOST)) {
+        if (version == 1.0 && env.isLocal()) {
             return restoreFromDisk10();
         }
-
-        int noSets = getPreferences().getInt(CSM + hkey + NO_SETS, -1);
+        String executionEnvironmentKey = ExecutionEnvironmentFactory.getHostKey(env);
+        int noSets = getPreferences().getInt(CSM + executionEnvironmentKey + NO_SETS, -1);
         if (noSets < 0) {
             return null;
         }
-        int pform = getPreferences().getInt(CSM + hkey + SET_PLATFORM, -1);
+        int pform = getPreferences().getInt(CSM + executionEnvironmentKey + SET_PLATFORM, -1);
         if (pform < 0) {
-            if (hkey.equals(LOCALHOST)) {
+            if (env.isLocal()) {
                 pform = computeLocalPlatform();
             }
         }
 
         ArrayList<CompilerSet> css = new ArrayList<CompilerSet>();
         for (int setCount = 0; setCount < noSets; setCount++) {
-            String setName = getPreferences().get(CSM + hkey + SET_NAME + setCount, null);
-            String setFlavorName = getPreferences().get(CSM + hkey + SET_FLAVOR + setCount, null);
+            String setName = getPreferences().get(CSM + executionEnvironmentKey + SET_NAME + setCount, null);
+            String setFlavorName = getPreferences().get(CSM + executionEnvironmentKey + SET_FLAVOR + setCount, null);
             CompilerFlavor flavor = null;
             if (setFlavorName != null) {
                 flavor = CompilerFlavor.toFlavor(setFlavorName, pform);
             }
-            String setDirectory = getPreferences().get(CSM + hkey + SET_DIRECTORY + setCount, null);
+            String setDirectory = getPreferences().get(CSM + executionEnvironmentKey + SET_DIRECTORY + setCount, null);
             if (setName == null || setFlavorName == null || flavor == null) {
                 // FIXUP: error
                 continue;
             }
-            Boolean auto = getPreferences().getBoolean(CSM + hkey + SET_AUTO + setCount, false);
-            Boolean isDefault = getPreferences().getBoolean(CSM + hkey + SET_DEFAULT + setCount, false);
+            Boolean auto = getPreferences().getBoolean(CSM + executionEnvironmentKey + SET_AUTO + setCount, false);
+            Boolean isDefault = getPreferences().getBoolean(CSM + executionEnvironmentKey + SET_DEFAULT + setCount, false);
             CompilerSet cs = new CompilerSet(flavor, setDirectory, setName);
             cs.setAutoGenerated(auto);
             cs.setAsDefault(isDefault);
-            int noTools = getPreferences().getInt(CSM + hkey + NO_TOOLS + setCount, -1);
+            int noTools = getPreferences().getInt(CSM + executionEnvironmentKey + NO_TOOLS + setCount, -1);
             for (int toolCount = 0; toolCount < noTools; toolCount++) {
-                String toolName = getPreferences().get(CSM + hkey + TOOL_NAME + setCount + '.' + toolCount, null);
-                String toolDisplayName = getPreferences().get(CSM + hkey + TOOL_DISPLAYNAME + '-' + setCount + '.' + toolCount, null);
-                int toolKind = getPreferences().getInt(CSM + hkey + TOOL_KIND + setCount + '.' + toolCount, -1);
-                String toolPath = getPreferences().get(CSM + hkey + TOOL_PATH + setCount + '.' + toolCount, null);
-                String toolFlavorName = getPreferences().get(CSM + hkey + TOOL_FLAVOR + setCount + '.' + toolCount, null);
+                String toolName = getPreferences().get(CSM + executionEnvironmentKey + TOOL_NAME + setCount + '.' + toolCount, null);
+                String toolDisplayName = getPreferences().get(CSM + executionEnvironmentKey + TOOL_DISPLAYNAME + '-' + setCount + '.' + toolCount, null);
+                int toolKind = getPreferences().getInt(CSM + executionEnvironmentKey + TOOL_KIND + setCount + '.' + toolCount, -1);
+                String toolPath = getPreferences().get(CSM + executionEnvironmentKey + TOOL_PATH + setCount + '.' + toolCount, null);
+                String toolFlavorName = getPreferences().get(CSM + executionEnvironmentKey + TOOL_FLAVOR + setCount + '.' + toolCount, null);
                 CompilerFlavor toolFlavor = null;
                 if (toolFlavorName != null) {
                     toolFlavor = CompilerFlavor.toFlavor(toolFlavorName, pform);
                 }
-                Tool tool = getCompilerProvider().createCompiler(hkey, toolFlavor, toolKind, "", toolDisplayName, toolPath);
+                Tool tool = getCompilerProvider().createCompiler(env, toolFlavor, toolKind, "", toolDisplayName, toolPath);
                 tool.setName(toolName);
                 cs.addTool(tool);
             }
-            completeCompilerSet(hkey, cs, css);
+            completeCompilerSet(env, cs, css);
             css.add(cs);
         }
 
-        CompilerSetManager csm = new CompilerSetManager(hkey, css, pform);
+        CompilerSetManager csm = new CompilerSetManager(env, css, pform);
         return csm;
     }
 
@@ -1319,14 +1343,17 @@ public class CompilerSetManager {
                 if (toolFlavorName != null) {
                     toolFlavor = CompilerFlavor.toFlavor(toolFlavorName, PlatformTypes.getDefaultPlatform());
                 }
-                Tool tool = getCompilerProvider().createCompiler(LOCALHOST, toolFlavor, toolKind, "", toolDisplayName, toolPath);
+                Tool tool = getCompilerProvider().createCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(),
+                        toolFlavor, toolKind, "", toolDisplayName, toolPath); //NOI18N
                 tool.setName(toolName);
                 cs.addTool(tool);
             }
-            completeCompilerSet(CompilerSetManager.LOCALHOST, cs, css);
+            completeCompilerSet(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), cs, css);
             css.add(cs);
         }
-        CompilerSetManager csm = new CompilerSetManager(LOCALHOST, css, computeLocalPlatform());
+        CompilerSetManager csm = new CompilerSetManager(
+                ExecutionEnvironmentFactory.getLocalExecutionEnvironment(),
+                css, computeLocalPlatform());
         return csm;
     }
 
@@ -1338,7 +1365,7 @@ public class CompilerSetManager {
     @Override
     public String toString() {
         StringBuilder out = new StringBuilder();
-        out.append("CSM for ").append(hkey); // NOI18N
+        out.append("CSM for ").append(executionEnvironment.toString()); // NOI18N
         out.append(" with toolchains:["); // NOI18N
         for (CompilerSet compilerSet : sets) {
             out.append(compilerSet.getName()).append(" "); // NOI18N
@@ -1349,7 +1376,12 @@ public class CompilerSetManager {
         return out.toString();
     }
 
+    public ExecutionEnvironment getExecutionEnvironment() {
+        return executionEnvironment;
+    }
+
+    /** TODO: deprecate and remove */
     public String getHost() {
-        return hkey;
+        return ExecutionEnvironmentFactory.getHostKey(executionEnvironment);
     }
 }

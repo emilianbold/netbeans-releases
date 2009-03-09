@@ -68,7 +68,7 @@ public class MeasureJ2SEActionsTest {
 //        .addTest(CloseEditorModifiedTest.class)
 //        .addTest(CloseEditorTabTest.class)
         .addTest(CommentingCodeInEditorTest.class)
-        .addTest(CreateNBProjectTest.class)
+// commented until IZ 159587 is fixed        .addTest(CreateNBProjectTest.class)
         .addTest(CreateProjectTest.class)
         // needs to be fixed .addTest(DeleteFolderTest.class)
         .addTest(ExpandNodesInComponentInspectorTest.class)

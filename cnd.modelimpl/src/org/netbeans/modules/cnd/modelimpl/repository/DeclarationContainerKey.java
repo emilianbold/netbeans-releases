@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
@@ -52,36 +51,40 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  * @author Vladimir Kvashin
  */
 public class DeclarationContainerKey extends ProjectNameBasedKey {
-    
+
     public DeclarationContainerKey(String project) {
-	 super(project);
+        super(project);
     }
-    
+
     public DeclarationContainerKey(DataInput in) throws IOException {
-	super(in);
+        super(in);
     }
-    
+
     public int getSecondaryDepth() {
-	return 1;
+        return 1;
     }
-    
+
     @Override
     public String toString() {
-	return "DeclarationContainerKey " + getProjectName(); // NOI18N
+        return "DeclarationContainerKey " + getProjectName(); // NOI18N
     }
-    
+
+    @Override
+    public int hashCode() {
+        return 37*KeyObjectFactory.KEY_DECLARATION_CONTAINER_KEY + super.hashCode();
+    }
+
     public int getSecondaryAt(int level) {
-	assert (level == 0);
-	return KeyObjectFactory.KEY_DECLARATION_CONTAINER_KEY;
+        assert (level == 0);
+        return KeyObjectFactory.KEY_DECLARATION_CONTAINER_KEY;
     }
-    
+
     public PersistentFactory getPersistentFactory() {
-	return CsmObjectFactory.instance();
+        return CsmObjectFactory.instance();
     }
 
     @Override
     public Key.Behavior getBehavior() {
-	return Key.Behavior.LargeAndMutable;
+        return Key.Behavior.LargeAndMutable;
     }
-
 }

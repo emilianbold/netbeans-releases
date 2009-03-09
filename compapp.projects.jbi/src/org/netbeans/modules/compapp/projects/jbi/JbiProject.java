@@ -103,6 +103,12 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Chris Webster
  */
+@AntBasedProjectRegistration(
+    type=JbiProjectType.TYPE,
+    iconResource="org/netbeans/modules/compapp/projects/jbi/ui/resources/composite_application_project.png",
+    sharedNamespace=JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+    privateNamespace=JbiProjectType.PRIVATE_CONFIGURATION_NAMESPACE
+)
 public final class JbiProject implements Project, AntProjectListener, ProjectPropertyProvider {
     private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/compapp/projects/jbi/ui/resources/composite_application_project.png", false); // NOI18N
     
@@ -159,7 +165,6 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
-    private AntBasedProjectType abpt;
     private JbiLogicalViewProvider lvp;    
     private FileChangeListener casaFileListener;
     
@@ -174,10 +179,9 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
      *
      * @throws IOException DOCUMENT ME!
      */
-    public JbiProject(final AntProjectHelper helper, AntBasedProjectType abpt)
+    public JbiProject(final AntProjectHelper helper)
     throws IOException {
         this.helper = helper;
-        this.abpt = abpt;
         eval = createEvaluator();
         
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
@@ -192,15 +196,6 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
 //                CasaHelper.registerCasaFileListener(JbiProject.this);
 //            }
 //        });
-    }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public AntBasedProjectType getAntBasedProjectType() {
-        return abpt;
     }
     
     /**

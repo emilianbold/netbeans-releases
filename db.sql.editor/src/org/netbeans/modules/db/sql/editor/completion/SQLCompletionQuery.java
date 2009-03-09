@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.sql.editor.completion;
@@ -67,13 +67,16 @@ import org.netbeans.modules.db.api.metadata.DBConnMetadataModelManager;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.sql.analyzer.FromClause;
+import org.netbeans.modules.db.sql.analyzer.InsertStatement;
+import org.netbeans.modules.db.sql.analyzer.InsertStatement.InsertContext;
+import org.netbeans.modules.db.sql.analyzer.InsertStatementAnalyzer;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
 import org.netbeans.modules.db.sql.analyzer.SQLStatement;
-import org.netbeans.modules.db.sql.analyzer.SQLStatement.SelectContext;
-import org.netbeans.modules.db.sql.analyzer.SQLStatementAnalyzer;
+import org.netbeans.modules.db.sql.analyzer.SelectStatement;
+import org.netbeans.modules.db.sql.analyzer.SelectStatement.SelectContext;
+import org.netbeans.modules.db.sql.analyzer.SelectStatementAnalyzer;
 import org.netbeans.modules.db.sql.analyzer.SQLStatementKind;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionResultSet;
-import org.netbeans.modules.db.sql.editor.api.completion.SubstitutionHandler;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -160,19 +163,33 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         anchorOffset = -1;
         substitutionOffset = 0;
         items = new SQLCompletionItems(quoter, env.getSubstitutionHandler());
-        statement = SQLStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
-        if (statement != null && statement.getKind() == SQLStatementKind.SELECT) {
-            completeSelect();
+        SQLStatementKind kind = SQLStatementAnalyzer.analyzeKind (env.getTokenSequence());
+        switch (kind) {
+            case SELECT:
+                statement = SelectStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
+                if (statement != null) {
+                    assert statement.getKind() == SQLStatementKind.SELECT : statement.getKind ();
+                    completeSelect ();
+                }
+                break;
+            case INSERT:
+                statement = InsertStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
+                if (statement != null) {
+                    assert statement.getKind() == SQLStatementKind.INSERT : statement.getKind ();
+                    completeInsert ();
+                }
+                break;
         }
         return items;
     }
 
     private void completeSelect() {
-        SelectContext context = statement.getContextAtOffset(env.getCaretOffset());
+        SelectStatement selectStatement = (SelectStatement) statement;
+        SelectContext context = selectStatement.getContextAtOffset(env.getCaretOffset());
         if (context == null) {
             return;
         }
-        fromClause = statement.getTablesInEffect(env.getCaretOffset());
+        fromClause = selectStatement.getTablesInEffect(env.getCaretOffset());
 
         Identifier ident = findIdentifier();
         if (ident == null) {
@@ -197,11 +214,54 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
+    private void completeInsert () {
+        InsertStatement insertStatement = (InsertStatement) statement;
+        InsertContext context = insertStatement.getContextAtOffset(env.getCaretOffset());
+        if (context == null) {
+            return;
+        }
+
+        Identifier ident = findIdentifier();
+        if (ident == null) {
+            return;
+        }
+        anchorOffset = ident.anchorOffset;
+        substitutionOffset = ident.substitutionOffset;
+        switch (context) {
+            case INSERT:
+                break;
+            case INTO:
+                insideFrom (ident);
+                break;
+            case COLUMNS:
+                insideColumns (ident, insertStatement.getTable ());
+                break;
+            case VALUES:
+                break;
+        }
+    }
+
     private void insideSelect(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
             completeSelectSimpleIdent(ident.lastPrefix, ident.quoted);
         } else {
             completeSelectQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
+        }
+    }
+
+    private void insideColumns (Identifier ident, QualIdent table) {
+        if (ident.fullyTypedIdent.isEmpty()) {
+            if (table == null) {
+                completeColumnWithTableIfSimpleIdent (ident.lastPrefix, ident.quoted);
+            } else {
+                items.addColumns (resolveTable (table), ident.lastPrefix, ident.quoted, substitutionOffset);
+            }
+        } else {
+            if (table == null) {
+                completeColumnWithTableIfQualIdent (ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
+            } else {
+                items.addColumns (resolveTable (table), ident.lastPrefix, ident.quoted, substitutionOffset);
+            }
         }
     }
 
@@ -243,6 +303,47 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             // All catalogs.
             items.addCatalogs(metadata, null, typedPrefix, quoted, substitutionOffset);
         }
+    }
+
+    private void completeColumnWithTableIfSimpleIdent(String typedPrefix, boolean quoted) {
+        Schema defaultSchema = metadata.getDefaultSchema();
+        if (defaultSchema != null) {
+            // All columns in default schema, but only if a prefix has been typed, otherwise there
+            // would be too many columns.
+            if (typedPrefix != null) {
+                for (Table table : defaultSchema.getTables()) {
+                    items.addColumnsWithTableName (table, null, typedPrefix, quoted, substitutionOffset - 1);
+                }
+            } else {
+                // All tables in default schema.
+                items.addTablesAtInsertInto (defaultSchema, null, null, typedPrefix, quoted, substitutionOffset - 1);
+            }
+        }
+        // All schemas.
+        Catalog defaultCatalog = metadata.getDefaultCatalog();
+        items.addSchemas(defaultCatalog, null, typedPrefix, quoted, substitutionOffset);
+        // All catalogs.
+        items.addCatalogs(metadata, null, typedPrefix, quoted, substitutionOffset);
+    }
+
+    private void completeColumnWithTableIfQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
+            // Assume fullyTypedIdent is a table.
+            Table table = resolveTable(fullyTypedIdent);
+            if (table != null) {
+                items.addColumnsWithTableName (table, fullyTypedIdent, lastPrefix, quoted,
+                        substitutionOffset - 1);
+            }
+            // Assume fullyTypedIdent is a schema.
+            Schema schema = resolveSchema(fullyTypedIdent);
+            if (schema != null) {
+                items.addTablesAtInsertInto (schema, fullyTypedIdent, null, lastPrefix, quoted,
+                        substitutionOffset - 1);
+            }
+            // Assume fullyTypedIdent is a catalog.
+            Catalog catalog = resolveCatalog(fullyTypedIdent);
+            if (catalog != null) {
+                completeCatalog(catalog, lastPrefix, quoted);
+            }
     }
 
     private void completeSelectQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {

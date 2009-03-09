@@ -221,10 +221,11 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             IndicatorAccessor.getDefault().addIndicatorActionListener(ind, this);
         }
         notifySessionAdded(session);
-        //should add existinhg listeners
-        for (DLightSessionListener sessionListener : sessionListeners){
-            sessionListener.sessionAdded(session);
-        }
+//        AK: Listeners are already notified...
+//        //should add existinhg listeners
+//        for (DLightSessionListener sessionListener : sessionListeners){
+//            sessionListener.sessionAdded(session);
+//        }
         return session;
     }
 
@@ -382,7 +383,9 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     }
 
     public void mouseClickedOnIndicator(Indicator source) {
-        openVisualizer(IndicatorAccessor.getDefault().getToolName(source),
-                IndicatorAccessor.getDefault().getVisualizerConfiguration(source));
+        VisualizerConfiguration vc = IndicatorAccessor.getDefault().getVisualizerConfiguration(source);
+        if (vc != null) {
+            openVisualizer(IndicatorAccessor.getDefault().getToolName(source), vc);
+        }
     }
 }

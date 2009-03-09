@@ -166,7 +166,6 @@ done
 #    TEST_CODE=1;
 #fi
 
-#ant -f nbbuild/build.xml commit-validation-junit-format
 if [ -n $WORKSPACE ]; then
     cp -r $NB_ALL/nbbuild/build/test/results $WORKSPACE
 fi

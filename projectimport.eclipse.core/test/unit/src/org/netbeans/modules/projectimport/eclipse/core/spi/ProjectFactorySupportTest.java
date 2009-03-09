@@ -62,21 +62,29 @@ import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterTestCase;
 import org.netbeans.modules.projectimport.eclipse.core.Workspace;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.test.MockLookup;
 
 public class ProjectFactorySupportTest extends NbTestCase {
     
     public ProjectFactorySupportTest(String testName) {
         super(testName);
-    }            
+    }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        MockLookup.setInstances(new Repository(FileUtil.createMemoryFileSystem())); // otherwise have problems parsing copylibstask lib definition
+        MockLookup.setInstances();
+        FileObject reg = FileUtil.getConfigFile("Services/AntBasedProjectTypes/org-netbeans-modules-java-j2seproject.instance");
+        assertNotNull("j2seproject definition is registered", reg);
+        Object abpt = reg.getAttribute("instanceCreate");
+        MockLookup.setInstances(abpt);
+        FileObject offending = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries/CopyLibs.xml");
+        if (offending != null) {
+            offending.delete();
+        }
     }
 
     private static EclipseProject getTestableProject(int version, File proj) throws IOException {

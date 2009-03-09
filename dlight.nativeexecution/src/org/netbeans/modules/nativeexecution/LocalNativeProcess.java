@@ -38,46 +38,129 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.Arrays;
+import java.net.ConnectException;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.support.Logger;
+import org.openide.util.Utilities;
 
-/**
- *
- */
 public final class LocalNativeProcess extends AbstractNativeProcess {
 
-    private static final Runtime rt = Runtime.getRuntime();
+    private final static Map<String, String> userEnv;
+    private final static String shell;
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
     private final Process process;
 
+
+    static {
+        ExecutionEnvironment execEnv = new ExecutionEnvironment();
+        String sh = null;
+
+        try {
+            sh = HostInfoUtils.getShell(execEnv);
+        } catch (ConnectException ex) {
+        }
+
+        shell = sh;
+
+        Map<String, String> env = new HashMap<String, String>();
+        ProcessBuilder pb = new ProcessBuilder(shell); // NOI18N
+
+        if (Utilities.isWindows()) {
+            if (shell == null) {
+                env = new TreeMap<String, String>(new Comparator<String>() {
+
+                    public int compare(String o1, String o2) {
+                        return o1.compareToIgnoreCase(o2);
+                    }
+                });
+                env.putAll(pb.environment());
+            } else {
+                try {
+                    Process p = new ProcessBuilder(shell, "-c", "/bin/env").start();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    String s;
+                    while (true) {
+                        s = br.readLine();
+                        if (s == null) {
+                            break;
+                        }
+                        int eidx = s.indexOf('=');
+                        env.put(s.substring(0, eidx), s.substring(eidx + 1));
+                    }
+                    try {
+                        p.waitFor();
+                    } catch (InterruptedException ex) {
+                    }
+                } catch (IOException ex) {
+                }
+            }
+        } else {
+            env.putAll(pb.environment());
+        }
+
+        userEnv = env;
+    }
+
     public LocalNativeProcess(NativeProcessInfo info) throws IOException {
         super(info);
-        
-        final String commandLine = info.getCommandLine(true);
+
         final String workingDirectory = info.getWorkingDirectory(true);
         final File wdir =
                 workingDirectory == null ? null : new File(workingDirectory);
 
-        synchronized (rt) {
-            ProcessBuilder pb = new ProcessBuilder(Arrays.asList(
-                    "/bin/sh", "-c", // NOI18N
-                    "/bin/echo $$ && exec " + commandLine)); // NOI18N
+        final ProcessBuilder pb;
+        final Map<String, String> env = info.getEnvVariables(userEnv);
 
-            pb.environment().putAll(info.getEnvVariables(true));
-            pb.directory(wdir);
+        if (Utilities.isWindows()) {
+            if (shell != null) {
+                String commandLine = info.getCommandLine().replaceAll("\\\\", "/"); //NOI18N
+                pb = new ProcessBuilder(shell, "-c", // NOI18N
+                        "/bin/echo $$ && PATH=${PATH_} exec " + commandLine); // NOI18N
+                env.put("PATH_", env.get("PATH")); //NOI18N
+            } else {
+                String[] cmd = info.getCommand();
+                if (wdir != null) {
+                    cmd[0] = wdir.getAbsolutePath() + File.separator + cmd[0];
+                }
+                pb = new ProcessBuilder(cmd);
+            }
+        } else {
+            pb = new ProcessBuilder(shell, "-c", // NOI18N
+                    "/bin/echo $$ && exec " + info.getCommandLine()); // NOI18N
+        }
 
-            process = pb.start();
+        pb.environment().putAll(env);
+        pb.directory(wdir);
 
-            processOutput = process.getInputStream();
-            processError = process.getErrorStream();
-            processInput = process.getOutputStream();
+        Process pr = null;
 
+        try {
+            pr = pb.start();
+        } catch (IOException ex) {
+            Logger.getInstance().warning(ex.getMessage());
+            throw ex;
+        }
 
+        process = pr;
+
+        processOutput = process.getInputStream();
+        processError = process.getErrorStream();
+        processInput = process.getOutputStream();
+
+        if (shell != null) {
             readPID(processOutput);
         }
     }
@@ -99,10 +182,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     public final int waitResult() throws InterruptedException {
-        int result = process.waitFor();
-//        // TODO: How to wait for all buffers?
-        Thread.yield();
-        return result;
+        return process.waitFor();
     }
 
     @Override

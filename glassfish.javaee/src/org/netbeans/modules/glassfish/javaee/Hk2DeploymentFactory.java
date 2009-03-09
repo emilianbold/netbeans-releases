@@ -56,13 +56,13 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
 
     private static Hk2DeploymentFactory preludeInstance;
     private static Hk2DeploymentFactory ee6Instance;
-    private String uriFragment;
+    private String[] uriFragments;
     private String version;
     private String displayName;
     private ServerUtilities su;
 
-    private Hk2DeploymentFactory(String uriFragment, String version, String displayName) {
-        this.uriFragment = uriFragment;
+    private Hk2DeploymentFactory(String[] uriFragments, String version, String displayName) {
+        this.uriFragments = uriFragments;
         this.version = version;
         this.displayName = displayName;
     }
@@ -79,7 +79,17 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
     public static synchronized DeploymentFactory createPrelude() {
         if (preludeInstance == null) {
             // TODO - find way to get uri fragment from GlassfishInstanceProvider
-            preludeInstance = new Hk2DeploymentFactory("deployer:gfv3:", "0.1",
+            //ServerUtilities t = ServerUtilities.getEe6Utilities();
+            String[] allowed;
+            String v3Root = System.getProperty("org.glassfish.v3ee6.installRoot");
+            if ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures")) ||
+                (null != v3Root && v3Root.trim().length() > 0) ) {
+                // pick up v3 Prelude and v3 instances and treat themn like Prelude
+                allowed = new String[] { "deployer:gfv3:" };
+            } else {
+                allowed = new String[] { "deployer:gfv3:", "deployer:gfv3ee6:" };
+            }
+            preludeInstance = new Hk2DeploymentFactory(allowed, "0.1",
                     NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_PreludeDisplayName"));
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(preludeInstance);
         }
@@ -91,10 +101,16 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
      * @return
      */
     public static synchronized DeploymentFactory createEe6() {
-        if (ee6Instance == null) {
-            ee6Instance = new Hk2DeploymentFactory("deployer:gfv3ee6:", "0.2",
-                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_DisplayName"));
-            DeploymentFactoryManager.getInstance().registerDeploymentFactory(ee6Instance);
+        //ServerUtilities t = ServerUtilities.getEe6Utilities();
+        String v3Root = System.getProperty("org.glassfish.v3ee6.installRoot");
+        if ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures")) ||
+            (null != v3Root && v3Root.trim().length() > 0) ) {
+            if (ee6Instance == null) {
+                ee6Instance = new Hk2DeploymentFactory(new String[]
+                    { "deployer:gfv3ee6:" }, "0.2",
+                        NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_DisplayName"));
+                DeploymentFactoryManager.getInstance().registerDeploymentFactory(ee6Instance);
+            }
         }
         return ee6Instance;
     }
@@ -110,8 +126,10 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         }
         
         if(uri.startsWith("[")) {//NOI18N
-            if (uri.indexOf(uriFragment)!=-1) {
-                return true;
+            for (String uriFragment : uriFragments) {
+                if (uri.indexOf(uriFragment)!=-1) {
+                    return true;
+                }
             }
         }
 

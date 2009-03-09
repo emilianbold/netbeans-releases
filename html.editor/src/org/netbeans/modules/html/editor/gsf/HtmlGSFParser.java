@@ -39,6 +39,7 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;

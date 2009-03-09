@@ -216,6 +216,18 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
+    /**
+     * Used to synchronize access to ui log files to avoid wrtiting to/deleting/renaming file
+     * which is being parsed in another thread.
+     */
+    private static final Object UIGESTURE_LOG_LOCK = new Object();
+
+    /**
+     * Used to synchronize access to metrics log files to avoid wrtiting to/deleting/renaming file
+     * which is being parsed in another thread.
+     */
+    private static final Object METRICS_LOG_LOCK = new Object();
+
     private static enum DataType {
         DATA_UIGESTURE,
         DATA_METRICS
@@ -404,7 +416,9 @@ public class Installer extends ModuleInstall implements Runnable {
 
     static void writeOut(LogRecord r) {
         try {
-            LogRecords.write(logStream(), r);
+            synchronized (UIGESTURE_LOG_LOCK) {
+                LogRecords.write(logStream(), r);
+            }
             if (logsSize >= UIHandler.MAX_LOGS) {
                 if(preferencesWritable) {
                     prefs.putInt("count", UIHandler.MAX_LOGS);
@@ -418,12 +432,14 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
                     RP.post(new Auto()).waitFinished();
                 }
-                File f = logFile(0);
-                File f1 = logFile(1);
-                if (f1.exists()) {
-                    f1.delete();
+                synchronized (UIGESTURE_LOG_LOCK) {
+                    File f = logFile(0);
+                    File f1 = logFile(1);
+                    if (f1.exists()) {
+                        f1.delete();
+                    }
+                    f.renameTo(f1);
                 }
-                f.renameTo(f1);
                 logsSize = 0;
             } else {
                 logsSize++;
@@ -432,23 +448,25 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
             if ((logsSize % 100) == 0) {
-                //This is fallback to avoid growing log file over any limit.
-                File f = logFile(0);
-                File f1 = logFile(1);
-                if (f.exists() && (f.length() > UIHandler.MAX_LOGS_SIZE)) {
-                    LOG.log(Level.INFO, "UIGesture Collector log file size is over limit. It will be deleted."); // NOI18N
-                    LOG.log(Level.INFO, "Log file:" + f + " Size:" + f.length() + " Bytes"); // NOI18N
-                    closeLogStream();
-                    logsSize = 0;
-                    if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
-                        prefs.putInt("count", logsSize);
+                synchronized (UIGESTURE_LOG_LOCK) {
+                    //This is fallback to avoid growing log file over any limit.
+                    File f = logFile(0);
+                    File f1 = logFile(1);
+                    if (f.exists() && (f.length() > UIHandler.MAX_LOGS_SIZE)) {
+                        LOG.log(Level.INFO, "UIGesture Collector log file size is over limit. It will be deleted."); // NOI18N
+                        LOG.log(Level.INFO, "Log file:" + f + " Size:" + f.length() + " Bytes"); // NOI18N
+                        closeLogStream();
+                        logsSize = 0;
+                        if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
+                            prefs.putInt("count", logsSize);
+                        }
+                        f.delete();
                     }
-                    f.delete();
-                }
-                if (f1.exists() && (f1.length() > UIHandler.MAX_LOGS_SIZE)) {
-                    LOG.log(Level.INFO, "UIGesture Collector backup log file size is over limit. It will be deleted."); // NOI18N
-                    LOG.log(Level.INFO, "Log file:" + f1 + " Size:" + f1.length() + " Bytes"); // NOI18N
-                    f1.delete();
+                    if (f1.exists() && (f1.length() > UIHandler.MAX_LOGS_SIZE)) {
+                        LOG.log(Level.INFO, "UIGesture Collector backup log file size is over limit. It will be deleted."); // NOI18N
+                        LOG.log(Level.INFO, "Log file:" + f1 + " Size:" + f1.length() + " Bytes"); // NOI18N
+                        f1.delete();
+                    }
                 }
             }
         } catch (IOException ex) {
@@ -474,43 +492,47 @@ public class Installer extends ModuleInstall implements Runnable {
 
     static void writeOutMetrics (LogRecord r) {
         try {
-            LogRecords.write(logStreamMetrics(), r);
+            synchronized (METRICS_LOG_LOCK) {
+                LogRecords.write(logStreamMetrics(), r);
+            }
             logsSizeMetrics++;
             if (preferencesWritable) {
                 prefs.putInt("countMetrics", logsSizeMetrics);
             }
             if (logsSizeMetrics >= MetricsHandler.MAX_LOGS) {
-                MetricsHandler.waitFlushed();
-                closeLogStreamMetrics();
-                File f = logFileMetrics(0);
-                File f1 = logFileMetrics(1);
-                if (f1.exists()) {
-                    if (logMetricsUploadFailed) {
-                        //If last metrics upload failed first check size of backup file
-                        if (f1.length() > MetricsHandler.MAX_LOGS_SIZE) {
-                            //Size is over limit delete file
+                synchronized (METRICS_LOG_LOCK) {
+                    MetricsHandler.waitFlushed();
+                    closeLogStreamMetrics();
+                    File f = logFileMetrics(0);
+                    File f1 = logFileMetrics(1);
+                    if (f1.exists()) {
+                        if (logMetricsUploadFailed) {
+                            //If last metrics upload failed first check size of backup file
+                            if (f1.length() > MetricsHandler.MAX_LOGS_SIZE) {
+                                //Size is over limit delete file
+                                f1.delete();
+                                if (!f.renameTo(f1)) {
+                                    LOG.log(Level.INFO, "Failed to rename file:" + f + " to:" + f1); // NOI18N
+                                }
+                            } else {
+                                //Size is below limit, append data
+                                appendFile(f, f1);
+                            }
+                        } else {
                             f1.delete();
                             if (!f.renameTo(f1)) {
                                 LOG.log(Level.INFO, "Failed to rename file:" + f + " to:" + f1); // NOI18N
                             }
-                        } else {
-                            //Size is below limit, append data
-                            appendFile(f, f1);
                         }
                     } else {
-                        f1.delete();
                         if (!f.renameTo(f1)) {
                             LOG.log(Level.INFO, "Failed to rename file:" + f + " to:" + f1); // NOI18N
                         }
                     }
-                } else {
-                    if (!f.renameTo(f1)) {
-                        LOG.log(Level.INFO, "Failed to rename file:" + f + " to:" + f1); // NOI18N
+                    logsSizeMetrics = 0;
+                    if (preferencesWritable) {
+                        prefs.putInt("countMetrics", logsSizeMetrics);
                     }
-                }
-                logsSizeMetrics = 0;
-                if (preferencesWritable) {
-                    prefs.putInt("countMetrics", logsSizeMetrics);
                 }
                 //Task to upload metrics data
                 class Auto implements Runnable {
@@ -518,7 +540,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         displaySummary("METRICS_URL", true, true, true, DataType.DATA_METRICS);
                     }
                 }
-                //Will be enabled as soon as server side will be adjusted to handle metrics data
+                //Must be performed out of lock because it calls getLogsMetrics
                 RP.post(new Auto()).waitFinished();
             }
         } catch (IOException ex) {
@@ -631,38 +653,54 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     static List<LogRecord> getLogs() {
-        UIHandler.waitFlushed();
+        synchronized (UIGESTURE_LOG_LOCK) {
+            UIHandler.waitFlushed();
 
-        File f = logFile(0);
-        if (f == null || !f.exists()) {
-            return new ArrayList<LogRecord>();
-        }
-        closeLogStream();
+            File f = logFile(0);
+            if (f == null || !f.exists()) {
+                return new ArrayList<LogRecord>();
+            }
+            closeLogStream();
 
-        class H extends Handler {
-            List<LogRecord> logs = new LinkedList<LogRecord>();
+            class H extends Handler {
+                List<LogRecord> logs = new LinkedList<LogRecord>();
 
-            public void publish(LogRecord r) {
-                logs.add(r);
-                if (logs.size() > UIHandler.MAX_LOGS) {
-                    logs.remove(0);
+                public void publish(LogRecord r) {
+                    logs.add(r);
+                    if (logs.size() > UIHandler.MAX_LOGS) {
+                        logs.remove(0);
+                    }
+                }
+
+                public void flush() {
+                }
+
+                public void close() throws SecurityException {
                 }
             }
+            H hndlr = new H();
 
-            public void flush() {
+
+            InputStream is = null;
+            File f1 = logFile(1);
+            if (logsSize < UIHandler.MAX_LOGS && f1 != null && f1.exists()) {
+                try {
+                    is = new FileInputStream(f1);
+                    LogRecords.scan(is, hndlr);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    try {
+                        if (is != null) {
+                            is.close();
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
-
-            public void close() throws SecurityException {
-            }
-        }
-        H hndlr = new H();
-
-
-        InputStream is = null;
-        File f1 = logFile(1);
-        if (logsSize < UIHandler.MAX_LOGS && f1 != null && f1.exists()) {
             try {
-                is = new FileInputStream(f1);
+                is = new FileInputStream(f);
                 LogRecords.scan(is, hndlr);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -675,76 +713,49 @@ public class Installer extends ModuleInstall implements Runnable {
                     Exceptions.printStackTrace(ex);
                 }
             }
+            return hndlr.logs;
         }
-        try {
-            is = new FileInputStream(f);
-            LogRecords.scan(is, hndlr);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        return hndlr.logs;
     }
 
     public static List<LogRecord> getLogsMetrics() {
+        synchronized (METRICS_LOG_LOCK) {
         
-        class H extends Handler {
-            List<LogRecord> logs = new LinkedList<LogRecord>();
+            class H extends Handler {
+                List<LogRecord> logs = new LinkedList<LogRecord>();
 
-            public void publish(LogRecord r) {
-                logs.add(r);
+                public void publish(LogRecord r) {
+                    logs.add(r);
+                }
+
+                public void flush() {
+                }
+
+                public void close() throws SecurityException {
+                }
             }
+            H hndlr = new H();
 
-            public void flush() {
-            }
-
-            public void close() throws SecurityException {
-            }
-        }
-        H hndlr = new H();
-
-        InputStream is = null;
-        File f1 = logFileMetrics(1);
-        if ((f1 != null) && f1.exists()) {
-            try {
-                is = new FileInputStream(f1);
-                LogRecords.scan(is, hndlr);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
+            InputStream is = null;
+            File f1 = logFileMetrics(1);
+            if ((f1 != null) && f1.exists()) {
                 try {
-                    if (is != null) {
-                        is.close();
-                    }
+                    is = new FileInputStream(f1);
+                    LogRecords.scan(is, hndlr);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
+                } finally {
+                    try {
+                        if (is != null) {
+                            is.close();
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
+            
+            return hndlr.logs;
         }
-        /*try {
-            is = new FileInputStream(f);
-            LogRecords.scan(is, hndlr);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }*/
-
-        return hndlr.logs;
     }
 
     private static File logsDirectory(){

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -920,10 +920,16 @@ public class WizardDescriptor extends DialogDescriptor {
                 autoWizardStyle = getBooleanProperty((JComponent) c, PROP_AUTO_WIZARD_STYLE);
 
                 if (autoWizardStyle) {
+                    String overlayImageName = NbBundle.getMessage(WizardDescriptor.class, "STRING_WizardOverlayImage"); //NOI18N
+                    boolean isOverlayImage = overlayImageName.length() > 0 && !Boolean.getBoolean("netbeans.wizard.overlayimage.hide") //NOI18N
+                        || null != getProperty("OverlayImageName"); //NOI18N
+                    if( isOverlayImage && null == getProperty("OverlayImageName") ) //NOI18N
+                        putProperty("OverlayImageName", overlayImageName); //NOI18N
                     wizardPanel = new WizardPanel(
                             getBooleanProperty((JComponent) c, PROP_CONTENT_DISPLAYED),
                             getBooleanProperty((JComponent) c, PROP_HELP_DISPLAYED),
-                            getBooleanProperty((JComponent) c, PROP_CONTENT_NUMBERED), getLeftDimension((JComponent) c)
+                            getBooleanProperty((JComponent) c, PROP_CONTENT_NUMBERED), getLeftDimension((JComponent) c),
+                            isOverlayImage
                         );
                     initBundleProperties();
                 }
@@ -1123,6 +1129,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 wizardPanel.getRootPane ().registerKeyboardAction (escapeActionListener, "Escape",
                     KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
             }
+            wizardPanel.setProgressComponent (null, null);
         }
 
         waitingComponent.setCursor(null);
@@ -2163,6 +2170,8 @@ public class WizardDescriptor extends DialogDescriptor {
         /** true if default image is used */
         boolean isDefault = false;
 
+        private final boolean showDefaultImage;
+
         /** true if loading of image is in progress, false otherwise */
         boolean loadPending = false;
         boolean north = true;
@@ -2173,7 +2182,8 @@ public class WizardDescriptor extends DialogDescriptor {
         /** Constrcuts panel with given image on background.
          * @param im background image, null means default image
          */
-        public ImagedPanel(Image im) {
+        public ImagedPanel(Image im, boolean showDefaultImage) {
+            this.showDefaultImage = showDefaultImage;
             setImage(im);
             setLayout(new BorderLayout());
             setOpaque(true);
@@ -2182,8 +2192,10 @@ public class WizardDescriptor extends DialogDescriptor {
         /** Overriden to paint backround image */
         @Override
         protected void paintComponent(Graphics graphics) {
-            graphics.setColor(getBackground());
-            graphics.fillRect(0, 0, getWidth(), getHeight());
+            if( showDefaultImage ) {
+                graphics.setColor(getBackground());
+                graphics.fillRect(0, 0, getWidth(), getHeight());
+            }
 
             if (image != null) {
                 graphics.drawImage(image, 0, north ? 0 : (getHeight() - image.getHeight(null)), this);
@@ -2209,7 +2221,9 @@ public class WizardDescriptor extends DialogDescriptor {
             }
 
             if (!isDefault) {
-                loadImage(getDefaultImage());
+                if( showDefaultImage ) {
+                    loadImage(getDefaultImage());
+                }
                 isDefault = true;
             }
         }
@@ -2440,21 +2454,24 @@ public class WizardDescriptor extends DialogDescriptor {
          * @param helpDisplayed whether help will be displayed in the left pane
          * @param contentNumbered whether content will be numbered
          * @param leftDimension dimension of content or help pane
+         * @param isOverlayImage True if overlay/watermark image will be painted
+         * over the whole wizard dialog window
          */
         public WizardPanel(
-            boolean contentDisplayed, boolean helpDispalyed, boolean contentNumbered, Dimension leftDimension
+            boolean contentDisplayed, boolean helpDispalyed, boolean contentNumbered, Dimension leftDimension, boolean isOverlayImage
         ) {
             super(new BorderLayout());
-            initComponents(contentDisplayed, helpDispalyed, contentNumbered, leftDimension);
+            initComponents(contentDisplayed, helpDispalyed, contentNumbered, leftDimension, isOverlayImage);
             setOpaque(false);
             resetPreferredSize();
         }
 
         private void initComponents(
-            boolean contentDisplayed, boolean helpDisplayed, boolean contentNumbered, Dimension leftDimension
+            boolean contentDisplayed, boolean helpDisplayed, boolean contentNumbered, Dimension leftDimension,
+            boolean isOverlayImage
         ) {
             if (contentDisplayed) {
-                createContentPanel(contentNumbered, leftDimension);
+                createContentPanel(contentNumbered, leftDimension, isOverlayImage);
 
                 if (!helpDisplayed) {
                     add(contentPanel, BorderLayout.WEST);
@@ -2581,25 +2598,30 @@ public class WizardDescriptor extends DialogDescriptor {
         }
 
         private void setProgressComponent (JComponent progressComp, final JLabel progressLabel) {
-            if (progressLabel != null) {
-                progressLabel.setText (PROGRESS_BAR_DISPLAY_NAME);
-                progressLabel.addPropertyChangeListener ("text", new PropertyChangeListener () { // NOI18N
-                    public void propertyChange (PropertyChangeEvent evt) {
-                        progressLabel.putClientProperty (JComponent.TOOL_TIP_TEXT_KEY, evt.getNewValue ().toString ());
-                    }
-                });
-                progressLabel.setToolTipText (PROGRESS_BAR_DISPLAY_NAME);
-                progressBarPanel.add (progressLabel, BorderLayout.NORTH);
+            if (progressComp == null) {
+                progressBarPanel.removeAll ();
+                progressBarPanel.setVisible (false);
+            } else {
+                if (progressLabel != null) {
+                    progressLabel.setText (PROGRESS_BAR_DISPLAY_NAME);
+                    progressLabel.addPropertyChangeListener ("text", new PropertyChangeListener () { // NOI18N
+                        public void propertyChange (PropertyChangeEvent evt) {
+                            progressLabel.putClientProperty (JComponent.TOOL_TIP_TEXT_KEY, evt.getNewValue ().toString ());
+                        }
+                    });
+                    progressLabel.setToolTipText (PROGRESS_BAR_DISPLAY_NAME);
+                    progressBarPanel.add (progressLabel, BorderLayout.NORTH);
+                }
+                progressBarPanel.add (progressComp, BorderLayout.CENTER);
+                progressBarPanel.setVisible (true);
             }
-            progressBarPanel.add (progressComp, BorderLayout.CENTER);
-            progressBarPanel.setVisible (true);
         }
 
         /** Creates content panel.
          * @param contentNumbered <CODE>boolean</CODE> whether content will be numbered
          * @param leftDimension <CODE>Dimension</CODE> dimension of content pane
          */
-        private void createContentPanel(boolean contentNumbered, Dimension leftDimension) {
+        private void createContentPanel(boolean contentNumbered, Dimension leftDimension, boolean  isOverlayImage) {
             contentList = new JList();
             cellRenderer = new WrappedCellRenderer(contentNumbered, leftDimension.width);
             cellRenderer.setOpaque(false);
@@ -2625,7 +2647,7 @@ public class WizardDescriptor extends DialogDescriptor {
             contentLabelPanel.setOpaque(false);
             contentLabelPanel.add(label, BorderLayout.NORTH);
 
-            contentPanel = new ImagedPanel(null);
+            contentPanel = new ImagedPanel(null, !isOverlayImage);
             contentPanel.add(contentLabelPanel, BorderLayout.NORTH);
             contentPanel.add(scroll, BorderLayout.CENTER);
 

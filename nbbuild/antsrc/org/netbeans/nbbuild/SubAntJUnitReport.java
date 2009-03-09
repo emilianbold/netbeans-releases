@@ -92,7 +92,7 @@ public class SubAntJUnitReport extends Task {
             Ant ant = new Ant(this);
             ant.init();
             ant.setTarget(targetToRun);
-            ant.setDir(dir);
+            ant.setDir(dir); // XXX Ant 1.8.0 (Ant #30569): ant.setUseNativeBasedir(true);
             final StringBuilder errors = new StringBuilder();
             BuildListener listener = new BuildListener() {
                 String task = null;
