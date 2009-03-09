@@ -332,6 +332,8 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.nbheaven.sqe.core.maven</friend>
+                <!-- a temporary experimental module-->
+                <friend>org.netbeans.modules.maven.maven.checkstyle.bridge</friend>
                 <friend>org.netbeans.modules.hudson.maven</friend>
                 <friend>org.netbeans.modules.jbi.fuji.support</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
