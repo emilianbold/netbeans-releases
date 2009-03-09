@@ -241,7 +241,7 @@ public class ChatTopComponent extends TopComponent {
 
     public void setActive(String name) {
         ChatNotifications.getDefault().removeGroup(name);
-        int indexOfTab = chats.indexOfTab(name);
+        int indexOfTab = chats.indexOfTab(name+"    ");
         if (indexOfTab < 0) {
             MultiUserChat muc = kec.getChat(name);
             if (muc != null) {
