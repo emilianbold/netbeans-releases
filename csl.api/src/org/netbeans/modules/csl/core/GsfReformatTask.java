@@ -43,6 +43,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 
 
 public class GsfReformatTask implements ReformatTask {
@@ -92,8 +93,12 @@ public class GsfReformatTask implements ReformatTask {
                         new UserTask () {
                             public void run (ResultIterator resultIterator) throws ParseException {
                                 if (resultIterator.getSnapshot().getMimeType().equals(mimeType)) {
-                                    ParserResult parserResult = (ParserResult) resultIterator.getParserResult();
-                                    f.reformat (context, parserResult);
+                                    Parser.Result parserResult = (ParserResult) resultIterator.getParserResult();
+                                    if(!(parserResult instanceof ParserResult)) {
+                                        return ;
+                                    }
+
+                                    f.reformat (context, (ParserResult)parserResult);
                                 }
 
                                 for(Embedding e : resultIterator.getEmbeddings()) {

@@ -294,6 +294,9 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
                 public @Override void run(ResultIterator resultIterator) throws ParseException {
                     Language language = LanguageRegistry.getInstance().getLanguageByMimeType(resultIterator.getSnapshot().getMimeType());
                     if (language != null) {
+                        if(!(resultIterator.getParserResult() instanceof ParserResult)) {
+                            return ;
+                        }
                         ParserResult r = (ParserResult) resultIterator.getParserResult();
                         List<? extends Error> errors = r.getDiagnostics();
                         List<ErrorDescription> desc = new ArrayList<ErrorDescription>();

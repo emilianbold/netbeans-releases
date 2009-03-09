@@ -57,6 +57,7 @@ import org.netbeans.modules.csl.editor.completion.GsfCompletionProvider;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.Exceptions;
 
 /**
@@ -113,8 +114,11 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         if (isCancelled()) {
             return;
         }
-
-        ParserResult parserResult = (ParserResult) resultIterator.getParserResult (startOffset);
+        Parser.Result result = resultIterator.getParserResult (startOffset);
+        if(!(result instanceof ParserResult)) {
+            return ;
+        }
+        ParserResult parserResult = (ParserResult) result;
         Snapshot snapshot = parserResult.getSnapshot ();
         CodeCompletionHandler completer = GsfCompletionProvider.getCompletable (snapshot.getSource ().getDocument (true),  startOffset);
             

@@ -62,6 +62,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -194,8 +195,11 @@ public final class SelectCodeElementAction extends BaseAction {
         }
 
         public void run (ResultIterator resultIterator) throws ParseException {
-            ParserResult parserResult = (ParserResult) resultIterator.getParserResult (target.getCaretPosition ());
-            selectionInfos = initSelectionPath(target, parserResult);
+            Parser.Result parserResult = resultIterator.getParserResult (target.getCaretPosition ());
+            if(!(parserResult instanceof ParserResult)) {
+                return ;
+            }
+            selectionInfos = initSelectionPath(target, (ParserResult)parserResult);
         }
         
         private KeystrokeHandler getBracketCompletion(Document doc, int offset) {

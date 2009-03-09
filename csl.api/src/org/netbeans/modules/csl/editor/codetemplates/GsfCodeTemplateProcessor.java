@@ -56,6 +56,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.Exceptions;
 
 
@@ -161,8 +162,11 @@ public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
                         Collections.<Source> singleton (js),
                         new UserTask () {
                             public void run (ResultIterator resultIterator) throws IOException, ParseException {
-                                ParserResult parserResult = (ParserResult) resultIterator.getParserResult (c.getCaretPosition ());
-                                cInfo = parserResult;
+                                Parser.Result parserResult = resultIterator.getParserResult (c.getCaretPosition ());
+                                if(!(parserResult instanceof ParserResult)) {
+                                    return ;
+                                }
+                                cInfo = (ParserResult)parserResult;
                                 snapshot = parserResult.getSnapshot ();
                             }
                         }
