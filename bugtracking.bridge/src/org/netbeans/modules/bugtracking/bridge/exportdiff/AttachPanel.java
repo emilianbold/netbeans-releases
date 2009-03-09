@@ -68,12 +68,14 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
     private QuickSearchComboBar qs;
     private PropertyChangeListener issueListener;
     
-    public AttachPanel(Repository[] repos, Repository toSelect, PropertyChangeListener issueListener) {
+    public AttachPanel(PropertyChangeListener issueListener) {
         initComponents();
         this.issueListener = issueListener;
         qs = new QuickSearchComboBar(this);
         issuePanel.add(qs, BorderLayout.NORTH);
-        
+    }
+
+    void init(Repository[] repos, Repository toSelect) {
         repositoryComboBox.setModel(new DefaultComboBoxModel(repos != null ? repos : new Repository[0]));
         repositoryComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -97,8 +99,7 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
                 qs.setRepository(repo);
             }
         }
-        enableFields();        
-        
+        enableFields();
     }
 
     Issue getIssue() {

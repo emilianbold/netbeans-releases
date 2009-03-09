@@ -94,23 +94,24 @@ public class AttachIssueProvider extends ExportDiffSupport.ExportDiffProvider im
     @Override
     public JComponent getComponent() {
         assert files != null;
-        if(panel == null) {
-            Repository[] repos = BugtrackingUtil.getKnownRepositories();
-            Repository repoToSelect = null;
-            if(files.length > 0) {
-                for (File file : files) {
-                    repoToSelect = support.getRepository(file);
-                    if(repoToSelect == null) {
-                        LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
-                    } else {
-                        LOG.log(Level.FINE, " found repository " + repoToSelect + " for " + file);  // NOI18N
-                        break;
-                    }
-                }
-            } 
-            panel = new AttachPanel(repos, repoToSelect, this);
+        if(panel == null) { // HOTFIX XXX
+            panel = new AttachPanel(this);
             panel.descriptionTextField.getDocument().addDocumentListener(this);
         }
+        Repository[] repos = BugtrackingUtil.getKnownRepositories();
+        Repository repoToSelect = null;
+        if(files.length > 0) {
+            for (File file : files) {
+                repoToSelect = support.getRepository(file);
+                if(repoToSelect == null) {
+                    LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
+                } else {
+                    LOG.log(Level.FINE, " found repository " + repoToSelect + " for " + file);  // NOI18N
+                    break;
+                }
+            }
+        }
+        panel.init(repos, repoToSelect);
         return panel;
     }
 
