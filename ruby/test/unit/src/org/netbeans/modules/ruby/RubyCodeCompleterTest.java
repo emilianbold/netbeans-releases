@@ -315,6 +315,10 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
         checkCompletion("testfiles/constants1.rb", "Fcntl::^O_A");
     }
 
+    FileObject getTestConstantsNonPrefixedClassPath() {
+        return null;
+    }
+
     public void testConstantsFromParentsAreNotOffered() throws Exception {
         // must not offer FALSE from Object
         checkCompletion("testfiles/constants1.rb", "Fcntl::F^");
