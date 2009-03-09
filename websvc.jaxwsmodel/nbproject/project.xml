@@ -257,10 +257,13 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <friend>org.netbeans.modules.websvc.wsitest</friend>
+                <package>org.netbeans.modules.websvc.api.customization.model</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.bindings</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.project</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.project.config</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.wsdlmodel</package>
+                <package>org.netbeans.modules.websvc.api.wseditor</package>
+                <package>org.netbeans.modules.websvc.spi.wseditor</package>
             </friend-packages>
         </data>
     </configuration>

@@ -40,6 +40,8 @@ package org.netbeans.modules.cnd.repository.disk;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -54,6 +56,7 @@ import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
 public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
 
     private static final boolean TRACE = false;
+    private static final Random rnd = new Random();
 
     static {
         //System.setProperty("cnd.repository.files.cache", "4");
@@ -91,8 +94,8 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         strategy.closeUnit(unit);
         assertNoExceptions();
     }
-    private boolean proceed;
-    private volatile int filled;
+    private volatile boolean proceed;
+    private volatile int filled = -1;
     private final Object barrier = new Object();
 
     private void waitBarrier() {
@@ -132,29 +135,42 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         if (TRACE) {
             System.out.printf("\n\ntestMultyThread: %d objects, %d laps, %d reading threads\n\n", objects.length, lapsCount, readingThreadCount);
         }
-
+        final CountDownLatch stopSignal = new CountDownLatch(readingThreadCount);
+        
         Runnable r = new Runnable() {
 
             public void run() {
-                if (TRACE) {
-                    System.out.printf("%s waiting on barrier\n", Thread.currentThread().getName());
-                }
-                waitBarrier();
-                if (TRACE) {
-                    System.out.printf("%s working...\n", Thread.currentThread().getName());
-                }
-                while (proceed) {
-                    try {
-                        int i = random(0, filled);
-                        Persistent read = strategy.read(objects[i].getKey());
-                        assertEquals(objects[i], read);
-                    } catch (Exception e) {
-                        DiagnosticExceptoins.register(e);
-                        break;
+                try {
+                    if (TRACE) {
+                        System.out.printf("%s waiting on barrier\n", Thread.currentThread().getName());
                     }
-                }
-                if (TRACE) {
-                    System.out.printf("%s finished\n", Thread.currentThread().getName());
+                    waitBarrier();
+                    if (TRACE) {
+                        System.out.printf("%s working...\n", Thread.currentThread().getName());
+                    }
+                    while (proceed) {
+                        try {
+                            int last = filled;
+                            // wait until the first object is written
+                            if (last >= 0) {
+                                int i = rnd.nextInt(last+1);
+                                Persistent read = strategy.read(objects[i].getKey());
+                                assertEquals("non equal object for index "+i+": [0-"+ last+"]", objects[i], read);
+                            } else {
+                                if (TRACE) {
+                                    System.out.println("waiting for the first written object");
+                                }
+                            }
+                        } catch (Exception e) {
+                            DiagnosticExceptoins.register(e);
+                            break;
+                        }
+                    }
+                    if (TRACE) {
+                        System.out.printf("%s finished\n", Thread.currentThread().getName());
+                    }
+                } finally {
+                    stopSignal.countDown();
                 }
             }
         };
@@ -169,8 +185,6 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         }
         sleep(1000); // wait threads to start
 
-        notifyBarrier();
-
         for (int lap = 0; lap < lapsCount; lap++) {
             if (TRACE) {
                 System.out.printf("Writing objects: lap %d\n", lap);
@@ -179,12 +193,19 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
                 strategy.write(objects[i].getKey(), objects[i]);
                 if (lap == 0) {
                     filled = i;
+                    if (i == 0) {
+                        notifyBarrier();
+                    }
                     assertNotNull("Read shouldn't return null for an object that has been just written", strategy.read(objects[i].getKey()));
                 }
             }
         }
         proceed = false;
-
+        try {
+            stopSignal.await();
+        } catch (InterruptedException ie) {
+             DiagnosticExceptoins.register(ie);
+        }
         if (TRACE) {
             strategy.printStatistics();
         }
@@ -192,10 +213,6 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
             strategy.closeUnit(units[i]);
         }
         assertNoExceptions();
-    }
-
-    private int random(int from, int to) {
-        return from + (int) ((double) (to - from - 1) * Math.random());
     }
 
     private void write(TestObject object) throws Exception {

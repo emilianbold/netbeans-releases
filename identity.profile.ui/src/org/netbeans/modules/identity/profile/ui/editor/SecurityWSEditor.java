@@ -47,7 +47,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.identity.profile.ui.SecurityView;
 import org.netbeans.modules.identity.profile.ui.WSCSecurityView;
 import org.netbeans.modules.identity.profile.ui.WSPSecurityView;
-import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
+import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.openide.nodes.Node;
 import org.netbeans.modules.identity.profile.ui.MessagePanel;
@@ -65,13 +65,14 @@ import org.netbeans.modules.identity.profile.ui.support.WsdlData;
 public class SecurityWSEditor implements WSEditor {
     private J2eeProjectHelper helper;
     private JPanel iPanel;
+    private JaxWsModel jaxWsModel;
     
     /** Creates a new instance of SecurityWSEditor */
-    public SecurityWSEditor() {
+    public SecurityWSEditor(JaxWsModel jaxWsModel) {
+        this.jaxWsModel = jaxWsModel;
     }
     
-    public JComponent createWSEditorComponent(Node node,
-            JaxWsModel jaxWsModel) {
+    public JComponent createWSEditorComponent(Node node) {
         helper = J2eeProjectHelper.newInstance(node, jaxWsModel);
    
         if (!helper.isAppServerSun()) {
@@ -120,13 +121,13 @@ public class SecurityWSEditor implements WSEditor {
                 "LBL_WSSecurityProviderTitle"); //NOI18N
     }
     
-    public void save(Node node, JaxWsModel jaxWsModel) {
+    public void save(Node node) {
         if (iPanel instanceof SecurityView) {
             ((SecurityView) iPanel).save();
         }
     }
     
-    public void cancel(Node node, JaxWsModel jaxWsModel) {
+    public void cancel(Node node) {
         if (iPanel instanceof SecurityView) {
             ((SecurityView) iPanel).cancel();
         }

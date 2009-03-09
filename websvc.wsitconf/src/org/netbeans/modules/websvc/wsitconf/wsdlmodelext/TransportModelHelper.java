@@ -42,7 +42,6 @@
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.wsitconf.spi.ProjectSpecificTransport;
 import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
 import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
@@ -119,11 +118,11 @@ public class TransportModelHelper {
     /* doesn't set anything in the DD; is used when changing namespaces for policies
      */
     static void enableTCP(Binding b, boolean enable) {
-        enableTCP(null, false, b, null, enable);
+        enableTCP(null, null, null, false, b, null, enable);
     }
     
     // enables/disables TCP in the config wsdl on specified binding
-    public static void enableTCP(Service s, boolean isFromJava, Binding b, Project p, boolean enable) {
+    public static void enableTCP(String name, String serviceName, String implClass, boolean isFromJava, Binding b, Project p, boolean enable) {
         PolicyModelHelper pmh = PolicyModelHelper.getInstance(PolicyModelHelper.getConfigVersion(b));
         All a = pmh.createPolicy(b, false);
         OptimizedTCPTransport tcp = 
@@ -149,7 +148,7 @@ public class TransportModelHelper {
                 if (provider != null) {
                     ProjectSpecificTransport t = provider.getProjectTransportUpdater();
                     if (t != null) {
-                        t.setTCPUrl(s, tomcat);
+                        t.setTCPUrl(name, serviceName, implClass, tomcat);
                     }
                 }
             }

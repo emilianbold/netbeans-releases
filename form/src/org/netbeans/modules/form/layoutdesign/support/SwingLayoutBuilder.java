@@ -166,6 +166,12 @@ public class SwingLayoutBuilder {
         try {
             GroupLayout layout = new GroupLayout(container);
             container.setLayout(layout);
+
+            // Issue 123320
+            for (Component comp : componentIDMap.values()) {
+                container.add(comp);
+            }
+
             GroupLayout.Group[] layoutGroups = new GroupLayout.Group[2];
             // with multiple roots add the highest roots first so the components appear at the top
             for (int i=containerLC.getLayoutRootCount()-1; i >= 0; i--) {

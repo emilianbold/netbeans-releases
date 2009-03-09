@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.cnd.api.utils;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
@@ -47,10 +48,14 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
  */
 public final class RemoteUtils {
 
+    /** TODO: deprecate and remove */
     public static boolean isLocalhost(String hkey) {
-        return CompilerSetManager.LOCALHOST.equals(hkey);
+        //return CompilerSetManager.LOCALHOST.equals(hkey);
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
+        return env.isLocal();
     }
 
+    /** TODO: deprecate and remove */
     public static String getHostName(String hkey) {
         int index = hkey.indexOf('@');
         if (index > -1 ) {

@@ -56,6 +56,8 @@ import antlr.TokenStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -72,6 +74,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
@@ -195,6 +198,8 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             }
         }
 
+        tt.cleanUp();
+
         // apply transformation to result document
         outDoc.putProperty(MACRO_EXPANSION_OFFSET_TRANSFORMER, tt);
         try {
@@ -293,7 +298,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
         if (tt != null) {
             int startIndex = tt.findInIntervalIndex(offset);
-            if (startIndex < tt.intervals.size()) {
+            if (0 <= startIndex && startIndex < tt.intervals.size()) {
                 if (tt.intervals.get(startIndex).inInterval.end == offset) {
                     // use next
                     startIndex++;
@@ -338,6 +343,9 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         StringBuilder sb = new StringBuilder(""); // NOI18N
         int size = tt.intervals.size();
         int startIndex = tt.findInIntervalIndex(startOffset);
+        if (startIndex < 0) {
+            return ""; // NOI18N
+        }
         for(int i = startIndex; i < size; i++) {
             IntervalCorrespondence ic = tt.intervals.get(i);
             if (ic.inInterval.start >= endOffset) {
@@ -363,9 +371,9 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             if (endShift - startShift != 0) {
                 if (ic.macro) {
                     if(startShift == 0 && endShift == ic.outInterval.length()) {
-                        sb.append(ic.macroExpansion);
+                        sb.append(ic.getMacroExpansion());
                     } else {
-                        sb.append(ic.macroExpansion.substring(startShift, endShift));
+                        sb.append(ic.getMacroExpansion().toString().substring(startShift, endShift));
                     }
                 } else if (ic.outInterval.length() != 0) {
                     try {
@@ -776,23 +784,31 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         public Interval inInterval;
         public Interval outInterval;
         boolean macro;
-        String macroExpansion;
+        private CharSequence macroExpansion;
 
         public IntervalCorrespondence(Interval in, Interval out, boolean macro) {
             this(in, out, macro, null);
         }
 
-        public IntervalCorrespondence(Interval in, Interval out, boolean macro, String macroExpansion) {
+        public IntervalCorrespondence(Interval in, Interval out, boolean macro, CharSequence macroExpansion) {
             this.inInterval = in;
             this.outInterval = out;
             this.macro = macro;
             this.macroExpansion = macroExpansion;
+        }
+
+        /**
+         * @return the macroExpansion
+         */
+        public CharSequence getMacroExpansion() {
+            return macroExpansion;
         }
     }
 
     private static class TransformationTable {
 
         private ArrayList<IntervalCorrespondence> intervals = new ArrayList<IntervalCorrespondence>();
+        private Map<CharSequence, CharSequence> cache = new HashMap<CharSequence, CharSequence>();
         private Interval currentIn;
         private Interval currentOut;
         private final long documentVersion;
@@ -803,6 +819,9 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             this.fileVersion = fileVersion;
         }
 
+        public void cleanUp() {
+            cache = null;
+        }
 
         public void setInStart(int start) {
             currentIn = new Interval(start);
@@ -817,9 +836,17 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
 
         public void appendInterval(int inLength, int outLength, boolean macro, String macroExpansion) {
+            assert(cache != null);
+            CharSequence cs = CharSequenceKey.create(macroExpansion);
+            CharSequence cachedCS = cache.get(cs);
+            if(cachedCS != null) {
+                cs = cachedCS;
+            } else {
+                cache.put(cs, cs);
+            }
             currentIn.setLength(inLength);
             currentOut.setLength(outLength);
-            intervals.add(new IntervalCorrespondence(currentIn, currentOut, macro, macroExpansion));
+            intervals.add(new IntervalCorrespondence(currentIn, currentOut, macro, cs));
             setInStart(currentIn.end);
             setOutStart(currentOut.end);
         }
@@ -942,6 +969,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         if (updateTable) {
             synchronized (tt) {
                 expand(doc, file, tt);
+                tt.cleanUp();
             }
         }
         return tt;

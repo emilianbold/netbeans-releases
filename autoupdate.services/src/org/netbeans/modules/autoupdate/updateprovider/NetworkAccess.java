@@ -31,11 +31,15 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
 
@@ -44,6 +48,7 @@ import org.openide.util.RequestProcessor;
  * @author Jirka Rechtacek
  */
 public class NetworkAccess {
+    private static final Logger err = Logger.getLogger(NetworkAccess.class.getName());
 
     private NetworkAccess () {}
     
@@ -73,7 +78,7 @@ public class NetworkAccess {
         }
         
         private void postTask () {
-            final Callable<InputStream> connectTask = createCallableNetwork (url, timeout);
+            final SizedConnection connectTask = createCallableNetwork (url, timeout);
             rpTask = RequestProcessor.getDefault ().post (new Runnable () {
                 public void run () {
                     connect = es.submit (connectTask);
@@ -81,7 +86,7 @@ public class NetworkAccess {
                     try {
                         is = connect.get ();
                         if (connect.isDone ()) {
-                            listener.streamOpened (is);
+                            listener.streamOpened (is, connectTask.getContentLength() );
                         } else if (connect.isCancelled ()) {
                             listener.accessCanceled ();
                         } else {
@@ -101,12 +106,28 @@ public class NetworkAccess {
             rpTask.waitFinished ();
         }
         
-        private Callable<InputStream> createCallableNetwork (final URL url, final int timeout) {
-            return new Callable<InputStream> () {
+        private SizedConnection createCallableNetwork (final URL url, final int timeout) {
+            return new SizedConnection () {
+                private int contentLength = -1;
+
+                public int getContentLength() {
+                    return contentLength;
+                }
+
                 public InputStream call () throws Exception {
                     URLConnection conn = url.openConnection ();
                     conn.setConnectTimeout (timeout);
-                    return new BufferedInputStream (conn.getInputStream ());
+                    InputStream is = conn.getInputStream ();
+                    contentLength = conn.getContentLength();
+                    Map <String, List <String>> map = conn.getHeaderFields();
+                    StringBuilder sb = new StringBuilder("Connection opened for:\n");
+                       sb.append("    Url: " + conn.getURL() + "\n");
+                    for(String field : map.keySet()) {
+                       sb.append("    " + (field==null ? "Status" : field )+ ": " + map.get(field) + "\n");
+                    }
+                    sb.append("\n");
+                    err.log(Level.INFO, sb.toString());
+                    return new BufferedInputStream (is);
                 }
             };
         }
@@ -116,9 +137,11 @@ public class NetworkAccess {
         }
         
     }
-    
+    private interface SizedConnection extends Callable<InputStream> {
+        public int getContentLength();
+    }
     public interface NetworkListener {
-        public void streamOpened (InputStream stream);
+        public void streamOpened (InputStream stream, int contentLength);
         public void accessCanceled ();
         public void accessTimeOut ();
         public void notifyException (Exception x);

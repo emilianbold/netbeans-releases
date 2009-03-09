@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.completion.csm;
 import java.util.Collection;
-import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
@@ -53,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 
 /**
  * completion resolver for the file
@@ -138,7 +138,8 @@ public interface CompletionResolver {
      * specify what to resolve by this resolver
      */
     public void setResolveTypes(int resolveTypes);
-    
+
+    public CsmCompletionQuery.QueryScope setResolveScope(CsmCompletionQuery.QueryScope queryScope);
     /**
      * init resolver before using
      * or reinit

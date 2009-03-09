@@ -41,15 +41,12 @@
 package org.netbeans.modules.mobility.svgcore.options;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListDataListener;
 import org.netbeans.modules.mobility.svgcore.api.snippets.SVGSnippetsProvider;
-import org.netbeans.modules.mobility.svgcore.items.form.SVGSnipetsProviderClassic;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
@@ -58,13 +55,16 @@ import org.openide.util.NbBundle;
 final class SvgcorePanel extends javax.swing.JPanel {
 
     private final SvgcoreOptionsPanelController controller;
-    private String providerName;
+    //private String providerName;
 
     SvgcorePanel(SvgcoreOptionsPanelController controller) {
         this.controller = controller;
         initComponents();
         // TODO listen to changes in form fields and call controller.changed()
-        jComboBox1.setModel(new SnippetsComboModel());
+
+        
+        ComboBoxModel model = new DefaultComboBoxModel(getListSnippets());
+        jComboBox1.setModel(model); 
     }
 
     /** This method is called from within the constructor to
@@ -185,12 +185,12 @@ final class SvgcorePanel extends javax.swing.JPanel {
 
     void load() {
         pathTextField.setText(SvgcoreSettings.getDefault().getExternalEditorPath());
-        providerName = SvgcoreSettings.getDefault().getCurrentSnippet();
+        jComboBox1.setSelectedItem(SvgcoreSettings.getDefault().getCurrentSnippet());
     }
 
     void store() {
         SvgcoreSettings.getDefault().setExternalEditorPath(pathTextField.getText());
-        SvgcoreSettings.getDefault().setCurrentSnippet(providerName);
+        SvgcoreSettings.getDefault().setCurrentSnippet((String) jComboBox1.getSelectedItem());
     }
 
     boolean valid() {
@@ -207,69 +207,77 @@ final class SvgcorePanel extends javax.swing.JPanel {
     private javax.swing.JPanel snippetsPanel;
     // End of variables declaration//GEN-END:variables
 
-    private class SnippetsComboModel implements ComboBoxModel {
+//    private class SnippetsComboModel extends MutableAttrListImpl {
+//
+//        private List<String> snippetsNameList;
+//
+//        public SnippetsComboModel() {
+//            super();
+//            Collection snippets = getListSnippets();
+//            snippetsNameList = new ArrayList(snippets.size());
+//            for (SVGSnippetsProvider provider : getListSnippets()) {
+//                snippetsNameList.add(provider.getName());
+//                if (providerName != null && providerName.equals(provider.getName())) {
+//                    providerName = provider.getName();
+//                }
+//            }
+//
+//        }
+//
+//        @Override
+//        public void setSelectedItem(Object anItem) {
+//            super.setSelectedItem(getName((String) anItem));
+//            providerName = getName((String) anItem);
+//        }
+//
+//        @Override
+//        public Object getSelectedItem() {
+//             if (providerName == null) {
+//                return NbBundle.getMessage(SVGSnipetsProviderClassic.class, "LBL_SNIPPET_DISPLAY_NAME"); //NOI18N
+//            }
+//             System.out.println(getDisplyName(providerName));
+//            return getDisplyName(providerName);
+//        }
+//
+//        @Override
+//        public int getSize() {
+//            return snippetsNameList.size();
+//        }
+//
+//        @Override
+//        public Object getElementAt(int index) {
+//            System.out.println(index);
+//            System.out.println(snippetsNameList.get(index));
+//            return getDisplyName(snippetsNameList.get(index));
+//        }
+//
+//    }
 
-        private List<String> snippetsNameList;
-
-        public SnippetsComboModel() {
-            Collection snippets = getListSnippets();
-            snippetsNameList = new ArrayList(snippets.size());
-            for (SVGSnippetsProvider provider : getListSnippets()) {
-                snippetsNameList.add(provider.getName());
-                if (providerName != null && providerName.equals(provider.getName())) {
-                    providerName = provider.getName();
-                }
-            }
-            
-        }
-
-        public void setSelectedItem(Object anItem) {
-            providerName = getName((String) anItem);
-        }
-
-        public Object getSelectedItem() {
-             if (providerName == null) {
-                return NbBundle.getMessage(SVGSnipetsProviderClassic.class, "LBL_SNIPPET_DISPLAY_NAME"); //NOI18N
-            }
-            return getDisplyName(providerName);
-        }
-
-        public int getSize() {
-            return snippetsNameList.size();
-        }
-
-        public Object getElementAt(int index) {
-           
-            return getDisplyName(snippetsNameList.get(index));
-        }
-
-        public void addListDataListener(ListDataListener l) {
-        }
-
-        public void removeListDataListener(ListDataListener l) {
-        }
-    }
-
-    private static final Collection<? extends SVGSnippetsProvider> getListSnippets() {
+    private static final String[] getListSnippets() {
         Collection<? extends SVGSnippetsProvider> snippetCollection = Lookup.getDefault().lookupAll(SVGSnippetsProvider.class);
-        return snippetCollection;
+        String[] names = new String[(snippetCollection.size())];
+        int i = 0;
+        for (SVGSnippetsProvider provider : snippetCollection) {
+            names[i++] = provider.getDisplayName();
+        }
+        return names;
     }
 
-    private static final String getDisplyName(String providerName) {
-        for (SVGSnippetsProvider provider : getListSnippets()) {
-            if (providerName != null && providerName.equals(provider.getName())) {
-                return provider.getDisplayName();
-            }
-        }
-        return null;
-    }
+//    private static final String getDisplyName(String providerName) {
+//        for (SVGSnippetsProvider provider : getListSnippets()) {
+//            if (providerName != null && providerName.equals(provider.getName())) {
+//                return provider.getDisplayName();
+//            }
+//        }
+//        return null;
+//    }
 
-    private static final String getName(String displayName) {
-        for (SVGSnippetsProvider provider : getListSnippets()) {
-            if (displayName != null && displayName.equals(provider.getDisplayName())) {
-                return provider.getName();
-            }
-        }
-        return null;
-    }
+//    private static final String getName(String displayName) {
+//        for (SVGSnippetsProvider provider : getListSnippets()) {
+//            if (displayName != null && displayName.equals(provider.getDisplayName())) {
+//                return provider.getName();
+//            }
+//        }
+//        return null;
+//    }
 }

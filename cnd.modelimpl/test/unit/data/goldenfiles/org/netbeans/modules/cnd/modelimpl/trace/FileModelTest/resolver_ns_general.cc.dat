@@ -34,7 +34,7 @@ NAMESPACE DEFINITOIN rng [1:1/0-36:2/675] SCOPE: resolver_ns_general.cc
                             RETURNS int TEXT=int  [14:25/254-14:28/257]
                 FIELD PUBLIC cc [16:13/292-16:24/303]  TYPE: rng::C::CC::CCC TEXT=CC::CCC  [16:13/292-16:20/299]  INIT: null  SCOPE: CC 
                 FUNCTION foo [17:13/316-17:23/326] MethodImpl SCOPE: CC 
-                    DEFINITION: null
+                    DEFINITION: foo  [40:5/698-43:6/756]
                     SIGNATURE foo()
                     UNIQUE NAME F:rng::C::CC::foo()
                     PARAMETERS:
@@ -53,8 +53,8 @@ NAMESPACE DEFINITOIN rng [1:1/0-36:2/675] SCOPE: resolver_ns_general.cc
 NAMESPACE DEFINITOIN rng [39:1/678-49:2/831] SCOPE: resolver_ns_general.cc
     FUNCTION DEFINITION foo  [40:5/698-43:6/756] FunctionDefinitionImpl SCOPE: resolver_ns_general.cc
         SIGNATURE foo()
-        UNIQUE NAME f:rng::CC::foo()
-        DECLARATION: null
+        UNIQUE NAME f:rng::C::CC::foo()
+        DECLARATION: foo  [17:13/316-17:23/326]
         PARAMETERS:
         RETURNS int TEXT=int  [40:5/698-40:8/701]
         STATEMENT COMPOUND  [40:19/712-43:6/756] SCOPE: foo 
@@ -113,7 +113,7 @@ NAMESPACE rng (rng)
                             RETURNS int TEXT=int  [14:25/254-14:28/257]
                 FIELD PUBLIC cc [16:13/292-16:24/303]  TYPE: rng::C::CC::CCC TEXT=CC::CCC  [16:13/292-16:20/299]  INIT: null  SCOPE: CC 
                 FUNCTION foo [17:13/316-17:23/326] MethodImpl SCOPE: CC 
-                    DEFINITION: null
+                    DEFINITION: foo  [40:5/698-43:6/756]
                     SIGNATURE foo()
                     UNIQUE NAME F:rng::C::CC::foo()
                     PARAMETERS:

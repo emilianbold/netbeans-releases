@@ -70,6 +70,8 @@ import org.openide.util.Lookup;
 /**
  * This class maintains cache of parser instance, snapshot and nested embeddings
  * for some block of code (or top level source).
+ *
+ * Threading: Instances of SourceCache and Source are synchronized using TaskProcessor.INTERNAL_LOCK
  * 
  * @author Jan Jancura
  */
@@ -97,7 +99,7 @@ public final class SourceCache {
     public void setEmbedding (
         Embedding           embedding
     ) {
-        synchronized (this.source) {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             this.embedding = embedding;
         }
     }
@@ -106,7 +108,7 @@ public final class SourceCache {
 
     public Snapshot getSnapshot () {
         boolean isEmbedding;
-        synchronized (this.source) {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             if (snapshot != null) {
                 return snapshot;
             }
@@ -114,7 +116,7 @@ public final class SourceCache {
         }
 
         final Snapshot _snapshot = createSnapshot (isEmbedding);
-        synchronized (this.source) {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             if (snapshot == null) {
                 snapshot = _snapshot;
             }
@@ -126,7 +128,7 @@ public final class SourceCache {
         assert idHolder != null;
         assert idHolder.length == 1;
         boolean isEmbedding;
-        synchronized (this.source) {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             isEmbedding = embedding != null;
         }
         idHolder[0] = SourceAccessor.getINSTANCE ().getLastEventId (this.source);
@@ -143,15 +145,24 @@ public final class SourceCache {
     private Parser          parser;
     
     public Parser getParser () {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
+            if (parserInitialized) {
+                return parser;
+            }
+        }
         final Snapshot _snapshot = getSnapshot ();
-        synchronized (this.source) {
-            if (!parserInitialized) {
+        Parser _parser = null;
+        Lookup lookup = MimeLookup.getLookup (mimeType);
+        ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
+        if (parserFactory != null) {
+            final Collection<Snapshot> _tmp = Collections.singleton (_snapshot);
+            _parser = parserFactory.createParser (_tmp);
+        }
+
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
+            if (!parserInitialized) {                                                                                
+                parser = _parser;
                 parserInitialized = true;
-                Lookup lookup = MimeLookup.getLookup (mimeType);
-                ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
-                if (parserFactory == null) return null;
-                final Collection<Snapshot> _tmp = Collections.singleton (_snapshot);
-                parser = parserFactory.createParser (_tmp);
             }
             return parser;
         }
@@ -167,7 +178,7 @@ public final class SourceCache {
         Parser _parser = getParser ();
         if (_parser == null) return null;
         boolean _parsed;
-        synchronized (this.source) {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             _parsed = this.parsed;
             this.parsed = true; //Optimizstic update
         }
@@ -185,7 +196,7 @@ public final class SourceCache {
                 parseSuccess = true;
             } finally {
                 if (!parseSuccess) {
-                    synchronized (this.source) {
+                    synchronized (TaskProcessor.INTERNAL_LOCK) {
                         parsed = false;
                     }
                 }
@@ -195,7 +206,7 @@ public final class SourceCache {
     }
     
     public void invalidate () {
-        synchronized (this.source) {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             snapshot = null;
             embedding = null;
             parsed = false;
@@ -207,7 +218,7 @@ public final class SourceCache {
     }
 
     public void invalidate (final Snapshot preRendered) {
-        synchronized (this.source) {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             invalidate();
             snapshot = preRendered;
         }
@@ -221,7 +232,7 @@ public final class SourceCache {
                             embeddingProviderToEmbedings = new HashMap<EmbeddingProvider,List<Embedding>> ();
     
     public Iterable<Embedding> getAllEmbeddings () {
-        synchronized (this.source) {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             if (this.embeddings == null) {
                 this.embeddings = new ArrayList<Embedding> ();
                 for (SchedulerTask schedulerTask : createTasks ()) {
@@ -251,11 +262,11 @@ public final class SourceCache {
     void refresh (EmbeddingProvider embeddingProvider, Class<? extends Scheduler> schedulerType) {
         List<Embedding> _embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
         List<Embedding> oldEmbeddings;
-        synchronized (this.source) {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
         }
         updateEmbeddings (_embeddings, oldEmbeddings, true, schedulerType);
-        synchronized (this.source) {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             embeddingProviderToEmbedings.put (embeddingProvider, _embeddings);
             upToDateEmbeddingProviders.add (embeddingProvider);
         }
@@ -268,7 +279,7 @@ public final class SourceCache {
             Class<? extends Scheduler>      schedulerType
     ) {
         List<SourceCache> toBeSchedulled = new ArrayList<SourceCache> ();
-        synchronized (this.source) {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             if (oldEmbeddings != null && embeddings.size () == oldEmbeddings.size ()) {
                 for (int i = 0; i < embeddings.size (); i++) {
                     SourceCache cache = embeddingToCache.remove (oldEmbeddings.get (i));
@@ -306,7 +317,7 @@ public final class SourceCache {
                             embeddingToCache = new HashMap<Embedding,SourceCache> ();
     
     public SourceCache getCache (Embedding embedding) {
-        synchronized (this.source) {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             SourceCache sourceCache = embeddingToCache.get (embedding);
             if (sourceCache == null) {
                 sourceCache = new SourceCache (source, embedding);
@@ -350,7 +361,7 @@ public final class SourceCache {
         //S ystem.out.println("scheduleTasks " + schedulerType);
         final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
         final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
-        synchronized (this.source) {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             if (tasks == null)
                 createTasks ();
             for (SchedulerTask task : tasks) {
@@ -378,6 +389,8 @@ public final class SourceCache {
     //jjancura: probably has race condition too
     public void sourceModified () {
         SourceModificationEvent sourceModificationEvent = SourceAccessor.getINSTANCE ().getSourceModificationEvent (source);
+        if (sourceModificationEvent == null)
+            return;
         Map<Class<? extends Scheduler>,SchedulerEvent> schedulerEvents = new HashMap<Class<? extends Scheduler>, SchedulerEvent> ();
         for (Scheduler scheduler : Schedulers.getSchedulers ()) {
             SchedulerEvent schedulerEvent = SchedulerAccessor.get ().createSchedulerEvent (scheduler, sourceModificationEvent);
@@ -389,7 +402,7 @@ public final class SourceCache {
             return;
         final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
         final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
-        synchronized (this) {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
             if (tasks == null)
                 createTasks ();
             for (SchedulerTask task : tasks) {

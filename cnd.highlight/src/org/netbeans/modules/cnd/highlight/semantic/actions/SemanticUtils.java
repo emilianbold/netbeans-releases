@@ -43,14 +43,13 @@ package org.netbeans.modules.cnd.highlight.semantic.actions;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.highlight.semantic.MarkOccurrencesHighlighter;
-import org.netbeans.modules.cnd.loaders.CCDataObject;
-import org.netbeans.modules.cnd.loaders.CDataObject;
-import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -106,19 +105,14 @@ public class SemanticUtils {
         return -1;
     }
 
+
     /*package*/ static void navigateToOccurrence(boolean next) {
         final Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
-        // check whether current file is C++ Source file
-        DataObject dobj = activatedNodes[0].getLookup().lookup(CCDataObject.class);
-        if (dobj == null) {
-            // check whether current file is C Source file
-            dobj = activatedNodes[0].getLookup().lookup(CDataObject.class);
-        }
-        if (dobj == null) {
-            // check whether current file is header file
-            dobj = activatedNodes[0].getLookup().lookup(HDataObject.class);            
-        }
-        if (dobj != null) {
+        // check whether current file is C/C++
+        DataObject dobj = activatedNodes[0].getLookup().lookup(DataObject.class);
+        FileObject fo = (dobj == null) ? null : dobj.getPrimaryFile();
+        String mime = (fo == null) ? "" : fo.getMIMEType();
+        if (MIMENames.isHeaderOrCppOrC(mime)) {
             EditorCookie ec = dobj.getCookie(EditorCookie.class);
             JEditorPane[] panes = ec.getOpenedPanes();
             Document doc = ec.getDocument();

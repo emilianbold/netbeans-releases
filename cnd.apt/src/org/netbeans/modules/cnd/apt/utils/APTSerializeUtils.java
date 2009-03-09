@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 /**
  * utilities for APT serialization
@@ -302,7 +301,7 @@ public class APTSerializeUtils {
     public static void readStringToMacroMap(Map<String, APTMacro> macros, DataInput input) throws IOException {
         int collSize = input.readInt();
         for (int i = 0; i < collSize; ++i) {
-            String key = TextCache.getString(input.readUTF()).toString();
+            String key = input.readUTF();
             assert key != null;
             APTMacro macro = readMacro(input);
             assert macro != null;

@@ -48,9 +48,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -117,15 +117,21 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                 if (namespace != null) {
                     CharSequence lastName = rawName[rawName.length - 1];
                     CsmDeclaration bestChoice = null;
-                    CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(lastName.toString(), true, true, false);
+                    CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(lastName, true, true, false);
 
                     // we should try searching not only in namespace resolved found,
                     // but in numspaces with the same name in required projects
                     // iz #140787 cout, endl unresolved in some Loki files
-                    Collection<CsmNamespace> namespacesToSearch = new ArrayList<CsmNamespace>();
+                    Collection<CsmNamespace> namespacesToSearch = new LinkedHashSet<CsmNamespace>();
                     namespacesToSearch.add(namespace);
                     CharSequence nspQName = namespace.getQualifiedName();
-                    for (CsmProject lib : getProject().getLibraries()) {
+                    final Collection<CsmProject> libraries;
+                    if (resolver != null) {
+                        libraries = resolver.getLibraries();
+                    } else {
+                        libraries = Resolver3.getSearchLibraries(prjBase);
+                    }
+                    for (CsmProject lib : libraries) {
                         CsmNamespace libNs = lib.findNamespace(nspQName);
                         if (libNs != null) {
                             namespacesToSearch.add(libNs);
@@ -134,7 +140,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
 
                     outer:
                     for (CsmNamespace curr : namespacesToSearch) {
-                        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(curr, filter);
+                        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(curr, filter);
                         while (it.hasNext()) {
                             CsmDeclaration elem = it.next();
                             if (CharSequenceKey.Comparator.compare(lastName,elem.getName())==0) {
@@ -147,6 +153,28 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                             }
                         }
                     }
+
+                    // search for enumerators
+                    if (referencedDeclaration == null && bestChoice == null) {
+                        CsmFilter filter2 = CsmSelect.getFilterBuilder().createKindFilter(new Kind[]{Kind.ENUM});
+                        outer2:
+                        for (CsmNamespace curr : namespacesToSearch) {
+                            Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(curr, filter2);
+                            while (it.hasNext()) {
+                                CsmDeclaration elem = it.next();
+                                if (CsmKindUtilities.isEnum(elem)) {
+                                    CsmEnum e = (CsmEnum) elem;
+                                    for (CsmEnumerator enumerator : e.getEnumerators()) {
+                                        if(lastName.toString().equals(enumerator.getName().toString())) {
+                                            referencedDeclaration = enumerator;
+                                            break outer2;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
                     referencedDeclaration = referencedDeclaration == null ? bestChoice : referencedDeclaration;
                 }
             }

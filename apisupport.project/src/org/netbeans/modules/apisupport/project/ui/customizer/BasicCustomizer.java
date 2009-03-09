@@ -93,13 +93,6 @@ abstract class BasicCustomizer implements CustomizerProvider {
     abstract void storeProperties() throws IOException;
     
     /**
-     * Gives a chance to do some work after all the changes in a customizer
-     * were successfully saved. Is called under the write access from {@link
-     * ProjectManager#mutex}.
-     */
-    abstract void postSave() throws IOException;
-    
-    /**
      * Be sure that you will prepare all the data (typically subclass of {@link
      * ModuleProperties}) needed by a customizer and its panels and that the
      * data is always up-to-date after this method was called.

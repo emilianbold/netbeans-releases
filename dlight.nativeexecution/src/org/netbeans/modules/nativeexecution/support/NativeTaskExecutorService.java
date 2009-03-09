@@ -42,6 +42,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import org.openide.util.RequestProcessor;
 
 /**
  * Default implementation of tasks executor service.
@@ -50,8 +52,10 @@ import java.util.concurrent.Future;
  */
 public class NativeTaskExecutorService {
 
-    private static ExecutorService executorService =
-            Executors.newCachedThreadPool();
+    private static final String PREFIX = "NATIVEEXECUTOR: "; // NOI18N
+    private static final Boolean NAMED_THREADS =
+            Boolean.getBoolean("nativeexecutor.namedthreads"); // NOI18N
+    private final static ExecutorService executorService = Executors.newCachedThreadPool();
 
 
     static {
@@ -64,11 +68,27 @@ public class NativeTaskExecutorService {
         });
     }
 
-    public static <T> Future<T> submit(Callable<T> task) {
-        return executorService.submit(task);
+    public static <T> Future<T> submit(final Callable<T> task, String name) {
+        Future<T> result = null;
+
+        if (NAMED_THREADS) {
+            final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
+            final FutureTask<T> ftask = new FutureTask<T>(task);
+            processor.post(ftask);
+            result = ftask;
+        } else {
+            result = executorService.submit(task);
+        }
+
+        return result;
     }
 
-    public static void submit(Runnable task) {
-        executorService.submit(task);
+    public static void submit(final Runnable task, String name) {
+        if (NAMED_THREADS) {
+            final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
+            processor.post(task);
+        } else {
+            executorService.submit(task);
+        }
     }
 }

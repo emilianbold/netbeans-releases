@@ -97,6 +97,52 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
         return EMPTY;
     }
 
+    /**
+     * Implementation of {@link String#indexOf(String)} for character sequences.
+     */
+    public static int indexOf(CharSequence text, CharSequence seq) {
+        return indexOf(text, seq, 0);
+    }
+
+    /**
+     * Implementation of {@link String#indexOf(String,int)} for character sequences.
+     */
+    public static int indexOf(CharSequence text, CharSequence seq, int fromIndex) {
+        int textLength = text.length();
+        int seqLength = seq.length();
+        if (fromIndex >= textLength) {
+            return (seqLength == 0 ? textLength : -1);
+        }
+        if (fromIndex < 0) {
+            fromIndex = 0;
+        }
+        if (seqLength == 0) {
+            return fromIndex;
+        }
+
+        char first = seq.charAt(0);
+        int max = textLength - seqLength;
+
+        for (int i = fromIndex; i <= max; i++) {
+            // look for first character
+            if (text.charAt(i) != first) {
+                while (++i <= max && text.charAt(i) != first);
+            }
+
+            // found first character, now look at the rest of seq
+            if (i <= max) {
+                int j = i + 1;
+                int end = j + seqLength - 1;
+                for (int k = 1; j < end && text.charAt(j) == seq.charAt(k); j++, k++);
+                if (j == end) {
+                    // found whole sequence
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+    
     private CharSequenceKey(byte[] b) {
         value = b;
     }

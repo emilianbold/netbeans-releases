@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.db.sql.editor.api.completion;
 
-import org.netbeans.modules.db.sql.analyzer.SQLStatementAnalyzer;
+import org.netbeans.modules.db.sql.analyzer.InsertStatementAnalyzer;
+import org.netbeans.modules.db.sql.analyzer.SelectStatementAnalyzer;
 import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv;
 import org.netbeans.modules.db.sql.editor.completion.SQLCompletionQuery;
 
@@ -63,7 +64,14 @@ public class SQLCompletion {
             throw new NullPointerException("The context's charSequence property should not be null.");
         }
         SQLCompletionEnv env = SQLCompletionEnv.forStatement(statement, 0, null);
-        return SQLStatementAnalyzer.detectKind(env.getTokenSequence()) != null;
+        // SELECT command
+        if (SelectStatementAnalyzer.detectKind(env.getTokenSequence()) != null) {
+            return true;
+        // INSERT command
+        } else if (InsertStatementAnalyzer.detectKind(env.getTokenSequence()) != null) {
+            return true;
+        }
+        return false;
     }
 
     private SQLCompletion(SQLCompletionContext initContext) {

@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -279,6 +281,9 @@ public final class CompletionSupport {
         if (tfrom.equals(tto)) {
             return true;
         }
+        if (CsmKindUtilities.isClass(toCls) && CsmKindUtilities.isClass(fromCls)) {
+            return CsmInheritanceUtilities.isAssignableFrom((CsmClass)fromCls, (CsmClass)toCls);
+        }
         return false;
     }
 
@@ -314,7 +319,7 @@ public final class CompletionSupport {
      * @param acceptMoreParameters useful for code completion to get
      *   even the methods with more parameters.
      */
-    public static List<CsmFunction> filterMethods(List<CsmFunction> methodList, List parmTypeList,
+    public static Collection<CsmFunction> filterMethods(Collection<CsmFunction> methodList, List parmTypeList,
             boolean acceptMoreParameters) {
         assert (methodList != null);
         if (parmTypeList == null) {
@@ -323,11 +328,9 @@ public final class CompletionSupport {
 
         List<CsmFunction> ret = new ArrayList<CsmFunction>();
         int parmTypeCnt = parmTypeList.size();
-        int cnt = methodList.size();
         int maxMatched = -1;
-        for (int i = 0; i < cnt; i++) {
+        for (CsmFunction m : methodList) {
             // Use constructor conversion to allow to use it too for the constructors
-            CsmFunction m = methodList.get(i);
             CsmParameter[] methodParms = m.getParameters().toArray(new CsmParameter[m.getParameters().size()]);
             if (methodParms.length == parmTypeCnt || (acceptMoreParameters && methodParms.length >= parmTypeCnt)) {
                 boolean accept = true;

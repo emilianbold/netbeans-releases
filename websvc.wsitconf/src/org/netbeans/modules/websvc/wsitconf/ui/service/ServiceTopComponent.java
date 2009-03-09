@@ -56,6 +56,7 @@ import java.awt.*;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
@@ -74,6 +75,7 @@ public class ServiceTopComponent extends TopComponent {
     private UndoManager undoManager;
     private Node node;
     private Service service;
+    private JaxWsService jaxService;
     private boolean serviceOnly;
     private JaxWsModel jaxWsModel;
     private FileObject implClass;
@@ -106,6 +108,15 @@ public class ServiceTopComponent extends TopComponent {
         this.implClass = implClass;
         this.serviceOnly = serviceOnly;
     }
+
+    public ServiceTopComponent(Node node, JaxWsService service, WSDLModel wsdlModel, UndoManager undoManager) {
+        setLayout(new BorderLayout());
+        this.wsdlModel = wsdlModel;
+        this.undoManager = undoManager;
+        this.jaxService = service;
+        this.service = null;
+        this.node = node;
+    }
     
     @Override
     protected String preferredID(){
@@ -126,7 +137,8 @@ public class ServiceTopComponent extends TopComponent {
         FileObject fo = org.netbeans.modules.xml.retriever.catalog.Utilities.getFileObject(ms);
         Project p = (fo != null) ? FileOwnerQuery.getOwner(fo) : null;
         InnerPanelFactory panelFactory = new PanelFactory(tb, node, undoManager, p, jaxWsModel);
-        ServiceView mview = new ServiceView(panelFactory, wsdlModel, node, implClass, service, bindings, serviceOnly);
+        ServiceView mview = (service == null) ? new ServiceView(panelFactory, wsdlModel, node, implClass, service, null, bindings, serviceOnly) :
+                            new ServiceView(panelFactory, wsdlModel, node, implClass, null, jaxService, bindings, serviceOnly);
         tb.setContentView(mview);
         add(tb);
         setFocusable(true);

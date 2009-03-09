@@ -48,9 +48,11 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -94,7 +96,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
 
     // we can't store CSM because it's dependent on devHostConfig name which is not persistent
     public CompilerSetManager getCompilerSetManager() {
-        return CompilerSetManager.getDefault(dhconf.getName());
+        return CompilerSetManager.getDefault(dhconf.getExecutionEnvironment());
     }
 
 //
@@ -157,7 +159,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         String s = getCompilerSetName().getValue();
         if (s != null) {
             int i = 0;
-            for (String csname : CompilerSetManager.getDefault(dhconf.getName()).getCompilerSetNames()) {
+            for (String csname : CompilerSetManager.getDefault(dhconf.getExecutionEnvironment()).getCompilerSetNames()) {
                 if (s.equals(csname)) {
                     return i;
                 }
@@ -289,20 +291,21 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
 
     public void propertyChange(final PropertyChangeEvent evt) {
         CompilerSet ocs = null;
-        final String key = ((DevelopmentHostConfiguration) evt.getNewValue()).getName();
-        final String oldName = oldNameMap.get(key);
+        String hkey = ((DevelopmentHostConfiguration) evt.getNewValue()).getName();
+        final ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
+        final String oldName = oldNameMap.get(hkey);
         if (oldName != null) {
-            ocs = CompilerSetManager.getDefault(key).getCompilerSet(oldName);
+            ocs = CompilerSetManager.getDefault(env).getCompilerSet(oldName);
         } else {
-            ocs = CompilerSetManager.getDefault(key).getDefaultCompilerSet();
+            ocs = CompilerSetManager.getDefault(env).getDefaultCompilerSet();
         }
         if (ocs == null) {
-            ocs = CompilerSetManager.getDefault(key).getCompilerSet(0);
+            ocs = CompilerSetManager.getDefault(env).getCompilerSet(0);
         }
 
         String okey = (String) evt.getOldValue();
         oldNameMap.put(okey, getName());
-        if (key.equals(CompilerSetManager.LOCALHOST)) {
+        if (env.isLocal()) {
             setValue(ocs.getName());
         } else {
             setValue(ocs.getName());
@@ -311,7 +314,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
                 public void run() {
                     ServerList server = Lookup.getDefault().lookup(ServerList.class);
                     if (server != null) {
-                        ServerRecord record = server.get(key);
+                        ServerRecord record = server.get(env);
                         if (record != null) {
                             // Not sure why we do this in an RP, but don't want to remove it this late in the release
                             setValue(focs.getName());

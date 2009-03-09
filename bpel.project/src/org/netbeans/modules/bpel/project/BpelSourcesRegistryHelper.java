@@ -52,7 +52,7 @@ public class BpelSourcesRegistryHelper {
             return;
         }
         Sources sources = ProjectUtils.getSources(myProject);
-        SourceGroup sgs [] = sources.getSourceGroups(IcanproProject.SOURCES_TYPE_ICANPRO);
+        SourceGroup sgs [] = sources.getSourceGroups(ProjectConstants.SOURCES_TYPE_PROJECT);
         for (int i = 0; i < sgs.length; i++) {
             FileObject fo = sgs[i].getRootFolder();
             if (fo == null) {

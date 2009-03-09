@@ -42,9 +42,12 @@ package org.netbeans.swing.outline;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Insets;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
@@ -66,10 +69,16 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     private boolean leaf = true;
     private boolean showHandle = true;
     private int nestingDepth = 0;
+    private final JCheckBox theCheckBox;
+    private JCheckBox checkBox;
     private static final Border expansionBorder = new ExpansionHandleBorder();
     
     /** Creates a new instance of DefaultOutlineTreeCellRenderer */
     public DefaultOutlineCellRenderer() {
+        theCheckBox = new JCheckBox();
+        theCheckBox.setSize(theCheckBox.getPreferredSize());
+        theCheckBox.setBorderPainted(false);
+        theCheckBox.setOpaque(false);
     }
     
     /** Overridden to combine the expansion border (whose insets determine how
@@ -140,6 +149,10 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     private void setShowHandle (boolean val) {
         showHandle = val;
     }
+
+    private void setCheckBox(JCheckBox checkBox) {
+        this.checkBox = checkBox;
+    }
     
     private boolean isLeaf () {
         return leaf;
@@ -159,6 +172,14 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
      * node. */
     private int getNestingDepth() {
         return nestingDepth;
+    }
+
+    private JCheckBox getCheckBox() {
+        return checkBox;
+    }
+
+    int getTheCheckBoxWidth() {
+        return theCheckBox.getSize().width;
     }
     
     /** Get a component that can render cells in an Outline.  If 
@@ -218,6 +239,22 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                         tbl.getSelectionForeground() : tbl.getForeground());
                 }
                 icon = rendata.getIcon(value);
+
+                JCheckBox cb = null;
+                if (rendata instanceof CheckRenderDataProvider) {
+                    CheckRenderDataProvider crendata = (CheckRenderDataProvider) rendata;
+                    if (crendata.isCheckable(value)) {
+                        cb = theCheckBox;
+                        Boolean chSelected = crendata.isSelected(value);
+                        cb.setSelected(!Boolean.FALSE.equals(chSelected));
+                        // Third state is "selected armed" to be consistent with org.openide.explorer.propertysheet.ButtonModel3Way
+                        cb.getModel().setArmed(chSelected == null);
+                        cb.getModel().setPressed(chSelected == null);
+                        cb.setEnabled(crendata.isCheckEnabled(value));
+                        cb.setBackground(getBackground());
+                    }
+                }
+                setCheckBox(cb);
             } 
             if (icon == null) {
                 if (!isleaf) {
@@ -239,7 +276,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
             }
         return this;
     }
-    
+
     private static class ExpansionHandleBorder implements Border {
 
         private static final boolean isGtk = "GTK".equals (UIManager.getLookAndFeel ().getID ()); //NOI18N
@@ -271,6 +308,9 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 insets.right = 1;
                 insets.bottom = 1;
             }
+            if (ren.getCheckBox() != null) {
+                insets.left += ren.getCheckBox().getSize().width;
+            }
             return insets;
         }
         
@@ -296,7 +336,13 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 } else {
                     icon.paintIcon(c, g, iconX, iconY);
                 }
-                
+            }
+            JCheckBox chBox = ren.getCheckBox();
+            if (chBox != null) {
+                int chBoxX = getExpansionHandleWidth() + ren.getNestingDepth() * getNestingWidth();
+                Dimension chDim = chBox.getSize();
+                java.awt.Graphics gch = g.create(chBoxX, 0, chDim.width, chDim.height);
+                chBox.paint(gch);
             }
         }
     }

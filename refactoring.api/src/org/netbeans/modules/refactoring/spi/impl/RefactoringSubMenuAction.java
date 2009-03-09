@@ -41,13 +41,18 @@
 package org.netbeans.modules.refactoring.spi.impl;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.text.TextAction;
 import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -61,6 +66,8 @@ import org.openide.util.actions.Presenter;
  * @author Martin Matula
  */
 public final class RefactoringSubMenuAction extends TextAction implements Presenter.Menu, Presenter.Popup {
+
+    private static final Logger LOG = Logger.getLogger(RefactoringSubMenuAction.class.getName());
     private final boolean showIcons;
     
     public static RefactoringSubMenuAction create(FileObject o) {
@@ -102,6 +109,8 @@ public final class RefactoringSubMenuAction extends TextAction implements Presen
     private final class SubMenu extends JMenu {
         
         private boolean createMenuLazily = true;
+        private boolean wasSeparator;
+        private boolean shouldAddSeparator;
         
         public SubMenu() {
             super((String) RefactoringSubMenuAction.this.getValue(Action.NAME));
@@ -126,6 +135,8 @@ public final class RefactoringSubMenuAction extends TextAction implements Presen
             DataFolder df = DataFolder.findFolder(fo);
                 
             if (df != null) {
+                wasSeparator = true;
+                shouldAddSeparator = false;
                 DataObject actionObjects[] = df.getChildren();
                 for (int i = 0; i < actionObjects.length; i++) {
                     InstanceCookie ic = actionObjects[i].getCookie(InstanceCookie.class);
@@ -135,31 +146,57 @@ public final class RefactoringSubMenuAction extends TextAction implements Presen
                         instance = ic.instanceCreate();
                     } catch (IOException e) {
                         // ignore
-                        e.printStackTrace();
+                        LOG.log(Level.WARNING, actionObjects[i].toString(), e);
                         continue;
                     } catch (ClassNotFoundException e) {
                         // ignore
-                        e.printStackTrace();
+                        LOG.log(Level.WARNING, actionObjects[i].toString(), e);
                         continue;
                     }
-                    if (instance instanceof Action) {
+                    
+                    if (instance instanceof Presenter.Popup) {
+                        JMenuItem temp = ((Presenter.Popup)instance).getPopupPresenter();
+                        if (temp instanceof DynamicMenuContent) {
+                            for (JComponent presenter : ((DynamicMenuContent) temp).getMenuPresenters()) {
+                                addPresenter(presenter);
+                            }
+                        } else {
+                            addPresenter(temp);
+                        }
+                    } else if (instance instanceof Action) {
                         // if the action is the refactoring action, pass it information
                         // whether it is in editor, popup or main menu
                         JMenuItem mi = new JMenuItem();
                         Actions.connect(mi, (Action) instance, true);
-                        if (!showIcons)
-                            mi.setIcon(null);
-                        add(mi);
+                        addPresenter(mi);
                     } else if (instance instanceof JSeparator) {
-                        add((JSeparator) instance);
-                    } else if (instance instanceof Presenter.Popup) {
-                        JMenuItem temp = ((Presenter.Popup)instance).getPopupPresenter();
-                        if (!showIcons)
-                            temp.setIcon(null);
-                        add(temp);
+                        addPresenter((JSeparator) instance);
                     }
                 }
             }
+        }
+
+        private void addPresenter(JComponent presenter) {
+            if (!showIcons && presenter instanceof AbstractButton) {
+                ((AbstractButton) presenter).setIcon(null);
+            }
+
+            boolean isSeparator = presenter == null || presenter instanceof JSeparator;
+
+            if (isSeparator) {
+                if (!wasSeparator) {
+                    shouldAddSeparator = true;
+                    wasSeparator = true;
+                }
+            } else {
+                if (shouldAddSeparator) {
+                    addSeparator();
+                    shouldAddSeparator = false;
+                }
+                add(presenter);
+                wasSeparator = false;
+            }
+
         }
         
     }

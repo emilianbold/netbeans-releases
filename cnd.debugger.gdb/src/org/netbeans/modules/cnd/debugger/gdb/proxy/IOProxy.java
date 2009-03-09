@@ -49,8 +49,10 @@ import java.io.Reader;
 import java.io.Writer;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -70,12 +72,12 @@ public abstract class IOProxy {
     private OutputReaderThread ort = null;
     private final Writer ioWriter;
     
-    public static IOProxy create(String hkey, InputOutput io) {
+    public static IOProxy create(ExecutionEnvironment execEnv, InputOutput io) {
         IOProxy res;
-        if (hkey == null || CompilerSetManager.LOCALHOST.equals(hkey)) {
+        if (execEnv == null || execEnv.isLocal()) {
             res = new LocalIOProxy(io.getIn(), io.getOut());
         } else {
-            res = new RemoteIOProxy(hkey, io.getIn(), io.getOut());
+            res = new RemoteIOProxy(execEnv, io.getIn(), io.getOut());
         }
         res.start();
         return res;
@@ -290,15 +292,15 @@ public abstract class IOProxy {
     private static class RemoteIOProxy extends IOProxy {
         private final String inFilename;
         private final String outFilename;
-        private final String hkey;
+        private final ExecutionEnvironment execEnv;
         private InteractiveCommandProvider inProvider = null;
         private InteractiveCommandProvider outProvider = null;
 
-        public RemoteIOProxy(String hkey, Reader ioReader, Writer ioWriter) {
+        public RemoteIOProxy(ExecutionEnvironment execEnv, Reader ioReader, Writer ioWriter) {
             super(ioReader, ioWriter);
-            this.hkey = hkey;
-            this.inFilename = createNewFifo(hkey);
-            this.outFilename = createNewFifo(hkey);
+            this.execEnv = execEnv;
+            this.inFilename = createNewFifo(execEnv);
+            this.outFilename = createNewFifo(execEnv);
         }
 
         @Override
@@ -308,8 +310,8 @@ public abstract class IOProxy {
 
         @Override
         protected OutputStream createInStream() throws IOException {
-            inProvider = InteractiveCommandProviderFactory.create(hkey);
-            if (inProvider != null && inProvider.run(hkey, "cat > " + inFilename, null)) { // NOI18N
+            inProvider = InteractiveCommandProviderFactory.create(ExecutionEnvironmentFactory.getHostKey(execEnv));
+            if (inProvider != null && inProvider.run(execEnv, "cat > " + inFilename, null)) { // NOI18N
                 return inProvider.getOutputStream();
             }
             return null;
@@ -322,19 +324,19 @@ public abstract class IOProxy {
 
         @Override
         protected InputStream createOutStream() throws IOException {
-            outProvider = InteractiveCommandProviderFactory.create(hkey);
-            if (outProvider != null && outProvider.run(hkey, "cat " + outFilename, null)) { // NOI18N
+            outProvider = InteractiveCommandProviderFactory.create(ExecutionEnvironmentFactory.getHostKey(execEnv));
+            if (outProvider != null && outProvider.run(execEnv, "cat " + outFilename, null)) { // NOI18N
                 return outProvider.getInputStream();
             }
             return null;
         }
 
-        private static String createNewFifo(String hkey) {
+        private static String createNewFifo(ExecutionEnvironment execEnv) {
             // TODO: /tmp may not be accessible on remote host
             // need to have a general way of getting temp files folder on remote host
             String name = "/tmp/" + FILENAME_PREFIX + "$$" + FILENAME_EXTENSION; // NOI18N
             CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
-            if (cp.run(hkey, "mkfifo " + name + ";echo " + name, null) == 0) { // NOI18N
+            if (cp.run(execEnv, "mkfifo " + name + ";echo " + name, null) == 0) { // NOI18N
                 return cp.getOutput().trim();
             }
             return null;
@@ -352,7 +354,7 @@ public abstract class IOProxy {
             // delete files
             CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
             if (cp != null) {
-                cp.run(hkey, "rm -f " + inFilename + " " + outFilename, null); // NOI18N
+                cp.run(execEnv, "rm -f " + inFilename + " " + outFilename, null); // NOI18N
             }
         }
     }

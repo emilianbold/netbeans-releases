@@ -54,8 +54,8 @@ import org.netbeans.jellytools.modules.ruby.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.BuildProjectAction;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jellytools.modules.ruby.actions.BuildGemAction;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -162,7 +162,7 @@ public abstract class RubyTestCase extends JellyTestCase {
                 if (!projectRoot.exists()) {
                     project = createProject(projectName);
                 } else {
-                    openProjects(projectRoot.getAbsolutePath());
+                    ProjectSupport.openProject(projectRoot);
                     FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(projectRoot));
                     assertNotNull("FO cannot be null", fo); //NOI18N
                     project = ProjectManager.getDefault().findProject(fo);
@@ -205,8 +205,8 @@ public abstract class RubyTestCase extends JellyTestCase {
      *
      * @return an instance of <code>ProjectRootNode</code>
      */
-    protected ProjectRootNode getProjectRootNode() {
-        return ProjectsTabOperator.invoke().getProjectRootNode(getProjectName());
+    protected Node getProjectRootNode() {
+        return new Node(ProjectsTabOperator.invoke().tree(), getProjectName());
     }
 
     /**
@@ -268,11 +268,11 @@ public abstract class RubyTestCase extends JellyTestCase {
         String openingProjectsTitle = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
         waitDialogClosed(openingProjectsTitle);
         // wait project appear in projects view
-        ProjectRootNode node = ProjectsTabOperator.invoke().getProjectRootNode(name);
+        Node prjNode = new Node(ProjectsTabOperator.invoke().tree(), name);
         // wait classpath scanning finished
       //  org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
         // get a project instance to return
-        Project p = ((org.openide.nodes.Node) node.getOpenideNode()).getLookup().lookup(Project.class);
+        Project p = ((org.openide.nodes.Node) prjNode.getOpenideNode()).getLookup().lookup(Project.class);
         assertNotNull("Project instance has not been found", p); //NOI18N
         return p;
     }
@@ -342,7 +342,7 @@ public abstract class RubyTestCase extends JellyTestCase {
 
     protected void buildProject() {
         OutputOperator oo = OutputOperator.invoke();
-        new BuildProjectAction().performPopup(getProjectRootNode());
+        new BuildGemAction().performPopup(getProjectRootNode());
         oo.getOutputTab(getProjectName()).waitText("BUILD SUCCESSFUL"); //NOI18N
     }
 

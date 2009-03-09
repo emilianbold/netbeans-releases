@@ -39,8 +39,12 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -50,36 +54,125 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.spi.model.services.CsmSelectProvider;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Alexander Simon
  */
-public abstract class CsmSelect {
-    private static CsmSelect DEFAULT = new Default();
+public class CsmSelect {
 
-    public abstract CsmFilterBuilder getFilterBuilder();
-    public abstract Iterator<CsmMacro> getMacros(CsmFile file, CsmFilter filter);
-    public abstract Iterator<CsmInclude> getIncludes(CsmFile file, CsmFilter filter);
-    public abstract boolean hasDeclarations(CsmFile file);
-    public abstract Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFile file, CsmFilter filter);
-    public abstract Iterator<CsmVariable> getStaticVariables(CsmFile file, CsmFilter filter);
-    public abstract Iterator<CsmFunction> getStaticFunctions(CsmFile file, CsmFilter filter);
-    public abstract Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespace namespace, CsmFilter filter);
-    public abstract Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter);
-    public abstract Iterator<CsmMember> getClassMembers(CsmClass cls, CsmFilter filter);
+    private static CsmSelectProvider DEFAULT = new Default();
 
-    
-    protected CsmSelect() {
+    public static CsmFilterBuilder getFilterBuilder() {
+        return getDefault().getFilterBuilder();
+    }
+
+    public static Iterator<CsmMacro> getMacros(CsmFile file, CsmFilter filter) {
+        return getDefault().getMacros(file, filter);
+    }
+
+    public static Iterator<CsmInclude> getIncludes(CsmFile file, CsmFilter filter) {
+        return getDefault().getIncludes(file, filter);
+    }
+
+    public static boolean hasDeclarations(CsmFile file) {
+        return getDefault().hasDeclarations(file);
+    }
+
+    public static Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFile file, CsmFilter filter) {
+        return getDefault().getDeclarations(file, filter);
+    }
+
+    public static Iterator<CsmVariable> getStaticVariables(CsmFile file, CsmFilter filter)  {
+        return getDefault().getStaticVariables(file, filter);
+    }
+
+    public static Iterator<CsmFunction> getStaticFunctions(CsmFile file, CsmFilter filter)  {
+        return getDefault().getStaticFunctions(file, filter);
+    }
+
+    public static Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespace namespace, CsmFilter filter)  {
+        return getDefault().getDeclarations(namespace, filter);
+    }
+
+    public static Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter)  {
+        return getDefault().getDeclarations(namespace, filter);
+    }
+
+    public static Iterator<CsmMember> getClassMembers(CsmClass cls, CsmFilter filter)  {
+        return getDefault().getClassMembers(cls, filter);
+    }
+
+    public static Iterator<CsmFunction> getFunctions(CsmProject project, CharSequence qualifiedName) {
+        // ensure that qName does NOT start with "::"
+        if (qualifiedName.length() > 1 && qualifiedName.charAt(0) == ':' && qualifiedName.charAt(1) == ':') {
+            qualifiedName = qualifiedName.subSequence(2, qualifiedName.length());
+        }
+        Collection<CsmFunction> result = new ArrayList<CsmFunction>();
+	getFunctions(project, qualifiedName, result, new LinkedHashSet<CsmProject>());
+	return result.iterator();
+    }
+
+    // NB: qName does NOT start with "::"
+    private static void getFunctions(CsmProject project, CharSequence qName,
+            Collection<CsmFunction> result, Collection<CsmProject> processedProjects) {
+        if (!processedProjects.contains(project)) {
+            processedProjects.add(project);
+            // find "::" in Name
+            int pos = -1;
+            for (int i = qName.length()-2; i > 1; i--) {
+                if (qName.charAt(i) == ':' && qName.charAt(i+1) == ':') { //NOI18N
+                    pos = i;
+                    break;
+                }
+            }
+            if (pos == -1) {
+                // qName resides in global namespace
+                CsmFilter filter = getFilterBuilder().createNameFilter(qName, true, true, false);
+                getFunctions(CsmSelect.getDeclarations(project.getGlobalNamespace(), filter), result);
+            } else {
+                // split qName into owner name and function name
+                CharSequence ownerQName = qName.subSequence(0, pos);
+                CharSequence funcName = qName.subSequence(pos+2, qName.length());
+                CsmNamespace nsp = project.findNamespace(ownerQName);
+                CsmFilter filter = getFilterBuilder().createNameFilter(funcName, true, true, false);
+                if (nsp != null) {
+                    getFunctions(CsmSelect.getDeclarations(nsp, filter), result);
+                }
+                for (CsmClassifier cls : project.findClassifiers(ownerQName)) {
+                    if (CsmKindUtilities.isClass(cls)) {
+                        getFunctions(CsmSelect.getClassMembers((CsmClass) cls, filter), result);
+                    }
+                }
+            }
+            for (CsmProject lib : project.getLibraries()) {
+                getFunctions(lib, qName, result, processedProjects);
+            }
+        }
+    }
+
+    private static void getFunctions(Iterator<? extends CsmOffsetableDeclaration> iter, Collection<CsmFunction> result) {
+        while (iter.hasNext()) {
+            CsmOffsetableDeclaration decl = iter.next();
+            if (CsmKindUtilities.isFunction(decl)) {
+                result.add((CsmFunction) decl);
+            }
+        }
+    }
+
+    private CsmSelect() {
     }
     
     /**
      * Static method to obtain the CsmSelect implementation.
      * @return the selector
      */
-    public static synchronized CsmSelect getDefault() {
+    private static synchronized CsmSelectProvider getDefault() {
         return DEFAULT;
     }
     
@@ -92,7 +185,7 @@ public abstract class CsmSelect {
 
     public static interface CsmFilterBuilder {
         CsmFilter createKindFilter(CsmDeclaration.Kind ... kinds);
-        CsmFilter createNameFilter(String strPrefix, boolean match, boolean caseSensitive, boolean allowEmptyName);
+        CsmFilter createNameFilter(CharSequence strPrefix, boolean match, boolean caseSensitive, boolean allowEmptyName);
         CsmFilter createOffsetFilter(int startOffset, int endOffset);
         CsmFilter createOffsetFilter(int innerOffset);
         CsmFilter createCompoundFilter(CsmFilter first, CsmFilter second);
@@ -102,18 +195,18 @@ public abstract class CsmSelect {
     /**
      * Implementation of the default selector
      */  
-    private static final class Default extends CsmSelect {
-        private final Lookup.Result<CsmSelect> res;
+    private static final class Default implements CsmSelectProvider {
+        private final Lookup.Result<CsmSelectProvider> res;
         private static final boolean FIX_SERVICE = true;
-        private CsmSelect fixedSelector;
+        private CsmSelectProvider fixedSelector;
         Default() {
-            res = Lookup.getDefault().lookupResult(CsmSelect.class);
+            res = Lookup.getDefault().lookupResult(CsmSelectProvider.class);
         }
 
-        private CsmSelect getService(){
-            CsmSelect service = fixedSelector;
+        private CsmSelectProvider getService(){
+            CsmSelectProvider service = fixedSelector;
             if (service == null) {
-                for (CsmSelect selector : res.allInstances()) {
+                for (CsmSelectProvider selector : res.allInstances()) {
                     service = selector;
                     break;
                 }
@@ -126,7 +219,7 @@ public abstract class CsmSelect {
         
         @Override
         public CsmFilterBuilder getFilterBuilder() {
-            CsmSelect service = getService();
+            CsmSelectProvider service = getService();
             if (service != null) {
                 return service.getFilterBuilder();
             }
@@ -135,7 +228,7 @@ public abstract class CsmSelect {
 
         @Override
         public Iterator<CsmMacro> getMacros(CsmFile file, CsmFilter filter) {
-            CsmSelect service = getService();
+            CsmSelectProvider service = getService();
             if (service != null) {
                 return service.getMacros(file, filter);
             }
@@ -144,7 +237,7 @@ public abstract class CsmSelect {
 
         @Override
         public Iterator<CsmInclude> getIncludes(CsmFile file, CsmFilter filter) {
-            CsmSelect service = getService();
+            CsmSelectProvider service = getService();
             if (service != null) {
                 return service.getIncludes(file, filter);
             }
@@ -153,7 +246,7 @@ public abstract class CsmSelect {
 
         @Override
         public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespace namespace, CsmFilter filter) {
-            CsmSelect service = getService();
+            CsmSelectProvider service = getService();
             if (service != null) {
                 return service.getDeclarations(namespace, filter);
             }
@@ -162,7 +255,7 @@ public abstract class CsmSelect {
 
         @Override
         public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFile file, CsmFilter filter) {
-            CsmSelect service = getService();
+            CsmSelectProvider service = getService();
             if (service != null) {
                 return service.getDeclarations(file, filter);
             }
@@ -171,7 +264,7 @@ public abstract class CsmSelect {
 
         @Override
         public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter) {
-            CsmSelect service = getService();
+            CsmSelectProvider service = getService();
             if (service != null) {
                 return service.getDeclarations(namespace, filter);
             }
@@ -180,7 +273,7 @@ public abstract class CsmSelect {
 
         @Override
         public Iterator<CsmMember> getClassMembers(CsmClass cls, CsmFilter filter) {
-            CsmSelect service = getService();
+            CsmSelectProvider service = getService();
             if (service != null) {
                 return service.getClassMembers(cls, filter);
             }
@@ -189,7 +282,7 @@ public abstract class CsmSelect {
 
         @Override
         public Iterator<CsmVariable> getStaticVariables(CsmFile file, CsmFilter filter) {
-            CsmSelect service = getService();
+            CsmSelectProvider service = getService();
             if (service != null) {
                 return service.getStaticVariables(file, filter);
             }
@@ -198,7 +291,7 @@ public abstract class CsmSelect {
 
         @Override
         public Iterator<CsmFunction> getStaticFunctions(CsmFile file, CsmFilter filter) {
-            CsmSelect service = getService();
+            CsmSelectProvider service = getService();
             if (service != null) {
                 return service.getStaticFunctions(file, filter);
             }
@@ -207,7 +300,7 @@ public abstract class CsmSelect {
 
         @Override
         public boolean hasDeclarations(CsmFile file) {
-            CsmSelect service = getService();
+            CsmSelectProvider service = getService();
             if (service != null) {
                 return service.hasDeclarations(file);
             }

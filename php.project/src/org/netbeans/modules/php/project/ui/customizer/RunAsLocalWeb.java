@@ -55,6 +55,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
+import org.netbeans.modules.php.project.util.Pair;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -193,6 +194,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         argsLabel = new JLabel();
         argsTextField = new JTextField();
         hintLabel = new JTextArea();
+        advancedButton = new JButton();
 
         setFocusTraversalPolicy(null);
 
@@ -224,6 +226,12 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         hintLabel.setDisabledTextColor(UIManager.getDefaults().getColor("Label.disabledForeground"));
         hintLabel.setEnabled(false);
         hintLabel.setOpaque(false);
+        Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.advancedButton.text"));
+        advancedButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                advancedButtonActionPerformed(evt);
+            }
+        });
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -231,23 +239,27 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(argsLabel)
-                    .add(urlLabel)
-                    .add(indexFileLabel)
-                    .add(runAsLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(GroupLayout.TRAILING, hintLabel, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(GroupLayout.TRAILING, argsTextField, GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
-                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(indexFileTextField, GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(advancedButton))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(GroupLayout.LEADING)
+                            .add(argsLabel)
+                            .add(urlLabel)
+                            .add(indexFileLabel)
+                            .add(runAsLabel))
                         .addPreferredGap(LayoutStyle.RELATED)
-                        .add(indexFileBrowseButton))
-                    .add(GroupLayout.TRAILING, runAsCombo, 0, 220, Short.MAX_VALUE)
-                    .add(GroupLayout.TRAILING, urlTextField, GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))
+                        .add(layout.createParallelGroup(GroupLayout.LEADING)
+                            .add(GroupLayout.TRAILING, hintLabel, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(GroupLayout.TRAILING, argsTextField, GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(indexFileTextField, GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
+                                .addPreferredGap(LayoutStyle.RELATED)
+                                .add(indexFileBrowseButton))
+                            .add(GroupLayout.TRAILING, runAsCombo, 0, 220, Short.MAX_VALUE)
+                            .add(GroupLayout.TRAILING, urlTextField, GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))))
                 .add(0, 0, 0))
-        
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
@@ -270,8 +282,9 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
                     .add(argsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(hintLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(advancedButton)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         runAsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -302,7 +315,23 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         Utils.browseFolderFile(getWebRoot(), indexFileTextField);
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
+    private void advancedButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_advancedButtonActionPerformed
+        RunAsWebAdvanced advanced = new RunAsWebAdvanced(
+                project,
+                getValue(PhpProjectProperties.DEBUG_URL),
+                hintLabel.getText(),
+                getValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE),
+                getValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL));
+        if (advanced.open()) {
+            Pair<String, String> pathMapping = advanced.getPathMapping();
+            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_URL, advanced.getDebugUrl().name());
+            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, pathMapping.first);
+            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, pathMapping.second);
+        }
+    }//GEN-LAST:event_advancedButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JButton advancedButton;
     private JLabel argsLabel;
     private JTextField argsTextField;
     private JTextArea hintLabel;

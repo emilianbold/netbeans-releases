@@ -194,6 +194,9 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                 if (isFindOverridingMethods() && CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
                     out.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, isSearchFromBaseClass()));
                 }
+            } else if (CsmKindUtilities.isClass(referencedObject)) {
+                // add all constructors
+                out.addAll(CsmRefactoringUtils.getConstructors((CsmClass)referencedObject));
             }
             out.add(referencedObject);
         }

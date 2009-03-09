@@ -1,0 +1,92 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE iz159324.cc
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+NAMESPACE DEFINITOIN N [1:1/0-8:2/90] SCOPE: iz159324.cc
+    STRUCT A (N::A ) [2:5/18-7:6/87] lcurly=27 SCOPE: N 
+        BASE CLASSES:
+        MEMBERS:
+            FUNCTION DEFINITION A  [3:9/37-4:10/52] ConstructorDDImpl SCOPE: A 
+                SIGNATURE A()
+                UNIQUE NAME f:N::A::A()
+                DECLARATION: A  [3:9/37-4:10/52]
+                PARAMETERS:
+                RETURNS <*no_classifier*> TEXT=  [null-null]
+                STATEMENT COMPOUND  [3:13/41-4:10/52] SCOPE: A 
+            FUNCTION DEFINITION A  [5:9/61-6:10/81] ConstructorDDImpl SCOPE: A 
+                SIGNATURE A(int)
+                UNIQUE NAME f:N::A::A(int)
+                DECLARATION: A  [5:9/61-6:10/81]
+                PARAMETERS:
+                    i [5:11/63-5:16/68]  TYPE: int TEXT=int  [5:11/63-5:14/66]  INIT: null  SCOPE: A 
+                RETURNS <*no_classifier*> TEXT=  [null-null]
+                STATEMENT COMPOUND  [5:18/70-6:10/81] SCOPE: A 
+FUNCTION DEFINITION foo  [9:1/91-14:2/175] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE foo()
+    UNIQUE NAME f:foo()
+    DECLARATION: foo  [9:1/91-14:2/175]
+    PARAMETERS:
+    RETURNS void TEXT=void  [9:1/91-9:5/95]
+    STATEMENT COMPOUND  [9:13/103-14:2/175] SCOPE: foo 
+        STATEMENT DECLARATION  [10:5/109-10:11/115] SCOPE: Stmt  [9:13/103-14:2/175]
+            VARIABLE i [10:5/109-10:11/115]  TYPE: int TEXT=int  [10:5/109-10:8/112]  INIT: null  SCOPE: Stmt  [9:13/103-14:2/175]
+        STATEMENT DECLARATION  [11:5/120-11:20/135] SCOPE: Stmt  [9:13/103-14:2/175]
+            VARIABLE a1 [11:10/125-11:15/130]  TYPE: N::A TEXT=N::A  [11:5/120-11:9/124]  INIT: null  SCOPE: Stmt  [9:13/103-14:2/175]
+            VARIABLE a2 [11:17/132-11:19/134]  TYPE: N::A TEXT=N::A  [11:5/120-11:9/124]  INIT: null  SCOPE: Stmt  [9:13/103-14:2/175]
+        STATEMENT DECLARATION  [12:5/140-12:19/154] SCOPE: Stmt  [9:13/103-14:2/175]
+            VARIABLE i1 [12:9/144-12:14/149]  TYPE: int TEXT=int  [12:5/140-12:8/143]  INIT: null  SCOPE: Stmt  [9:13/103-14:2/175]
+            VARIABLE i2 [12:16/151-12:18/153]  TYPE: int TEXT=int  [12:5/140-12:8/143]  INIT: null  SCOPE: Stmt  [9:13/103-14:2/175]
+        STATEMENT DECLARATION  [13:5/159-13:19/173] SCOPE: Stmt  [9:13/103-14:2/175]
+            VARIABLE i3 [13:9/163-13:14/168]  TYPE: int TEXT=int  [13:5/159-13:8/162]  INIT: null  SCOPE: Stmt  [9:13/103-14:2/175]
+            VARIABLE i4 [13:16/170-13:18/172]  TYPE: int TEXT=int  [13:5/159-13:8/162]  INIT: null  SCOPE: Stmt  [9:13/103-14:2/175]
+
+========== Dumping model of PROJECT DummyProject
+FUNCTION DEFINITION foo  [9:1/91-14:2/175] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE foo()
+    UNIQUE NAME f:foo()
+    DECLARATION: foo  [9:1/91-14:2/175]
+    PARAMETERS:
+    RETURNS void TEXT=void  [9:1/91-9:5/95]
+    STATEMENT COMPOUND  [9:13/103-14:2/175] SCOPE: foo 
+        STATEMENT DECLARATION  [10:5/109-10:11/115] SCOPE: Stmt  [9:13/103-14:2/175]
+            VARIABLE i [10:5/109-10:11/115]  TYPE: int TEXT=int  [10:5/109-10:8/112]  INIT: null  SCOPE: Stmt  [9:13/103-14:2/175]
+        STATEMENT DECLARATION  [11:5/120-11:20/135] SCOPE: Stmt  [9:13/103-14:2/175]
+            VARIABLE a1 [11:10/125-11:15/130]  TYPE: N::A TEXT=N::A  [11:5/120-11:9/124]  INIT: null  SCOPE: Stmt  [9:13/103-14:2/175]
+            VARIABLE a2 [11:17/132-11:19/134]  TYPE: N::A TEXT=N::A  [11:5/120-11:9/124]  INIT: null  SCOPE: Stmt  [9:13/103-14:2/175]
+        STATEMENT DECLARATION  [12:5/140-12:19/154] SCOPE: Stmt  [9:13/103-14:2/175]
+            VARIABLE i1 [12:9/144-12:14/149]  TYPE: int TEXT=int  [12:5/140-12:8/143]  INIT: null  SCOPE: Stmt  [9:13/103-14:2/175]
+            VARIABLE i2 [12:16/151-12:18/153]  TYPE: int TEXT=int  [12:5/140-12:8/143]  INIT: null  SCOPE: Stmt  [9:13/103-14:2/175]
+        STATEMENT DECLARATION  [13:5/159-13:19/173] SCOPE: Stmt  [9:13/103-14:2/175]
+            VARIABLE i3 [13:9/163-13:14/168]  TYPE: int TEXT=int  [13:5/159-13:8/162]  INIT: null  SCOPE: Stmt  [9:13/103-14:2/175]
+            VARIABLE i4 [13:16/170-13:18/172]  TYPE: int TEXT=int  [13:5/159-13:8/162]  INIT: null  SCOPE: Stmt  [9:13/103-14:2/175]
+NAMESPACE DEFINITIONS for N (N) 
+    iz159324.cc  [1:1/0-8:2/90]
+NAMESPACE N (N) 
+    STRUCT A (N::A ) [2:5/18-7:6/87] lcurly=27 SCOPE: N 
+        BASE CLASSES:
+        MEMBERS:
+            FUNCTION DEFINITION A  [3:9/37-4:10/52] ConstructorDDImpl SCOPE: A 
+                SIGNATURE A()
+                UNIQUE NAME f:N::A::A()
+                DECLARATION: A  [3:9/37-4:10/52]
+                PARAMETERS:
+                RETURNS <*no_classifier*> TEXT=  [null-null]
+                STATEMENT COMPOUND  [3:13/41-4:10/52] SCOPE: A 
+            FUNCTION DEFINITION A  [5:9/61-6:10/81] ConstructorDDImpl SCOPE: A 
+                SIGNATURE A(int)
+                UNIQUE NAME f:N::A::A(int)
+                DECLARATION: A  [5:9/61-6:10/81]
+                PARAMETERS:
+                    i [5:11/63-5:16/68]  TYPE: int TEXT=int  [5:11/63-5:14/66]  INIT: null  SCOPE: A 
+                RETURNS <*no_classifier*> TEXT=  [null-null]
+                STATEMENT COMPOUND  [5:18/70-6:10/81] SCOPE: A 
+

@@ -144,6 +144,7 @@ public class TraceFlags {
     public static final boolean TRACE_ERROR_PROVIDER = DebugUtils.getBoolean("cnd.modelimpl.trace.error.provider", false); // NOI18N
     public static final boolean PARSE_STATISTICS = DebugUtils.getBoolean("cnd.parse.statistics", false); // NOI18N
     public static final boolean TRACE_PC_STATE = DebugUtils.getBoolean("cnd.pp.condition.state.trace", false); // NOI18N
+    public static final boolean TRACE_PC_STATE_COMPARISION = DebugUtils.getBoolean("cnd.pp.condition.comparision.trace", false); // NOI18N
 
     public static final int REPARSE_DELAY = DebugUtils.getInt("cnd.reparse.delay", 1001); // NOI18N
 

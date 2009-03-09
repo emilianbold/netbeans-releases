@@ -49,27 +49,28 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo
  */
 public final class SSDCProvider {
 
-  private static SSDCProvider instance = null;
-  private SunStudioDataCollector ssDataCollector = null;
+    private static SSDCProvider instance = null;
+    private SunStudioDataCollector ssDataCollector = null;
 
-
-
-  private SSDCProvider() {
-  }
-
-  public static SSDCProvider getInstance() {
-    if (instance == null) {
-      instance = new SSDCProvider();
+    private SSDCProvider() {
     }
-    return instance;
-  }
 
-  public SunStudioDataCollector getSSDataCollector(List<CollectedInfo> collectedInfoList) {
-    if (ssDataCollector == null) {
-      ssDataCollector = new SunStudioDataCollector(collectedInfoList);
-      return ssDataCollector;
+    public static SSDCProvider getInstance() {
+        if (instance == null) {
+            instance = new SSDCProvider();
+        }
+        return instance;
     }
-    ssDataCollector.addCollectedInfo(collectedInfoList);
-    return ssDataCollector;
-  }
+
+    public SunStudioDataCollector getSSDataCollector(
+            List<CollectedInfo> collectedInfoList) {
+
+        if (ssDataCollector == null) {
+            ssDataCollector = new SunStudioDataCollector(collectedInfoList);
+            return ssDataCollector;
+        }
+
+        ssDataCollector.addCollectedInfo(collectedInfoList);
+        return ssDataCollector;
+    }
 }

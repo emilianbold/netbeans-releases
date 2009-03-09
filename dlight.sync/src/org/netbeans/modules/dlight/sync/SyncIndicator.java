@@ -70,9 +70,13 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
     public void updated(List<DataRow> data) {
         List<Column> indicatorColumns = getMetadataColumns();
+        String firstColumnName = indicatorColumns.iterator().next().getColumnName();
         int[][] values = new int[data.size()][indicatorColumns.size()];
         int rowIdx = 0;
         for (DataRow row : data) {
+            if (!row.getColumnNames().contains(firstColumnName)) {
+                continue;
+            }
             int colIdx = 0;
             for (Column column : indicatorColumns) {
                 String strValue = row.getStringValue(column.getColumnName()); //TODO: change to Long

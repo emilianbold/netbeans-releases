@@ -44,6 +44,7 @@ package org.netbeans.modules.refactoring.java;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.Color;
@@ -66,7 +67,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -180,28 +180,31 @@ public class RetoucheUtils {
         return null;
     }
     
-    public static Set<ElementHandle<TypeElement>> getImplementorsAsHandles(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {    
+    public static Set<ElementHandle<TypeElement>> getImplementorsAsHandles(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
         cancel = false;
-       ClassPath source = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-       LinkedList<ElementHandle<TypeElement>> elements = new LinkedList<ElementHandle<TypeElement>>(idx.getElements(ElementHandle.create(el),
-                EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
-                EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES)));
-        HashSet<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();
-        while(!elements.isEmpty()) {
+        LinkedList<ElementHandle<TypeElement>> elements = new LinkedList<ElementHandle<TypeElement>>(
+                implementorsQuery(idx, ElementHandle.create(el)));
+        Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();
+        while (!elements.isEmpty()) {
             if (cancel) {
                 cancel = false;
-                return Collections.<ElementHandle<TypeElement>>emptySet();
+                return Collections.emptySet();
             }
             ElementHandle<TypeElement> next = elements.removeFirst();
-            FileObject file = SourceUtils.getFile(next, cpInfo);
-            if(file!=null && source.contains(file)) {
-                result.add(next);
+            if (!result.add(next)) {
+                // it is a duplicate; do not query again
+                continue;
             }
-            elements.addAll(idx.getElements(next,
-                    EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
-                    EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES)));
+            Set<ElementHandle<TypeElement>> foundElements = implementorsQuery(idx, next);
+            elements.addAll(foundElements);
         }
         return result;
+    }
+
+    private static Set<ElementHandle<TypeElement>> implementorsQuery(ClassIndex idx, ElementHandle<TypeElement> next) {
+        return idx.getElements(next,
+                    EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+                    EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES));
     }
 
     public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement e, CompilationInfo info) {
@@ -1008,5 +1011,37 @@ public class RetoucheUtils {
             }
         }
     }
-    
+
+    //XXX: copied from SourceUtils.addImports. Ideally, should be on one place only:
+    public static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make)
+        throws IOException {
+        // do not modify the list given by the caller (may be reused or immutable).
+        toImport = new ArrayList<String>(toImport);
+        Collections.sort(toImport);
+
+        List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
+        int currentToImport = toImport.size() - 1;
+        int currentExisting = imports.size() - 1;
+
+        while (currentToImport >= 0 && currentExisting >= 0) {
+            String currentToImportText = toImport.get(currentToImport);
+
+            while (currentExisting >= 0 && (imports.get(currentExisting).isStatic() || imports.get(currentExisting).getQualifiedIdentifier().toString().compareTo(currentToImportText) > 0))
+                currentExisting--;
+
+            if (currentExisting >= 0) {
+                imports.add(currentExisting+1, make.Import(make.Identifier(currentToImportText), false));
+                currentToImport--;
+            }
+        }
+        // we are at the head of import section and we still have some imports
+        // to add, put them to the very beginning
+        while (currentToImport >= 0) {
+            String importText = toImport.get(currentToImport);
+            imports.add(0, make.Import(make.Identifier(importText), false));
+            currentToImport--;
+        }
+        // return a copy of the unit with changed imports section
+        return make.CompilationUnit(cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
+    }
 }

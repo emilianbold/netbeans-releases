@@ -47,7 +47,7 @@ import java.util.List;
  *
  * @author Erno Mononen
  */
-public final class TestSuite {
+public class TestSuite {
 
     public static final String ANONYMOUS_SUITE = new String();
 

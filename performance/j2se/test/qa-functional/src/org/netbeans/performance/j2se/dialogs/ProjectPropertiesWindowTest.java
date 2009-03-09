@@ -91,11 +91,12 @@ public class ProjectPropertiesWindowTest extends PerformanceTestCase {
         projectName = "PerformanceTestData";
         doMeasurement();
     }
-    
+
+/* commented until IZ 159587 is fixed    
     public void testNBProject(){
         projectName = "SystemProperties";
         doMeasurement();
-    }
+    }*/
     
     public void initialize() {
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle","LBL_Customizer_Title", new String[]{projectName});

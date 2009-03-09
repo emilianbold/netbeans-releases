@@ -47,9 +47,21 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="CheckNodes">
+        <api name="explorer"/>
+        <summary>Support for check-boxes displayed next to node icons.</summary>
+        <version major="6" minor="18"/>
+        <date day="8" month="3" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>Nodes can have check-boxes rendered next to their icons or display names.
+        </description>
+        <class package="org.openide.explorer.view" name="CheckNodeCookie"/>
+        <issue number="159546"/>
+    </change>    
     <change id="SetSelectedNodes">
         <api name="explorer"/>
-        <summary>setSelectedNodes() does partial selection instead of throwing IllegalArgumentException when 
+        <summary>setSelectedNodes() does partial selection instead of throwing IllegalArgumentException when
         some of newly selected nodes are not under root context.</summary>
         <version major="6" minor="16"/>
         <date day="16" month="9" year="2008"/>
@@ -57,14 +69,14 @@ made subject to such option by the copyright holder.
         <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="no"/>
         <description>Nodes can be removed outside of AWT thread while e.g. view can
         try to select them. This generated IllegalArgumentException during checking if
-        such a node is under root context. Now 
+        such a node is under root context. Now
         <a href="@TOP@/org/openide/explorer/ExplorerManager.html#setSelectedNodes(org.openide.nodes.Node[])"><code>setSelectedNodes()</code></a>.
-        does partial selection 
+        does partial selection
         of valid nodes instead of throwing IllegalArgumentException.
         </description>
         <class package="org.openide.explorer" name="ExplorerManager"/>
         <issue number="145376"/>
-    </change>    
+    </change>
     <change id="OutlineView">
         <api name="explorer"/>
         <summary>Added OutlineView component which is a replacement for buggy TreeTableView.</summary>

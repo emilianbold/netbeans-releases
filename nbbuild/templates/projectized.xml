@@ -217,6 +217,14 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         </ant>
     </target>
 
+    <target name="-verify-apichanges" if="javadoc.apichanges" depends="basic-init">
+        <xmlvalidate file="${javadoc.apichanges}" failonerror="true"/>
+        <xslt in="${javadoc.apichanges}" out="build/apichanges.html" style="${nb_all}/nbbuild/javadoctools/apichanges.xsl">
+            <param name="javadoc-url-base" expression="."/>
+        </xslt>
+        <!-- XXX could perhaps validate arch.xml too, if it exists -->
+    </target>
+
     <target name="check-sources-exist" depends="build-init">
         <available file="${src.dir}" property="sources.exist"/>
     </target>

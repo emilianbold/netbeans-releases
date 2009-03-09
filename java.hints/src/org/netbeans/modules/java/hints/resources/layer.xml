@@ -59,6 +59,30 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMethod"/>
             </file>
               </folder>
+
+                <folder name="RefactoringActions">
+                    <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance"/>
+                        <attr name="position" intvalue="1050"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance"/>
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance"/>
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file>
+                </folder>
+
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -114,7 +138,8 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-netbeans-modules-java-hints-EqualsMethodHint.instance"/>
                     <file name="org-netbeans-modules-java-hints-SyncOnNonFinal.instance"/>
-                </folder>    
+                    <file name="org-netbeans-modules-java-hints-CollectionRemove.instance"/>
+                </folder>
 
                 <folder name="errors">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
@@ -217,6 +242,9 @@ made subject to such option by the copyright holder.
                     <file name="DivisionByZero.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createDivisionByZero"/>
                     </file>
+                    <file name="RawTypes.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createRawTypes"/>
+                    </file>
                 </folder>
 
                 <folder name="apisupport">
@@ -299,29 +327,5 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance"/>
         </folder>
     </folder>
-    <folder name="Menu">
-        <folder name="Refactoring">
-            <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance"/>
-                <attr name="position" intvalue="1050"/>
-            </file>
-            <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance"/>
-                <attr name="position" intvalue="1400"/>
-            </file>
-            <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance"/>
-                <attr name="position" intvalue="1500"/>
-            </file>
-            <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance"/>
-                <attr name="position" intvalue="1600"/>
-            </file>
-            <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance"/>
-                <attr name="position" intvalue="1700"/>
-            </file>            
-            </folder>
-    </folder>   
     
 </filesystem>

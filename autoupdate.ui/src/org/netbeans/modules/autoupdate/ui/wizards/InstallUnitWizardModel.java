@@ -67,6 +67,7 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     private OperationContainer<InstallSupport> updateContainer = null;
     private OperationContainer<OperationSupport> customContainer = Containers.forCustomInstall ();
     private PluginManagerUI manager;
+    private boolean allLicensesTouched = false;
     
     /** Creates a new instance of InstallUnitWizardModel */
     public InstallUnitWizardModel (OperationType doOperation, OperationContainer<InstallSupport> updateContainer) {
@@ -129,11 +130,16 @@ public class InstallUnitWizardModel extends OperationWizardModel {
                 break;
             }
         }
+        allLicensesTouched = true;
         return res;
+    }
+    public boolean allLicensesTouched() {
+        return allLicensesTouched;
     }
     
     public void addApprovedLicenses (Collection<String> licences) {
         approvedLicences.addAll (licences);
+        allLicensesTouched = false;
     }
     
     public InstallSupport getInstallSupport () {

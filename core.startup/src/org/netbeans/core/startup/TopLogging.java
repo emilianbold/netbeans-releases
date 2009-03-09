@@ -258,8 +258,11 @@ public final class TopLogging {
         if (nbdirs != null) { // noted in #67862: should show all clusters here.
             StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
             while (tok.hasMoreTokens()) {
-                ps.print(FileUtil.normalizeFile(new File(tok.nextToken())));
-                ps.print("\n                            "); //NOI18N
+                File dir = FileUtil.normalizeFile(new File(tok.nextToken()));
+                if (dir.isDirectory()) {
+                    ps.print(dir);
+                    ps.print("\n                            "); //NOI18N
+                }
             }
         }
         ps.println(CLIOptions.getHomeDir());
@@ -448,7 +451,7 @@ public final class TopLogging {
             delegate.close();
         }
 
-        public Formatter getFormatter() {
+        public @Override Formatter getFormatter() {
             return delegate.getFormatter();
         }
 
@@ -681,7 +684,7 @@ public final class TopLogging {
      */
     private static final class LgStream extends PrintStream implements Runnable {
         private Logger log;
-        private StringBuffer sb = new StringBuffer();
+        private final StringBuffer sb = new StringBuffer();
         private static RequestProcessor RP = new RequestProcessor("StdErr Flush");
         private RequestProcessor.Task flush = RP.create(this, true);
 
@@ -690,7 +693,7 @@ public final class TopLogging {
             this.log = log;
         }
 
-        public void write(byte[] buf, int off, int len) {
+        public @Override void write(byte[] buf, int off, int len) {
             if (RP.isRequestProcessorThread()) {
                 return;
             }
@@ -702,11 +705,11 @@ public final class TopLogging {
             checkFlush();
         }
 
-        public void write(byte[] b) throws IOException {
+        public @Override void write(byte[] b) throws IOException {
             write(b, 0, b.length);
         }
 
-        public void write(int b) {
+        public @Override void write(int b) {
             if (RP.isRequestProcessorThread()) {
                 return;
             }

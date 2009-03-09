@@ -71,7 +71,7 @@ public class APTHandlersSupportImpl {
         ((APTPreprocHandlerImpl)preprocHandler).setValid(false);
     }
     
-    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<String> sysIncludePaths, List<String> userIncludePaths) {
+    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<CharSequence> sysIncludePaths, List<CharSequence> userIncludePaths) {
         return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths);
     }
 

@@ -44,12 +44,7 @@ package org.openide.explorer.view;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import junit.textui.TestRunner;
@@ -57,14 +52,11 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
-import org.openide.loaders.DataFilter;
-import org.openide.loaders.RepositoryNodeFactory;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.windows.TopComponent;
 
 
 /** Tests for TreeTableView.

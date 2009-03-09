@@ -42,7 +42,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * CompilerSetManagerEvents handles tasks which depends on CompilerSetManager activity and
@@ -54,29 +55,30 @@ import org.netbeans.modules.cnd.api.utils.RemoteUtils;
  */
 public class CompilerSetManagerEvents {
 
-    private static final Map<String, CompilerSetManagerEvents> map = new HashMap<String, CompilerSetManagerEvents>();
+    private static final Map<ExecutionEnvironment, CompilerSetManagerEvents> map =
+            new HashMap<ExecutionEnvironment, CompilerSetManagerEvents>();
 
-    public static synchronized CompilerSetManagerEvents get(String hkey) {
-        CompilerSetManagerEvents instance = map.get(hkey);
+    public static synchronized CompilerSetManagerEvents get(ExecutionEnvironment env) {
+        CompilerSetManagerEvents instance = map.get(env);
         if (instance == null) {
-            instance = new CompilerSetManagerEvents(hkey);
-            map.put(hkey, instance);
+            instance = new CompilerSetManagerEvents(env);
+            map.put(env, instance);
         }
         return instance;
     }
 
-    public CompilerSetManagerEvents(String hkey) {
-        this.hkey = hkey;
-        this.isCodeModelInfoReady = CompilerSetManager.getDefault(hkey).isComplete();
+    public CompilerSetManagerEvents(ExecutionEnvironment env) {
+        this.executionEnvironment = env;
+        this.isCodeModelInfoReady = CompilerSetManager.getDefault(executionEnvironment).isComplete();
     }
 
-    private final String hkey;
+    private final ExecutionEnvironment executionEnvironment;
 
     private boolean isCodeModelInfoReady;
     private List<Runnable> tasks = new ArrayList<Runnable>();
 
     public void runOnCodeModelReadiness(Runnable task) {
-        if (RemoteUtils.isLocalhost(hkey) || isCodeModelInfoReady) {
+        if (executionEnvironment.isLocal() || isCodeModelInfoReady) {
             task.run();
         } else {
             tasks.add(task);

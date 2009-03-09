@@ -74,7 +74,7 @@ public abstract class ScreenDisplayPresenter extends DynamicPresenter {
     public abstract Collection<DesignComponent> getChildren ();
 
     /**
-     * Gets actual view of the component. The JComponent is supposed to 
+     * Gets actual view of the component. The JComponent is supposed to
      * cooperate nicely with various LayoutManagers (in MIDP there
      * are specific layout managers)
      * @return the view
@@ -116,7 +116,20 @@ public abstract class ScreenDisplayPresenter extends DynamicPresenter {
     public boolean isDraggable() {
         return false;
     }
-    
+
+    /**
+     * Returns component's view location, that can differ
+     * from real location of view, returned by getView().getLocation().
+     * <p>
+     * If returns null, getView().getLocation() will be used.
+     * <p>
+     * In default implementation returns getView().getLocation();
+     * @return actual component's view location
+     */
+    public Point getLocation(){
+        return getView().getLocation();
+    }
+
     public AcceptSuggestion createSuggestion(Transferable transferable) {
         return null;
     }

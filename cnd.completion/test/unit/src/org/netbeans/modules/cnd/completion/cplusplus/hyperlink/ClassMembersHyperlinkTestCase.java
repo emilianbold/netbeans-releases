@@ -50,6 +50,25 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ159307() throws Exception {
+        // IZ#159307: Wrong recognition of local constructor as global function
+        performTest("iz159307.cpp", 13, 12, "iz159307.cpp", 7, 9);
+        performTest("iz159307.cpp", 13, 30, "iz159307.cpp", 9, 9);
+        performTest("iz159307.cpp", 14, 15, "iz159307.cpp", 1, 1);
+    }
+
+    public void testIZ159156() throws Exception {
+        // IZ#159156: Wrong type resolving scope sequence in Resolver3
+        performTest("iz159156.cpp", 18, 18, "iz159156.cpp", 2, 5);
+    }
+
+    public void testIZ148223() throws Exception {
+        // IZ#148223: IDE can't recognize overloaded operator&&
+        performTest("operators_hyperlink.cpp", 65, 21, "operators_hyperlink.cpp", 6, 9); // cc in (a1 && b1).cc()
+        performTest("operators_hyperlink.cpp", 66, 21, "operators_hyperlink.cpp", 6, 9); // cc in (a1 && e1).cc()
+        performTest("operators_hyperlink.cpp", 67, 21, "operators_hyperlink.cpp", 14, 9); // c1 in (e1 && d1)->c1()
+    }
+
     public void testIZ157837() throws Exception {
         // IZ#157837: incorrect deref of function-type fields
         performTest("iz157837.cc", 23, 35, "iz157837.cc", 7, 9); // me_value
@@ -739,6 +758,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         //IZ#154781: Completion fails on const
         performTest("iz154781.cc", 14, 20, "iz154781.cc", 5, 5);
         performTest("iz154781.cc", 15, 20, "iz154781.cc", 5, 5);
+    }
+
+    public void testIZ151592() throws Exception {
+        //IZ#151592: wrong hyperlink on derived class member
+        performTest("iz151592.cc", 9, 14, "iz151592.cc", 9, 5);
+        performTest("iz151592.cc", 10, 14, "iz151592.cc", 10, 5);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

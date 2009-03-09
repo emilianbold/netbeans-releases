@@ -117,9 +117,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             System.err.println("function ast " + ast.getText() + " without childs in file " + file.getAbsolutePath());            
         }
         if (!isStatic()) {
-            CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(
-                               name.toString(), true, true, false);
-            Iterator<CsmFunction> it = CsmSelect.getDefault().getStaticFunctions(file, filter);
+            CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(
+                               name, true, true, false);
+            Iterator<CsmFunction> it = CsmSelect.getStaticFunctions(file, filter);
             while(it.hasNext()){
                 CsmFunction fun = it.next();
                 if( name.equals(fun.getName()) ) {
@@ -375,9 +375,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      */
     public CsmFunctionDefinition getDefinition() {
         if( isCStyleStatic() ) {
-            CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(
-                               getName().toString(), true, true, false);
-            Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(getContainingFile(), filter);
+            CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(
+                               getName(), true, true, false);
+            Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(getContainingFile(), filter);
             while(it.hasNext()){
                 CsmDeclaration decl = it.next();
                 if( CsmKindUtilities.isFunctionDefinition(decl) ) {
@@ -575,7 +575,27 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             assert start >= 0 : "must have word \"operator\" in name";
             start += OPERATOR.length();
             String signText = strName.substring(start).trim();
-            out = OperatorKind.getKindByImage(signText);
+            OperatorKind binaryKind = OperatorKind.getKindByImage(signText, true);
+            OperatorKind nonBinaryKind = OperatorKind.getKindByImage(signText, false);
+            if (binaryKind != OperatorKind.NONE && nonBinaryKind != OperatorKind.NONE) {
+                // select the best
+                int nrParams = getNrParameters();
+                if (nrParams == 0) {
+                    out = nonBinaryKind;
+                } else if (nrParams == 1) {
+                    if (CsmKindUtilities.isClass(getScope())) {
+                        out = binaryKind;
+                    } else {
+                        out = nonBinaryKind;
+                    }
+                } else if (nrParams == 2) {
+                    out = binaryKind;
+                } else {
+                    out = nonBinaryKind;
+                }
+            } else {
+                out = (binaryKind != OperatorKind.NONE) ? binaryKind : nonBinaryKind;
+            }
         }
         return out;                
     }
@@ -730,6 +750,14 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
     }
 
+    private int getNrParameters() {
+        if (isVoidParameterList() || this.parameterList == null) {
+            return 0;
+        } else {
+            return this.parameterList.getNrParameters();
+        }
+    }
+    
     private void _disposeParameters() {
         if (this.parameterList != null) {
             parameterList.dispose();

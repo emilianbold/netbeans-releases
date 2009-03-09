@@ -50,6 +50,8 @@ import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.eecommon.api.HttpMonitorHelper;
 import org.netbeans.modules.glassfish.eecommon.api.Utils;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
@@ -61,6 +63,8 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
@@ -93,18 +97,20 @@ public class FastDeploy extends IncrementalDeployment {
      */
     public ProgressObject initialDeploy(Target target, J2eeModule module, ModuleConfiguration configuration, File dir) {
         String moduleName = Utils.computeModuleID(module, dir, Integer.toString(hashCode()));
-        String contextRoot;
-        try {
-            ContextRootConfiguration contextRootConfig = configuration.getLookup().lookup(ContextRootConfiguration.class);
-            contextRoot = contextRootConfig.getContextRoot();
-        } catch(ConfigurationException ex) {
-            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "Unable to read context-root for " + moduleName, ex);
-            contextRoot = moduleName;
+        String contextRoot = null;
+        if (ModuleType.WAR.equals(module.getModuleType())) {
+            try {
+                ContextRootConfiguration contextRootConfig = configuration.getLookup().lookup(ContextRootConfiguration.class);
+                contextRoot = contextRootConfig.getContextRoot();
+            } catch (ConfigurationException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, "Unable to read context-root for " + moduleName, ex);
+                contextRoot = moduleName;
+            }
         }
         // XXX fix cast -- need error instance for ProgressObject to return errors
-        Hk2TargetModuleID moduleId = new Hk2TargetModuleID((Hk2Target) target, moduleName, 
+        Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target, moduleName,
                 contextRoot, dir.getAbsolutePath());
-        MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId);
+        MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId, ModuleType.EAR.equals(module.getModuleType()));
 
         GlassfishModule commonSupport = dm.getCommonServerSupport();
         try {
@@ -117,9 +123,9 @@ public class FastDeploy extends IncrementalDeployment {
                 commonSupport.restartServer(progressObject);
             }
         } catch (IOException ex) {
-            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         } catch (SAXException ex) {
-            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
         }
         commonSupport.deploy(progressObject, dir, moduleName);
 
@@ -133,7 +139,8 @@ public class FastDeploy extends IncrementalDeployment {
      * @return 
      */
     public ProgressObject incrementalDeploy(TargetModuleID targetModuleID, AppChangeDescriptor appChangeDescriptor) {
-        MonitorProgressObject progressObject = new MonitorProgressObject(dm, targetModuleID,CommandType.REDEPLOY);
+        MonitorProgressObject progressObject = new MonitorProgressObject(dm, 
+                (Hk2TargetModuleID) targetModuleID,CommandType.REDEPLOY,targetModuleID.getChildTargetModuleID().length > 0);
         GlassfishModule commonSupport = dm.getCommonServerSupport();
         try {
             boolean restart = HttpMonitorHelper.synchronizeMonitor(
@@ -171,17 +178,10 @@ public class FastDeploy extends IncrementalDeployment {
      * @return 
      */
     public boolean canFileDeploy(Target target, J2eeModule deployable) {
-//        if (null == target){
-//            return false;
-//        }
         if (null == deployable){
             return false;
         }
         
-        if (deployable.getModuleType() == ModuleType.EAR) {
-            return false;
-        }
-
         if (deployable.getModuleType() == ModuleType.CAR) {
             return false;
         }
@@ -194,7 +194,30 @@ public class FastDeploy extends IncrementalDeployment {
      *   server can accept the deployment from an arbitrary directory.
      */
     public File getDirectoryForNewApplication(Target target, J2eeModule app, ModuleConfiguration configuration) {
-        return null;
+        File dest = null;
+        if (app.getModuleType() == J2eeModule.EAR) {
+            File tmp = getProjectDir(app);
+            if (null == tmp) {
+               return dest;
+            }
+            dest = new File(tmp, "target");  // NOI18N
+            if (!dest.exists()) {
+                // the app wasn't a maven project
+                dest = new File(tmp, "dist");  // NOI18N
+            }
+            if (dest.isFile() || (dest.isDirectory() && !dest.canWrite())) {
+               throw new IllegalStateException();
+            }
+            dest = new File(dest, "gfdeploy");  // NOI18N
+            boolean retval = true;
+            if (!dest.exists()) {
+                retval = dest.mkdirs();
+            }
+            if (!retval || !dest.isDirectory()) {
+               dest = null;
+            }
+        }
+        return dest;
     }
     
     /**
@@ -206,7 +229,33 @@ public class FastDeploy extends IncrementalDeployment {
      * @return 
      */
     public File getDirectoryForNewModule(File file, String string, J2eeModule app, ModuleConfiguration configuration) {
-        return null;
+        return new File(file, transform(removeLeadSlash(string)));
+    }
+
+    private String removeLeadSlash(String s) {
+        if (null == s) {
+            return s;
+        }
+        if (s.length() < 1) {
+            return s;
+        }
+        if (!s.startsWith("/")) {
+            return s;
+        }
+        return s.substring(1);
+    }
+
+    static String transform(String s) {
+        int len = s.length();
+        if (len > 4) {
+            StringBuffer sb = new StringBuffer(s);
+            char tmp = sb.charAt(len - 4);
+            if (tmp == '.') {
+                sb.setCharAt(len-4, '_');
+                return sb.toString();
+            }
+        }
+        return s;
     }
     
     /**
@@ -215,7 +264,7 @@ public class FastDeploy extends IncrementalDeployment {
      * @return 
      */
     public File getDirectoryForModule(TargetModuleID targetModuleID) {
-        return null;
+        return new File(((Hk2TargetModuleID) targetModuleID).getLocation());
     }
 
     @Override
@@ -226,5 +275,40 @@ public class FastDeploy extends IncrementalDeployment {
     @Override
     public boolean isDeployOnSaveSupported() {
         return !"false".equals(System.getProperty("glassfish.javaee.deployonsave"));
+    }
+
+    // try to get the Project Directory as a File
+    // use a couple different stratgies, since the resource.dir is in a user-
+    // editable file -- but it is quicker to access, if it is there....
+    //
+    private File getProjectDir(J2eeModule app) {
+        try {
+            FileObject fo = app.getContentDirectory();
+            Project p = FileOwnerQuery.getOwner(fo);
+            if (null != p) {
+                fo = p.getProjectDirectory();
+                return FileUtil.toFile(fo);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger("glassfish-javaee").log(Level.FINER,    // NOI18N
+                    null,ex);
+        }
+        java.io.File tmp = app.getResourceDirectory();
+
+        if (tmp != null) {
+            return tmp.getParentFile();
+        }
+        return null;
+    }
+
+    @Override
+    public String getModuleUrl(TargetModuleID module) {
+        assert null != module;
+        if (null == module) {
+            return "/bogusModule";
+        }
+        Hk2TargetModuleID self = (Hk2TargetModuleID) module;
+        String retVal = self.getModuleID();
+        return retVal.startsWith("/") ? retVal : "/"+retVal;
     }
 }

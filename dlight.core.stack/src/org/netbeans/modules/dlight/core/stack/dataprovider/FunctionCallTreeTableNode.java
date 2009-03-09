@@ -93,6 +93,9 @@ public final class FunctionCallTreeTableNode implements TreeTableNode {
   }
 
   public Object getValue(String columnName) {
+    if (!deligator.hasMetric(columnName)){
+        return deligator.getFunction().getQuilifiedName();
+    }
     return deligator.getMetricValue(columnName);
   }
 

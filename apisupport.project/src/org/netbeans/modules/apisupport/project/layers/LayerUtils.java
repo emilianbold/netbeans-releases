@@ -692,7 +692,7 @@ public class LayerUtils {
         }
         return platform;
     }
-    
+    // TODO C.P +cluster.path
     public static Set<File> getPlatformJarsForSuiteComponentProject(Project project, SuiteProject suite) {
         NbPlatform platform = suite.getPlatform(true);
         PropertyEvaluator eval = suite.getEvaluator();
@@ -732,8 +732,8 @@ public class LayerUtils {
         Set<String> includedClustersS = (includedClusters != null) ? new HashSet<String>(Arrays.asList(includedClusters)) : Collections.<String>emptySet();
         Set<String> excludedClustersS = (excludedClusters != null) ? new HashSet<String>(Arrays.asList(excludedClusters)) : Collections.<String>emptySet();
         Set<String> excludedModulesS = (excludedModules != null) ? new HashSet<String>(Arrays.asList(excludedModules)) : Collections.<String>emptySet();
-        ModuleEntry[] entries = platform.getModules();
-        Set<File> jars = new HashSet<File>(entries.length);
+        Set<ModuleEntry> entries = platform.getModules();
+        Set<File> jars = new HashSet<File>(entries.size());
         for (ModuleEntry entry : entries) {
             if (SingleModuleProperties.isExcluded(entry, excludedModulesS, includedClustersS, excludedClustersS)) {
                 continue;

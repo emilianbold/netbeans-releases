@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.sql.editor.completion;
@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
@@ -79,7 +80,11 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         filterMetadata(metadata.getCatalogs(), restrict, prefix, new Handler<Catalog>() {
             public void handle(Catalog catalog) {
                 String catalogName = catalog.getName();
-                items.add(SQLCompletionItem.catalog(catalogName, doQuote(catalogName, quote), substitutionOffset, substitutionHandler));
+                items.add(SQLCompletionItem.catalog(
+                        catalogName,
+                        doQuote(catalogName, quote),
+                        substitutionOffset,
+                        substitutionHandler));
             }
         });
         return result;
@@ -91,7 +96,11 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
             public void handle(Schema schema) {
                 if (!schema.isSynthetic()) {
                     String schemaName = schema.getName();
-                    items.add(SQLCompletionItem.schema(schemaName, doQuote(schemaName, quote), substitutionOffset, substitutionHandler));
+                    items.add(SQLCompletionItem.schema(
+                            schemaName,
+                            doQuote(schemaName, quote),
+                            substitutionOffset,
+                            substitutionHandler));
                 }
             }
         });
@@ -99,10 +108,27 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
     }
 
     public void addTables(Schema schema, Set<String> restrict, String prefix, final boolean quote, final int substitutionOffset) {
+        addTables (schema, null, restrict, prefix, quote, substitutionOffset, false);
+    }
+
+    public void addTablesAtInsertInto (Schema schema, QualIdent fullyTypedIdent, Set<String> restrict, String prefix, final boolean quote, final int substitutionOffset) {
+        addTables (schema, fullyTypedIdent, restrict, prefix, quote, substitutionOffset, true);
+    }
+
+    private void addTables(Schema schema, QualIdent fullyTypedIdent, Set<String> restrict, String prefix, final boolean quote, final int substitutionOffset, final boolean ownHandler) {
+        final String schema4display = fullyTypedIdent == null ? "" : fullyTypedIdent.getSimpleName () + '.'; // NOI18N
+        final int ownOffset = fullyTypedIdent == null ? substitutionOffset :
+            substitutionOffset - (fullyTypedIdent.getSimpleName ().length () + 1);
         filterMetadata(schema.getTables(), restrict, prefix, new Handler<Table>() {
             public void handle(Table table) {
                 String tableName = table.getName();
-                items.add(SQLCompletionItem.table(tableName, doQuote(tableName, quote), substitutionOffset, substitutionHandler));
+                items.add(SQLCompletionItem.table(
+                        tableName,
+                        doQuote(tableName, quote),
+                        ownOffset,
+                        ownHandler ?
+                            new ExtendedSubstitutionHandler (substitutionHandler, schema4display, " (") // NOI18N
+                            : substitutionHandler));
             }
         });
     }
@@ -116,7 +142,15 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         });
     }
 
+    public void addColumnsWithTableName (Table table, QualIdent fullyTypedIdent, String prefix, final boolean quote, final int substitutionOffset) {
+        addColumns (table, fullyTypedIdent, prefix, quote, substitutionOffset, true);
+    }
+
     public void addColumns(Table table, String prefix, final boolean quote, final int substitutionOffset) {
+        addColumns (table, null, prefix, quote, substitutionOffset, false);
+    }
+
+    private void addColumns(final Table table, QualIdent fullyTypedIdent, String prefix, final boolean quote, final int substitutionOffset, final boolean ownHandler) {
         Schema schema = table.getParent();
         Catalog catalog = schema.getParent();
         List<String> parts = new ArrayList<String>(3);
@@ -128,10 +162,21 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         }
         parts.add(table.getName());
         final QualIdent qualTableName = new QualIdent(parts);
+        final String table4display = fullyTypedIdent == null ? table.getName () :
+            fullyTypedIdent.getFirstQualifier () + '.' + fullyTypedIdent.getSecondQualifier (); // NOI18N
+        final int ownOffset = fullyTypedIdent == null ? substitutionOffset :
+            substitutionOffset - (fullyTypedIdent.getFirstQualifier ().length () + fullyTypedIdent.getSecondQualifier ().length () + 2);
         filterMetadata(table.getColumns(), null, prefix, new Handler<Column>() {
             public void handle(Column column) {
                 String columnName = column.getName();
-                items.add(SQLCompletionItem.column(qualTableName, columnName, doQuote(columnName, quote), substitutionOffset, substitutionHandler));
+                items.add(SQLCompletionItem.column (
+                        qualTableName,
+                        columnName,
+                        doQuote(columnName, quote),
+                        ownOffset,
+                        ownHandler ?
+                            new ExtendedSubstitutionHandler (substitutionHandler, table4display + " (", null) // NOI18N
+                            : substitutionHandler));
             }
         });
     }
@@ -191,5 +236,21 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
     private interface ParamHandler<T, P> {
 
         void handle(T object, P param);
+    }
+
+    private static final class ExtendedSubstitutionHandler implements
+            SubstitutionHandler {
+        private final SubstitutionHandler original;
+        private final String prefix;
+        private final String postfix;
+        public ExtendedSubstitutionHandler (SubstitutionHandler handler, String prefix, String postfix) {
+            this.original = handler;
+            this.prefix = prefix == null ? "" : prefix;
+            this.postfix = postfix == null ? "" : postfix;
+        }
+        public void substituteText (JTextComponent component, int offset, String text) {
+            original.substituteText (component, offset, prefix + text + postfix);
+        }
+
     }
 }

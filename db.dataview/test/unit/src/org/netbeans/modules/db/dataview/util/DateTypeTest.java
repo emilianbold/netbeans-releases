@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.dataview.util;
@@ -90,13 +90,13 @@ public class DateTypeTest extends NbTestCase {
      */
     public void testConvertObject() {
         try {
-            type.convert(new Object());
+            DateType.convert(new Object());
             fail("Expected Exception");
         } catch (Exception e) {
             // expected
         }
         try {
-            type.convert("this is not a date");
+            DateType.convert("this is not a date");
             fail("Expected Exception");
         } catch (Exception e) {
             // expected
@@ -104,13 +104,13 @@ public class DateTypeTest extends NbTestCase {
     }
 
     public void testToDate() throws Exception {
-        Object result = type.convert(new Date(now));
+        Object result = DateType.convert(new Date(now));
         assertNotNull("Should get object back", result);
         assertTrue("Should get Date back", result instanceof java.sql.Date);
     }
     
     public void testToTimestamp() throws Exception {
-        Object result = type.convert(new Timestamp(now));
+        Object result = DateType.convert(new Timestamp(now));
         assertTrue("Should get Timestamp back", result instanceof java.sql.Date);
         assertEquals(expectedMillis, ((Date) result).getTime());
     }
@@ -123,7 +123,7 @@ public class DateTypeTest extends NbTestCase {
                 0; // time
 
         Date expectedDate = new Date(GMT_2002_0801 - TimeZone.getDefault().getOffset(GMT_2002_0801));
-        assertEquals("Should accept", expectedDate, type.convert("2002-08-01"));
+        assertEquals("Should accept", expectedDate, DateType.convert("2002-08-01"));
 
         // August 1, 2002 12:00 PM CDT
         expectedDate = new Date(expectedDate.getTime() + 12 * 60 * 60 * 1000L // time (daylight
@@ -138,15 +138,15 @@ public class DateTypeTest extends NbTestCase {
         assertEquals("Check format", "2002-08-01", toConvert);
 
         String tExpected = "2002-08-01";
-        String converted = type.convert(tExpected).toString();
+        String converted = DateType.convert(tExpected).toString();
         assertEquals(tExpected, converted);
 
         String expectedPlusTime = tExpected + " 08:45:00";
-        converted = type.convert(expectedPlusTime).toString();
+        converted = DateType.convert(expectedPlusTime).toString();
         assertEquals(tExpected, converted);
 
         expectedPlusTime = tExpected + " 23:59:59";
-        converted = type.convert(expectedPlusTime).toString();
+        converted = DateType.convert(expectedPlusTime).toString();
         assertEquals(tExpected, converted);
     }
 

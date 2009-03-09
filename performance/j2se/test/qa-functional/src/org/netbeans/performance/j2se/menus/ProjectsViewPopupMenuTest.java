@@ -109,10 +109,11 @@ public class ProjectsViewPopupMenuTest extends ValidatePopupMenuOnNodes {
     public void testXmlFilePopupMenuProjects(){
         testNode(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|xmlfile.xml"));
     }
-    
+
+/* commented until IZ 159587 is fixed    
     public void testNBProjectNodePopupMenuProjects() {
         testNode(getProjectNode("SystemProperties"));
-    }
+    }*/
     
     
     public void testNode(Node node){

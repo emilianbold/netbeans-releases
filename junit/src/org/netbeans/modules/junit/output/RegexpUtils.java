@@ -153,7 +153,10 @@ final class RegexpUtils {
     static final String END_OF_TEST_PREFIX = "endTest";                 //NOI18N
     static final String ADD_FAILURE_PREFIX = "addFailure";      //NOI18N
     static final String ADD_ERROR_PREFIX = "addError";          //NOI18N
-    
+
+    static final String COMPARISON_REGEX = ".*expected:<(.*)\\[(.*)\\](.*)> but was:<(.*)\\[(.*)\\](.*)>$"; //NOI18N
+    static final String COMPARISON_HIDDEN_REGEX = ".*expected:<(.*)> but was:<(.*)>$"; //NOI18N
+
     /**
      * Regexp matching part of a Java task's invocation debug message
      * that specificies the classpath.
@@ -201,7 +204,8 @@ final class RegexpUtils {
                              locationInFilePattern,
                              testcaseHeaderBriefPattern,
                              testcaseHeaderPlainPattern,
-                             xmlDeclPattern, floatNumPattern;
+                             xmlDeclPattern, floatNumPattern,
+                             comparisonPattern, comparisonHiddenPattern;
     
     //<editor-fold defaultstate="collapsed" desc=" Note about synchronization ">
     /*
@@ -314,6 +318,22 @@ final class RegexpUtils {
             floatNumPattern = Pattern.compile(FLOAT_NUMBER_REGEX);
         }
         return floatNumPattern;
+    }
+
+    /** */
+    Pattern getComparisonPattern() {
+        if (comparisonPattern == null) {
+            comparisonPattern = Pattern.compile(COMPARISON_REGEX);
+        }
+        return comparisonPattern;
+    }
+
+    /** */
+    Pattern getComparisonHiddenPattern() {
+        if (comparisonHiddenPattern == null) {
+            comparisonHiddenPattern = Pattern.compile(COMPARISON_HIDDEN_REGEX);
+        }
+        return comparisonHiddenPattern;
     }
 
     /**

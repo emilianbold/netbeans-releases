@@ -172,7 +172,7 @@ public class FilePreprocessorConditionState
 
     public final boolean isBetter(FilePreprocessorConditionState other) {
         int result = compareToImpl(other);
-        if (TraceFlags.TRACE_PC_STATE) {
+        if (TraceFlags.TRACE_PC_STATE || TraceFlags.TRACE_PC_STATE_COMPARISION) {
             traceComparison(other, result);
         }
         return result > 0;

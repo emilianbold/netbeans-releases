@@ -57,6 +57,7 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
     private static StandardJavacWarnings emptyStatementAfterIf;
     private static StandardJavacWarnings overrides;
     private static StandardJavacWarnings divisionByZero;
+    private static StandardJavacWarnings rawTypes;
         
     private String JAVAC_ID = "Javac_"; // NOI18N
     
@@ -133,6 +134,13 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
         return divisionByZero;
     }
             
+    public static synchronized StandardJavacWarnings createRawTypes() {
+        if ( rawTypes == null ) {
+            rawTypes = new StandardJavacWarnings(Kind.RAWTYPES);
+        }
+        return rawTypes;
+    }
+    
     public Set<Tree.Kind> getTreeKinds() {
         return treeKinds;        
     }
@@ -189,7 +197,8 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
         UNNECESSARY_CAST,
         EMPTY_STATEMENT_AFTER_IF,
         OVERRIDES,
-        DIVISION_BY_ZERO;
+        DIVISION_BY_ZERO,
+        RAWTYPES;
         
         boolean defaultOn() {        
             return false;
@@ -215,6 +224,8 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
                     return "enable_lint_empty"; // NOI18N
                 case OVERRIDES:
                     return "enable_lint_overrides"; // NOI18N
+                case RAWTYPES:
+                    return "enable_lint_rawtypes"; // NOI18N
             }
             return "unknown_kind"; // NOI18N
         }

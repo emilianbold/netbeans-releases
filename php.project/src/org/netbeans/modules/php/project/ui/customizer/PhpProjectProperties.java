@@ -57,8 +57,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
-import org.netbeans.modules.php.project.connections.RemoteSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -92,6 +92,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String REMOTE_DIRECTORY = "remote.directory"; // NOI18N
     public static final String REMOTE_UPLOAD = "remote.upload"; // NOI18N
     public static final String REMOTE_PERMISSIONS = "remote.permissions"; // NOI18N
+    public static final String DEBUG_URL = "debug.url"; // NOI18N
+    public static final String DEBUG_PATH_MAPPING_REMOTE = "debug.path.mapping.remote"; // NOI18N
+    public static final String DEBUG_PATH_MAPPING_LOCAL = "debug.path.mapping.local"; // NOI18N
     public static final String SHORT_TAGS = "tags.short"; // NOI18N
     public static final String ASP_TAGS = "tags.asp"; // NOI18N
 
@@ -104,7 +107,10 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         REMOTE_CONNECTION,
         REMOTE_DIRECTORY,
         REMOTE_UPLOAD,
-        REMOTE_PERMISSIONS
+        REMOTE_PERMISSIONS,
+        DEBUG_URL,
+        DEBUG_PATH_MAPPING_REMOTE,
+        DEBUG_PATH_MAPPING_LOCAL,
     };
 
     public static enum RunAsType {
@@ -134,6 +140,12 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         public String getDescription() {
           return description;
         }
+    }
+
+    public static enum DebugUrl {
+        DEFAULT_URL,
+        ASK_FOR_URL,
+        DO_NOT_OPEN_BROWSER
     }
 
     static final String CONFIG_PRIVATE_PROPERTIES_PATH = "nbproject/private/config.properties"; // NOI18N
@@ -385,7 +397,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         }
 
         // reset timestamp of the last upload
-        RemoteSettings.resetLastUpload(project);
+        ProjectSettings.resetLastUpload(project);
 
         // UI log
         logUsage(helper.getProjectDirectory(), ProjectPropertiesSupport.getSourcesDirectory(project),

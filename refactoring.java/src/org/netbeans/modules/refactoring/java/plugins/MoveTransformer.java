@@ -42,8 +42,10 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.util.TreePath;
+import java.util.List;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.*;
@@ -80,6 +82,7 @@ public class MoveTransformer extends RefactoringVisitor {
         this.move = move;
     }
     
+    @Override
     public void setWorkingCopy(WorkingCopy copy) throws ToPhaseException {
         super.setWorkingCopy(copy);
         originalFolder = workingCopy.getFileObject().getParent();
@@ -98,9 +101,24 @@ public class MoveTransformer extends RefactoringVisitor {
                 if (isElementMoving(el)) {
                     elementsAlreadyImported.add(el);
                     String newPackageName = move.getTargetPackageName(SourceUtils.getFile(el, workingCopy.getClasspathInfo()));
+                    String targetPackageName = workingCopy.getCompilationUnit().getPackageName().toString();
+                    
                     if (!"".equals(newPackageName)) {
-                        Tree nju = make.MemberSelect(make.Identifier(newPackageName), el);
-                        rewrite(node, nju);
+                        if (targetPackageName.equals(newPackageName)) { //remove newly created import from same package
+                            List<? extends ImportTree> imports = new ArrayList<ImportTree>(workingCopy.getCompilationUnit().getImports());
+                            ImportTree toRemove = null;
+                            for (ImportTree importTree : imports) {
+                                if (importTree.getQualifiedIdentifier().equals(node)) {
+                                    toRemove = importTree;
+                                }
+                            }
+                            imports.remove(toRemove);
+                            Tree nju = make.CompilationUnit(workingCopy.getCompilationUnit().getPackageName(), imports, workingCopy.getCompilationUnit().getTypeDecls(), workingCopy.getCompilationUnit().getSourceFile());
+                            rewrite(workingCopy.getCompilationUnit(), nju);
+                        } else {
+                            Tree nju = make.MemberSelect(make.Identifier(newPackageName), el);
+                            rewrite(node, nju);
+                        }
                     } else {
                         if (!moveToDefaulPackageProblem) {
                             problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_MovingClassToDefaultPackage"));
@@ -278,7 +296,7 @@ public class MoveTransformer extends RefactoringVisitor {
         rewrite(node, cut);
         return result;
     }
-    
+
     private CompilationUnitTree insertImport(CompilationUnitTree node, String imp, Element orig) {
         for (ImportTree tree: node.getImports()) {
             if (tree.getQualifiedIdentifier().toString().equals(imp)) 

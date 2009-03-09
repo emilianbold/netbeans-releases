@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.impl;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -60,14 +62,14 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  */
-abstract public class SQLDataStorage extends DataStorage {
+public abstract class SQLDataStorage extends DataStorage {
 
   public static final String SQL_DATA_STORAGE_TYPE = "db:sql";
 
@@ -224,12 +226,13 @@ abstract public class SQLDataStorage extends DataStorage {
     logger.info("Table " + tableName + " created");
 
     tables.put(tableName, metadata);
-    RequestProcessor.getDefault().post(new Runnable() {
+
+    DLightExecutorService.submit(new Runnable() {
 
       public void run() {
         getPreparedInsertStatement(metadata);
       }
-    });
+    }, "SQL: Prepare Insert Statement for " + metadata.getName()); // NOI18N
     return true;
   }
 
@@ -312,6 +315,25 @@ abstract public class SQLDataStorage extends DataStorage {
 
   protected final Connection getConnection() {
     return connection;
+  }
+
+  public final void execute(BufferedReader reader) throws SQLException, IOException {
+    String line;
+    StringBuilder buf = new StringBuilder();
+    Statement s = connection.createStatement();
+    while ((line = reader.readLine()) != null) {
+      if (line.startsWith("-- ")) {
+        continue;
+      }
+      buf.append(line);
+      if (line.endsWith(";")) {
+        String sql = buf.toString();
+        buf.setLength(0);
+        String sqlToExecute = sql.substring(0, sql.length() - 1) + getSQLQueriesDelimeter();
+        s.execute(sqlToExecute);
+      }
+    }
+    s.close();
   }
 
   protected final void execute(String sql) throws SQLException {
@@ -427,7 +449,7 @@ abstract public class SQLDataStorage extends DataStorage {
 
     public AsyncThread() {
       setDaemon(true);
-      setName("SQL Storage AsyncThread");
+      setName("DLIGHT: SQL Storage AsyncThread"); // NOI18N
     }
 
     @Override
@@ -489,7 +511,7 @@ abstract public class SQLDataStorage extends DataStorage {
 
     public AsyncReadThread() {
       setDaemon(true);
-      setName("SQL Storage AsyncFillModelThread");
+      setName("DLIGHT: SQL Storage AsyncFillModelThread"); // NOI18N
     }
 
     @Override

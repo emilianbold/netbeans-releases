@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.gizmo.actions;
 
+import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
@@ -50,7 +51,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=ProjectActionHandlerFactory.class, position=4000)
 public class GizmoRunActionHandlerFactory implements ProjectActionHandlerFactory {
 
-    private static final boolean ENABLE = Boolean.getBoolean("gizmo.enable");
+    private static final boolean ENABLE = Util.getBoolean("cnd.prof.enable", true);
 
     public boolean canHandle(Type type) {
         switch (type) {
