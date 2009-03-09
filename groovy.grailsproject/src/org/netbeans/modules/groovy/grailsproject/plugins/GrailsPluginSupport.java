@@ -62,7 +62,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -80,7 +79,6 @@ import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.ProgressSupport;
 import org.netbeans.modules.groovy.grailsproject.ProgressSupport.ProgressDialogDescriptor;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -95,18 +93,14 @@ import org.xml.sax.InputSource;
  *
  * @author David Calavera, Petr Hejl
  */
-public class GrailsPluginsManager {
+public class GrailsPluginSupport {
 
-    private static Logger LOGGER = Logger.getLogger(GrailsPluginsManager.class.getName());
+    private static Logger LOGGER = Logger.getLogger(GrailsPluginSupport.class.getName());
 
     private final GrailsProject project;
 
-    private GrailsPluginsManager(GrailsProject project) {
+    public GrailsPluginSupport(GrailsProject project) {
         this.project = project;
-    }
-
-    public static GrailsPluginsManager getInstance(GrailsProject project) {
-        return new GrailsPluginsManager(project);
     }
 
     public List<GrailsPlugin> refreshAvailablePlugins() throws InterruptedException {
@@ -252,8 +246,8 @@ public class GrailsPluginsManager {
 
         final ExecutorService executor = Executors.newFixedThreadPool(1);
         for (final GrailsPlugin plugin : selectedPlugins) {
-            String title = NbBundle.getMessage(GrailsPluginsManager.class, uninstall ? "Uninstallation" : "Installation");
-            String message = NbBundle.getMessage(GrailsPluginsManager.class, uninstall ? "PluginUninstallPleaseWait" : "PluginInstallPleaseWait", plugin.getName());
+            String title = NbBundle.getMessage(GrailsPluginSupport.class, uninstall ? "Uninstallation" : "Installation");
+            String message = NbBundle.getMessage(GrailsPluginSupport.class, uninstall ? "PluginUninstallPleaseWait" : "PluginInstallPleaseWait", plugin.getName());
             ProgressHandle handle = ProgressHandleFactory.createHandle(message);
             
             ProgressDialogDescriptor descriptor = ProgressSupport.createProgressDialog(title, handle, null);

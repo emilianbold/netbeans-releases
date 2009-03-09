@@ -64,7 +64,7 @@ import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
-import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginsManager;
+import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginSupport;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.util.RequestProcessor;
@@ -151,7 +151,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
 
         if (pluginsDir.isDirectory()) {
             if (GrailsPlatform.Version.VERSION_1_1.compareTo(projectConfig.getGrailsPlatform().getVersion()) <= 0) {
-                List<GrailsPlugin> plugins = GrailsPluginsManager.getInstance((GrailsProject) projectConfig.getProject())
+                List<GrailsPlugin> plugins = new GrailsPluginSupport((GrailsProject) projectConfig.getProject())
                         .loadInstalledPlugins11();
                 Set<String> pluginDirs = new HashSet<String>();
                 for (GrailsPlugin plugin : plugins) {
