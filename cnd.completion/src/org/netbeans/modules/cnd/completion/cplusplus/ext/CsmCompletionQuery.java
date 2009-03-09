@@ -1166,21 +1166,27 @@ abstract public class CsmCompletionQuery {
                                 } else { // not last item or finding type
                                     // find type of variable
                                     if (nextKind != ExprKind.SCOPE) {
-                                        lastType = findExactVarType(var, varPos);
+                                        if (first && !findType) {
+                                            lastType = findExactVarType(var, varPos);
+                                        }
                                         if (lastType == null) {
                                             // try to find with resolver
                                             CompletionResolver.Result res = null;
-                                            compResolver.setResolveTypes(CompletionResolver.RESOLVE_VARIABLES);
+                                            compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                                             if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
                                                 res = compResolver.getResult();
                                                 List<? extends CsmObject> vars = new ArrayList<CsmObject>();
                                                 res.addResulItemsToCol(vars);
-                                                if (vars.size() > 0) {
-                                                    // get the first
-                                                    CsmObject firstElem = vars.get(0);
+                                                for (CsmObject firstElem : vars) {
                                                     if (CsmKindUtilities.isVariable(firstElem)) {
                                                         CsmVariable varElem = (CsmVariable) firstElem;
                                                         lastType = varElem.getType();
+                                                    } else if (findType && CsmKindUtilities.isClassifier(firstElem)) {
+                                                        lastType = CsmCompletion.getType((CsmClassifier) firstElem, 0);
+                                                    }
+                                                    // stop on the first
+                                                    if (lastType != null) {
+                                                        break;
                                                     }
                                                 }
                                             }

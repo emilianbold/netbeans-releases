@@ -38,34 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.editor.makefile;
+package org.netbeans.cnd.api.lexer;
 
-import java.util.Collection;
-
-import java.util.EnumSet;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.spi.lexer.LanguageHierarchy;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.netbeans.api.lexer.TokenId;
 
 /**
  *
  * @author Jan Jancura
  */
-public class MakefileLanguageHierarchy extends LanguageHierarchy<MakefileTokenId> {
+public enum MakefileTokenId implements TokenId {
 
-    protected synchronized Collection<MakefileTokenId> createTokenIds() {
-        return EnumSet.allOf(MakefileTokenId.class);
+    WHITESPACE("whitespace"),// NOI18N
+    NEW_LINE("newline"),// NOI18N
+    TAB("tab"),// NOI18N
+    LINE_COMMENT("line_comment"),// NOI18N
+    MACRO("macro"),// NOI18N
+    MACRO_OPERATOR("macro_operator"),// NOI18N
+    RULE_OPERATOR("rule_operator"),// NOI18N
+    SEPARATOR("separator"),// NOI18N
+    KEYWORD("keyword"),// NOI18N
+    SPECIAL_TARGET("special_target"),// NOI18N
+    STRING_LITERAL("string_literal"),// NOI18N
+    IDENTIFIER("identifier"),// NOI18N
+    ERROR("error");// NOI18N
+    private String name;
+
+    MakefileTokenId(
+            String name) {
+        this.name = name;
     }
 
-    protected Lexer<MakefileTokenId> createLexer(LexerRestartInfo<MakefileTokenId> info) {
-        return new MakefileLexer(info);
-    }
-
-    protected String mimeType() {
-        return MIMENames.MAKEFILE_MIME_TYPE;
+    public String primaryCategory() {
+        return name;
     }
 }
-
-
-
