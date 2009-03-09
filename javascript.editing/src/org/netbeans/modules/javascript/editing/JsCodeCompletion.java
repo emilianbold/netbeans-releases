@@ -426,6 +426,16 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 request.fqn = AstUtilities.getFqn(path, null, null);
 
                 final Node closest = path.leaf();
+
+                //check for regexp ast node. Under some circumstances (see issue #158890)
+                //the text is not lexed as JsTokenId.REGEXP_LITERAL but still represents
+                //a regular expression so we want the right completion there.
+                if(closest.getType() == org.mozilla.nb.javascript.Token.REGEXP) {
+                    completeRegexps(proposals, request);
+                    completionResult.setFilterable(false);
+                    return completionResult;
+                }
+
                 request.root = root;
                 request.node = closest;
             }
