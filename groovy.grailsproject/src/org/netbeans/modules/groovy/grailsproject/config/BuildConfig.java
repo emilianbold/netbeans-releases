@@ -56,6 +56,7 @@ import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -87,11 +88,16 @@ public class BuildConfig {
         loadGlobalPluginsDirDefault();
     }
 
+    private boolean isFilePresent() {
+        FileObject root = project.getProjectDirectory();
+        return root.getFileObject("grails-app/conf/BuildConfig.groovy") != null; // NOI18N
+    }
+
     private synchronized void loadProjectPluginsDirDefault() {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
             GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
             File cached = config.getProjectPluginsDir();
-            if (cached != null) {
+            if (cached != null && isFilePresent()) {
                 projectPluginsDir = cached;
             } else {
                 projectPluginsDir = getProjectPluginsDirDefault11();
