@@ -298,7 +298,7 @@ public class JavacParser extends Parser {
                     ciImpl = new CompilationInfoImpl(cpInfo);
                 }
                 else {
-                    throw new IllegalArgumentException("Task has to provide classpath.");
+                    throw new IllegalArgumentException("No classpath provided by task: " + task);
                 }
             }
             else if (this.sourceCount == 1) {

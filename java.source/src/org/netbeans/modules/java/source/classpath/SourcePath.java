@@ -76,7 +76,7 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         this.manager = ClassIndexManager.getDefault();
         manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, this, manager));
         delegate.addPropertyChangeListener(WeakListeners.propertyChange(this, delegate));
-        this.forcePrefSources = bkgComp;
+        this.forcePrefSources = true;//bkgComp;
     }
     
     public List<? extends PathResourceImplementation> getResources() {
