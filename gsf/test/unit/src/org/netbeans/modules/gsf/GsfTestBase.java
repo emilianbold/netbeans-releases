@@ -187,7 +187,6 @@ public abstract class GsfTestBase extends NbTestCase {
         super.setUp();
         clearWorkDir();
         System.setProperty("netbeans.user", getWorkDirPath());
-        MockServices.setServices(MockMimeLookup.class);
     }
 
     protected void initializeRegistry() {
@@ -1972,24 +1971,11 @@ public abstract class GsfTestBase extends NbTestCase {
 
         };
 
-        if (Lookup.getDefault().lookup(MockMimeLookup.class) == null) {
-            fail("MockMimeLookup was not found in lookup. Perhaps you are calling " +
-                    "MockServices.setServices(..) and forgot to add MockMimeLookup.class?");
-        }
-        MockMimeLookup lkp = new MockMimeLookup();
-        if ((lkp.getLookup(MimePath.parse(mimeType))).lookup(Object.class) == null) {
-            // lookup is empty so we can safely update it here:
-            if (indentOnly) {
-                MockMimeLookup.setInstances(MimePath.parse(mimeType), indentFactory);
-            } else {
-                MockMimeLookup.setInstances(MimePath.parse(mimeType), reformatFactory, indentFactory);
-            }
+        MockServices.setServices(MockMimeLookup.class);
+        if (indentOnly) {
+            MockMimeLookup.setInstances(MimePath.parse(mimeType), indentFactory);
         } else {
-            // lookup is already initialized by client
-            assert lkp.getLookup(MimePath.parse(mimeType)).lookup(IndentTask.Factory.class) != null : "you forgot to set IndentTask.Factory for mime "+mimeType;
-            if (!indentOnly) {
-                assert lkp.getLookup(MimePath.parse(mimeType)).lookup(ReformatTask.Factory.class) != null : "you forgot to set ReformatTask.Factory for mime "+mimeType;
-            }
+            MockMimeLookup.setInstances(MimePath.parse(mimeType), reformatFactory, indentFactory);
         }
     }
 
