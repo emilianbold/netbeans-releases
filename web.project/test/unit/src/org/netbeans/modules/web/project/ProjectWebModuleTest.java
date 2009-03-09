@@ -49,6 +49,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.web.project.test.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
 
@@ -69,6 +70,7 @@ public class ProjectWebModuleTest extends NbTestCase {
      * Tests that the metadata models are returned correctly.
      */
     public void testMetadataModel() throws Exception {
+        TestUtil.setLookup();
         File f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication1");
         project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
