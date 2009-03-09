@@ -36,8 +36,11 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.util;
+package org.netbeans.modules.php.project.api;
 
+/**
+ * @since 2.11
+ */
 public final class Pair<P, K> {
 
     public final P first;
