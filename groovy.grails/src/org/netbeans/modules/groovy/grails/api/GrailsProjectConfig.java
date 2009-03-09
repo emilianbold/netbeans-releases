@@ -47,6 +47,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -60,10 +61,6 @@ public final class GrailsProjectConfig {
     public static final String GRAILS_PORT_PROPERTY = "grails.port"; // NOI18N
 
     public static final String GRAILS_ENVIRONMENT_PROPERTY = "grails.environment"; // NOI18N
-
-    public static final String GRAILS_DEPLOY_DIR_PROPERTY = "grails.deploy.dir"; // NOI18N
-
-    public static final String GRAILS_AUTODEPLOY_PROPERTY = "grails.deploy.auto"; // NOI18N
 
     public static final String GRAILS_JAVA_PLATFORM_PROPERTY = "grails.java.platform"; // NOI18N
 
@@ -81,8 +78,6 @@ public final class GrailsProjectConfig {
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-    //private static final Map<Project, GrailsProjectConfig> CONFIG_CACHE = new WeakHashMap<Project, GrailsProjectConfig>();
-
     private static final JavaPlatformManager PLATFORM_MANAGER  = JavaPlatformManager.getDefault();
 
     public GrailsProjectConfig(Project prj) {
@@ -95,17 +90,11 @@ public final class GrailsProjectConfig {
      * @param project project for which the returned configuration will serve
      * @return the configuration of the given project
      */
-    public static synchronized GrailsProjectConfig forProject(Project project) {
+    // FIXME remove
+    public static GrailsProjectConfig forProject(Project project) {
         GrailsProjectConfig config = project.getLookup().lookup(GrailsProjectConfig.class);
 
         return config;
-
-//        GrailsProjectConfig config = CONFIG_CACHE.get(project);
-//        if (config == null) {
-//            config = new GrailsProjectConfig(project);
-//            CONFIG_CACHE.put(project, config);
-//        }
-//        return config;
     }
 
     /**
@@ -180,58 +169,6 @@ public final class GrailsProjectConfig {
             settings.setEnvForProject(prj, env);
         }
         propertyChangeSupport.firePropertyChange(GRAILS_ENVIRONMENT_PROPERTY, oldValue, env);
-    }
-
-    /**
-     * Returns the deployment dir configured for the project.
-     *
-     * @return the deployment dir configured for the project or <code>null</code>
-     *             if no deployment dir has been configured yet
-     */
-    public String getDeployDir() {
-        synchronized (settings) {
-            return settings.getDeployDirForProject(prj);
-        }
-    }
-
-    /**
-     * Sets the deployment dir for the project.
-     *
-     * @param dir deployemnt dir to set
-     */
-    public void setDeployDir(String dir) {
-        assert dir != null;
-        String oldValue;
-        synchronized (settings) {
-            oldValue = getDeployDir();
-            settings.setDeployDirForProject(prj, dir);
-        }
-        propertyChangeSupport.firePropertyChange(GRAILS_DEPLOY_DIR_PROPERTY, oldValue, dir);
-    }
-
-    /**
-     * Returns the autodeploy flag of the project.
-     *
-     * @return the autodeploy flag of the project
-     */
-    public boolean getAutoDeployFlag() {
-        synchronized (settings) {
-            return settings.getAutoDeployFlagForProject(prj);
-        }
-    }
-
-    /**
-     * Sets the autodeploy flag of the project.
-     *
-     * @param flag the autodeploy flag to set
-     */
-    public void setAutoDeployFlag(boolean flag) {
-        boolean oldValue;
-        synchronized (this) {
-            oldValue = getAutoDeployFlag();
-            settings.setAutoDeployFlagForProject(prj, flag);
-        }
-        propertyChangeSupport.firePropertyChange(GRAILS_AUTODEPLOY_PROPERTY, oldValue, flag);
     }
 
     /**
@@ -326,9 +263,26 @@ public final class GrailsProjectConfig {
         propertyChangeSupport.firePropertyChange(GRAILS_DISPLAY_BROWSER_PROPERTY, oldValue, displayBrowser);
     }
 
-    public void setProjectPluginsDir(File dir) {
-        // TODO
-        propertyChangeSupport.firePropertyChange(GRAILS_PROJECT_PLUGINS_DIR_PROPERTY, null, dir);
+    public File getProjectPluginsDir() {
+        synchronized (settings) {
+            String value = settings.getProjectPluginDirForProject(prj);
+            if (value != null) {
+                return new File(value);
+            }
+            return null;
+        }
     }
 
+    public void setProjectPluginsDir(File dir) {
+        assert FileUtil.normalizeFile(dir).equals(dir);
+        
+        // TODO
+        File oldValue;
+        synchronized (this) {
+            oldValue = getProjectPluginsDir();
+            settings.setProjectPluginDirForProject(prj, dir.getAbsolutePath());
+        }
+        propertyChangeSupport.firePropertyChange(GRAILS_PROJECT_PLUGINS_DIR_PROPERTY, oldValue, dir);
+    }
+    
 }
