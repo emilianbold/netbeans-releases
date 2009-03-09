@@ -282,6 +282,8 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
                 if( canShowBalloon() ) {
                     SwingUtilities.invokeLater( new Runnable() {
                         public void run() {
+                            if( null == currentNotification )
+                                return;
                             BalloonManager.show(FlashingIcon.this,
                                     currentNotification.getBalloonComp(), 
                                     null,
