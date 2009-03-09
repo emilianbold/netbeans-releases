@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.Map;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Run a remote command. This remote command should <b>not</b> expect input. The output
@@ -61,13 +62,13 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
     private final String cmd;
     private final Map<String, String> env;
 
-    public static int run(String key, String cmd) {
-        RemoteCommandSupport support = new RemoteCommandSupport(key, cmd);
+    public static int run(ExecutionEnvironment execEnv, String cmd) {
+        RemoteCommandSupport support = new RemoteCommandSupport(execEnv, cmd);
         return support.run();
     }
 
-    public RemoteCommandSupport(String key, String cmd, Map<String, String> env, int port) {
-        super(key, port);
+    public RemoteCommandSupport(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
+        super(execEnv);
         this.cmd = cmd;
         this.env = env;
     }
@@ -106,12 +107,8 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         return getExitStatus();
     }
 
-    public RemoteCommandSupport(String key, String cmd) {
-        this(key, cmd, null, PORT);
-    }
-
-    public RemoteCommandSupport(String key, String cmd, Map<String, String> env) {
-        this(key, cmd, env, PORT);
+    public RemoteCommandSupport(ExecutionEnvironment execEnv, String cmd) {
+        this(execEnv, cmd, null);
     }
 
     @Override

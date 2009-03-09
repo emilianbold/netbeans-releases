@@ -367,6 +367,7 @@ public final class SelectConfigurationPanel extends JPanel {
         String rootFolder = wizardDescriptor.getRootFolder();
         DiscoveryProvider provider = wizardDescriptor.getProvider();
         String consolidation = wizardDescriptor.getLevel();
+        assert consolidation != null;
         List<Configuration> configs = provider.analyze(new ProjectProxy() {
             public boolean createSubProjects() {
                 return false;

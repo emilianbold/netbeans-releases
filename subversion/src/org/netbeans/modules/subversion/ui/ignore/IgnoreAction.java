@@ -50,6 +50,7 @@ import org.openide.*;
 import org.openide.nodes.Node;
 import java.io.File;
 import java.lang.String;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -157,7 +158,10 @@ public class IgnoreAction extends ContextAction {
                             // #108369 - added files cannot be ignored
                             FileInformation s = cache.getStatus(file);
                             if (s.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
-                                client.revert(file, true); // revert the tree to NEWLOCALLY
+                                ISVNInfo info = client.getInfo(file);
+                                if (info == null || !info.isCopied()) { // do not revert copied files
+                                    client.revert(file, true); // revert the tree to NEWLOCALLY
+                                }
                             }
                         }
                     } catch (SVNClientException ex) {
@@ -171,15 +175,22 @@ public class IgnoreAction extends ContextAction {
                         return;
                     }
                     try {
-                        Set<String> currentPatterns = new HashSet<String>(client.getIgnoredPatterns(parent));
-                        if (actionStatus == IGNORING) {
-                            ensureVersioned(parent);
-                            currentPatterns.addAll(patterns);
-                        } else if (actionStatus == UNIGNORING) {
-                            currentPatterns.removeAll(patterns);
+                        Collection<String> c = client.getIgnoredPatterns(parent);
+                        if (c == null) {
+                            Subversion.LOG.log(Level.WARNING, IgnoreAction.class.toString() + ": cannot acquire ignored patterns for " + parent.getAbsolutePath()); // NOI18N
+                            if (parent.exists()) {
+                                Subversion.LOG.log(Level.WARNING, IgnoreAction.class.toString() + ": file does exist: " + parent.getAbsolutePath()); // NOI18N
+                            }
+                        } else {
+                            Set<String> currentPatterns = new HashSet<String>(c);
+                            if (actionStatus == IGNORING) {
+                                ensureVersioned(parent);
+                                currentPatterns.addAll(patterns);
+                            } else if (actionStatus == UNIGNORING) {
+                                currentPatterns.removeAll(patterns);
+                            }
+                            client.setIgnoredPatterns(parent, new ArrayList<String>(currentPatterns));
                         }
-                        client.setIgnoredPatterns(parent, new ArrayList<String>(currentPatterns));    
-                        
                     } catch (SVNClientException e) {
                         SvnClientExceptionHandler.notifyException(e, true, true);
                     }

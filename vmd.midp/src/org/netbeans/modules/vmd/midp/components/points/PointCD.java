@@ -72,7 +72,7 @@ public final class PointCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList(
             //inspector
-            new InspectorFolderComponentPresenter(false),
+            new InspectorFolderComponentPresenter(true),
             InspectorPositionPresenter.create(new PointPC(), null)
         );
     }

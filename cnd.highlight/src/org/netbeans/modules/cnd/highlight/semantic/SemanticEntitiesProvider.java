@@ -130,8 +130,9 @@ public class SemanticEntitiesProvider {
                     case POSITION_PREDEFINED:
                         return sysMacroColors;
                     case DEFINED:
-                    default:
                         return color;
+                    default:
+                        throw new IllegalArgumentException("unexpected macro kind:" + macro.getKind() + " in macro:" + macro); // NOI18N
                 }
             }
             protected AttributeSet sysMacroColors;

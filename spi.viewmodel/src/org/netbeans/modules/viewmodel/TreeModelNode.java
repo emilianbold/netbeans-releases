@@ -59,6 +59,7 @@ import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
+import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.Models;
@@ -67,6 +68,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.ErrorManager;
 
 import org.openide.awt.Actions;
+import org.openide.explorer.view.CheckableNode;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -114,7 +116,7 @@ public class TreeModelNode extends AbstractNode {
     ) {
         super (
             createChildren (model, treeModelRoot, object),
-            Lookups.singleton (object)
+            Lookups.fixed(object, new CheckNodeCookieImpl(model, object))
         );
         this.model = model;
         this.treeModelRoot = treeModelRoot;
@@ -702,6 +704,53 @@ public class TreeModelNode extends AbstractNode {
     }
 
     // innerclasses ............................................................
+
+    private static final class CheckNodeCookieImpl implements CheckableNode {
+
+        private final Models.CompoundModel model;
+        private final Object object;
+
+        public CheckNodeCookieImpl(Models.CompoundModel model, Object object) {
+            this.model = model;
+            this.object = object;
+        }
+
+        public boolean isCheckable() {
+            try {
+                return model.isCheckable(object);
+            } catch (UnknownTypeException ex) {
+                Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Model = "+model));
+                return false;
+            }
+        }
+
+        public boolean isCheckEnabled() {
+            try {
+                return model.isCheckEnabled(object);
+            } catch (UnknownTypeException ex) {
+                Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Model = "+model));
+                return false;
+            }
+        }
+
+        public Boolean isSelected() {
+            try {
+                return model.isSelected(object);
+            } catch (UnknownTypeException ex) {
+                Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Model = "+model));
+                return false;
+            }
+        }
+
+        public void setSelected(Boolean selected) {
+            try {
+                model.setSelected(object, selected);
+            } catch (UnknownTypeException ex) {
+                Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Model = "+model));
+            }
+        }
+
+    }
     
     /** Special locals subnodes (children) */
     static final class TreeModelChildren extends Children.Keys<Object>

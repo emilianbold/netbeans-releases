@@ -161,7 +161,7 @@ made subject to such option by the copyright holder.
                 
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.HTMLKit"/>
-                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.editor.html.HTMLKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.html.editor.HTMLKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 

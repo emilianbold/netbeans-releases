@@ -101,7 +101,7 @@ public class JDBCDriverDeployHelper {
                         break;
                     }
                 } else {
-                    Logger.getLogger("glassfish.eecommon").finer("Invalid directory for driver deployment");
+                    Logger.getLogger("glassfish-eecommon").finer("Invalid directory for driver deployment");
                 }
             }
             if (!exists) {

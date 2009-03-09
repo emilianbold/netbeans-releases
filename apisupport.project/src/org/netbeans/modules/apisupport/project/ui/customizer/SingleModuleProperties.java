@@ -111,7 +111,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     // property keys for project.properties
     public static final String BUILD_COMPILER_DEBUG = "build.compiler.debug"; // NOI18N
     public static final String BUILD_COMPILER_DEPRECATION = "build.compiler.deprecation"; // NOI18N
-    public static final String CLUSTER_DIR = "cluster.dir"; // NOI18N
+// XXX unused   public static final String CLUSTER_DIR = "cluster.dir"; // NOI18N
     public static final String IS_AUTOLOAD = "is.autoload"; // NOI18N
     public static final String IS_EAGER = "is.eager"; // NOI18N
     public static final String JAVAC_SOURCE = "javac.source"; // NOI18N
@@ -134,8 +134,6 @@ public final class SingleModuleProperties extends ModuleProperties {
     private boolean providedTokensChanged;
     private boolean autoUpdateShowInClientChanged;
 
-    private boolean moduleListRefreshNeeded;
-    
     static {
         // setup defaults
         Map<String, String> map = new HashMap<String, String>();
@@ -225,6 +223,8 @@ public final class SingleModuleProperties extends ModuleProperties {
         if (isSuiteComponent()) {
             assert getSuiteDirectory() != null;
             ModuleList.refreshSuiteModuleList(getSuiteDirectory());
+        } else if (isStandalone()) {
+            ModuleList.refreshSuiteModuleList(getProjectDirectoryFile());
         }
         ManifestManager manifestManager = ManifestManager.getInstance(getManifestFile(), false);
         majorReleaseVersion = manifestManager.getReleaseVersion();
@@ -424,14 +424,6 @@ public final class SingleModuleProperties extends ModuleProperties {
         return moduleType == NbModuleProvider.SUITE_COMPONENT;
     }
 
-    public void setModuleListRefreshNeeded(boolean moduleListRefreshNeeded) {
-        this.moduleListRefreshNeeded = moduleListRefreshNeeded;
-    }
-    
-    boolean isModuleListRefreshNeeded() {
-        return moduleListRefreshNeeded;
-    }
-    
     boolean dependingOnImplDependency() {
         DependencyListModel depsModel = getDependenciesListModel();
         if (depsModel == CustomizerComponentFactory.INVALID_DEP_LIST_MODEL) {
@@ -722,13 +714,14 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         String[] friends = getFriendListModel().getFriends();
         String[] publicPkgs = getPublicPackagesModel().getSelectedPackages();
+        boolean refreshSuite = false;
         if (getPublicPackagesModel().isChanged() || getFriendListModel().isChanged()) {
             if (friends.length > 0) { // store friends packages
                 getProjectXMLManager().replaceFriends(friends, publicPkgs);
             } else { // store public packages
                 getProjectXMLManager().replacePublicPackages(publicPkgs);
             }
-            setModuleListRefreshNeeded(true);
+            refreshSuite = true;
         }
         
         if (isStandalone()) {
@@ -736,6 +729,11 @@ public final class SingleModuleProperties extends ModuleProperties {
             if (javaPlatformChanged) {
                 ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), false);
             }
+            if (refreshSuite) {
+                ModuleList.refreshSuiteModuleList(getProjectDirectoryFile());
+            }
+        } else if (isSuiteComponent() && refreshSuite) {
+            ModuleList.refreshSuiteModuleList(getSuiteDirectory());
         } else if (isNetBeansOrg() && javaPlatformChanged) {
             ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), true);
         }

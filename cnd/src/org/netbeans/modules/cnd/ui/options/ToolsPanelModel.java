@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.ui.options;
 
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+
 /** Manage the data for the ToolsPanel */
 public abstract class ToolsPanelModel {
     
@@ -145,13 +147,13 @@ public abstract class ToolsPanelModel {
     
     public boolean enableRequiredCompilerCB() {return true;}
 
-    private String selectedDevelopmentHost = null;
+    private ExecutionEnvironment selectedDevelopmentHost = null;
 
-    public void setSelectedDevelopmentHost(String hkey) {
-        selectedDevelopmentHost = hkey;
+    public void setSelectedDevelopmentHost(ExecutionEnvironment env) {
+        selectedDevelopmentHost = env;
     }
 
-    public String getSelectedDevelopmentHost() {
+    public ExecutionEnvironment getSelectedDevelopmentHost() {
         return selectedDevelopmentHost;
     }
 

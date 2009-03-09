@@ -147,7 +147,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         }
     }
 
-    protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, int mode, APTInclude apt) throws IOException {
+    protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt) throws IOException {
         try {
             return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), mode);
         } catch (NullPointerException ex) {

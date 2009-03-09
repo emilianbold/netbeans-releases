@@ -9,6 +9,10 @@
 #     - pointing to the native Ruby installation which will be used for
 #       pre-indexing
 #
+#   NB_INDEX_RUBY_BIN (optional)
+#     - should point to the ruby executable, you need to be specify this only if it is
+#       not $NB_INDEX_RUBY_HOME/bin/ruby
+#
 #   NB_RUBY_INDEX_PROJECT
 #     - Any Ruby on Rails NetBeans project. It will then be used for indexing
 #       purposes. (It's important that this is currently a Rails project since
@@ -53,7 +57,12 @@ VMFLAGS=-J-Xmx1024m
 # You probably don't want to change these:
 NB=$NB_INDEX_HG_HOME/nbbuild/netbeans/bin/netbeans
 # Location of a Ruby interpreter which contains lots of gems
-NATIVERUBY=$NB_INDEX_RUBY_HOME/bin/ruby
+if [ -n $NB_INDEX_RUBY_BIN ]
+then
+    NATIVERUBY=$NB_INDEX_RUBY_BIN
+else
+    NATIVERUBY=$NB_INDEX_RUBY_HOME/bin/ruby
+fi
 SCRATCHFILE=/tmp/native.zip
 USERDIR=/tmp/preindexing
 TMP_BINARIES=/tmp/binaries-list
@@ -85,7 +94,7 @@ rm -rf $GSF/preindexed-javascript/lib
 if test "$ar" = "local" -o  "$ar" = "both" ; then
 
 rm -rf $USERDIR
-$NB $VMFLAGS -J-Dgsf.preindexing=true -J-Druby.computeindex -J-Dgsf.preindexing.projectpath=$INDEXING_PROJECT -J-Dnetbeans.full.hack=true --userdir $USERDIR
+$NB $VMFLAGS -J-Dgsf.preindexing=true -J-Druby.computeindex -J-Dgsf.preindexing.projectpath=$NB_RUBY_INDEX_PROJECT -J-Dnetbeans.full.hack=true --userdir $USERDIR
 
 # Pack preindexed.zip
 #cd $CLUSTERS
@@ -114,7 +123,7 @@ if test "$ar" = "native" -o  "$ar" = "both" ; then
 
 find $NB_INDEX_RUBY_HOME . -name "netbeans-index*.zip" -exec rm {} \;
 rm -rf $USERDIR
-$NB $VMFLAGS -J-Dgsf.preindexing=true -J-Druby.computeindex -J-Dgsf.preindexing.projectpath=$INDEXING_PROJECT -J-Dnetbeans.full.hack=true --userdir $USERDIR -J-Druby.interpreter=$NATIVERUBY
+$NB $VMFLAGS -J-Dgsf.preindexing=true -J-Druby.computeindex -J-Dgsf.preindexing.projectpath=$NB_RUBY_INDEX_PROJECT -J-Dnetbeans.full.hack=true --userdir $USERDIR -J-Druby.interpreter=$NATIVERUBY
 
 # Go to the native installation:
 # Ruby

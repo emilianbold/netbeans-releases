@@ -60,13 +60,11 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.Utilities;
-import org.openide.windows.TopComponent;
 import org.openide.filesystems.URLMapper;
 
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.DebuggerAnnotation;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.DebuggerBreakpointAnnotation;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
-import org.netbeans.modules.cnd.loaders.CppEditorSupport.CppEditorComponent;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.text.Annotation;
 
@@ -247,25 +245,25 @@ public class EditorContextImpl extends EditorContext {
         return currentURL;
     }
     
-    /** Look in all open C/C++ files and find the one showing. Return its URL */
-    private String digForIt() {
-        TopComponent.Registry reg = TopComponent.getRegistry();
-        for (TopComponent o : reg.getOpened()) {
-            if (o instanceof CppEditorComponent) {
-                CppEditorComponent cec = (CppEditorComponent) o;
-                if (cec.isShowing()) {
-                    String url;
-                    try {
-                        url = cec.getSupport().getDataObject().getPrimaryFile().getURL().toString();
-                    } catch (Exception ex) {
-                        continue;
-                    }
-                    return url;
-                }
-            }
-        }
-        return "";
-    }
+//    /** Look in all open C/C++ files and find the one showing. Return its URL */
+//    private String digForIt() {
+//        TopComponent.Registry reg = TopComponent.getRegistry();
+//        for (TopComponent o : reg.getOpened()) {
+//            if (o instanceof CppEditorComponent) {
+//                CppEditorComponent cec = (CppEditorComponent) o;
+//                if (cec.isShowing()) {
+//                    String url;
+//                    try {
+//                        url = cec.getSupport().getDataObject().getPrimaryFile().getURL().toString();
+//                    } catch (Exception ex) {
+//                        continue;
+//                    }
+//                    return url;
+//                }
+//            }
+//        }
+//        return "";
+//    }
     
     /**
      *  Return the most recent URL or empty string. The difference between this and getCurrentURL()

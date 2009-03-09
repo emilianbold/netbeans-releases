@@ -48,6 +48,7 @@ import junit.framework.Test;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
  *
@@ -104,7 +105,8 @@ public class navigation_0001 extends navigation
     menu.pushMenuNoBlock( "Navigate|Line..." );
     JDialogOperator jdGoto = new JDialogOperator( "Go To Line" );
     JComboBoxOperator jcLine = new JComboBoxOperator( jdGoto, 0 );
-    jcLine.enterText( "" + iLineToGo );
+    JTextFieldOperator jtTemp = jcLine.getTextField( );
+    jtTemp.setText( "" + iLineToGo );
     JButtonOperator jbGoto = new JButtonOperator( jdGoto, "Go To" );
     jbGoto.push( );
     jdGoto.waitClosed( );

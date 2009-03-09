@@ -120,8 +120,8 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
                 if (cls != null) {
                     if (CsmKindUtilities.isClass(cls)) {
                         CsmClass container = (CsmClass) cls;
-                        Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(container,
-                                CsmSelect.getDefault().getFilterBuilder().createNameFilter(suffix, true, true, false));
+                        Iterator<CsmMember> it = CsmSelect.getClassMembers(container,
+                                CsmSelect.getFilterBuilder().createNameFilter(suffix, true, true, false));
                         if (it.hasNext()) {
                             CsmMember m = it.next();
                             if (m instanceof ClassImpl.ClassMemberForwardDeclaration) {

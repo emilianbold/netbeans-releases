@@ -56,11 +56,8 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
 
 /**
  * This class represents D-Light Session.
@@ -76,7 +73,6 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private List<DataCollector> collectors = null;
     private List<Visualizer> visualizers = null;
     private SessionState state;
-    private Task sessionTask;
     private final int sessionID;
     private String description = null;
     private List<ExecutionContextListener> contextListeners;
@@ -206,19 +202,17 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         for (ExecutionContext c : contexts) {
             final DLightTarget target = c.getTarget();
             target.removeTargetListener(this);
-            RequestProcessor.getDefault().post(new Runnable() {
+            DLightExecutorService.submit(new Runnable() {
 
                 public void run() {
                     DLightTargetAccessor.getDefault().getDLightTargetExecution(target).terminate(target);
                 }
-            });
+            }, "Stop DLight session's target " + target.toString()); // NOI18N
         }
     }
 
     void start() {
         Runnable sessionRunnable = new Runnable() {
-
-            boolean hasValidContext = true;
 
             public void run() {
                 DataStorageManager.getInstance().clearActiveStorages();
@@ -232,13 +226,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 }
 
                 for (ExecutionContext context : contexts) {
-                    boolean result = prepareContext(context);
-                    hasValidContext &= result;
-                }
-
-                if (!hasValidContext) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("No tool passed validation... ")); // NOI18N
-                    return;
+                    prepareContext(context);
                 }
 
                 setState(SessionState.STARTING);
@@ -246,8 +234,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 // TODO: For now add target listeners to
                 // first target.... (from the first context)
                 boolean f = false;
-                
-                final DLightTargetAccessor targetAccess = 
+
+                final DLightTargetAccessor targetAccess =
                         DLightTargetAccessor.getDefault();
 
                 for (ExecutionContext context : contexts) {
@@ -257,16 +245,16 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                         target.addTargetListener(DLightSession.this);
                         f = true;
                     }
-                    
+
                     DLightTarget.ExecutionEnvVariablesProvider envProvider =
                             context.getDLightTargetExecutionEnvProvider();
-                    
+
                     targetAccess.getDLightTargetExecution(target).start(target, envProvider);
                 }
             }
         };
 
-        sessionTask = RequestProcessor.getDefault().post(sessionRunnable);
+        DLightExecutorService.submit(sessionRunnable, "DLight session"); // NOI18N
     }
 
     private boolean prepareContext(ExecutionContext context) {
@@ -287,17 +275,27 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         }
 
         DataCollector notAttachableDataCollector = null;
-        
+
         if (collectors == null) {
             collectors = new ArrayList<DataCollector>();
         }
-        
+
         for (DLightTool tool : validTools) {
-            List<DataCollector> toolCollectors = tool.getCollectors();
-            //TODO: no algorithm here:) should be better
-            for (DataCollector c : toolCollectors) {
-                if (!collectors.contains(c)) {
-                    collectors.add(c);
+            if (tool.collectorsTurnedOn()) {
+                List<DataCollector> toolCollectors = tool.getCollectors();
+                //TODO: no algorithm here:) should be better
+                for (DataCollector c : toolCollectors) {
+                    if (!collectors.contains(c)) {
+                        collectors.add(c);
+                    }
+                }
+            } else {
+                //should remove if any
+                List<DataCollector> toolCollectors = tool.getCollectors();
+                //TODO: no algorithm here:) should be better
+                for (DataCollector c : toolCollectors) {
+                    collectors.remove(c);
+
                 }
             }
         }
@@ -328,11 +326,18 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 
         for (DLightTool tool : validTools) {
             // Try to subscribe every IndicatorDataProvider to every Indicator
+            //there can be the situation when IndicatorDataProvider is collector
+            //and not attacheble
             List<IndicatorDataProvider> idps = DLightToolAccessor.getDefault().getIndicatorDataProviders(tool);
             if (idps != null) {
                 for (IndicatorDataProvider idp : idps) {
                     if (idp instanceof DLightTarget.ExecutionEnvVariablesProvider) {
                         context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) idp);
+                    }
+                    if (idp instanceof DataCollector) {
+                        if (notAttachableDataCollector == null && !((DataCollector) idp).isAttachable()) {
+                            notAttachableDataCollector = ((DataCollector) idp);
+                        }
                     }
                     List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
                     for (Indicator i : indicators) {

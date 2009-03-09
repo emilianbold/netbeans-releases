@@ -289,18 +289,6 @@ public class ColumnModels {
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view 
      * representation.
      */
-    public static ColumnModel createBreakpointEnabledColumn() {
-        return new AbstractColumn(Constants.BREAKPOINT_ENABLED_COLUMN_ID,
-                "CTL_BreakpointView_Column_Enabled_Name",
-                "CTL_BreakpointView_Column_Enabled_Desc",
-                Boolean.TYPE);
-    }
-    
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view 
-     * representation.
-     */
     public static ColumnModel createDefaultCallStackColumn() {
         return new AbstractColumn("DefaultCallStackColumn",
                 "CTL_CallstackView_Column_Name_Name",

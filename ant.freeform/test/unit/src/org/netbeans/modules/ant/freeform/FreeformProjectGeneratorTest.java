@@ -60,6 +60,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.w3c.dom.Element;
 
@@ -79,8 +80,10 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+        Lookup.getDefault().lookup(ModuleInfo.class);
     }
     
     public AntProjectHelper createEmptyProject(String projectFolder, String projectName) throws Exception {

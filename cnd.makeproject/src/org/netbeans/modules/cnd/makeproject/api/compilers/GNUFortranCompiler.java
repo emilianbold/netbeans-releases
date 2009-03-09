@@ -43,18 +43,23 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public class GNUFortranCompiler extends BasicCompiler {
     /** Creates a new instance of GNUCCompiler */
-    public GNUFortranCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(hkey, flavor, kind, name, displayName, path); // NOI18N
+    private GNUFortranCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(env, flavor, kind, name, displayName, path); // NOI18N
     }
     
     @Override
     public GNUFortranCompiler createCopy() {
-        GNUFortranCompiler copy = new GNUFortranCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
+        GNUFortranCompiler copy = new GNUFortranCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
+    }
+
+    public static GNUFortranCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        return new GNUFortranCompiler(env, flavor, kind, name, displayName, path);
     }
     
     @Override

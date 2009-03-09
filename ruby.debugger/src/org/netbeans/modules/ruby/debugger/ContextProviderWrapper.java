@@ -50,6 +50,7 @@ import org.netbeans.modules.ruby.debugger.model.ThreadsModel;
 import org.netbeans.modules.ruby.debugger.model.VariablesModel;
 import org.netbeans.modules.ruby.debugger.model.WatchesModel;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -106,8 +107,8 @@ public class ContextProviderWrapper {
     
     public static BreakpointModel getBreakpointModel() {
         if (breakpointModel == null) {
-            List<? extends TableModel> tableModels = ContextProviderWrapper.debugLookup("BreakpointsView", TableModel.class);
-            for (TableModel model : tableModels) {
+            List<? extends NodeModel> tableModels = ContextProviderWrapper.debugLookup("BreakpointsView", NodeModel.class);
+            for (NodeModel model : tableModels) {
                 if (model instanceof BreakpointModel) {
                     breakpointModel = (BreakpointModel) model;
                     break;

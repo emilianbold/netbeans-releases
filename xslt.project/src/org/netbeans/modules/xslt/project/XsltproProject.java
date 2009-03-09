@@ -51,6 +51,7 @@ import org.netbeans.modules.xslt.project.wizard.IcanproLogicalViewProvider;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -73,7 +74,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -86,6 +86,14 @@ import org.w3c.dom.Text;
  * @author Vitaly Bychkov
  * @version 1.0
  */
+@AntBasedProjectRegistration(
+    type=XsltproProjectType.TYPE,
+    iconResource=XSLT_PROJECT_ICON,
+    sharedNamespace=XsltproProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+    sharedName=XsltproProjectType.PROJECT_CONFIGURATION_NAME,
+    privateNamespace=XsltproProjectType.PRIVATE_CONFIGURATION_NAMESPACE,
+    privateName=XsltproProjectType.PRIVATE_CONFIGURATION_NAME
+)
 public class XsltproProject implements Project, AntProjectListener {
     
     private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon(XSLT_PROJECT_ICON, false); // NOI18N

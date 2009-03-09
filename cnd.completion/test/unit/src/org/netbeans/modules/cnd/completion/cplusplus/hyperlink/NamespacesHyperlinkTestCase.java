@@ -52,6 +52,15 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         //System.setProperty("cnd.modelimpl.trace.registration", "true");
     }
 
+    public void testUsingInOtherNsDef() throws Exception {
+        // IZ#159223: Unresolved ids from namespace with usings
+        performTest("using_in_ns.cpp", 11, 24, "using_in_ns.cpp", 3, 9); // AA in struct B : public AA {
+        performTest("using_in_ns.cpp", 11, 24, "using_in_ns.cpp", 3, 9); // TTT in TTT t;
+        // IZ#159308: Unresolved using of using in nested namespace
+        performTest("using_in_ns.cpp", 24, 20, "using_in_ns.cpp", 18, 9); // AAA in using N2::AAA;
+        performTest("using_in_ns.cpp", 26, 15, "using_in_ns.cpp", 18, 9); // AAA in AAA a;
+    }
+    
     public void testS1FooDefFQN() throws Exception {
         performTest("file.cc", 9, 10, "file.cc", 4, 1); // S1 in S1::foo();
         performTest("file.cc", 9, 14, "file.cc", 7, 5); // foo in S1::foo();
@@ -245,6 +254,11 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz155148.cc", 12, 13, "iz155148.cc", 5, 5);
     }
     
+    public void testIZ145142() throws Exception {
+        // IZ#145142 : unable to resolve declaration imported from child namespace
+        performTest("iz145142.cc", 16, 35, "iz145142.cc", 4, 13);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

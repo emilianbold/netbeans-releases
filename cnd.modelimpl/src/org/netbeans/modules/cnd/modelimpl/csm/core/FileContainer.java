@@ -84,7 +84,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
     private final Object lock = new Object();
     private Map<CharSequence, MyFile> myFiles = new ConcurrentHashMap<CharSequence, MyFile>();
-    private Map<CharSequence, Object/*String or String[]*/> canonicFiles = new ConcurrentHashMap<CharSequence, Object/*String or String[]*/>();
+    private Map<CharSequence, Object/*CharSequence or CharSequence[]*/> canonicFiles = new ConcurrentHashMap<CharSequence, Object/*CharSequence or CharSequence[]*/>();
 
     // empty stub
     private static final FileContainer EMPTY = new FileContainer() {
@@ -242,7 +242,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         files = new ArrayList<MyFile>(myFiles.values());
         for (MyFile file : files){
             synchronized (file.getLock()) {
-                file.clearState();
+                file.debugClearState();
             }
         }
 	put();
@@ -442,7 +442,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
     
     private static void writeStringToStringsArrMap (
-            final DataOutput output, final Map<CharSequence, Object/*String or String[]*/> aMap) throws IOException {
+            final DataOutput output, final Map<CharSequence, Object/*CharSequence or CharSequence[]*/> aMap) throws IOException {
         
         assert output != null;
         assert aMap != null;
@@ -465,23 +465,23 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             
             output.writeUTF(key.toString());
             
-            if (value instanceof String ) {
+            if (value instanceof CharSequence ) {
                 output.writeInt(1);
                 output.writeUTF((String)value);
-            } else if (value instanceof String[]) {
+            } else if (value instanceof CharSequence[]) {
                 
-                final String[] array = (String[]) value;
+                final CharSequence[] array = (CharSequence[]) value;
                 
                 output.writeInt(array.length);
                 for (int j = 0; j < array.length; j++) {
-                    output.writeUTF(array[j]);
+                    output.writeUTF(array[j].toString());
                 }
             }
         }
     }
     
     private static void readStringToStringsArrMap (
-            final DataInput input, Map<CharSequence, Object/*String or String[]*/> aMap) throws IOException {
+            final DataInput input, Map<CharSequence, Object/*CharSequence or CharSequence[]*/> aMap) throws IOException {
         assert input != null;
         assert aMap != null;
         
@@ -492,8 +492,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         final int size = input.readInt();
         
         for (int i = 0; i < size; i++) {
-            String key = input.readUTF();
-            key = pathManager == null ? key : pathManager.getString(key).toString();
+            CharSequence key = pathManager.getString(input.readUTF());
             assert key != null;
             
             final int arraySize = input.readInt();
@@ -503,10 +502,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 		aMap.put(key, input.readUTF());
 	    }
 	    else {
-		final String[] value = new String[arraySize];
+		final CharSequence[] value = new String[arraySize];
 		for (int j = 0; j < arraySize; j++) {
-		    String path = input.readUTF();
-		    path = pathManager == null ? path : pathManager.getString(path).toString();
+		    CharSequence path = pathManager.getString(input.readUTF());
 		    assert path != null;
 
 		    value[j] = path;
@@ -549,7 +547,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
          */
         //boolean setPCState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
         
-        int size();
+//        int size();
 
         /**
          * Gets mod count; mod count allows to understand whether the entry was changed:
@@ -576,7 +574,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
         private final CsmUID<CsmFile> fileNew;
         private final CharSequence canonical;
-        private Object data; // either StatePair or List<StatePair>
+        private volatile Object data; // either StatePair or List<StatePair>
         private volatile int modCount;
         private volatile boolean pendingReparse = false; // "transient"
 
@@ -617,14 +615,15 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             UIDObjectFactory.getDefaultFactory().writeUID(fileNew, output);
             output.writeUTF(canonical.toString());
             output.writeInt(modCount);
-            output.writeBoolean(data != null);
-            if (data != null) {
-                if(data instanceof StatePair) {
+            Object aData = data;
+            output.writeBoolean(aData != null);
+            if (aData != null) {
+                if(aData instanceof StatePair) {
                     output.writeInt(1);
-                    writeStatePair(output, (StatePair) data);
+                    writeStatePair(output, (StatePair) aData);
                 } else {
                     @SuppressWarnings("unchecked")
-                    Collection<StatePair> pairs = (Collection<StatePair>)data;
+                    Collection<StatePair> pairs = (Collection<StatePair>)aData;
                     output.writeInt(pairs.size());
                     for (StatePair pair : pairs) {
                         writeStatePair(output, pair);
@@ -676,16 +675,16 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             return this;
         }
         
-        public synchronized int size() {
-            return (data instanceof Collection) ? ((Collection) data).size() : 1;
-        }
+//        public synchronized int size() {
+//            return (data instanceof Collection) ? ((Collection) data).size() : 1;
+//        }
 
         //@Deprecated
         private final synchronized APTPreprocHandler.State getState() {
             return getStates().iterator().next().state;
         }
 
-        private synchronized void clearState() {
+        private synchronized void debugClearState() {
             data = null;
         }
 

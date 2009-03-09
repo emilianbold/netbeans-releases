@@ -50,15 +50,9 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
  */
 public class MemoryIndicatorConfiguration extends IndicatorConfiguration{
   static final String ID = "MemoryIndicatorConfigurationID";
-  private final String colName;
 
-  public MemoryIndicatorConfiguration(IndicatorMetadata metadata, String colName) {
+  public MemoryIndicatorConfiguration(IndicatorMetadata metadata) {
     super(metadata);
-    this.colName = colName;
-  }
-
-  String getColName(){
-    return colName;
   }
 
 

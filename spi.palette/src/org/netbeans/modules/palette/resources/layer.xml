@@ -59,6 +59,7 @@ made subject to such option by the copyright holder.
         <folder name="Tools">
             <folder name="PaletteManager">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.palette.resources.Bundle"/>
+                <attr name="position" intvalue="1200"/>
             </folder>
         </folder>
         <folder name="Window">
@@ -112,12 +113,12 @@ made subject to such option by the copyright holder.
             <folder name="NetBeans">
                 <file name="Editor_Palette_Item_1_0.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.palette.PaletteEnvironmentProvider"/>
-                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.palette.PaletteEnvironmentProvider.createProvider"/>
                 </file>
                 <file name="Editor_Palette_Item_1_1.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.palette.PaletteEnvironmentProvider"/>
-                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.palette.PaletteEnvironmentProvider.createProvider"/>
                 </file>
             </folder>

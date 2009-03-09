@@ -65,6 +65,7 @@ import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
@@ -82,7 +83,14 @@ public class ToDoTest extends TestBase {
     static {
         // #65461: do not try to load ModuleInfo instances from ant module
         System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
-        LayerTestBase.Lkp.setLookup(new Object[]{new WindowManagerMock(),new TopComponentRegistryMock()});
+        LayerTestBase.Lkp.setLookup(new Object[0]);
+        FileObject reg = FileUtil.getConfigFile("Services/AntBasedProjectTypes/org-netbeans-modules-apisupport-project.instance");
+        assertNotNull("apisupport definition is registered", reg);
+        Object abpt = reg.getAttribute("instanceCreate");
+        FileObject reg2 = FileUtil.getConfigFile("Services/AntBasedProjectTypes/org-netbeans-modules-apisupport-project-suite.instance");
+        assertNotNull("j2seproject definition is registered", reg2);
+        Object abpt2 = reg2.getAttribute("instanceCreate");
+        LayerTestBase.Lkp.setLookup(new Object[]{new WindowManagerMock(),new TopComponentRegistryMock(), abpt, abpt2});
         DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
     }
     

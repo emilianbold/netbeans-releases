@@ -143,6 +143,12 @@ import org.w3c.dom.Node;
  * Represents one plain J2ME project.
  * @author Jesse Glick, Adam Sotona, Tim Boudreau
  */
+@AntBasedProjectRegistration(
+    type=J2MEProjectType.TYPE,
+    iconResource="org/netbeans/modules/mobility/project/ui/resources/mobile-project.png",
+    sharedNamespace=J2MEProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+    privateNamespace=J2MEProjectType.PRIVATE_CONFIGURATION_NAMESPACE
+)
 public final class J2MEProject implements Project, AntProjectListener {
     final Icon J2ME_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/mobility/project/ui/resources/mobile-project.png", false); // NOI18N
     private static final URLStreamHandler COMPOSED_STREAM_HANDLER = new URLStreamHandler() {
@@ -395,7 +401,7 @@ public final class J2MEProject implements Project, AntProjectListener {
     }
 
     
-    J2MEProject(AntProjectHelper helper) {
+    public J2MEProject(AntProjectHelper helper) {
         rp = new RequestProcessor ("RP for " +
                 helper.getProjectDirectory().getPath(), 2, true);
         this.helper = helper;

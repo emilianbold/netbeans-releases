@@ -39,16 +39,26 @@
 
 package org.netbeans.modules.groovy.grails;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.openide.execution.NbProcessDescriptor;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.InputReaderTask;
+import org.netbeans.api.extexecution.input.InputReaders;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -59,18 +69,20 @@ public class KillableProcess extends Process {
 
     private static final Logger LOGGER = Logger.getLogger(KillableProcess.class.getName());
 
+    private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
+
     private static final long TIMEOUT = 5000;
 
     private final Process nativeProcess;
 
-    private final File directory;
+    private final String remark;
 
     private final String command;
 
-    public KillableProcess(Process nativeProcess, File directory, String command) {
+    public KillableProcess(Process nativeProcess, String command, String remark) {
         this.nativeProcess = nativeProcess;
-        this.directory = directory;
         this.command = command;
+        this.remark = remark;
     }
 
     @Override
@@ -81,44 +93,45 @@ public class KillableProcess extends Process {
             return;
         }
 
-        // wmic process where name="cmd.exe" get processid, commandline
-        String params[] = {"process", "where", "name=\"cmd.exe\"", // NOI18N
-                            "get", "processid,commandline" }; // NOI18N
+        int pid = -1;
 
-        WindowsExecutor executor = new WindowsExecutor("wmic.exe",
-                Utilities.escapeParameters(params), directory.getAbsolutePath(), command);
+        ExternalProcessBuilder builder = new ExternalProcessBuilder("wmic.exe") // NOI18N
+                .redirectErrorStream(true).addArgument("process") // NOI18N
+                .addArgument("where").addArgument("name=\"cmd.exe\"") // NOI18N
+                .addArgument("get").addArgument("processid,commandline"); // NOI18N
 
-        Thread t = new Thread(executor);
+        PidLineProcessor pidProcessor = new PidLineProcessor(command, remark);
+
         LOGGER.log(Level.FINEST, "About to run wmic.exe");
-        t.start();
 
-        boolean interrupted = Thread.interrupted();
+        Future<Integer> task = EXECUTOR_SERVICE.submit(new ExecutionCallable(builder, pidProcessor));
         try {
-            try {
-                t.join(TIMEOUT);
-            } catch (InterruptedException ex) {
-                LOGGER.log(Level.FINEST, null, ex);
+            Integer retValue = task.get(TIMEOUT, TimeUnit.MILLISECONDS);
+            if (retValue != null && retValue.intValue() == 0) {
+                pid = pidProcessor.getPid();
             }
-        } finally {
-            if (interrupted) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (TimeoutException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            task.cancel(true);
         }
 
-        // kill running server using taskkill
-        String pidToKill =  executor.getPid();
-
-        if (pidToKill != null) {
-            WindowsExecutor killer = new WindowsExecutor(
-                    "taskkill.exe", "/F /PID " + pidToKill + " /T", null, null);
-
-            Thread tk = new Thread(killer);
-            LOGGER.log(Level.FINEST, "About to run taskkill.exe");
-            tk.start();
-        } else {
+        if (pid < 0) {
             LOGGER.log(Level.FINEST, "No pid acquired - normal exit");
             nativeProcess.destroy();
+            return;
         }
+
+        builder = new ExternalProcessBuilder("taskkill.exe"); // NOI18N
+        builder = builder.redirectErrorStream(true).addArgument("/F") // NOI18N
+                .addArgument("/PID").addArgument(Integer.toString(pid)).addArgument("/T"); // NOI18N
+
+        LOGGER.log(Level.FINEST, "About to run taskkill.exe with pid {0}", pid);
+
+        EXECUTOR_SERVICE.submit(new ExecutionCallable(builder, null));
     }
 
     @Override
@@ -146,81 +159,99 @@ public class KillableProcess extends Process {
         return nativeProcess.exitValue();
     }
 
-    private static class WindowsExecutor implements Runnable {
+    private static class PidLineProcessor implements LineProcessor {
 
-        private final String cmd;
+        private final Pattern pattern;
 
-        private final String args;
+        private AtomicInteger pid = new AtomicInteger(-1);
 
-        private final String nameToFilter;
-
-        private final String commandToFilter;
-
-        private String pid;
-
-        public WindowsExecutor(String cmd, String args, String nameToFilter, String commandToFilter) {
-            this.cmd = cmd;
-            this.args = args;
-            this.nameToFilter = nameToFilter;
-            this.commandToFilter = commandToFilter;
+        public PidLineProcessor(String command, String remark) {
+            pattern = Pattern.compile("^.*grails.bat(\\s+-D\\S*=\\S*)*\\s+" // NOI18N
+                    + Pattern.quote(command) + "\\s+REM NB:" + Pattern.quote(remark)
+                    + ".*\\s+(\\d+)(\\s+.*)?$"); // NOI18N
         }
 
-        public String getPid() {
-            return pid;
+        public void processLine(String line) {
+            LOGGER.log(Level.FINEST, "WMIC output line {0}", line);
+
+            Matcher matcher = pattern.matcher(line);
+            try {
+                if (matcher.matches()) {
+                    pid.set(Integer.parseInt(matcher.group(2)));
+                }
+            } catch (NumberFormatException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
         }
 
-        public void run() {
-            NbProcessDescriptor cmdProcessDesc = new NbProcessDescriptor(cmd, args);
+        public void close() {
+            // noop
+        }
 
-            LOGGER.log(Level.FINEST, "Running {0} {1}", new Object[] {cmd, args});
+        public void reset() {
+            // noop
+        }
+
+        public int getPid() {
+            return pid.get();
+        }
+    }
+
+    private static class ExecutionCallable implements Callable<Integer> {
+
+        private final Callable<Process> builder;
+
+        private final LineProcessor processor;
+
+        public ExecutionCallable(Callable<Process> builder, LineProcessor processor) {
+            this.builder = builder;
+            this.processor = processor;
+        }
+
+        public Integer call() throws Exception {
+            boolean interrupted = false;
+
+            Process process = builder.call();
+            // troubles on XP if this is omitted
+            process.getOutputStream().close();
+
+            ProcessInputStream is = new ProcessInputStream(process, process.getInputStream());
+            InputReaderTask task = InputReaderTask.newDrainingTask(
+                    InputReaders.forStream(is, Charset.defaultCharset()),
+                    processor != null ? InputProcessors.bridge(processor) : null);
+
+            EXECUTOR_SERVICE.submit(task);
 
             try {
-                Process utilityProcess = cmdProcessDesc.exec(null, null, true, null);
-
-                if (utilityProcess == null) {
-                    return;
-                }
-
-                utilityProcess.getOutputStream().close();
-
-                // we wait till the process finishes. De-coupling is done a layer above.
+                process.waitFor();
+            } catch (InterruptedException ex) {
+                interrupted = true;
+            } finally {
                 try {
-                    utilityProcess.waitFor();
-                } catch (InterruptedException ex) {
-                    LOGGER.log(Level.FINEST, null, ex);
-                }
+                    interrupted = interrupted | Thread.interrupted();
 
-                if (nameToFilter == null) {
-                    return;
-                }
+                    if (!interrupted) {
+                        if (is != null) {
+                            is.close(true);
+                        }
+                    }
 
-                Pattern pattern = Pattern.compile(".*grails.bat(\\s+-D\\S*=\\S*)*\\s+"
-                        + Pattern.quote(commandToFilter) + "\\s+REM NB:" + Pattern.quote(nameToFilter)
-                        + ".*");
+                    if (process != null) {
+                        process.destroy();
 
-                LOGGER.log(Level.FINEST, "Process pattern {0}", pattern);
-
-                BufferedReader procOutput = new BufferedReader(
-                        new InputStreamReader(utilityProcess.getInputStream()));
-                try {
-                    String errString;
-                    while ((errString = procOutput.readLine()) != null) {
-                        LOGGER.log(Level.FINEST, "Line: {0}", errString);
-                        if (pattern.matcher(errString).matches()) {
-                            LOGGER.log(Level.FINEST, "Match: {0}", errString);
-                            String nbTag = "REM NB:" + nameToFilter; // NOI18N
-                            int idx = errString.indexOf(nbTag);
-                            idx = idx + nbTag.length();
-                            pid = errString.substring(idx).trim();
-                            LOGGER.log(Level.FINEST, "Found: " + pid);
+                        try {
+                            return process.exitValue();
+                        } catch (IllegalThreadStateException ex) {
+                            // noop
                         }
                     }
                 } finally {
-                    procOutput.close();
+                    if (interrupted) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Project exec() problem", ex);
             }
+            return null;
         }
     }
 }

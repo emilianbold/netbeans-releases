@@ -75,6 +75,8 @@ import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /**
  * Tests for JavaProjectGenerator.
@@ -92,8 +94,10 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+        Lookup.getDefault().lookup(ModuleInfo.class);
     }
 
     @Override

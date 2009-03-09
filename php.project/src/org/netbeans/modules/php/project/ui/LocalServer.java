@@ -71,6 +71,10 @@ public class LocalServer implements Comparable<LocalServer> {
     private String hint = " "; // NOI18N
     private String srcRoot;
 
+    public static LocalServer getEmpty() {
+        return new LocalServer("", ""); // NOI18N
+    }
+
     public LocalServer(final LocalServer localServer) {
         this(localServer.virtualHost, localServer.documentRoot, localServer.srcRoot, localServer.editable);
     }
@@ -299,7 +303,8 @@ public class LocalServer implements Comparable<LocalServer> {
                 boolean cellHasFocus) {
             assert value instanceof LocalServer;
             setName("ComboBox.listRenderer"); // NOI18N
-            setText(((LocalServer) value).getSrcRoot());
+            String srcRoot = ((LocalServer) value).getSrcRoot();
+            setText(srcRoot.length() == 0 ? " " : srcRoot); // NOI18N // combo is too low otherwise
 
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
@@ -321,7 +326,7 @@ public class LocalServer implements Comparable<LocalServer> {
         public ComboBoxModel(LocalServer... defaultLocalServers) {
             if (defaultLocalServers == null || defaultLocalServers.length == 0) {
                 // prevent NPE
-                defaultLocalServers = new LocalServer[] {new LocalServer("", "")}; // NOI18N
+                defaultLocalServers = new LocalServer[] {getEmpty()};
             }
             data = new ArrayList<LocalServer>(2 * defaultLocalServers.length);
             for (LocalServer localServer : defaultLocalServers) {

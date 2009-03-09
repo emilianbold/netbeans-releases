@@ -56,6 +56,9 @@ pack_all_components()
     cd $NB_ALL/nbbuild/netbeans
 
     #Continue with individual component
+    pack_component $DIST_DIR/zip/moduleclusters $NAME dlight "dlight*"
+    rm -rf dlight*
+
     pack_component $DIST_DIR/zip/moduleclusters $NAME webcommon "webcommon*"
     rm -rf webcommon*
 

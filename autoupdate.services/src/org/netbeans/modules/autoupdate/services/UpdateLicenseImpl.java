@@ -41,30 +41,49 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.net.URL;
+import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogCache;
+
 /**
  *
  * @author Jiri Rechtacek
+ * @author Dmitry Lipin
  */
 public final class UpdateLicenseImpl {
     private String name;
-    private String agreement;
+    private URL url;
     
     /** Creates a new instance of UpdateLicense */
     public UpdateLicenseImpl (String licenseName, String agreement) {
         this.name = licenseName;
-        this.agreement = agreement;
+        setAgreement(agreement);
+    }
+    /** Creates a new instance of UpdateLicense */
+    public UpdateLicenseImpl (String licenseName, String agreement, URL url) {
+        this.name = licenseName;
+        this.url = url;
+        setAgreement(agreement);
     }
     
     public String getName () {
         return name;
     }
     
+    public URL getURL() {
+        return url;
+    }
+
+    public void setUrl(URL url) {
+        this.url = url;
+    }
+
     public String getAgreement () {
-        return agreement;
+        return AutoupdateCatalogCache.getDefault().getLicense(name,url);
     }
     
     public void setAgreement (String content) {
-        this.agreement = content;
-    }
-    
+        if(content!=null) {
+            AutoupdateCatalogCache.getDefault().storeLicense(name,content);
+        }
+    }    
 }

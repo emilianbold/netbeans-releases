@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.dataview.util;
@@ -72,18 +72,18 @@ public class TimestampTypeTest extends NbTestCase {
 
     //---------------------- Test Case -------------------------
     public void testToTime() throws Exception {
-        assertNotNull(type.convert(new Timestamp(0)));
+        assertNotNull(TimestampType.convert(new Timestamp(0)));
     }
     
     public void testConvertObject() {
         try {
-            type.convert(new Object());
+            TimestampType.convert(new Object());
             fail("Expected Exception");
         } catch (Exception e) {
         // expected
         }
         try {
-            type.convert("this is not a date");
+            TimestampType.convert("this is not a date");
             fail("Expected Exception");
         } catch (Exception e) {
         // expected
@@ -91,7 +91,7 @@ public class TimestampTypeTest extends NbTestCase {
     }
     
     public void testToTimestamp() throws Exception {
-        Object result = type.convert(new Timestamp(now));
+        Object result = TimestampType.convert(new Timestamp(now));
         assertNotNull("Should get object back", result);
         assertTrue("Should get Timestamp back", result instanceof java.sql.Timestamp);
     }

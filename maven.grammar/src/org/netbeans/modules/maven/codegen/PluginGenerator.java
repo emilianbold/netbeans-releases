@@ -112,6 +112,7 @@ public class PluginGenerator implements CodeGenerator {
                 Build buildSection = model.getProject().getBuild();
                 if (buildSection == null) {
                     buildSection = model.getFactory().createBuild();
+                    model.getProject().setBuild(buildSection);
                 }
                 buildSection.addPlugin(plug);
                 model.endTransaction();

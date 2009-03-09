@@ -145,8 +145,8 @@ public final class NbPlatformCustomizer extends JPanel {
             }
             if (sourcesTab != null) {
                 modulesTab.setPlatform(plaf);
-                sourcesTab.setPlatform(plaf);
-                javadocTab.setPlatform(plaf);
+                sourcesTab.setSourceRootsProvider(plaf);
+                javadocTab.setJavadocRootsProvider(plaf);
                 harnessTab.setPlatform(plaf);
             }
         } else {

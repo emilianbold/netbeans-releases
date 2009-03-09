@@ -1,6 +1,5 @@
 package org.netbeans.modules.parsing.impl;
 
-import org.netbeans.modules.parsing.api.*;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 class ASchedulerEvent extends SchedulerEvent {

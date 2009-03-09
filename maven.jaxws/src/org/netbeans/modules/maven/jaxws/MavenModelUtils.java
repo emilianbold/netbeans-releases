@@ -162,15 +162,15 @@ public final class MavenModelUtils {
         config.setSimpleParameter("xnocompile", "true"); //NOI18N
         config.setSimpleParameter("verbose", "true"); //NOI18N
         config.setSimpleParameter("extension", "true"); //NOI18N
-        config.setSimpleParameter("catalog", "${basedir}/" + MavenJAXWSSupportIml.CATALOG_PATH);
+        config.setSimpleParameter("catalog", "${basedir}/" + MavenJAXWSSupportImpl.CATALOG_PATH);
         if (jaxWsVersion != null) {
             config.setSimpleParameter("target", jaxWsVersion); //NOI18N
         }
-        Dependency jsr181Dep = model.getFactory().createDependency();
-        jsr181Dep.setGroupId("javax.jws"); //NOI18N
-        jsr181Dep.setArtifactId("jsr181-api"); //NOI18N
-        jsr181Dep.setVersion("1.0-MR1"); //NOI18N
-        plugin.addDependency(jsr181Dep);
+        Dependency webservicesDep = model.getFactory().createDependency();
+        webservicesDep.setGroupId("javax.xml"); //NOI18N
+        webservicesDep.setArtifactId("webservices-api"); //NOI18N
+        webservicesDep.setVersion("1.4"); //NOI18N
+        plugin.addDependency(webservicesDep);
         
         return plugin; 
     }
@@ -435,17 +435,17 @@ public final class MavenModelUtils {
             ClassPath classPath = ClassPath.getClassPath(srcGroups[0].getRootFolder(), ClassPath.COMPILE);
             FileObject wsimportFO = classPath.findResource("javax/xml/ws/WebServiceFeature.class"); // NOI18N
             if (wsimportFO == null) {
-                //add the JAXWS 2.1 library
-                Library jaxws21Lib = LibraryManager.getDefault().getLibrary("jaxws21"); //NOI18N
-                if (jaxws21Lib == null) {
-                    throw new IOException("Unable to find JAXWS 21 Library."); //NOI18N
+                //add the Metro library
+                Library metroLib = LibraryManager.getDefault().getLibrary("metro"); //NOI18N
+                if (metroLib == null) {
+                    throw new IOException("Unable to find Metro Library."); //NOI18N
                 }
                 try {
-                    ProjectClassPathModifier.addLibraries(new Library[] {jaxws21Lib},
+                    ProjectClassPathModifier.addLibraries(new Library[] {metroLib},
                             srcGroups[0].getRootFolder(),
                             ClassPath.COMPILE);
                 } catch (IOException e) {
-                    throw new IOException("Unable to add JAXWS 21 Library. " + e.getMessage()); //NOI18N
+                    throw new IOException("Unable to add Metro Library. " + e.getMessage()); //NOI18N
                 }
             }
         }

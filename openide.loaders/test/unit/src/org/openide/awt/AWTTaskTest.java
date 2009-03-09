@@ -39,12 +39,9 @@
 
 package org.openide.awt;
 
+import org.netbeans.modules.openide.loaders.AWTTask;
 import java.awt.EventQueue;
 import java.util.logging.Level;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.junit.Log;
 import static org.junit.Assert.*;

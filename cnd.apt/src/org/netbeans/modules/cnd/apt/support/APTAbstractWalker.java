@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 public abstract class APTAbstractWalker extends APTWalker {
     
     private final APTPreprocHandler preprocHandler;
-    private final String startPath;
+    private final CharSequence startPath;
     
     protected APTAbstractWalker(APTFile apt, APTPreprocHandler preprocHandler) {
         super(apt, preprocHandler == null ? null: preprocHandler.getMacroMap());
@@ -76,7 +76,7 @@ public abstract class APTAbstractWalker extends APTWalker {
             if (resolvedPath == null) {
                 if (DebugUtils.STANDALONE) {
                     if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
-                        System.err.println("FAILED INCLUDE: from " + new File(startPath).getName() + " for:\n\t" + apt);// NOI18N
+                        System.err.println("FAILED INCLUDE: from " + new File(startPath.toString()).getName() + " for:\n\t" + apt);// NOI18N
                     }
                 } else {
                     APTUtils.LOG.log(Level.WARNING,
@@ -95,7 +95,7 @@ public abstract class APTAbstractWalker extends APTWalker {
             if (resolvedPath == null) {
                 if (DebugUtils.STANDALONE) {
                     if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
-                        System.err.println("FAILED INCLUDE: from " + new File(startPath).getName() + " for:\n\t" + apt);// NOI18N
+                        System.err.println("FAILED INCLUDE: from " + new File(startPath.toString()).getName() + " for:\n\t" + apt);// NOI18N
                     }
                 } else {
                     APTUtils.LOG.log(Level.WARNING,
@@ -116,12 +116,12 @@ public abstract class APTAbstractWalker extends APTWalker {
         } else {
             if (DebugUtils.STANDALONE) {
                 if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
-                    System.err.println("INCORRECT #define directive: in " + new File(startPath).getName() + " for:\n\t" + apt);// NOI18N
+                    System.err.println("INCORRECT #define directive: in " + new File(startPath.toString()).getName() + " for:\n\t" + apt);// NOI18N
                 }
             } else {
                 APTUtils.LOG.log(Level.SEVERE,
                         "INCORRECT #define directive: in {0} for:\n\t{1}", // NOI18N
-                        new Object[] { new File(startPath).getName(), apt });
+                        new Object[] { new File(startPath.toString()).getName(), apt });
             }
         }
     }

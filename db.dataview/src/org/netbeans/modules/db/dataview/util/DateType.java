@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,12 +40,13 @@
  */
 package org.netbeans.modules.db.dataview.util;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.DateFormat;
-import java.text.ParsePosition;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.util.NbBundle;
 
@@ -55,23 +56,26 @@ import org.openide.util.NbBundle;
  *
  * @author Ahimanikya Satapathy
  */
-public class DateType extends TimestampType {
+public class DateType {
 
-    // DateFormat objects are not thread safe. Do not share across threads w/o synch block.
-    public final DateFormat[] DATE_PARSING_FORMATS = new DateFormat[]{
+    public static final String DEFAULT_FOMAT_PATTERN = "yyyy-MM-dd"; // NOI18N
+    private static final DateFormat[] DATE_PARSING_FORMATS = new DateFormat[]{
+        new SimpleDateFormat (DEFAULT_FOMAT_PATTERN),
         DateFormat.getDateInstance(),
-        new SimpleDateFormat("yyyy-MM-dd", LOCALE), // NOI18N
-        new SimpleDateFormat("MM-dd-yyyy", LOCALE), // NOI18N        
-        DateFormat.getTimeInstance(DateFormat.SHORT, LOCALE)
+        DateFormat.getTimeInstance(DateFormat.SHORT),
+        DateFormat.getTimeInstance(DateFormat.SHORT, TimestampType.LOCALE),
+        new SimpleDateFormat("yyyy-MM-dd"), // NOI18N
+        new SimpleDateFormat("MM-dd-yyyy"), // NOI18N
     };
 
-    public DateType() {
+    {
         for (int i = 0; i < DATE_PARSING_FORMATS.length; i++) {
             DATE_PARSING_FORMATS[i].setLenient(false);
         }
     }
     
-    private Date convertToDate(Object value) throws DBException {
+
+    public static java.sql.Date convert(Object value) throws DBException {
         Calendar cal = Calendar.getInstance();
 
         if (null == value) {
@@ -81,19 +85,15 @@ public class DateType extends TimestampType {
         } else if (value instanceof java.util.Date) {
             cal.setTimeInMillis(((java.util.Date) value).getTime());
         }else if (value instanceof String) {
-            java.util.Date dVal = null;
-            int i = 0;
-            while (dVal == null && i < DATE_PARSING_FORMATS.length) {
-                dVal = DATE_PARSING_FORMATS[i].parse((String) value, new ParsePosition(0));
-                i++;
-            }
-
+            java.util.Date dVal = doParse ((String) value);
             if (dVal == null) {
-                throw new DBException(NbBundle.getMessage(DateType.class,"LBL_invalid_date"));
+                throw new DBException(NbBundle.getMessage(DateType.class,
+                    "MSG_failure_convert_date", value.getClass().getName(), value.toString())); // NOI18N
             }
             cal.setTimeInMillis(dVal.getTime());
         } else {
-            throw new DBException(NbBundle.getMessage(DateType.class,"LBL_invalid_date"));
+            throw new DBException(NbBundle.getMessage(DateType.class,
+                    "MSG_failure_convert_date", value.getClass().getName(), value.toString())); // NOI18N
         }
 
         // Normalize to 0 hour in default time zone.
@@ -101,20 +101,20 @@ public class DateType extends TimestampType {
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
-        return new Date(cal.getTimeInMillis());
+
+        return new java.sql.Date(cal.getTimeInMillis());
     }
 
-    @Override
-    public Object convert(Object value) throws DBException {
-        try {
-            if (value instanceof Date) {
-                return value;
+    private synchronized static java.util.Date doParse (String sVal) {
+        java.util.Date dVal = null;
+        for (DateFormat format : DATE_PARSING_FORMATS) {
+            try {
+                dVal = format.parse (sVal);
+                break;
+            } catch (ParseException ex) {
+                Logger.getLogger (DateType.class.getName ()).log (Level.FINEST, ex.getLocalizedMessage () , ex);
             }
-            return convertToDate(value);
-
-        } catch (DBException e) {
-            throw new DBException(NbBundle.getMessage(DateType.class,"MSG_failure_convert_date",value.getClass().getName(), value.toString()));
-  
         }
+        return dVal;
     }
 }

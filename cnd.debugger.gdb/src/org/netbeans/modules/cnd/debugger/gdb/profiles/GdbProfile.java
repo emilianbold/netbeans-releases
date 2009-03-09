@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -144,19 +145,19 @@ public class GdbProfile implements ConfigurationAuxObject {
         
         if (csconf.isValid()) {
             csname = csconf.getOption();
-            cs = CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(csname);
+            cs = CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(csname);
         } else {
             csname = csconf.getOldName();
-            cs = CompilerSet.getCompilerSet(conf.getDevelopmentHost().getName(), csname, conf.getPlatformInfo().getPlatform());
-            CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).add(cs);
+            cs = CompilerSet.getCompilerSet(conf.getDevelopmentHost().getExecutionEnvironment(), csname, conf.getPlatformInfo().getPlatform());
+            CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).add(cs);
             csconf.setValid();
         }
         Tool debuggerTool = cs.getTool(Tool.DebuggerTool);
-        String hkey = null;
+        ExecutionEnvironment execEnv = null;
         if (debuggerTool != null) {
             String gdbPath = debuggerTool.getPath();
-            hkey = conf.getDevelopmentHost().getName();
-            if (hkey.equals(CompilerSetManager.LOCALHOST)) {
+            execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+            if (execEnv.isLocal()) {
                 File gdbFile = new File(gdbPath);
                 if (gdbFile.exists() && !gdbFile.isDirectory()) {
                     return gdbPath;
@@ -170,7 +171,7 @@ public class GdbProfile implements ConfigurationAuxObject {
             } else {
                 // Remote gdb...
                 ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
-                if (serverList != null && serverList.isValidExecutable(hkey, gdbPath)) {
+                if (serverList != null && serverList.isValidExecutable(execEnv, gdbPath)) {
                     return gdbPath;
                 }
             }
@@ -190,7 +191,7 @@ public class GdbProfile implements ConfigurationAuxObject {
             model.setShowRequiredDebugTools(true);
             model.setCompilerSetName(null); // means don't change
             model.setSelectedCompilerSetName(csname);
-            model.setSelectedDevelopmentHost(hkey);
+            model.setSelectedDevelopmentHost(execEnv);
             model.setEnableDevelopmentHostChange(false);
             BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
             bt.setTitle(NbBundle.getMessage(GdbProfile.class, "LBL_ResolveMissingGdb_Title")); // NOI18N
@@ -199,7 +200,7 @@ public class GdbProfile implements ConfigurationAuxObject {
 //                    setGdbCommand(model.getGdbName());
 //                }
                 conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
-                cs = CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(model.getSelectedCompilerSetName());
+                cs = CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(model.getSelectedCompilerSetName());
                 return cs.getTool(Tool.DebuggerTool).getPath();
             }
         }

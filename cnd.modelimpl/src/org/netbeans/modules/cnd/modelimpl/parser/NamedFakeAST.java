@@ -44,17 +44,16 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 import antlr.Token;
 import antlr.collections.AST;
 import java.io.Serializable;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 /**
  * Fake AST managing text
  * @author Vladimir Voskresensky
  */
-public class NamedFakeAST extends FakeAST implements Serializable {
+public final class NamedFakeAST extends FakeAST implements Serializable {
     private static final long serialVersionUID = 3949611279758335361L;
     
-    private String text;
+    private CharSequence text;
     
     public NamedFakeAST() {
     }
@@ -62,16 +61,13 @@ public class NamedFakeAST extends FakeAST implements Serializable {
     /** Set the token text for this node */
     @Override
     public void setText(String text_) {
-        if (APTTraceFlags.APT_SHARE_TEXT) {
-            text_ = TextCache.getString(text_).toString();
-        }
-        text = text_;
+        text = TextCache.getString(text_);
     } 
 
     /** Get the token text for this node */
     @Override
     public String getText() {
-        return text;
+        return text.toString();
     }
 
     @Override

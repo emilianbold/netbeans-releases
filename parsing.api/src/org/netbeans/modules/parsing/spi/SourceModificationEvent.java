@@ -40,6 +40,7 @@
 package org.netbeans.modules.parsing.spi;
 
 import java.util.EventObject;
+import org.netbeans.modules.parsing.api.Source;
 
 /**
  *
@@ -51,6 +52,10 @@ public class SourceModificationEvent extends EventObject {
         Object              source
     ) {
         super (source);
+    }
+
+    public Source getModifiedSource () {
+        return (Source) getSource ();
     }
 
     @Override

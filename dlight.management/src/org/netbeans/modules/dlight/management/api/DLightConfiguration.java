@@ -93,11 +93,15 @@ public final class DLightConfiguration {
     this.rootFolder = configurationRoot;
   }
 
-   List<DLightTool> getToolsSet(){
+  /**
+   * This method returns the list of tools for the current configuration
+   * @return list of tools used in the current configuration
+   */
+  public List<DLightTool> getToolsSet(){
     return toolsConfiguration.getToolsSet();
   }
 
-  String getConfigurationName(){
+  public String getConfigurationName(){
     return rootFolder.getName();
   }
 

@@ -46,6 +46,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.core.startup.layers.LayerCacheManager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
@@ -132,10 +134,14 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
-                clusters(".*").enableModules(".*").gui(false)
-        );
+        TestSuite suite = new TestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
+                clusters(".*").enableClasspathModules(false).enableModules(".*").gui(false)));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
+                clusters("(platform|harness|ide|websvccommon|gsf|java|profiler|nb)[0-9.]*").enableClasspathModules(false).enableModules(".*").gui(false)));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
+                clusters("(platform|ide)[0-9.]*").enableClasspathModules(false).enableModules(".*").gui(false)));
+        return suite;
     }
 
     private void assertNoErrors(String message, Collection<String> warnings) {
@@ -182,6 +188,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             Enumeration<String> attrs = fo.getAttributes();
             while (attrs.hasMoreElements()) {
                 String name = attrs.nextElement();
+
+                if (name.equals("instanceCreate")) {
+                    continue; // will be handled in testInstantiateAllInstances anyway
+                }
                 
                 Object attr = fo.getAttribute(name);
                 if (attr == null) {
@@ -321,7 +331,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         List<String> errors = new ArrayList<String>();
         
         Enumeration<? extends FileObject> files = FileUtil.getConfigRoot().getChildren(true);
-        while (files.hasMoreElements()) {
+        FILE: while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
             
             if (skipFile(fo.getPath())) {
@@ -332,11 +342,27 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 DataObject obj = DataObject.find (fo);
                 InstanceCookie ic = obj.getCookie(InstanceCookie.class);
                 if (ic != null) {
+                    String iof = (String) fo.getAttribute("instanceOf");
+                    if (iof != null) {
+                        for (String clz : iof.split("[, ]+")) {
+                            try {
+                                Class<?> c = Lookup.getDefault().lookup(ClassLoader.class).loadClass(clz);
+                            } catch (ClassNotFoundException x) {
+                                // E.g. Services/Hidden/org-netbeans-lib-jsch-antlibrary.instance in ide cluster
+                                // cannot be loaded (and would just be ignored) if running without java cluster
+                                System.err.println("Warning: skipping " + fo.getPath() + " due to inaccessible interface " + clz);
+                                continue FILE;
+                            }
+                        }
+                    }
                     Object o = ic.instanceCreate ();
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
-                errors.add ("File " + fo.getPath() + " threw " + ex);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PrintStream ps = new PrintStream(baos);
+                ex.printStackTrace(ps);
+                ps.flush();
+                errors.add ("File " + fo.getPath() + " threw: " + baos);
             }
         }
         
@@ -631,7 +657,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 }
             }
         }
-        assertNoErrors("No warnings relating to folder ordering; cf: http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers.txt", h.errors());
+        assertNoErrors("No warnings relating to folder ordering; " +
+                "cf: http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers.txt", h.errors());
         for (List<String> multiPath : editorMultiFolders) {
             List<FileSystem> layers = new ArrayList<FileSystem>(3);
             for (final String path : multiPath) {
@@ -646,7 +673,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 }
             }
             loadChildren(new MultiFileSystem(layers.toArray(new FileSystem[layers.size()])).getRoot());
-            assertNoErrors("No warnings relating to folder ordering in " + multiPath + "; cf: http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers.txt", h.errors());
+            assertNoErrors("No warnings relating to folder ordering in " + multiPath + 
+                    "; cf: http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers.txt",
+                    h.errors());
         }
     }
     private static void loadChildren(FileObject folder) {
@@ -677,6 +706,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         Enumeration<String> en = fo.getAttributes();
         while (en.hasMoreElements()) {
             String attrName = en.nextElement();
+            if (attrName.equals("instanceCreate")) {
+                continue;
+            }
             Object attr = fo.getAttribute(attrName);
             if (attrName.equals(SFS_LB)) {
                 try {

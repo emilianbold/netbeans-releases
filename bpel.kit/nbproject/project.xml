@@ -6,12 +6,6 @@
             <code-name-base>org.netbeans.modules.bpel.kit</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.bpel.help</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.bpel.core</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
@@ -58,15 +52,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.bpel.model</code-name-base>
+                    <code-name-base>org.netbeans.modules.bpel.help</code-name-base>
                     <run-dependency>
                         <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.bpel.validation</code-name-base>
+                    <code-name-base>org.netbeans.modules.bpel.model</code-name-base>
                     <run-dependency>
-                        <specification-version>6.5</specification-version>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -83,6 +77,12 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.bpel.samples</code-name-base>
+                    <run-dependency>
+                        <specification-version>6.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.bpel.validation</code-name-base>
                     <run-dependency>
                         <specification-version>6.5</specification-version>
                     </run-dependency>
@@ -113,12 +113,6 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.xml.wsdl.kit</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.soa.kit</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>

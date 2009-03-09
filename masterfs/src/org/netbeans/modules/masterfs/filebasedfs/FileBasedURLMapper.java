@@ -135,18 +135,16 @@ public final class FileBasedURLMapper extends URLMapper {
         return new FileObject[]{retVal};
     }
 
-    
     private static URL fileToURL(final File file, final FileObject fo) throws MalformedURLException {
-        URL retVal = null;
-        if (fo.isFolder() && (!fo.isValid() || fo.isVirtual())) {
-            final String urlDef = file.toURI().toURL().toExternalForm();
+        URL retVal = file.toURI().toURL();
+        if (fo.isFolder()) {
+            // #155742 - URL for folder must always end with slash
+            final String urlDef = retVal.toExternalForm();
             final String pathSeparator = "/";//NOI18N
             if (!urlDef.endsWith(pathSeparator)) {
-                //TODO: string concatenation
                 retVal = new URL(urlDef + pathSeparator);
             }
         }
-        retVal = (retVal == null) ? file.toURI().toURL() : retVal;
         return retVal;
     }
 }

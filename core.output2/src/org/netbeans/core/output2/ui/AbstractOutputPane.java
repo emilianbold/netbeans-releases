@@ -113,7 +113,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         fontHeight = -1;
         textView.setFont(f);
     }
-    
+
     protected abstract JEditorPane createTextView();
 
     protected void documentChanged() {
@@ -235,22 +235,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         addMouseListener(this);
 
         getCaret().addChangeListener(this);
-        Integer i = null;
-        int val = Controller.getDefaultFontSize();
-        if (val >= 7) {
-            i = new Integer (val);
-        }
-        if (i == null) {
-            i = (Integer) UIManager.get("customFontSize"); //NOI18N
-        }
-        int size;
-        if (i != null) {
-            size = i.intValue();
-        } else {
-            Font f = (Font) UIManager.get("controlFont");
-            size = f != null ? f.getSize() : 11;
-        }
-        textView.setFont (new Font ("Monospaced", Font.PLAIN, size)); //NOI18N
+        textView.setFont(isWrapped() ? Controller.getDefault().getCurrentFontMS() : Controller.getDefault().getCurrentFont()); //NOI18N
         setBorder (BorderFactory.createEmptyBorder());
         setViewportBorder (BorderFactory.createEmptyBorder());
         
@@ -663,30 +648,30 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     public void keyTyped(KeyEvent keyEvent) {
     }
 
-    protected abstract void changeFontSizeBy (int amt);
+    protected abstract void changeFontSizeBy(int change);
 
     public final void mouseWheelMoved(MouseWheelEvent e) {
         if (e.isControlDown()) {
-            int change = e.getWheelRotation();
-            changeFontSizeBy (change);
+            int change = -e.getWheelRotation();
+            changeFontSizeBy(change);
             e.consume();
-        } else {
-            BoundedRangeModel sbmodel = getVerticalScrollBar().getModel();
-            int max = sbmodel.getMaximum();
-            int range = sbmodel.getExtent();
-
-            int currPosition = sbmodel.getValue();
-            if (e.getSource() == textView) {
-                int newPosition = Math.max(0, Math.min(sbmodel.getMaximum(), currPosition + (e.getUnitsToScroll() * fontHeight)));
-                // height is a magic constant because of #57532
-                sbmodel.setValue (newPosition);
-                if (newPosition + range >= max) {
-                    lockScroll();
-                    return;
-                }
-            }
-            unlockScroll();
+            return;
         }
+        BoundedRangeModel sbmodel = getVerticalScrollBar().getModel();
+        int max = sbmodel.getMaximum();
+        int range = sbmodel.getExtent();
+
+        int currPosition = sbmodel.getValue();
+        if (e.getSource() == textView) {
+            int newPosition = Math.max(0, Math.min(sbmodel.getMaximum(), currPosition + (e.getUnitsToScroll() * fontHeight)));
+            // height is a magic constant because of #57532
+            sbmodel.setValue (newPosition);
+            if (newPosition + range >= max) {
+                lockScroll();
+                return;
+            }
+        }
+        unlockScroll();
     }
 
     Caret getCaret() {

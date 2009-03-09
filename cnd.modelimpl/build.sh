@@ -40,25 +40,103 @@
 
 function main() {
 
-	local nbbuild="../nbbuild"
-	local ubp="${nbbuild}/user.build.properties"
+	local clean="n"
+	local all="n"
+	local cluster="cnd"
+
+	if [ -d "../nbbuild" ]; then
+		nbbuild="../nbbuild"
+	else
+		if [ -d "nbbuild" ]; then
+			nbbuild="nbbuild"
+		else
+			if [ -d ${NBBUILD} ]; then
+				nbbuild="${NBBUILD}"
+			else
+				echo "Can not find nbbuild directory"
+				return
+			fi
+		fi
+	fi
 	
-	if [ ! -r ${ubp} ]; then
-		echo "Can not read file ${ubp}"
-		return
+	while [ -n "$1" ]
+	do
+		case "$1" in
+			-h|--help|-\?)
+				usage
+				return
+				;;
+			-c|--clean)
+				clean="y"
+				;;
+			-a|--all)
+				all="y"
+				;;
+			*)
+				cluster="$1"
+				;;
+		esac
+		shift
+	done
+	
+	local cluster_config="-Dcluster.config=${cluster}"
+	local rebuild_cluster="-Drebuild.cluster.name=nb.cluster.${cluster}"
+	
+	# if we need to build BIG ide, check that user.build.properties does NOT contain cluster specification
+	if [ ${all} == "y" ]; then
+		cluster_config=""
+		rebuild_cluster=""
+		local ubp="${nbbuild}/user.build.properties"
+		if [ ${clean} == "y" ]; then
+			local search_string="^cluster.config"
+		else
+			local search_string="^rebuild.cluster.name"
+		fi
+		egrep "${search_string}" ${ubp}
+		if [ -r ${ubp} ]; then
+			local tmp
+			tmp=`egrep "${search_string}" ${ubp}`
+			rc=$?
+			if [ ${rc} == 0 ]; then
+				echo "Can not build BIG IDE: your ${ubp} specifies cluster:"
+				echo "${tmp}"
+				return
+			fi
+		fi
+		clean="y"
+		echo ""; echo "========== Building BIG IDE =========="; echo ""; 
+		sleep 4 # allow user pressing ^C before we clean :)
+	else
+		egrep "^nb\.cluster\.${cluster}=" ${nbbuild}/cluster.properties > /dev/null
+		rc=$?
+		if [ ${rc} != 0 ]; then
+			echo "Wrong cluster: ${cluster}"
+			return
+		fi
 	fi
 
-	cnd_cluster="rebuild.cluster.name=nb.cluster.cnd"
-
-	fgrep "${cnd_cluster}" ${ubp}
-	rc=$?
-	if [ ! ${rc} == 0 ]; then
-		echo "The file ${ubp} does not contain \"${cnd_cluster}\""
-		return
+	if [ ${clean} == "y" ]; then
+		echo ""; echo "========== Cleaning and building cluster ${cluster} =========="; echo ""; 
+		sleep 2 # allow user pressing ^C before we clean :)
+		ant -f ${nbbuild}/build.xml ${cluster_config} clean build-nozip
+	else
+		echo ""; echo "========== Rebuilding cluster ${cluster} =========="; echo ""; 
+		ant -f ${nbbuild}/build.xml ${rebuild_cluster} rebuild-cluster
 	fi
+}
 
-
-	ant -f ../nbbuild/build.xml -D${cnd_cluster} rebuild-cluster
+function usage() {
+	echo ""
+	echo "Usage:"
+	echo ""
+	echo "build.sh [-c] -a"
+	echo "	to build BIG IDE"
+	echo "or"
+	echo "build.sh [-c] cluster"
+	echo "	to build particular cluster"
+	echo ""
+	echo "	-c means clean build-nozip, otherwise rebuild-cluster"
+	echo ""
 }
 
 main $@

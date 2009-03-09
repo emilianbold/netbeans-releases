@@ -40,7 +40,11 @@ package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
 import java.awt.Image;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.midpnb.screen.display.SVGLabelDisplayPresenter;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -76,6 +80,20 @@ public class SVGLabelEventSourceCD extends SVGComponentEventSourceCD {
     @Override
     protected TypeID getTypeId() {
         return TYPEID;
+    }
+
+    @Override
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        removeActions(presenters);
+        super.gatherPresenters(presenters);
+    }
+
+    @Override
+    protected List<? extends Presenter> createPresenters() {
+        List<? extends Presenter> presenters = super.createPresenters();
+        List<Presenter> result = new ArrayList<Presenter>( presenters  );
+        result.add( new SVGLabelDisplayPresenter() );
+        return result;
     }
 
 }

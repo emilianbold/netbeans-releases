@@ -593,26 +593,34 @@ made subject to such option by the copyright holder.
             <folder name="NetBeans">
                 <file name="DTD_JDBC_Driver_1_0.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor"/>
-                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor.createProvider"/>
                 </file>
                 <file name="DTD_JDBC_Driver_1_1.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor"/>
-                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor.createProvider"/>
                 </file>
                 <file name="DTD_Database_Connection_1_0.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor"/>
-                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor.createProvider"/>
                 </file>
                 <file name="DTD_Database_Connection_1_1.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor"/>
-                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor.createProvider"/>
                 </file>
             </folder>
         </folder>
     </folder>
-    
+
+    <folder name="OptionsExport">
+        <folder name="Advanced">
+            <file name="Databases">
+                <attr name="include" stringvalue="config/Databases/.*|Services/org-netbeans-modules-db-explorer-DatabaseOption\.settings"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.db.explorer.Bundle#Databases.Options.Export.displayName"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

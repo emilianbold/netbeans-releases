@@ -38,6 +38,10 @@
  */
 package org.netbeans.modules.dlight.core.stack.storage;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -50,12 +54,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
+import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Stack data storage over a relational database.
@@ -64,19 +73,19 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
  */
 public class SQLStackStorage {
 
-    public static final List<FunctionMetric> METRICS =Arrays.<FunctionMetric>asList(
-          FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
-
+    public static final List<FunctionMetric> METRICS = Arrays.<FunctionMetric>asList(
+        FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
     protected final SQLDataStorage sqlStorage;
     private final Map<CharSequence, Integer> funcCache;
     private final Map<NodeCacheKey, Integer> nodeCache;
-
     private int funcIdSequence;
     private int nodeIdSequence;
     private final ExecutorThread executor;
+    private final DemanglingFunctionNameService demanglingService;
 
-    public SQLStackStorage(SQLDataStorage sqlStorage) {
+    public SQLStackStorage(SQLDataStorage sqlStorage) throws SQLException, IOException {
         this.sqlStorage = sqlStorage;
+        initTables();
         funcCache = new HashMap<CharSequence, Integer>();
         nodeCache = new HashMap<NodeCacheKey, Integer>();
         funcIdSequence = 0;
@@ -84,6 +93,22 @@ public class SQLStackStorage {
         executor = new ExecutorThread();
         executor.setPriority(Thread.MIN_PRIORITY);
         executor.start();
+        DemanglingFunctionNameServiceFactory factory = Lookup.getDefault().lookup(DemanglingFunctionNameServiceFactory.class);
+        if (factory != null) {
+            demanglingService = factory.getForCurrentSession();
+        } else {
+            demanglingService = null;
+       }
+    }
+
+    private void initTables() throws SQLException, IOException {
+        InputStream is = SQLStackStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resource/schema.sql");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        try {
+            sqlStorage.execute(reader);
+        } finally {
+            reader.close();
+        }
     }
 
     public int putStack(List<CharSequence> stack, long sampleDuration) {
@@ -95,7 +120,7 @@ public class SQLStackStorage {
             int funcId = generateFuncId(funcName);
             updateMetrics(funcId, false, sampleDuration, !funcs.contains(funcId), isLeaf);
             funcs.add(funcId);
-            int nodeId = generateNodeId(callerId, funcId);
+            int nodeId = generateNodeId(callerId, funcId, getOffset(funcName));
             updateMetrics(nodeId, true, sampleDuration, true, isLeaf);
             callerId = nodeId;
         }
@@ -109,8 +134,8 @@ public class SQLStackStorage {
     public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) throws SQLException {
         List<Long> result = new ArrayList<Long>();
         PreparedStatement ps = sqlStorage.prepareStatement(
-                "SELECT time_stamp FROM CallStack " +
-                "WHERE ? <= time_stamp AND time_stamp < ? ORDER BY time_stamp");
+            "SELECT time_stamp FROM CallStack " +
+            "WHERE ? <= time_stamp AND time_stamp < ? ORDER BY time_stamp");
         ps.setMaxRows(1);
         for (long time1 = startTime; time1 < endTime; time1 += interval) {
             long time2 = Math.min(time1 + interval, endTime);
@@ -135,9 +160,9 @@ public class SQLStackStorage {
         ResultSet rs = select.executeQuery();
         while (rs.next()) {
             Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
-            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
-            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2)), metrics));
+            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
+            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2), rs.getString(3)), metrics));
         }
         rs.close();
         return result;
@@ -149,9 +174,9 @@ public class SQLStackStorage {
         ResultSet rs = select.executeQuery();
         while (rs.next()) {
             Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
-            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
-            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2)), metrics));
+            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
+            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2), rs.getString(3)), metrics));
         }
         rs.close();
         return result;
@@ -160,27 +185,36 @@ public class SQLStackStorage {
     public List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit) throws SQLException {
         List<FunctionCall> result = new ArrayList<FunctionCall>();
         PreparedStatement select = sqlStorage.prepareStatement(
-                "SELECT func_id, func_name, time_incl, time_excl " +
-                "FROM Func ORDER BY " + metric.getMetricID() + " DESC");
+            "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " +
+            "FROM Func ORDER BY " + metric.getMetricID() + " DESC");
         select.setMaxRows(limit);
         ResultSet rs = select.executeQuery();
         while (rs.next()) {
             Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
-            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
-            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), rs.getString(2)), metrics));
+            metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
+            metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+            String func_name = rs.getString(2);
+            if (demanglingService != null){
+                try {
+                    func_name = demanglingService.demangle(func_name).get();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), func_name, rs.getString(3)), metrics));
         }
         rs.close();
         return result;
     }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-    private void updateMetrics(int id, boolean funcOrCall, long sampleDuration, boolean addIncl, boolean addExcl) {
+    private void updateMetrics(int id, boolean funcOrNode, long sampleDuration, boolean addIncl, boolean addExcl) {
         if (0 < sampleDuration) {
             UpdateMetrics cmd = new UpdateMetrics();
             cmd.objId = id;
-            cmd.funcOrNode = funcOrCall;
+            cmd.funcOrNode = funcOrNode;
             if (addIncl) {
                 cmd.cpuTimeInclusive = sampleDuration;
             }
@@ -191,9 +225,9 @@ public class SQLStackStorage {
         }
     }
 
-    private int generateNodeId(int callerId, int funcId) {
+    private int generateNodeId(int callerId, int funcId, long offset) {
         synchronized (nodeCache) {
-            NodeCacheKey cacheKey = new NodeCacheKey(callerId, funcId);
+            NodeCacheKey cacheKey = new NodeCacheKey(callerId, funcId, offset);
             Integer nodeId = nodeCache.get(cacheKey);
             if (nodeId == null) {
                 nodeId = ++nodeIdSequence;
@@ -201,6 +235,7 @@ public class SQLStackStorage {
                 cmd.id = nodeId;
                 cmd.callerId = callerId;
                 cmd.funcId = funcId;
+                cmd.offset = offset;
                 executor.submitCommand(cmd);
                 nodeCache.put(cacheKey, nodeId);
             }
@@ -209,6 +244,10 @@ public class SQLStackStorage {
     }
 
     private int generateFuncId(CharSequence funcName) {
+        int plusPos = lastIndexOf(funcName, '+'); // NOI18N
+        if (0 <= plusPos) {
+            funcName = funcName.subSequence(0, plusPos);
+        }
         synchronized (funcCache) {
             Integer funcId = funcCache.get(funcName);
             if (funcId == null) {
@@ -223,9 +262,30 @@ public class SQLStackStorage {
         }
     }
 
+    private long getOffset(CharSequence cs) {
+        int plusPos = lastIndexOf(cs, '+'); // NOI18N
+        if (0 <= plusPos) {
+            try {
+                return Long.parseLong(cs.subSequence(plusPos + 3, cs.length()).toString(), 16);
+            } catch (NumberFormatException ex) {
+                // ignore
+            }
+        }
+        return 0l;
+    }
+
+    private int lastIndexOf(CharSequence cs, char c) {
+        for (int i = cs.length() - 1; 0 <= i; --i) {
+            if (cs.charAt(i) == c) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     private PreparedStatement prepareCallersSelect(FunctionCall[] path) throws SQLException {
         StringBuilder buf = new StringBuilder();
-        buf.append(" SELECT F.func_id, F.func_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N ");
+        buf.append(" SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N ");
         buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id ");
         buf.append(" INNER JOIN Node N1 ON N.node_id = N1.caller_id ");
         for (int i = 1; i < path.length; ++i) {
@@ -239,7 +299,7 @@ public class SQLStackStorage {
             }
             buf.append("N").append(i).append(".func_id = ? ");
         }
-        buf.append(" GROUP BY F.func_id, F.func_name");
+        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name");
         PreparedStatement select = sqlStorage.prepareStatement(buf.toString());
         for (int i = 0; i < path.length; ++i) {
             select.setInt(i + 1, ((FunctionImpl) path[i].getFunction()).getId());
@@ -249,7 +309,7 @@ public class SQLStackStorage {
 
     private PreparedStatement prepareCalleesSelect(FunctionCall[] path) throws SQLException {
         StringBuilder buf = new StringBuilder();
-        buf.append("SELECT F.func_id, F.func_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N1 ");
+        buf.append("SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N1 ");
         for (int i = 1; i < path.length; ++i) {
             buf.append(" INNER JOIN Node AS N").append(i + 1);
             buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id ");
@@ -262,7 +322,7 @@ public class SQLStackStorage {
             }
             buf.append(" N").append(i).append(".func_id = ? ");
         }
-        buf.append(" GROUP BY F.func_id, F.func_name");
+        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name");
         PreparedStatement select = sqlStorage.prepareStatement(buf.toString());
         for (int i = 0; i < path.length; ++i) {
             select.setInt(i + 1, ((FunctionImpl) path[i].getFunction()).getId());
@@ -271,15 +331,16 @@ public class SQLStackStorage {
     }
 
 ////////////////////////////////////////////////////////////////////////////////
-
     private static class NodeCacheKey {
 
         private final int callerId;
         private final int funcId;
+        private long offset;
 
-        public NodeCacheKey(int callerId, int funcId) {
+        public NodeCacheKey(int callerId, int funcId, long offset) {
             this.callerId = callerId;
             this.funcId = funcId;
+            this.offset = offset;
         }
 
         @Override
@@ -288,12 +349,12 @@ public class SQLStackStorage {
                 return false;
             }
             final NodeCacheKey that = (NodeCacheKey) obj;
-            return callerId == that.callerId && funcId == that.funcId;
+            return callerId == that.callerId && funcId == that.funcId && offset == that.offset;
         }
 
         @Override
         public int hashCode() {
-            return 13 * callerId + 17 * funcId;
+            return 13 * callerId + 17 * funcId + ((int)(offset >> 32) | (int)offset);
         }
     }
 
@@ -301,12 +362,18 @@ public class SQLStackStorage {
 
         private final int id;
         private final String name;
+        private final String quilifiedName;
 
-        public FunctionImpl(int id, String name) {
+        public FunctionImpl(int id, String name, String qualified_name) {
             this.id = id;
             this.name = name;
+            this.quilifiedName = qualified_name;
         }
 
+//        public FunctionImpl(int id, String name) {
+//            this.id = id;
+//            this.name = name;
+//        }
         public int getId() {
             return id;
         }
@@ -316,7 +383,7 @@ public class SQLStackStorage {
         }
 
         public String getQuilifiedName() {
-            return name;
+            return quilifiedName;
         }
 
         @Override
@@ -350,34 +417,60 @@ public class SQLStackStorage {
         }
 
         @Override
+        public boolean hasMetric(String metric_id) {
+            for (FunctionMetric metric : metrics.keySet()) {
+                if (metric.getMetricID().equals(metric_id)) {
+                    return true;
+                }
+            }
+            return false;
+
+        }
+
+        @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
             buf.append("FunctionCall{ function=").append(getFunction());
             buf.append(", metrics=").append(metrics).append(" }");
             return buf.toString();
         }
-
     }
 
     private static class AddFunction {
+
         public int id;
         public CharSequence name;
+//        public CharSequence full_name;
     }
 
     private static class AddNode {
+
         public int id;
         public int callerId;
         public int funcId;
+        public long offset;
     }
 
     private static class UpdateMetrics {
+
         public int objId;
         public boolean funcOrNode; // false => func, true => node
         public long cpuTimeInclusive;
         public long cpuTimeExclusive;
+
         public void add(UpdateMetrics delta) {
             cpuTimeInclusive += delta.cpuTimeInclusive;
             cpuTimeExclusive += delta.cpuTimeExclusive;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            buf.append(funcOrNode? "func" : "node"); // NO18N
+            buf.append(" id=").append(objId); // NOI18N
+            buf.append(": time_incl+=").append(cpuTimeInclusive); // NOI18N
+            buf.append(", time_excl+=").append(cpuTimeExclusive); // NOI18N
+            return buf.toString();
         }
     }
 
@@ -388,6 +481,7 @@ public class SQLStackStorage {
         private final LinkedBlockingQueue<Object> queue;
 
         public ExecutorThread() {
+            setName("DLIGTH: SQLStackStorage executor thread"); // NOI18N
             queue = new LinkedBlockingQueue<Object>();
         }
 
@@ -421,7 +515,7 @@ public class SQLStackStorage {
                             Object cmd = cmdIterator.next();
                             if (cmd instanceof UpdateMetrics) {
                                 UpdateMetrics updateMetricsCmd = (UpdateMetrics) cmd;
-                                Map<Integer, UpdateMetrics> map = updateMetricsCmd.funcOrNode? nodeMetrics : funcMetrics;
+                                Map<Integer, UpdateMetrics> map = updateMetricsCmd.funcOrNode ? nodeMetrics : funcMetrics;
                                 UpdateMetrics original = map.get(updateMetricsCmd.objId);
                                 if (original == null) {
                                     map.put(updateMetricsCmd.objId, updateMetricsCmd);
@@ -439,31 +533,43 @@ public class SQLStackStorage {
                             try {
                                 if (cmd instanceof AddFunction) {
                                     AddFunction addFunctionCmd = (AddFunction) cmd;
-                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Func (func_id, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?)");
+                                    //demagle here
+                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Func (func_id, func_full_name, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?, ?)");
                                     stmt.setInt(1, addFunctionCmd.id);
                                     stmt.setString(2, addFunctionCmd.name.toString());
+//                                    if (demanglingService == null) {
+                                        stmt.setString(3, addFunctionCmd.name.toString());
+//                                    } else {
+//                                        Future<String> demangled = demanglingService.demangle(addFunctionCmd.name.toString());
+//                                        try {
+//                                            stmt.setString(3, demangled.get());
+//                                        } catch (ExecutionException ex) {
+//                                            stmt.setString(3, addFunctionCmd.name.toString());
+//                                        }
+//                                    }
                                     UpdateMetrics metrics = funcMetrics.remove(addFunctionCmd.id);
-                                    if (metrics == null) {
-                                        stmt.setLong(3, 0);
-                                        stmt.setLong(4, 0);
-                                    } else {
-                                        stmt.setLong(3, metrics.cpuTimeInclusive);
-                                        stmt.setLong(4, metrics.cpuTimeExclusive);
-                                    }
-                                    stmt.executeUpdate();
-                                } else if (cmd instanceof AddNode) {
-                                    AddNode addNodeCmd = (AddNode) cmd;
-                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Node (node_id, caller_id, func_id, time_incl, time_excl) VALUES (?, ?, ?, ?, ?)");
-                                    stmt.setInt(1, addNodeCmd.id);
-                                    stmt.setInt(2, addNodeCmd.callerId);
-                                    stmt.setInt(3, addNodeCmd.funcId);
-                                    UpdateMetrics metrics = nodeMetrics.remove(addNodeCmd.id);
                                     if (metrics == null) {
                                         stmt.setLong(4, 0);
                                         stmt.setLong(5, 0);
                                     } else {
                                         stmt.setLong(4, metrics.cpuTimeInclusive);
                                         stmt.setLong(5, metrics.cpuTimeExclusive);
+                                    }
+                                    stmt.executeUpdate();
+                                } else if (cmd instanceof AddNode) {
+                                    AddNode addNodeCmd = (AddNode) cmd;
+                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Node (node_id, caller_id, func_id, offset, time_incl, time_excl) VALUES (?, ?, ?, ?, ?, ?)");
+                                    stmt.setInt(1, addNodeCmd.id);
+                                    stmt.setInt(2, addNodeCmd.callerId);
+                                    stmt.setInt(3, addNodeCmd.funcId);
+                                    stmt.setLong(4, addNodeCmd.offset);
+                                    UpdateMetrics metrics = nodeMetrics.remove(addNodeCmd.id);
+                                    if (metrics == null) {
+                                        stmt.setLong(5, 0);
+                                        stmt.setLong(6, 0);
+                                    } else {
+                                        stmt.setLong(5, metrics.cpuTimeInclusive);
+                                        stmt.setLong(6, metrics.cpuTimeExclusive);
                                     }
                                     stmt.executeUpdate();
                                 }
@@ -509,7 +615,6 @@ public class SQLStackStorage {
                 ex.printStackTrace();
             }
         }
-
     }
 
 }

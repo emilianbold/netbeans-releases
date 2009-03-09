@@ -214,7 +214,7 @@ made subject to such option by the copyright holder.
             <file name="SunStudioExpress.xml" url="toolchain/SunStudioExpress.xml">
                 <attr name="position" intvalue="1600"/>
             </file>
-            <file name="SunStudio_13.xml" url="toolchain/SunStudio_13.xml">
+            <file name="SunStudio_12.1.xml" url="toolchain/SunStudio_12.1.xml">
                 <attr name="position" intvalue="1700"/>
                 <attr name="extends" stringvalue="SunStudio_12"/>
             </file>

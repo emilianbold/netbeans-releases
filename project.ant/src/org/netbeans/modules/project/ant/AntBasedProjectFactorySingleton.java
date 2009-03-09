@@ -69,7 +69,6 @@ import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType2;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -187,8 +186,8 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
                     if (type != null) {
                         AntBasedProjectType provider = findAntBasedProjectType(type);
                         if (provider != null) {
-                            if (provider instanceof AntBasedProjectType2) {
-                                return new ProjectManager.Result(((AntBasedProjectType2)provider).getIcon());
+                            if (provider instanceof AntBasedGenericType) {
+                                return new ProjectManager.Result(((AntBasedGenericType)provider).getIcon());
                             } else {
                                 //put special icon?
                                 return new ProjectManager.Result(null);
@@ -385,5 +384,10 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         }
         assert HELPER_CALLBACK != null;
     }
-    
+
+    public static AntBasedProjectType create(Map map) {
+        return new AntBasedGenericType(map);
+    }
+
+
 }

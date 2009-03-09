@@ -42,8 +42,7 @@ package org.netbeans.modules.dlight.management.api;
 import java.util.ArrayList;
 import java.util.List;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 
 /**
  * This class
@@ -56,8 +55,8 @@ final class DLightConfigurationManager {
   private  DLightConfigurationManager() {
   }
   private final FileObject getToolsFSRoot() {
-    FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-    return fs.getRoot().getFileObject(getToolsFSRootPath());
+    FileObject fsRoot  = FileUtil.getConfigRoot();
+    return fsRoot.getFileObject(getToolsFSRootPath());
   }
 
   private final String getToolsFSRootPath() {

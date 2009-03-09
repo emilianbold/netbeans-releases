@@ -50,6 +50,14 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void test159679() throws Exception {
+        // IZ159679: regression on Boost: resolver prefers global variable to local typedef
+        performTest("iz159679.cpp", 12, 25, "iz159679.cpp", 11, 5);
+        performTest("iz159679.cpp", 12, 35, "iz159679.cpp", 3, 5);
+        performTest("iz159679.cpp", 12, 40, "iz159679.cpp", 6, 5);
+        performTest("iz159679.cpp", 12, 45, "iz159679.cpp", 12, 5);
+    }
+
     public void test154777() throws Exception {
         // IZ154777: Unresolved inner type of specialization
         performTest("iz154777.cpp", 16, 19, "iz154777.cpp", 10, 9); // DD in CC<int>::DD::dType j;
@@ -80,5 +88,16 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         // MYSTL case of IZ#153986: code completion of iterators and of the [] operator
         performTest("iz153986.cc", 18, 15, "iz153986.cc", 9, 9);
         performTest("iz153986.cc", 18, 30, "iz153986.cc", 4, 9);
+    }
+
+    public void test159068() throws Exception {
+        // IZ#159068 : Unresolved ids in instantiations after &
+        performTest("iz159068.cc", 4, 27, "iz159068.cc", 2, 5);
+    }
+
+    public void test159054() throws Exception {
+        // IZ#159054 : Unresolved id in case of reference to template as return type
+        performTest("iz159054.cc", 9, 17, "iz159054.cc", 3, 5);
+        performTest("iz159054.cc", 15, 17, "iz159054.cc", 4, 5);
     }
 }

@@ -43,11 +43,7 @@ package org.openide.nodes;
 import org.openide.util.Lookup;
 import org.openide.util.UserCancelException;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.*;
 
@@ -137,7 +133,6 @@ public abstract class NodeOperation {
      */
     public Node[] select(String title, String rootTitle, Node root, NodeAcceptor acceptor)
     throws UserCancelException {
-        //XXX AFAIK this is completely unused in NetBeans.  Deprecate? -Tim
         return select(title, rootTitle, root, acceptor, null);
     }
 

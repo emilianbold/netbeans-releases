@@ -41,12 +41,13 @@ package org.netbeans.modules.cnd.remote.mapper;
 
 import java.util.Map;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
  * @author Sergey Grinev
  */
 public interface HostMappingProvider {
-    public Map<String, String> findMappings(String hkey, String otherHkey);
+    public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv);
     public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform);
 }

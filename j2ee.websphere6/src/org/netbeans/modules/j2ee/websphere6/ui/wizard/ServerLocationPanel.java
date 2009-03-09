@@ -85,7 +85,6 @@ public class ServerLocationPanel  implements WizardDescriptor.Panel, ChangeListe
      * @return true if the entered installation directory is valid, false
      *      otherwise
      */
-    @Override
     public boolean isValid() {
          return getVisual().valid(wizardDescriptor);
     }

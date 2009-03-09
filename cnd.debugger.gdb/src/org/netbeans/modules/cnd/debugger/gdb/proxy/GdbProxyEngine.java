@@ -56,8 +56,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 import org.netbeans.modules.cnd.api.utils.Path;
@@ -129,7 +129,7 @@ public class GdbProxyEngine {
         getLogger().logMessage("workingDirectory: " + workingDirectory); // NOI18N
         getLogger().logMessage("================================================"); // NOI18N
         
-        if (debugger.getHostKey().equals(CompilerSetManager.LOCALHOST)) {
+        if (debugger.getHostExecutionEnvironment().isLocal()) {
             localDebugger(debuggerCommand, debuggerEnvironment, workingDirectory, cspath);
         } else {
             remoteDebugger(debugger, debuggerCommand, debuggerEnvironment, workingDirectory, cspath);
@@ -203,8 +203,8 @@ public class GdbProxyEngine {
             sb.append(' ');
         }
         
-        provider = InteractiveCommandProviderFactory.create(debugger.getHostKey());
-        if (provider != null && provider.run(debugger.getHostKey(), sb.toString(), null)) {
+        provider = InteractiveCommandProviderFactory.create(ExecutionEnvironmentFactory.getHostKey(debugger.getHostExecutionEnvironment()));
+        if (provider != null && provider.run(debugger.getHostExecutionEnvironment(), sb.toString(), null)) {
             try {
                 toGdb = gdbReader(provider.getInputStream(), provider.getOutputStream());
             } catch (IOException ioe) {

@@ -134,9 +134,9 @@ public final class ExcludeFromCommitAction extends ContextAction {
                     paths.add(file.getAbsolutePath());
                 }
                 if (isCanceled()) return;
-                if (status == EXCLUDING) {
+                if (status != INCLUDING) {
                     config.addExclusionPaths(paths);
-                } else if (status == INCLUDING) {
+                } else {
                     config.removeExclusionPaths(paths);
                 }
             }

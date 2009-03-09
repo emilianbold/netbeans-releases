@@ -51,36 +51,97 @@ import java.awt.*;
 public class SVGImageComponent extends JPanel {
 
     private SVGImage image;
+    private int originalVieportWidth;
+    private int originalVieportHeight;
+    private float scaleX = 1.0f;
+    private float scaleY = 1.0f;
+    private int correctionX = 0;
+    private int correctionY = 0;
 
-    public SVGImageComponent () {
-        setOpaque (false);
+    public SVGImageComponent() {
+        setOpaque(false);
     }
 
-
-    public SVGImage getImage () {
+    public SVGImage getImage() {
         return image;
     }
 
-    public void setImage (SVGImage image) {
+    public void setImage(SVGImage image) {
         SVGImage old = this.image;
-        if (old == image)
+        if (old == image) {
             return;
+        }
         this.image = image;
-        firePropertyChange ("svg-image", old, image); // NOI18N
-        repaint ();
+        if (image != null) {
+            this.originalVieportWidth = image.getViewportWidth();
+            this.originalVieportHeight = image.getViewportHeight();
+        }
+        firePropertyChange("svg-image", old, image); // NOI18N
+        repaint();
     }
-
 
     @Override
-    public void paint (Graphics g) {
-        super.paint (g);
+    public void paint(Graphics g) {
+        super.paint(g);
         if (image != null) {
-            image.setViewportHeight (getHeight ());
-            image.setViewportWidth (getWidth ());
-            ScalableGraphics gr = ScalableGraphics.createInstance ();
-            gr.bindTarget (g);
-            gr.render (0, 0, image);
-            gr.releaseTarget ();
+
+            updateScale();
+            if (getHeight() < originalVieportHeight || getWidth() < originalVieportWidth) {
+                image.setViewportHeight(getHeight());
+                image.setViewportWidth(getWidth());
+            } else {
+                image.setViewportHeight(originalVieportHeight);
+                image.setViewportWidth(originalVieportWidth);
+            }
+            ScalableGraphics gr = ScalableGraphics.createInstance();
+            gr.bindTarget(g);
+            gr.render(0, 0, image);
+            gr.releaseTarget();
         }
     }
+
+    protected float getScaleX() {
+        return scaleX;
+    }
+
+    protected float getScaleY() {
+        return scaleY;
+    }
+
+    protected int getCorrectionX() {
+        return correctionX;
+    }
+
+    protected int getCorrectionY() {
+        return correctionY;
+    }
+
+    private void updateScale() {
+        assert image != null;
+        if (getHeight() < originalVieportHeight || getWidth() < originalVieportWidth) {
+
+            // update scales
+            float sx = (float) getWidth() / (float) originalVieportWidth;
+            float sy = (float) getHeight() / (float) originalVieportHeight;
+            scaleX = Math.min(sx, sy);
+            scaleY = scaleX;
+
+            // update corrections
+            if (sy < sx) {
+                int realViewWidth = (int) ((float) originalVieportWidth * scaleY);
+                correctionX = (getWidth() - realViewWidth) / 2;
+                correctionY = 0;
+            } else {
+                correctionX = 0;
+                int realViewHeight = (int) ((float) originalVieportHeight * scaleX);
+                correctionY = (getHeight() - realViewHeight) / 2;
+            }
+        } else {
+            scaleX = 1.0f;
+            scaleY = 1.0f;
+            correctionX = 0;
+            correctionY = 0;
+        }
+    }
+
 }

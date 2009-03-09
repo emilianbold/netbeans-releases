@@ -41,33 +41,35 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+
 /**
  *
  * @author Alexander Simon
  */
 public final class ResolvedPath {
-    private final String folder;
-    private final String path;
+    private final CharSequence folder;
+    private final CharSequence path;
     private final boolean isDefaultSearchPath;
     private final int index;
     
-    public ResolvedPath(String folder, String path, boolean isDefaultSearchPath, int index) {
-        this.folder = folder;
-        this.path = path;
+    public ResolvedPath(CharSequence folder, CharSequence path, boolean isDefaultSearchPath, int index) {
+        this.folder = FilePathCache.getString(folder);
+        this.path = FilePathCache.getString(path);
         this.isDefaultSearchPath = isDefaultSearchPath;
         this.index = index;
     }
     /**
      * Resolved file path
      */
-    public String getPath(){
+    public CharSequence getPath(){
         return path;
     }
 
     /**
      * Include path used for resolving file path
      */
-    public String getFolder(){
+    public CharSequence getFolder(){
         return folder;
     }
 
@@ -85,6 +87,7 @@ public final class ResolvedPath {
         return index;
     }
     
+    @Override
     public String toString(){
         return path+" in "+folder; // NOI18N
     }

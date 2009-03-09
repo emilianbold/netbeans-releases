@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -105,6 +106,7 @@ import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
@@ -134,6 +136,8 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private Set<String> editItemsSet = new HashSet<String>();
     private ArrayList<String> editItemsList = new ArrayList<String>();
     private JPopupMenu editItemsMenu;
+
+    private Preferences preferences = NbPreferences.forModule(ContextProvider.class).node("variables_view");
 
     private static volatile CodeEvaluator currentEvaluator;
     private Variable result;
@@ -367,6 +371,8 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
         rightPanel.add(evaluateButton, gridBagConstraints);
+
+        emptyPanel.setPreferredSize(new java.awt.Dimension(0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -412,6 +418,12 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     }
 
     @Override
+    public boolean requestFocusInWindow() {
+        codePane.requestFocusInWindow(); // [TODO}
+        return super.requestFocusInWindow();
+    }
+
+    @Override
     protected String preferredID() {
         return this.getClass().getName();
     }
@@ -454,13 +466,19 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 //                if (result == null && resultView == null) { // [TODO]
 //                    return ; // Ignore when nothing to display and nothing is initialized.
 //                }
-                if (resultView == null) {
-                    resultView = getResultViewInstance();
+                if (preferences.getBoolean("show_evaluator_result", false)) {
+                    TopComponent view = WindowManager.getDefault().findTopComponent("localsView"); // NOI18N [TODO]
+                    view.open();
+                    view.requestActive();
+                } else {
+                    if (resultView == null) {
+                        resultView = getResultViewInstance();
+                    }
+                    if (result != null) {
+                        resultView.open();
+                    }
+                    resultView.requestActive();
                 }
-                if (result != null) {
-                    resultView.open();
-                }
-                resultView.requestActive();
                 //viewModelListener.updateModel();
                 fireResultChange();
             }

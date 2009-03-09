@@ -47,6 +47,7 @@ import javax.swing.JTable;
 import javax.swing.tree.AbstractLayoutCache;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.netbeans.swing.outline.CheckRenderDataProvider;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.RenderDataProvider;
 import org.openide.nodes.Node;
@@ -55,12 +56,12 @@ import org.openide.nodes.Node;
  *
  * @author David Strupl
  */
-class NodeRenderDataProvider implements RenderDataProvider {
+class NodeRenderDataProvider implements CheckRenderDataProvider {
     
-    private JTable table;
+    private Outline table;
     
     /** Creates a new instance of NodeRenderDataProvider */
-    public NodeRenderDataProvider(JTable table) {
+    public NodeRenderDataProvider(Outline table) {
         this.table = table;
     }
 
@@ -95,7 +96,7 @@ class NodeRenderDataProvider implements RenderDataProvider {
             }
             Collections.reverse(al);
             TreePath tp = new TreePath(al.toArray());
-            AbstractLayoutCache layout = ((Outline)table).getLayoutCache();
+            AbstractLayoutCache layout = table.getLayoutCache();
             expanded = layout.isExpanded(tp);
         }
         java.awt.Image image = null;
@@ -118,5 +119,39 @@ class NodeRenderDataProvider implements RenderDataProvider {
     public boolean isHtmlDisplayName(Object o) {
         return false;
     }
-    
+
+    private CheckableNode getCheckCookie(Object o) {
+        Node n = Visualizer.findNode(o);
+        if (n == null) {
+            throw new IllegalStateException("TreeNode must be VisualizerNode but was: " + o + " of class " + o.getClass().getName());
+        }
+        return n.getLookup().lookup(CheckableNode.class);
+    }
+
+    public boolean isCheckable(Object o) {
+        CheckableNode c = getCheckCookie(o);
+        return c != null && c.isCheckable();
+    }
+
+    public boolean isCheckEnabled(Object o) {
+        CheckableNode c = getCheckCookie(o);
+        return c != null && c.isCheckEnabled();
+    }
+
+    public Boolean isSelected(Object o) {
+        CheckableNode c = getCheckCookie(o);
+        if (c != null) {
+            return c.isSelected();
+        } else {
+            return null;
+        }
+    }
+
+    public void setSelected(Object o, Boolean selected) {
+        CheckableNode c = getCheckCookie(o);
+        if (c != null) {
+            c.setSelected(selected);
+        }
+    }
+
 }

@@ -285,7 +285,9 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
             if (retVal && module.getModuleType() == ModuleType.EAR) {
                 try {
                     FileObject fo = module.getContentDirectory();
-                    retVal = noChildrenWithInitialUnderscores(fo);
+                    if (null != fo) {
+                        retVal = noChildrenWithInitialUnderscores(fo);
+                    }
                 } catch (IOException ioe) {
                     Logger.getLogger(DirectoryDeploymentFacade.class.getName()).
                             log(Level.FINER, "", ioe);
@@ -298,8 +300,8 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
             }
         }
         DeploymentManagerProperties dmp = new DeploymentManagerProperties(dm);
-        if (!dmp.isDirectoryDeploymentPossible()) {
-            return false;
+        if (retVal && !dmp.isDirectoryDeploymentPossible()) {
+            retVal = false;
         }
         
         return retVal;

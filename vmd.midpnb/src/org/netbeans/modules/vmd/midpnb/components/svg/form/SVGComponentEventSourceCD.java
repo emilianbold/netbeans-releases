@@ -68,6 +68,7 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.IconType;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.NameType;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.PropertiesPresenterForwarder;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
@@ -77,6 +78,7 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassSupport;
 import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerSupport;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -138,7 +140,6 @@ public abstract class SVGComponentEventSourceCD extends ComponentDescriptor {
                 //inspector
                 new SVGComponentInspectorFolderPresenter()
                 );
-
 
     }
 
@@ -226,5 +227,17 @@ public abstract class SVGComponentEventSourceCD extends ComponentDescriptor {
                 Exceptions.printStackTrace(e);
             }
         }
+    }
+
+    protected void removeActions(ArrayList<Presenter> presenters) {
+        for (Presenter presenter : presenters) {
+            if (presenter instanceof DefaultPropertiesPresenter) {
+                if (((DefaultPropertiesPresenter)presenter).getPropertiesCategories().contains(MidpPropertiesCategories.CATEGORY_ACTION_PROPERTIES)) {
+                    DocumentSupport.removePresenter(presenters, presenter);
+                    break;
+                }
+            }
+        }
+
     }
 }

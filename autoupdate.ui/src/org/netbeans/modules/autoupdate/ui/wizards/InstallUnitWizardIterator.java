@@ -44,6 +44,7 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -128,12 +129,14 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
     // If nothing unusual changes in the middle of the wizard, simply:
     public void addChangeListener (ChangeListener l) {}
     public void removeChangeListener (ChangeListener l) {}
-    
+
     private void compactPanels () {
         if (isCompact) {
             return ;
         }
-        if (getModel ().allLicensesApproved ()) {
+
+        boolean allLicensesTouched = getModel().allLicensesTouched();
+        if (allLicensesTouched && getModel ().allLicensesApproved ()) {            
             panels.remove (licenseApprovalStep);
         }
         if (! getModel ().hasCustomComponents ()) {
@@ -142,7 +145,7 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
         if (! getModel ().hasStandardComponents ()) {
             panels.remove (installStep);
         }
-        isCompact = true;
+        isCompact = allLicensesTouched;
     }
     
 }
