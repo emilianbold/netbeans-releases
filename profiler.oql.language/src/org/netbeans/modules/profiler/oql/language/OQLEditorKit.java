@@ -37,14 +37,19 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.profiler.spi;
+package org.netbeans.modules.profiler.oql.language;
 
-import javax.swing.JEditorPane;
+import org.netbeans.modules.editor.NbEditorKit;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * @author hanz
  */
-abstract public class OQLEditorImpl {
-    public abstract JEditorPane getEditorPane();
+public class OQLEditorKit extends NbEditorKit {
+
+
+    @Override
+    public String getContentType () {
+        return "text/x-oql";
+    }
 }

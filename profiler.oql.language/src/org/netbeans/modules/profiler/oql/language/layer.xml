@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-<filesystem>
+hg push<?xml version="1.0" encoding="UTF-8"?> <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" 
+"http://www.netbeans.org/dtds/filesystem-1_1.dtd"> <filesystem>
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-oql">
@@ -75,11 +74,20 @@
                         </folder>
                     </folder>
                 </folder>
+<<<<<<< /home/hanz/Hanz/Dev/trunk/profiler.oql.language/src/org/netbeans/modules/profiler/oql/language/layer.xml.orig.6685571
                 <folder name="Preferences">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-editor-preferences.xml" url="preferences.xml"/>
                     </folder>
                 </folder>
+||||||| /tmp/layer.xml~base.ymmcSo
+=======
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.profiler.oql.language.OQLEditorKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.profiler.oql.language.OQLEditorKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
+                </file>
+>>>>>>> /tmp/layer.xml~other.x-x1HH
             </folder>
         </folder>
     </folder>
