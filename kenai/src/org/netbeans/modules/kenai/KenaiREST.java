@@ -147,6 +147,9 @@ public class KenaiREST extends KenaiImpl {
             start = System.currentTimeMillis();
             System.err.println("Loading page " + url);
         }
+        if (url==null) {
+            System.out.println("");
+        }
         RestConnection conn = new RestConnection(url);
         RestResponse resp = null;
         try {
@@ -220,11 +223,9 @@ public class KenaiREST extends KenaiImpl {
 
 
         public boolean hasNext() {
-            if (col.total>currentIndex) {
+            if (col.size()>currentIndex) {
                 return true;
             }
-            if (col.size()==col.total) 
-                return false;
             return col.next!=null;
         }
 
