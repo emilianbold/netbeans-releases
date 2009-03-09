@@ -42,6 +42,7 @@ package org.netbeans.modules.kenai.ui.treelist;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractListModel;
+import javax.swing.SwingUtilities;
 
 /**
  * List model which allows adding and removing of nodes to simulate tree-like 
@@ -232,6 +233,45 @@ public class TreeListModel extends AbstractListModel implements TreeListListener
         }
         if( index >= 0 ) {
             fireContentsChanged(this, index, index);
+        }
+    }
+
+    @Override
+    protected void fireContentsChanged(final Object source, final int index0, final int index1) {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    TreeListModel.super.fireContentsChanged(source, index0, index1);
+                }
+            });
+        } else {
+            super.fireContentsChanged(source, index0, index1);
+        }
+    }
+
+    @Override
+    protected void fireIntervalAdded(final Object source, final int index0, final int index1) {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    TreeListModel.super.fireIntervalAdded(source, index0, index1);
+                }
+            });
+        } else {
+            super.fireIntervalAdded(source, index0, index1);
+        }
+    }
+
+    @Override
+    protected void fireIntervalRemoved(final Object source, final int index0, final int index1) {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    TreeListModel.super.fireIntervalRemoved(source, index0, index1);
+                }
+            });
+        } else {
+            super.fireIntervalRemoved(source, index0, index1);
         }
     }
 }
