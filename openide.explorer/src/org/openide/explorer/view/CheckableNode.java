@@ -39,16 +39,15 @@
 
 package org.openide.explorer.view;
 
-import org.openide.nodes.Node;
-
 /**
- * Node cookie, which adds a possibility to display a check box
+ * Node service that can be registered into Node's lookup,
+ * which adds a possibility to display a check box
  * next to the node display name in the views that support it.
  *
  * @author Martin Entlicher
  * @since 6.18
  */
-public interface CheckNodeCookie extends Node.Cookie {
+public interface CheckableNode {
 
     /**
      * Tell the view to display a check-box for this node.
