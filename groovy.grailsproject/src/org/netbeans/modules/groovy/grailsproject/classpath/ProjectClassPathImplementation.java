@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.groovy.grailsproject.classpath;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileAttributeEvent;
@@ -63,12 +64,13 @@ import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
-import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginsManager;
+import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginSupport;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
-final class ProjectClassPathImplementation implements ClassPathImplementation {
+final class ProjectClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -88,8 +90,10 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
     }
 
     public static ProjectClassPathImplementation forProject(Project project) {
-        ProjectClassPathImplementation impl = new ProjectClassPathImplementation(
-                GrailsProjectConfig.forProject(project));
+        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+        ProjectClassPathImplementation impl = new ProjectClassPathImplementation(config);
+
+        config.addPropertyChangeListener(WeakListeners.propertyChange(impl, config));
 
         return impl;
     }
@@ -99,6 +103,15 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
             this.resources = this.getPath();
         }
         return this.resources;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (GrailsProjectConfig.GRAILS_PROJECT_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())) {
+            synchronized (this) {
+                this.resources = null;
+            }
+            this.support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
+        }
     }
 
     private List<PathResourceImplementation> getPath() {
@@ -138,7 +151,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
 
         if (pluginsDir.isDirectory()) {
             if (GrailsPlatform.Version.VERSION_1_1.compareTo(projectConfig.getGrailsPlatform().getVersion()) <= 0) {
-                List<GrailsPlugin> plugins = GrailsPluginsManager.getInstance((GrailsProject) projectConfig.getProject())
+                List<GrailsPlugin> plugins = new GrailsPluginSupport((GrailsProject) projectConfig.getProject())
                         .loadInstalledPlugins11();
                 Set<String> pluginDirs = new HashSet<String>();
                 for (GrailsPlugin plugin : plugins) {
