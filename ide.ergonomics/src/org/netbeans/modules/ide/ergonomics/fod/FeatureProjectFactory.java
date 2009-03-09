@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -78,6 +79,7 @@ import org.openide.util.lookup.ServiceProvider;
 import org.w3c.dom.Document;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.SAXException;
 
@@ -86,7 +88,12 @@ import org.xml.sax.SAXException;
  * @author Jaroslav Tulach <jtulach@netbeans.org>, Jirka Rechtacek <jrechtacek@netbeans.org>
  */
 @ServiceProvider(service=ProjectFactory.class, position=30000)
-public class FeatureProjectFactory implements ProjectFactory {
+public class FeatureProjectFactory implements ProjectFactory, PropertyChangeListener {
+
+    public FeatureProjectFactory() {
+        OpenProjects.getDefault().addPropertyChangeListener(this);
+    }
+
     final static class Data {
         private final boolean deepCheck;
         private final FileObject dir;
@@ -236,6 +243,58 @@ public class FeatureProjectFactory implements ProjectFactory {
     public void saveProject(Project project) throws IOException, ClassCastException {
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+            final List<FeatureInfo> additional = new ArrayList<FeatureInfo>();
+            FeatureInfo f = null;
+            for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+                Data d = new Data(p.getProjectDirectory(), true);
+
+                for (FeatureInfo info : FeatureManager.features()) {
+                    switch (info.isProject(d)) {
+                        case 0: break;
+                        case 1: 
+                            f = info;
+                            break;
+                        case 2:
+                            f = info;
+                            additional.add(info);
+                            break;
+                        default: assert false;
+                    }
+                }
+            }
+
+            if (f != null && !additional.isEmpty()) {
+                final FeatureInfo finalF = f;
+                final FeatureInfo[] addF = additional.toArray(new FeatureInfo[0]);
+                class Enable implements Runnable {
+                    private boolean success;
+                    public void run() {
+                        FeatureManager.logUI("ERGO_PROJECT_OPEN", finalF.clusterName);
+                        FindComponentModules findModules = new FindComponentModules(finalF, addF);
+                        Collection<UpdateElement> toInstall = findModules.getModulesForInstall();
+                        Collection<UpdateElement> toEnable = findModules.getModulesForEnable();
+                        if (toInstall != null && !toInstall.isEmpty()) {
+                            ModulesInstaller installer = new ModulesInstaller(toInstall, findModules);
+                            installer.getInstallTask().waitFinished();
+                            success = true;
+                        } else if (toEnable != null && !toEnable.isEmpty()) {
+                            ModulesActivator enabler = new ModulesActivator(toEnable, findModules);
+                            enabler.getEnableTask().waitFinished();
+                            success = true;
+                        } else if (toEnable == null || toInstall == null) {
+                            success = true;
+                        } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
+                            success = true;
+                        }
+                    }
+                }
+                Enable en = new Enable();
+                RequestProcessor.getDefault ().post (en, 0, Thread.NORM_PRIORITY).waitFinished ();
+            }
+        }
+    }
 
     private static final class FeatureNonProject 
     implements Project, ChangeListener {
