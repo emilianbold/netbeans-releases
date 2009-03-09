@@ -89,10 +89,16 @@ public class BuildConfig {
 
     private synchronized void loadProjectPluginsDirDefault() {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
-            // TODO - load from cache
-            projectPluginsDir = getProjectPluginsDirDefault11();
+            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+            File cached = config.getProjectPluginsDir();
+            if (cached != null) {
+                projectPluginsDir = cached;
+            } else {
+                projectPluginsDir = getProjectPluginsDirDefault11();
+            }
+        } else {
+            projectPluginsDir = getProjectPluginsDirDefault10();
         }
-        projectPluginsDir = getProjectPluginsDirDefault10();
     }
 
     private File getProjectPluginsDirDefault10() {
@@ -153,42 +159,44 @@ public class BuildConfig {
         localPlugins = Collections.emptyList();
     }
 
-    public synchronized void reload() {
+    public void reload() {
         long start = System.currentTimeMillis();
 
-        File newProjectRoot = FileUtil.toFile(project.getProjectDirectory());
-        assert newProjectRoot != null;
+        File currentProjectPluginsDir;
+        synchronized (this) {
+            File newProjectRoot = FileUtil.toFile(project.getProjectDirectory());
+            assert newProjectRoot != null;
 
-        if (!newProjectRoot.equals(projectRoot)) {
-            projectRoot = newProjectRoot;
+            if (!newProjectRoot.equals(projectRoot)) {
+                projectRoot = newProjectRoot;
+            }
+
+            buildSettingsInstance = loadBuildSettings();
+            LOGGER.log(Level.INFO, "Took {0} ms to load BuildSettings for {1}",
+                    new Object[] {(System.currentTimeMillis() - start), project.getProjectDirectory().getNameExt()});
+
+            loadLocalPlugins();
+            currentProjectPluginsDir = loadProjectPluginsDir();
+            loadGlobalPluginsDir();
         }
 
-        buildSettingsInstance = loadBuildSettings();
-        LOGGER.log(Level.INFO, "Took {0} ms to load BuildSettings for {1}",
-                new Object[] {(System.currentTimeMillis() - start), project.getProjectDirectory().getNameExt()});
-
-        loadLocalPlugins();
-        loadProjectPluginsDir();
-        loadGlobalPluginsDir();
+        GrailsProjectConfig config = project.getLookup().lookup(GrailsProjectConfig.class);
+        if (config != null) {
+            config.setProjectPluginsDir(currentProjectPluginsDir);
+        }
     }
 
     public synchronized File getProjectPluginsDir() {
         return projectPluginsDir;
     }
 
-    private void loadProjectPluginsDir() {
-        File dir;
-        synchronized (this) {
-            if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
-                projectPluginsDir = getProjectPluginsDir11();
-            }
+    private synchronized File loadProjectPluginsDir() {
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
+            projectPluginsDir = getProjectPluginsDir11();
+        } else {
             projectPluginsDir = getProjectPluginsDir10();
-            dir = projectPluginsDir;
         }
-        GrailsProjectConfig config = project.getLookup().lookup(GrailsProjectConfig.class);
-        if (config != null) {
-            config.setProjectPluginsDir(dir);
-        }
+        return projectPluginsDir;
     }
     
     private File getProjectPluginsDir10() {
@@ -237,8 +245,9 @@ public class BuildConfig {
     private synchronized void loadGlobalPluginsDir() {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
             globalPluginsDir = getGlobalPluginsDir11();
+        } else {
+            globalPluginsDir = getGlobalPluginsDir10();
         }
-        globalPluginsDir = getGlobalPluginsDir10();
     }
     
     private File getGlobalPluginsDir10() {
@@ -286,8 +295,9 @@ public class BuildConfig {
     private synchronized void loadLocalPlugins() {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
             localPlugins = getLocalPlugins11();
+        } else {
+            localPlugins = getLocalPlugins10();
         }
-        localPlugins = getLocalPlugins10();
     }
 
     private List<GrailsPlugin> getLocalPlugins10() {
