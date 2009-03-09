@@ -130,6 +130,9 @@ public class BugtrackingUtil {
         }
         List<Issue> ret = new ArrayList<Issue>();
         for (Issue issue : issues) {
+            if(issue == null) {
+                continue; // XXX HOTFIX - SHOULD NOT HAPPEN!!!
+            }
             if(criteria.equals(issue.getID()) ||
                issue.getSummary().indexOf(criteria) > -1)
             {
