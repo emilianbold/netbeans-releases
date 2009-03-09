@@ -48,18 +48,13 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.classpath.ClassPath;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 
 final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {

@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
  */
 public class ManagePluginsAction extends AbstractAction {
     
-    GrailsProject project;
+    private final GrailsProject project;
     
     public ManagePluginsAction(Project project) {
         super(NbBundle.getMessage(ManagePluginsAction.class, "CTL_ManagePluginsAction"));

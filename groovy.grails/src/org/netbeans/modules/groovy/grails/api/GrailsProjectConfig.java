@@ -42,13 +42,10 @@ package org.netbeans.modules.groovy.grails.api;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.util.Map;
-import java.util.WeakHashMap;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.grails.RuntimeHelper;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 
 
@@ -74,6 +71,8 @@ public final class GrailsProjectConfig {
 
     public static final String GRAILS_DISPLAY_BROWSER_PROPERTY = "grails.display.browser"; // NOI18N
 
+    public static final String GRAILS_PROJECT_PLUGINS_DIR_PROPERTY = "grails.project.plugins.dir"; // NOI18N
+
     private static final String DEFAULT_PORT = "8080"; // NOI18N
 
     private final Project prj;
@@ -82,11 +81,11 @@ public final class GrailsProjectConfig {
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-    private static final Map<Project, GrailsProjectConfig> CONFIG_CACHE = new WeakHashMap<Project, GrailsProjectConfig>();
+    //private static final Map<Project, GrailsProjectConfig> CONFIG_CACHE = new WeakHashMap<Project, GrailsProjectConfig>();
 
     private static final JavaPlatformManager PLATFORM_MANAGER  = JavaPlatformManager.getDefault();
 
-    private GrailsProjectConfig(Project prj) {
+    public GrailsProjectConfig(Project prj) {
         this.prj = prj;
     }
 
@@ -97,12 +96,16 @@ public final class GrailsProjectConfig {
      * @return the configuration of the given project
      */
     public static synchronized GrailsProjectConfig forProject(Project project) {
-        GrailsProjectConfig config = CONFIG_CACHE.get(project);
-        if (config == null) {
-            config = new GrailsProjectConfig(project);
-            CONFIG_CACHE.put(project, config);
-        }
+        GrailsProjectConfig config = project.getLookup().lookup(GrailsProjectConfig.class);
+
         return config;
+
+//        GrailsProjectConfig config = CONFIG_CACHE.get(project);
+//        if (config == null) {
+//            config = new GrailsProjectConfig(project);
+//            CONFIG_CACHE.put(project, config);
+//        }
+//        return config;
     }
 
     /**
@@ -321,6 +324,11 @@ public final class GrailsProjectConfig {
             settings.setDisplayBrowserForProject(prj, displayBrowser);
         }
         propertyChangeSupport.firePropertyChange(GRAILS_DISPLAY_BROWSER_PROPERTY, oldValue, displayBrowser);
+    }
+
+    public void setProjectPluginsDir(File dir) {
+        // TODO
+        propertyChangeSupport.firePropertyChange(GRAILS_PROJECT_PLUGINS_DIR_PROPERTY, null, dir);
     }
 
 }
