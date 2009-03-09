@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.execution.OutputWindowWriter;
@@ -110,6 +109,12 @@ public class NativeExecutor implements Runnable {
             boolean unbuffer) {
         this.execEnv = execEnv;
         this.runDir = runDir;
+        if (!new File(executable).exists() && new File(executable+".lnk").exists()) { // NOI18N
+            String resolved = LinkSupport.getOriginalFile(executable+".lnk"); // NOI18N
+            if (resolved != null){
+                executable = resolved;
+            }
+        }
         this.executable = executable;
         this.arguments = arguments;
         this.envp = envp;

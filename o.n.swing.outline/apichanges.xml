@@ -153,6 +153,20 @@ is the proper place.
       </description>
       <class package="org.netbeans.swing.etable" name="ETable"/>
     </change>
+    <change id="checkbox_rendering">
+      <api name="etable_outline"/>
+      <summary>Add a support for rendering of check-boxes in the tree column.</summary>
+      <version major="1" minor="4"/>
+      <date day="8" month="3" year="2009"/>
+      <author login="mentlicher"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        <p>Added <code>CheckRenderDataProvider</code> interface.
+        </p>
+      </description>
+      <class package="org.netbeans.swing.outline" name="CheckRenderDataProvider"/>
+      <issue number="159546"/>
+    </change>
 
 </changes>
 
