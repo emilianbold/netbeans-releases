@@ -40,7 +40,9 @@
 package org.netbeans.modules.web.core.syntax.formatting;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -68,19 +70,27 @@ import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.java.source.parsing.ClassParserFactory;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
+import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
 import org.netbeans.modules.web.core.syntax.JSPKit;
 import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.test.web.core.syntax.TestBase2;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 public class JspIndenterTest extends TestBase2 {
 
+    private static TestLanguageProvider testLanguageProvider = null;
+
     public JspIndenterTest(String name) {
         super(name);
+        if (testLanguageProvider == null) {
+            testLanguageProvider = new TestLanguageProvider();
+        }
     }
 
     @Override
@@ -91,7 +101,10 @@ public class JspIndenterTest extends TestBase2 {
         NbReaderProvider.setupReaders();
         AbstractIndenter.inUnitTestRun = true;
 
-        MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class);
+        MockLookup.init();
+        MockLookup.setInstances(create(), testLanguageProvider, new MockMimeLookup());
+        //MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class);
+
         // init TestLanguageProvider
         Lookup.getDefault().lookup(TestLanguageProvider.class);
 
@@ -108,6 +121,20 @@ public class JspIndenterTest extends TestBase2 {
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HTMLKit("text/x-jsp"));
         Reformatter.Factory factory = new Reformatter.Factory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, new JavacParserFactory(), new ClassParserFactory());
+    }
+
+    // HACK to workaround #159622
+    public static AntBasedProjectType create() {
+        Map map = new HashMap();
+        map.put("type", "org.netbeans.modules.web.project");
+        map.put("iconResource", "org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif");
+        map.put("sharedName", "true");
+        map.put("sharedNamespace", "http://www.netbeans.org/ns/web-project/3");
+        map.put("privateName", "data");
+        map.put("privateNamespace", "http://www.netbeans.org/ns/web-project-private/1");
+        map.put("className", "org.netbeans.modules.web.project.WebProjectType");
+        map.put("methodName", "createProject");
+        return AntBasedProjectFactorySingleton.create(map);
     }
 
     @Override
