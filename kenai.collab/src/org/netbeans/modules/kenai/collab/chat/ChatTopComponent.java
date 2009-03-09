@@ -255,7 +255,7 @@ public class ChatTopComponent extends TopComponent {
 
     void addChat(ChatPanel chatPanel) {
         ChatNotifications.getDefault().removeGroup(chatPanel.getName());
-        chats.addTab(chatPanel.getName(),chatPanel);
+        chats.add(chatPanel);
         open.add(chatPanel.getName());
         chats.setSelectedComponent(chatPanel);
         validate();
@@ -273,6 +273,7 @@ public class ChatTopComponent extends TopComponent {
         int index = chats.indexOfComponent(chatPanel);
         assert index>=0: "Component not found in CloseButtonTabbedPane " + chatPanel;
         open.remove(chats.getTitleAt(index));
+        chats.remove(chatPanel);
     }
 
     void setModified(ChatPanel panel) {

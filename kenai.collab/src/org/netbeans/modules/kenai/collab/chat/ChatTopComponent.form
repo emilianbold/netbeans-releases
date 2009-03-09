@@ -184,7 +184,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="initLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="285" max="32767" attributes="0"/>
+                  <EmptySpace pref="302" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -193,7 +193,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="initLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="272" max="32767" attributes="0"/>
+                  <EmptySpace pref="275" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
