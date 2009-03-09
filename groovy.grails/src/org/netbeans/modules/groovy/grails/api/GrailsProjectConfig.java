@@ -41,6 +41,7 @@ package org.netbeans.modules.groovy.grails.api;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -69,6 +70,8 @@ public final class GrailsProjectConfig {
     public static final String GRAILS_DEBUG_BROWSER_PROPERTY = "grails.debug.browser"; // NOI18N
 
     public static final String GRAILS_DISPLAY_BROWSER_PROPERTY = "grails.display.browser"; // NOI18N
+
+    public static final String GRAILS_PROJECT_PLUGINS_DIR_PROPERTY = "grails.project.plugins.dir"; // NOI18N
 
     private static final String DEFAULT_PORT = "8080"; // NOI18N
 
@@ -321,6 +324,11 @@ public final class GrailsProjectConfig {
             settings.setDisplayBrowserForProject(prj, displayBrowser);
         }
         propertyChangeSupport.firePropertyChange(GRAILS_DISPLAY_BROWSER_PROPERTY, oldValue, displayBrowser);
+    }
+
+    public void setProjectPluginsDir(File dir) {
+        // TODO
+        propertyChangeSupport.firePropertyChange(GRAILS_PROJECT_PLUGINS_DIR_PROPERTY, null, dir);
     }
 
 }

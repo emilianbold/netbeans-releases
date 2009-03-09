@@ -80,6 +80,7 @@ public class BuildConfig {
     
     public BuildConfig(GrailsProject project) {
         this.project = project;
+        this.projectRoot = FileUtil.toFile(project.getProjectDirectory());
 
         loadLocalPluginsDefault();
         loadProjectPluginsDirDefault();
@@ -89,8 +90,53 @@ public class BuildConfig {
     private synchronized void loadProjectPluginsDirDefault() {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
             // TODO - load from cache
+            projectPluginsDir = getProjectPluginsDirDefault11();
         }
-        projectPluginsDir = getProjectPluginsDir10();
+        projectPluginsDir = getProjectPluginsDirDefault10();
+    }
+
+    private File getProjectPluginsDirDefault10() {
+        assert Thread.holdsLock(this);
+        return new File(projectRoot, "plugins"); // NOI18N
+    }
+
+    private File getProjectPluginsDirDefault11() {
+        GrailsPlatform platform = GrailsProjectConfig.forProject(project).getGrailsPlatform();
+
+        File pluginsDirFile;
+        String strPluginsDir = System.getProperty("grails.project.plugins.dir"); // NOI18N
+        if (strPluginsDir == null) {
+            File projectWorkDirFile;
+            String projectWorkDir = System.getProperty("grails.project.work.dir"); // NOI18N
+            if (projectWorkDir == null) {
+                File workDirFile;
+                String workDir = System.getProperty("grails.work.dir"); // NOI18N
+                if (workDir == null) {
+                    workDir = System.getProperty("user.home"); // NOI18N
+                    workDir = workDir + File.separator + ".grails" + File.separator + platform.getVersion(); // NOI18N
+                    workDirFile = new File(workDir);
+                } else {
+                    workDirFile = new File(workDir);
+                    if (!workDirFile.isAbsolute()) {
+                        workDirFile = new File(projectRoot, workDir);
+                    }
+                }
+                projectWorkDirFile = new File(workDirFile, "projects" + File.separator + projectRoot.getName()); // NOI18N
+            } else {
+                projectWorkDirFile = new File(projectWorkDir);
+                if (!projectWorkDirFile.isAbsolute()) {
+                    projectWorkDirFile = new File(projectRoot, projectWorkDir);
+                }
+            }
+            pluginsDirFile = new File(projectWorkDirFile, "plugins"); // NOI18N
+        } else {
+            pluginsDirFile = new File(strPluginsDir);
+            if (!pluginsDirFile.isAbsolute()) {
+                pluginsDirFile = new File(projectRoot, strPluginsDir);
+            }
+        }
+
+        return pluginsDirFile;
     }
 
     private synchronized void loadGlobalPluginsDirDefault() {
@@ -130,11 +176,19 @@ public class BuildConfig {
         return projectPluginsDir;
     }
 
-    private synchronized void loadProjectPluginsDir() {
-        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
-            projectPluginsDir = getProjectPluginsDir11();
+    private void loadProjectPluginsDir() {
+        File dir;
+        synchronized (this) {
+            if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
+                projectPluginsDir = getProjectPluginsDir11();
+            }
+            projectPluginsDir = getProjectPluginsDir10();
+            dir = projectPluginsDir;
         }
-        projectPluginsDir = getProjectPluginsDir10();
+        GrailsProjectConfig config = project.getLookup().lookup(GrailsProjectConfig.class);
+        if (config != null) {
+            config.setProjectPluginsDir(dir);
+        }
     }
     
     private File getProjectPluginsDir10() {
@@ -315,5 +369,49 @@ public class BuildConfig {
             LOGGER.log(Level.FINE, null, ex);
         }
         return null;
+    }
+
+
+    //////
+
+    public File getProjectPluginsDirDefault(GrailsPlatform platform) {
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(platform.getVersion()) <= 0) {
+            File pluginsDirFile;
+            String strPluginsDir = System.getProperty("grails.project.plugins.dir"); // NOI18N
+            if (strPluginsDir == null) {
+                File projectWorkDirFile;
+                String projectWorkDir = System.getProperty("grails.project.work.dir"); // NOI18N
+                if (projectWorkDir == null) {
+                    File workDirFile;
+                    String workDir = System.getProperty("grails.work.dir"); // NOI18N
+                    if (workDir == null) {
+                        workDir = System.getProperty("user.home"); // NOI18N
+                        workDir = workDir + File.separator + ".grails" + File.separator + platform.getVersion(); // NOI18N
+                        workDirFile = new File(workDir);
+                    } else {
+                        workDirFile = new File(workDir);
+                        if (!workDirFile.isAbsolute()) {
+                            workDirFile = new File(projectRoot, workDir);
+                        }
+                    }
+                    projectWorkDirFile = new File(workDirFile, "projects" + File.separator + projectRoot.getName()); // NOI18N
+                } else {
+                    projectWorkDirFile = new File(projectWorkDir);
+                    if (!projectWorkDirFile.isAbsolute()) {
+                        projectWorkDirFile = new File(projectRoot, projectWorkDir);
+                    }
+                }
+                pluginsDirFile = new File(projectWorkDirFile, "plugins"); // NOI18N
+            } else {
+                pluginsDirFile = new File(strPluginsDir);
+                if (!pluginsDirFile.isAbsolute()) {
+                    pluginsDirFile = new File(projectRoot, strPluginsDir);
+                }
+            }
+
+            return pluginsDirFile;
+        }
+
+        return new File(projectRoot, "plugins");
     }
 }

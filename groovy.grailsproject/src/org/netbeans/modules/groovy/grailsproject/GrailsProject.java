@@ -105,8 +105,6 @@ public final class GrailsProject implements Project {
     private final GrailsCommandSupport commandSupport;
 
     private final BuildConfig buildConfig;
-
-    private final GrailsProjectConfig projectConfig;
     
     private SourceRoots sourceRoots;
 
@@ -121,8 +119,6 @@ public final class GrailsProject implements Project {
         this.cpProvider = new ClassPathProviderImpl(getSourceRoots(), getTestSourceRoots(), FileUtil.toFile(projectDir), this);
         this.commandSupport = new GrailsCommandSupport(this);
         this.buildConfig = new BuildConfig(this);
-        this.projectConfig = new GrailsProjectConfig(this);
-
     }
 
     // copied from ruby.project Utils
@@ -209,10 +205,6 @@ public final class GrailsProject implements Project {
         return buildConfig;
     }
 
-    public GrailsProjectConfig getProjectConfig() {
-        return projectConfig;
-    }
-
     public Lookup getLookup() {
         if (lookup == null) {
             lookup = Lookups.fixed(
@@ -234,7 +226,7 @@ public final class GrailsProject implements Project {
                 new DomainCompletionProvider(),
                 logicalView, //Logical view of project implementation
                 cpProvider,
-                projectConfig
+                new GrailsProjectConfig(this)
             );
         }
         return lookup;

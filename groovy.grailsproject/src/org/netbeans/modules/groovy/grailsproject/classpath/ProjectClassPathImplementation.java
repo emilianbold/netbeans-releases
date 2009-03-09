@@ -106,12 +106,12 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-//        if (GrailsProjectConfig.GRAILS_JAVA_PLATFORM_PROPERTY.equals(evt.getPropertyName())) {
-//            synchronized (this) {
-//                this.resources = null;
-//            }
-//            this.support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
-//        }
+        if (GrailsProjectConfig.GRAILS_PROJECT_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())) {
+            synchronized (this) {
+                this.resources = null;
+            }
+            this.support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
+        }
     }
 
     private List<PathResourceImplementation> getPath() {
