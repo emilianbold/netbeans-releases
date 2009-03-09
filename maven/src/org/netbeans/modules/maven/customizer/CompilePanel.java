@@ -599,6 +599,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
             JavaPlatformManager jpm = JavaPlatformManager.getDefault();
             data = jpm.getInstalledPlatforms();
             jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, jpm));
+            sel = jpm.getDefaultPlatform();
         }
 
         public int getSize() {
