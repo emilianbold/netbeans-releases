@@ -82,6 +82,7 @@
         <subant genericantfile="build.xml" target="-disable-one-cluster">
             <property name="xmldir" value="${build.release.dir}/config/Modules"/>
             <property name="ergonomicsdir" location="${basedir}"/>
+            <property name="src-ant.cp" value="${src-ant.cp}"/>
             <dirset refid="ergonomic.clusters"/>
         </subant>
         <pathconvert property="extra.module.files" pathsep=",">
@@ -109,6 +110,7 @@
     >
         <subant genericantfile="build.xml" target="-proxy-one-cluster">
             <property name="ergonomicsdir" location="${basedir}"/>
+            <property name="src-ant.cp" value="${src-ant.cp}"/>
             <dirset refid="ergonomic.clusters"/>
         </subant>
     </target>
@@ -136,7 +138,7 @@
         </layerindex>
         <taskdef name="extractlayer"
              classname="org.netbeans.modules.ide.ergonomics.ant.ExtractLayer"
-             classpath="${ergonomicsdir}/build/antclasses/"/>
+             classpath="${ergonomicsdir}/build/antclasses/:${src-ant.cp}"/>
 
         <mkdir dir="${proxytmp}/layers"/>
         <copy todir="${proxytmp}/layers">
@@ -194,6 +196,7 @@
             layer="${proxytmp}/${cluster.name}.xml"
             bundle="${proxydir}/Bundle.properties"
             destdir="${proxydir}"
+            badgeicon="${ergonomicsdir}/src/org/netbeans/modules/ide/ergonomics/fod/badge.png"
         >
            <modules dir=".">
                 <include name="modules/*.jar"/>
