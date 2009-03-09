@@ -54,7 +54,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -127,8 +126,12 @@ public abstract class ExportDiffSupport {
         dialog.setVisible(true);
         if(dd.getValue() == DialogDescriptor.OK_OPTION) {
             if(edp == null || panel.asFileRadioButton.isSelected()) {
-                File toFile = new File(panel.fileTextField.getText());
-                writeDiffFile(toFile);
+                final File toFile = new File(panel.fileTextField.getText());
+                Utils.createTask(new Runnable() {
+                    public void run() {
+                        writeDiffFile(toFile);
+                    }
+                }).schedule(0);
             } else {
                 final Task[] t = new Task[1];
                 Cancellable c = new Cancellable() {
