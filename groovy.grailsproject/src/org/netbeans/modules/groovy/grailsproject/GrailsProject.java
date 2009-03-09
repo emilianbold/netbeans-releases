@@ -68,6 +68,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.groovy.grails.api.GrailsConstants;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandSupport;
 import org.netbeans.modules.groovy.grailsproject.completion.ControllerCompletionProvider;
 import org.netbeans.modules.groovy.grailsproject.completion.DomainCompletionProvider;
@@ -104,7 +105,7 @@ public final class GrailsProject implements Project {
     private final GrailsCommandSupport commandSupport;
 
     private final BuildConfig buildConfig;
-
+    
     private SourceRoots sourceRoots;
 
     private SourceRoots testRoots;
@@ -212,7 +213,7 @@ public final class GrailsProject implements Project {
                 new Info(), //Project information implementation
                 new GrailsActionProvider(this),
                 GrailsSources.create(projectDir),
-                new GrailsServerState(this, getProjectDirectory().getName()),
+                new GrailsServerState(this),
                 new GrailsProjectCustomizerProvider(this),
                 new GrailsProjectOperations(this),
                 new GrailsProjectEncodingQueryImpl(),
@@ -224,7 +225,8 @@ public final class GrailsProject implements Project {
                 new ControllerCompletionProvider(),
                 new DomainCompletionProvider(),
                 logicalView, //Logical view of project implementation
-                cpProvider
+                cpProvider,
+                new GrailsProjectConfig(this)
             );
         }
         return lookup;
