@@ -63,6 +63,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -351,7 +352,12 @@ public class GsfTaskProvider extends PushTaskScanner  {
         List<Task>              tasks
     ) throws ParseException {
         Snapshot snapshot = resultIterator.getSnapshot ();
-        ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();
+        Parser.Result presult = resultIterator.getParserResult ();
+        if(!(presult instanceof ParserResult)) {
+            return ;
+        }
+        ParserResult parserResult = (ParserResult)presult;
+
         refreshEmbedding (file, parserResult, snapshot, result, tasks);
         for (Embedding embedding : resultIterator.getEmbeddings ())
             refreshEmbedding (file, resultIterator.getResultIterator (embedding), result, tasks);

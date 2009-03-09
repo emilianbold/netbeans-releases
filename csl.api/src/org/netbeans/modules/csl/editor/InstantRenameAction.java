@@ -65,6 +65,7 @@ import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -122,7 +123,11 @@ public class InstantRenameAction extends BaseAction {
                 Collections.<Source> singleton (js), 
                 new UserTask () {
                     public void run (ResultIterator resultIterator) throws Exception {
-                        ParserResult parserResult = (ParserResult) resultIterator.getParserResult (target.getCaretPosition ());
+                        Parser.Result result = resultIterator.getParserResult (target.getCaretPosition ());
+                        if(!(result instanceof ParserResult)) {
+                            return ;
+                        }
+                        ParserResult parserResult = (ParserResult)result;
                         Document doc = target.getDocument();
                         BaseDocument baseDoc = (BaseDocument)doc;
                         List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, caret);

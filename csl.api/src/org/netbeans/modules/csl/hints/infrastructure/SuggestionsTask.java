@@ -111,6 +111,9 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
             ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
                 public @Override void run(ResultIterator resultIterator) throws Exception {
                     Parser.Result r = resultIterator.getParserResult(pos);
+                    if(!(r instanceof ParserResult)) {
+                        return ;
+                    }
                     Language language = LanguageRegistry.getInstance().getLanguageByMimeType(r.getSnapshot().getMimeType());
                     if (language == null || isCancelled()) {
                         return;
