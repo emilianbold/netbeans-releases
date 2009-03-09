@@ -53,7 +53,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -228,6 +227,7 @@ public class BreakpointsTreeModel implements TreeModel {
             return m;
         }
         
+        @Override
         public void breakpointAdded (Breakpoint breakpoint) {
             BreakpointsTreeModel m = getModel ();
             if (m == null) return;
@@ -235,6 +235,7 @@ public class BreakpointsTreeModel implements TreeModel {
             m.fireTreeChanged ();
         }
         
+        @Override
         public void breakpointRemoved (Breakpoint breakpoint) {
             BreakpointsTreeModel m = getModel ();
             if (m == null) return;
@@ -242,6 +243,7 @@ public class BreakpointsTreeModel implements TreeModel {
             m.fireTreeChanged ();
         }
     
+        @Override
         public void propertyChange (PropertyChangeEvent evt) {
             BreakpointsTreeModel m = getModel ();
             if (m == null) return;
@@ -256,9 +258,8 @@ public class BreakpointsTreeModel implements TreeModel {
                     Breakpoint bp = (Breakpoint) evt.getSource ();
                     String groupName = bp.getGroupName();
                     if (groupName != null) {
-                        m.fireTreeChanged(new ModelEvent.TableValueChanged(
-                            m,
-                            groupName, Constants.BREAKPOINT_ENABLED_COLUMN_ID));
+                        m.fireTreeChanged (new ModelEvent.NodeChanged(
+                            m, groupName));
                     }
                 }
             }

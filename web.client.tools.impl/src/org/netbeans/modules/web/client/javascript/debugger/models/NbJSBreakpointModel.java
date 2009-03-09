@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.models;
 
-import static org.netbeans.spi.debugger.ui.Constants.BREAKPOINT_ENABLED_COLUMN_ID;
-
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -120,9 +118,7 @@ public final class NbJSBreakpointModel implements NodeModel, TableModel {
         if (node instanceof NbJSBreakpoint )
         {
             NbJSBreakpoint breakpoint = (NbJSBreakpoint)node;
-            if( BREAKPOINT_ENABLED_COLUMN_ID.equals(columnID)) {
-                return Boolean.valueOf(breakpoint.isEnabled());
-            } else if ( ResolvedLocationColumnModel.RESOLVED_LOCATION_COLUMN_ID.equals(columnID) ) {
+            if ( ResolvedLocationColumnModel.RESOLVED_LOCATION_COLUMN_ID.equals(columnID) ) {
                 return breakpoint.getResolvedLocation();
             }  else {
                 return columnID;
@@ -141,9 +137,6 @@ public final class NbJSBreakpointModel implements NodeModel, TableModel {
             return true;
         }
         if (node instanceof NbJSBreakpoint ) {
-            if  ( BREAKPOINT_ENABLED_COLUMN_ID.equals(columnID)) {
-                return false;
-            }
             return true;
         }
         throw new UnknownTypeException(node);
@@ -151,16 +144,7 @@ public final class NbJSBreakpointModel implements NodeModel, TableModel {
 
     public void setValueAt(Object node, String columnID, Object value)
             throws UnknownTypeException {
-        if (node instanceof NbJSBreakpoint && BREAKPOINT_ENABLED_COLUMN_ID.equals(columnID) && value instanceof Boolean) {
-            if (((Boolean) value)) {
-                ((NbJSBreakpoint) node).enable();
-            } else {
-                ((NbJSBreakpoint) node).disable();
-            }
-        /* I would rather throw something else, but since I am override this I can't. */
-        } else {
-            throw new UnknownTypeException(node);
-        }
+        throw new UnknownTypeException(node);
     }
 
     // TableModel implementation ......................................
