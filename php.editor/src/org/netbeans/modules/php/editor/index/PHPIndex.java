@@ -776,8 +776,7 @@ public class PHPIndex {
 
     public Set<String> typeNamesForIdentifier(String identifierName, ElementKind kind,QuerySupport.Kind nameKind) {
         final Set<String> result = new HashSet<String>();
-        final Set<IndexResult> idIndexResult = new HashSet<IndexResult>();
-        search(PHPIndexer.FIELD_IDENTIFIER_DECLARATION, identifierName.toLowerCase(), QuerySupport.Kind.PREFIX);
+        Collection<? extends IndexResult> idIndexResult = search(PHPIndexer.FIELD_IDENTIFIER_DECLARATION, identifierName.toLowerCase(), QuerySupport.Kind.PREFIX);
         for (IndexResult IndexResult : idIndexResult) {
             String[] signatures = IndexResult.getValues(PHPIndexer.FIELD_IDENTIFIER_DECLARATION);
             if (signatures == null) {
