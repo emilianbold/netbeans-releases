@@ -181,7 +181,7 @@ public class KenaiREST extends KenaiImpl {
 
     @Override
     public String checkName(String name) throws KenaiException {
-        CheckNameData cnd = loadPage(baseURL.toString() + "/projects/check_unique.json?name="+name, CheckNameData.class);
+        CheckNameData cnd = loadPage(baseURL.toString() + "/api/projects/check_unique.json?name="+name, CheckNameData.class);
         return cnd.is_unique?null:cnd.message;
     }
 

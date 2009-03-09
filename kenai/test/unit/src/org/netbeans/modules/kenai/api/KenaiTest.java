@@ -210,7 +210,7 @@ public class KenaiTest extends NbTestCase {
         String name = "java-inline";
         KenaiProject prj = instance.getProject(name);
         System.out.println(prj.getTags());
-        if (prj.getTags() == null || !prj.getTags().equals("java, javac, jruby, ruby")) {
+        if (prj.getTags() == null || !prj.getTags().equals("java javac jruby ruby")) {
             fail("Tags of the project have changed.");
         }
     }
@@ -492,7 +492,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testGetFeatures"));
         _suite.addTest(new KenaiTest("testGetLicenses"));
         _suite.addTest(new KenaiTest("testGetServices"));
-//        _suite.addTest(new KenaiTest("testGetMyProjects"));
+        _suite.addTest(new KenaiTest("testGetMyProjects"));
         return _suite;
     }
     ;

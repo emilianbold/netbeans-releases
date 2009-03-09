@@ -107,6 +107,6 @@ public class KenaiProjectTest {
     @Test
     public void testCheckName() throws KenaiException, MalformedURLException {
         assert KenaiProject.checkName("uniquenamebond007") == null;
-        assert KenaiProject.checkName(UNITTESTUNIQUENAME).equals("foo");
+        assert KenaiProject.checkName(UNITTESTUNIQUENAME).equals("Name has already been taken");
     }
 }
