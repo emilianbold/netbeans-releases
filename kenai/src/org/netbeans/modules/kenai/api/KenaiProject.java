@@ -157,7 +157,8 @@ public final class KenaiProject {
     }
 
     /**
-     * @return comma separated tags
+     * @return tags separated by space
+     *
      */
     public synchronized String getTags() {
         return data.tags;
