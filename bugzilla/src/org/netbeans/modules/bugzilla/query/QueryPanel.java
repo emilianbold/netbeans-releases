@@ -1214,7 +1214,6 @@ public class QueryPanel extends javax.swing.JPanel {
         searchPanel.setVisible(false);
         queryHeaderPanel.setVisible(true);
         tableHeaderPanel.setVisible(true);
-        tableHeaderPanel.setVisible(true);
         filterComboBox.setVisible(true); // XXX move to bugtracking IssueTable component
         filterLabel.setVisible(true);
         tablePanel.setVisible(true);
