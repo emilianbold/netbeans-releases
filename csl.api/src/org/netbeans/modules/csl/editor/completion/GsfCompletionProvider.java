@@ -81,6 +81,7 @@ import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.GsfLanguage;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -311,7 +312,11 @@ public class GsfCompletionProvider implements CompletionProvider {
                             new UserTask () {
 
                                 public void run (ResultIterator resultIterator) throws Exception {
-                                    ParserResult parserResult = (ParserResult) resultIterator.getParserResult (caretOffset);
+                                    Parser.Result result = resultIterator.getParserResult (caretOffset);
+                                    if(!(result instanceof ParserResult)) {
+                                        return ;
+                                    }
+                                    ParserResult parserResult = (ParserResult) result;
                                     if (parserResult == null) {
                                         return;
                                     }
