@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,54 +37,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.lexer;
 
-package org.openide.explorer.view;
-
-import org.openide.nodes.Node;
+import org.netbeans.cnd.api.lexer.MakefileTokenId;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageProvider;
 
 /**
- * Node cookie, which adds a possibility to display a check box
- * next to the node display name in the views that support it.
  *
- * @author Martin Entlicher
- * @since 6.18
+ * @author Jan Jancura
  */
-public interface CheckNodeCookie extends Node.Cookie {
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.spi.lexer.LanguageProvider.class)
+public class MakefileLanguageProvider extends LanguageProvider {
 
-    /**
-     * Tell the view to display a check-box for this node.
-     *
-     * @return <code>true</code> if the check-box should be displayed, <code>false</code> otherwise.
-     */
-    boolean isCheckable();
+    public Language<MakefileTokenId> findLanguage(String mimeType) {
+        if (MIMENames.MAKEFILE_MIME_TYPE.equals(mimeType)) {
+            return new MakefileLanguageHierarchy().language();
+        }
+        return null;
+    }
 
-    /**
-     * Provide the enabled state of the check-box.
-     *
-     * @return <code>true</code> if the check-box should be enabled, <code>false</code> otherwise.
-     */
-    boolean isCheckEnabled();
-
-    /**
-     * Provide the selected state of the check-box.
-     *
-     * @return <code>true</code> if the check-box should be selected,
-     *         <code>false</code> if it should be unselected and
-     *         <code>null</code> if the state is unknown.
-     */
-    Boolean isSelected();
-
-    /**
-     * Called by the view when the check-box gets selected/unselected
-     *
-     * @param selected <code>true</code> if the check-box was selected,
-     *                 <code>false</code> if the check-box was unselected.
-     */
-    void setSelected(Boolean selected);
-
+    @Override
+    public LanguageEmbedding<?> findLanguageEmbedding(
+            Token arg0,
+            LanguagePath arg1,
+            InputAttributes arg2) {
+        return null;
+    }
 }
+
+
