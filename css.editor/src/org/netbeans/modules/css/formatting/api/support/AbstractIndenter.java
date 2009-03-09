@@ -69,7 +69,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     private Context context;
     private int indentationSize;
 
-    protected static final boolean DEBUG = true;
+    protected static final boolean DEBUG = false;
 
     public static boolean inUnitTestRun = false;
 
