@@ -46,27 +46,41 @@
 package org.netbeans.modules.bugtracking.ui.selectors;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Image;
 import java.awt.event.ItemEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class ConnectorPanel extends javax.swing.JPanel {
+public class ConnectorPanel extends javax.swing.JPanel implements PropertyChangeListener {
     private Repository currentRepo;
+    private DialogDescriptor dd;
 
     /** Creates new form ConnectorPanel */
     public ConnectorPanel() {
         initComponents();
-
+        errorLabel.setForeground(new Color(153,0,0));
+        Image img = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/error.gif"); //NOI18N
+        errorLabel.setIcon(new ImageIcon(img));
+        errorLabel.setVisible(false);
+        
         final ListCellRenderer lcr = connectorCbo.getRenderer();
         connectorCbo.setRenderer(new ListCellRenderer() {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -77,6 +91,15 @@ public class ConnectorPanel extends javax.swing.JPanel {
                 return lcr.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
         });
+    }
+
+    boolean open() {
+        String title = NbBundle.getMessage(ConnectorPanel.class, "CTL_ConnectorTitle");
+//        JButton ok = new JButton(NbBundle.getMessage(ConnectorPanel.class, "CTL_OK"));
+//        JButton cancel = new JButton(NbBundle.getMessage(ConnectorPanel.class, "CTL_Cancel"));
+        dd = new DialogDescriptor(this, title);
+        validateController();
+        return DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION;
     }
 
     Repository getRepository() {
@@ -98,6 +121,7 @@ public class ConnectorPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
+        errorLabel = new javax.swing.JLabel();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(ConnectorPanel.class, "ConnectorPanel.jLabel1.text")); // NOI18N
 
@@ -109,6 +133,8 @@ public class ConnectorPanel extends javax.swing.JPanel {
 
         repoPanel.setLayout(new java.awt.BorderLayout());
 
+        errorLabel.setText(org.openide.util.NbBundle.getMessage(ConnectorPanel.class, "ConnectorPanel.errorLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -119,6 +145,9 @@ public class ConnectorPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
                         .addContainerGap())
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+                        .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -128,12 +157,14 @@ public class ConnectorPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(20, 20, 20)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(connectorCbo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE))
+                .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(errorLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -144,6 +175,7 @@ public class ConnectorPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JComboBox connectorCbo = new javax.swing.JComboBox();
+    private javax.swing.JLabel errorLabel;
     private javax.swing.JLabel jLabel1;
     final javax.swing.JPanel repoPanel = new javax.swing.JPanel();
     // End of variables declaration//GEN-END:variables
@@ -156,6 +188,7 @@ public class ConnectorPanel extends javax.swing.JPanel {
         if (currentRepo == null) {
             return;
         }
+        currentRepo.getController().addPropertyChangeListener(this);
         BugtrackingController controller = currentRepo.getController();
         JComponent comp = controller.getComponent();
         repoPanel.removeAll();
@@ -163,6 +196,27 @@ public class ConnectorPanel extends javax.swing.JPanel {
         revalidate();
         repaint();
         return;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(BugtrackingController.EVENT_COMPONENT_DATA_CHANGED)) {
+            validateController();
+        }
+    }
+
+    private void validateController() {
+        if (dd != null && currentRepo != null) {
+            final BugtrackingController controller = currentRepo.getController();
+            boolean valid = controller.isValid();
+            dd.setValid(valid);
+            String msg = controller.getErrorMessage();
+            if(msg != null) {
+                errorLabel.setText(msg);
+                errorLabel.setVisible(!valid);
+            } else {
+                errorLabel.setVisible(false);
+            }
+        }
     }
 
 }

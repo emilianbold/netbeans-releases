@@ -52,6 +52,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.vcshooks.VCSHooksConfig.Format;
 import org.netbeans.modules.bugtracking.vcshooks.VCSHooksConfig.PushAction;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
@@ -67,11 +68,9 @@ public class HgHookImpl extends HgHook {
     private HookPanel panel;
     private final String name;
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HgHook");   // NOI18N
-    private BugtrackingOwnerSupport support;
 
     public HgHookImpl() {
         this.name = NbBundle.getMessage(HgHookImpl.class, "LBL_VCSHook");       // NOI18N
-        support = BugtrackingOwnerSupport.getInstance();
     }
 
     @Override
@@ -86,8 +85,9 @@ public class HgHookImpl extends HgHook {
 
         if(panel.addIssueCheckBox1.isSelected()) {
             String msg = context.getMessage();
-            
-            String formatString = VCSHooksConfig.getInstance().getHgIssueFormat().getFormat();
+
+            Format format = VCSHooksConfig.getInstance().getHgIssueFormat();
+            String formatString = format.getFormat();
             formatString = formatString.replaceAll("\\{id\\}", "\\{0\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{summary\\}", "\\{1\\}");    // NOI18N
             
@@ -102,8 +102,11 @@ public class HgHookImpl extends HgHook {
                     null).toString();
 
             LOG.log(Level.FINER, " svn commit hook issue info '" + issueInfo + "'");     // NOI18N
-            // XXX check before/after
-            msg = msg + "\n" + issueInfo;
+            if(format.isAbove()) {
+                msg = issueInfo + "\n" + msg;
+            } else {
+                msg = msg + "\n" + issueInfo;
+            }
             
             context = new HgHookContext(context.getFiles(), msg, context.getLogEntries());
             return context;
@@ -132,12 +135,6 @@ public class HgHookImpl extends HgHook {
         Issue issue = panel.getIssue();
         if (issue == null) {
             LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
-            return;
-        }
-        
-        Repository repo = support.getRepository(file, issue.getID());
-        if(repo == null) {
-            LOG.log(Level.FINE, " could not find repository for " + file);      // NOI18N
             return;
         }
 
@@ -188,7 +185,7 @@ public class HgHookImpl extends HgHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "push hook start for " + file);
 
-        Repository repo = support.getRepository(file);
+        Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file);
         if(repo == null) {
             LOG.log(Level.FINE, " could not find repository for " + file);      // NOI18N
             return;
@@ -221,7 +218,7 @@ public class HgHookImpl extends HgHook {
             panel = new HookPanel(repos, null);
         } else {
             File file = context.getFiles()[0];
-            Repository repoToSelect = support.getRepository(file);
+            Repository repoToSelect = BugtrackingOwnerSupport.getInstance().getRepository(file);
             if(repoToSelect == null) {
                 LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
             }

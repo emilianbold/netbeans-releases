@@ -611,7 +611,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
             String attcomment = "my first attachement";
             String attdesc = "file containing text";
             File f = getAttachmentFile(atttext);
-            issue.addAttachment(f, attcomment, attdesc, "text/plain");
+            issue.addAttachment(f, attcomment, attdesc, "text/plain", false);
             issue.refresh();
 
             // get attachment
@@ -633,7 +633,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
             attcomment = "my second attachement";
             attdesc = "file containing text";
             f = getAttachmentFile(atttext);
-            issue.addAttachment(f, attcomment, attdesc, "text/plain");
+            issue.addAttachment(f, attcomment, attdesc, "text/plain", false);
             issue.refresh();
 
             // get attachment

@@ -1,5 +1,3 @@
-package org.netbeans.modules.bugtracking.ui.selectors;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,39 +37,36 @@ package org.netbeans.modules.bugtracking.ui.selectors;
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-
+package org.netbeans.modules.bugzilla.commands;
 
 import java.io.IOException;
 import java.util.logging.Level;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.modules.bugzilla.Bugzilla;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class RepositorySelector {
+public class ValidateCommand extends BugzillaCommand {
 
-    private ConnectorPanel connectorPanel = new ConnectorPanel();
-    public RepositorySelector() {
-        // init connector cbo
-        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        connectorPanel.setConnectors(connectors);
+    private final TaskRepository taskRepository;
+
+    public ValidateCommand(TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
     }
 
-    public Repository create() {
-        connectorPanel.open();
-        Repository repo = connectorPanel.getRepository();
-        // XXX check for duplicate repositories
+    @Override
+    public void execute() throws CoreException {
         try {
-            repo.getController().applyChanges();
+            BugzillaClient client = Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(taskRepository, new NullProgressMonitor());
+            client.validate(new NullProgressMonitor());
         } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            return null;
+            Bugzilla.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
         }
-        BugtrackingManager.getInstance().addRepo(repo);
-        return repo;
     }
 
 }

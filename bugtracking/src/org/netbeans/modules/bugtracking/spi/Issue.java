@@ -41,13 +41,13 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
-import org.openide.util.NbBundle;
 
 /**
  * Represens a bugtracking Issue
@@ -126,17 +126,13 @@ public abstract class Issue {
      * Returns this issues display name
      * @return
      */
-    public String getDisplayName() {
-        return NbBundle.getMessage(Issue.class, "LBL_Issue") + " " +  getID(); // NOI18N
-    }
+    public abstract String getDisplayName();
 
     /**
      * Returns this issues tooltip
      * @return
      */
-    public String getTooltip() {
-        return NbBundle.getMessage(Issue.class, "LBL_Issue") + " " + getID() + " : " + getSummary(); // NOI18N
-    }
+    public abstract String getTooltip();
 
     /**
      * Refreshes this Issues data from its bugtracking repositry
@@ -147,11 +143,14 @@ public abstract class Issue {
     // XXX throw exception
     public abstract void addComment(String comment, boolean closeAsFixed);
 
+    // XXX throw exception; attach Patch or attachFile?
+    public abstract void attachPatch(File file, String description);
+
     /**
      * Returns this issues controller
      * @return
      */
-    public abstract BugtrackingController getControler();
+    public abstract BugtrackingController getController();
 
     /**
      * Opens this issue in the IDE

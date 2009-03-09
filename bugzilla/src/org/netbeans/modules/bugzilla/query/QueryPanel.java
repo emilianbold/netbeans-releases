@@ -88,7 +88,7 @@ public class QueryPanel extends javax.swing.JPanel {
 
         this.tableComponent = tableComponent;
         noContentPanel = new NoContentPanel();
-        tablePanel.add(tableComponent, BorderLayout.CENTER);
+        tablePanel.add(tableComponent);
 
         JTree tv = new JTree();
         BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
@@ -402,8 +402,8 @@ public class QueryPanel extends javax.swing.JPanel {
         productList.setMaximumSize(new java.awt.Dimension(100, 2));
         jScrollPane7.setViewportView(productList);
 
-        versionLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13));
-        versionLabel1.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.versionLabel1.text")); // NOI18N
+        severityLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        severityLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.severityLabel.text")); // NOI18N
 
         jScrollPane8.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane8.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -450,7 +450,7 @@ public class QueryPanel extends javax.swing.JPanel {
                     .add(jScrollPane4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(versionLabel1)
+                    .add(severityLabel)
                     .add(jScrollPane8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(37, 37, 37))
         );
@@ -461,7 +461,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, byDetailsPanelLayout.createSequentialGroup()
-                            .add(versionLabel1)
+                            .add(severityLabel)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(jScrollPane8))
                         .add(org.jdesktop.layout.GroupLayout.LEADING, byDetailsPanelLayout.createSequentialGroup()
@@ -1084,6 +1084,7 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JButton searchButton = new javax.swing.JButton();
     final javax.swing.JPanel searchPanel = new javax.swing.JPanel();
     final org.netbeans.modules.bugtracking.util.LinkButton seenButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final javax.swing.JLabel severityLabel = new javax.swing.JLabel();
     final javax.swing.JList severityList = new javax.swing.JList();
     final javax.swing.JLabel statusLabel = new javax.swing.JLabel();
     final javax.swing.JList statusList = new javax.swing.JList();
@@ -1098,7 +1099,6 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JTextField urlTextField = new javax.swing.JTextField();
     final org.netbeans.modules.bugtracking.util.LinkButton urlToggleButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JLabel versionLabel = new javax.swing.JLabel();
-    final javax.swing.JLabel versionLabel1 = new javax.swing.JLabel();
     final javax.swing.JList versionList = new javax.swing.JList();
     final org.netbeans.modules.bugtracking.util.LinkButton webButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     // End of variables declaration//GEN-END:variables
@@ -1125,6 +1125,7 @@ public class QueryPanel extends javax.swing.JPanel {
         versionLabel.setEnabled(enable);
 //        versionList.setEnabled(enable);
         statusLabel.setEnabled(enable);
+        severityLabel.setEnabled(enable);
 //        statusList.setEnabled(enable);
         resolutionLabel.setEnabled(enable);
 //        resolutionList.setEnabled(enable);
@@ -1171,9 +1172,10 @@ public class QueryPanel extends javax.swing.JPanel {
 
 
     void showSearchingProgress(boolean on, JComponent progressBar, String text) {
+//        searchPanel.setVisible(!on);
         noContentContainer.setVisible(on);
         tableSummaryLabel.setVisible(!on);
-        tableFieldsPanel.setVisible(true);
+        tableFieldsPanel.setVisible(!on);
         if(on && text != null) {
             noContentPanel.setText(text);
         }
@@ -1182,6 +1184,7 @@ public class QueryPanel extends javax.swing.JPanel {
 
     void showRetrievingProgress(boolean on, JComponent progressBar, String text, boolean searchPanelVisible) {
         noContentContainer.setVisible(on);
+//        tableSummaryLabel.setVisible(!on);
         if(searchPanelVisible) {
             searchPanel.setVisible(!on);
         }

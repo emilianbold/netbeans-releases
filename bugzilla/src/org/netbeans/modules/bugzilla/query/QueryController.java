@@ -81,6 +81,7 @@ import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.query.QueryParameter.CheckBoxParameter;
@@ -292,41 +293,42 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
-    public void populate(String urlParameters) {
+    public void populate(final String urlParameters) {
         Bugzilla.LOG.fine("Starting populate query controller"); // NOI18N
         try {
-            Bugzilla bgz = Bugzilla.getInstance();
-            productParameter.setParameterValues(toParameterValues(bgz.getProducts(repository)));
-            if (panel.productList.getModel().getSize() > 0) {
-                panel.productList.setSelectedIndex(0);
-                populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
-            }
-            severityParameter.setParameterValues(toParameterValues(bgz.getSeverities(repository)));
-            statusParameter.setParameterValues(toParameterValues(bgz.getStatusValues(repository)));
-            resolutionParameter.setParameterValues(toParameterValues(bgz.getResolutions(repository)));
-            priorityParameter.setParameterValues(toParameterValues(bgz.getPriorities(repository)));
-            changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
-            summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-            commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-            keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
-            peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
-            panel.changedToTextField.setText("Now"); // XXX
-            if (urlParameters != null) {
-                setParameters(urlParameters);
-            }
-            panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
-            panel.jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            panel.jScrollPane3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            panel.jScrollPane4.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            panel.jScrollPane5.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            panel.jScrollPane6.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            panel.jScrollPane7.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        } catch (MalformedURLException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+            BugzillaCommand cmd = new BugzillaCommand() {
+                @Override
+                public void execute() throws CoreException, IOException, MalformedURLException {
+                    Bugzilla bgz = Bugzilla.getInstance();
+                    productParameter.setParameterValues(toParameterValues(bgz.getProducts(repository)));
+                    if (panel.productList.getModel().getSize() > 0) {
+                        panel.productList.setSelectedIndex(0);
+                        populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
+                    }
+                    severityParameter.setParameterValues(toParameterValues(bgz.getSeverities(repository)));
+                    statusParameter.setParameterValues(toParameterValues(bgz.getStatusValues(repository)));
+                    resolutionParameter.setParameterValues(toParameterValues(bgz.getResolutions(repository)));
+                    priorityParameter.setParameterValues(toParameterValues(bgz.getPriorities(repository)));
+                    changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
+                    summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
+                    commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
+                    keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
+                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
+                    panel.changedToTextField.setText("Now"); // XXX
+                    // XXX
+                    if (urlParameters != null) {
+                        setParameters(urlParameters);
+                    }
+                    panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
+                    panel.jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                    panel.jScrollPane3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                    panel.jScrollPane4.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                    panel.jScrollPane5.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                    panel.jScrollPane6.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                    panel.jScrollPane7.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                }
+            };
+            repository.getExecutor().execute(cmd);
         } finally {
             Bugzilla.LOG.fine("Finnished populate query controller"); // NOI18N
         }
@@ -783,15 +785,25 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 products = new String[] {null};
             }
 
-            List<String> components = new ArrayList<String>();
-            List<String> versions = new ArrayList<String>();
+            List<String> newComponents = new ArrayList<String>();
+            List<String> newVersions = new ArrayList<String>();
             for (String p : products) {
-                components.addAll(bgz.getComponents(repository, p));
-                versions.addAll(bgz.getVersions(repository, p));
+                List<String> productComponents = bgz.getComponents(repository, p);
+                for (String c : productComponents) {
+                    if(!newComponents.contains(c)) {
+                        newComponents.add(c);
+                    }
+                }
+                List<String> productVersions = bgz.getVersions(repository, p);
+                for (String c : productVersions) {
+                    if(!newVersions.contains(c)) {
+                        newVersions.add(c);
+                    }
+                }
             }
             
-            componentParameter.setParameterValues(toParameterValues(components));
-            versionParameter.setParameterValues(toParameterValues(versions));
+            componentParameter.setParameterValues(toParameterValues(newComponents));
+            versionParameter.setParameterValues(toParameterValues(newVersions));
 
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);

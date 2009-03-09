@@ -42,7 +42,9 @@ package org.netbeans.modules.bugzilla.query;
 import java.io.IOException;
 import org.netbeans.modules.bugzilla.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -64,7 +66,8 @@ public class BugzillaQuery extends Query {
     private String name;
     private final BugzillaRepository repository;
     private QueryController controller;
-    private final List<String> issues = new ArrayList<String>();
+    private final Set<String> issues = new HashSet<String>();
+    private Set<String> obsoleteIssues = new HashSet<String>();
 
     protected String urlParameters;
     private boolean firstRun = true;
@@ -118,7 +121,7 @@ public class BugzillaQuery extends Query {
     }
 
     @Override
-    public void refresh() {
+    public void refresh() { // XXX sync???
 
         assert urlParameters != null;
         assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
@@ -127,7 +130,6 @@ public class BugzillaQuery extends Query {
             public void run() {
                 Bugzilla.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name, urlParameters});
                 try {
-                    List<String> obsoleteIssues = new ArrayList<String>();
                     if(isSaved()) {
                         if(!wasRun()) {
                             if(issues.size() != 0) {
@@ -136,7 +138,10 @@ public class BugzillaQuery extends Query {
                             }
                             obsoleteIssues.addAll(repository.getIssueCache().readQuery(BugzillaQuery.this.getDisplayName()));
                         } else {
+                            // store all you got
+                            issues.addAll(obsoleteIssues);
                             repository.getIssueCache().storeQuery(BugzillaQuery.this.getDisplayName(), issues.toArray(new String[issues.size()]));
+                            obsoleteIssues.clear();
                             obsoleteIssues.addAll(issues);
                         }
                     }
@@ -154,10 +159,10 @@ public class BugzillaQuery extends Query {
                         if(obsoleteIssues.size() > 0) {
                             url = new StringBuffer();
                             url.append(BugzillaConstants.URL_BUG_IDS);
-                            for (int i = 0; i < obsoleteIssues.size(); i++) {
-                                String id = obsoleteIssues.get(i);
+                            int i = 0;
+                            for (String id : obsoleteIssues) {
                                 url.append(id);
-                                if(i < obsoleteIssues.size() -1) {
+                                if(i++ < obsoleteIssues.size() - 1) {
                                     url.append(",");
                                 }
                             }

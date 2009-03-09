@@ -37,23 +37,36 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugzilla.commands;
 
-import java.util.Set;
+import java.io.IOException;
+import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaLanguageSettings;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.modules.bugzilla.Bugzilla;
 
 /**
- * XXX simpl impl
+ *
  * @author Tomas Stupka
  */
-public class ExceptionHandler {
+public class PopulateCommand extends BugzillaCommand {
 
-    public static boolean isAuthenticate(CoreException ce) {
-        Set<BugzillaLanguageSettings> settings = BugzillaRepositoryConnector.getLanguageSettings();
-        
-        return false;
+    private final TaskRepository taskRepository;
+
+    public PopulateCommand(TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
+    }
+
+    @Override
+    public void execute() throws CoreException {
+        try {
+            BugzillaClient client = Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(taskRepository, new NullProgressMonitor());
+            client.validate(new NullProgressMonitor());
+        } catch (IOException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
+        }
     }
 
 }

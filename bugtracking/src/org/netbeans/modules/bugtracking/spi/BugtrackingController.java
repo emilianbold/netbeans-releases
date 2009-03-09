@@ -78,6 +78,14 @@ public abstract class BugtrackingController {
     public abstract boolean isValid();
 
     /**
+     * Should return a message in case the controller isn't valid
+     * @return
+     */
+    public String getErrorMessage() {
+        return null;
+    }
+    
+    /**
      *
      */
     public abstract void applyChanges() throws IOException; 

@@ -52,6 +52,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.vcshooks.VCSHooksConfig.Format;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
 import org.netbeans.modules.subversion.hooks.spi.SvnHookContext.LogEntry;
@@ -66,10 +67,8 @@ public class SvnHookImpl extends SvnHook {
     private HookPanel panel;
     private final String name;
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.SvnHook");  // NOI18N
-    private BugtrackingOwnerSupport support;
 
     public SvnHookImpl() {
-        this.support = BugtrackingOwnerSupport.getInstance();
         this.name = NbBundle.getMessage(SvnHookImpl.class, "LBL_VCSHook");                              // NOI18N
     }
 
@@ -86,7 +85,8 @@ public class SvnHookImpl extends SvnHook {
         if(panel.addIssueCheckBox1.isSelected()) {
             String msg = context.getMessage();
 
-            String formatString = VCSHooksConfig.getInstance().getSvnIssueFormat().getFormat();
+            final Format format = VCSHooksConfig.getInstance().getSvnIssueFormat();
+            String formatString = format.getFormat();
             formatString = formatString.replaceAll("\\{id\\}", "\\{0\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{summary\\}", "\\{1\\}");    // NOI18N
 
@@ -101,8 +101,11 @@ public class SvnHookImpl extends SvnHook {
                     null).toString();
 
             LOG.log(Level.FINER, " svn commit hook issue info '" + issueInfo + "'");     // NOI18N
-            // XXX check before/after
-            msg = msg + "\n" + issueInfo;
+            if(format.isAbove()) {
+                msg = issueInfo + "\n" + msg;
+            } else {
+                msg = msg + "\n" + issueInfo;
+            }
 
             context = new SvnHookContext(context.getFiles(), msg, context.getLogEntries());
             return context;
@@ -134,12 +137,6 @@ public class SvnHookImpl extends SvnHook {
             return;
         }
         
-        Repository repo = support.getRepository(file, issue.getID());
-        if(repo == null) {
-            LOG.log(Level.FINE, " could not find repository for " + file);      // NOI18N
-            return;
-        }
-
         String msg = context.getMessage();
         if(!panel.addCommentCheckBox.isSelected() || msg == null || msg.trim().equals("")) {
             msg = null;
@@ -180,7 +177,7 @@ public class SvnHookImpl extends SvnHook {
             panel = new HookPanel(repos, null);
         } else {
             File file = context.getFiles()[0];
-            Repository repoToSelect = support.getRepository(file);
+            Repository repoToSelect = BugtrackingOwnerSupport.getInstance().getRepository(file);
             if(repoToSelect == null) {
                 LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
             }

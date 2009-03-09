@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
+import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.openide.util.Lookup;
@@ -96,7 +97,12 @@ public final class BugtrackingManager implements LookupListener {
      * @return repositories
      */
     public Repository[] getKnownRepositories() {
-        return getRepositories().toArray(new Repository[repos.size()]);
+        Repository[] kenaiRepos = KenaiRepositories.getInstance().getRepositories();
+        Repository[] otherRepos = getRepositories().toArray(new Repository[repos.size()]);
+        Repository[] ret = new Repository[kenaiRepos.length + otherRepos.length];
+        System.arraycopy(kenaiRepos, 0, ret, 0, kenaiRepos.length);
+        System.arraycopy(otherRepos, 0, ret, kenaiRepos.length, otherRepos.length);
+        return ret;
     }
 
     private Set<Repository> getRepositories() {
