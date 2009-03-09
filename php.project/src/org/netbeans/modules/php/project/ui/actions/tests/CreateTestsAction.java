@@ -226,7 +226,7 @@ public final class CreateTestsAction extends NodeAction {
             assert file.isFile() : "File must be given to open: " + file;
             toRefresh.add(file.getParentFile());
             try {
-                FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 assert fo != null : "File object not found for " + file;
                 assert fo.isValid() : "File object not valid for " + file;
                 DataObject dobj = DataObject.find(fo);
