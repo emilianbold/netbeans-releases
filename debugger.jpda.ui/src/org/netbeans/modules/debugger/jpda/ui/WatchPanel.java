@@ -76,6 +76,7 @@ import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import javax.naming.event.EventDirContext;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
@@ -102,8 +103,8 @@ public class WatchPanel {
     }
     
     public static void setupContext(final JEditorPane editorPane, final ActionListener contextSetUp) {
-        EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-java");
-        editorPane.setEditorKit(kit);
+        //EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-java");
+        //editorPane.setEditorKit(kit); - Do not set it, setupContext() will do the job.
         DebuggerEngine en = DebuggerManager.getDebuggerManager ().getCurrentEngine();
         if (EventQueue.isDispatchThread() && en != null) {
             RequestProcessor contextRetrievalRP = en.lookupFirst(null, RequestProcessor.class);
@@ -170,7 +171,6 @@ public class WatchPanel {
     }
     
     public static void setupContext(JEditorPane editorPane, String url, int line) {
-        setupUI(editorPane);
         FileObject file;
         StyledDocument doc;
         try {
@@ -205,6 +205,7 @@ public class WatchPanel {
         } catch (IndexOutOfBoundsException ioobex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
         }
+        setupUI(editorPane);
     }
     
     private static void setupUI(final JEditorPane editorPane) {

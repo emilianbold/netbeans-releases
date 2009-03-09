@@ -292,7 +292,10 @@ import org.xml.sax.helpers.DefaultHandler;
         if (!file.exists()) {
             file = new File(path + "/" + c.getNames()[0] + ".exe"); // NOI18N
             if (!file.exists()) {
-                return false;
+                file = new File(path + "/" + c.getNames()[0] + ".exe.lnk"); // NOI18N
+                if (!file.exists()) {
+                    return false;
+                }
             }
         }
         String flag = c.getVersionFlags();

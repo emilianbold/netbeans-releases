@@ -49,10 +49,8 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.models.ViewModelSupport;
 import org.netbeans.modules.php.dbgp.packets.Stack;
-import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -62,7 +60,7 @@ import org.openide.util.NbBundle;
  * @author ads
  */
 public class BreakpointModel extends ViewModelSupport
-        implements NodeModel, TableModel 
+        implements NodeModel 
 { 
 
     public static final String BREAKPOINT =
@@ -173,56 +171,6 @@ public class BreakpointModel extends ViewModelSupport
         throw new UnknownTypeException(node);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.TableModel#getValueAt(java.lang.Object, java.lang.String)
-     */
-    public Object getValueAt(Object node, String columnID) 
-        throws UnknownTypeException 
-    {
-        if (node instanceof AbstractBreakpoint) {
-            if (columnID.equals(Constants.BREAKPOINT_ENABLED_COLUMN_ID)) {
-                return ((AbstractBreakpoint)node).isEnabled();
-            } else {
-                return null;
-            }
-        }
-
-        throw new UnknownTypeException(node);
-    }
-
-    public boolean isReadOnly(Object node, String columnID) 
-        throws UnknownTypeException 
-    {
-        if (node instanceof AbstractBreakpoint) {
-            if (columnID.equals(Constants.BREAKPOINT_ENABLED_COLUMN_ID)) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        throw new UnknownTypeException(node);
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.TableModel#setValueAt(java.lang.Object, java.lang.String, java.lang.Object)
-     */
-    public void setValueAt(Object node, String columnID, Object value) 
-        throws UnknownTypeException 
-    {
-        if(node instanceof AbstractBreakpoint) {
-            if(columnID.equals(Constants.BREAKPOINT_ENABLED_COLUMN_ID)) {
-                if(((Boolean)value).equals(Boolean.TRUE)) {
-                    ((AbstractBreakpoint)node).enable();
-                } else {
-                    ((AbstractBreakpoint)node).disable();
-                }
-            }
-        } else {
-            throw new UnknownTypeException(node);
-        }
-    }
-    
     public void setCurrentStack( Stack stack, DebugSession session ) {
         if ( stack == null ) {
             synchronized ( myCurrentBreakpoints ) {
