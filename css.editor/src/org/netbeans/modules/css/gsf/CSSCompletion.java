@@ -101,7 +101,7 @@ public class CSSCompletion implements CodeCompletionHandler {
         Snapshot snapshot = info.getSnapshot();
 
         int caretOffset = context.getCaretOffset();
-        String prefix = context.getPrefix();
+        String prefix = context.getPrefix() != null ? context.getPrefix() : "";
         QueryType queryType = context.getQueryType();
         boolean caseSensitive = context.isCaseSensitive();
     
