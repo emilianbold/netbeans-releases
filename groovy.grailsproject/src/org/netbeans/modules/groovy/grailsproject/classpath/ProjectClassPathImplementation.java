@@ -128,7 +128,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         File currentPluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getProjectPluginsDir();
 
         if (pluginsDir == null || !pluginsDir.equals(currentPluginsDir)) {
-            LOGGER.log(Level.INFO, "Project plugins dir changed from {0} to {1}", new Object[]{pluginsDir, currentPluginsDir});
+            LOGGER.log(Level.FINE, "Project plugins dir changed from {0} to {1}", new Object[]{pluginsDir, currentPluginsDir});
             this.pluginsDir = currentPluginsDir;
         }
 
