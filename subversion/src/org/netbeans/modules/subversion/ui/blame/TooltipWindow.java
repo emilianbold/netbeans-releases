@@ -262,12 +262,15 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
 
     public void mouseMoved(MouseEvent e) {
         if (e.getSource().equals(textPane)) {
-            if (getLinkerInPosition(e.getPoint()) != null) {
+            Linker l = null;
+            if ((l = getLinkerInPosition(e.getPoint())) != null) {
                 textPane.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                textPane.setToolTipText(l.provider.getTooltip(commitMessage, l.startOffset, l.endOffset));
                 return;
             }
             textPane.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
+        textPane.setToolTipText("");  // NOI18N
     }
 
     public void mouseClicked(MouseEvent e) {
