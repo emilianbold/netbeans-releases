@@ -71,6 +71,7 @@ import org.netbeans.swing.outline.RowModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
+import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
@@ -96,6 +97,9 @@ public final class OptionsChooserPanel extends JPanel {
 
     private OptionsChooserPanel() {
         initComponents();
+        Mnemonics.setLocalizedText(btnBrowse, NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.btnBrowse"));
+        Mnemonics.setLocalizedText(lblFile, NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.lblFile.text"));
+        Mnemonics.setLocalizedText(lblHint, NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.lblHint.text"));
     }
 
     private void setOptionsExportModel(OptionsExportModel optionsExportModel) {
@@ -157,8 +161,8 @@ public final class OptionsChooserPanel extends JPanel {
         LOGGER.fine("showImportDialog");  //NOI18N
         OptionsChooserPanel optionsChooserPanel = new OptionsChooserPanel();
         optionsChooserPanel.txtFile.setEditable(false);
-        optionsChooserPanel.lblFile.setText(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.lblFile.text"));
-        optionsChooserPanel.lblHint.setText(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.lblHint.text"));
+        Mnemonics.setLocalizedText(optionsChooserPanel.lblFile, NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.lblFile.text"));
+        Mnemonics.setLocalizedText(optionsChooserPanel.lblHint, NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.lblHint.text"));
         optionsChooserPanel.panelType = PanelType.IMPORT;
 
         DialogDescriptor dd = new DialogDescriptor(
@@ -219,6 +223,10 @@ public final class OptionsChooserPanel extends JPanel {
         outline.getTableHeader().setReorderingAllowed(false);
         outline.setColumnHidingAllowed(false);
         outline.setDefaultRenderer(Boolean.class, new BooleanRenderer());
+        // a11y
+        outline.getAccessibleContext().setAccessibleName(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.AN"));
+        outline.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.AD"));
+        lblHint.setLabelFor(outline);
         return outline;
     }
 
@@ -294,6 +302,7 @@ public final class OptionsChooserPanel extends JPanel {
 
         lblHint.setText(org.openide.util.NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.lblHint.text")); // NOI18N
 
+        lblFile.setLabelFor(txtFile);
         lblFile.setText(org.openide.util.NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.lblFile.text")); // NOI18N
 
         btnBrowse.setText(org.openide.util.NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.btnBrowse")); // NOI18N
@@ -334,27 +343,40 @@ public final class OptionsChooserPanel extends JPanel {
                 .add(scrollPaneOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        txtFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.txtFile.AD")); // NOI18N
+        btnBrowse.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.btnBrowse.AN")); // NOI18N
+        btnBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.btnBrowse.AD")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.AD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBrowseActionPerformed
         FileChooserBuilder fileChooserBuilder = new FileChooserBuilder(OptionsChooserPanel.class);
         fileChooserBuilder.setDefaultWorkingDirectory(new File(System.getProperty("user.home")));  //NOI18N
         fileChooserBuilder.setFileFilter(new FileNameExtensionFilter("*.zip", "zip"));  //NOI18N
-        fileChooserBuilder.setApproveText(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.chooser.approve"));
+        String approveText = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.chooser.approve");
+        fileChooserBuilder.setApproveText(approveText);
         if (panelType == PanelType.IMPORT) {
             fileChooserBuilder.setTitle(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.file.chooser.title"));
+            File selectedFile = fileChooserBuilder.showOpenDialog();
+            if (selectedFile != null) {
+                txtFile.setText(selectedFile.getAbsolutePath());
+                setOptionsExportModel(new OptionsExportModel(selectedFile));
+                scrollPaneOptions.setViewportView(getOutline());
+                dialogDescriptor.setValid(isPanelValid());
+            }
         } else {
             fileChooserBuilder.setTitle(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.chooser.title"));
-        }
-
-        JFileChooser fileChooser = fileChooserBuilder.createFileChooser();
-        if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(this)) {
-            txtFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
-            if (panelType == PanelType.IMPORT) {
-                setOptionsExportModel(new OptionsExportModel(fileChooser.getSelectedFile()));
-                scrollPaneOptions.setViewportView(getOutline());
+            JFileChooser fileChooser = fileChooserBuilder.createFileChooser();
+            if (JFileChooser.APPROVE_OPTION == fileChooser.showDialog(this, approveText)) {
+                String selectedFileName = fileChooser.getSelectedFile().getAbsolutePath();
+                if (!selectedFileName.endsWith(".zip")) {  //NOI18N
+                    selectedFileName += ".zip";  //NOI18N
+                }
+                txtFile.setText(selectedFileName);
+                dialogDescriptor.setValid(isPanelValid());
             }
-            dialogDescriptor.setValid(isPanelValid());
         }
     }//GEN-LAST:event_btnBrowseActionPerformed
 
@@ -486,6 +508,9 @@ public final class OptionsChooserPanel extends JPanel {
         }
 
         public String getDisplayName(Object node) {
+            if (node == null) {
+                return null;
+            }
             Object userObject = ((DefaultMutableTreeNode) node).getUserObject();
             if (userObject instanceof OptionsExportModel.Category) {
                 return ((OptionsExportModel.Category) userObject).getDisplayName();
