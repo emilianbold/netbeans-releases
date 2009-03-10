@@ -158,7 +158,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         String theCommand = cmdline.toString();
 
         if (!preserveCommand) {
-            theCommand = ShellUtils.wrapCommand(key, theCommand);
+            theCommand = ShellUtils.wrapCommand(executionEnvironment, theCommand);
         }
 
         echannel.setCommand(theCommand);

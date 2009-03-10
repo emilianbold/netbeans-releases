@@ -318,7 +318,7 @@ public class MakeActionProvider implements ActionProvider {
                 if (res == JOptionPane.YES_OPTION) {
                     ServerList registry = Lookup.getDefault().lookup(ServerList.class);
                     assert registry != null;
-                    registry.addServer(record.getName(), false, true);
+                    registry.addServer(record.getExecutionEnvironment(), false, true);
                 }
             } else if (!record.isOnline()) {
                 message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());

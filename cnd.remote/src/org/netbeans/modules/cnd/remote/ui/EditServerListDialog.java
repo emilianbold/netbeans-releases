@@ -275,10 +275,11 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         if (o instanceof JButton) {
             JButton b = (JButton) o;
             if (b.getActionCommand().equals("Add")) { // NOI18N
-                String hkey = CreateHostWizardIterator.invokeMe(cacheManager);
-                if (hkey != null) {
+                ExecutionEnvironment execEnv = CreateHostWizardIterator.invokeMe(cacheManager);
+                if (execEnv != null) {
+                    String hkey = ExecutionEnvironmentFactory.getHostKey(execEnv);
                     if (!model.contains(hkey)) {
-                        Lookup.getDefault().lookup(ServerList.class).addServer(hkey, false, false);
+                        Lookup.getDefault().lookup(ServerList.class).addServer(execEnv, false, false);
                         model.addElement(hkey);
                         lstDevHosts.setSelectedValue(hkey, true);
                     }

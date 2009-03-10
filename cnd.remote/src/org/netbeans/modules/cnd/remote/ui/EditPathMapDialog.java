@@ -115,7 +115,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private synchronized void initTableModel(final String hkey) {
         DefaultTableModel tableModel = cache.get(hkey);
         if (tableModel == null) {
-            if (RemotePathMap.isReady(hkey)) {
+            if (RemotePathMap.isReady(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey))) {
                 tableModel = prepareTableModel(hkey);
             } else {
                 handleProgress(true);

@@ -76,8 +76,8 @@ public class RemotePathMap implements PathMap {
         return pathmap;
     }
 
-    public static boolean isReady(String hkey) {
-        return pmtable.get(hkey) != null;
+    public static boolean isReady(ExecutionEnvironment execEnv) {
+        return pmtable.get(execEnv) != null;
     }
 
     //
@@ -204,10 +204,6 @@ public class RemotePathMap implements PathMap {
         }
 
     }
-
-//    public void showUI() {
-//        EditPathMapDialog.showMe(hkey, null);
-//    }
 
     // Utility
     public void updatePathMap(Map<String, String> newPathMap) {
