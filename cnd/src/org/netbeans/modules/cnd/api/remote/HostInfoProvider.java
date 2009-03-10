@@ -53,7 +53,7 @@ import org.openide.util.Lookup;
 public abstract class HostInfoProvider {
 
     /**
-     * This function returns path mapper for the host stated by hkey
+     * This function returns path mapper for the given host
      */
     public abstract PathMap getMapper(ExecutionEnvironment execEnv);
 
@@ -63,17 +63,9 @@ public abstract class HostInfoProvider {
     public abstract int getPlatform(ExecutionEnvironment execEnv);
 
     /**
-     * This function returns system environment for the host stated by hkey
+     * This function returns system environment for the given host
      */
     public abstract Map<String, String> getEnv(ExecutionEnvironment execEnv);
-
-    /**
-     * Validates file existence
-     * TODO: deprecate and remove
-     */
-    public final boolean fileExists(String hkey, String path) {
-        return fileExists(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), path);
-    }
 
     /**
      * Validates file existence

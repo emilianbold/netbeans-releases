@@ -142,7 +142,7 @@ public abstract class SunCCCCompiler extends CCCCompiler {
         systemIncludeDirectoriesList = new PersistentList<String>();
         systemPreprocessorSymbolsList = new PersistentList<String>();
         String path = getPath();
-        if (path == null || !PlatformInfo.getDefault(getHostKey()).fileExists(path)) {
+        if (path == null || !PlatformInfo.getDefault(getExecutionEnvironment()).fileExists(path)) {
             path = getDefaultPath();
         }
         try {

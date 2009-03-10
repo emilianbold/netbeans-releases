@@ -46,7 +46,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -265,7 +264,7 @@ public class RemotePathMap implements PathMap {
     }
 
     static boolean validateMapping(ExecutionEnvironment exexEnv, String rpath, String lpath) {
-        if (!PlatformInfo.getDefault(exexEnv).isWindows() && !PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).isWindows()) {
+        if (!PlatformInfo.getDefault(exexEnv).isWindows() && !PlatformInfo.getDefault(ExecutionEnvironmentFactory.getLocalExecutionEnvironment()).isWindows()) {
             File path = new File(lpath);
             if (path.exists() && path.isDirectory()) {
                 File validationFile = null;

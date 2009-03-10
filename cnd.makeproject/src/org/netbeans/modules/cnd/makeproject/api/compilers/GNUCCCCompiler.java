@@ -173,7 +173,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
         if (path != null && path.length() == 0) {
             return;
         }
-        if (path == null || !PlatformInfo.getDefault(getHostKey()).fileExists(path)) {
+        if (path == null || !PlatformInfo.getDefault(getExecutionEnvironment()).fileExists(path)) {
             path = getDefaultPath();
         }
         try {

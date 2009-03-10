@@ -232,7 +232,7 @@ public class CompilerSetManager {
             // TODO: not remove, only replace now...
 //            for (CompilerSetManager oldCsm : managers.values()) {
 //                // erase old info
-//                getPreferences().remove(CSM + oldCsm.hkey + NO_SETS);
+//                getPreferences().remove(CSM + ExecutionEnvironmentFactory.getHostKey(oldCam.executionEnvironment) + NO_SETS);
 //            }
 //            managers.clear();
             for (CompilerSetManager csm : csms) {

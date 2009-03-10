@@ -385,7 +385,7 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
             if (local != null) {
                 local = local.trim();
                 if (local.length() > 0) {
-                    if (!HostInfoProvider.getDefault().fileExists(CompilerSetManager.LOCALHOST, local)) {
+                    if (!HostInfoProvider.getDefault().fileExists(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), local)) {
                         sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_BadLocalPath", local));
                     }
                     if (pathToValidate != null && !pathIsValidated) {
@@ -399,7 +399,8 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
             if (remote != null) {
                 remote = remote.trim();
                 if (remote.length() > 0) {
-                    if (!HostInfoProvider.getDefault().fileExists(currentHkey, remote)) {
+                    if (!HostInfoProvider.getDefault().fileExists(
+                            ExecutionEnvironmentFactory.getExecutionEnvironment(currentHkey), remote)) {
                         sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_BadRemotePath", remote));
                     }
                 }

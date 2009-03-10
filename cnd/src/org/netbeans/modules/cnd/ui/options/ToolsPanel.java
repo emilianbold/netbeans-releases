@@ -81,7 +81,6 @@ import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
@@ -444,7 +443,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
 //                // always return true in remote mode, instead of call to very expensive operation
 //                return true;
 //            } else {
-//                return serverList.isValidExecutable(hkey, txt);
+//                return serverList.isValidExecutable(execEnv, txt);
 //            }
         }
     }
@@ -526,7 +525,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     }
 
     private boolean isRemoteHostSelected() {
-        return !RemoteUtils.isLocalhost((String)cbDevHost.getSelectedItem());
+        return ExecutionEnvironmentFactory.getExecutionEnvironment((String)cbDevHost.getSelectedItem()).isRemote();
     }
 
     private ExecutionEnvironment getSelectedEnvironment() {

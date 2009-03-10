@@ -49,7 +49,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Collections;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.LinkSupport;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
@@ -83,7 +82,7 @@ import org.openide.util.Lookup;
     }
 
     private void run() {
-        if (CompilerSetManager.LOCALHOST.equals(tool.getHostKey())) {
+        if (tool.getExecutionEnvironment().isLocal()) {
             // we're dealing with a local toolchain
             File file = new File(path);
             if (!file.exists() && new File(path+".lnk").exists()){ // NOI18N

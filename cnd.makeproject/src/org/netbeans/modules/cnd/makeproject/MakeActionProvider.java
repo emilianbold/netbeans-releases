@@ -470,7 +470,7 @@ public class MakeActionProvider implements ActionProvider {
                 if (useRsync && !conf.getDevelopmentHost().isLocalhost()) {
                     final String rsyncLocalPath = "rsync"; //NOI18N
                     CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-                    int result = provider.run(conf.getDevelopmentHost().getName(), "which rsync", null); //NOI18N
+                    int result = provider.run(conf.getDevelopmentHost().getExecutionEnvironment(), "which rsync", null); //NOI18N
                     String rsyncRemotePath = (result != 0 || provider.getOutput().indexOf(' ')>-1) ? "/opt/csw/bin/rsync" : provider.getOutput(); //NOI18N //YESCHEAT
                     // do sync
                     RunProfile runSyncProfile = conf.getProfile().clone();
