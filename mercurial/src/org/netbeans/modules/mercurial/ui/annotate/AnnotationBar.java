@@ -407,7 +407,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             al = getAnnotateLine(getLineFromMouseEvent(event));
         }
 
-        if (al != null) {
+        /**
+         * al.getCommitMessage() != null - since commit messages are initialized separately from the AL constructor
+         */
+        if (al != null && al.getCommitMessage() != null) {
             TooltipWindow ttw = new TooltipWindow(this, al);
             ttw.show(new Point(p.x - p2.x, p.y));
         }
