@@ -74,7 +74,7 @@ public final class UnitTestRunner {
         assert project != null;
         assert sessionType != null;
         assert rerunHandler != null;
-        testSession = new TestSession("PHPUnit test session", project, sessionType); // NOI18N
+        testSession = new TestSession("PHPUnit test session", project, sessionType, new PhpTestRunnerNodeFactory()); // NOI18N
         testSession.setRerunHandler(rerunHandler);
     }
 
