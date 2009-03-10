@@ -369,7 +369,7 @@ public class PHPIndex {
         Map<String, IndexedConstant> constants = new TreeMap<String, IndexedConstant>();
        
         // #147730 - prefer the current file
-        FileObject currentFile = context.getSnapshot().getSource().getFileObject();
+        FileObject currentFile = context != null ? context.getSnapshot().getSource().getFileObject() : null;
         Set<String> currentFileClasses = new HashSet<String>();
 
         for (String className : getClassAncestors(context, typeName)) {
@@ -454,7 +454,7 @@ public class PHPIndex {
         Map<String, IndexedConstant> fields = new TreeMap<String, IndexedConstant>();
         
         // #147730 - prefer the current file
-        FileObject currentFile = context.getSnapshot().getSource().getFileObject();
+        FileObject currentFile = context != null ? context.getSnapshot().getSource().getFileObject() : null;
         Set<String> currentFileClasses = new HashSet<String>();
 
         for (String className : getClassAncestors(context, typeName)) {
