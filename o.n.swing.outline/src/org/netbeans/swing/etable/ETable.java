@@ -217,7 +217,7 @@ public class ETable extends JTable {
     private String[] quickFilterFormatStrings = new String [] {
         "{0} == {1}", "{0} <> {1}", "{0} > {1}", 
         "{0} < {1}", "{0} >= {1}", "{0} <= {1}",
-        "No Filter"
+        java.util.ResourceBundle.getBundle("org/netbeans/swing/etable/Bundle").getString("LBL_NoFilter")
     };
     
     /**
