@@ -42,8 +42,13 @@ package org.netbeans.modules.bugzilla.issue;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.JLabel;
@@ -59,9 +64,12 @@ import org.openide.util.NbBundle;
  * @author Jan Stola
  */
 public class AttachmentsPanel extends JPanel {
+    private static final Color BG_COLOR = new Color(220, 220, 220);
     private BugzillaIssue issue;
+    private List<AttachmentPanel> newAttachments;
     private JLabel noneLabel;
     private LinkButton createNewButton;
+    private JLabel dummyLabel = new JLabel();
 
     public AttachmentsPanel() {
         setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
@@ -71,28 +79,33 @@ public class AttachmentsPanel extends JPanel {
     }
 
     public void setIssue(BugzillaIssue issue) {
-        removeAll();
         this.issue = issue;
+        newAttachments = new LinkedList<AttachmentPanel>();
+        removeAll();
 
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
         GroupLayout.ParallelGroup horizontalGroup = layout.createParallelGroup(GroupLayout.LEADING);
         GroupLayout.SequentialGroup verticalGroup = layout.createSequentialGroup();
         ResourceBundle bundle = NbBundle.getBundle(AttachmentsPanel.class);
-        String createNewButtonText = bundle.getString("AttachmentsPanel.createNewButton.text"); // NOI18N
+        GroupLayout.SequentialGroup newVerticalGroup = layout.createSequentialGroup();
 
         BugzillaIssue.Attachment[] attachments = issue.getAttachments();
-        if (attachments.length == 0) {
+        boolean noAttachments = (attachments.length == 0);
+        horizontalGroup.add(layout.createSequentialGroup()
+            .add(noneLabel)
+            .addPreferredGap(LayoutStyle.RELATED)
+            .add(noAttachments ? createNewButton : dummyLabel)
+            .add(0, 0, Short.MAX_VALUE));
+        verticalGroup.add(layout.createParallelGroup(GroupLayout.BASELINE)
+            .add(noneLabel)
+            .add(noAttachments ? createNewButton : dummyLabel));
+        dummyLabel.setVisible(false);
+        noneLabel.setVisible(noAttachments);
+        updateCreateNewButton(noAttachments);
+        if (noAttachments) {
             // noneLabel + createNewButton
-            createNewButton.setText('('+createNewButtonText+')');
-            horizontalGroup.add(layout.createSequentialGroup()
-                    .add(noneLabel)
-                    .addPreferredGap(LayoutStyle.RELATED)
-                    .add(createNewButton)
-                    .add(0, 0, Short.MAX_VALUE));
-            verticalGroup.add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(noneLabel)
-                    .add(createNewButton));
+            verticalGroup.add(newVerticalGroup);
         } else {
             JLabel descriptionLabel = new JLabel(bundle.getString("AttachmentsPanel.table.description")); // NOI18N
             JLabel filenameLabel = new JLabel(bundle.getString("AttachmentsPanel.table.filename")); // NOI18N
@@ -155,17 +168,22 @@ public class AttachmentsPanel extends JPanel {
                             .add(dateLabel)
                             .add(authorLabel)));
             }
-            // createNewButton
-            createNewButton.setText(createNewButtonText);
-            horizontalGroup.add(layout.createSequentialGroup()
-                    .add(createNewButton)
-                    .add(0, 0, Short.MAX_VALUE));
-            verticalGroup.addPreferredGap(LayoutStyle.RELATED);
-            verticalGroup.add(createNewButton);
+            verticalGroup.add(newVerticalGroup);
         }
+        horizontalGroup.add(layout.createSequentialGroup()
+                .add(noAttachments ? dummyLabel : createNewButton)
+                .add(0, 0, Short.MAX_VALUE));
+        verticalGroup.addPreferredGap(LayoutStyle.RELATED);
+        verticalGroup.add(noAttachments ? dummyLabel : createNewButton);
+
         layout.setHorizontalGroup(horizontalGroup);
         layout.setVerticalGroup(verticalGroup);
-        ((CreateNewAction)createNewButton.getAction()).setLayoutGroups(horizontalGroup, verticalGroup);
+        ((CreateNewAction)createNewButton.getAction()).setLayoutGroups(horizontalGroup, newVerticalGroup);
+    }
+
+    private void updateCreateNewButton(boolean noAttachments) {
+        String createNewButtonText = NbBundle.getMessage(AttachmentsPanel.class, "AttachmentsPanel.createNewButton.text"); // NOI18N
+        createNewButton.setText(noAttachments ? ('('+createNewButtonText+')') : createNewButtonText);
     }
 
     private void makeBold(JLabel label) {
@@ -176,9 +194,59 @@ public class AttachmentsPanel extends JPanel {
     private JPanel createHighlightPanel() {
         JPanel panel = new JPanel();
         // PENDING what color (e.g. what key from UIDefaults) should I use?
-        panel.setBackground(new Color(220, 220, 220));
+        panel.setBackground(BG_COLOR);
         add(panel);
         return panel;
+    }
+
+    private PropertyChangeListener deletedListener;
+    PropertyChangeListener getDeletedListener() {
+        if (deletedListener == null) {
+            deletedListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    for (AttachmentPanel panel : newAttachments) {
+                        if (!panel.isDeleted()) {
+                            return;
+                        }
+                    }
+                    // The last attachment deleted
+                    noneLabel.setVisible(true);
+                    switchHelper();
+                    updateCreateNewButton(true);
+                }
+            };
+        }
+        return deletedListener;
+    }
+
+    private void switchHelper() {
+        JLabel temp = new JLabel();
+        GroupLayout layout = (GroupLayout)getLayout();
+        layout.replace(dummyLabel, temp);
+        layout.replace(createNewButton, dummyLabel);
+        layout.replace(temp, createNewButton);
+    }
+
+    List<AttachmentInfo> getNewAttachments() {
+        List<AttachmentInfo> infos = new LinkedList<AttachmentInfo>();
+        for (AttachmentPanel attachment : newAttachments) {
+            if (!attachment.isDeleted()) {
+                AttachmentInfo info = new AttachmentInfo();
+                info.file = attachment.getFile();
+                info.description = attachment.getDescription();
+                info.contentType = attachment.getContentType();
+                info.isPatch = attachment.isPatch();
+                infos.add(info);
+            }
+        }
+        return infos;
+    }
+
+    class AttachmentInfo {
+        File file;
+        String description;
+        String contentType;
+        boolean isPatch;
     }
 
     class CreateNewAction extends AbstractAction {
@@ -192,7 +260,21 @@ public class AttachmentsPanel extends JPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            AttachmentPanel attachment = new AttachmentPanel();
+            attachment.setBackground(BG_COLOR);
+            horizontalGroup.add(attachment, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+            verticalGroup.addPreferredGap(LayoutStyle.RELATED);
+            verticalGroup.add(attachment, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+            if (noneLabel.isVisible()) {
+                noneLabel.setVisible(false);
+                switchHelper();
+                updateCreateNewButton(false);
+            }
+            if (issue.getAttachments().length == 0) {
+                attachment.addPropertyChangeListener(getDeletedListener());
+            }
+            newAttachments.add(attachment);
+            revalidate();
         }
 
     }

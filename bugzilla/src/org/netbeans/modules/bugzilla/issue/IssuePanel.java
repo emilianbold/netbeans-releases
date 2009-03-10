@@ -59,6 +59,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.apache.commons.httpclient.HttpException;
 import org.eclipse.core.runtime.CoreException;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
@@ -884,7 +885,6 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(BugzillaIssue.IssueField.CC, ccField);
         storeFieldValue(BugzillaIssue.IssueField.DEPENDS_ON, dependsField);
         storeFieldValue(BugzillaIssue.IssueField.BLOCKS, blocksField);
-        // PENDING attachment modifications
         if (!"".equals(addCommentArea.getText().trim())) { // NOI18N
             issue.addComment(addCommentArea.getText());
         }
@@ -896,12 +896,23 @@ public class IssuePanel extends javax.swing.JPanel {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
+                    for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
+                        try {
+                            issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
+                        } catch (HttpException hex) {
+                            hex.printStackTrace();
+                        } catch (IOException ioex) {
+                            ioex.printStackTrace();
+                        } catch (CoreException cex) {
+                            cex.printStackTrace();
+                        }
+                    }
                     issue.submit();
-                    issue.refresh();
                 } catch (CoreException cex) {
                     System.out.println(cex.getStatus().getMessage());
                     cex.printStackTrace();
                 } finally {
+                    issue.refresh();
                     handle.finish();
                     reloadFormInAWT(true);
                 }
