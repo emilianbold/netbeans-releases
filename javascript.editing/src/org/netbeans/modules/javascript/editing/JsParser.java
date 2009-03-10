@@ -741,19 +741,23 @@ public class JsParser extends Parser {
         return null;
     }
 
-//    private void dumpTree(Node node, int depth) {
-//        for (int i = 0; i < depth; i++) {
-//            System.out.print("    ");
-//        }
-//        System.out.println(node.toString());
-//        if (node.hasChildren()) {
-//            Node curr = node.getFirstChild();
-//            while (curr != null) {
-//                dumpTree(curr, depth+1);
-//                curr = curr.getNext();
-//            }
-//        }
-//    }
+    public static void dumpTree(Node node) {
+        dumpTree(node, 0);
+    }
+    
+    private static void dumpTree(Node node, int depth) {
+        for (int i = 0; i < depth; i++) {
+            System.out.print("    ");
+        }
+        System.out.println(node.toString());
+        if (node.hasChildren()) {
+            Node curr = node.getFirstChild();
+            while (curr != null) {
+                dumpTree(curr, depth+1);
+                curr = curr.getNext();
+            }
+        }
+    }
 
     private void adjustOffsets(Node node, int offset, int delta) {
         int start = node.getSourceStart();

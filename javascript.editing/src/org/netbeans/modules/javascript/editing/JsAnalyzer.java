@@ -248,6 +248,11 @@ public class JsAnalyzer implements StructureScanner {
         AnalysisResult analysisResult = new AnalysisResult(result);
         ParseTreeWalker walker = new ParseTreeWalker(analysisResult);
         Node root = result.getRootNode();
+
+        if(Boolean.getBoolean("debug.js.ast")) {
+            JsParser.dumpTree(root);
+        }
+        
         if (root != null) {
             walker.walk(root);
         }

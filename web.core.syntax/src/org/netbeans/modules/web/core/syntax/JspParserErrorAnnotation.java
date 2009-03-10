@@ -144,7 +144,6 @@ public class JspParserErrorAnnotation extends ErrorAnnotation.LineSetAnnotation 
             while (!(tokenSequence.token().id() == JspTokenId.SYMBOL
                     && tokenSequence.token().text().toString().charAt(0) == '<' //directive
                     || tokenSequence.token().id() == JspTokenId.TAG)  //or jsp tag
-                    && tokenSequence.token().id() != JspTokenId.EOL
                     && tokenSequence.movePrevious()) {
                 start = NbDocument.findLineColumn(document, tokenSequence.token().offset(tokenHierarchy));
                 offset = tokenSequence.token().offset(tokenHierarchy);
@@ -154,7 +153,7 @@ public class JspParserErrorAnnotation extends ErrorAnnotation.LineSetAnnotation 
             while ((tokenSequence.token().id() != JspTokenId.SYMBOL
                     || tokenSequence.token().text().toString().trim().length() > 0 
                     && tokenSequence.token().text().toString().charAt(tokenSequence.token().text().toString().trim().length()-1) != '>')
-                    && tokenSequence.token().id() != JspTokenId.EOL && tokenSequence.moveNext());
+                    && tokenSequence.moveNext());
         } else {
             // The error is in EL - start and offset are set properly - we have one big EL token now in JspLexer
         }
