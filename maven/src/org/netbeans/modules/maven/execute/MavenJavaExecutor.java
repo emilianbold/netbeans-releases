@@ -65,7 +65,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.embedder.exec.MyLifecycleExecutor;
-import org.netbeans.modules.maven.options.MavenExecutionSettings;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -236,9 +236,9 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
             req.setTransferListener(new ProgressTransferListener());
             //            req.setReactorActive(true);
             
-            req.setReactorFailureBehavior(MavenExecutionSettings.getDefault().getFailureBehaviour());
+            req.setReactorFailureBehavior(MavenSettings.getDefault().getFailureBehaviour());
             req.setStartTime(new Date());
-            req.setGlobalChecksumPolicy(MavenExecutionSettings.getDefault().getChecksumPolicy());
+            req.setGlobalChecksumPolicy(MavenSettings.getDefault().getChecksumPolicy());
             
             req.setUpdateSnapshots(clonedConfig.isUpdateSnapshots());
             req.setRecursive(clonedConfig.isRecursive());
