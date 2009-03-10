@@ -94,6 +94,16 @@ public class GeneratedSourceRootTest extends NbTestCase {
         super(n);
     }
 
+    @Override
+    protected void setUp() throws IOException {
+        FileObject fo = FileUtil.getConfigFile("Services");
+        if (fo != null) {
+            fo.delete();
+        }
+        clearWorkDir();
+        MockLookup.setInstances(new TestAntBasedProjectType());
+    }
+
     public void testSourceRoots() throws Exception {
         Project p = createTestProject(true);
         FileObject d = p.getProjectDirectory();
@@ -179,10 +189,6 @@ public class GeneratedSourceRootTest extends NbTestCase {
         assertTrue(status.isBuilt());
     }
 
-    protected @Override void setUp() throws Exception {
-        clearWorkDir();
-        MockLookup.setInstances(new TestAntBasedProjectType());
-    }
 
     private Project createTestProject(boolean initGenRoot) throws Exception {
         final FileObject dir = FileUtil.toFileObject(getWorkDir());

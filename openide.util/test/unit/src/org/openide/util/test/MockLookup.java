@@ -56,6 +56,7 @@ public class MockLookup extends ProxyLookup {
 
     private static MockLookup DEFAULT;
     private static boolean making = false;
+    private static volatile boolean ready;
 
     static {
         making = true;
@@ -68,7 +69,6 @@ public class MockLookup extends ProxyLookup {
                 defaultLookup.set(null, null);
             }
             assertEquals(MockLookup.class, Lookup.getDefault().getClass());
-            setInstances();
         } catch (Exception x) {
             throw new ExceptionInInitializerError(x);
         } finally {
@@ -89,7 +89,11 @@ public class MockLookup extends ProxyLookup {
      * and you want to ensure that any users of mock lookup will see the correct default lookup right away,
      * even if they have not yet called {@link #setLookup} or {@link #setInstances}.
      */
-    public static void init() {}
+    public static void init() {
+        if (!ready) {
+            setInstances();
+        }
+    }
 
     /**
      * Sets the global default lookup with zero or more delegate lookups.
@@ -98,6 +102,7 @@ public class MockLookup extends ProxyLookup {
      * Most of the time you should use {@link #setInstances} instead.
      */
     public static void setLookup(Lookup... lookups) {
+        ready = true;
         DEFAULT.setLookups(lookups);
     }
 
@@ -109,7 +114,7 @@ public class MockLookup extends ProxyLookup {
     public static void setInstances(Object... instances) {
         ClassLoader l = MockLookup.class.getClassLoader();
         if (l != Lookup.getDefault().lookup(ClassLoader.class)) {
-            setLookup(Lookups.metaInfServices(l), Lookups.singleton(l));
+            setLookup(Lookups.fixed(instances), Lookups.metaInfServices(l), Lookups.singleton(l));
         }
         Lookup projects = Lookups.forPath("Services");
         Collection<?> initialize = projects.lookupAll(Object.class);
