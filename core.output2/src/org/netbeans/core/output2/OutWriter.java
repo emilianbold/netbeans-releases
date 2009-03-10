@@ -46,6 +46,7 @@
 
 package org.netbeans.core.output2;
 
+import java.awt.Color;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputListener;
@@ -488,7 +489,24 @@ class OutWriter extends PrintWriter {
             lines.fire();
         }
     }
-        
+
+    void println(CharSequence s, OutputListener l, boolean important, Color c) throws IOException {
+        if (checkError()) {
+            return;
+        }
+        int addedCount = doWrite(s, 0, s.length());
+        println();
+        addedCount++;
+        int newCount = lines.getLineCount()-1;
+        for (int i = newCount - addedCount; i < newCount; i++) {
+            if (l != null) {
+                lines.addListener(i, l, important);
+            }
+            lines.setColor(i, c);
+            lines.fire();
+        }
+    }
+
     /**
      * A useless writer object to pass to the superclass constructor.  We override all methods
      * of it anyway.

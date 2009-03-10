@@ -51,35 +51,35 @@ public class CssTemplatedModelTest extends NbTestCase {
     public void testGetCode() throws Exception {
         BaseDocument document = createJSPDocument("<style>h1 { background: <%=s %>;}</style>");
         CssTemplatedModel model = CssTemplatedModel.get(document);
-        assertEquals("h1 { background: GENERATED_CODE;;}", model.getCode());
+        assertEquals("h1 { background: GENERATED_CODE;}", model.getCode());
 
         document = createJSPDocument("<style>h1 { background: <%=s %>}</style>");
         model = CssTemplatedModel.get(document);
-        assertEquals("h1 { background: GENERATED_CODE;}", model.getCode());
+        assertEquals("h1 { background: GENERATED_CODE}", model.getCode());
 
         document = createJSPDocument("<style>a {background: red } h1 { <%=s %>}</style>");
         model = CssTemplatedModel.get(document);
-        assertEquals("a {background: red } h1 {                }", model.getCode());
+        assertEquals("a {background: red } h1 { GENERATED_CODE}", model.getCode());
 
         document = createJSPDocument("<style>a {background: red } <%=s %> { background: blue }</style>");
         model = CssTemplatedModel.get(document);
-        assertEquals("a {background: red } GENERATED_CODEE { background: blue }", model.getCode());
+        assertEquals("a {background: red } GENERATED_CODE { background: blue }", model.getCode());
 
         document = createJSPDocument("<style>a {background: red } <%=s %></style>");
         model = CssTemplatedModel.get(document);
-        assertEquals("a {background: red } GENERATED_CODE;", model.getCode());
+        assertEquals("a {background: red } GENERATED_CODE", model.getCode());
 
         document = createJSPDocument("<a style=\"color: red; background: <%=s %>\"/>");
         model = CssTemplatedModel.get(document);
-        assertEquals("\n SELECTOR {\n\tcolor: red; background: GENERATED_CODE;\n}\n", model.getCode());
+        assertEquals("\n SELECTOR {\n\tcolor: red; background: GENERATED_CODE\n}\n", model.getCode());
 
         document = createJSPDocument("<a style=\"color: red; <%=s %>\"/>");
         model = CssTemplatedModel.get(document);
-        assertEquals("\n SELECTOR {\n\tcolor: red;                \n}\n", model.getCode());
+        assertEquals("\n SELECTOR {\n\tcolor: red; GENERATED_CODE\n}\n", model.getCode());
 
         document = createJSPDocument("<a style=\"<%=s %>: red\"/>");
         model = CssTemplatedModel.get(document);
-        assertEquals("\n SELECTOR {\n\tGENERATED_CODE : red\n}\n", model.getCode());
+        assertEquals("\n SELECTOR {\n\tGENERATED_CODE: red\n}\n", model.getCode());
 
     }
 
