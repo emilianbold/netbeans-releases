@@ -126,8 +126,11 @@ abstract public class BasePanel extends JPanel {
                     if (null != tce) {
                         tce.stopCellEditing();
                     }
-                    DataTableModel model = (DataTableModel) table.getModel();
-                    retVal.putAll(model.getData());
+                    Object tm = table.getModel();
+                    if (tm instanceof DataTableModel) {
+                        DataTableModel model = (DataTableModel) tm;
+                        retVal.putAll(model.getData());
+                    }
                 }
             }
         }

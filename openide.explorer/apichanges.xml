@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
         <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
         <description>Nodes can have check-boxes rendered next to their icons or display names.
         </description>
-        <class package="org.openide.explorer.view" name="CheckNodeCookie"/>
+        <class package="org.openide.explorer.view" name="CheckableNode"/>
         <issue number="159546"/>
     </change>    
     <change id="SetSelectedNodes">

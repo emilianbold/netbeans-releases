@@ -46,8 +46,7 @@ package org.netbeans.modules.css.gsf.api;
 public class CssEmbeddingModelUtils {
 
     private static final String GEN_CODE_IDENT = "GENERATED_CODE";
-    private static final String POSTFIX = ";";
-    private static final String GEN_CODE_IDENT_WITH_POSTFIX = GEN_CODE_IDENT + POSTFIX;
+    private static final String GEN_CODE_IDENT_WITH_POSTFIX = GEN_CODE_IDENT;
     
     public static final String getGeneratedCodeIdentifier() {
         return GEN_CODE_IDENT_WITH_POSTFIX;
