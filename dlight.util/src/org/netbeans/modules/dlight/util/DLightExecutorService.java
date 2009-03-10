@@ -39,56 +39,28 @@
 package org.netbeans.modules.dlight.util;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import org.openide.util.RequestProcessor;
 
 /**
- * Service class to get executor's service {@link java.util.concurrent.ExecutorService}.
- *
- *
+ * Default implementation of tasks executor service.
+ * Uses RequestProcessor but allows submit Callable tasks.
  */
 public class DLightExecutorService {
 
     private static final String PREFIX = "DLIGHT: "; // NOI18N
-    private static final Boolean NAMED_THREADS =
-            Boolean.getBoolean("dlight.namedthreads"); // NOI18N
-    private final static ExecutorService executorService = Executors.newCachedThreadPool();
-
-
-    static {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-
-            @Override
-            public void run() {
-                executorService.shutdown();
-            }
-        });
-    }
 
     public static <T> Future<T> submit(final Callable<T> task, String name) {
-        Future<T> result = null;
+        final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
+        final FutureTask<T> ftask = new FutureTask<T>(task);
+        processor.post(ftask);
 
-        if (NAMED_THREADS) {
-            final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
-            final FutureTask<T> ftask = new FutureTask<T>(task);
-            processor.post(ftask);
-            result = ftask;
-        } else {
-            result = executorService.submit(task);
-        }
-
-        return result;
+        return ftask;
     }
 
     public static void submit(final Runnable task, String name) {
-        if (NAMED_THREADS) {
-            final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
-            processor.post(task);
-        } else {
-            executorService.submit(task);
-        }
+        final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
+        processor.post(task);
     }
 }
