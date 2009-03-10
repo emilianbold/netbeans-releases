@@ -56,6 +56,7 @@ public class MockLookup extends ProxyLookup {
 
     private static MockLookup DEFAULT;
     private static boolean making = false;
+    private static volatile boolean ready;
 
     static {
         making = true;
@@ -89,7 +90,9 @@ public class MockLookup extends ProxyLookup {
      * even if they have not yet called {@link #setLookup} or {@link #setInstances}.
      */
     public static void init() {
-        setInstances();
+        if (!ready) {
+            setInstances();
+        }
     }
 
     /**
@@ -99,6 +102,7 @@ public class MockLookup extends ProxyLookup {
      * Most of the time you should use {@link #setInstances} instead.
      */
     public static void setLookup(Lookup... lookups) {
+        ready = true;
         DEFAULT.setLookups(lookups);
     }
 
