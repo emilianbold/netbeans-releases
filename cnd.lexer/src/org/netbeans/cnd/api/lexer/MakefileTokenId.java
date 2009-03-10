@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,44 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.cnd.api.lexer;
 
-package org.netbeans.modules.web.project;
-
-import java.io.File;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
-import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.web.project.test.TestUtil;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.api.lexer.TokenId;
 
 /**
  *
- * @author Andrei Badea
+ * @author Jan Jancura
  */
-public class ProjectWebModuleTest extends NbTestCase {
+public enum MakefileTokenId implements TokenId {
 
-    private Project project;
-    private AntProjectHelper helper;
+    WHITESPACE("whitespace"),// NOI18N
+    NEW_LINE("newline"),// NOI18N
+    TAB("tab"),// NOI18N
+    LINE_COMMENT("line_comment"),// NOI18N
+    MACRO("macro"),// NOI18N
+    MACRO_OPERATOR("macro_operator"),// NOI18N
+    RULE_OPERATOR("rule_operator"),// NOI18N
+    SEPARATOR("separator"),// NOI18N
+    KEYWORD("keyword"),// NOI18N
+    SPECIAL_TARGET("special_target"),// NOI18N
+    STRING_LITERAL("string_literal"),// NOI18N
+    IDENTIFIER("identifier"),// NOI18N
+    ERROR("error");// NOI18N
+    private String name;
 
-    public ProjectWebModuleTest(String testName) {
-        super(testName);
+    MakefileTokenId(
+            String name) {
+        this.name = name;
     }
 
-    /**
-     * Tests that the metadata models are returned correctly.
-     */
-    public void testMetadataModel() throws Exception {
-        TestUtil.setLookup();
-        File f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication1");
-        project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
-        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        J2eeModule j2eeModule = provider.getJ2eeModule();
-        assertNotNull(j2eeModule.getMetadataModel(WebAppMetadata.class));
-        assertNotNull(j2eeModule.getMetadataModel(WebservicesMetadata.class));
+    public String primaryCategory() {
+        return name;
     }
 }

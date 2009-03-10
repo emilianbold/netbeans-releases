@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.options.MavenExecutionSettings;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.openide.util.Exceptions;
 
 /**

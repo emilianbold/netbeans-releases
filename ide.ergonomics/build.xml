@@ -4,7 +4,6 @@
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="-release.dir" depends="-disable-kits,projectized-common.-release.dir"/>
-    <target name="basic-init" depends="-compile-ant,projectized-common.basic-init"/>
     <target name="jar-prep" depends="-generate-proxies,projectized-common.jar-prep"/>
     <target name="clean" depends="-clean-release,projectized-common.clean"/>
 
@@ -82,6 +81,7 @@
         <subant genericantfile="build.xml" target="-disable-one-cluster">
             <property name="xmldir" value="${build.release.dir}/config/Modules"/>
             <property name="ergonomicsdir" location="${basedir}"/>
+            <property name="src-ant.cp" value="${src-ant.cp}"/>
             <dirset refid="ergonomic.clusters"/>
         </subant>
         <pathconvert property="extra.module.files" pathsep=",">
@@ -104,11 +104,12 @@
 
     <target 
         name="-generate-proxies"
-        depends="-init-clusters,-init-static-analysis"
+        depends="-init-clusters,-init-static-analysis,-compile-ant"
         unless="skip.static.analysis"
     >
         <subant genericantfile="build.xml" target="-proxy-one-cluster">
             <property name="ergonomicsdir" location="${basedir}"/>
+            <property name="src-ant.cp" value="${src-ant.cp}"/>
             <dirset refid="ergonomic.clusters"/>
         </subant>
     </target>
@@ -136,7 +137,7 @@
         </layerindex>
         <taskdef name="extractlayer"
              classname="org.netbeans.modules.ide.ergonomics.ant.ExtractLayer"
-             classpath="${ergonomicsdir}/build/antclasses/"/>
+             classpath="${ergonomicsdir}/build/antclasses/:${src-ant.cp}"/>
 
         <mkdir dir="${proxytmp}/layers"/>
         <copy todir="${proxytmp}/layers">
@@ -194,6 +195,7 @@
             layer="${proxytmp}/${cluster.name}.xml"
             bundle="${proxydir}/Bundle.properties"
             destdir="${proxydir}"
+            badgeicon="${ergonomicsdir}/src/org/netbeans/modules/ide/ergonomics/fod/badge.png"
         >
            <modules dir=".">
                 <include name="modules/*.jar"/>

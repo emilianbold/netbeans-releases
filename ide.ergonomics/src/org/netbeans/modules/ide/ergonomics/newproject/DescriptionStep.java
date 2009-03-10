@@ -174,7 +174,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                                 waitForDelegateWizard ();
                                 return new JLabel(" ");
                             }
-                        }, info);
+                        }, info, true);
                     }
                 });
             } catch (InterruptedException ex) {

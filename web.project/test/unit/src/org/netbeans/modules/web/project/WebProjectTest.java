@@ -44,18 +44,14 @@ package org.netbeans.modules.web.project;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
-import org.netbeans.modules.web.project.api.WebProjectCreateData;
-import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.test.TestUtil;
 import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -72,6 +68,7 @@ public class WebProjectTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
