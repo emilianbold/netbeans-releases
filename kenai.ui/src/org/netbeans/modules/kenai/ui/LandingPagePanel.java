@@ -70,8 +70,10 @@ public class LandingPagePanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jEditorPane1 = new javax.swing.JEditorPane();
 
+        setPreferredSize(new java.awt.Dimension(450, 300));
         setLayout(new java.awt.GridBagLayout());
 
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai_logo.png"))); // NOI18N
         jLabel1.setText(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.jLabel1.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -85,6 +87,7 @@ public class LandingPagePanel extends javax.swing.JPanel {
 
         jEditorPane1.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         jEditorPane1.setContentType(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.jEditorPane1.contentType")); // NOI18N
+        jEditorPane1.setEditable(false);
         jEditorPane1.setText(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.jEditorPane1.text")); // NOI18N
         jScrollPane1.setViewportView(jEditorPane1);
 

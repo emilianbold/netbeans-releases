@@ -80,7 +80,7 @@ public final class NewKenaiProjectAction implements ActionListener {
         options[2] = new JButton("Close");
 
         DialogDescriptor dialogDesc = new DialogDescriptor(new LandingPagePanel(), "New Kenai Project",
-            true, options, options[0], DialogDescriptor.RIGHT_ALIGN, null, null);
+            true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
 
         Object option = DialogDisplayer.getDefault().notify(dialogDesc);
         
