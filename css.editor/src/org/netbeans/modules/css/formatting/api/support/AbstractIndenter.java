@@ -43,8 +43,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
@@ -1370,10 +1374,22 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
         int indentation = 0;
         List<IndentCommand> commands = new ArrayList<IndentCommand>();
-        int index = 0;
+
+        int nextLineIndent = -1;
+        Line previousLine = null;
+        Map<Integer, Integer> suggestedIndentsForOtherLines = new HashMap<Integer, Integer>();
 
         // iterate over lines indentation commands and calculate real indentation
         for (Line line : indentedLines) {
+
+            if (previousLine != null && previousLine.index+1 != line.index) {
+                // there was a gap: store what the identation of such lines should
+                // be for other formatters to follow. for example Ruby formatter
+                // expects it.
+                for (int i = previousLine.index+1; i < line.index; i++) {
+                    suggestedIndentsForOtherLines.put(i, nextLineIndent);
+                }
+            }
 
             // calculate indentation:
             indentation = calculateLineIndent(indentation, indentedLines, line,
@@ -1385,11 +1401,23 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
 
             commands.addAll(line.lineIndent);
-            index++;
+
+            if (!line.indentThisLine) {
+                // if we are not indenting this line store indent for other formatter:
+                suggestedIndentsForOtherLines.put(line.index, indentation);
+            }
+            nextLineIndent = calculateLineIndent(indentation, indentedLines, null,
+                    line.preliminaryNextLineIndent, commands, false, lineStart);
+            previousLine = line;
+        }
+
+        for (int i = previousLine.index+1; i <= lineEnd; i++) {
+            // store indent for all other lines to the end of document:
+            suggestedIndentsForOtherLines.put(i, nextLineIndent);
         }
 
         // generate line indents for lines within a block:
-        indentedLines = generateBlockIndentsForForeignLanguage(indentedLines);
+        indentedLines = generateBlockIndentsForForeignLanguage(indentedLines, suggestedIndentsForOtherLines);
 
         // set line indent for preserved lines:
         updateIndentationForPreservedLines(indentedLines);
@@ -1408,11 +1436,26 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
         }
 
+        storeIndentsForOtherFormatters(suggestedIndentsForOtherLines);
+
         // physically modify document's indentation
         modifyDocument(indentedLines, lineStart, lineEnd);
     }
 
-    private List<Line> generateBlockIndentsForForeignLanguage(List<Line> indentedLines) throws BadLocationException {
+    private void storeIndentsForOtherFormatters(Map<Integer, Integer> suggestedIndentsForOtherLines) {
+        getDocument().putProperty("AbstractIndenter.lineIndents", suggestedIndentsForOtherLines);
+        if (DEBUG && !suggestedIndentsForOtherLines.isEmpty()) {
+            Set<Integer> keys = new TreeSet<Integer>(suggestedIndentsForOtherLines.keySet());
+            System.err.print("AbstractIndenter.lineIndents:");
+            for (int l : keys) {
+                System.err.print(""+(l+1)+":"+suggestedIndentsForOtherLines.get(l)+" ");
+            }
+            System.err.println("");
+        }
+    }
+
+    private List<Line> generateBlockIndentsForForeignLanguage(List<Line> indentedLines,
+            Map<Integer, Integer> suggestedIndentsForOtherLines) throws BadLocationException {
         // go through compound blocks and generate lines for them:
         List<Line> indents = new ArrayList<Line>();
         int lastStart = -1;
@@ -1440,8 +1483,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                         if (!line2.emptyLine) {
                             indents.add(line2);
                         }
+                        suggestedIndentsForOtherLines.remove(i);
                     }
-                    }
+                }
                 lastStart = -1;
             }
             indents.add(line);
