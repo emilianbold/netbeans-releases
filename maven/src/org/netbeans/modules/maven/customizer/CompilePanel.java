@@ -70,7 +70,7 @@ import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Properties;
-import org.netbeans.modules.maven.options.MavenExecutionSettings;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.util.NbBundle;
@@ -369,7 +369,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
         String val = props.get(Constants.HINT_USE_EXTERNAL, true);
         boolean useEmbedded = "false".equalsIgnoreCase(val);
 
-        return !useEmbedded && MavenExecutionSettings.canFindExternalMaven();
+        return !useEmbedded && MavenSettings.canFindExternalMaven();
     }
 
     private void checkExternalMaven () {
@@ -599,6 +599,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
             JavaPlatformManager jpm = JavaPlatformManager.getDefault();
             data = jpm.getInstalledPlatforms();
             jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, jpm));
+            sel = jpm.getDefaultPlatform();
         }
 
         public int getSize() {

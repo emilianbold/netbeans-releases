@@ -76,7 +76,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="reloadInstalledButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="uninstallButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="jScrollPane1" alignment="0" pref="660" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" alignment="0" pref="692" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -88,7 +88,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="reloadInstalledButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane1" pref="312" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" pref="349" max="32767" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="uninstallButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -187,13 +187,13 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane2" alignment="0" pref="660" max="32767" attributes="0"/>
+                          <Component id="jScrollPane2" alignment="0" pref="692" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="installButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="pluginLocationLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="pluginZipPath" pref="360" max="32767" attributes="0"/>
+                              <Component id="pluginZipPath" pref="404" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="pluginBrowseButton" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -209,7 +209,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="reloadAvailableButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane2" pref="305" max="32767" attributes="0"/>
+                      <Component id="jScrollPane2" pref="349" max="32767" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="installButton" alignment="3" min="-2" max="-2" attributes="0"/>

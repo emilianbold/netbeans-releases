@@ -58,7 +58,7 @@ import org.openide.util.Utilities;
  * a netbeans settings for global options that cannot be put into the settings file.
  * @author mkleint
  */
-public class MavenExecutionSettings  {
+public class MavenSettings  {
     public static final String PROP_DEBUG = "showDebug"; // NOI18N
     public static final String PROP_ERRORS = "showErrors"; //NOI18N
     public static final String PROP_CHECKSUM_POLICY = "checksumPolicy"; //NOI18N
@@ -69,15 +69,19 @@ public class MavenExecutionSettings  {
     public static final String PROP_USE_COMMANDLINE = "useCommandLineMaven"; //NOI18N
     public static final String PROP_COMMANDLINE_PATH = "commandLineMavenPath"; //NOI18N
     public static final String PROP_SHOW_RUN_DIALOG = "showRunDialog"; //NOI18N
+    public static final String PROP_SOURCE_DOWNLOAD = "sourceDownload"; //NOI18N
+    public static final String PROP_JAVADOC_DOWNLOAD = "javadocDownload"; //NOI18N
+    public static final String PROP_BINARY_DOWNLOAD = "binaryDownload"; //NOI18N
+
     
-    private static final MavenExecutionSettings INSTANCE = new MavenExecutionSettings();
+    private static final MavenSettings INSTANCE = new MavenSettings();
     
-    public static MavenExecutionSettings getDefault() {
+    public static MavenSettings getDefault() {
         return INSTANCE;
     }
     
     protected final Preferences getPreferences() {
-        return NbPreferences.forModule(MavenExecutionSettings.class);
+        return NbPreferences.forModule(MavenSettings.class);
     }
     
     protected final String putProperty(String key, String value) {
@@ -94,7 +98,7 @@ public class MavenExecutionSettings  {
         return getPreferences().get(key, null);
     }    
     
-    private MavenExecutionSettings() {
+    private MavenSettings() {
     }
     
 
@@ -182,11 +186,44 @@ public class MavenExecutionSettings  {
     public void setShowRunDialog(boolean  b){
       getPreferences().putBoolean(PROP_SHOW_RUN_DIALOG, b);
     }
+
+    public static enum DownloadStrategy {
+        EVERY_OPEN,
+        FIRST_OPEN,
+        NEVER
+    }
+
+    public DownloadStrategy getSourceDownloadStrategy() {
+        String val = getPreferences().get(PROP_SOURCE_DOWNLOAD, DownloadStrategy.NEVER.name());
+        try {
+            return DownloadStrategy.valueOf(val);
+        } catch (IllegalArgumentException ex) {
+            return DownloadStrategy.NEVER;
+        }
+    }
+
+    public DownloadStrategy getJavadocDownloadStrategy() {
+        String val = getPreferences().get(PROP_JAVADOC_DOWNLOAD, DownloadStrategy.NEVER.name());
+        try {
+            return DownloadStrategy.valueOf(val);
+        } catch (IllegalArgumentException ex) {
+            return DownloadStrategy.NEVER;
+        }
+    }
+
+    public DownloadStrategy getBinaryDownloadStrategy() {
+        String val = getPreferences().get(PROP_BINARY_DOWNLOAD, DownloadStrategy.NEVER.name());
+        try {
+            return DownloadStrategy.valueOf(val);
+        } catch (IllegalArgumentException ex) {
+            return DownloadStrategy.NEVER;
+        }
+    }
     
     private static Boolean cachedMaven = null;
     
     public static boolean canFindExternalMaven() {
-        File home = MavenExecutionSettings.getDefault().getCommandLinePath();
+        File home = MavenSettings.getDefault().getCommandLinePath();
         String ex = Utilities.isWindows() ? "mvn.bat" : "mvn"; //NOI18N
         if (home != null && home.exists()) {
             File bin = new File(home, "bin" + File.separator + ex);//NOI18N
