@@ -94,7 +94,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     private final List<? extends CharSequence> params;
     
     /** Creates new instance of MacroImpl based on macro information and specified position */
-    public MacroImpl(String macroName, List<String> macroParams, String macroBody, CsmOffsetable macroPos) {
+    public MacroImpl(String macroName, List<CharSequence> macroParams, String macroBody, CsmOffsetable macroPos) {
         this(macroName, macroParams, macroBody, null, macroPos);
     }
     
@@ -109,12 +109,12 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         return new SystemMacroImpl(macroName, macroBody, null, unresolved, kind);
     }
     
-    public MacroImpl(String macroName, List<String> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos, Kind kind) {
+    public MacroImpl(String macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos, Kind kind) {
         super(containingFile, macroPos);
         assert(macroName != null);
         assert(macroName.length() > 0);
         assert(macroBody != null);
-        this.name = NameCache.getManager().getString(macroName);
+        this.name = NameCache.getString(macroName);
         this.kind = kind;
         this.body = macroBody;
         if (macroParams != null) {
@@ -124,7 +124,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         }
     }
     
-    public MacroImpl(String macroName, List<String> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos) {
+    public MacroImpl(String macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos) {
         this(macroName, macroParams, macroBody, containingFile, macroPos, Kind.DEFINED);
     }
     
@@ -201,15 +201,15 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         assert this.body != null;
         output.writeUTF(this.body.toString());
         output.writeByte((byte)this.kind.ordinal());
-        String[] out = this.params == null?null:this.params.toArray(new String[params.size()]);
+        CharSequence[] out = this.params == null?null:this.params.toArray(new CharSequence[params.size()]);
         PersistentUtils.writeStrings(out, output);
     }
 
     public MacroImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getManager().getString(input.readUTF());
+        this.name = NameCache.getString(input.readUTF());
         assert this.name != null;
-        this.body = NameCache.getManager().getString(input.readUTF());
+        this.body = NameCache.getString(input.readUTF());
         assert this.body != null;
         this.kind = Kind.values()[input.readByte()];
         CharSequence[] out = PersistentUtils.readStrings(input, NameCache.getManager());

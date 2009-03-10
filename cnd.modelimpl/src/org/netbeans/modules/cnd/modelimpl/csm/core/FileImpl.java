@@ -1736,7 +1736,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         private OffsetSortedKey(int offset, String name) {
             start = offset;
-            this.name = name;
+            this.name = NameCache.getString(name);
         }
 
         public int compareTo(OffsetSortedKey o) {
@@ -1771,7 +1771,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         public OffsetSortedKey(DataInput input) throws IOException {
             start = input.readInt();
-            name = NameCache.getManager().getString(input.readUTF());
+            name = NameCache.getString(input.readUTF());
         }
     }
 
@@ -1786,7 +1786,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         private NameSortedKey(CharSequence name, int start) {
             this.start = start;
-            this.name = name;
+            this.name = NameCache.getString(name);
         }
 
         public int compareTo(NameSortedKey o) {
@@ -1815,11 +1815,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
 
         public static NameSortedKey getStartKey(CharSequence name) {
-            return new NameSortedKey(CharSequenceKey.create(name), 0);
+            return new NameSortedKey(name, 0);
         }
 
         public static NameSortedKey getEndKey(CharSequence name) {
-            return new NameSortedKey(CharSequenceKey.create(name), Integer.MAX_VALUE);
+            return new NameSortedKey(name, Integer.MAX_VALUE);
         }
 
         public void write(DataOutput output) throws IOException {
@@ -1829,7 +1829,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         public NameSortedKey(DataInput input) throws IOException {
             start = input.readInt();
-            name = NameCache.getManager().getString(input.readUTF());
+            name = NameCache.getString(input.readUTF());
         }
     }
 

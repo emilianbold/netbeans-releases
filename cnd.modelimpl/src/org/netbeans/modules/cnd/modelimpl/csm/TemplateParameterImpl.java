@@ -75,7 +75,7 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     public TemplateParameterImpl(AST ast, String name, CsmFile file, CsmScope scope) {
         super(ast, file);
         // TODO what about explicite type in ast?
-        this.name = NameCache.getManager().getString(name);
+        this.name = NameCache.getString(name);
         if ((scope instanceof CsmIdentifiable)) {
             this.scope = UIDCsmConverter.scopeToUID(scope);
         }
@@ -122,7 +122,7 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     
     public TemplateParameterImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getManager().getString(input.readUTF());
+        this.name = NameCache.getString(input.readUTF());
         this.scope = UIDObjectFactory.getDefaultFactory().readUID(input);
         this.defaultValue = PersistentUtils.readType(input);
     }

@@ -107,7 +107,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
         
-        name = QualifiedNameCache.getManager().getString(initName(ast));
+        name = QualifiedNameCache.getString(initName(ast));
         rawName = AstUtil.getRawNameInChildren(ast);
 
         AST child = ast.getFirstChild();
@@ -334,7 +334,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     protected final void setName(CharSequence name) {
-        this.name = QualifiedNameCache.getManager().getString(name);
+        this.name = QualifiedNameCache.getString(name);
     }
     
     public CharSequence getQualifiedName() {
@@ -554,7 +554,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     public CharSequence getSignature() {
         if( signature == null ) {
-            signature = QualifiedNameCache.getManager().getString(createSignature());
+            signature = QualifiedNameCache.getString(createSignature());
         }
         return signature;
     }
@@ -789,7 +789,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     public FunctionImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getManager().getString(input.readUTF());
+        this.name = QualifiedNameCache.getString(input.readUTF());
         assert this.name != null;
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
@@ -803,10 +803,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         this.signature = PersistentUtils.readUTF(input);
         if (this.signature != null) {
-            this.signature = QualifiedNameCache.getManager().getString(this.signature);
+            this.signature = QualifiedNameCache.getString(this.signature);
         }
         this.flags = input.readByte();
-        this.classTemplateSuffix = NameCache.getManager().getString(input.readUTF());
+        this.classTemplateSuffix = NameCache.getString(input.readUTF());
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
     }
 }

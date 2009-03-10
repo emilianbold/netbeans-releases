@@ -48,8 +48,9 @@ import org.netbeans.modules.cnd.api.model.CsmMacroParameter;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
-import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 /**
  * Implementation of system macros and user-defined (in project properties) ones.
@@ -65,8 +66,8 @@ public class SystemMacroImpl implements CsmMacro {
     private CsmFile containingFile;
 
     public SystemMacroImpl(String macroName, String macroBody, List<String> macroParams, CsmFile containingFile, Kind macroKind) {
-        this.macroName = QualifiedNameCache.getManager().getString(macroName);
-        this.macroBody = QualifiedNameCache.getManager().getString(macroBody);
+        this.macroName = NameCache.getString(macroName);
+        this.macroBody = TextCache.getString(macroBody);
         this.macroKind = macroKind;
         if (macroParams != null) {
             this.params = Collections.unmodifiableList(macroParams);

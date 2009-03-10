@@ -69,7 +69,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         assert kind.length() == 1;
-        this.name = name;
+        this.name = NameCache.getString(name);
         this.hashCode = (_hashCode() << 8) | (kind.charAt(0) & 0xff);
     }
 
@@ -125,7 +125,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         this.startOffset = aStream.readInt();
         this.endOffset = aStream.readInt();
         this.hashCode = aStream.readInt();
-        this.name = NameCache.getManager().getString(aStream.readUTF());
+        this.name = NameCache.getString(aStream.readUTF());
         assert this.name != null;
     }
 

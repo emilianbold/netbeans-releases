@@ -77,7 +77,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
         super(ast, file);
         assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
-        name = NameCache.getManager().getString(ast.getText());
+        name = NameCache.getString(ast.getText());
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
         
         // set parent ns, do it in constructor to have final fields
@@ -91,7 +91,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public static NamespaceDefinitionImpl findNamespaceDefionition(MutableDeclarationsContainer container, AST ast) {
         int start = getStartOffset(ast);
         int end = getEndOffset(ast);
-        CharSequence name = NameCache.getManager().getString(ast.getText()); // otherwise equals returns false
+        CharSequence name = NameCache.getString(ast.getText()); // otherwise equals returns false
         for (CsmDeclaration decl : container.getDeclarations()) {
             if (CsmKindUtilities.isNamespaceDefinition(decl)) {
                 NamespaceDefinitionImpl candidate = (NamespaceDefinitionImpl) decl;
@@ -278,7 +278,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         assert this.namespaceUID != null;
         this.namespaceRef = null;    
         
-        this.name = NameCache.getManager().getString(input.readUTF());
+        this.name = NameCache.getString(input.readUTF());
         assert this.name != null;
 
         if (getName().length() == 0) {

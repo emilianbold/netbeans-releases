@@ -132,7 +132,7 @@ public final class TemplateDescriptor {
 
     public TemplateDescriptor(DataInput input) throws IOException {
         this.templateParams = UIDObjectFactory.getDefaultFactory().readUIDCollection(new ArrayList<CsmUID<CsmTemplateParameter>>(), input);
-        this.templateSuffix = NameCache.getManager().getString(input.readUTF());
+        this.templateSuffix = NameCache.getString(input.readUTF());
         this.inheritedTemplateParametersNumber = input.readInt();
     }
 

@@ -122,7 +122,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private static final boolean CHECK_PARENT = false;
     
     public NamespaceImpl(ProjectBase project, NamespaceImpl parent, String name, String qualifiedName) {
-        this.name = NameCache.getManager().getString(name);
+        this.name = NameCache.getString(name);
         this.global = false;
         assert project != null;
         
@@ -130,7 +130,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert this.projectUID != null;
 
         this.projectRef = new WeakReference<ProjectBase>(project);
-        this.qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
+        this.qualifiedName = QualifiedNameCache.getString(qualifiedName);
         // TODO: rethink once more
         // now all classes do have namespaces
 //        // TODO: this makes parent-child relationships assymetric, that's bad;
@@ -634,9 +634,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.parentRef = null;
        
 
-        this.name = NameCache.getManager().getString(input.readUTF());
+        this.name = NameCache.getString(input.readUTF());
         assert this.name != null;
-        this.qualifiedName = QualifiedNameCache.getManager().getString(input.readUTF());
+        this.qualifiedName = QualifiedNameCache.getString(input.readUTF());
         assert this.qualifiedName != null;
         theFactory.readStringToUIDMap(this.nestedNamespaces, input, QualifiedNameCache.getManager());
         declarationsSorageKey = ProjectComponent.readKey(input);

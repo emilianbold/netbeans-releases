@@ -74,7 +74,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     public ClassForwardDeclarationImpl(AST ast, CsmFile file) {
         super(file, getClassForwardStartOffset(ast), getClassForwardEndOffset(ast));
         AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-        name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
+        name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
         this.templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, null);
     }
@@ -146,11 +146,11 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
 
-    private String[] initNameParts(AST qid) {
+    private CharSequence[] initNameParts(AST qid) {
         if( qid != null ) {
             return AstRenderer.getNameTokens(qid);
         }
-        return new String[0];
+        return new CharSequence[0];
     }
     
     private CsmObject resolve(Resolver resolver) {
@@ -230,7 +230,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     
     public ClassForwardDeclarationImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getManager().getString(input.readUTF());
+        this.name = QualifiedNameCache.getString(input.readUTF());
         assert this.name != null;
         this.nameParts = PersistentUtils.readStrings(input, NameCache.getManager());
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
