@@ -42,7 +42,6 @@ package org.netbeans.modules.java.source.indexing;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
@@ -61,9 +60,6 @@ class DiagnosticListenerImpl implements DiagnosticListener<JavaFileObject> {
         while (it.hasNext()) {
             Diagnostic<? extends JavaFileObject> d = it.next();
             if (d.getSource() == file) {
-                if (JavaCustomIndexer.LOG.isLoggable(Level.FINER)) {
-                    JavaCustomIndexer.LOG.finer(d.toString());
-                }
                 result.add(d);
                 it.remove();
             }

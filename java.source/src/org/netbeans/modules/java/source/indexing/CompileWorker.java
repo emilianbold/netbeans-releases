@@ -98,11 +98,11 @@ abstract class CompileWorker {
         final boolean success;
         final Map<URI, List<String>> file2FQNs;
         final Set<ElementHandle<TypeElement>> addedTypes;
-        final List<File> createdFiles;
+        final Set<File> createdFiles;
         final Set<Indexable> finishedFiles;
         final Map<URL, Set<URL>> root2Rebuild;
 
-        public ParsingOutput(boolean success, Map<URI, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, List<File> createdFiles, Set<Indexable> finishedFiles, Map<URL, Set<URL>> root2Rebuild) {
+        public ParsingOutput(boolean success, Map<URI, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, Set<File> createdFiles, Set<Indexable> finishedFiles, Map<URL, Set<URL>> root2Rebuild) {
             this.success = success;
             this.file2FQNs = file2FQNs;
             this.addedTypes = addedTypes;

@@ -239,18 +239,16 @@ final class MultiPassCompileWorker extends CompileWorker {
                             urls.addAll(toRebuild.getValue());
                         }
                     }
-                    for (JavaFileObject generated : jt.generate(types)) {   //Analyzing genlist may be a bit faster
+                    for (JavaFileObject generated : jt.generate(types)) {
                         if (generated instanceof OutputFileObject) {
+                            previous.createdFiles.add(((OutputFileObject) generated).getFile());
                             String path = ((OutputFileObject)generated).getPath();
                             File f = new File(FileObjects.stripExtension(path) + '.' + FileObjects.SIG);
                             if (f.exists()) {
                                 f.delete();
                             }
-//                            if (addedFiles != null) {
-//                                addedFiles.add(((OutputFileObject) generated).getFile());
-//                            }
-//                        } else {
-//                            //XXX: log (presumably should not happen)
+                        } else {
+                            // presumably should not happen
                         }
                     }
                     Log.instance(jt.getContext()).nerrors = 0;
