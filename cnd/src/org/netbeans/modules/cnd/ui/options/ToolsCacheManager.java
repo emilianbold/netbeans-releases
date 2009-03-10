@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
@@ -126,7 +127,7 @@ public final class ToolsCacheManager {
                 liveServers = new ArrayList<String>();
                 serverList.clear();
                 for (String key : serverUpdateCache.getHostKeyList()) {
-                    serverList.addServer(key, false, false);
+                    serverList.addServer(ExecutionEnvironmentFactory.getExecutionEnvironment(key), false, false);
                     liveServers.add(key);
                 }
                 serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());

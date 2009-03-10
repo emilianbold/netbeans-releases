@@ -137,7 +137,7 @@ public class DevelopmentHostConfiguration {
     private boolean addDevelopmentHost(String host) {
         ServerList list = Lookup.getDefault().lookup(ServerList.class);
         if (list != null) {
-            list.addServer(host, false, false);
+            list.addServer(ExecutionEnvironmentFactory.getExecutionEnvironment(host), false, false);
         }
         return list != null;
     }
