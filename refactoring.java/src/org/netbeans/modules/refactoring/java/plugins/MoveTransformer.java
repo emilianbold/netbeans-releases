@@ -65,10 +65,10 @@ public class MoveTransformer extends RefactoringVisitor {
 
     private FileObject originalFolder;
     private MoveRefactoringPlugin move;
-    private Set<Element> elementsToImport = new HashSet();
+    private Set<Element> elementsToImport = new HashSet<Element>();
     private boolean isThisFileMoving;
     private boolean isThisFileReferencingOldPackage = false;
-    private Set<Element> elementsAlreadyImported = new HashSet();
+    private Set<Element> elementsAlreadyImported = new HashSet<Element>();
     private Problem problem;
     private boolean moveToDefaulPackageProblem = false;
 
@@ -84,9 +84,9 @@ public class MoveTransformer extends RefactoringVisitor {
         super.setWorkingCopy(copy);
         originalFolder = workingCopy.getFileObject().getParent();
         isThisFileMoving = move.filesToMove.contains(workingCopy.getFileObject());
-        elementsToImport = new HashSet();
+        elementsToImport = new HashSet<Element>();
         isThisFileReferencingOldPackage = false;
-        elementsAlreadyImported = new HashSet();
+        elementsAlreadyImported = new HashSet<Element>();
     }
     
     @Override
@@ -202,7 +202,7 @@ public class MoveTransformer extends RefactoringVisitor {
     }
     
     private boolean isThisFileReferencedbyOldPackage() {
-        Set<FileObject> references = new HashSet(move.whoReferences.get(workingCopy.getFileObject()));
+        Set<FileObject> references = new HashSet<FileObject>(move.whoReferences.get(workingCopy.getFileObject()));
         references.removeAll(move.filesToMove);
         for (FileObject file:references) {
             if (file.getParent().equals(originalFolder))
