@@ -334,6 +334,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
         }
 
+        if (indentedLines.size() == 0) {
+            return;
+        }
         applyIndents(indentedLines, lineStart, lineEnd, false);
     }
 
@@ -475,6 +478,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             all = mergeProcessedIndentedLines(all, l);
         }
 
+        if (all.size() == 0) {
+            return all;
+        }
         // eliminate foreign language groups which have a formatter:
         blocks = eliminateUnneededBlocks(blocks, all);
 
