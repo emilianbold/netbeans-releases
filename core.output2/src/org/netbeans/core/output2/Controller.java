@@ -58,6 +58,7 @@ import javax.swing.UIManager;
 import javax.swing.text.Document;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import org.openide.windows.IOColors;
 import org.openide.windows.IOContainer;
 import org.openide.windows.OutputEvent;
 import org.openide.xml.XMLUtil;
@@ -441,7 +442,7 @@ public class Controller {
                     if (doc != null && doc instanceof OutputDocument) {
                         Lines lines = ((OutputDocument) doc).getLines();
                         if (lines != null) {
-                            int type = (Integer) data;
+                            IOColors.OutputType type = (IOColors.OutputType) data;
                             lines.setDefColor(type, io.getColor(type));
                             tab.getOutputPane().repaint();
                         }

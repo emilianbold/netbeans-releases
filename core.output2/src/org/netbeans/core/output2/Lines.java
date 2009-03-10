@@ -46,6 +46,7 @@ import org.openide.windows.OutputListener;
 import javax.swing.event.ChangeListener;
 import java.io.IOException;
 import java.util.regex.Matcher;
+import org.openide.windows.IOColors;
 
 /**
  * An interface representing the data written to an OutWriter, in terms of lines of text, with
@@ -109,7 +110,7 @@ public interface Lines {
      * @param type line type
      * @param color color
      */
-    void setDefColor(int type, Color color);
+    void setDefColor(IOColors.OutputType type, Color color);
 
     /**
      * Get the index of the first line which has a listener
