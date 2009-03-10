@@ -62,7 +62,7 @@ import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
  *
  * @author S. Aubrecht
  */
-public class QueryNode extends AsynchronousLeafNode implements PropertyChangeListener {
+public class QueryNode extends AsynchronousLeafNode<List<QueryResultHandle>> implements PropertyChangeListener {
 
     private final QueryHandle query;
 
@@ -109,9 +109,8 @@ public class QueryNode extends AsynchronousLeafNode implements PropertyChangeLis
     }
 
     @Override
-    protected JComponent createComponent() {
+    protected JComponent createComponent(List<QueryResultHandle> data) {
         QueryAccessor accessor = QueryAccessor.getDefault();
-        List<QueryResultHandle> results = accessor.getQueryResults(query);
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
 
@@ -127,12 +126,12 @@ public class QueryNode extends AsynchronousLeafNode implements PropertyChangeLis
             labels.add(lbl);
             panel.add( lbl, new GridBagConstraints(col++,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
 
-            for( int i=0; i<results.size(); i++ ) {
-                QueryResultHandle qrh = results.get(i);
+            for( int i=0; i<data.size(); i++ ) {
+                QueryResultHandle qrh = data.get(i);
                 LinkButton btn = new LinkButton(qrh.getText(), accessor.getOpenQueryResultAction(qrh));
                 buttons.add( btn );
                 panel.add( btn, new GridBagConstraints(col++,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-                if( i < results.size()-1 ) {
+                if( i < data.size()-1 ) {
                     lbl = new JLabel("|"); //NOI18N
                     labels.add(lbl);
                     panel.add( lbl, new GridBagConstraints(col++,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0,0));
@@ -144,5 +143,10 @@ public class QueryNode extends AsynchronousLeafNode implements PropertyChangeLis
             panel.add( lbl, new GridBagConstraints(col++,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
         }
         return panel;
+    }
+
+    protected List<QueryResultHandle> load() {
+        QueryAccessor accessor = QueryAccessor.getDefault();
+        return accessor.getQueryResults(query);
     }
 }
