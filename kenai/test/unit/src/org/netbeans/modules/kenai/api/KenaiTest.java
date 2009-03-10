@@ -161,6 +161,20 @@ public class KenaiTest extends NbTestCase {
 
     @Test
     /**
+     * Test of getProject method of class Kenai
+     */
+    public void testGetProjectGit() throws Exception {
+        System.out.println("testGetProject");
+        String name = "git-test";
+        KenaiProject prj = instance.getProject(name);
+        System.out.println("Project: " + prj.getName());
+        if (!prj.getName().equals("git-test")) {
+            fail("Call to getProject failed.");
+        }
+    }
+
+    @Test
+    /**
      * Test of getDisplayName method of class KenaiProject
      */
     public void testGetDisplayName() throws Exception {
@@ -509,6 +523,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testSearchProjects"));
         _suite.addTest(new KenaiTest("testSearchProjectsWithSpace"));
         _suite.addTest(new KenaiTest("testGetProject"));
+        _suite.addTest(new KenaiTest("testGetProjectGit"));
         _suite.addTest(new KenaiTest("testGetDescription"));
         _suite.addTest(new KenaiTest("testGetDisplayName"));
         _suite.addTest(new KenaiTest("testGetWebLocation"));
