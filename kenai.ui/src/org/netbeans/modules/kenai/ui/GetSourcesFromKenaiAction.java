@@ -96,7 +96,7 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
                     public void run() {
                         try {
                             Subversion.checkoutRepositoryFolder(feature.getLocation().toExternalForm(), sourcesInfo.relativePaths,
-                                new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), passwdAuth.getPassword().toString(), true);
+                                new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -107,7 +107,7 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
                     public void run() {
                         try {
                             Mercurial.cloneRepository(feature.getLocation().toExternalForm(), new File(sourcesInfo.localFolderPath),
-                                    "", "", "", passwdAuth.getUserName(), passwdAuth.getPassword().toString());
+                                    "", "", "", passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }
