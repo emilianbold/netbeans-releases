@@ -58,6 +58,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
+import org.netbeans.modules.versioning.util.ExportDiffSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
@@ -101,31 +102,21 @@ public class ExportDiffAction extends ContextAction {
     private static void exportDiff(VCSContext ctx) {
         final File root = HgUtils.getRootFile(ctx);
         File[] files = ctx != null? ctx.getFiles().toArray(new File[0]): null;
-        ExportDiff ed = new ExportDiff(root, files);
-        if (!ed.showDialog()) {
-            return;
-        }
-        final String revStr = ed.getSelectionRevision();
-        final String outputFileName = ed.getOutputFileName();
-        File destinationFile = new File(outputFileName);
-        if (destinationFile.exists()) {
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportDiffAction.class, "BK3005", destinationFile.getAbsolutePath()));
-            nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
-            DialogDisplayer.getDefault().notify(nd);
-            if (nd.getValue().equals(NotifyDescriptor.OK_OPTION) == false) {
-                return;
-            }
-        }
-
-        HgModuleConfig.getDefault().setExportFolder(destinationFile.getParent());
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
-        HgProgressSupport support = new HgProgressSupport() {
-            public void perform() {
-                OutputLogger logger = getLogger();
-                performExport(root, revStr, outputFileName, logger);
+        ExportDiffSupport exportDiffSupport = new ExportDiff(root, files) {
+            public void writeDiffFile (final File toFile) {
+                final String revStr = getSelectionRevision();
+                HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParent()); // NOI18N
+                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
+                HgProgressSupport support = new HgProgressSupport() {
+                    public void perform() {
+                        OutputLogger logger = getLogger();
+                        performExport(root, revStr, toFile.getAbsolutePath(), logger);
+                    }
+                };
+                support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")).waitFinished(); // NOI18N
             }
         };
-        support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")); // NOI18N
+        exportDiffSupport.export();
     }
 
     public static void exportDiffFileRevision(final RepositoryRevision.Event drev) {
@@ -135,64 +126,43 @@ public class ExportDiffAction extends ContextAction {
         if(repoRev.getRepositoryRootUrl() == null || repoRev.getRepositoryRootUrl().equals(""))
             return;
         final File root = new File(repoRev.getRepositoryRootUrl());
-        ExportDiff ed = new ExportDiff(root, repoRev, null, fileToDiff);
         final String revStr = repoRev.getLog().getRevision();
-        if (!ed.showDialog()) {
-            return;
-        }
-        final String outputFileName = ed.getOutputFileName();
-        File destinationFile = new File(outputFileName);
-        if (destinationFile.exists()) {
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportDiffAction.class, "BK3005", destinationFile.getAbsolutePath()));
-            nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
-            DialogDisplayer.getDefault().notify(nd);
-            if (nd.getValue().equals(NotifyDescriptor.OK_OPTION) == false) {
-                return;
-            }
-        }
-
-        HgModuleConfig.getDefault().setExportFolder(destinationFile.getParent());
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
-        HgProgressSupport support = new HgProgressSupport() {
-
-            public void perform() {
-                OutputLogger logger = getLogger();
-                performExportFile(root, revStr, fileToDiff, outputFileName, logger);
+        ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, null, fileToDiff) {
+            public void writeDiffFile (final File toFile) {
+                HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParent()); // NOI18N
+                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
+                HgProgressSupport support = new HgProgressSupport() {
+                    public void perform() {
+                        OutputLogger logger = getLogger();
+                        performExportFile(root, revStr, fileToDiff, toFile.getAbsolutePath(), logger);
+                    }
+                };
+                support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")).waitFinished(); // NOI18N
             }
         };
-        support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")); // NOI18N
+        exportDiffSupport.export();
     }
 
     public static void exportDiffRevision(final RepositoryRevision repoRev, final File[] roots) {
         if(repoRev == null || repoRev.getRepositoryRootUrl() == null || repoRev.getRepositoryRootUrl().equals(""))
             return;
         final File root = new File(repoRev.getRepositoryRootUrl());
-        ExportDiff ed = new ExportDiff(root, repoRev, roots);
-        final String revStr = repoRev.getLog().getRevision();
-        if (!ed.showDialog()) {
-            return;
-        }
-        final String outputFileName = ed.getOutputFileName();
-        File destinationFile = new File(outputFileName);
-        if (destinationFile.exists()) {
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportDiffAction.class, "BK3005", destinationFile.getAbsolutePath()));
-            nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
-            DialogDisplayer.getDefault().notify(nd);
-            if (nd.getValue().equals(NotifyDescriptor.OK_OPTION) == false) {
-                return;
-            }
-        }
-
-        HgModuleConfig.getDefault().setExportFolder(destinationFile.getParent());
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
-        HgProgressSupport support = new HgProgressSupport() {
-
-            public void perform() {
-                OutputLogger logger = getLogger();
-                performExport(root, revStr, outputFileName, logger);
+        
+        ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, roots) {
+            public void writeDiffFile (final File toFile) {
+                final String revStr = getSelectionRevision();
+                HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParent()); // NOI18N
+                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
+                HgProgressSupport support = new HgProgressSupport() {
+                    public void perform() {
+                        OutputLogger logger = getLogger();
+                        performExport(root, revStr, toFile.getAbsolutePath(), logger);
+                    }
+                };
+                support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")).waitFinished(); // NOI18N
             }
         };
-        support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")); // NOI18N
+        exportDiffSupport.export();
     }
 
     private static void performExport(File repository, String revStr, String outputFileName, OutputLogger logger) {
