@@ -61,6 +61,7 @@ import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.tasklist.RebuildOraculum;
 import org.netbeans.modules.java.source.tasklist.TaskCache;
+import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.Pair;
@@ -94,11 +95,13 @@ public class JavaCustomIndexer extends CustomIndexer {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
-                            final Set<ElementHandle<TypeElement>> removed = new HashSet <ElementHandle<TypeElement>> ();
+                            final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
+                            final Set<File> removedFiles = new HashSet<File> ();
                             JavaParsingContext javaContext = new JavaParsingContext(context);
-                            cim.getUsagesQuery(context.getRootURI()).setDirty(null);
+                            ClassIndexImpl uq = cim.getUsagesQuery(context.getRootURI());
+                            uq.setDirty(null);
                             for (Indexable i : files) {
-                                clear(context, javaContext, i.getRelativePath(), removed);
+                                clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
                             }
 
                             CompileWorker.ParsingOutput compileResult = null;
@@ -110,10 +113,10 @@ public class JavaCustomIndexer extends CustomIndexer {
                             }
                             assert compileResult != null && compileResult.success;
                             Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added
-                            Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removed); //Removed
-                            _at.removeAll(removed);
+                            Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed
+                            _at.removeAll(removedTypes);
                             _rt.removeAll(compileResult.addedTypes);
-                            compileResult.addedTypes.retainAll(removed); //Changed
+                            compileResult.addedTypes.retainAll(removedTypes); //Changed
 
                             if (!context.isSupplementaryFilesIndexing()) {
                                 for (Map.Entry<URL, Collection<URL>> entry : RebuildOraculum.findAllDependent(context.getRootURI(), null, javaContext.cpInfo.getClassIndex(), _rt).entrySet()) {
@@ -136,7 +139,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                             }
 
                             javaContext.sa.store();
-                            cim.getUsagesQuery(context.getRootURI()).typesEvent(_at, _rt, compileResult.addedTypes);
+                            uq.typesEvent(_at, _rt, compileResult.addedTypes);
+                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles);
                             for (Map.Entry<URL, Set<URL>> entry : compileResult.root2Rebuild.entrySet()) {
                                 context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                             }
@@ -159,15 +163,17 @@ public class JavaCustomIndexer extends CustomIndexer {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
-                            final Set<ElementHandle<TypeElement>> removed = new HashSet <ElementHandle<TypeElement>> ();
+                            final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
+                            final Set<File> removedFiles = new HashSet<File> ();
                             JavaParsingContext javaContext = new JavaParsingContext(context);
                             for (Indexable i : files) {
-                                clear(context, javaContext, i.getRelativePath(), removed);
+                                clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
                                 TaskCache.getDefault().dumpErrors(context.getRootURI(), i.getURL(), Collections.<Diagnostic>emptyList());
                             }
-                            Map<URL, Collection<URL>> root2Rebuild = RebuildOraculum.findAllDependent(context.getRootURI(), null, javaContext.cpInfo.getClassIndex(), removed);
+                            Map<URL, Collection<URL>> root2Rebuild = RebuildOraculum.findAllDependent(context.getRootURI(), null, javaContext.cpInfo.getClassIndex(), removedTypes);
                             javaContext.sa.store();
-                            cim.getUsagesQuery(context.getRootURI()).typesEvent(null, removed, null);
+                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, Collections.<File>emptySet());
+                            cim.getUsagesQuery(context.getRootURI()).typesEvent(null, removedTypes, null);
                             for (Map.Entry<URL, Collection<URL>> entry : root2Rebuild.entrySet()) {
                                 context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                             }
@@ -183,7 +189,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
 
-    private static void clear(Context context, JavaParsingContext javaContext, String sourceRelative, Set<ElementHandle<TypeElement>> removed) throws IOException {
+    private static void clear(Context context, JavaParsingContext javaContext, String sourceRelative, Set<ElementHandle<TypeElement>> removedTypes, Set<File> removedFiles) throws IOException {
         List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
         File classFolder = JavaIndex.getClassFolder(context);
         String withoutExt = FileObjects.stripExtension(sourceRelative);
@@ -199,7 +205,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                     String className = FileObjects.getBinaryName (f, classFolder);
                     if (!binaryName.equals(className)) {
                         toDelete.add(Pair.<String,String>of (className, sourceRelative));
-                        removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                        removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                        removedFiles.add(f);
                         f.delete();
                     } else {
                         cont = true;
@@ -229,7 +236,8 @@ public class JavaCustomIndexer extends CustomIndexer {
             for (File f : parent.listFiles(filter)) {
                 String className = FileObjects.getBinaryName (f, classFolder);
                 toDelete.add(Pair.<String,String>of (className, null));
-                removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                removedFiles.add(f);
                 f.delete();
             }
         }
