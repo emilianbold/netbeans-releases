@@ -43,11 +43,14 @@ package org.netbeans.modules.php.editor.indent;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.spi.Context;
@@ -70,7 +73,7 @@ import org.openide.util.Exceptions;
  */
 public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
 
-    private static final Logger LOG = Logger.getLogger(PHPFormatter2.class.getName());
+    private static final Logger LOG = Logger.getLogger(PHPFormatter.class.getName());
 
     public PHPFormatter2() {
         LOG.fine("PHP Formatter: " + this); //NOI18N
@@ -81,7 +84,16 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     public void reindent(final Context context) {
-        // TODO: Make sure we're not reindenting HTML content
+        // performance optimization: do nth unless caret is within actual PHP code
+        // TODO: this may not be correct for indenting multiple lines
+        String mimeType = getMimeTypeAtOffset(context.document(), context.caretOffset());
+        System.err.println("mimeType=" + mimeType);
+
+        if (!PHPLanguage.PHP_MIME_TYPE.equals(mimeType)){
+            return;
+        }
+
+
         FileObject file = NavUtils.getFile(context.document());
         try {
             SourceModelFactory.getInstance().getModel(file).runUserActionTask(new CancellableTask<CompilationInfo>() {
@@ -90,7 +102,7 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
                 }
 
                 public void run(CompilationInfo parameter) throws Exception {
-                    reindent(context, parameter, true);
+                    astReindent(context, parameter);
                 }
             }, true);
         } catch (IOException ex) {
@@ -100,7 +112,7 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
 
     public void reformat(Context context, CompilationInfo info) {
         prettyPrint(context, info);
-        reindent(context, info, false);
+        astReindent(context, info);
     }
 
     public int indentSize() {
@@ -148,7 +160,7 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
         });
     }
 
-    private void reindent(final Context context, CompilationInfo info, final boolean indentOnly) {
+    private void astReindent(final Context context, CompilationInfo info) {
         final BaseDocument doc = (BaseDocument)context.document();
         doc.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE); //NOI18N
 
@@ -220,5 +232,16 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
+    }
+
+    private static String getMimeTypeAtOffset(Document doc, int offset){
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        List<TokenSequence<?>> tsl = th.embeddedTokenSequences(offset, false);
+        if (tsl != null && tsl.size() > 0) {
+            TokenSequence<?> tokenSequence = tsl.get(tsl.size() - 1);
+            return tokenSequence.language().mimeType();
+        }
+
+        return null;
     }
 }
