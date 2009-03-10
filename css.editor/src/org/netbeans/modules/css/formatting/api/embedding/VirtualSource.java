@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,44 +34,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.util;
 
-public final class Pair<P, K> {
+package org.netbeans.modules.css.formatting.api.embedding;
 
-    public final P first;
-    public final K second;
+import javax.swing.text.Document;
 
-    private Pair(P first, K second) {
-        this.first = first;
-        this.second = second;
-    }
+/**
+ * Virtual source generated for a language from a document. The purpose of virtual
+ * source is to extract individual parts of given language from a document
+ * and amend such a source to be syntactically correct as much as possible.
+ * 
+ * @since org.netbeans.modules.css.editor/1 1.3
+ */
+public interface VirtualSource {
 
-    public static <P, K> Pair<P, K> of(P first, K second) {
-        return new Pair<P, K>(first, second);
-    }
+    /**
+     * Returns text for given start and end offset from virtual source.
+     * @param startOffset start offset
+     * @param endOffset end offset
+     * @return text lying within given range or null if there is none
+     */
+    String getSource(int startOffset, int endOffset);
 
-    @Override
-    public int hashCode() {
-        int hashCode  = 0;
-        hashCode ^= first == null ? 0 : first.hashCode();
-        hashCode ^= second == null ? 0 : second.hashCode();
-        return hashCode;
-    }
+    /**
+     * Factory creating virtual source of given mime from a document.
+     */
+    public interface Factory {
 
-    @Override
-    public boolean equals(final Object other) {
-        if (other instanceof Pair) {
-            Pair otherPair = (Pair) other;
-            return (this.first == null ? otherPair.first == null : this.first.equals(otherPair.first))
-                    && (this.second == null ? otherPair.second == null : this.second.equals(otherPair.second));
-        }
-        return false;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Pair [%s, %s]", first, second);
+        /**
+         * Create virtual source of specified MIME type from given document.
+         * @param doc document to extract virtual source from
+         * @param mimeOfInterest MIME type which should be extracted from document
+         * @return instance of virtual source or null factory does not know
+         *  how to extract requested MIME type from given document
+         */
+        VirtualSource createVirtualSource(Document doc, String mimeOfInterest);
+        
     }
 }

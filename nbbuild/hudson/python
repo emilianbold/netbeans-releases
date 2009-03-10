@@ -3,5 +3,5 @@
 set -e
 ant -Dcluster.config=python build
 ant -f python.editor/build-python.xml runtests
-ant -Dcluster.config=python commit-validation 
+#ant -Dcluster.config=python commit-validation 
 
