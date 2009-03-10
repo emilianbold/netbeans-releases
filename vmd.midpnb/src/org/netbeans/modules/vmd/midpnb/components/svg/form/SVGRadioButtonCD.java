@@ -171,7 +171,7 @@ public class SVGRadioButtonCD extends ComponentDescriptor{
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
-                new SVGCodeFooter( SVGRadioButtonEventSourceCD.TYPEID ),
+               // new SVGCodeFooter( SVGRadioButtonEventSourceCD.TYPEID ),
                 //delete
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter( 
                         SVGRadioButtonCD.PROP_BUTTON_GROUP )

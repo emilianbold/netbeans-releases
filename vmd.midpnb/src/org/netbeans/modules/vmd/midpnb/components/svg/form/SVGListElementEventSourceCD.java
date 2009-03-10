@@ -57,8 +57,8 @@ import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.IconType;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.NameType;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
+import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
@@ -120,6 +120,22 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
+                
+                //delete
+                new DeletePresenter() {
+
+            @Override
+            protected void delete() {
+                PropertyValue arrayValue = getComponent().getParentComponent().readProperty(SVGListCD.PROP_ELEMENTS);
+                if (arrayValue.getArray() != null) {
+                    for (PropertyValue value : arrayValue.getArray()) {
+                        if (value.getComponent() == getComponent()) {
+                            ArraySupport.remove(getComponent().getParentComponent(), SVGListCD.PROP_ELEMENTS, getComponent());
+                        }
+                    }
+                }
+            }
+        },
                 // info
                 InfoPresenter.create(new SVGListElementresolver()),
                 //properties
