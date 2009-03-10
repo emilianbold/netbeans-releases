@@ -45,12 +45,12 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -111,22 +111,10 @@ public class RemoteServerList implements ServerList {
     }
 
     /**
-     * Get a ServerRecord pertaining to hkey. If needed, create the record.
-     *
-     * @param hkey The host key (either "localhost" or "user@host")
-     * @return A RemoteServerRecord for hkey
-     *
-     * TODO: deprecate and remove
-     */
-    public synchronized ServerRecord get(String hkey) {
-        return get(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
-    }
-
-    /**
-     * Get a ServerRecord pertaining to hkey. If needed, create the record.
+     * Get a ServerRecord pertaining to env. If needed, create the record.
      * 
-     * @param hkey The host key (either "localhost" or "user@host")
-     * @return A RemoteServerRecord for hkey
+     * @param env specvifies the host
+     * @return A RemoteServerRecord for env
      */
     public synchronized ServerRecord get(ExecutionEnvironment env) {
 
@@ -173,8 +161,8 @@ public class RemoteServerList implements ServerList {
         return sa;
     }
 
-    public Collection<ExecutionEnvironment> getEnvironments() {
-        Collection<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(items.size());
+    public List<ExecutionEnvironment> getEnvironments() {
+        List<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(items.size());
         for (RemoteServerRecord item : items) {
             result.add(item.getExecutionEnvironment());
         }
@@ -299,23 +287,8 @@ public class RemoteServerList implements ServerList {
         cs.fireChange();
     }
     
-    public synchronized boolean contains(String hkey) {
-        for (RemoteServerRecord record : items) {
-            if (hkey.equals(record.getName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public synchronized RemoteServerRecord getLocalhostRecord() {
         return items.get(0);
-    }
-
-    //TODO: why this is here?
-    //TODO: deprecate and remove
-    public boolean isValidExecutable(String hkey, String path) {
-        return isValidExecutable(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), path);
     }
 
     //TODO: why this is here?

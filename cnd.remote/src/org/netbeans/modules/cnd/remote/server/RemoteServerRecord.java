@@ -44,7 +44,6 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
@@ -170,7 +169,7 @@ public class RemoteServerRecord implements ServerRecord {
                 state = State.OFFLINE;
                 reason = rss.getReason();
             } else {
-                RemotePathMap.getRemotePathMapInstance(getName()).init();
+                RemotePathMap.getRemotePathMapInstance(getExecutionEnvironment()).init();
                 state = State.ONLINE;
             }
         }

@@ -277,16 +277,16 @@ public class MakeActionProvider implements ActionProvider {
                 }
             }
         };
-        runActionWorker(conf.getDevelopmentHost().getName(), actionWorker);
+        runActionWorker(conf.getDevelopmentHost().getExecutionEnvironment(), actionWorker);
     }
 
-    private static void runActionWorker(String hkey, Runnable actionWorker) {
-        if (ExecutionEnvironmentFactory.getExecutionEnvironment(hkey).isLocal()) {
+    private static void runActionWorker(ExecutionEnvironment exeEnv, Runnable actionWorker) {
+        if (exeEnv.isLocal()) {
             actionWorker.run();
         } else {
             ServerList registry = Lookup.getDefault().lookup(ServerList.class);
             assert registry != null;
-            ServerRecord record = registry.get(hkey);
+            ServerRecord record = registry.get(exeEnv);
             assert record != null;
             invokeRemoteHostAction(record, actionWorker);
         }
@@ -303,7 +303,7 @@ public class MakeActionProvider implements ActionProvider {
                         customProjectActionHandler);
             }
         };
-        runActionWorker(conf.getDevelopmentHost().getName(), actionWorker);
+        runActionWorker(conf.getDevelopmentHost().getExecutionEnvironment(), actionWorker);
     }
 
     private static void invokeRemoteHostAction(final ServerRecord record, final Runnable actionWorker) {
@@ -490,7 +490,7 @@ public class MakeActionProvider implements ActionProvider {
                         runSyncProfile.getConsoleType().setValue(RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
 
                         MakeConfiguration syncConf = (MakeConfiguration) conf.clone();
-                        syncConf.setDevelopmentHost(new DevelopmentHostConfiguration(CompilerSetManager.LOCALHOST)); // rsync should be ran only locally
+                        syncConf.setDevelopmentHost(new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.getLocalExecutionEnvironment())); // rsync should be ran only locally
                         ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                                 project,
                                 actionEvent,
@@ -1208,11 +1208,11 @@ public class MakeActionProvider implements ActionProvider {
 //                    errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL2", tool); // NOI18N
 //                }
 //            } else {
-//                String hkey = conf.getDevelopmentHost().getName();
+//                ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
 //                ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
 //                if (serverList != null) {
-//                    if (!serverList.isValidExecutable(hkey, tool)) {
-//                        errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL3", tool, hkey); // NOI18N
+//                    if (!serverList.isValidExecutable(execEnv, tool)) {
+//                        errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL3", tool, execEnv.getHost()); // NOI18N
 //                    }
 //                }
 //            }
