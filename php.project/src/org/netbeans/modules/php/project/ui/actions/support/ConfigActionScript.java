@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
@@ -135,7 +134,7 @@ class ConfigActionScript extends ConfigAction {
             startFile = getStartFile(context);
         }
 
-        public Project getProject() {
+        public PhpProject getProject() {
             return project;
         }
 

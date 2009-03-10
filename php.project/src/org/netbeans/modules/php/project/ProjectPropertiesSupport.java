@@ -40,16 +40,18 @@
 package org.netbeans.modules.php.project;
 
 import java.beans.PropertyChangeListener;
+import java.io.UnsupportedEncodingException;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.modules.php.project.util.Pair;
+import org.netbeans.modules.php.project.api.Pair;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -295,6 +297,29 @@ public final class ProjectPropertiesSupport {
             }
         }
         return Pair.of(remotePath, localPath);
+    }
+
+    public static Pair<String, String> getEncodedDebugPathMapping(PhpProject project) {
+        Pair<String, String> pathMapping = getDebugPathMapping(project);
+                        final StringBuilder sb = new StringBuilder ();
+        try {
+            String resName = pathMapping.first;
+            final String[] elements = resName.split("/");                 //NOI18N
+            for (int i = 0; i < elements.length; i++) {
+                String element = elements[i];
+                element = URLEncoder.encode(element, "UTF-8");       //NOI18N
+                element = element.replace("+", "%20");               //NOI18N
+                sb.append(element);
+                if (i < elements.length - 1) {
+                    sb.append('/');
+                }
+            }
+
+            return Pair.of(sb.toString(), pathMapping.second);//NOI18N
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return pathMapping;
     }
 
     private static boolean getBoolean(PhpProject project, String property, boolean defaultValue) {

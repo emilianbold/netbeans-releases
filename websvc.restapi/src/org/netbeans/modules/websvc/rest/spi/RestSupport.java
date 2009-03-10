@@ -66,6 +66,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider;
@@ -168,7 +169,13 @@ public abstract class RestSupport {
      * Get persistence.xml file.
      */
     public abstract FileObject getPersistenceXml();
-    
+
+    /** Get Data Source for JNDI name
+     *
+     * @param jndiName JNDI name
+     * @return
+     */
+    public abstract Datasource getDatasource(String jndiName);
   
     public FileObject findSourceRoot() {
         return findSourceRoot(getProject());

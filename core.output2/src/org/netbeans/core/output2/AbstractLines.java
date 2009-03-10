@@ -41,6 +41,7 @@
 
 package org.netbeans.core.output2;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -56,10 +57,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.windows.IOColors;
 import org.openide.windows.OutputListener;
 
 /**
@@ -70,6 +73,8 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     IntList lineStartList;
     /** Maps output listeners to the lines they are associated with */
     IntMap linesToListeners;
+    /** Mapping of explicitly set colors to line numbers */
+    IntMap linesToColors;
 
     /** longest line length (in chars)*/
     private int longestLineLen = 0;
@@ -264,11 +269,13 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         lineStartList = new IntList(100);
         lineStartList.add(0);
         linesToListeners = new IntMap();
+        linesToColors = new IntMap();
         longestLineLen = 0;
         errLines = null;
         matcher = null;
         listener = null;
         dirty = false;
+        curDefColors = DEF_COLORS.clone();
     }
 
     private boolean dirty;
@@ -509,7 +516,13 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             }
         }
     }
-    
+
+    public void setColor(int line, Color color) {
+        if (color != null) {
+            linesToColors.put(line, color);
+        }
+    }
+
     private IntList importantLines = new IntList(10);
     
     public int firstImportantListenerLine() {
@@ -653,6 +666,62 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         } finally {
             fos.close();
         }
+    }
+
+    /** initial default colors */
+    static final Color[] DEF_COLORS;
+
+    /** current default colors */
+    Color[] curDefColors;
+
+    static {
+        Color out = UIManager.getColor("nb.output.foreground"); //NOI18N
+        if (out == null) {
+            out = UIManager.getColor("textText");
+            if (out == null) {
+                out = Color.BLACK;
+            }
+        }
+
+        Color err = UIManager.getColor("nb.output.err.foreground"); //NOI18N
+        if (err == null) {
+            err = new Color(164, 0, 0);
+        }
+
+        Color hyperlink = UIManager.getColor("nb.output.link.foreground"); //NOI18N
+        if (hyperlink == null) {
+            hyperlink = Color.BLUE.darker();
+        }
+
+        Color hyperlinkImp = UIManager.getColor("nb.output.link.foreground.important"); //NOI18N
+        if (hyperlinkImp == null) {
+            hyperlinkImp = Color.BLUE;
+        }
+
+        DEF_COLORS = new Color[]{out, err, hyperlink, hyperlinkImp};
+    }
+
+    public void setDefColor(int type, Color color) {
+        curDefColors[type] = color;
+    }
+
+    Color getDefColor(int type) {
+        return curDefColors[type];
+    }
+
+    public Color getColorForLine(int line) {
+        Color color = (Color) linesToColors.get(line);
+        if (color != null) {
+            return color;
+        }
+
+        boolean hyperlink = isHyperlink(line);
+        boolean important = hyperlink ? isImportantHyperlink(line) : false;
+        boolean isErr = isErr(line);
+        if (hyperlink) {
+            return important ? curDefColors[IOColors.HYPERLINK_IMPORTANT] : curDefColors[IOColors.HYPERLINK];
+        }
+        return isErr ? curDefColors[IOColors.ERROR] : curDefColors[IOColors.OUTPUT];
     }
 
     private String lastSearchString = null;
