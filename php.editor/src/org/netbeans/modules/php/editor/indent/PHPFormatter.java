@@ -54,6 +54,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -288,6 +289,11 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END ||
                     id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING ||
                     id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
+
+// TODO: please review!! without this line PHP formatter clobers
+// all indentation done by HTML formatter:
+                    id == PHPTokenId.T_INLINE_HTML ||
+
                     id == PHPTokenId.PHP_HEREDOC_TAG
                 ) {
                     // No indentation for literal strings in Ruby, since they can
