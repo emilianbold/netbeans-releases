@@ -145,6 +145,8 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
@@ -360,6 +362,15 @@ public abstract class CslTestBase extends NbTestCase {
     protected Source getTestSource(FileObject f) {
         Document doc = GsfUtilities.getDocument(f, true);
         return Source.create(doc);
+    }
+
+    public Project getTestProject(String relativePath) throws Exception {
+        FileObject projectDir = getTestFile(relativePath);
+        assertNotNull(projectDir);
+        Project project = ProjectManager.getDefault().findProject(projectDir);
+        assertNotNull(project);
+
+        return project;
     }
 
     protected String readFile(final FileObject fo) {
