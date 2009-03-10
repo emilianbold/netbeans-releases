@@ -54,7 +54,7 @@ import org.openide.util.RequestProcessor;
  */
 public class RegisterDatabase {
 
-    private static RegisterDatabase reg = null;
+    private static volatile RegisterDatabase reg = null;
     
     public static RegisterDatabase getDefault(){
         if (reg == null) {
