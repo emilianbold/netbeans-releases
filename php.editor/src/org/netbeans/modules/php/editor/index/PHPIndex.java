@@ -91,23 +91,8 @@ public class PHPIndex {
     private static String clusterUrl = null;
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
 
-    //static final Set<SearchScope> ALL_SCOPE = EnumSet.allOf(SearchScope.class);
-    //static final Set<SearchScope> SOURCE_SCOPE = EnumSet.of(SearchScope.SOURCE);
-//    private static final Set<String> TERMS_BASE = Collections.singleton(PHPIndexer.FIELD_BASE);
-//    private static final Set<String> TERMS_CONST = Collections.singleton(PHPIndexer.FIELD_CONST);
-//    private static final Set<String> TERMS_CLASS = Collections.singleton(PHPIndexer.FIELD_CLASS);
-//    private static final Set<String> TERMS_VAR = Collections.singleton(PHPIndexer.FIELD_VAR);
-//    private static final Set<String> TERMS_ALL = new HashSet<String>();
-//    private static final Set<String> TERMS_CONSTRUCTOR = new HashSet<String>();
-//
-//    {
-//        TERMS_CONSTRUCTOR.add(PHPIndexer.FIELD_CLASS);
-//        TERMS_CONSTRUCTOR.add(PHPIndexer.FIELD_CONSTRUCTOR);
-//        TERMS_ALL.add(PHPIndexer.FIELD_BASE);
-//        TERMS_ALL.add(PHPIndexer.FIELD_CONST);
-//        TERMS_ALL.add(PHPIndexer.FIELD_CLASS);
-//        TERMS_ALL.add(PHPIndexer.FIELD_VAR);
-//    }
+    private static final String[] TOP_LEVEL_TERMS = new String[]{PHPIndexer.FIELD_BASE,
+        PHPIndexer.FIELD_CONST, PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_VAR};
 
     private final QuerySupport index;
 
@@ -141,7 +126,8 @@ public class PHPIndex {
         Collection<IndexedVariable> vars = new ArrayList<IndexedVariable>();
 
         // search through the top leve elements
-        final Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_TOP_LEVEL, prefix.toLowerCase(), QuerySupport.Kind.PREFIX);
+        final Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_TOP_LEVEL, 
+                prefix.toLowerCase(), QuerySupport.Kind.PREFIX, TOP_LEVEL_TERMS);
 
         findFunctions(result, nameKind, prefix, functions);
         findConstants(result, nameKind, prefix, constants);
