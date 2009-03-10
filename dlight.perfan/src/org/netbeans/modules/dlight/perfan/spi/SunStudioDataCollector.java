@@ -369,17 +369,16 @@ public class SunStudioDataCollector
 
             if (collectedInfoList.contains(SunStudioDCConfiguration.CollectedInfo.SYNCSUMMARY)) {
                 resetIndicators();
-                TimerTaskExecutionService service =
-                    TimerTaskExecutionService.getInstance();
-                statisticsTask = service.scheduleAtFixedRate(
-                    new SummaryDataFetchingTask(), 1, TimeUnit.SECONDS, "SYNCSUMMARY"); // NOI18N
+                statisticsTask = DLightExecutorService.scheduleAtFixedRate(
+                        new SummaryDataFetchingTask(), 1, TimeUnit.SECONDS,
+                        "SYNCSUMMARY"); // NOI18N
             }
+            
             if (collectedInfoList.contains(SunStudioDCConfiguration.CollectedInfo.MEMSUMMARY)) {
                 resetIndicators();
-                TimerTaskExecutionService service =
-                    TimerTaskExecutionService.getInstance();
-                memoryStatisticsTask = service.scheduleAtFixedRate(
-                    new SummaryLeaksDataFetchingTask(), 1, TimeUnit.SECONDS, "MEMSUMMARY"); // NOI18N
+                statisticsTask = DLightExecutorService.scheduleAtFixedRate(
+                        new SummaryLeaksDataFetchingTask(), 1, TimeUnit.SECONDS,
+                        "MEMSUMMARY"); // NOI18N
             }
 
         }

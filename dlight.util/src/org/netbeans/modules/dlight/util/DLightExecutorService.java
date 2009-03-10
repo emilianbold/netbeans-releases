@@ -39,8 +39,14 @@
 package org.netbeans.modules.dlight.util;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -49,7 +55,26 @@ import org.openide.util.RequestProcessor;
  */
 public class DLightExecutorService {
 
-    private static final String PREFIX = "DLIGHT: "; // NOI18N
+    private final static String PREFIX = "DLIGHT: "; // NOI18N
+    private final static ScheduledExecutorService service;
+    private final static Object lock;
+    private static String threadName;
+    private final static Logger log;
+
+    static {
+        log = DLightLogger.getLogger(DLightExecutorService.class);
+        service = Executors.newScheduledThreadPool(10, new TaskThreadFactory());
+        lock = new String(DLightExecutorService.class.getName());
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+
+            @Override
+            public void run() {
+                log.fine("Stop DLight ScheduledExecutorService"); // NOI18N
+                service.shutdownNow();
+            }
+        });
+    }
 
     public static <T> Future<T> submit(final Callable<T> task, String name) {
         final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
@@ -62,5 +87,40 @@ public class DLightExecutorService {
     public static void submit(final Runnable task, String name) {
         final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
         processor.post(task);
+    }
+
+    public static Future scheduleAtFixedRate(Runnable task, long period, TimeUnit unit, String descr) {
+        synchronized (lock) {
+            threadName = descr;
+            return service.scheduleAtFixedRate(task, 0, period, unit);
+        }
+    }
+
+    static class TaskThreadFactory implements ThreadFactory {
+
+        static final AtomicInteger poolNumber = new AtomicInteger(1);
+        final ThreadGroup group;
+        final AtomicInteger threadNumber = new AtomicInteger(1);
+        final String namePrefix = PREFIX + "ScheduledExecutorService Task No. "; // NOI18N
+
+        TaskThreadFactory() {
+            SecurityManager s = System.getSecurityManager();
+            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+        }
+
+        public Thread newThread(Runnable r) {
+            synchronized (lock) {
+                Thread t = new Thread(group, r,
+                        namePrefix + threadNumber.getAndIncrement() + " [ " + threadName + " ]", // NOI18N
+                        0);
+                if (t.isDaemon()) {
+                    t.setDaemon(false);
+                }
+                if (t.getPriority() != Thread.NORM_PRIORITY) {
+                    t.setPriority(Thread.NORM_PRIORITY);
+                }
+                return t;
+            }
+        }
     }
 }
