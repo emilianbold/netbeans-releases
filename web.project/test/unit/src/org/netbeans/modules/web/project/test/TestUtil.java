@@ -65,6 +65,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
@@ -92,16 +93,25 @@ public final class TestUtil extends ProxyLookup {
         TestUtil.class.getClassLoader().setDefaultAssertionStatus(true);
         System.setProperty("org.openide.util.Lookup", TestUtil.class.getName());
         Assert.assertEquals(TestUtil.class, Lookup.getDefault().getClass());
+        Lookup p = Lookups.forPath("Services/AntBasedProjectTypes/");
+        p.lookupAll(AntBasedProjectType.class);
+        projects = p;
+        setLookup(new Object[0]);
     }
     
     private static TestUtil DEFAULT;
     private static final int BUFFER = 2048;
+    private static final Lookup projects;
     
     /** Do not call directly */
     public TestUtil() {
         Assert.assertNull(DEFAULT);
         DEFAULT = this;
-        setLookup(new Object[0]);
+        ClassLoader l = TestUtil.class.getClassLoader();
+        setLookups(new Lookup[] {
+            Lookups.metaInfServices(l),
+            Lookups.singleton(l)
+        });
     }
     
     /**
@@ -116,12 +126,13 @@ public final class TestUtil extends ProxyLookup {
     /**
      * Set the global default lookup with some fixed instances including META-INF/services/*.
      */
-    public static void setLookup(Object[] instances) {
+    public static void setLookup(Object... instances) {
         ClassLoader l = TestUtil.class.getClassLoader();
         DEFAULT.setLookups(new Lookup[] {
             Lookups.fixed(instances),
             Lookups.metaInfServices(l),
             Lookups.singleton(l),
+            projects
         });
     }
     

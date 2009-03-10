@@ -46,19 +46,26 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.tasklist.RebuildOraculum;
 import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -87,10 +94,11 @@ public class JavaCustomIndexer extends CustomIndexer {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
+                            final Set<ElementHandle<TypeElement>> removed = new HashSet <ElementHandle<TypeElement>> ();
                             JavaParsingContext javaContext = new JavaParsingContext(context);
                             cim.getUsagesQuery(context.getRootURI()).setDirty(null);
                             for (Indexable i : files) {
-                                clear(context, javaContext, i.getRelativePath());
+                                clear(context, javaContext, i.getRelativePath(), removed);
                             }
 
                             CompileWorker.ParsingOutput compileResult = null;
@@ -101,8 +109,34 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 }
                             }
                             assert compileResult != null && compileResult.success;
+                            Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added
+                            Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removed); //Removed
+                            _at.removeAll(removed);
+                            _rt.removeAll(compileResult.addedTypes);
+                            compileResult.addedTypes.retainAll(removed); //Changed
+
+                            if (!context.isSupplementaryFilesIndexing()) {
+                                for (Map.Entry<URL, Collection<URL>> entry : RebuildOraculum.findAllDependent(context.getRootURI(), null, javaContext.cpInfo.getClassIndex(), _rt).entrySet()) {
+                                    Set<URL> urls = compileResult.root2Rebuild.get(entry.getKey());
+                                    if (urls == null) {
+                                        compileResult.root2Rebuild.put(entry.getKey(), urls = new HashSet<URL>());
+                                    }
+                                    urls.addAll(entry.getValue());
+                                }
+                            }
+
+                            if (!_at.isEmpty()) {
+                                //new type creation may cause/fix some errors
+                                //not 100% correct (consider eg. a file that has two .* imports
+                                //new file creation may cause new error in this case
+                                List<URL> urls = TaskCache.getDefault().getAllFilesInError(context.getRootURI());
+                                if (!urls.isEmpty()) {
+                                    IndexingManager.getDefault().refreshIndex(context.getRootURI(), urls);
+                                }
+                            }
 
                             javaContext.sa.store();
+                            cim.getUsagesQuery(context.getRootURI()).typesEvent(_at, _rt, compileResult.addedTypes);
                             for (Map.Entry<URL, Set<URL>> entry : compileResult.root2Rebuild.entrySet()) {
                                 context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                             }
@@ -120,16 +154,23 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {
         try {
-            ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+            final ClassIndexManager cim = ClassIndexManager.getDefault();
+            cim.writeLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
+                            final Set<ElementHandle<TypeElement>> removed = new HashSet <ElementHandle<TypeElement>> ();
                             JavaParsingContext javaContext = new JavaParsingContext(context);
                             for (Indexable i : files) {
-                                clear(context, javaContext, i.getRelativePath());
+                                clear(context, javaContext, i.getRelativePath(), removed);
                                 TaskCache.getDefault().dumpErrors(context.getRootURI(), i.getURL(), Collections.<Diagnostic>emptyList());
                             }
+                            Map<URL, Collection<URL>> root2Rebuild = RebuildOraculum.findAllDependent(context.getRootURI(), null, javaContext.cpInfo.getClassIndex(), removed);
                             javaContext.sa.store();
+                            cim.getUsagesQuery(context.getRootURI()).typesEvent(null, removed, null);
+                            for (Map.Entry<URL, Collection<URL>> entry : root2Rebuild.entrySet()) {
+                                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                            }
                             return null;
                         }
                     });
@@ -142,7 +183,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
 
-    private static void clear(Context context, JavaParsingContext javaContext, String sourceRelative) throws IOException {
+    private static void clear(Context context, JavaParsingContext javaContext, String sourceRelative, Set<ElementHandle<TypeElement>> removed) throws IOException {
         List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
         File classFolder = JavaIndex.getClassFolder(context);
         String withoutExt = FileObjects.stripExtension(sourceRelative);
@@ -158,6 +199,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     String className = FileObjects.getBinaryName (f, classFolder);
                     if (!binaryName.equals(className)) {
                         toDelete.add(Pair.<String,String>of (className, sourceRelative));
+                        removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                         f.delete();
                     } else {
                         cont = true;
@@ -187,6 +229,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             for (File f : parent.listFiles(filter)) {
                 String className = FileObjects.getBinaryName (f, classFolder);
                 toDelete.add(Pair.<String,String>of (className, null));
+                removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                 f.delete();
             }
         }

@@ -37,48 +37,49 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.openide.explorer.view;
+package org.netbeans.modules.ide.ergonomics.ant;
 
-import org.openide.nodes.Node;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import javax.imageio.ImageIO;
+import org.apache.tools.ant.types.Resource;
+import org.openide.util.ImageUtilities;
 
 /**
- * Node cookie, which adds a possibility to display a check box
- * next to the node display name in the views that support it.
  *
- * @author Martin Entlicher
- * @since 6.18
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public interface CheckNodeCookie extends Node.Cookie {
+final class IconResource extends Resource {
+    private Resource r;
+    private BufferedImage badgeIcon;
 
-    /**
-     * Tell the view to display a check-box for this node.
-     *
-     * @return <code>true</code> if the check-box should be displayed, <code>false</code> otherwise.
-     */
-    boolean isCheckable();
+    public IconResource(Resource r, BufferedImage badgeIcon) {
+        super(r.getName(), r.isExists(), r.getLastModified(), r.isDirectory(), r.getSize());
+        this.r = r;
+        this.badgeIcon = badgeIcon;
+    }
 
-    /**
-     * Provide the enabled state of the check-box.
-     *
-     * @return <code>true</code> if the check-box should be enabled, <code>false</code> otherwise.
-     */
-    boolean isCheckEnabled();
-
-    /**
-     * Provide the selected state of the check-box.
-     *
-     * @return <code>true</code> if the check-box should be selected,
-     *         <code>false</code> if it should be unselected and
-     *         <code>null</code> if the state is unknown.
-     */
-    Boolean isSelected();
-
-    /**
-     * Called by the view when the check-box gets selected/unselected
-     *
-     * @param selected <code>true</code> if the check-box was selected,
-     *                 <code>false</code> if the check-box was unselected.
-     */
-    void setSelected(Boolean selected);
-
+    @Override
+    public InputStream getInputStream() throws IOException {
+        if (getName().endsWith(".html")) {
+            return r.getInputStream();
+        }
+        try {
+            InputStream is = r.getInputStream();
+            BufferedImage img = ImageIO.read(is);
+            if (img == null) {
+                return r.getInputStream();
+            }
+            Image merge = ImageUtilities.mergeImages(img, badgeIcon, 0, 0);
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ImageIO.write((BufferedImage)merge, "png", os);
+            return new ByteArrayInputStream(os.toByteArray());
+        } catch (IOException ex) {
+            return r.getInputStream();
+        }
+    }
 }
