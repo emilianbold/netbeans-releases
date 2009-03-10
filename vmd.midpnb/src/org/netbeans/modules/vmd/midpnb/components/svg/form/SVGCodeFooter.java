@@ -108,19 +108,3 @@ class SVGCodeFooter extends CodeClassInitHeaderFooterPresenter {
     
     private TypeID myTypeId;
 }
-
-//   svgList.addActionListener(new SVGActionListener() {
-//
-//                public void actionPerformed(SVGComponent comp) {
-//                    int index = svgList.getSelectionModel().getSelectedIndex();
-//                    String item = (String) svgList.getModel().getElementAt(index);
-//                    if (item.equals("form0")) {
-//                        switchDisplayable(null, getForm());
-//                    } else if (item.equals("form1")) {
-//                        switchDisplayable(null, getForm1());
-//                    } else if (item.equals("form2")) {
-//                        switchDisplayable(null, getForm2());
-//                    }
-//                    ;
-//                }
-//            });
