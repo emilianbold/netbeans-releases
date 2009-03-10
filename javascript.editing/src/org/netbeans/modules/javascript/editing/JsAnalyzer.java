@@ -315,6 +315,75 @@ public class JsAnalyzer implements StructureScanner {
         
         public boolean visit(Node node) {
             switch (node.getType()) {
+
+                //handle prototype fields: Object.prototype.field = 'xxx';
+                case Token.STRING: {
+                    if (node.getString().equalsIgnoreCase("prototype")) {
+                        Node getPropertyNode = node.getParentNode();
+                        if (getPropertyNode.getType() == Token.GETPROP) {
+                            Node className = getPropertyNode.getFirstChild();
+                            if (className.getType() == Token.NAME) {
+                                //find fields
+                                Node setNode = getPropertyNode.getParentNode();
+                                if (setNode.getType() == Token.SETPROP) {
+                                    Node propertyNode = getPropertyNode.getNext();
+
+                                    if (!Character.isLowerCase(propertyNode.getString().charAt(0))) {
+                                        break;
+                                    }
+
+                                    Node rhs = propertyNode.getNext();
+                                    if (rhs != null && rhs.getType() == Token.FUNCTION) {
+                                        // Functions are handled separately - when we see a function we walk outwards
+                                        // and compute the name, handling "this" appropriately
+                                        break;
+                                    }
+
+                                    if (propertyNode.getType() == Token.STRING) {
+                                        //found field node
+                                        StringBuilder sb = new StringBuilder();
+                                        if (AstUtilities.addName(sb, className)) {
+                                            String fqn = sb.toString();
+                                            String property = propertyNode.getString();
+
+                                            String propFqn = fqn + "." + property;
+                                            if (fields == null || !fields.contains(propFqn)) {
+                                                int clzIndex = fqn.lastIndexOf('.') + 1;
+                                                if (clzIndex < fqn.length() && Character.isUpperCase(fqn.charAt(clzIndex))) {
+                                                    // Looks like a class
+                                                    String name = property;
+                                                    String in = fqn;
+
+                                                    if (fields == null) {
+                                                        fields = new HashSet<String>();
+                                                    }
+                                                    fields.add(propFqn);
+                                                    AstElement js = AstElement.createElement(info, propertyNode, name, in, this);
+                                                    if (js != null) {
+                                                        checkDocumentation(js);
+                                                        js.setKind(ElementKind.PROPERTY);
+                                                        if (rhs != null) {
+                                                            String type = AstUtilities.getExpressionType(rhs);
+                                                            if (type != null) {
+                                                                js.setType(type);
+                                                            }
+                                                        }
+                                                        elements.add(js);
+                                                    }
+
+                                                }
+
+                                            }
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                }
+
+
             case Token.CALL: {
                 if (node.hasChildren()) {
                     // Handle imports
