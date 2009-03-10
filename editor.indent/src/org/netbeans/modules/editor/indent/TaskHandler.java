@@ -189,7 +189,25 @@ public final class TaskHandler {
             }
             items = newItems;
         }
-        
+
+        // current PHP formatter must run after HTML formatter
+        if (items != null && "text/x-php5".equals(docMimeType())) { //NOI18N
+            // Copy list, except for Ruby element, which we then add at the end
+            List<MimeItem> newItems = new ArrayList<MimeItem>(items.size());
+            MimeItem phpItem = null;
+            for (MimeItem item : items) {
+                if (item.mimePath().getPath().endsWith("text/x-php5")) { // NOI18N
+                    phpItem = item;
+                } else {
+                    newItems.add(item);
+                }
+            }
+            if (phpItem != null) {
+                newItems.add(phpItem);
+            }
+            items = newItems;
+        }
+
         // XXX: HACK TODO PENDING WORKAROUND
         // A hotfix for #116022: the jsp formatter must be called first and the html formatter second
         if (items != null && "text/x-jsp".equals(docMimeType()) || "text/x-tag".equals(docMimeType())) { //NOI18N

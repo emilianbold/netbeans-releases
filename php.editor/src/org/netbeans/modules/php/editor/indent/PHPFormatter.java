@@ -44,9 +44,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,7 +62,6 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.PHPLanguage;
@@ -648,6 +647,27 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 int indent; // The indentation to be used for the current line
 
                 int hangingIndent = continued ? (hiSize) : 0;
+
+                /**
+                 * As most of this code was copy&pasted from JavaScript/Ruby formatter
+                 * I'm copy pasting also intialization of initialIndent as done in Ruby
+                 * formatter.
+                 * TODO: PHP does not seem to have isEmbeddedDoc. is that OK?
+                 */
+                if (/*isEmbeddedDoc &&*/ !indentOnly) {
+                    // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
+                    Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
+                    if (suggestedLineIndents != null) {
+                        Integer ind = suggestedLineIndents.get(Utilities.getLineOffset(doc, offset));
+                        if (ind != null) {
+                            initialIndent = ind.intValue();
+                        } else {
+                            initialIndent = GsfUtilities.getLineIndent(doc, offset);
+                        }
+                    } else {
+                        initialIndent = GsfUtilities.getLineIndent(doc, offset);
+                    }
+                }
 
                 if (isInLiteral(doc, offset)) {
                     // Skip this line - leave formatting as it is prior to reformatting 
