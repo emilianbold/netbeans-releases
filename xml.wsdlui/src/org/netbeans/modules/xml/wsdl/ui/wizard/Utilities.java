@@ -67,7 +67,8 @@ public class Utilities {
             if (i < (before.length - diff)) {
                 res[i] = before[i];
             } else {
-                res[i] = panels[i - before.length + diff].getComponent().getName();
+                Component component = panels[i - before.length + diff].getComponent();
+                res[i] = component != null ? component.getName() : "...";
             }
         }
         return res;
@@ -111,5 +112,22 @@ public class Utilities {
             }
         }
         return null;
+    }
+    
+    
+    public static String[] createSteps(String[] before) {
+        //assert panels != null;
+        // hack to use the steps set before this panel processed
+        int diff = 0;
+        if (before == null) {
+            before = new String[0];
+        } else if (before.length > 0) {
+            diff = ("...".equals(before[before.length - 1])) ? 1 : 0; // NOI18N
+        }
+        String[] res = new String[(before.length - diff)];
+        for (int i = 0; i < res.length; i++) {
+            res[i] = before[i];
+        }
+        return res;
     }
 }
