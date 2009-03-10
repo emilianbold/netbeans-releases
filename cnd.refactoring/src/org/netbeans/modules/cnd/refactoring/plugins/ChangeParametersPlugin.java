@@ -277,7 +277,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         assert oldName != null;
         PositionRef startPos = ces.createPositionRef(ref.getStartOffset(), Bias.Forward);
         PositionRef endPos = ces.createPositionRef(ref.getEndOffset(), Bias.Backward);
-        Difference diff = new Difference(Difference.Kind.CHANGE, ref, startPos, endPos, oldName, oldName + "$1", descr);
+        Difference diff = new Difference(Difference.Kind.CHANGE, ref, startPos, endPos, oldName, oldName + "$1", descr); // NOI18N
         return diff;
     }
 }
