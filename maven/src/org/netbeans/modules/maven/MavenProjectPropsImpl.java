@@ -183,11 +183,13 @@ public class MavenProjectPropsImpl {
         Element el = conf.getConfigurationFragment(ROOT, NAMESPACE, shared);
         if (el == null) {
             el = XMLUtil.createDocument(ROOT, NAMESPACE, null, null).getDocumentElement();
-            Comment comment = el.getOwnerDocument().createComment("\nProperties that influence various parts of the IDE, especially code formatting and the like. \n" + //NOI18N
-                    "You can copy and paste the single properties, into the pom.xml file and the IDE will pick them up.\n" + //NOI18N
-                    "That way multiple projects can share the same settings (useful for formatting rules for example).\n" + //NOI18N
-                    "Any value defined here will override the pom.xml file value but is only applicable to the current project.\n"); //NOI18N
-            el.appendChild(comment);
+            if (shared) {
+                Comment comment = el.getOwnerDocument().createComment("\nProperties that influence various parts of the IDE, especially code formatting and the like. \n" + //NOI18N
+                        "You can copy and paste the single properties, into the pom.xml file and the IDE will pick them up.\n" + //NOI18N
+                        "That way multiple projects can share the same settings (useful for formatting rules for example).\n" + //NOI18N
+                        "Any value defined here will override the pom.xml file value but is only applicable to the current project.\n"); //NOI18N
+                el.appendChild(comment);
+            }
         }
         return el;
     }

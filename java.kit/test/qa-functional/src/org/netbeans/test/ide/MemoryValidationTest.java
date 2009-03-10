@@ -102,7 +102,7 @@ public class MemoryValidationTest extends JellyTestCase {
 //        conf = conf.addTest("testFilesView");
         conf = conf.addTest("testEditor");
         conf = conf.addTest("testBuildAndRun");
-        conf = conf.addTest("testDebugging");
+        conf = conf.addTest("testDebuggingMayFail");
 //        conf = conf.addTest("testJUnit");
 //        conf = conf.addTest("testXML");
 //        conf = conf.addTest("testDb");

@@ -45,11 +45,6 @@ import java.awt.Dialog;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,13 +57,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -76,18 +69,20 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform.Version;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.modules.groovy.grailsproject.ProgressSupport;
+import org.netbeans.modules.groovy.grailsproject.ProgressSupport.ProgressDialogDescriptor;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -98,18 +93,14 @@ import org.xml.sax.InputSource;
  *
  * @author David Calavera, Petr Hejl
  */
-public class GrailsPluginsManager {
+public class GrailsPluginSupport {
 
-    private static Logger LOGGER = Logger.getLogger(GrailsPluginsManager.class.getName());
+    private static Logger LOGGER = Logger.getLogger(GrailsPluginSupport.class.getName());
 
     private final GrailsProject project;
 
-    private GrailsPluginsManager(GrailsProject project) {
+    public GrailsPluginSupport(GrailsProject project) {
         this.project = project;
-    }
-
-    public static GrailsPluginsManager getInstance(GrailsProject project) {
-        return new GrailsPluginsManager(project);
     }
 
     public List<GrailsPlugin> refreshAvailablePlugins() throws InterruptedException {
@@ -245,28 +236,39 @@ public class GrailsPluginsManager {
     }
 
     private boolean handlePlugins(final Collection<GrailsPlugin> selectedPlugins, boolean uninstall) {
+        assert SwingUtilities.isEventDispatchThread();
+        
         if (!(selectedPlugins != null && selectedPlugins.size() > 0)) {
             return false;
         }
 
         boolean installed = true;
-        final JButton[] buttons = getProgressDlgButtons();
 
         final ExecutorService executor = Executors.newFixedThreadPool(1);
         for (final GrailsPlugin plugin : selectedPlugins) {
-            final Dialog dlg = getProgressDialog(plugin, buttons, uninstall);
+            String title = NbBundle.getMessage(GrailsPluginSupport.class, uninstall ? "Uninstallation" : "Installation");
+            String message = NbBundle.getMessage(GrailsPluginSupport.class, uninstall ? "PluginUninstallPleaseWait" : "PluginInstallPleaseWait", plugin.getName());
+            ProgressHandle handle = ProgressHandleFactory.createHandle(message);
+            
+            ProgressDialogDescriptor descriptor = ProgressSupport.createProgressDialog(title, handle, null);
+            final Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
 
-            buttons[0].addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent ev) {
+            descriptor.addCancelListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
                     dlg.setVisible(false);
                     dlg.dispose();
                 }
             });
 
             // FIXME should it be FS atomic action ?
-            Callable<Boolean> runner = getPluginHandlerCallable(plugin, buttons[1], dlg, uninstall);
+            Callable<Boolean> runner = getPluginHandlerCallable(plugin, descriptor, dlg, uninstall);
 
             final Future<Boolean> result = executor.submit(runner);
+            
+            handle.start();
+            handle.progress(message);
+
             dlg.setVisible(true);
 
             try {
@@ -276,6 +278,8 @@ public class GrailsPluginsManager {
                 break;
             } catch (ExecutionException ex) {
                 Exceptions.printStackTrace(ex.getCause() != null ? ex.getCause() : ex);
+            } finally {
+                handle.finish();
             }
         }
         executor.shutdown();
@@ -285,7 +289,7 @@ public class GrailsPluginsManager {
     }
     
     private Callable<Boolean> getPluginHandlerCallable(final GrailsPlugin plugin,
-            final JButton cancelButton, final Dialog dlg, final boolean uninstall) {
+            final ProgressDialogDescriptor desc, final Dialog dlg, final boolean uninstall) {
         final String command = uninstall ? "uninstall-plugin" : "install-plugin"; // NOI18N
 
         return new Callable<Boolean>() {
@@ -307,7 +311,7 @@ public class GrailsPluginsManager {
 
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        cancelButton.addActionListener(new ActionListener() {
+                        desc.addCancelListener(new ActionListener() {
                             public void actionPerformed(ActionEvent ev) {
                                 future.cancel(true);
                             }
@@ -353,28 +357,6 @@ public class GrailsPluginsManager {
                 }
             }
         };
-    }
-
-    private Dialog getProgressDialog(GrailsPlugin plugin, JButton[] buttons, boolean uninstall) {
-        final String title = NbBundle.getMessage(GrailsPluginsManager.class, uninstall ? "Uninstallation" : "Installation");
-
-        final InstallingPluginPanel progress = new InstallingPluginPanel(
-            NbBundle.getMessage(GrailsPluginsManager.class, uninstall ? "PluginUninstallPleaseWait" : "PluginInstallPleaseWait", plugin.getName()));
-        final DialogDescriptor descriptor = new DialogDescriptor(progress, title, true, buttons, buttons[0],
-            DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(InstallingPluginPanel.class), null); // NOI18N
-        descriptor.setModal(true);
-        return DialogDisplayer.getDefault().createDialog(descriptor);
-    }
-    
-    private JButton[] getProgressDlgButtons() {
-        final JButton closeButton = new JButton(NbBundle.getMessage(GrailsPluginsManager.class, "CTL_Close"));
-        final JButton cancelButton =
-                new JButton(NbBundle.getMessage(GrailsPluginsManager.class, "CTL_Cancel"));
-        closeButton.getAccessibleContext()
-                .setAccessibleDescription(NbBundle.getMessage(GrailsPluginsManager.class, "CTL_Close"));
-
-        closeButton.setEnabled(false);
-        return new JButton[] {closeButton, cancelButton};
     }
 
     public GrailsPlugin getPluginFromZipFile(String path) {
