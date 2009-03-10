@@ -189,7 +189,8 @@ public class SVGFormCD extends ComponentDescriptor {
                 new SVGFormFileChangePresenter(),
                 //flow
                 new SVGComponentEventSourceOrder(),
-                new SVGListElementOrderCategory(),
+                //new SVGListElementOrderCategory(),
+                new SVGFlowListElementPinOrderPresenter(),
                 //delete
                 new DeleteDependencyPresenter() {
 

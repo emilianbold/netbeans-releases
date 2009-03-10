@@ -113,8 +113,8 @@ public class SVGListCD extends ComponentDescriptor{
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
-                //new SVGCodeFooter( SVGListEventSourceCD.TYPEID ),
                 new SVGListModelFooter(),
+                new SVGListElementCodeFooter(SVGListElementEventSourceCD.TYPEID),
                 //inspector
                 new SVGComponentInspectorFolderPresenter(),
                 MidpInspectorSupport.createComponentElementsCategory(NbBundle.getMessage (ListCD.class, "DISP_InspectorCategory_Elements"), getInspectorOrderingControllers(), SVGListElementEventSourceCD.TYPEID) //NOI18N

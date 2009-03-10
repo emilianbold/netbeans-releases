@@ -49,10 +49,9 @@ import org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.components.handlers.ExitMidletEventHandlerCD;
 
+class SVGListElementCodeFooter extends CodeClassInitHeaderFooterPresenter {
 
-class SVGCodeFooter extends CodeClassInitHeaderFooterPresenter {
-    
-    SVGCodeFooter( TypeID typeId ){
+    SVGListElementCodeFooter(TypeID typeId) {
         myTypeId = typeId;
     }
 
@@ -62,57 +61,69 @@ class SVGCodeFooter extends CodeClassInitHeaderFooterPresenter {
 
     @Override
     public void generateClassInitializationFooter(MultiGuardedSection section) {
-        DesignComponent svgForm = getComponent().getParentComponent();
+        DesignComponent svgForm = getComponent();
         DesignComponent eventHandler = null;
+        boolean initBlock = false;
         for (DesignComponent component : svgForm.getComponents()) {
             if (!component.getType().equals(myTypeId)) {
                 continue;
             }
-            if (component.readProperty(SVGComponentEventSourceCD.PROP_SVGCOMPONENT).
-                    getComponent() != getComponent()) {
+
+            eventHandler = component.readProperty(EventSourceCD.PROP_EVENT_HANDLER).getComponent();
+            if (eventHandler == null) {
                 continue;
             }
-            eventHandler = component.readProperty(EventSourceCD.PROP_EVENT_HANDLER).getComponent();
-            if (eventHandler != null) {
-                break;
+
+            if (!initBlock) {
+                section.getWriter().write(CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ".addActionListener(new SVGActionListener() {\n"); //NOI18N
+                section.getWriter().write("public void actionPerformed(SVGComponent svgComponent) {\n");// NOI18N
+                section.getWriter().write("int index = " + CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ".getSelectionModel().getSelectedIndex();\n"); //NOI18N
+                section.getWriter().write("switch (index) {\n"); //NOI18N
+                section.getWriter().commit();
+                section.switchToEditable(getComponent().getComponentID() + "action"); //NOI18N
+                section.getWriter().commit();
+                initBlock = Boolean.TRUE;
             }
+            if (eventHandler.getType() != ExitMidletEventHandlerCD.TYPEID) {
+                section.switchToGuarded();
+                section.getWriter().write("case " + component.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue().toString() + ":\n"); //NOI18N
+                section.getWriter().commit();
+                section.switchToEditable(component.getComponentID() + "beforeSwitch"); //NOI18N
+                section.getWriter().write("//Some action before switch\n"); // NOI18N
+                section.getWriter().commit();
+                section.switchToGuarded();
+                CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode(section, eventHandler);
+                section.getWriter().commit();
+                section.switchToEditable(component.getComponentID() + "afterSwitch"); //NOI18N
+                section.getWriter().write("//Some action after switch\n"); // NOI18N
+                section.getWriter().commit();
+            } else {
+                section.switchToGuarded();
+                 section.getWriter().write("case " + component.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue().toString() + ":\n"); //NOI18N
+                section.getWriter().commit();
+                section.switchToEditable(component.getComponentID() + "beforeSwitch"); //NOI18N
+                section.getWriter().write("//Some action before exit Midlet\n"); // NOI18N
+                section.getWriter().commit();
+            }
+
         }
-        if (eventHandler == null) {
-            return;
-        }
-        section.getWriter().write(CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ".addActionListener(new SVGActionListener() {\n"); //NOI18N
-        section.getWriter().write("public void actionPerformed(SVGComponent svgComponent) {\n");// NOI18N                
-        if (eventHandler.getType() != ExitMidletEventHandlerCD.TYPEID) {
-            section.getWriter().commit();
-            section.switchToEditable(getComponent().getComponentID() + "beforeSwitch"); //NOI18N
-            section.getWriter().write("//Some action before switch\n"); // NOI18N
-            section.getWriter().commit();
+
+
+        if (initBlock) {
             section.switchToGuarded();
             CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode(section, eventHandler);
-            section.getWriter().commit();
-            section.switchToEditable(getComponent().getComponentID() + "afterSwitch"); //NOI18N
-            section.getWriter().write("//Some action after switch\n"); // NOI18N
-            section.getWriter().commit();
-            section.switchToGuarded();
-        } else {
-            section.getWriter().commit();
-            section.switchToEditable(getComponent().getComponentID() + "beforeSwitch"); //NOI18N
-            section.getWriter().write("//Some action before exit Midlet\n"); // NOI18N
-            section.getWriter().commit();
-            section.switchToGuarded();
-            CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode(section, eventHandler);
+            section.getWriter().write("}\n"); // NOI18N
+            section.getWriter().write("}\n"); // NOI18N
+            section.getWriter().write("});\n"); //NOI18N
         }
-        section.getWriter().write("}\n"); // NOI18N
-        section.getWriter().write("});\n"); //NOI18N
     }
-    
     private TypeID myTypeId;
 }
 
 //   svgList.addActionListener(new SVGActionListener() {
 //
 //                public void actionPerformed(SVGComponent comp) {
-//                    int index = svgList.getSelectionModel().getSelectedIndex();
+//                    
 //                    String item = (String) svgList.getModel().getElementAt(index);
 //                    if (item.equals("form0")) {
 //                        switchDisplayable(null, getForm());
