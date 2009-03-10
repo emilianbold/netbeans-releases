@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
@@ -678,7 +679,17 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
                 if (isEmbeddedDoc && !indentOnly) {
                     // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
-                    initialIndent = GsfUtilities.getLineIndent(doc, offset);
+                    Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
+                    if (suggestedLineIndents != null) {
+                        Integer ind = suggestedLineIndents.get(Utilities.getLineOffset(doc, offset));
+                        if (ind != null) {
+                            initialIndent = ind.intValue();
+                        } else {
+                            initialIndent = GsfUtilities.getLineIndent(doc, offset);
+                        }
+                    } else {
+                        initialIndent = GsfUtilities.getLineIndent(doc, offset);
+                    }
                 }
                 
                 if (isInLiteral(doc, offset)) {
