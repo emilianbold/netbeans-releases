@@ -76,7 +76,7 @@ import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
-import org.netbeans.modules.maven.options.MavenExecutionSettings;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -841,7 +841,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     public void run() {
         if (!EventQueue.isDispatchThread()) {
             // phase one, outside EQ thread
-            String version = MavenExecutionSettings.getCommandLineMavenVersion();
+            String version = MavenSettings.getCommandLineMavenVersion();
             synchronized (MAVEN_VERSION_LOCK) {
                 mavenVersion = version != null ? new DefaultArtifactVersion(version) : null;
             }
