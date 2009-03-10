@@ -310,15 +310,15 @@ public final class MemoryCache {
                     String res = key.getClass().getName();
                     if (value == null) {
                         if (isSoft) {
-                            res += "-soft null";
+                            res += "-soft null"; // NOI18N
                         } else {
-                            res += "-null";
+                            res += "-null"; // NOI18N
                         }
                     } else {
                         if (isSoft) {
-                            res += "-soft "+value.getClass().getName();
+                            res += "-soft "+value.getClass().getName(); // NOI18N
                         } else {
-                            res += "-"+value.getClass().getName();
+                            res += "-"+value.getClass().getName(); // NOI18N
                         }
                     }
                     Integer i = isSoft ? statSoft.get(res) : stat.get(res);
