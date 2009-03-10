@@ -14,6 +14,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.namespace.QName;
+
+import org.netbeans.modules.e2e.api.wsdl.Definition;
 import org.netbeans.modules.e2e.api.wsdl.Operation;
 import org.netbeans.modules.e2e.api.wsdl.PortType;
 
@@ -23,21 +27,24 @@ import org.netbeans.modules.e2e.api.wsdl.PortType;
  */
 public class PortTypeImpl implements PortType {
     
-    private String name;
     private Map<String, Operation> operations;
+    private QName myName;
     
     /** Creates a new instance of PortTypeImpl */
-    public PortTypeImpl( String name ) {
-        this.name = name;
+    public PortTypeImpl( QName name ) {
+        myName = name;
         operations = new HashMap<String,Operation>();
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getName() {
-        return name;
+        return getQName().getLocalPart();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.e2e.api.wsdl.PortType#getQName()
+     */
+    public QName getQName() {
+        return myName;
     }
 
     public void addOperation(Operation operation) {
@@ -71,10 +78,6 @@ public class PortTypeImpl implements PortType {
         return OperationImpl.toJavaName( newName );
     }
 
-    public void getOperation(String name) {
-        throw new UnsupportedOperationException( "Not implemented." );
-    }
-
     public List<Operation> getOperations() {
         return Collections.unmodifiableList( new ArrayList( operations.values()));
     }
@@ -88,4 +91,21 @@ public class PortTypeImpl implements PortType {
         return name;
     }
     
+    public static class PortTypeReferenceImpl extends PortTypeImpl 
+        implements PortTypeReference
+    {
+
+        public PortTypeReferenceImpl( QName name ) {
+            super(name);
+        }
+
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.e2e.api.wsdl.PortType.PortTypeReference#isValid()
+         */
+        public boolean isValid() {
+            return false;
+        }
+        
+    }
 }
