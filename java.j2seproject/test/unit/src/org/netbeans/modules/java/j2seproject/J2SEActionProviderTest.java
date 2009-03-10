@@ -361,7 +361,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         }
         assertNotNull("Must found some targets for COMMAND_RUN_SINGLE", targets);
         assertEquals("There must be one target for COMMAND_RUN_SINGLE", 1, targets.length);
-        assertEquals("Unexpected target name", "test-single", targets[0]);
+        assertEquals("Unexpected target name", "run-test-with-main", targets[0]);
         assertEquals("There must be one target parameter", 2, p.keySet().size());
         assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("javac.includes"));
         assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("test.includes"));

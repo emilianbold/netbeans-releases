@@ -79,31 +79,31 @@ public class MIMESupportTest extends NbTestCase {
 
     public void testFindMIMETypeCanBeGarbageCollected() throws IOException {
         FileObject fo = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), "Ahoj.bla");
-        
+
         String expResult = "content/unknown";
         String result = FileUtil.getMIMEType(fo);
         assertEquals("some content found", expResult, result);
-        
+
         WeakReference<FileObject> r = new WeakReference<FileObject>(fo);
         fo = null;
         assertGC("Can be GCed", r);
     }
-    
+
     public void testBehaviourWhemLookupResultIsChanging() throws Exception {
         MIMESupportTest.TestResolver testR = new MIMESupportTest.TestResolver("a/a");
         assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).isEmpty());
-        
+
         FileObject fo = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), "mysterious.lenka");
-        
+
         assertEquals("content/unknown",fo.getMIMEType());
-        
+
         lookup.setLookups(testR);
-        assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).contains(testR));        
+        assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).contains(testR));
         assertEquals(testR.getMime(),fo.getMIMEType());
-        
+
         testR = new MIMESupportTest.TestResolver("b/b");
         lookup.setLookups(testR);
-        assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).contains(testR));        
+        assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).contains(testR));
         assertEquals(testR.getMime(),fo.getMIMEType());
     }
 
@@ -111,7 +111,7 @@ public class MIMESupportTest extends NbTestCase {
         MIMESupportTest.TestResolver testR = new MIMESupportTest.TestResolver("a/a");
         assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).isEmpty());
         lookup.setLookups(testR);
-        assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).contains(testR));        
+        assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).contains(testR));
         AbstractFileSystem afs = new AbstractFileSystem() {
             @Override
             public String getDisplayName() {
@@ -178,8 +178,8 @@ public class MIMESupportTest extends NbTestCase {
         assertEquals("unreadable", fo.getMIMEType());
     }
 
-    private class TestResolver extends MIMEResolver {
-        private String mime;
+    private static final class TestResolver extends MIMEResolver {
+        private final String mime;
         private TestResolver(String mime) {            
             this.mime = mime;
         }
@@ -194,6 +194,43 @@ public class MIMESupportTest extends NbTestCase {
         
         private String getMime() {
             return mime;
+        }
+    }
+
+    public void testWithinMimeTypes() throws Exception {
+        MIMESupportTest.TestExtResolver testResolverA = new MIMESupportTest.TestExtResolver("a", "a/a");
+        MIMESupportTest.TestExtResolver testResolverB = new MIMESupportTest.TestExtResolver("b", "b/b");
+        assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).isEmpty());
+
+        lookup.setLookups(testResolverA, testResolverB);
+        assertEquals(2, Lookup.getDefault().lookupAll(MIMEResolver.class).size());
+
+        FileObject fo = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), "file.a");
+        String mimeType = FileUtil.getMIMEType(fo, "b/b");
+        assertEquals("content/unknown", mimeType);
+        mimeType = FileUtil.getMIMEType(fo, "a/a");
+        assertEquals("a/a", mimeType);
+        mimeType = FileUtil.getMIMEType(fo);
+        assertEquals("a/a", mimeType);
+        mimeType = FileUtil.getMIMEType(fo, "b/b");
+        assertEquals("a/a", mimeType);
+    }
+
+    private static final class TestExtResolver extends MIMEResolver {
+        private final String ext;
+        private final String mime;
+        private TestExtResolver(String ext, String mime) {
+            super(mime);
+            this.ext = ext;
+            this.mime = mime;
+        }
+
+        public String findMIMEType(FileObject fo) {
+            if (fo.getExt().equals(ext)) {
+                return mime;
+            } else {
+                return null;
+            }
         }
     }
     
@@ -256,13 +293,15 @@ public class MIMESupportTest extends NbTestCase {
             setLookups(new Lookup[] {});
         }
         
-        private void setLookups(Object instance) {
-            setLookups(new Lookup[] {getInstanceLookup(instance)});
+        private void setLookups(Object... instances) {
+            setLookups(new Lookup[] {getInstanceLookup(instances)});
         }
         
-        private Lookup getInstanceLookup(final Object instance) {
+        private Lookup getInstanceLookup(final Object... instances) {
             InstanceContent instanceContent = new InstanceContent();
-            instanceContent.add(instance);
+            for(Object i : instances) {
+                instanceContent.add(i);
+            }
             Lookup instanceLookup = new AbstractLookup(instanceContent);
             return instanceLookup;
         }        
