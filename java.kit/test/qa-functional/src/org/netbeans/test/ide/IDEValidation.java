@@ -1127,7 +1127,7 @@ public class IDEValidation extends JellyTestCase {
      */
     public void testCVSLite() {
         // "Versioning"
-        String versioningItem = Bundle.getStringTrimmed("org.netbeans.modules.versioning.Bundle", "Menu/Window/Versioning");
+        String versioningItem = Bundle.getStringTrimmed("org.netbeans.modules.versioning.Bundle", "Menu/Versioning");
         // "CVS"
         String cvsItem = Bundle.getStringTrimmed(
                 "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",

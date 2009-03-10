@@ -94,7 +94,9 @@ public class InteceptorTest extends NbTestCase {
         FileUtil.refreshFor(dataRootDir);
         wc = new File(dataRootDir, getName() + "_wc");        
         repoDir = new File(dataRootDir, "repo");
-        repoUrl = new SVNUrl("file:///" + repoDir.getAbsolutePath());
+        String repoPath = repoDir.getAbsolutePath();
+        if(repoPath.startsWith("/")) repoPath = repoPath.substring(1, repoPath.length());
+        repoUrl = new SVNUrl("file:///" + repoPath);
         
         System.setProperty("netbeans.user", System.getProperty("data.root.dir") + "/cache");
         cache = Subversion.getInstance().getStatusCache();
@@ -120,10 +122,13 @@ public class InteceptorTest extends NbTestCase {
     
     public static Test suite() {
         TestSuite suite = new TestSuite();
+
+        suite.addTest(getAttributeSuite());
+
         suite.addTest(createSuite());
 
         suite.addTest(deleteSuite());
-        
+
         suite.addTest(renameViaDataObjectSuite());
         suite.addTest(renameViaFileObjectSuite());
 
@@ -133,6 +138,13 @@ public class InteceptorTest extends NbTestCase {
         return suite;
     }
     
+    public static Test getAttributeSuite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new InteceptorTest("getWrongAttribute"));
+        suite.addTest(new InteceptorTest("getRemoteLocationAttribute"));
+        return(suite);
+    }
+
     public static Test deleteSuite() {
 	TestSuite suite = new TestSuite();
         suite.addTest(new InteceptorTest("deleteCreateChangeCase_issue_157373"));
@@ -221,6 +233,25 @@ public class InteceptorTest extends NbTestCase {
         return(suite);
     }
     
+    public void getWrongAttribute() throws Exception {
+        File file = new File(wc, "attrfile");
+        file.createNewFile();
+        FileObject fo = FileUtil.toFileObject(file);
+
+        String str = (String) fo.getAttribute("peek-a-boo");
+        assertNull(str);
+    }
+
+    public void getRemoteLocationAttribute() throws Exception {
+        File file = new File(wc, "attrfile");
+        file.createNewFile();
+        FileObject fo = FileUtil.toFileObject(file);
+
+        String str = (String) fo.getAttribute("ProvidedExtensions.RemoteLocation");
+        assertNotNull(str);
+        assertEquals(repoUrl.toString(), str);
+    }
+
     public void deleteNotVersionedFile() throws Exception {
         // init        
         File file = new File(wc, "file");
