@@ -80,11 +80,6 @@ public class RemoteInteractiveCommandProvider implements InteractiveCommandProvi
         return !support.isFailedOrCancelled();
     }
 
-    public boolean connect(String hkey, String cmd, Map<String, String> env) {
-        support = new RemoteInteractiveCommandSupport(executionEnvironment, cmd, env);
-        return !support.isFailedOrCancelled();
-    }
-
     public InputStream getInputStream() throws IOException {
         return support == null ? null : support.getInputStream();
     }

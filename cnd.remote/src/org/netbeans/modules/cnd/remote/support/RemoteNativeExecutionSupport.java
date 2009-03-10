@@ -131,7 +131,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         command.append(exe).append(" ").append(args).append(" 2>&1"); // NOI18N
         command.insert(0, dircmd);
 
-        String theCommand = ShellUtils.wrapCommand(key, command.toString());
+        String theCommand = ShellUtils.wrapCommand(executionEnvironment, command.toString());
 
         channel = createChannel();
         log.finest("RNES: running command: " + theCommand);

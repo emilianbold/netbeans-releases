@@ -54,11 +54,6 @@ import org.openide.util.Exceptions;
 public abstract class RunFacade {
 
     /** TODO: deprecate and remove */
-    public static RunFacade getInstance(String hkey) {
-        return getInstance(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
-    }
-
-    /** TODO: deprecate and remove */
     public static RunFacade getInstance(ExecutionEnvironment env) {
         if (env.isLocal()) {
             return new RunFacadeLocal();
