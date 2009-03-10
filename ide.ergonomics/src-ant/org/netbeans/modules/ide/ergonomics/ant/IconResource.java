@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,55 +34,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grails.api;
+package org.netbeans.modules.ide.ergonomics.ant;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import org.netbeans.api.project.Project;
-import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileUtil;
+import java.io.InputStream;
+import javax.imageio.ImageIO;
+import org.apache.tools.ant.types.Resource;
+import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Petr Hejl
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class GrailsProjectConfigTest extends NbTestCase {
+final class IconResource extends Resource {
+    private Resource r;
+    private BufferedImage badgeIcon;
 
-    public GrailsProjectConfigTest(String name) {
-        super(name);
+    public IconResource(Resource r, BufferedImage badgeIcon) {
+        super(r.getName(), r.isExists(), r.getLastModified(), r.isDirectory(), r.getSize());
+        this.r = r;
+        this.badgeIcon = badgeIcon;
     }
 
-    public void testProject() throws IOException {
-        Project project = new TestProject("test", FileUtil.toFileObject(
-                FileUtil.normalizeFile(getWorkDir())));
-        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
-        assertEquals(project, config.getProject());
-    }
-
-    public void testPort() throws IOException {
-        Project project = new TestProject("test", FileUtil.toFileObject(
-                FileUtil.normalizeFile(getWorkDir())));
-        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
-
-        assertEquals("8080", config.getPort());
-        config.setPort("9000");
-        assertEquals("9000", config.getPort());
-        config.setPort("9001");
-        assertEquals("9001", config.getPort());
-    }
-
-    public void testEnvironment() throws IOException {
-        Project project = new TestProject("test", FileUtil.toFileObject(
-                FileUtil.normalizeFile(getWorkDir())));
-        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
-
-        assertNull(config.getEnvironment());
-        config.setEnvironment(GrailsEnvironment.DEV);
-        assertEquals(GrailsEnvironment.DEV, config.getEnvironment());
-        GrailsEnvironment env = GrailsEnvironment.valueOf("something");
-        config.setEnvironment(env);
-        assertEquals(env, config.getEnvironment());
+    @Override
+    public InputStream getInputStream() throws IOException {
+        if (getName().endsWith(".html")) {
+            return r.getInputStream();
+        }
+        try {
+            InputStream is = r.getInputStream();
+            BufferedImage img = ImageIO.read(is);
+            if (img == null) {
+                return r.getInputStream();
+            }
+            Image merge = ImageUtilities.mergeImages(img, badgeIcon, 0, 0);
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ImageIO.write((BufferedImage)merge, "png", os);
+            return new ByteArrayInputStream(os.toByteArray());
+        } catch (IOException ex) {
+            return r.getInputStream();
+        }
     }
 }
