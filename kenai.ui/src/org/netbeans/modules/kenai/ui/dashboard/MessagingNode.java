@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht
  */
-public class MessagingNode extends AsynchronousLeafNode implements PropertyChangeListener {
+public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> implements PropertyChangeListener {
 
     private final ProjectHandle project;
     private MessagingHandle messaging;
@@ -92,12 +92,12 @@ public class MessagingNode extends AsynchronousLeafNode implements PropertyChang
     }
 
     @Override
-    protected JComponent createComponent() {
+    protected JComponent createComponent( MessagingHandle data ) {
+        MessagingAccessor accessor = MessagingAccessor.getDefault();
         if( null != messaging ) {
             messaging.removePropertyChangeListener(this);
         }
-        MessagingAccessor accessor = MessagingAccessor.getDefault();
-        messaging = accessor.getMessaging(project);
+        this.messaging = data;
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
 
@@ -145,6 +145,11 @@ public class MessagingNode extends AsynchronousLeafNode implements PropertyChang
         }
         messaging.addPropertyChangeListener(this);
         return panel;
+    }
+
+    protected MessagingHandle load() {
+        MessagingAccessor accessor = MessagingAccessor.getDefault();
+        return accessor.getMessaging(project);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

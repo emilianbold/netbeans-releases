@@ -58,9 +58,11 @@ import org.openide.util.RequestProcessor;
 /**
  * Node which creates its renderer component asynchronously.
  *
+ * @param <T> The type of data displayed in this Node.
+ *
  * @author S. Aubrecht
  */
-public abstract class AsynchronousLeafNode extends LeafNode {
+public abstract class AsynchronousLeafNode<T> extends LeafNode {
 
     private JComponent inner = null;
     private JPanel panel;
@@ -131,11 +133,17 @@ public abstract class AsynchronousLeafNode extends LeafNode {
     protected abstract void configure( JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus);
 
     /**
-     * Creates node's renderer component. The method is called outside AWT thread
-     * and can block indefinetely.
+     * Creates node's renderer component.  The method is always invoked from AWT thread.
      * @return Renderer component, never null.
      */
-    protected abstract JComponent createComponent();
+    protected abstract JComponent createComponent( T data );
+
+    /**
+     * Retrieve data to display in this node. The method is called outside AWT
+     * thread and can block indefinetely.
+     * @return Node's data.
+     */
+    protected abstract T load();
 
     /**
      * Invoke this method to recreate node's renderer component.
@@ -180,10 +188,11 @@ public abstract class AsynchronousLeafNode extends LeafNode {
         });
     }
 
-    private void loaded( final JComponent c ) {
+    private void loaded( final T data ) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 synchronized( LOCK ) {
+                    JComponent c = createComponent(data);
                     loaded = true;
                     if( null == c ) {
                         lblLoading.setVisible(false);
@@ -209,10 +218,10 @@ public abstract class AsynchronousLeafNode extends LeafNode {
         private Thread t = null;
 
         public void run() {
-            final JComponent[] res = new JComponent[1];
+            final Object[] res = new Object[1];
             Runnable r = new Runnable() {
                 public void run() {
-                    res[0] = createComponent();
+                    res[0] = load();
                 }
             };
             t = new Thread( r );
@@ -226,7 +235,7 @@ public abstract class AsynchronousLeafNode extends LeafNode {
                 if( cancelled )
                     return;
 
-                loaded(res[0]);
+                loaded((T)res[0]);
             } catch( InterruptedException iE ) {
                 if( !cancelled )
                     timedout();
