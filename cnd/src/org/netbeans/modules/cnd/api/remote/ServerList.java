@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.api.remote;
 
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -61,10 +62,7 @@ public interface ServerList {
     /** A String[] containing the names of all currently defined development servers */
     public String[] getServerNames();
 
-    public Collection<ExecutionEnvironment> getEnvironments();
-
-    /** TODO: deprecate and remove */
-    public ServerRecord get(String key);
+    public List<ExecutionEnvironment> getEnvironments();
 
     public ServerRecord get(ExecutionEnvironment env);
     
@@ -79,9 +77,6 @@ public interface ServerList {
     public void removeServer(ServerRecord record);
 
     public boolean show(ToolsCacheManager cacheManager);
-
-    /** TODO: deprecate and remove */
-    public boolean isValidExecutable(String hkey, String path);
 
     public boolean isValidExecutable(ExecutionEnvironment env, String path);
 }
