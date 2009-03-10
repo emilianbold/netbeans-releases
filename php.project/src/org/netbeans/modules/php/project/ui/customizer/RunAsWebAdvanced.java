@@ -55,7 +55,7 @@ import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.util.Pair;
+import org.netbeans.modules.php.project.api.Pair;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

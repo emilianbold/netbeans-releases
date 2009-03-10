@@ -51,6 +51,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.web.project.test.ProjectUtil;
+import org.netbeans.modules.web.project.test.TestUtil;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -65,6 +66,11 @@ public class CopyOnSaveSupportTest extends NbTestCase {
 
     public CopyOnSaveSupportTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        TestUtil.setLookup();
     }
 
     public void testSingleDir() throws Exception {

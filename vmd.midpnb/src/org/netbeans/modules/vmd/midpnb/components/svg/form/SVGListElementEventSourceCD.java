@@ -43,9 +43,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPath;
-import org.netbeans.modules.vmd.api.inspector.InspectorPositionController;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -60,21 +57,32 @@ import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.IconType;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.NameType;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
+import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
+import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
+import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 public class SVGListElementEventSourceCD extends ComponentDescriptor {
 
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#SVGListelement"); // NOI18N
-    public static final String PROP_INDEX = "index";
-
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#SVGListElementEventSource"); // NOI18N
+    
     private static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/element_16.png"; // NOI18N
     private static final Image ICON = ImageUtilities.loadImage(ICON_PATH);
+
+    public static final String PROP_INDEX = "index";
+    public static final String PROP_STRING = "name";
+
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
@@ -92,11 +100,16 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_INDEX, MidpTypes.TYPEID_INT, PropertyValue.createNull(), false, false, MidpVersionable.MIDP));
+                new PropertyDescriptor(PROP_INDEX, MidpTypes.TYPEID_INT, PropertyValue.createNull(), false, false, MidpVersionable.MIDP),
+                new PropertyDescriptor(PROP_STRING, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), false, false, MidpVersionable.MIDP)
+        );
     }
 
-    private static DefaultPropertiesPresenter createPropertiesPresenter() {
-        return null;
+    private static DefaultPropertiesPresenter createPropertiesPresenter () {
+        return new DefaultPropertiesPresenter ()
+            .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
+            .addProperty (NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_String"), // NOI18N
+                PropertyEditorString.createInstance(NbBundle.getMessage(ListElementEventSourceCD.class, "LBL_ListElementEventSource_String")), PROP_STRING);
     }
 
     @Override
@@ -109,6 +122,8 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
         return Arrays.asList(
                 // info
                 InfoPresenter.create(new SVGListElementresolver()),
+                //properties
+                createPropertiesPresenter(),
                 //flow
                 new FlowEventSourcePinPresenter() {
 
@@ -126,20 +141,22 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
             protected String getOrder() {
                 return SVGFormCD.SVGListElementOrderCategory.CATEGORY_ID;
             }
+
+            @Override
+            protected DesignEventFilter getEventFilter() {
+                return super.getEventFilter().addParentFilter(getComponent(), 1, false);
+            }
         },
                 //inspector
-                InspectorPositionPresenter.create(new InspectorPositionController[]{new SVGListElementEventSourcePositionController()}));
+                InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)));
+                
 
     }
 
     private static String getName(DesignComponent component) {
-        List<PropertyValue> array = component.getParentComponent().readProperty(SVGListCD.PROP_MODEL).getArray();
-        if (array == null || array.size() - 1 < (Integer) component.readProperty(PROP_INDEX).getPrimitiveValue()) {
-            return "updating array"; //NOI18N
-        }
-        PropertyValue pv = array.get((Integer) component.readProperty(PROP_INDEX).getPrimitiveValue());
+       
 
-        return (String) pv.getPrimitiveValue();
+        return (String) component.readProperty(PROP_STRING).getPrimitiveValue();
 
     }
 
@@ -168,17 +185,4 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
             return ICON;
         }
     }
-
-    //TODO This is not finish yet!
-    private class SVGListElementEventSourcePositionController implements InspectorPositionController {
-
-        public boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component) {
-            if (path.getLastElement().getTypeID() == SVGListCD.TYPEID)
-                return true;
-            return false;
-        }
-    }
 }
-
-
-

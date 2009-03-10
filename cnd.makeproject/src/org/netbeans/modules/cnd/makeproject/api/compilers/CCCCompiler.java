@@ -190,15 +190,25 @@ public abstract class CCCCompiler extends BasicCompiler {
 
     protected void parseUserMacros(final String line, final PersistentList<String> preprocessorList) {
         int defineIndex = line.indexOf("-D"); // NOI18N
-        while (defineIndex > 0) {
+        while (defineIndex >= 0) {
             String token;
             int spaceIndex = line.indexOf(" ", defineIndex + 1); // NOI18N
             if (spaceIndex > 0) {
                 token = line.substring(defineIndex+2, spaceIndex);
+                if (defineIndex > 0 && line.charAt(defineIndex-1)=='"') {
+                    if (token.length() > 0 && token.charAt(token.length()-1)=='"') {
+                        token = token.substring(0,token.length()-1);
+                    }
+                }
                 preprocessorList.add(token);
                 defineIndex = line.indexOf("-D", spaceIndex); // NOI18N
             } else {
                 token = line.substring(defineIndex+2);
+                if (defineIndex > 0 && line.charAt(defineIndex-1)=='"') {
+                    if (token.length() > 0 && token.charAt(token.length()-1)=='"') {
+                        token = token.substring(0,token.length()-1);
+                    }
+                }
                 preprocessorList.add(token);
                 break;
             }

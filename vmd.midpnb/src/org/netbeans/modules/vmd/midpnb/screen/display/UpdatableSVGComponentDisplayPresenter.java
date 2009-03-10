@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.microedition.m2g.SVGImage;
 import org.netbeans.modules.mobility.svgcore.util.Util;
@@ -56,6 +57,8 @@ import org.w3c.dom.svg.SVGElement;
  * @author akorostelev
  */
 public abstract class UpdatableSVGComponentDisplayPresenter extends SVGComponentDisplayPresenter{
+
+    public static final    String SVG_NS = "http://www.w3.org/2000/svg";   // NOI18N
 
     protected static final String TRAIT_X           = "x";                 // NOI18N
     protected static final String TRAIT_Y           = "y";                 // NOI18N
@@ -124,8 +127,8 @@ public abstract class UpdatableSVGComponentDisplayPresenter extends SVGComponent
         }
     }
 
-    protected String getFirstListModelElement(DesignComponent svgComponent) {
-        PropertyValue model = svgComponent.readProperty(SVGComboBoxCD.PROP_MODEL);
+    protected String getFirstListModelElement(DesignComponent svgComponent, String modelPropertyName) {
+        PropertyValue model = svgComponent.readProperty(modelPropertyName);
         String value = ""; // NOI18N
         if (model == null) {
             return value;
@@ -140,6 +143,27 @@ public abstract class UpdatableSVGComponentDisplayPresenter extends SVGComponent
             value = list.get(0).getPrimitiveValue().toString();
         }
         return value;
+    }
+
+    protected List<String> getListModelElements(DesignComponent svgComponent, String modelPropertyName) {
+        PropertyValue model = svgComponent.readProperty(modelPropertyName);
+        List<String> itemsList = new ArrayList<String>();
+        if (model == null) {
+            return itemsList;
+        }
+        if (model.getKind().equals(Kind.USERCODE)) {
+            itemsList.add(USERCODE);
+        } else {
+            List<PropertyValue> propsList = model.getArray();
+            if ( propsList == null || propsList.isEmpty() ){
+                return itemsList;
+            }
+            for (PropertyValue propertyValue : propsList) {
+                itemsList.add(propertyValue.getPrimitiveValue().toString());
+
+            }
+        }
+        return itemsList;
     }
 
 }

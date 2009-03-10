@@ -41,6 +41,7 @@ package org.netbeans.modules.vmd.midpnb.screen.display;
 import javax.microedition.m2g.SVGImage;
 import org.netbeans.modules.mobility.svgcore.util.Util;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComboBoxCD;
 import org.w3c.dom.svg.SVGElement;
 
 /**
@@ -62,7 +63,7 @@ public class SVGComboBoxDisplayPresenter extends UpdatableSVGComponentDisplayPre
             String componentId) {
         String id = componentId + TITLE_SUFFIX; // NOI18N
 
-        String value = getFirstListModelElement(svgComponent); //NOI18N
+        String value = getFirstListModelElement(svgComponent, SVGComboBoxCD.PROP_MODEL); //NOI18N
 
         SVGElement element = Util.getElementById(svgImage, id);
 

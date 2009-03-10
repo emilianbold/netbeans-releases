@@ -51,6 +51,7 @@ import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.editor.indent.IndentImpl;
 import org.netbeans.modules.editor.indent.IndentSpiPackageAccessor;
 import org.netbeans.modules.editor.indent.TaskHandler;
+import org.openide.util.Lookup;
 
 
 /**
@@ -73,6 +74,22 @@ public final class Context {
 
     Context(TaskHandler.MimeItem mimeItem) {
         this.mimeItem = mimeItem;
+    }
+
+    /**
+     * Returns lookup which is merge of lookups provided by individual
+     * formatters involved in formatting given document. This method returns
+     * a valid non-null value only after formatting was started, that is in and after
+     * {@link IndentTask#reindent()} or {@link ReformatTask#reformat()}.
+     * 
+     * @return merge lookup provided by individual formatters; will be null
+     *  before formatting starts
+     *
+     * @since org.netbeans.modules.editor.indent/2 1.12
+     */
+    public Lookup getLookup() {
+        assert mimeItem.handler().getLookup() != null : "you are calling getLookup() too early - re-read Javadoc";
+        return mimeItem.handler().getLookup();
     }
 
     /**
