@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.debugger.jpda.ant;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -180,6 +181,16 @@ public class JPDAConnect extends Task {
         properties.put ("sourcepath", sourcePath); // NOI18N
         properties.put ("name", getName ()); // NOI18N
         properties.put ("jdksources", jdkSourcePath); // NOI18N
+        String workDir = getProject().getProperty("work.dir");
+        File baseDir;
+        if (workDir != null) {
+            baseDir = new File(workDir);
+        } else {
+            baseDir = getProject().getBaseDir();
+        }
+        properties.put ("baseDir", baseDir); // NOI18N
+
+        logger.fine("JPDAStart: properties = "+properties);
         
 
         synchronized(lock) {
