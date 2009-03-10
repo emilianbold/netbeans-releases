@@ -217,6 +217,7 @@ abstract class Lookup implements ContextProvider {
     static class MetaInf extends Lookup {
         
         private static final String HIDDEN = "-hidden"; // NOI18N
+        private static final RequestProcessor RP = new RequestProcessor("Debugger Services Refresh", 1);
         
         private String rootFolder;
         private final Map<String,List<String>> registrationCache = new HashMap<String,List<String>>();
@@ -229,6 +230,8 @@ abstract class Lookup implements ContextProvider {
         private final Map<ModuleInfo, ModuleChangeListener> disabledModuleChangeListeners
                 = new HashMap<ModuleInfo, ModuleChangeListener>();
         private final Set<MetaInfLookupList> lookupLists = new WeakSet<MetaInfLookupList>();
+        private RequestProcessor.Task refreshListEnabled;
+        private RequestProcessor.Task refreshListDisabled;
 
         
         MetaInf (String rootFolder) {
@@ -370,12 +373,53 @@ abstract class Lookup implements ContextProvider {
             }
         }
 
+        private void clearCaches(ClassLoader cl) {
+            MetaInf.this.clearCaches();
+            if (cl != null) {
+                // Release the appropriate instances from the instance cache
+                synchronized(instanceCache) {
+                    List<String> classes = new ArrayList<String>(instanceCache.size());
+                    classes.addAll(instanceCache.keySet());
+                    for (String clazz : classes) {
+                        Object instance = instanceCache.get(clazz);
+                        if (instance.getClass().getClassLoader() == cl) {
+                            instanceCache.remove(clazz);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void refreshLists(boolean load) {
+            List<MetaInfLookupList> ll;
+            synchronized (lookupLists) {
+                ll = new ArrayList<MetaInfLookupList>(lookupLists.size());
+                //System.err.println("\nRefreshing lookup lists ("+load+"):\n");
+                //System.err.println("  unsorted: "+lookupLists+"\n");
+                ll.addAll(lookupLists);
+            }
+            Collections.sort(ll, getMetaInfLookupListComparator(load));
+            //System.err.println("    sorted: "+ll+"\n");
+            for (MetaInfLookupList mll : ll) {
+                mll.refreshContent();
+            }
+        }
+
+        private static Comparator<MetaInfLookupList> getMetaInfLookupListComparator(final boolean load) {
+            return new Comparator<MetaInfLookupList>() {
+                public int compare(MetaInfLookupList l1, MetaInfLookupList l2) {
+                    if (load) {
+                        return l1.notifyLoadOrder - l2.notifyLoadOrder;
+                    } else {
+                        return l1.notifyUnloadOrder - l2.notifyUnloadOrder;
+                    }
+                }
+            };
+        }
+
         private final class ModuleChangeListener implements PropertyChangeListener, org.openide.util.LookupListener {
 
             private ClassLoader cl;
-            private RequestProcessor.Task refreshListEnabled;
-            private RequestProcessor.Task refreshListDisabled;
-            private RequestProcessor rp;
 
             public ModuleChangeListener(ClassLoader cl) {
                 this.cl = cl;
@@ -403,23 +447,17 @@ abstract class Lookup implements ContextProvider {
                         moduleChangeListeners.put(cl, this);
                     }
                 }
-                synchronized (this) {
+                synchronized (MetaInf.this) {
                     if (mi.isEnabled()) {
                         if (refreshListEnabled == null) {
-                            if (rp == null) {
-                                rp = new RequestProcessor("Debugger Services Refresh", 1);
-                            }
-                            refreshListEnabled = rp.create(new Runnable() {
+                            refreshListEnabled = RP.create(new Runnable() {
                                 public void run() { refreshLists(true); }
                             });
                         }
                         refreshListEnabled.schedule(100);
                     } else {
                         if (refreshListDisabled == null) {
-                            if (rp == null) {
-                                rp = new RequestProcessor("Debugger Services Refresh", 1);
-                            }
-                            refreshListDisabled = rp.create(new Runnable() {
+                            refreshListDisabled = RP.create(new Runnable() {
                                 public void run() { refreshLists(false); }
                             });
                         }
@@ -440,52 +478,8 @@ abstract class Lookup implements ContextProvider {
                 listenOnDisabledModules();
             }
 
-            private void clearCaches(ClassLoader cl) {
-                MetaInf.this.clearCaches();
-                if (cl != null) {
-                    // Release the appropriate instances from the instance cache
-                    synchronized(instanceCache) {
-                        List<String> classes = new ArrayList<String>(instanceCache.size());
-                        classes.addAll(instanceCache.keySet());
-                        for (String clazz : classes) {
-                            Object instance = instanceCache.get(clazz);
-                            if (instance.getClass().getClassLoader() == cl) {
-                                instanceCache.remove(clazz);
-                            }
-                        }
-                    }
-                }
-            }
-            
-            private void refreshLists(boolean load) {
-                List<MetaInfLookupList> ll;
-                synchronized (lookupLists) {
-                    ll = new ArrayList<MetaInfLookupList>(lookupLists.size());
-                    //System.err.println("\nRefreshing lookup lists ("+load+"):\n");
-                    //System.err.println("  unsorted: "+lookupLists+"\n");
-                    ll.addAll(lookupLists);
-                }
-                Collections.sort(ll, getMetaInfLookupListComparator(load));
-                //System.err.println("    sorted: "+ll+"\n");
-                for (MetaInfLookupList mll : ll) {
-                    mll.refreshContent();
-                }
-            }
-
         }
             
-        public static Comparator<MetaInfLookupList> getMetaInfLookupListComparator(final boolean load) {
-            return new Comparator<MetaInfLookupList>() {
-                public int compare(MetaInfLookupList l1, MetaInfLookupList l2) {
-                    if (load) {
-                        return l1.notifyLoadOrder - l2.notifyLoadOrder;
-                    } else {
-                        return l1.notifyUnloadOrder - l2.notifyUnloadOrder;
-                    }
-                }
-            };
-        }
-        
         /**
          * A special List implementation, which ensures that hidden elements
          * are removed when adding items into the list.
