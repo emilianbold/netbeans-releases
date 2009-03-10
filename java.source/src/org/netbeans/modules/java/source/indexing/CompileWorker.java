@@ -49,7 +49,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
@@ -95,13 +97,15 @@ abstract class CompileWorker {
     static class ParsingOutput {
         final boolean success;
         final Map<URI, List<String>> file2FQNs;
+        final Set<ElementHandle<TypeElement>> addedTypes;
         final List<File> createdFiles;
         final Set<Indexable> finishedFiles;
         final Map<URL, Set<URL>> root2Rebuild;
 
-        public ParsingOutput(boolean success, Map<URI, List<String>> file2FQNs, List<File> createdFiles, Set<Indexable> finishedFiles, Map<URL, Set<URL>> root2Rebuild) {
+        public ParsingOutput(boolean success, Map<URI, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, List<File> createdFiles, Set<Indexable> finishedFiles, Map<URL, Set<URL>> root2Rebuild) {
             this.success = success;
             this.file2FQNs = file2FQNs;
+            this.addedTypes = addedTypes;
             this.createdFiles = createdFiles;
             this.finishedFiles = finishedFiles;
             this.root2Rebuild = root2Rebuild;

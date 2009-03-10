@@ -97,11 +97,11 @@ import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
@@ -905,7 +905,7 @@ out:                    for (URL e : roots) {
                         for (URL mainClass : mainClasses) {
                             File mainFo = new File (URI.create(mainClass.toExternalForm()));
                             if (mainFo.exists()) {
-                                classes.addAll(RepositoryUpdater.getRelatedFiles(mainFo, rootFile));
+                                classes.addAll(org.netbeans.modules.java.source.usages.RepositoryUpdater.getRelatedFiles(mainFo, rootFile));
                             }
                         }
                         for (ElementHandle<TypeElement> cls : classes) {

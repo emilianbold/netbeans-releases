@@ -50,7 +50,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ElementHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
@@ -125,6 +127,13 @@ public abstract class ClassIndexImpl {
         }
     }
     
+    public void typesEvent (final Iterable<? extends ElementHandle<TypeElement>> added, final Iterable<? extends ElementHandle<TypeElement>> removed, final Iterable<? extends ElementHandle<TypeElement>> changed) {
+        final ClassIndexImplEvent a = added != null ? new ClassIndexImplEvent(this, added) : null;
+        final ClassIndexImplEvent r = removed != null ? new ClassIndexImplEvent(this, removed) : null;
+        final ClassIndexImplEvent ch = changed != null ? new ClassIndexImplEvent(this, changed) : null;
+        typesEvent(a, r, ch);
+    }
+
     public void typesEvent (final ClassIndexImplEvent added, final ClassIndexImplEvent removed, final ClassIndexImplEvent changed) {
         WeakReference<ClassIndexImplListener>[] _listeners;
         synchronized (this.listeners) {
