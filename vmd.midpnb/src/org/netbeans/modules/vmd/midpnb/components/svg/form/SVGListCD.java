@@ -66,6 +66,7 @@ import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorListModel;
+import org.netbeans.modules.vmd.midpnb.screen.display.SVGListDisplayPresenter;
 import org.openide.util.NbBundle;
 
 /**
@@ -117,7 +118,8 @@ public class SVGListCD extends ComponentDescriptor{
                 new SVGListElementCodeFooter(SVGListElementEventSourceCD.TYPEID),
                 //inspector
                 new SVGComponentInspectorFolderPresenter(),
-                MidpInspectorSupport.createComponentElementsCategory(NbBundle.getMessage (ListCD.class, "DISP_InspectorCategory_Elements"), getInspectorOrderingControllers(), SVGListElementEventSourceCD.TYPEID) //NOI18N
+                MidpInspectorSupport.createComponentElementsCategory(NbBundle.getMessage (ListCD.class, "DISP_InspectorCategory_Elements"), getInspectorOrderingControllers(), SVGListElementEventSourceCD.TYPEID), //NOI18N
+                new SVGListDisplayPresenter()
         );
     }
 

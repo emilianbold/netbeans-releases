@@ -38,15 +38,12 @@
  */
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.microedition.m2g.SVGImage;
 import org.netbeans.modules.mobility.svgcore.util.Util;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.PropertyValue.Kind;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComboBoxCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGLabelCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGRadioButtonCD;
@@ -125,45 +122,6 @@ public abstract class UpdatableSVGComponentDisplayPresenter extends SVGComponent
         if (element != null){
             element.setTrait( TRAIT_VISIBILITY, value ? TR_VALUE_VISIBLE : TR_VALUE_HIDDEN);
         }
-    }
-
-    protected String getFirstListModelElement(DesignComponent svgComponent, String modelPropertyName) {
-        PropertyValue model = svgComponent.readProperty(modelPropertyName);
-        String value = ""; // NOI18N
-        if (model == null) {
-            return value;
-        }
-        if (model.getKind().equals(Kind.USERCODE)) {
-            value = USERCODE;
-        } else {
-            List<PropertyValue> list = model.getArray();
-            if ( list == null || list.isEmpty() ){
-                return value;
-            }
-            value = list.get(0).getPrimitiveValue().toString();
-        }
-        return value;
-    }
-
-    protected List<String> getListModelElements(DesignComponent svgComponent, String modelPropertyName) {
-        PropertyValue model = svgComponent.readProperty(modelPropertyName);
-        List<String> itemsList = new ArrayList<String>();
-        if (model == null) {
-            return itemsList;
-        }
-        if (model.getKind().equals(Kind.USERCODE)) {
-            itemsList.add(USERCODE);
-        } else {
-            List<PropertyValue> propsList = model.getArray();
-            if ( propsList == null || propsList.isEmpty() ){
-                return itemsList;
-            }
-            for (PropertyValue propertyValue : propsList) {
-                itemsList.add(propertyValue.getPrimitiveValue().toString());
-
-            }
-        }
-        return itemsList;
     }
 
 }

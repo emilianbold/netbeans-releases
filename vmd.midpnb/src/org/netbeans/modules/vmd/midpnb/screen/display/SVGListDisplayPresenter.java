@@ -38,12 +38,16 @@
  */
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import javax.microedition.m2g.SVGImage;
 import org.netbeans.modules.mobility.svgcore.util.Util;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.PropertyValue.Kind;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGListCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGListElementEventSourceCD;
 import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGRect;
 
@@ -63,6 +67,10 @@ public class SVGListDisplayPresenter extends UpdatableSVGComponentDisplayPresent
     protected static final String TRAIT_FONT_FAMILY = "font-family";      // NOI18N
     protected static final String TEXT = "text";             // NOI18N
 
+    public static final String METADATA_METADATA         = "text";           // NOI18N
+    public static final String METADATA_DISPLAY          = "display";        // NOI18N
+    public static final String METADATA_NONE             = "none";           // NOI18N
+
     @Override
     protected void reloadSVGComponent(SVGImage svgImage, DesignComponent svgComponent, String componentId) {
 
@@ -77,12 +85,13 @@ public class SVGListDisplayPresenter extends UpdatableSVGComponentDisplayPresent
         int listCapacity = (int) (myBounds.getBBox().getHeight() / itemHeight);
         SVGListCellRenderer renderer = new SVGListCellRenderer(svgImage.getDocument(), itemHeight, myHiddenText, myBounds, myContent);
 
-        List<String> items = getListModelElements(svgComponent, SVGListCD.PROP_ELEMENTS);
+        List<String> items = getListModelElements(svgComponent);
         renderList(items, renderer, listCapacity);
     }
 
     private Vector<SVGLocatableElement> renderList(List<String> items, SVGListCellRenderer renderer, int listCapacity) {
-        //removeContent();
+        renderer.clearContent();
+        
         Vector<SVGLocatableElement> vector = new Vector<SVGLocatableElement>();
         int itemsCount = items.size();
         if (itemsCount == 0) {
@@ -104,4 +113,31 @@ public class SVGListDisplayPresenter extends UpdatableSVGComponentDisplayPresent
         SVGRect rect = element.getScreenBBox();
         return rect;
     }
+
+    private List<String> getListModelElements(DesignComponent svgComponent) {
+        List<String> itemsList = new ArrayList<String>();
+        if (SVGListCD.TYPEID != svgComponent.getType()) {
+            return itemsList;
+        }
+        PropertyValue model = svgComponent.readProperty(SVGListCD.PROP_ELEMENTS);
+        if (model == null) {
+            return itemsList;
+        }
+        if (model.getKind().equals(Kind.USERCODE)) {
+            itemsList.add(USERCODE);
+        } else {
+            List<PropertyValue> propsList = model.getArray();
+            if ( propsList == null || propsList.isEmpty() ){
+                return itemsList;
+            }
+
+            for (PropertyValue propertyValue : propsList) {
+                PropertyValue stringValue = propertyValue.getComponent().
+                        readProperty(SVGListElementEventSourceCD.PROP_STRING);
+                itemsList.add(stringValue.getPrimitiveValue().toString());
+            }
+        }
+        return itemsList;
+    }
+
 }

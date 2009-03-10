@@ -40,53 +40,22 @@
  */
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
-import com.sun.perseus.awt.SVGComponent;
+import com.sun.jmx.mbeanserver.MetaData;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
 
 
 /**
- * Suggested svg list tag :
- * <pre>
- * &lt;g id="list" visibility="hidden" transform="translate(20,200)">
- *       &lt;!-- Metadata information. Please don't edit. -->
- *       &lt;text display="none">type=list&lt;/text>
- *
- *       &lt;g>
- *       &lt;text id="list_hidden_text" visibility="hidden">
- *           HIDDEN TEXT
- *       &lt;/text>
- *       &lt;text display="none">type=hidden_text&lt;/text>
- *       &lt;g>
- *           &lt;!-- Metadata information. Please don't edit. -->
- *           &lt;text display="none">type=bound&lt;/text>
- *           &lt;rect id="list_bound" x="5.0" y="0.0" width="80" height="60" fill="white" stroke="black" stroke-width="2" visibility="inherit"/>
- *       &lt;/g>
- *       &lt;g>
- *           &lt;!-- Metadata information. Please don't edit. -->
- *           &lt;text display="none">type=selection&lt;/text>
- *           &lt;rect id="list_selection" x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
- *       &lt;/g>
- *       &lt;g id="list_current_selection" >
- *          &lt;!-- Metadata information. Please don't edit. -->
- *          &lt;text display="none">type=current_selection&lt;/text> 
- *       &lt;/g>
- *       &lt;g  id="list_content" visibility="inherit">
- *           &lt;!-- Metadata information. Please don't edit. -->
- *           &lt;text display="none">type=content&lt;/text>
- *           &lt;/g>
- *   &lt;/g
- * </pre>
- * Absence of inner "text" node will lead to IllegalArgumentException. 
- * Rectangle ( first "rect" tag ) represents selection figure on the screen.
- * Group tag represent content that will be used as area for rendering
- * in this class. It should be present ( NPE will be thrown otherwise ).  
- * This renderer also needs selection element. 
- * 
- * @author ads
+ * Logic implementation is copied from
+ * main/vmd.components.svg/nb_svg_midp_components/src/org.netbeans.microedition.svg.SVGListCellRenderer.java
+ * @author akorostelev
  *
  */
 class SVGListCellRenderer extends TextRenderer {
+
     
     SVGListCellRenderer(Document document, float height, SVGLocatableElement hiddenText,
                 SVGLocatableElement bounds, SVGLocatableElement content) {
@@ -97,6 +66,27 @@ class SVGListCellRenderer extends TextRenderer {
         myContent = content;
 
         initEmpiricalLetterWidth(hiddenText);
+    }
+
+    public void clearContent(){
+        Node node = getContentElement().getFirstElementChild();
+        while (node != null) {
+            Element next = null;
+            if (node instanceof SVGElement) {
+                next = ((SVGElement) node).getNextElementSibling();
+            }
+            if (!SVGListDisplayPresenter.METADATA_METADATA.equals(node.getLocalName())) {
+                getContentElement().removeChild(node);
+            }
+            else if (node instanceof SVGElement) {
+                String display = ((SVGElement) node).getTrait(SVGListDisplayPresenter.METADATA_DISPLAY);
+                if (!SVGListDisplayPresenter.METADATA_NONE.equals(display)) {
+                    final Node forRemove = node;
+                    getContentElement().removeChild(forRemove);
+                }
+            }
+            node = next;
+        }
     }
 
     public SVGLocatableElement getCellRendererComponent( Object value,

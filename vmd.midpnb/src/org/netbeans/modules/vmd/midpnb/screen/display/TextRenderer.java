@@ -44,7 +44,9 @@ import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGRect;
 
 /**
- * @author ads
+ * Logic implementation is copied from
+ * main/vmd.components.svg/nb_svg_midp_components/src/org.netbeans.microedition.svg.TextRenderer.java
+ * @author akorostelev
  *
  */
 class TextRenderer {
