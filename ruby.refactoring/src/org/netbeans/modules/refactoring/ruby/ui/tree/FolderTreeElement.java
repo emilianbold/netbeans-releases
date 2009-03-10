@@ -42,16 +42,16 @@
 package org.netbeans.modules.refactoring.ruby.ui.tree;
 
 import javax.swing.Icon;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.napi.gsfret.source.UiUtils;
-import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.core.UiUtils;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.refactoring.spi.ui.*;
+import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

@@ -1,6 +1,6 @@
 Code completion result for source line:
 Heig|ht: 5'11'' (180 cm)
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 KEYWORD    !                                          Non-specific tag
 KEYWORD    !!foo                                      Secondary

@@ -42,12 +42,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.Index;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.php.editor.index.IndexedClass;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.PHPIndex;
@@ -123,12 +121,10 @@ public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingR
             BodyDeclaration.Modifier.PUBLIC;
 
         List<String> classNames = new ArrayList<String>();        
-        Index i = context.compilationInfo.getIndex(PhpSourcePath.MIME_TYPE);
-        PHPIndex index = PHPIndex.get(i);
         List<IndexedElement> l = new LinkedList<IndexedElement>();
         Collection<IndexedConstant> flds = null;        
-        for (String clazzName : index.getClassAncestors(null, className)) {
-            flds = getFields(index, clazzName, field, modifiers);
+        for (String clazzName : context.index.getClassAncestors(null, className)) {
+            flds = getFields(context.index, clazzName, field, modifiers);
             if (!flds.isEmpty()) {
                 break;
             } else {
@@ -182,14 +178,14 @@ public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingR
 
     private void addHint(Variable field) {
         OffsetRange range = new OffsetRange(field.getStartOffset(), field.getEndOffset());
-        Hint hint = new Hint(ImproperFieldAccessRule.this, getDisplayName(), context.compilationInfo.getFileObject(), range, null, 500);
+        Hint hint = new Hint(ImproperFieldAccessRule.this, getDisplayName(), context.parserResult.getSnapshot().getSource().getFileObject(), range, null, 500);
         addResult(hint);
     }
 
     private Collection<IndexedConstant> getFields(PHPIndex index, String clsName, Variable field, int modifiers) {
         Collection<IndexedConstant> retval = new ArrayList<IndexedConstant>();
         final String varName = extractVariableName(field);
-        Collection<IndexedConstant> flds = index.getFields(null, clsName,varName, NameKind.PREFIX, modifiers);
+        Collection<IndexedConstant> flds = index.getFields(null, clsName,varName, QuerySupport.Kind.PREFIX, modifiers);
         for (IndexedConstant indexedConstant : flds) {
             String fldName = indexedConstant.getName();
             fldName = fldName.charAt(0) == '$' ? fldName.substring(1) : fldName;//NOI18N

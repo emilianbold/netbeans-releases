@@ -49,18 +49,22 @@ import org.jvyamlb.Position.Range;
 import org.jvyamlb.nodes.Node;
 import org.jvyamlb.nodes.PositionedScalarNode;
 import org.jvyamlb.nodes.PositionedSequenceNode;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  * Semantic Analyzer for YAML
  * 
  * @author Tor Norbye
  */
-public class YamlSemanticAnalyzer implements SemanticAnalyzer {
+public class YamlSemanticAnalyzer extends SemanticAnalyzer {
+    
     private boolean cancelled;
+    
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
@@ -79,14 +83,25 @@ public class YamlSemanticAnalyzer implements SemanticAnalyzer {
         cancelled = true;
     }
 
-    public void run(CompilationInfo info) throws Exception {
+    @Override
+    public int getPriority() {
+        return 0;
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    @Override
+    public void run(Result result, SchedulerEvent event) {
         resume();
 
         if (isCancelled()) {
             return;
         }
 
-        YamlParserResult ypr = (YamlParserResult) info.getEmbeddedResult(YamlTokenId.YAML_MIME_TYPE, 0);
+        YamlParserResult ypr = (YamlParserResult) result;
         if (ypr == null || ypr.getRootNodes().size() == 0) {
             this.semanticHighlights = Collections.emptyMap();
             return;

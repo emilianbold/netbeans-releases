@@ -17,7 +17,7 @@
             </folder>
         </folder>
     </folder>
-    <folder name="GsfPlugins">
+    <folder name="CslPlugins">
         <folder name="text">
             <folder name="x-php5">
                 <file name="language.instance">
@@ -37,6 +37,8 @@
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.lexer.PHPTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
+                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
+                <file name="org-netbeans-modules-php-editor-PhpEmbeddingProvider$Factory.instance" />
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -202,7 +204,7 @@
             </file>
         </folder>
     </folder>
-    <folder name="gsf-hints">
+    <folder name="csl-hints">
         <folder name="text">
             <folder name="x-php5">
                 <folder name="hints">

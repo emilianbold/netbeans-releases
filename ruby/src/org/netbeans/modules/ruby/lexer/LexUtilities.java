@@ -46,11 +46,8 @@ import java.util.Set;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -58,10 +55,14 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.ruby.RubyParseResult;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-
 
 /**
  * Utilities associated with lexing or analyzing the document at the
@@ -118,41 +119,30 @@ public class LexUtilities {
     private LexUtilities() {
     }
 
-    /** For a possibly generated offset in an AST, return the corresponding lexing/true document offset */
-    public static int getLexerOffset(CompilationInfo info, int astOffset) {
-        ParserResult result = info.getEmbeddedResult(RubyInstallation.RUBY_MIME_TYPE, 0);
+    @CheckForNull
+    public static BaseDocument getDocument(RubyParseResult result, boolean forceOpen) {
         if (result != null) {
-            TranslatedSource ts = result.getTranslatedSource();
-            if (ts != null) {
-                return ts.getLexicalOffset(astOffset);
-            }
+            Source source = result.getSnapshot().getSource();
+            return GsfUtilities.getDocument(source.getFileObject(), forceOpen);
         }
-        
-        return astOffset;
+        return null;
     }
-    
-    public static OffsetRange getLexerOffsets(CompilationInfo info, OffsetRange astRange) {
-        if (astRange == OffsetRange.NONE) {
-            return OffsetRange.NONE;
-        }
-        ParserResult result = info.getEmbeddedResult(RubyInstallation.RUBY_MIME_TYPE, 0);
-        if (result != null) {
-            TranslatedSource ts = result.getTranslatedSource();
-            if (ts != null) {
-                int rangeStart = astRange.getStart();
-                int start = ts.getLexicalOffset(rangeStart);
-                if (start == rangeStart) {
-                    return astRange;
-                } else if (start == -1) {
-                    return OffsetRange.NONE;
-                } else {
-                    // Assumes the translated range maintains size
-                    return new OffsetRange(start, start+astRange.getLength());
-                }
-            }
-        }
 
-        return astRange;
+    public static int getLexerOffset(Parser.Result result, int astOffset) {
+        return result.getSnapshot().getOriginalOffset(astOffset);
+    }
+
+    public static OffsetRange getLexerOffsets(Parser.Result result, OffsetRange astRange) {
+        int rangeStart = astRange.getStart();
+        int start = result.getSnapshot().getOriginalOffset(rangeStart);
+        if (start == rangeStart) {
+            return astRange;
+        } else if (start == -1) {
+            return OffsetRange.NONE;
+        } else {
+            // Assumes the translated range maintains size
+            return new OffsetRange(start, start + astRange.getLength());
+        }
     }
 
     /** Find the ruby token sequence (in case it's embedded in something else at the top level */

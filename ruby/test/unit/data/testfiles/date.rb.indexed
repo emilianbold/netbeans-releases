@@ -102,6 +102,7 @@ Searchable Keys:
   method : yday|DOCUMENTED|
   method : year|DOCUMENTED|
   method : zone|PRIVATE|
+  require : date
 
 Not Searchable Keys:
   attrs : |DOCUMENTED|;1362

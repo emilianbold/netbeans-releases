@@ -38,53 +38,42 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.html.editor.test;
 
-import junit.framework.Assert;
-import org.netbeans.junit.NbTestCase;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 
 /**
  * @author Marek Fukala
  */
-public class TestBase extends NbTestCase {
+public class TestBase extends CslTestBase {
 
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
-    
-    }
+    private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
 
-    public static class Lkp extends ProxyLookup {
-        
-        private static Lkp DEFAULT;
-        
-        public Lkp() {
-            Assert.assertNull(DEFAULT);
-            DEFAULT = this;
-        }
-        
-        public static void initLookups(Object[] objs) {
-            ClassLoader loader = Lkp.class.getClassLoader();
-            DEFAULT.setLookups(new Lookup [] {
-                Lookups.fixed(new RepositoryImpl()),
-                Lookups.metaInfServices(loader),
-                Lookups.singleton(loader)
-            });
-        }
-    }
-    
     public TestBase(String name) {
         super(name);
     }
 
-    @Override
-    public void setUp() {
-        Lkp.initLookups(new Object[]{});
+    protected BaseDocument createDocument() {
+        NbEditorDocument doc = new NbEditorDocument(HTMLKit.HTML_MIME_TYPE);
+        doc.putProperty(PROP_MIME_TYPE, HTMLKit.HTML_MIME_TYPE);
+        doc.putProperty(Language.class, HTMLTokenId.language());
+        return doc;
     }
-    
-    
+
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new HtmlLanguage();
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return HTMLKit.HTML_MIME_TYPE;
+    }
 }

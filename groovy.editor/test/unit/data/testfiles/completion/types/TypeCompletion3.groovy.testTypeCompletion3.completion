@@ -1,6 +1,6 @@
 Code completion result for source line:
 Cl| }
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      Class                                      null
 CLASS      ClassCastException                         null

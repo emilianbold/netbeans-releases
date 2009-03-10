@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.php.editor.parser;
 
-import org.netbeans.modules.gsf.api.*;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 
@@ -51,10 +54,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
 public class PHPParseResult extends ParserResult {
     
     private final Program root;
+    private List<Error> errors;
 
-    public PHPParseResult(GSFPHPParser parser, ParserFile file, Program rootNode, boolean isValid) {
-        super(parser, file, PHPLanguage.PHP_MIME_TYPE, isValid);
+    public PHPParseResult(Snapshot snapshot, Program rootNode) {
+        super(snapshot);
         this.root = rootNode;
+        this.errors = Collections.<Error>emptyList();
     }
 
     public Program getProgram() {
@@ -62,8 +67,19 @@ public class PHPParseResult extends ParserResult {
     }
     
     @Override
-    public AstTreeNode getAst() {
-        return null;
+    public List<? extends Error> getDiagnostics() {
+        return errors;
+    }
+
+    @Override
+    protected void invalidate() {
+        // comments copied from Groovy:
+        // FIXME parsing API
+        // remove from parser cache (?)
+    }
+
+    public void setErrors(List<Error> errors) {
+        this.errors = errors;
     }
 
 }
