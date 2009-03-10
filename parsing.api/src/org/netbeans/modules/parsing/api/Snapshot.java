@@ -137,7 +137,9 @@ public final class Snapshot {
                     originalToCurrent [i] [0], -1
                 });
         }
-        if (newOriginalToCurrent.get (newOriginalToCurrent.size () - 1) [1] >= 0)
+        if (newOriginalToCurrent.size () > 0 &&
+            newOriginalToCurrent.get (newOriginalToCurrent.size () - 1) [1] >= 0
+        )
             newOriginalToCurrent.add (new int[] {
                 newOriginalToCurrent.get (newOriginalToCurrent.size () - 1) [0] + 
                     length - 
