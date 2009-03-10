@@ -141,10 +141,16 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
                     pluginDirs.add(plugin.getDirName());
                 }
 
-                addPlugin(result, pluginDirs);
+                addPlugins(pluginsDir, result, pluginDirs);
             } else {
-                addPlugin(result, null);
+                addPlugins(pluginsDir, result, null);
             }
+        }
+
+        // TODO philosophical question: Is the global plugin boot or compile classpath?
+        File globalPluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getGlobalPluginsDir();
+        if (globalPluginsDir != null && globalPluginsDir.isDirectory()) {
+            addPlugins(globalPluginsDir, result, null);
         }
 
         if (listenerPluginsLib == null) {
@@ -165,9 +171,9 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         return Collections.unmodifiableList(result);
     }
 
-    private void addPlugin(List<PathResourceImplementation> result, Set<String> names) {
-        for (String name : pluginsDir.list()) {
-            File file = new File(pluginsDir, name);
+    private void addPlugins(File dir, List<PathResourceImplementation> result, Set<String> names) {
+        for (String name : dir.list()) {
+            File file = new File(dir, name);
             if (file.isDirectory() && (names == null || names.contains(name))) {
                 // lib directories of installed plugins
                 addLibs(file, result);

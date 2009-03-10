@@ -279,7 +279,7 @@ public class BuildConfig {
         return null;
     }
 
-    public synchronized File getGlobalPluginDir() {
+    public synchronized File getGlobalPluginsDir() {
         return globalPluginsDir;
     }
 
