@@ -77,7 +77,7 @@ public class SVGListDisplayPresenter extends UpdatableSVGComponentDisplayPresent
         int listCapacity = (int) (myBounds.getBBox().getHeight() / itemHeight);
         SVGListCellRenderer renderer = new SVGListCellRenderer(svgImage.getDocument(), itemHeight, myHiddenText, myBounds, myContent);
 
-        List<String> items = getListModelElements(svgComponent, SVGListCD.PROP_MODEL);
+        List<String> items = getListModelElements(svgComponent, SVGListCD.PROP_ELEMENTS);
         renderList(items, renderer, listCapacity);
     }
 
