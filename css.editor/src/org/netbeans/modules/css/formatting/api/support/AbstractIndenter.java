@@ -66,6 +66,7 @@ import org.openide.util.Lookup;
 
 /**
  *
+ * @since org.netbeans.modules.css.editor/1 1.3
  */
 abstract public class AbstractIndenter<T1 extends TokenId> {
 

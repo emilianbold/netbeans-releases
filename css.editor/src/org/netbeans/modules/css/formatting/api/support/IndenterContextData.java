@@ -42,6 +42,10 @@ package org.netbeans.modules.css.formatting.api.support;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 
+/**
+ *
+ * @since org.netbeans.modules.css.editor/1 1.3
+ */
 public final class IndenterContextData<T1 extends TokenId> {
 
     private int lineStartOffset;

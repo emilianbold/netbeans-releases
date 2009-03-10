@@ -45,6 +45,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.editor.BaseDocument;
 
+/**
+ *
+ * @since org.netbeans.modules.css.editor/1 1.3
+ */
 public final class IndenterFormattingContext {
 
     private boolean firstIndenter = false;

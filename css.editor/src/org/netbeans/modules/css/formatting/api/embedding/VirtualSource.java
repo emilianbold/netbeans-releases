@@ -45,6 +45,8 @@ import javax.swing.text.Document;
  * Virtual source generated for a language from a document. The purpose of virtual
  * source is to extract individual parts of given language from a document
  * and amend such a source to be syntactically correct as much as possible.
+ * 
+ * @since org.netbeans.modules.css.editor/1 1.3
  */
 public interface VirtualSource {
 

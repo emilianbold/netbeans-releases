@@ -61,6 +61,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
+ * @since org.netbeans.modules.css.editor/1 1.3
  */
 public class LexUtilities {
 

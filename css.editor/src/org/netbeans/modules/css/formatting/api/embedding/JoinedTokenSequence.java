@@ -23,6 +23,10 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 
+/**
+ *
+ * @since org.netbeans.modules.css.editor/1 1.3
+ */
 public final class JoinedTokenSequence<T1 extends TokenId> {
 
     List<TokenSequenceWrapper<T1>> tss;
