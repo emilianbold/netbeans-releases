@@ -42,6 +42,7 @@
 package org.openide.util.test;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import static junit.framework.Assert.*;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -67,6 +68,7 @@ public class MockLookup extends ProxyLookup {
                 defaultLookup.set(null, null);
             }
             assertEquals(MockLookup.class, Lookup.getDefault().getClass());
+            setInstances();
         } catch (Exception x) {
             throw new ExceptionInInitializerError(x);
         } finally {
@@ -79,7 +81,6 @@ public class MockLookup extends ProxyLookup {
         assertTrue(making);
         assertNull(DEFAULT);
         DEFAULT = this;
-        setInstances();
     }
 
     /**
@@ -107,7 +108,13 @@ public class MockLookup extends ProxyLookup {
      */
     public static void setInstances(Object... instances) {
         ClassLoader l = MockLookup.class.getClassLoader();
-        setLookup(Lookups.fixed(instances), Lookups.metaInfServices(l), Lookups.singleton(l));
+        if (l != Lookup.getDefault().lookup(ClassLoader.class)) {
+            setLookup(Lookups.metaInfServices(l), Lookups.singleton(l));
+        }
+        Lookup projects = Lookups.forPath("Services");
+        Collection<?> initialize = projects.lookupAll(Object.class);
+        //System.err.println("all: " + initialize);
+        setLookup(Lookups.fixed(instances), Lookups.metaInfServices(l), projects, Lookups.singleton(l));
     }
 
 }

@@ -53,6 +53,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.test.MockLookup;
 
 /**
  * Tests for J2SEProjectGenerator
@@ -169,6 +170,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
     };
 
     public void testCreateProject() throws Exception {
+        MockLookup.init();
         File proj = getWorkDir();
         clearWorkDir();
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
