@@ -38,8 +38,8 @@
  */
 package org.netbeans.modules.php.editor.model;
 
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
  * @author Radek Matous
@@ -48,7 +48,7 @@ public class ModelFactory {
     private ModelFactory() {}
 
     @NonNull
-    public static Model getModel(CompilationInfo info) {
+    public static Model getModel(ParserResult info) {
         return new Model(info);
     }
 

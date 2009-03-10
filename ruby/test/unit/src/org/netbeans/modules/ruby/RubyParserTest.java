@@ -41,22 +41,14 @@
 
 package org.netbeans.modules.ruby;
 
-import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 import org.jruby.nb.ast.Node;
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParseEvent;
-import org.netbeans.modules.gsf.api.ParseListener;
-import org.netbeans.modules.gsf.api.Parser.Job;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.SourceFileReader;
-import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -79,42 +71,47 @@ public class RubyParserTest extends RubyTestBase {
         super.tearDown();
     }
 
-    private void checkParseTree(String file, String caretLine, String nodeName) throws Exception {
-        CompilationInfo info = getInfo(file);
-        
-        String text = info.getText();
+    private void checkParseTree(final String file, final String caretLine, final String nodeName) throws Exception {
+        Source source = Source.create(getTestFile(file));
 
-        int caretOffset = -1;
+        final int caretOffset;
         if (caretLine != null) {
-            int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
-            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-            int lineOffset = text.indexOf(caretLine);
-            assertTrue(lineOffset != -1);
-
-            caretOffset = lineOffset + caretDelta;
-            ((GsfTestCompilationInfo)info).setCaretOffset(caretOffset);
+            caretOffset = getCaretOffset(source.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(source, caretOffset);
+        } else {
+            caretOffset = -1;
         }
 
-        Node root = AstUtilities.getRoot(info);
-        assertNotNull("Parsing broken input failed for " + file, root);
-        
-        // Ensure that we find the node we're looking for
-        if (nodeName != null) {
-            RubyParseResult rpr = AstUtilities.getParseResult(info);
-            OffsetRange range = rpr.getSanitizedRange();
-            if (range.containsInclusive(caretOffset)) {
-                caretOffset = range.getStart();
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result pr = resultIterator.getParserResult();
+                RubyParseResult rpr = AstUtilities.getParseResult(pr);
+
+                Node root = rpr.getRootNode();
+                assertNotNull("Parsing broken input failed for " + file + "; " + rpr.getDiagnostics(), root);
+
+                // Ensure that we find the node we're looking for
+                if (nodeName != null) {
+                    OffsetRange range = rpr.getSanitizedRange();
+                    int adjustedOffset;
+                    if (range.containsInclusive(caretOffset)) {
+                        adjustedOffset = range.getStart();
+                    } else {
+                        adjustedOffset = caretOffset;
+                    }
+                    AstPath path = new AstPath(root, adjustedOffset);
+                    Node closest = path.leaf();
+                    assertNotNull(closest);
+                    String leafName = closest.getClass().getName();
+                    leafName = leafName.substring(leafName.lastIndexOf('.') + 1);
+                    assertEquals(nodeName, leafName);
+                }
             }
-            AstPath path = new AstPath(root, caretOffset);
-            Node closest = path.leaf();
-            assertNotNull(closest);
-            String leafName = closest.getClass().getName();
-            leafName = leafName.substring(leafName.lastIndexOf('.')+1);
-            assertEquals(nodeName, leafName);
-        }
+        });
+
     }
-        
+       
     public void testPartial1() throws Exception {
         checkParseTree("testfiles/broken1.rb", "x.^", "VCallNode");
     }
@@ -195,44 +192,16 @@ public class RubyParserTest extends RubyTestBase {
     public void testValidResult() throws Exception {
         // Make sure we get a valid parse result out of an aborted parse
         FileObject fo = getTestFile("testfiles/broken6.rb");
-        ParserFile file = new DefaultParserFile(fo, null, false);
-        List<ParserFile> files = Collections.<ParserFile>singletonList(file);
-        final ParserResult[] resultHolder = new ParserResult[1];
-        final Exception[] exceptionHolder = new Exception[1];
+        Source source = Source.create(fo);
 
-        ParseListener listener = new ParseListener() {
-
-            public void started(ParseEvent e) {
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            public
+            @Override
+            void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result r = resultIterator.getParserResult();
+                RubyParseResult jspr = AstUtilities.getParseResult(r);
+                assertNotNull("Expecting JsParseResult, but got " + r, jspr);
             }
-
-            public void finished(ParseEvent e) {
-                resultHolder[0] = e.getResult();
-            }
-
-            public void error(Error e) {
-            }
-
-            public void exception(Exception e) {
-                exceptionHolder[0] = e;
-            }
-
-        };
-        TranslatedSource ts = null;
-        SourceFileReader reader = new SourceFileReader() {
-
-            public CharSequence read(ParserFile file) throws IOException {
-                throw new IOException("Simulate failure");
-            }
-
-            public int getCaretOffset(ParserFile file) {
-                return -1;
-            }
-
-        };
-        Job job = new Job(files, listener, reader, ts);
-        new RubyParser().parseFiles(job);
-
-        assertNotNull("Parser result must be nonnull", resultHolder[0]);
-        assertNotNull("Expected to have the listener notified of a failure", exceptionHolder[0]);
+        });
     }
 }

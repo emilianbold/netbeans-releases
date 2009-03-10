@@ -86,7 +86,7 @@ public class HTMLCompletionQueryTest extends TestBase {
         String content = Utils.readFileContentToString(inputFile);
         BaseDocument doc = createDocument();
         doc.insertString(0,content,null);
-        HTMLSyntaxSupport sup = new HTMLSyntaxSupport(doc);
+        HTMLSyntaxSupport sup = HTMLSyntaxSupport.get(doc);
         HTMLCompletionQuery query = new HTMLCompletionQuery();
         
         JEditorPane component = new JEditorPane();

@@ -42,7 +42,6 @@
 package org.netbeans.modules.ruby;
 
 import java.util.List;
-import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -57,6 +56,7 @@ import org.openide.filesystems.FileUtil;
  * @author Tor Norbye
  */
 public class RubyFormatterTest extends RubyTestBase {
+    
     public RubyFormatterTest(String testName) {
         super(testName);
     }
@@ -64,6 +64,7 @@ public class RubyFormatterTest extends RubyTestBase {
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2,2));
     }
+
     // Used to test arbitrary source trees
     //public void testReformatSourceTree() {
     //    List<FileObject> files = new ArrayList<FileObject>();
@@ -145,8 +146,7 @@ if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-
             BaseDocument doc = getDocument(fo);
 
             try {
-
-                format(doc, formatter, null, 0, doc.getLength(), true);
+                format(doc, formatter, 0, doc.getLength(), true);
             } catch (Exception ex) {
                 System.err.println("Exception processing " + FileUtil.getFileDisplayName(fo));
                 fail(ex.toString());
@@ -169,10 +169,7 @@ if (fo.getNameExt().equals("test-enhancers.rb") || fo.getNameExt().equals("test-
                     if (indentation != 0) {
                         // Make sure the file actually compiles - we might be picking up some testfiles in the
                         // JRuby tree which don't actually pass
-                        ParserResult result = parse(fo);
-                        RubyParseResult rpr = (RubyParseResult)result;
-
-                        if (rpr.getRootNode() == null) {
+                        if (AstUtilities.getRoot(fo) == null) {
                             System.err.println("WARNING - invalid formatting for " + FileUtil.getFileDisplayName(fo) + " " +
                                     "but it also doesn't parse with JRuby so ignoring");
                             break;

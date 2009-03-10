@@ -53,31 +53,27 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.AttributedElement;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.ClassElement;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.ClassMemberElement;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -175,7 +171,7 @@ public final class WhereUsedSupport {
         return new WhereUsedSupport.ResultElement(node, fo, element);
     }
 
-    public static WhereUsedSupport getInstance(final CompilationInfo info, final int offset) {
+    public static WhereUsedSupport getInstance(final ParserResult info, final int offset) {
         List<ASTNode> path = RefactoringUtils.underCaret(info, offset);
         AttributedNodes attribs = AttributedNodes.getInstance(info);
         AttributedElement el = null;
@@ -201,8 +197,8 @@ public final class WhereUsedSupport {
                 break;
             }
         }
-        return (el != null) ? new WhereUsedSupport(PHPIndex.get(info.getIndex(PhpSourcePath.MIME_TYPE)),
-                el, offset, info.getFileObject(), attribs) : null;
+        return (el != null) ? new WhereUsedSupport(PHPIndex.get(info),
+                el, offset, info.getSnapshot().getSource().getFileObject(), attribs) : null;
     }
 
     public void collectUsages(final FileObject fileObject) {
@@ -214,12 +210,12 @@ public final class WhereUsedSupport {
     }
 
     private  void collectUsages(final FileObject fileObject, final boolean directSubclasses) {
-        Source source = Source.forFileObject(fileObject);
         try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
+            ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
 
-                public void run(CompilationController parameter) throws Exception {
-                    parameter.toPhase(Phase.RESOLVED);
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    ParserResult parameter = (ParserResult) resultIterator.getParserResult();
                     AttributedNodes a = AttributedNodes.getInstance(parameter);
                     Map<ASTNode, AttributedElement> findOccurences = null;
                     findOccurences = (directSubclasses) ?  a.findDirectSubclasses(aElement) :
@@ -228,11 +224,8 @@ public final class WhereUsedSupport {
                         results.addEntry(fileObject, findOccurences);
                     }
                 }
-
-                public void cancel() {
-                }
-            }, true);
-        } catch (IOException ex) {
+            });
+        } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
@@ -260,12 +253,12 @@ public final class WhereUsedSupport {
             boolean declInOtherFile = !fo.equals(indexedElement.getFileObject());
             if (declInOtherFile) {
                 relevantFiles.add(indexedElement.getFileObject());
-                Source source = Source.forFileObject(indexedElement.getFileObject());
                 try {
-                    source.runUserActionTask(attribsTask, true);
-                } catch (IOException ex) {
+                    ParserManager.parse(Collections.singleton(Source.create(indexedElement.getFileObject())), attribsTask);
+                } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+
                 semiAttribs = attribsTask.get();
             }
         }
@@ -474,7 +467,7 @@ public final class WhereUsedSupport {
         }
     }
 
-    private class SemiAttrsProviderTask implements CancellableTask<CompilationController> {
+    private class SemiAttrsProviderTask extends UserTask {
 
         private final List<AttributedNodes> attResult;
 
@@ -482,17 +475,18 @@ public final class WhereUsedSupport {
             this.attResult = new ArrayList<AttributedNodes>();
         }
 
-        public void run(CompilationController parameter) throws Exception {
-            parameter.toPhase(Phase.RESOLVED);
-            AttributedNodes a = semiAttribs.getInstance(parameter);
-            attResult.add(a);
-        }
-
         public void cancel() {
         }
 
         public AttributedNodes get() {
             return (attResult.size() > 0) ? attResult.get(0) : null;
+        }
+
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            ParserResult parameter = (ParserResult)resultIterator.getParserResult();
+            AttributedNodes a = semiAttribs.getInstance(parameter);
+            attResult.add(a);
         }
     }
 }

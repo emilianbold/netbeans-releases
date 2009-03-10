@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.javascript.editing;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,13 +48,9 @@ import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
-import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.openide.filesystems.FileObject;
 
 
 /**
@@ -112,9 +109,7 @@ public class JsTypeAnalyzer {
     private final Node root;
     /** Node we are looking for;  */
     private Node target;
-    private final BaseDocument doc;
-    private final FileObject fileObject;
-    private final CompilationInfo info;
+    private final JsParseResult info;
     private long startTime;
     
     // Generated with
@@ -143,15 +138,13 @@ public class JsTypeAnalyzer {
 
     /** Creates a new instance of JsTypeAnalyzer for a given position.
      * The {@link #analyze} method will do the rest. */
-    public JsTypeAnalyzer(CompilationInfo info, JsIndex index, Node root, Node target, int astOffset, int lexOffset, BaseDocument doc, FileObject fileObject) {
+    public JsTypeAnalyzer(JsParseResult info, JsIndex index, Node root, Node target, int astOffset, int lexOffset) {
         this.info = info;
         this.index = index;
         this.root = root;
         this.target = target;
         this.astOffset = astOffset;
         this.lexOffset = lexOffset;
-        this.doc = doc;
-        this.fileObject = fileObject;
     }
     
     /**
@@ -468,8 +461,8 @@ public class JsTypeAnalyzer {
         return type;
     }
     
-    public static String getCallFqn(CompilationInfo info, Node callNode, boolean resolveLocals) {
-        JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+    public static String getCallFqn(JsParseResult info, Node callNode, boolean resolveLocals) {
+        JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.singleton(JsClassPathProvider.BOOT_CP), Collections.<String>emptySet()));
         Node methodNode = callNode.getParentNode();
         while (methodNode != null) {
             if (methodNode.getType() == Token.FUNCTION) {
@@ -478,9 +471,9 @@ public class JsTypeAnalyzer {
             methodNode = methodNode.getParentNode();
         }
         if (methodNode == null) {
-            methodNode = AstUtilities.getRoot(info);
+            methodNode = info.getRootNode();
         }
-        JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, index, methodNode, callNode, 0, 0, LexUtilities.getDocument(info, false), info.getFileObject());
+        JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, index, methodNode, callNode, 0, 0);
         if (resolveLocals && analyzer.dependsOnLocals()) {
             analyzer.init();
         }
@@ -563,7 +556,7 @@ public class JsTypeAnalyzer {
             startTime = System.currentTimeMillis();
             types = new HashMap<String, String>();
 
-            if (doc != null) {
+            if (info.getSnapshot().getSource().getDocument(false) != null) {
                 initTypeAssertions();
             }
 
@@ -630,7 +623,7 @@ public class JsTypeAnalyzer {
     private void initTypeAssertions() {
         if (root.getType() == Token.FUNCTION) {
             // Look for parameter hints 
-            TokenSequence<? extends JsCommentTokenId> ts = AstUtilities.getCommentFor(info, doc, (FunctionNode)root);
+            TokenSequence<? extends JsCommentTokenId> ts = AstUtilities.getCommentFor(info, (FunctionNode)root);
             
             if (ts != null) {
                 Map<String, String> typeMap = JsCommentLexer.findFunctionTypes(ts);

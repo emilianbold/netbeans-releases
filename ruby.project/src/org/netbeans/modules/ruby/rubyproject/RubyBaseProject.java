@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -88,7 +88,6 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
         // initialize the logging levels -- see #151976
         RubyLoggingOption.initLoggers();
     }
-
 
     /**
      * Ruby package root sources type.
@@ -276,11 +275,10 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     public void removePlatformChangeListener(final PlatformChangeListener platformChangeListener) {
         platformCLs.remove(platformChangeListener);
     }
-    
+
     /** Mainly for unit tests. */
     protected void open() {
         registerClassPath();
-
         FileObject rakeFile = getRakeFile();
         if (rakeFile != null) {
             rakeFile.addFileChangeListener(new FileChangeAdapter() {
@@ -383,7 +381,7 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     }
 
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
-        
+
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
@@ -403,7 +401,6 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
-            
             unregisterClassPath();
         }
     }

@@ -42,8 +42,9 @@
 package org.netbeans.modules.groovy.editor.api.elements;
 
 import java.util.Set;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
  * A class describing a Groovy class that is in "textual form" (signature, filename, etc.)
@@ -59,14 +60,14 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
 
     private final String simpleName;
 
-    protected IndexedClass(GroovyIndex index, String fileUrl, String fqn, String simpleName, String attributes, int flags) {
-        super(index, fileUrl, fqn, attributes, flags);
+    protected IndexedClass(GroovyIndex index, IndexResult result, String fqn, String simpleName, String attributes, int flags) {
+        super(index, result, fqn, attributes, flags);
         this.simpleName = simpleName;
     }
 
-    public static IndexedClass create(GroovyIndex index, String simpleName, String fqn, String fileUrl,
+    public static IndexedClass create(GroovyIndex index, String simpleName, String fqn, IndexResult result,
         String attributes, int flags) {
-        IndexedClass c = new IndexedClass(index, fileUrl, fqn, simpleName, attributes, flags);
+        IndexedClass c = new IndexedClass(index, result, fqn, simpleName, attributes, flags);
         return c;
     }
 

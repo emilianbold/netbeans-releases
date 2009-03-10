@@ -41,9 +41,11 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.Collections;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
 
@@ -74,5 +76,9 @@ public abstract class JsElement implements Element {
 
     public String getIn() {
         return null;
+    }
+
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return OffsetRange.NONE;
     }
 }

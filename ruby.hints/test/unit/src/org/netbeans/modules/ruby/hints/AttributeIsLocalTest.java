@@ -72,7 +72,6 @@ public class AttributeIsLocalTest extends HintTestBase {
     }
     
     public void testNoPositives() throws Exception {
-        initializeClassPaths();
         try {
             parseErrorsOk = true;
             Set<String> exceptions = new HashSet<String>();

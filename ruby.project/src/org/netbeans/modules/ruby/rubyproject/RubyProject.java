@@ -44,10 +44,10 @@ package org.netbeans.modules.ruby.rubyproject;
 import java.io.IOException;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
+import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.rubyproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.ruby.rubyproject.queries.RubyProjectEncodingQueryImpl;
@@ -128,15 +128,15 @@ public final class RubyProject extends RubyBaseProject {
     protected @Override void registerClassPath() {
         // register project's classpaths to GlobalPathRegistry
         ClassPathProviderImpl cpProvider = getLookup().lookup(ClassPathProviderImpl.class);
-        GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+        GlobalPathRegistry.getDefault().register(RubyLanguage.BOOT, cpProvider.getProjectClassPaths(RubyLanguage.BOOT));
+        GlobalPathRegistry.getDefault().register(RubyLanguage.SOURCE, cpProvider.getProjectClassPaths(RubyLanguage.SOURCE));
     }
     
     protected @Override void unregisterClassPath() {
         // unregister project's classpaths to GlobalPathRegistry
         ClassPathProviderImpl cpProvider = getLookup().lookup(ClassPathProviderImpl.class);
-        //GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-        GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+        //GlobalPathRegistry.getDefault().unregister(RubyLanguage.BOOT, cpProvider.getProjectClassPaths(RubyLanguage.BOOT));
+        GlobalPathRegistry.getDefault().unregister(RubyLanguage.SOURCE, cpProvider.getProjectClassPaths(RubyLanguage.SOURCE));
     }
 
     @Override

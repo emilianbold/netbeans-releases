@@ -40,27 +40,22 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
-import org.netbeans.modules.gsf.api.DeclarationFinder;
-import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.api.IndexSearcher;
-import org.netbeans.modules.gsf.api.Indexer;
-import org.netbeans.modules.gsf.api.InstantRenamer;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-import org.netbeans.modules.gsf.api.StructureScanner;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.IndexSearcher;
+import org.netbeans.modules.csl.api.InstantRenamer;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.openide.filesystems.FileObject;
-
 
 /*
  * Language/lexing configuration for Ruby
@@ -73,6 +68,12 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public class RubyLanguage extends DefaultLanguageConfig {
+
+    public final static String BOOT = "ruby/classpath/boot";
+    public final static String COMPILE = "ruby/classpath/compile";
+    public final static String EXECUTE = "ruby/classpath/execute";
+    public final static String SOURCE = "ruby/classpath/source";
+
     public RubyLanguage() {
     }
 
@@ -102,22 +103,6 @@ public class RubyLanguage extends DefaultLanguageConfig {
     }
 
     @Override
-    public Map<String,String> getSourceGroupNames() {
-        Map<String,String> sourceGroups = new HashMap<String,String>();
-        sourceGroups.put("RubyProject", "ruby"); // NOI18N
-        sourceGroups.put("WebProject", "ruby"); // NOI18N
-        sourceGroups.put("RailsProject", "ruby"); // NOI18N
-        
-        return sourceGroups;
-    }
-    
-    
-    @Override
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.singletonList(RubyPlatform.getRubyStubs());
-    }
-
-    @Override
     public CodeCompletionHandler getCompletionHandler() {
         return new RubyCodeCompleter();
     }
@@ -135,11 +120,6 @@ public class RubyLanguage extends DefaultLanguageConfig {
     @Override
     public Formatter getFormatter() {
         return new RubyFormatter();
-    }
-
-    @Override
-    public Indexer getIndexer() {
-        return new RubyIndexer();
     }
 
     @Override
@@ -186,4 +166,20 @@ public class RubyLanguage extends DefaultLanguageConfig {
     public IndexSearcher getIndexSearcher() {
         return new RubyTypeSearcher();
     }
+
+    @Override
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        return new RubyIndexer.Factory();
+    }
+
+    @Override
+    public Set<String> getSourcePathIds() {
+        return Collections.singleton(SOURCE);
+    }
+
+    @Override
+    public Set<String> getLibraryPathIds() {
+        return Collections.singleton(BOOT);
+    }
+
 }

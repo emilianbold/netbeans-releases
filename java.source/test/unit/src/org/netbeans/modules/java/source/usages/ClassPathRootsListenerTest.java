@@ -87,8 +87,8 @@ public class ClassPathRootsListenerTest extends NbTestCase {
         cache.mkdirs();
         
         FileUtil.refreshFor(workDir);
-        
-        Index.setCacheFolder(cache);
+
+        IndexUtil.setCacheFolder(cache);
         
         super.setUp();
     }

@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.event.ChangeListener;
 import org.jruby.util.ByteList;
 import org.jvyamlb.Composer;
 import org.jvyamlb.PositioningComposerImpl;
@@ -57,25 +58,43 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParseEvent;
-import org.netbeans.modules.gsf.api.ParseListener;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.PositionManager;
-import org.netbeans.modules.gsf.api.Severity;
-import org.netbeans.modules.gsf.api.SourceFileReader;
-import org.netbeans.modules.gsf.spi.DefaultError;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.spi.DefaultError;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.util.NbBundle;
 
 /**
  * Parser for YAML. Delegates to the YAML parser shipped with JRuby (jvyamlb)
  * @author Tor Norbye
  */
-public class YamlParser implements Parser {
+public class YamlParser extends Parser {
+
+    private YamlParserResult lastResult;
+
+    @Override
+    public void addChangeListener(ChangeListener changeListener) {
+        // FIXME parsing API
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener changeListener) {
+        // FIXME parsing API
+    }
+    
+    @Override
+    public void cancel() {
+        // FIXME parsing API
+    }
+
+    @Override
+    public Result getResult(Task task) throws ParseException {
+        assert lastResult != null : "getResult() called prior parse()"; //NOI18N
+        return lastResult;
+    }
 
     private static String asString(CharSequence sequence) {
         if (sequence instanceof String) {
@@ -84,12 +103,15 @@ public class YamlParser implements Parser {
             return sequence.toString();
         }
     }
-    
-    private ParserResult parse(String source, ParserFile file) {
+
+    // for test package private
+    YamlParserResult parse(String source, Snapshot snapshot) {
         try {
             if (source.length() > 512*1024) {
-                YamlParserResult result = new YamlParserResult(Collections.<Node>emptyList(), this, file, false, null, null);
-                DefaultError error = new DefaultError(null, NbBundle.getMessage(YamlParser.class, "TooLarge"), null, file.getFileObject(), 0, 0, Severity.WARNING);
+                YamlParserResult result = new YamlParserResult(Collections.<Node>emptyList(), this, snapshot, false, null, null);
+                // FIXME this can violate contract of DefaultError (null fo)
+                DefaultError error = new DefaultError(null, NbBundle.getMessage(YamlParser.class, "TooLarge"), null,
+                        snapshot.getSource().getFileObject(), 0, 0, Severity.WARNING);
                 result.addError(error);
                 return result;
             }
@@ -156,7 +178,7 @@ public class YamlParser implements Parser {
             }
 
             //Object yaml = YAML.load(stream);
-            return new YamlParserResult(nodes, this, file, true, byteToUtf8, utf8toByte);
+            return new YamlParserResult(nodes, this, snapshot, true, byteToUtf8, utf8toByte);
         } catch (Exception ex) {
             int pos = 0;
             if (ex instanceof PositionedParserException) {
@@ -164,7 +186,7 @@ public class YamlParser implements Parser {
                 pos = ppe.getPosition().offset;
             }
 
-            YamlParserResult result = new YamlParserResult(Collections.<Node>emptyList(), this, file, false, null, null);
+            YamlParserResult result = new YamlParserResult(Collections.<Node>emptyList(), this, snapshot, false, null, null);
             String message = ex.getMessage();
             if (message != null && message.length() > 0) {
                 // Strip off useless prefixes to make errors more readable
@@ -180,7 +202,9 @@ public class YamlParser implements Parser {
                     message = upcasedChar + message.substring(1);
                 }
 
-                DefaultError error = new DefaultError(null, message, null, file.getFileObject(), pos, pos, Severity.ERROR);
+                // FIXME this can violate contract of DefaultError (null fo)
+                DefaultError error = new DefaultError(null, message, null, snapshot.getSource().getFileObject(),
+                        pos, pos, Severity.ERROR);
                 result.addError(error);
             }
             
@@ -188,81 +212,57 @@ public class YamlParser implements Parser {
         }
     }
 
-    public void parseFiles(Job job) {
-        ParseListener listener = job.listener;
-        SourceFileReader reader = job.reader;
-        
-        for (ParserFile file : job.files) {
-            ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
-            listener.started(beginEvent);
-
-            ParserResult result = null;
- 
-            try {
-                CharSequence buffer = reader.read(file);
-                String source = asString(buffer);
+    @Override
+    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        try {
+            String source = asString(snapshot.getText());
 //                int caretOffset = reader.getCaretOffset(file);
 //                if (caretOffset != -1 && job.translatedSource != null) {
 //                    caretOffset = job.translatedSource.getAstOffset(caretOffset);
 //                }
 
-                // Construct source by removing <% %> tokens etc.
-                StringBuilder sb = new StringBuilder();
-                TokenHierarchy hi = TokenHierarchy.create(source, YamlTokenId.language());
+            // Construct source by removing <% %> tokens etc.
+            StringBuilder sb = new StringBuilder();
+            TokenHierarchy hi = TokenHierarchy.create(source, YamlTokenId.language());
 
-                TokenSequence ts = hi.tokenSequence();
+            TokenSequence ts = hi.tokenSequence();
 
-                // If necessary move ts to the requested offset
-                int offset = 0;
-                ts.move(offset);
+            // If necessary move ts to the requested offset
+            int offset = 0;
+            ts.move(offset);
 
 //                int adjustedOffset = 0;
 //                int adjustedCaretOffset = -1;
-                while (ts.moveNext()) {
-                    Token t = ts.token();
-                    TokenId id = t.id();
+            while (ts.moveNext()) {
+                Token t = ts.token();
+                TokenId id = t.id();
 
-                    if (id == YamlTokenId.RUBY_EXPR) {
-                        String marker = "__"; // NOI18N
-                        // Marker
-                        sb.append(marker);
-                        // Replace with spaces to preserve offsets
-                        for (int i = 0, n = t.length()-marker.length(); i < n; i++) { // -2: account for the __
-                            sb.append(' ');
-                        }
-                    } else if (id == YamlTokenId.RUBY || id == YamlTokenId.RUBYCOMMENT || id == YamlTokenId.DELIMITER) {
-                        // Replace with spaces to preserve offsets
-                        for (int i = 0; i < t.length(); i++) {
-                            sb.append(' ');
-                        }
-                    } else {
-                        sb.append(t.text().toString());
+                if (id == YamlTokenId.RUBY_EXPR) {
+                    String marker = "__"; // NOI18N
+                    // Marker
+                    sb.append(marker);
+                    // Replace with spaces to preserve offsets
+                    for (int i = 0, n = t.length()-marker.length(); i < n; i++) { // -2: account for the __
+                        sb.append(' ');
                     }
-
-//                    adjustedOffset += t.length();
+                } else if (id == YamlTokenId.RUBY || id == YamlTokenId.RUBYCOMMENT || id == YamlTokenId.DELIMITER) {
+                    // Replace with spaces to preserve offsets
+                    for (int i = 0; i < t.length(); i++) {
+                        sb.append(' ');
+                    }
+                } else {
+                    sb.append(t.text().toString());
                 }
 
-                source = sb.toString();
-                
-                result = parse(source, file);
-            } catch (Exception ioe) {
-                listener.exception(ioe);
-                result = new YamlParserResult(Collections.<Node>emptyList(), this, file, false, null, null);
-            } 
+//                    adjustedOffset += t.length();
+            }
 
-            ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
-            listener.finished(doneEvent);
-        }   
-    }   
+            source = sb.toString();
 
-    public PositionManager getPositionManager() {
-        return new YamlPositionManager();
-    }
-
-    private class YamlPositionManager implements PositionManager {
-
-        public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            lastResult = parse(source, snapshot);
+        } catch (Exception ioe) {
+            lastResult = new YamlParserResult(Collections.<Node>emptyList(), this, snapshot, false, null, null);
         }
     }
+ 
 }
