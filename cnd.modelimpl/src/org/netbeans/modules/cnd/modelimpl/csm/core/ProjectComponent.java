@@ -64,14 +64,16 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 public abstract class ProjectComponent implements Persistent, SelfPersistent {
     
-    private Key key;
-    
-    public ProjectComponent(Key key) {
+    private final Key key;
+    private final boolean hangInRepository;
+    public ProjectComponent(Key key, boolean hangInRepository) {
 	this.key = key;
+        this.hangInRepository = hangInRepository;
     }
     
     public ProjectComponent(DataInput in) throws IOException {
 	key = KeyFactory.getDefaultFactory().readKey(in);
+        hangInRepository = in.readBoolean();
 	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) System.err.printf("< ProjectComponent: Reading %s key %s\n", this, key);
     }
     
@@ -81,7 +83,11 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
     
     public void put() {
 	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) {System.err.printf("> ProjectComponent: Hanging %s by key %s\n", this, key);}
-	RepositoryUtils.hang(key, this);
+        if (hangInRepository) {
+            RepositoryUtils.hang(key, this);
+        } else {
+            RepositoryUtils.put(key, this);
+        }
     }
 
 //    private void putImpl() {
@@ -92,6 +98,7 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
     public void write(DataOutput out) throws IOException {
 	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) {System.err.printf("> ProjectComponent: Writing %s by key %s\n", this, key);}
 	writeKey(key, out);
+        out.writeBoolean(hangInRepository);
     }
     
     public static Key readKey(DataInput in) throws IOException {
