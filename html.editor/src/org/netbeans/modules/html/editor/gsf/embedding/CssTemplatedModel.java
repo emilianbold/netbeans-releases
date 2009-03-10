@@ -120,8 +120,19 @@ public class CssTemplatedModel extends CssModel {
                     LOGGER.log(Level.FINE, "NO REPLACED TEMPLATING!");
                     return code;
                 }
-                
-                Boolean doSanitize = (Boolean)doc.getProperty("sanitize_source");
+
+                //
+                //
+                // Disable sanitization of virtual source via Parser. It is possibly
+                // performance penatly which should not be needed. This model is
+                // now also used from indentation engine (see VirtualSourceFactory)
+                // and indentation should never be blocked by parser.
+                // If there is a need for sanitization then implement it 
+                // based on token hierarchy - CSS syntax is simple enough 
+                // to be able to do it that way correctly enough.
+                //
+                //
+                Boolean doSanitize = Boolean.FALSE;//(Boolean)doc.getProperty("sanitize_source");
                 
                 if(doSanitize != null && !doSanitize.booleanValue()) {
                     //do not sanitize

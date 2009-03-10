@@ -10,15 +10,15 @@
             function foo() {
                 alert('foo');
             }</script>
-        
+
     </head>
     <body>
-        
+
         <script language="javascript">
             function foo() {
                 alert('foo');
             }
         </script>
-        
+
     </body>
 </html>
