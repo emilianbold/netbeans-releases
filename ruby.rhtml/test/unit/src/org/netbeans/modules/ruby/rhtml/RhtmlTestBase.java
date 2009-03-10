@@ -41,9 +41,9 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.gsf.GsfIndentTaskFactory;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
+//import org.netbeans.modules.gsf.GsfIndentTaskFactory;
+//import org.netbeans.modules.gsf.Language;
+//import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.ruby.RubyKeystrokeHandler;
 import org.netbeans.modules.ruby.RubyRenameHandler;
@@ -53,7 +53,10 @@ import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+//import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 
@@ -64,7 +67,7 @@ import org.netbeans.modules.ruby.lexer.RubyTokenId;
 public abstract class RhtmlTestBase extends RubyTestBase {
    private RhtmlIndentTaskFactory rhtmlReformatFactory;
    private HtmlIndentTaskFactory htmlReformatFactory;
-   private GsfIndentTaskFactory rubyReformatFactory;
+//   private GsfIndentTaskFactory rubyReformatFactory;
 
     public RhtmlTestBase(String testName) {
         super(testName);
@@ -80,63 +83,63 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         return RhtmlTokenId.MIME_TYPE;
     }
     
-    @Override
-    @SuppressWarnings("deprecation") // For setFormatter()
-    protected void setUp() throws Exception {
-        super.setUp();
-        try {
-            TestLanguageProvider.register(RhtmlTokenId.language());
-        } catch (IllegalStateException ise) {
-            // Already registered?
-        }
-        try {
-            TestLanguageProvider.register(RubyTokenId.language());
-        } catch (IllegalStateException ise) {
-            // Already registered?
-        }
-        try {
-            TestLanguageProvider.register(HTMLTokenId.language());
-        } catch (IllegalStateException ise) {
-            // Already registered?
-        }
-        
-        rhtmlReformatFactory = new RhtmlIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse(RubyInstallation.RHTML_MIME_TYPE), rhtmlReformatFactory);
-        htmlReformatFactory = new HtmlIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory);
-        // Can't do this without LanguageRegistry finding Ruby
-        //rubyReformatFactory = new GsfIndentTaskFactory();
-        //IndentTestMimeDataProvider.addInstances(RubyInstallation.RUBY_MIME_TYPE, rubyReformatFactory);
-        
-        Formatter.setFormatter(RhtmlKit.class, new ExtFormatter(RhtmlKit.class));
-        
-        LanguageRegistry registry = LanguageRegistry.getInstance();
-        List<Action> actions = Collections.emptyList();
-        if (!LanguageRegistry.getInstance().isSupported(RhtmlTokenId.MIME_TYPE)) {
-            Language dl = new Language("org/netbeans/modules/ruby/jrubydoc.png", RhtmlTokenId.MIME_TYPE, 
-                    actions, new RhtmlLanguage(), 
-                    null, new RhtmlCompleter(), new RubyRenameHandler(), new RhtmlFinder(), 
-                    null, new RubyKeystrokeHandler(), null, null, null, true);
-            List<Language> languages = new ArrayList<Language>();
-            languages.add(dl);
-            registry.addLanguages(languages);
+//    @Override
+//    @SuppressWarnings("deprecation") // For setFormatter()
+//    protected void setUp() throws Exception {
+//        super.setUp();
+//        try {
+//            TestLanguageProvider.register(RhtmlTokenId.language());
+//        } catch (IllegalStateException ise) {
+//            // Already registered?
+//        }
+//        try {
+//            TestLanguageProvider.register(RubyTokenId.language());
+//        } catch (IllegalStateException ise) {
+//            // Already registered?
+//        }
+//        try {
+//            TestLanguageProvider.register(HTMLTokenId.language());
+//        } catch (IllegalStateException ise) {
+//            // Already registered?
+//        }
+//
+//        rhtmlReformatFactory = new RhtmlIndentTaskFactory();
+//        MockMimeLookup.setInstances(MimePath.parse(RubyInstallation.RHTML_MIME_TYPE), rhtmlReformatFactory);
+//        htmlReformatFactory = new HtmlIndentTaskFactory();
+//        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory);
+//        // Can't do this without LanguageRegistry finding Ruby
+//        //rubyReformatFactory = new GsfIndentTaskFactory();
+//        //IndentTestMimeDataProvider.addInstances(RubyInstallation.RUBY_MIME_TYPE, rubyReformatFactory);
+//
+//        Formatter.setFormatter(RhtmlKit.class, new ExtFormatter(RhtmlKit.class));
+//
+//        LanguageRegistry registry = LanguageRegistry.getInstance();
+//        List<Action> actions = Collections.emptyList();
+//        if (!LanguageRegistry.getInstance().isSupported(RhtmlTokenId.MIME_TYPE)) {
+//            Language dl = new Language("org/netbeans/modules/ruby/jrubydoc.png", RhtmlTokenId.MIME_TYPE,
+//                    actions, new RhtmlLanguage(),
+//                    new RhtmlCompleter(), new RubyRenameHandler(), new RhtmlFinder(),
+//                    null, new RubyKeystrokeHandler(), null, null, null, true);
+//            List<Language> languages = new ArrayList<Language>();
+//            languages.add(dl);
+//            registry.addLanguages(languages);
+//
+//            String mimeFolder = "Editors/" + dl.getMimeType();
+//            final FileObject root = FileUtil.getConfigFile(mimeFolder); // NOI18N
+//            if (root == null) {
+//                FileUtil.createFolder(FileUtil.getConfigRoot(), mimeFolder);
+//            }
+//        }
+//    }
+//
+//    @Override
+//    protected void tearDown() throws Exception {
+//        MockMimeLookup.setLookup(MimePath.parse(RubyInstallation.RHTML_MIME_TYPE));
+//        MockMimeLookup.setLookup(MimePath.parse("text/html"));
+//        //IndentTestMimeDataProvider.removeInstances(RubyInstallation.RUBY_MIME_TYPE, rubyReformatFactory);
+//        super.tearDown();
+//    }
 
-            String mimeFolder = "Editors/" + dl.getMimeType();
-            final FileObject root = FileUtil.getConfigFile(mimeFolder); // NOI18N
-            if (root == null) {
-                FileUtil.createFolder(FileUtil.getConfigRoot(), mimeFolder);
-            }
-        }
-    }
-    
-    @Override
-    protected void tearDown() throws Exception {
-        MockMimeLookup.setLookup(MimePath.parse(RubyInstallation.RHTML_MIME_TYPE));
-        MockMimeLookup.setLookup(MimePath.parse("text/html"));
-        //IndentTestMimeDataProvider.removeInstances(RubyInstallation.RUBY_MIME_TYPE, rubyReformatFactory);
-        super.tearDown();
-    }
-    
     @Override
     protected BaseDocument getDocument(String s) {
         BaseDocument doc = super.getDocument(s);
@@ -213,23 +216,23 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         a.actionPerformed(new ActionEvent(pane, 0, cmd));
     }
 
-    // Ensure Ruby is registered too
-    @Override
-    protected void initializeRegistry() {
-        super.initializeRegistry();
-        LanguageRegistry registry = LanguageRegistry.getInstance();
-        if (!LanguageRegistry.getInstance().isSupported(getPreferredMimeType())) {
-            List<Action> actions = Collections.emptyList();
-            RubyLanguage l = new RubyLanguage();
-            org.netbeans.modules.gsf.Language dl = new org.netbeans.modules.gsf.Language("unknown", "text/x-ruby", actions,
-                    l, l.getParser(), l.getCompletionHandler(),
-                    l.getInstantRenamer(), l.getDeclarationFinder(),
-                    l.getFormatter(), l.getKeystrokeHandler(),
-                    l.getIndexer(), l.getStructureScanner(), null,
-                    l.isUsingCustomEditorKit());
-            List<org.netbeans.modules.gsf.Language> languages = new ArrayList<org.netbeans.modules.gsf.Language>();
-            languages.add(dl);
-            registry.addLanguages(languages);
-        }
-    }
+//    // Ensure Ruby is registered too
+//    @Override
+//    protected void initializeRegistry() {
+//        super.initializeRegistry();
+//        LanguageRegistry registry = LanguageRegistry.getInstance();
+//        if (!LanguageRegistry.getInstance().isSupported(getPreferredMimeType())) {
+//            List<Action> actions = Collections.emptyList();
+//            RubyLanguage l = new RubyLanguage();
+//            org.netbeans.modules.gsf.Language dl = new org.netbeans.modules.gsf.Language("unknown", "text/x-ruby", actions,
+//                    l, l.getParser(), l.getCompletionHandler(),
+//                    l.getInstantRenamer(), l.getDeclarationFinder(),
+//                    l.getFormatter(), l.getKeystrokeHandler(),
+//                    l.getIndexer(), l.getStructureScanner(), null,
+//                    l.isUsingCustomEditorKit());
+//            List<org.netbeans.modules.gsf.Language> languages = new ArrayList<org.netbeans.modules.gsf.Language>();
+//            languages.add(dl);
+//            registry.addLanguages(languages);
+//        }
+//    }
 }

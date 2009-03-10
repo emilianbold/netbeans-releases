@@ -40,7 +40,7 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.List;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 

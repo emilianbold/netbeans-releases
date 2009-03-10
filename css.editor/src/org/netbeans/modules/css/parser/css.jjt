@@ -31,7 +31,7 @@ public class CSSParser {
 PARSER_END(CSSParser)
 
 //TOKEN_MGR_DECLS :
-  
+
 <DEFAULT> TOKEN :
 {
     < S: ( " "|"\t"|"\r"|"\n"|"\f" )+ >
@@ -104,6 +104,10 @@ PARSER_END(CSSParser)
 | < URI: "url(" ( <S> )* ( <STRING> | ( <URL> )* ) ( <S> )* <RROUND> > 
 }
 
+<DEFAULT> TOKEN : {
+    < GENERATED: "@@@" >
+}
+
 <DEFAULT> TOKEN :
 {
   < CDO: "<!--" >
@@ -138,7 +142,7 @@ PARSER_END(CSSParser)
 | < NUMBER: <NUM> >
 | < RGB: "rgb(" >
 | < FUNCTION: <IDENT> "(" >
-| < IDENT: ( "-" )? <NMSTART> ( <NMCHAR> )* >
+| < IDENT: ( "-" )?( (<GENERATED>)? | <NMSTART>) ( <GENERATED> | <NMCHAR> )* >
 | < #NAME: ( <NMCHAR> )+ >
 | < NUM: ( ["0"-"9"] )+ | ( ["0"-"9"] )* "." ( ["0"-"9"] )+ >
 
@@ -241,7 +245,7 @@ void medium() :
 {
 }
 {
-  <IDENT> ( <S> )* 
+  ( <IDENT> | <GENERATED> ) ( <S> )*
 }
 
 void pageRule() :
@@ -341,7 +345,7 @@ void property() :
 {
 }
 {
-    <IDENT> ( <S> )*
+    (<IDENT> | <GENERATED>) ( <S> )*
 }
 
 //
@@ -437,7 +441,7 @@ void _class() :
 {
 }
 {
-    <DOT> <IDENT>
+    <DOT> ( <IDENT> | <GENERATED> )
 }
 
 //
@@ -449,7 +453,7 @@ void elementName() :
 {
 }
 {
-  <IDENT> | <ASTERISK>
+  <IDENT> | <GENERATED> | <ASTERISK>
 }
 
 //
@@ -495,11 +499,11 @@ void pseudo() :
 {
     <COLON>
     (
-        ( <IDENT> )
+        ( <IDENT> | <GENERATED> )
         |
         (
             <FUNCTION> ( <S> )*
-            ( <IDENT> ) ( <S> )*
+            ( <IDENT> | <GENERATED> ) ( <S> )*
             <RROUND>
         )
     )
@@ -605,7 +609,8 @@ void term() :
         | function()
         )
     | <STRING>        
-    | <IDENT>        
+    | <IDENT>
+    | <GENERATED>
     | <URI>         
     | <UNICODERANGE>
     | rgb()

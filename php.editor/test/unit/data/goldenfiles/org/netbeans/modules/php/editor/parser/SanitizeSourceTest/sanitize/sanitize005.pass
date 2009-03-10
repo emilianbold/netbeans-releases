@@ -1,4 +1,4 @@
-<Program start='0' end='105'>
+<Program start='0' end='104'>
     <Comments>
         <PHPDocBlock start='9' end='30'>
             <Tags>
@@ -38,6 +38,6 @@
                 </MethodDeclaration>
             </Block>
         </ClassDeclaration>
-        <EmptyStatement start='102' end='105'/>
+        <EmptyStatement start='102' end='104'/>
     </Statements>
 </Program>

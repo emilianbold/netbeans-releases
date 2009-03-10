@@ -8,6 +8,7 @@ Searchable Keys:
   fqn : AddPrice
   method : down|STATIC|
   method : up|STATIC|
+  require : 002_add_price
 
 Not Searchable Keys:
   attrs : |DOCUMENTED|;1429
@@ -16,6 +17,7 @@ Not Searchable Keys:
 Document 1
 Searchable Keys:
   dbtable : products
+  require : 002_add_price
 
 Not Searchable Keys:
   dbcolumn : price;decimal

@@ -1,6 +1,6 @@
 Code completion result for source line:
 10.between?(0, 100).to|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     to_s                                       FalseClass
 METHOD     to_s                                       TrueClass
 ------------------------------------

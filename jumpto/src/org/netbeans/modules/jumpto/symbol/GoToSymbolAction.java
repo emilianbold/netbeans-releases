@@ -428,6 +428,7 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
                 if (isCanceled) {
                     return null;
                 }
+                LOGGER.fine("Calling SymbolProvider: " + provider);
                 provider.computeSymbolNames(context, result);
                 current = null;
             }

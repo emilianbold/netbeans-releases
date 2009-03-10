@@ -1,6 +1,6 @@
 Code completion result for source line:
 ss.|sing # is completed
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     new(name)                       [STATIC,   Song
 METHOD     sing(text)                                 Song
 ATTRIBUTE  age                                        Song

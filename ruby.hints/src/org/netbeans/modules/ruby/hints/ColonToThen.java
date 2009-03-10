@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.ruby.hints;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,20 +49,20 @@ import javax.swing.text.BadLocationException;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.WhenNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.PreviewableFix;
-import org.netbeans.modules.gsf.api.RuleContext;
-import org.netbeans.modules.ruby.RubyFormatter;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.PreviewableFix;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -89,7 +88,7 @@ public class ColonToThen extends RubyAstRule {
 
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
 
         WhenNode when = (WhenNode)node;
         Node body = when.getBodyNode();
@@ -158,7 +157,7 @@ public class ColonToThen extends RubyAstRule {
             fixes.add(new ColonFix(doc, offset, INSERT_THEN));
             fixes.add(new ColonFix(doc, offset, INSERT_SEMICOLON));
             fixes.add(new ColonFix(doc, offset, INSERT_NEWLINE));
-            Hint desc = new Hint(this, displayName, info.getFileObject(), range, 
+            Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range,
                     fixes, 150);
             result.add(desc);
         } catch (BadLocationException ex) {

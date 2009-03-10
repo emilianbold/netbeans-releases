@@ -1,0 +1,284 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.java.source.indexing;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
+import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.tasklist.RebuildOraculum;
+import org.netbeans.modules.java.source.tasklist.TaskCache;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.java.source.usages.Pair;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex.ExceptionAction;
+
+/**
+ *
+ * @author Jan Lahoda, Dusan Balek
+ */
+public class JavaCustomIndexer extends CustomIndexer {
+
+    static final Logger LOG = Logger.getLogger(JavaCustomIndexer.class.getName());
+    private static final CompileWorker[] WORKERS = {
+        new OnePassCompileWorker(),
+        new MultiPassCompileWorker()
+    };
+    
+    @Override
+    protected void index(final Iterable<? extends Indexable> files, final Context context) {
+        LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", files);
+        try {
+            final ClassIndexManager cim = ClassIndexManager.getDefault();
+            cim.writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+                public Void run() throws IOException, InterruptedException {
+                    return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
+                        public Void run() throws Exception {
+                            final Set<ElementHandle<TypeElement>> removed = new HashSet <ElementHandle<TypeElement>> ();
+                            JavaParsingContext javaContext = new JavaParsingContext(context);
+                            cim.getUsagesQuery(context.getRootURI()).setDirty(null);
+                            for (Indexable i : files) {
+                                clear(context, javaContext, i.getRelativePath(), removed);
+                            }
+
+                            CompileWorker.ParsingOutput compileResult = null;
+                            for (CompileWorker w : WORKERS) {
+                                compileResult = w.compile(compileResult, context, javaContext, files);
+                                if (compileResult.success) {
+                                    break;
+                                }
+                            }
+                            assert compileResult != null && compileResult.success;
+                            Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added
+                            Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removed); //Removed
+                            _at.removeAll(removed);
+                            _rt.removeAll(compileResult.addedTypes);
+                            compileResult.addedTypes.retainAll(removed); //Changed
+
+                            if (!context.isSupplementaryFilesIndexing()) {
+                                for (Map.Entry<URL, Collection<URL>> entry : RebuildOraculum.findAllDependent(context.getRootURI(), null, javaContext.cpInfo.getClassIndex(), _rt).entrySet()) {
+                                    Set<URL> urls = compileResult.root2Rebuild.get(entry.getKey());
+                                    if (urls == null) {
+                                        compileResult.root2Rebuild.put(entry.getKey(), urls = new HashSet<URL>());
+                                    }
+                                    urls.addAll(entry.getValue());
+                                }
+                            }
+
+                            if (!_at.isEmpty()) {
+                                //new type creation may cause/fix some errors
+                                //not 100% correct (consider eg. a file that has two .* imports
+                                //new file creation may cause new error in this case
+                                List<URL> urls = TaskCache.getDefault().getAllFilesInError(context.getRootURI());
+                                if (!urls.isEmpty()) {
+                                    IndexingManager.getDefault().refreshIndex(context.getRootURI(), urls);
+                                }
+                            }
+
+                            javaContext.sa.store();
+                            cim.getUsagesQuery(context.getRootURI()).typesEvent(_at, _rt, compileResult.addedTypes);
+                            for (Map.Entry<URL, Set<URL>> entry : compileResult.root2Rebuild.entrySet()) {
+                                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                            }
+                            return null;
+                        }
+                    });
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {
+        try {
+            final ClassIndexManager cim = ClassIndexManager.getDefault();
+            cim.writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+                public Void run() throws IOException, InterruptedException {
+                    return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
+                        public Void run() throws Exception {
+                            final Set<ElementHandle<TypeElement>> removed = new HashSet <ElementHandle<TypeElement>> ();
+                            JavaParsingContext javaContext = new JavaParsingContext(context);
+                            for (Indexable i : files) {
+                                clear(context, javaContext, i.getRelativePath(), removed);
+                                TaskCache.getDefault().dumpErrors(context.getRootURI(), i.getURL(), Collections.<Diagnostic>emptyList());
+                            }
+                            Map<URL, Collection<URL>> root2Rebuild = RebuildOraculum.findAllDependent(context.getRootURI(), null, javaContext.cpInfo.getClassIndex(), removed);
+                            javaContext.sa.store();
+                            cim.getUsagesQuery(context.getRootURI()).typesEvent(null, removed, null);
+                            for (Map.Entry<URL, Collection<URL>> entry : root2Rebuild.entrySet()) {
+                                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                            }
+                            return null;
+                        }
+                    });
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private static void clear(Context context, JavaParsingContext javaContext, String sourceRelative, Set<ElementHandle<TypeElement>> removed) throws IOException {
+        List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
+        File classFolder = JavaIndex.getClassFolder(context);
+        String withoutExt = FileObjects.stripExtension(sourceRelative);
+        File file = new File(classFolder, withoutExt + '.' + FileObjects.RS);
+        boolean cont = true;
+        if (file.exists()) {
+            cont = false;
+            try {
+                String binaryName = FileObjects.getBinaryName(file, classFolder);
+                List<File> files = new LinkedList<File>();
+                RepositoryUpdater.readRSFile(file, classFolder, files);
+                for (File f : files) {
+                    String className = FileObjects.getBinaryName (f, classFolder);
+                    if (!binaryName.equals(className)) {
+                        toDelete.add(Pair.<String,String>of (className, sourceRelative));
+                        removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                        f.delete();
+                    } else {
+                        cont = true;
+                    }
+                }
+            } catch (IOException ioe) {
+                //The signature file is broken, report it but don't stop scanning
+                Exceptions.printStackTrace(ioe);
+            }
+            file.delete();
+        }
+        if (cont && (file = new File(classFolder, withoutExt + '.' + FileObjects.CLASS)).exists()) {
+            String fileName = file.getName();
+            fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+            final String[] patterns = new String[] {fileName + '.', fileName + '$'}; //NOI18N
+            File parent = file.getParentFile();
+            FilenameFilter filter = new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    for (int i=0; i< patterns.length; i++) {
+                        if (name.startsWith(patterns[i])) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            };
+            for (File f : parent.listFiles(filter)) {
+                String className = FileObjects.getBinaryName (f, classFolder);
+                toDelete.add(Pair.<String,String>of (className, null));
+                removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                f.delete();
+            }
+        }
+        for (Pair<String, String> pair : toDelete) {
+            javaContext.sa.delete(pair);
+        }
+    }
+
+    private static void markDirtyFiles(final Context context, final Iterable<? extends Indexable> files) {
+        ClassIndexImpl indexImpl = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI());
+        if (indexImpl != null) {
+            for (Indexable i : files) {
+                indexImpl.setDirty(i.getURL());
+            }
+        }
+    }
+
+    public static class Factory extends CustomIndexerFactory {
+
+        @Override
+        public CustomIndexer createIndexer() {
+            return new JavaCustomIndexer();
+        }
+
+        @Override
+        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+            LOG.log(Level.FINE, "filesDeleted({0})", deleted);
+            clearFiles(context, deleted);
+        }
+
+        @Override
+        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+            LOG.log(Level.FINE, "filesDirty({0})", dirty);
+            markDirtyFiles(context, dirty);
+        }
+
+        @Override
+        public String getIndexerName() {
+            return JavaIndex.NAME;
+        }
+
+        @Override
+        public boolean supportsEmbeddedIndexers() {
+            return false;
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return JavaIndex.VERSION;
+        }
+    }
+}

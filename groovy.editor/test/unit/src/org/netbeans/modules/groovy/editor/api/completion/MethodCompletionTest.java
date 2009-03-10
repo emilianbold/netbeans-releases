@@ -43,11 +43,15 @@ package org.netbeans.modules.groovy.editor.api.completion;
  *
  * @author schmidtm
  */
-import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
+import java.util.Map;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -70,6 +74,13 @@ public class MethodCompletionTest extends GroovyTestBase {
         // as returning Level.FINEST here would log from all loggers
     }
 
+    protected @Override Map<String, ClassPath> createClassPathsForTest() {
+        Map<String, ClassPath> map = super.createClassPathsForTest();
+        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
+            FileUtil.toFileObject(getDataFile("/testfiles/completion/method")) }));
+        return map;
+    }
+
     public void testMethods1() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods1.groovy", "        new URL(\"http://google.com\").getPr^", false);
     }
@@ -89,7 +100,7 @@ public class MethodCompletionTest extends GroovyTestBase {
     public void testMethods5() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods2.groovy", "        new Byte().^", false);
     }
-    
+
     public void testCompletionInMethodCall1() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods4.groovy", "        new File(\"something\").ea^", false);
     }
@@ -129,7 +140,7 @@ public class MethodCompletionTest extends GroovyTestBase {
     public void testCompletionInsideConstructor3() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods9.groovy", "if (new File(new Date().get^", false);
     }
-    
+
     public void testCompletionInsideFor1() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for(new Date().get^", false);
     }
@@ -137,10 +148,10 @@ public class MethodCompletionTest extends GroovyTestBase {
     public void testCompletionNoPrefixString1() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods10.groovy", "println \"Hello $name!\".^", false);
     }
-    
+
     public void testCompletionNoPrefixString2() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods11.groovy", "def name='Petr'.^", false);
-    }    
+    }
 
     // FIXME this test randomly fails
     @RandomlyFails
@@ -163,7 +174,7 @@ public class MethodCompletionTest extends GroovyTestBase {
     public void testCompletionGroovyThis1() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods14.groovy", "        this.get^", false);
     }
-    
+
     public void testCompletionGroovySuper1() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods15.groovy", "        super.^", false);
     }
