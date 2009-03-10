@@ -101,7 +101,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     /** Creates a new instance of ProjectDeclarations */
     public DeclarationContainer(ProjectBase project) {
-        super(new DeclarationContainerKey(project.getUniqueName().toString()), true);
+        super(new DeclarationContainerKey(project.getUniqueName().toString()), false);
         put();
     }
 
@@ -118,7 +118,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     // only for EMPTY static field
     private DeclarationContainer() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null, true);
+        super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
     }
 
     public static DeclarationContainer empty() {
