@@ -50,6 +50,7 @@
 
 package org.netbeans.modules.xml.wsdl.bindingsupport.template.localized;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider;
@@ -69,6 +70,9 @@ public class LocalizedTemplateGroup implements Comparable<LocalizedTemplateGroup
     private ExtensibilityElementTemplateProvider mProvider;
     
     private LocalizedTemplate[] mLtts = null;
+    
+        
+    private LocalizedTemplate skeletonTemplate = null;
     
     /** Creates a new instance of LocalizedTemplateGroup */
     public LocalizedTemplateGroup(TemplateGroup tGroup, ExtensibilityElementTemplateProvider provider) {
@@ -115,15 +119,29 @@ public class LocalizedTemplateGroup implements Comparable<LocalizedTemplateGroup
         
         TemplateType[] tts = this.mTGroup.getTemplate();
         if(tts != null) {
-            mLtts = new LocalizedTemplate[tts.length];
+            List<LocalizedTemplate> lttList = new ArrayList<LocalizedTemplate>();
+            //mLtts = new LocalizedTemplate[tts.length];
             for(int i =0; i < tts.length; i++) {
                 TemplateType tt = tts[i];
-                LocalizedTemplate ltt = new LocalizedTemplate(this, tt, this.mProvider);
-                mLtts[i] = ltt;
+                if (!tt.isSkeleton()) {
+                    LocalizedTemplate ltt = new LocalizedTemplate(this, tt, this.mProvider);
+                    lttList.add(ltt);
+                } else {
+                    skeletonTemplate = new LocalizedTemplate(this, tt, mProvider);
+                }
             }
+            mLtts = lttList.toArray(new LocalizedTemplate[lttList.size()]);
         }
         
         return mLtts;
+    }
+    
+    public LocalizedTemplate getSkeletonTemplate() {
+        if (mLtts != null && skeletonTemplate !=  null) {
+            return skeletonTemplate;
+        }
+        getTemplate();
+        return skeletonTemplate;
     }
     
     @Override
