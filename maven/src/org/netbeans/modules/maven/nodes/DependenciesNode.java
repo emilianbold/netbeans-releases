@@ -331,15 +331,15 @@ public class DependenciesNode extends AbstractNode {
     
     private class AddDependencyAction extends AbstractAction {
         public AddDependencyAction() {
-            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependenciesNode.class, "BTN_Add_Library"));
+            putValue(Action.NAME, NbBundle.getMessage(DependenciesNode.class, "BTN_Add_Library"));
         }
 
         public void actionPerformed(ActionEvent event) {
-            AddDependencyPanel pnl = new AddDependencyPanel(project.getOriginalMavenProject());
+            AddDependencyPanel pnl = new AddDependencyPanel(project.getOriginalMavenProject(), project);
             String typeString = type == TYPE_RUNTIME ? "runtime" : (type == TYPE_TEST ? "test" : "compile"); //NOI18N
             pnl.setSelectedScope(typeString);
         
-            DialogDescriptor dd = new DialogDescriptor(pnl, org.openide.util.NbBundle.getMessage(DependenciesNode.class, "TIT_Add_Library"));
+            DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(DependenciesNode.class, "TIT_Add_Library"));
             dd.setClosingOptions(new Object[] {
                 pnl.getOkButton(),
                 DialogDescriptor.CANCEL_OPTION
