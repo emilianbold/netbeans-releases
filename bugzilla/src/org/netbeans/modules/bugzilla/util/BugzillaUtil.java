@@ -101,7 +101,7 @@ public class BugzillaUtil {
             String[] values = kp.getSelectedKeywords();
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i < values.length; i++) {
-                String s = (String) values[i];
+                String s = values[i];
                 sb.append(s);
                 if(i < values.length - 1) {
                     sb.append(", "); // NOI18N
