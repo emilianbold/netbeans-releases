@@ -177,7 +177,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 cbDevHost.addItem(key);
             }
         } else {
-            cbDevHost.addItem(CompilerSetManager.LOCALHOST);
+            cbDevHost.addItem(ExecutionEnvironmentFactory.getHostKey(ExecutionEnvironmentFactory.getLocalExecutionEnvironment()));
         }
 
         if (model.getSelectedDevelopmentHost() != null) {
@@ -230,7 +230,9 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
 
     private void addCompilerSet() {
         AddCompilerSetPanel panel = new AddCompilerSetPanel(csm);
-        String title = isRemoteHostSelected() ? getString("NEW_TOOL_SET_TITLE_REMOTE", csm.getHost()) : getString("NEW_TOOL_SET_TITLE");
+        String title = isRemoteHostSelected() ? 
+            getString("NEW_TOOL_SET_TITLE_REMOTE", ExecutionEnvironmentFactory.getHostKey(csm.getExecutionEnvironment())) :
+            getString("NEW_TOOL_SET_TITLE");
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
         panel.setDialogDescriptor(dialogDescriptor);
         DialogDisplayer.getDefault().notify(dialogDescriptor);

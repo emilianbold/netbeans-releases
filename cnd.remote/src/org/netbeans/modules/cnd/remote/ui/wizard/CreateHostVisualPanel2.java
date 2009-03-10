@@ -299,7 +299,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
                             csm.finishInitialization();
                         }
                     };
-                    hostFound = csm.getHost(); //TODO: no validations, pure cheat
+                    hostFound = ExecutionEnvironmentFactory.getHostKey(csm.getExecutionEnvironment()); //TODO: no validations, pure cheat
                     wizardListener.stateChanged(null);
                 } else {
                     addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.ErrConn")

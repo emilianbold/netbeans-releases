@@ -333,7 +333,7 @@ public class MakeActionProvider implements ActionProvider {
                         try {
                             record.validate(true);
                             // initialize compiler sets for remote host if needed
-                            CompilerSetManager csm = CompilerSetManager.getDefault(record.getName());
+                            CompilerSetManager csm = CompilerSetManager.getDefault(record.getExecutionEnvironment());
                             csm.initialize(true, true);
                         } catch (Exception e) {
                             e.printStackTrace();
