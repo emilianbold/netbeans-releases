@@ -1058,15 +1058,6 @@ public class IDEValidation extends JellyTestCase {
         }
     }
 	
-	public void testDebuggingMayFail() {
-	    try {
-	        testDebugging();
-		}
-		catch (Throwable t) {
-            log(t.getClass().getName()+": "+t.getMessage());
-		}
-	}
-
      /** Test Options  
       * - open Options window from main menu Tools|Options
       * - select General category

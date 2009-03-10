@@ -83,7 +83,7 @@ public class MemoryValidationTest extends JellyTestCase {
         
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             IDEValidation.class
-        ).clusters("ide[0-9]*|java[0-9]*").enableModules(".*").honorAutoloadEager(true);
+        ).clusters("ide[0-9]*|java[0-9]*|websvccommon[0-9]").enableModules(".*").honorAutoloadEager(true);
 
         
         if (blacklistEnabled) {
@@ -102,7 +102,7 @@ public class MemoryValidationTest extends JellyTestCase {
 //        conf = conf.addTest("testFilesView");
         conf = conf.addTest("testEditor");
         conf = conf.addTest("testBuildAndRun");
-        conf = conf.addTest("testDebuggingMayFail");
+        conf = conf.addTest("testDebugging");
 //        conf = conf.addTest("testJUnit");
 //        conf = conf.addTest("testXML");
 //        conf = conf.addTest("testDb");
