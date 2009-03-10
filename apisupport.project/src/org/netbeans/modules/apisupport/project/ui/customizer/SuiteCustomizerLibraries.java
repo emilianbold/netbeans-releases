@@ -1546,7 +1546,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private FixInfo resolveFixInfo;
-    private static class FixInfo {
+    // package private for tests only
+    static class FixInfo {
 
         private static void putFixable(FixInfo fi, String cnb, String[] warning) {
             if (! fi.fixable)
