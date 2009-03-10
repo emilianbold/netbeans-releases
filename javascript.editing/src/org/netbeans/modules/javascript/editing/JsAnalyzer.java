@@ -318,7 +318,7 @@ public class JsAnalyzer implements StructureScanner {
 
                 //handle prototype fields: Object.prototype.field = 'xxx';
                 case Token.STRING: {
-                    if (node.getString().equalsIgnoreCase("prototype")) {
+                    if (node.getString().equalsIgnoreCase("prototype")) { //NOI18N
                         Node getPropertyNode = node.getParentNode();
                         if (getPropertyNode.getType() == Token.GETPROP) {
                             Node className = getPropertyNode.getFirstChild();
@@ -346,7 +346,7 @@ public class JsAnalyzer implements StructureScanner {
                                             String fqn = sb.toString();
                                             String property = propertyNode.getString();
 
-                                            String propFqn = fqn + "." + property;
+                                            String propFqn = fqn + "." + property; //NOI18N
                                             if (fields == null || !fields.contains(propFqn)) {
                                                 int clzIndex = fqn.lastIndexOf('.') + 1;
                                                 if (clzIndex < fqn.length() && Character.isUpperCase(fqn.charAt(clzIndex))) {
@@ -377,7 +377,6 @@ public class JsAnalyzer implements StructureScanner {
                                         }
                                     }
                                 }
-
                             }
                         }
                     }
