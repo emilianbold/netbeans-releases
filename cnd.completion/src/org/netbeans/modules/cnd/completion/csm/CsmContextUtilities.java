@@ -534,9 +534,10 @@ public class CsmContextUtilities {
         for (int i = context.size() - 1; 0 <= i; --i) {
             CsmScope scope = context.get(i).getScope();
             int offset = context.getOffset();
-            if (CsmKindUtilities.isClass(scope) && CsmOffsetUtilities.isInClassScope((CsmClass)scope, offset)) {
-                break;
-            } else if (CsmKindUtilities.isFunction(scope)
+//            if (CsmKindUtilities.isClass(scope) && CsmOffsetUtilities.isInClassScope((CsmClass)scope, offset)) {
+//                break;
+//            } else
+            if (CsmKindUtilities.isFunction(scope)
                     && (!inScope || CsmOffsetUtilities.isInFunctionScope((CsmFunction)scope, offset))) {
                 return (CsmFunction)scope;
             }

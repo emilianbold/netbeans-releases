@@ -580,7 +580,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ150884.cc", 3, 11, "IZ150884.cc", 3, 9);
         performTest("IZ150884.cc", 3, 28, "IZ150884.cc", 3, 24);
         performTest("IZ150884.cc", 3, 54, "IZ150884.cc", 3, 51);
-        //performTest("IZ150884.cc", 9, 20, "IZ150884.cc", 2, 5);
+        performTest("IZ150884.cc", 9, 20, "IZ150884.cc", 2, 5);
         performTest("IZ150884.cc", 12, 17, "IZ150884.cc", 3, 9);
         performTest("IZ150884.cc", 14, 39, "IZ150884.cc", 3, 24);
         performTest("IZ150884.cc", 16, 19, "IZ150884.cc", 3, 51);
