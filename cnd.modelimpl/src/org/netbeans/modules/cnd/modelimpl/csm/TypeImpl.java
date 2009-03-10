@@ -448,11 +448,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                 // for example, for std::vector new String[] { "std", "vector" }
 
                 //TODO: we have AstRenderer.getNameTokens, it is better to use it here
-                List<String> l = new ArrayList<String>();
+                List<CharSequence> l = new ArrayList<CharSequence>();
                 int templateDepth = 0;
                 for (AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling()) {
                     if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID) {
-                        l.add(namePart.getText());
+                        l.add(NameCache.getManager().getString(namePart.getText()));
                     } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
                         // the beginning of template parameters
                         templateDepth++;
@@ -482,7 +482,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                         }
                     }
                 }
-                qname = l.toArray(new String[l.size()]);
+                qname = l.toArray(new CharSequence[l.size()]);
             /*CsmObject o = resolver.resolve(qname);
             if( CsmKindUtilities.isClassifier(o) ) {
             result = (CsmClassifier) o;
