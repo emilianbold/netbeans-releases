@@ -169,19 +169,11 @@ public final class RepositoryUtils {
                 int index = nextIndex();
                 System.err.println(index + ": " + System.identityHashCode(key) + "@putting key " + key);
                 repository.put(key, obj);
-                // A workaround for #131701
-                if (key instanceof FileKey) {
-                    repository.hang(key, obj);
-                }
                 time = System.currentTimeMillis() - time;
                 System.err.println(index + ": " + System.identityHashCode(key) + "@put in " + time + "ms the key " + key);
                 return;
             }
             repository.put(key, obj);
-            // A workaround for #131701
-            if (key instanceof FileKey) {
-                repository.hang(key, obj);
-            }
         }
     }
 
