@@ -103,13 +103,8 @@ public class BuildConfig {
                 projectPluginsDir = getProjectPluginsDirDefault11();
             }
         } else {
-            projectPluginsDir = getProjectPluginsDirDefault10();
+            projectPluginsDir = getProjectPluginsDir10();
         }
-    }
-
-    private File getProjectPluginsDirDefault10() {
-        assert Thread.holdsLock(this);
-        return new File(projectRoot, "plugins"); // NOI18N
     }
 
     private File getProjectPluginsDirDefault11() {
@@ -153,9 +148,45 @@ public class BuildConfig {
 
     private synchronized void loadGlobalPluginsDirDefault() {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
-            // TODO load from cache
+            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+            File cached = config.getGlobalPluginsDir();
+            if (cached != null && isFilePresent()) {
+                globalPluginsDir = cached;
+            } else {
+                globalPluginsDir = getGlobalPluginsDirDefault11();
+            }
+        } else {
+            globalPluginsDir = getGlobalPluginsDir10();
         }
-        globalPluginsDir = getGlobalPluginsDir10();
+    }
+
+    private File getGlobalPluginsDirDefault11() {
+        GrailsPlatform platform = GrailsProjectConfig.forProject(project).getGrailsPlatform();
+
+        File pluginsDirFile;
+        String strPluginsDir = System.getProperty("grails.global.plugins.dir"); // NOI18N
+        if (strPluginsDir == null) {
+            File workDirFile;
+            String workDir = System.getProperty("grails.work.dir"); // NOI18N
+            if (workDir == null) {
+                workDir = System.getProperty("user.home"); // NOI18N
+                workDir = workDir + File.separator + ".grails" + File.separator + platform.getVersion(); // NOI18N
+                workDirFile = new File(workDir);
+            } else {
+                workDirFile = new File(workDir);
+                if (!workDirFile.isAbsolute()) {
+                    workDirFile = new File(projectRoot, workDir);
+                }
+            }
+            pluginsDirFile = new File(workDirFile, "global-plugins"); // NOI18N
+        } else {
+            pluginsDirFile = new File(strPluginsDir);
+            if (!pluginsDirFile.isAbsolute()) {
+                pluginsDirFile = new File(projectRoot, strPluginsDir);
+            }
+        }
+
+        return pluginsDirFile;
     }
 
     private synchronized void loadLocalPluginsDefault() {
@@ -169,6 +200,7 @@ public class BuildConfig {
         long start = System.currentTimeMillis();
 
         File currentProjectPluginsDir;
+        File currentGlobalPluginsDir;
         synchronized (this) {
             File newProjectRoot = FileUtil.toFile(project.getProjectDirectory());
             assert newProjectRoot != null;
@@ -178,17 +210,20 @@ public class BuildConfig {
             }
 
             buildSettingsInstance = loadBuildSettings();
-            LOGGER.log(Level.INFO, "Took {0} ms to load BuildSettings for {1}",
+            LOGGER.log(Level.FINE, "Took {0} ms to load BuildSettings for {1}",
                     new Object[] {(System.currentTimeMillis() - start), project.getProjectDirectory().getNameExt()});
 
             loadLocalPlugins();
             currentProjectPluginsDir = loadProjectPluginsDir();
-            loadGlobalPluginsDir();
+            currentGlobalPluginsDir = loadGlobalPluginsDir();
         }
 
-        GrailsProjectConfig config = project.getLookup().lookup(GrailsProjectConfig.class);
-        if (config != null) {
-            config.setProjectPluginsDir(currentProjectPluginsDir);
+        if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
+            GrailsProjectConfig config = project.getLookup().lookup(GrailsProjectConfig.class);
+            if (config != null) {
+                config.setProjectPluginsDir(FileUtil.normalizeFile(currentProjectPluginsDir));
+                config.setGlobalPluginsDir(FileUtil.normalizeFile(currentGlobalPluginsDir));
+            }
         }
     }
 
@@ -248,12 +283,13 @@ public class BuildConfig {
         return globalPluginsDir;
     }
 
-    private synchronized void loadGlobalPluginsDir() {
+    private synchronized File loadGlobalPluginsDir() {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
             globalPluginsDir = getGlobalPluginsDir11();
         } else {
             globalPluginsDir = getGlobalPluginsDir10();
         }
+        return globalPluginsDir;
     }
     
     private File getGlobalPluginsDir10() {
