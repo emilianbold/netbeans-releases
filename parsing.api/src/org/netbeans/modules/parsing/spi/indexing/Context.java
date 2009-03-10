@@ -39,13 +39,15 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import org.netbeans.modules.parsing.impl.indexing.IndexingSPIAccessor;
-import org.netbeans.modules.parsing.spi.Parser.Result;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Collection;
+import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 
 /**
  * Represents a context of indexing given root.
@@ -54,42 +56,50 @@ import org.openide.util.Exceptions;
 //@NotThreadSafe
 public final class Context {
 
-    private final URI rootURI;
+    private final URL rootURL;
+    private final FileObject indexBaseFolder;
     private final FileObject indexFolder;
     private final String indexerName;
     private final int indexerVersion;
+    private final boolean followUpJob;
+    
     private FileObject root;
+    private IndexingSupport indexingSupport;
 
-    static {
-        IndexingSPIAccessor.setInstance(new MyAccessor());
-    }
+    //unit test
+    final IndexFactoryImpl factory;
 
-    Context (final FileObject indexFolder,
-             final URI rootURI, String indexerName, int indexerVersion) {
-        assert indexFolder != null;
-        assert rootURI != null;
+    Context (final FileObject indexBaseFolder,
+             final URL rootURL, final String indexerName, final int indexerVersion,
+             final IndexFactoryImpl factory, boolean followUpJob) throws IOException {
+        assert indexBaseFolder != null;
+        assert rootURL != null;
         assert indexerName != null;
-        this.indexFolder = indexFolder;
-        this.rootURI = rootURI;
+        this.indexBaseFolder = indexBaseFolder;
+        this.rootURL = rootURL;
         this.indexerName = indexerName;
         this.indexerVersion = indexerVersion;
+        this.factory = factory;
+        this.followUpJob = followUpJob;
+        final String path = getIndexerPath(indexerName, indexerVersion); //NOI18N
+        this.indexFolder = FileUtil.createFolder(this.indexBaseFolder,path);
     }
 
     /**
      * Returns the cache folder where the indexer may store language metadata.
      * For each root and indexer there exist a separate cache folder.
-     * @return The cahce folder
+     * @return The cache folder
      */
-    public FileObject getIndexFolder () {
+    public FileObject getIndexFolder () {        
         return this.indexFolder;
     }
 
     /**
-     * Return the {@link URI} of the processed root
-     * @return the absolute URI
+     * Return the {@link URL} of the processed root
+     * @return the absolute URL
      */
-    public URI getRootURI () {
-        return this.rootURI;
+    public URL getRootURI () {
+        return this.rootURL;
     }
 
     /**
@@ -100,35 +110,64 @@ public final class Context {
      * @return the root or null when the root doesn't exist
      */
     public FileObject getRoot () {
-        if (root == null) {
-            try {
-                root = URLMapper.findFileObject(this.rootURI.toURL());
-            } catch (MalformedURLException e) {
-                //Never thrown
-                Exceptions.printStackTrace(e);
-                return null;
-            }
+        if (root == null) {            
+            root = URLMapper.findFileObject(this.rootURL);
         }
         return root;
     }
 
+    /**
+     * Schedules additional files for reindexing. This method can be used for requesting
+     * reindexing of additional files that an indexer discovers while indexing some
+     * other files. The files passed to this method will be processed by a new
+     * indexing job after the current indexing is finished.
+     * That means that all the indexers appropriate
+     * for each file will have a chance to update their index. No timestamp checks
+     * are done on the additional files, which means that even files that have not been changed
+     * since their last indexing will be reindexed again.
+     *
+     * @param root The common parent folder of the files that should be reindexed.
+     * @param files The files to reindex. Can be <code>null</code> or an empty
+     *   collection in which case <b>all</b> files under the <code>root</code> will
+     *   be reindexed.
+     *
+     * @since 1.3
+     */
+    public void addSupplementaryFiles(URL root, Collection<? extends URL> files) {
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, true, false);
+    }
 
+    /**
+     * Indicates whether the current indexing job was requested by calling
+     * {@link #addSupplementaryFiles(java.net.URL, java.util.Collection) } method.
+     *
+     * @return <code>true</code> if the indexing job was requested by <code>addSupplementaryFiles</code>,
+     *   otherwise <code>false</code>
+     *
+     * @since 1.3
+     */
+    public boolean isSupplementaryFilesIndexing() {
+        return followUpJob;
+    }
 
-    private static class MyAccessor extends IndexingSPIAccessor {
+    String getIndexerName () {
+        return this.indexerName;
+    }
 
-        @Override
-        public void index(EmbeddingIndexer indexer, Result parserResult, Context ctx) {
-            indexer.index(parserResult, ctx);
-        }
+    int getIndexerVersion () {
+        return this.indexerVersion;
+    }
 
-        @Override
-        public String getIndexerName(final Context ctx) {
-            return ctx.indexerName;
-        }
+    void attachIndexingSupport(IndexingSupport support) {
+        assert this.indexingSupport == null;
+        this.indexingSupport = support;
+    }
 
-        @Override
-        public int getIndexerVersion(final Context ctx) {
-            return ctx.indexerVersion;
-        }
+    IndexingSupport getAttachedIndexingSupport() {
+        return this.indexingSupport;
+    }
+
+    static String getIndexerPath (final String indexerName, final int indexerVersion) {
+        return indexerName + "/" + indexerVersion; //NOI18N
     }
 }

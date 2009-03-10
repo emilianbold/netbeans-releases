@@ -46,13 +46,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.loaders.FolderInstance;
 import org.openide.cookies.InstanceCookie;
-import java.lang.ClassNotFoundException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.IOException;
-import java.lang.String;
 import org.openide.filesystems.FileObject;
 import org.netbeans.editor.AnnotationType;
 import java.util.Iterator;
@@ -61,7 +59,6 @@ import org.openide.util.Exceptions;
 import org.w3c.dom.*;
 import org.openide.xml.XMLUtil;
 import org.openide.filesystems.FileLock;
-import java.lang.Exception;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileUtil;
@@ -88,16 +85,11 @@ public class AnnotationTypesFolder extends FolderInstance{
     /** map of annotationtype_name <-> AnnotationType_instance*/
     private Map annotationTypes;
 
-    /** FileObject which represent the folder with annotation types*/
-    private FileObject fo;
-    
     /** Creates new AnnotationTypesFolder */
     private AnnotationTypesFolder(FileObject fo, DataFolder fld) {
         super(fld);
         recreate();
         instanceFinished();
-        
-        this.fo = fo;
         
         // add listener on changes in annotation types folder
         fo.addFileChangeListener(new FileChangeAdapter() {

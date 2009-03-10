@@ -48,7 +48,6 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.ClassNamesForFileOraculum;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
-import com.sun.tools.javac.parser.DocCommentScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -220,7 +219,11 @@ public class JavacParser extends Parser {
         JavaFileFilterImplementation filter = null;
         if (this.supportsReparse) {
             final Source source = snapshots.iterator().next().getSource();
-            filter = JavaFileFilterQuery.getFilter(source.getFileObject());            
+            FileObject fo = source.getFileObject();
+            if (fo != null) {
+                //fileless Source -- ie. debugger watch CC etc
+                filter = JavaFileFilterQuery.getFilter(source.getFileObject());
+            }
             try {
                 final DataObject dobj = DataObject.find(source.getFileObject());
                 ec = dobj.getCookie(EditorCookie.Observable.class);
@@ -298,7 +301,7 @@ public class JavacParser extends Parser {
                     ciImpl = new CompilationInfoImpl(cpInfo);
                 }
                 else {
-                    throw new IllegalArgumentException("Task has to provide classpath.");
+                    throw new IllegalArgumentException("No classpath provided by task: " + task);
                 }
             }
             else if (this.sourceCount == 1) {
