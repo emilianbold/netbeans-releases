@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xml.wsdl.model.extensions.soap.validation;
+package org.netbeans.modules.xml.wsdl.model.extensions.soap12.validation;
 
 import java.net.URI;
 import java.net.URL;
@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
@@ -61,16 +62,16 @@ import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPAddress;
-import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
-import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
-import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPComponent;
-import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPFault;
-import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeader;
-import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeaderBase;
-import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeaderFault;
-import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPMessageBase;
-import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap12.SOAP12Address;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap12.SOAP12Binding;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap12.SOAP12Body;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap12.SOAP12Component;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap12.SOAP12Fault;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap12.SOAP12Header;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap12.SOAP12HeaderBase;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap12.SOAP12HeaderFault;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap12.SOAP12MessageBase;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap12.SOAP12Operation;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validator;
@@ -78,18 +79,18 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.util.NbBundle;
 
 /**
+ * @author Sujit Biswas
  *
- * @author nang
  */
-public class SOAPComponentVisitor implements SOAPComponent.Visitor {
+public class SOAP12ComponentVisitor implements SOAP12Component.Visitor {
     private static final String HTTP_DEFAULT_PORT_TOKEN = "${HttpDefaultPort}";
     private static final String HTTPS_DEFAULT_PORT_TOKEN = "${HttpsDefaultPort}";
     
-    private final SOAPComponentValidator mValidator;
+    private final SOAP12ComponentValidator mValidator;
     private final Validation mValidation;
     private final List<ResultItem> results;
 
-    SOAPComponentVisitor(SOAPComponentValidator validator, Validation validation) {
+    SOAP12ComponentVisitor(SOAP12ComponentValidator validator, Validation validation) {
         mValidator = validator;
         mValidation = validation;
         results = new LinkedList<ResultItem>();
@@ -104,16 +105,16 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
         Iterator<Binding> bindings = defs.getBindings().iterator();
         while (bindings.hasNext()) {
             Binding binding = bindings.next();
-            int numSoapBindings = binding.getExtensibilityElements(SOAPBinding.class).size();
+            int numSoapBindings = binding.getExtensibilityElements(SOAP12Binding.class).size();
             if (numSoapBindings > 0 && numSoapBindings != 1) {
                 results.add(
                         new Validator.ResultItem(mValidator,
                         Validator.ResultType.ERROR,
                         binding,
-                        NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBindingValidator.Only_one_binding_allowed")));
+                        NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPBindingValidator.Only_one_binding_allowed")));
             }
-            Iterator<SOAPBinding> soapBindings =
-                    binding.getExtensibilityElements(SOAPBinding.class).iterator();
+            Iterator<SOAP12Binding> soapBindings =
+                    binding.getExtensibilityElements(SOAP12Binding.class).iterator();
             while (soapBindings.hasNext()) {
                 soapBindings.next().accept(this);
             }
@@ -121,8 +122,8 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
                     binding.getBindingOperations().iterator();
             while (bindingOps.hasNext()) {
                 BindingOperation bindingOp = bindingOps.next();
-                List soapOpsList = bindingOp.getExtensibilityElements(SOAPOperation.class);
-                Iterator<SOAPOperation> soapOps =
+                List soapOpsList = bindingOp.getExtensibilityElements(SOAP12Operation.class);
+                Iterator<SOAP12Operation> soapOps =
                         soapOpsList.iterator();
                 while (soapOps.hasNext()) {
                     soapOps.next().accept(this);
@@ -143,13 +144,13 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
                             bindingOp.getBindingFaults().iterator();
                     while (bindingFaults.hasNext()) {
                         BindingFault bindingFault = bindingFaults.next();
-                        int numSoapFaults = bindingFault.getExtensibilityElements(SOAPFault.class).size();
+                        int numSoapFaults = bindingFault.getExtensibilityElements(SOAP12Fault.class).size();
                         if (numSoapFaults == 0) {
                             results.add(
                                     new Validator.ResultItem(mValidator,
                                     Validator.ResultType.ERROR,
                                     bindingFault,
-                                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPFaultValidator.No_soap_fault_defined")));
+                                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPFaultValidator.No_soap_fault_defined")));
                         }
                         if (numSoapFaults > 0 && numSoapFaults != 1) {
 
@@ -157,20 +158,20 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
                                     new Validator.ResultItem(mValidator,
                                     Validator.ResultType.ERROR,
                                     bindingFault,
-                                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPFaultValidator.Only_one_fault_allowed")));
+                                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPFaultValidator.Only_one_fault_allowed")));
                         }
 
-                        Iterator<SOAPFault> soapFaults =
-                                bindingFault.getExtensibilityElements(SOAPFault.class).iterator();
+                        Iterator<SOAP12Fault> soapFaults =
+                                bindingFault.getExtensibilityElements(SOAP12Fault.class).iterator();
                         while(soapFaults.hasNext()) {
-                            SOAPFault soapFault = (SOAPFault) soapFaults.next();   // should be only one defined
+                            SOAP12Fault soapFault = (SOAP12Fault) soapFaults.next();   // should be only one defined
                             if (soapFault.getName() != null
                                     && !soapFault.getName().equals(bindingFault.getName()))  {
                                 results.add(
                                     new Validator.ResultItem(mValidator,
                                     Validator.ResultType.ERROR,
                                     bindingFault,
-                                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPFaultValidator.Fault_name_not_match")));
+                                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPFaultValidator.Fault_name_not_match")));
                             }
                             soapFault.accept(this);
                         }
@@ -187,22 +188,22 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
                 if(port.getBinding() != null) {
                     Binding binding = port.getBinding().get();
                     if(binding != null) {
-                        int numRelatedSoapBindings = binding.getExtensibilityElements(SOAPBinding.class).size();
-                        Iterator<SOAPAddress> soapAddresses = port.getExtensibilityElements(SOAPAddress.class).iterator();
+                        int numRelatedSoapBindings = binding.getExtensibilityElements(SOAP12Binding.class).size();
+                        Iterator<SOAP12Address> soapAddresses = port.getExtensibilityElements(SOAP12Address.class).iterator();
                         if((numRelatedSoapBindings > 0) && (!soapAddresses.hasNext())){
                             results.add(
                                     new Validator.ResultItem(mValidator,
                                     Validator.ResultType.ERROR,
                                     port,
-                                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPAddressValidator.Missing_SoapAddress")));
+                                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPAddressValidator.Missing_SoapAddress")));
                         }
 
-                        if(port.getExtensibilityElements(SOAPAddress.class).size() > 1){
+                        if(port.getExtensibilityElements(SOAP12Address.class).size() > 1){
                             results.add(
                                     new Validator.ResultItem(mValidator,
                                     Validator.ResultType.ERROR,
                                     port,
-                                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPAddressValidator.Only_one_SoapAddress_allowed")));
+                                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPAddressValidator.Only_one_SoapAddress_allowed")));
                         }
                         while (soapAddresses.hasNext()) {
                             soapAddresses.next().accept(this);
@@ -219,14 +220,14 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
     ////
     /////////////////////////////////////////////
     
-    public void visit(SOAPHeader header) {
+    public void visit(SOAP12Header header) {
         NamedComponentReference<Message> message = header.getMessage();
         if (message == null) {
             results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     header,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPHeaderValidator.Missing_message")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPHeaderValidator.Missing_message")));
         }
         
         String part = header.getPart();
@@ -235,24 +236,24 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     header,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPHeaderValidator.Missing_part")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPHeaderValidator.Missing_part")));
         }
         
         try {
-            SOAPMessageBase.Use use = header.getUse();
+            SOAP12MessageBase.Use use = header.getUse();
             if (use == null) {
                 results.add(
                         new Validator.ResultItem(mValidator,
                         Validator.ResultType.ERROR,
                         header,
-                        NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPHeaderValidator.Missing_use")));
+                        NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPHeaderValidator.Missing_use")));
             }
         } catch (Throwable th) {
             results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     header,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPHeaderValidator.Unsupported_header_use_attribute")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPHeaderValidator.Unsupported_header_use_attribute")));
         }
         
         Collection<String> encodingStyles = header.getEncodingStyles();
@@ -268,14 +269,14 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
         }
     }
     
-    public void visit(SOAPAddress address) {
+    public void visit(SOAP12Address address) {
         String location = address.getLocation();
         if (location == null) {
             results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     address,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPAddressValidator.Missing_location")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPAddressValidator.Missing_location")));
             return;
         }
         
@@ -308,7 +309,7 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
                             new Validator.ResultItem(mValidator,
                             Validator.ResultType.ERROR,
                             address,
-                            NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPAddressValidator.Unsupported_location_attribute")));
+                            NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPAddressValidator.Unsupported_location_attribute")));
                     return;
                 }
             }
@@ -330,7 +331,7 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
                             new Validator.ResultItem(mValidator,
                             Validator.ResultType.ERROR,
                             address,
-                            NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPAddressValidator.Unsupported_location_attribute")));
+                            NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPAddressValidator.Unsupported_location_attribute")));
                     return;
                 }
             }
@@ -342,7 +343,7 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
                             new Validator.ResultItem(mValidator,
                             Validator.ResultType.ERROR,
                             address,
-                            NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPAddressValidator.Unsupported_Token_Format")));
+                            NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPAddressValidator.Unsupported_Token_Format")));
                     return;
                 }
             } else {
@@ -359,39 +360,39 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
                         new Validator.ResultItem(mValidator,
                         Validator.ResultType.ERROR,
                         address,
-                        NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPAddressValidator.Unsupported_location_attribute")));
+                        NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPAddressValidator.Unsupported_location_attribute")));
                 }   
         }
     }
     
-    public void visit(SOAPBinding binding) {
+    public void visit(SOAP12Binding binding) {
         String transportURI = binding.getTransportURI();
         if (transportURI == null) {
             results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     binding,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBindingValidator.Transport_URI_required")));
-        } else if (!transportURI.equals("http://schemas.xmlsoap.org/soap/http")) {
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPBindingValidator.Transport_URI_required")));
+        } else if (!(transportURI.equals("http://schemas.xmlsoap.org/soap/http")||transportURI.equals("http://www.w3.org/2003/05/soap/bindings/HTTP/"))) {
             results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     binding,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBindingValidator.Unsupported_transport")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPBindingValidator.Unsupported_transport")));
         }
         
         try {
-            SOAPBinding.Style style = binding.getStyle();
+            SOAP12Binding.Style style = binding.getStyle();
         } catch (Throwable th) {
             results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     binding,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBindingValidator.Unsupported_style_attribute")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPBindingValidator.Unsupported_style_attribute")));
         }
     }
     
-    public void visit(SOAPBody body) {
+    public void visit(SOAP12Body body) {
         Collection<String> encodingStyles = body.getEncodingStyles();
         if (encodingStyles != null) {
             // This is optional.  Don't verify contents at this point.
@@ -404,13 +405,13 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
         }
         
         try {
-            SOAPMessageBase.Use use = body.getUse();
+            SOAP12MessageBase.Use use = body.getUse();
         } catch (Throwable th) {
             results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     body,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBodyValidator.Unsupported_use_attribute")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPBodyValidator.Unsupported_use_attribute")));
         }
         
         List<String> parts = body.getParts();
@@ -452,14 +453,14 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
          */
     }
     
-    public void visit(SOAPFault fault) {
+    public void visit(SOAP12Fault fault) {
         String name = fault.getName();
         if (name == null) {
             results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     fault,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPFaultValidator.Missing_name")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPFaultValidator.Missing_name")));
         }
         
         Collection<String> encodingStyles = fault.getEncodingStyles();
@@ -474,24 +475,24 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
         }
         
         try {
-            SOAPMessageBase.Use use = fault.getUse();
+            SOAP12MessageBase.Use use = fault.getUse();
         } catch (Throwable th) {
             results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     fault,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPFaultValidator.Unsupported_use_attribute")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPFaultValidator.Unsupported_use_attribute")));
         }
     }
     
-    public void visit(SOAPHeaderFault headerFault) {
+    public void visit(SOAP12HeaderFault headerFault) {
         NamedComponentReference<Message> message = headerFault.getMessage();
         if (message == null) {
             results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     headerFault,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPHeaderFaultValidator.Missing_header_fault_message")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPHeaderFaultValidator.Missing_header_fault_message")));
         }
         
         String part = headerFault.getPart();
@@ -500,24 +501,24 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     headerFault,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPHeaderFaultValidator.Missing_header_fault_part")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPHeaderFaultValidator.Missing_header_fault_part")));
         }
         
         try {
-            SOAPMessageBase.Use use = headerFault.getUse();
+            SOAP12MessageBase.Use use = headerFault.getUse();
             if (use == null) {
                 results.add(
                         new Validator.ResultItem(mValidator,
                         Validator.ResultType.ERROR,
                         headerFault,
-                        NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPHeaderFaultValidator.Missing_header_fault_use")));
+                        NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPHeaderFaultValidator.Missing_header_fault_use")));
             }
         } catch (Throwable th) {
             results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     headerFault,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPHeaderFaultValidator.Unsupported_header_fault_use_attribute")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPHeaderFaultValidator.Unsupported_header_fault_use_attribute")));
         }
         
         
@@ -534,7 +535,7 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
         
     }
     
-    public void visit(SOAPOperation operation) {
+    public void visit(SOAP12Operation operation) {
         String soapActionURI = operation.getSoapAction();
         if (soapActionURI != null) {
             // This is fine.  The URI can be anything.  In reality,
@@ -543,76 +544,76 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
         }
         
         try {
-            SOAPBinding.Style style = operation.getStyle();
+            SOAP12Binding.Style style = operation.getStyle();
         } catch (Throwable th) {
             results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     operation,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPOperationValidator.Unsupported_style_attribute")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPOperationValidator.Unsupported_style_attribute")));
         }
     }
 
     private void visit(BindingInput bindingInput) {
-        Map<MessagePart, SOAPMessageBase> partMap =
-                new HashMap<MessagePart, SOAPMessageBase>();
+        Map<MessagePart, SOAP12MessageBase> partMap =
+                new HashMap<MessagePart, SOAP12MessageBase>();
         
-        List<SOAPHeader> soapHeaders=
-                bindingInput.getExtensibilityElements(SOAPHeader.class);
-        for (SOAPHeader header: soapHeaders) {
+        List<SOAP12Header> soapHeaders=
+                bindingInput.getExtensibilityElements(SOAP12Header.class);
+        for (SOAP12Header header: soapHeaders) {
             header.accept(this);
             ensureUniqueParts(partMap, header);
-            Collection<SOAPHeaderFault> soapHeaderFaults = header.getSOAPHeaderFaults();
-            for (SOAPHeaderFault fault: soapHeaderFaults) {
+            Collection<SOAP12HeaderFault> soapHeaderFaults = header.getSOAPHeaderFaults();
+            for (SOAP12HeaderFault fault: soapHeaderFaults) {
                 fault.accept(this);
                 ensureUniqueParts(partMap, fault);
             }
         }
                             
-        int numSoapBodies = bindingInput.getExtensibilityElements(SOAPBody.class).size();
+        int numSoapBodies = bindingInput.getExtensibilityElements(SOAP12Body.class).size();
         if(numSoapBodies == 0) {
-            /*results.add(
+            results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     bindingInput,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBodyValidator.Atleast_one_body_Required")));*/
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPBodyValidator.Atleast_one_body_Required")));
 
         } else if (numSoapBodies > 0 && numSoapBodies != 1) {
             results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     bindingInput,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBodyValidator.Only_one_body_allowed")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPBodyValidator.Only_one_body_allowed")));
         }
-        List<SOAPBody> soapBodies = bindingInput.getExtensibilityElements(SOAPBody.class);
-        for (SOAPBody body: soapBodies) {
+        List<SOAP12Body> soapBodies = bindingInput.getExtensibilityElements(SOAP12Body.class);
+        for (SOAP12Body body: soapBodies) {
             body.accept(this);
             ensureUniqueParts(partMap, body, bindingInput);
         }
     }
     
     private void visit(BindingOutput bindingOutput) {
-        Map<MessagePart, SOAPMessageBase> partMap =
-                new HashMap<MessagePart, SOAPMessageBase>();
+        Map<MessagePart, SOAP12MessageBase> partMap =
+                new HashMap<MessagePart, SOAP12MessageBase>();
         
-        List<SOAPHeader> soapHeaders = bindingOutput.getExtensibilityElements(SOAPHeader.class);
-        for (SOAPHeader soapHeader: soapHeaders) {
+        List<SOAP12Header> soapHeaders = bindingOutput.getExtensibilityElements(SOAP12Header.class);
+        for (SOAP12Header soapHeader: soapHeaders) {
             soapHeader.accept(this);
             ensureUniqueParts(partMap, soapHeader);
-            Collection<SOAPHeaderFault> soapHeaderFaults = soapHeader.getSOAPHeaderFaults();
-            for (SOAPHeaderFault fault: soapHeaderFaults) {
+            Collection<SOAP12HeaderFault> soapHeaderFaults = soapHeader.getSOAPHeaderFaults();
+            for (SOAP12HeaderFault fault: soapHeaderFaults) {
                 fault.accept(this);
                 ensureUniqueParts(partMap, fault);
             }
         }
 
-        int numSoapBodies = bindingOutput.getExtensibilityElements(SOAPBody.class).size();
+        int numSoapBodies = bindingOutput.getExtensibilityElements(SOAP12Body.class).size();
         if(numSoapBodies == 0) {
-           /* results.add(
+            results.add(
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     bindingOutput,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBodyValidator.Atleast_one_body_Required")));*/
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPBodyValidator.Atleast_one_body_Required")));
 
         } else if (numSoapBodies > 0 && numSoapBodies != 1) {
 
@@ -620,17 +621,17 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
                     new Validator.ResultItem(mValidator,
                     Validator.ResultType.ERROR,
                     bindingOutput,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBodyValidator.Only_one_body_allowed")));
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class, "SOAPBodyValidator.Only_one_body_allowed")));
         }
-        List<SOAPBody> soapBodies = bindingOutput.getExtensibilityElements(SOAPBody.class);
-        for (SOAPBody body: soapBodies) {
+        List<SOAP12Body> soapBodies = bindingOutput.getExtensibilityElements(SOAP12Body.class);
+        for (SOAP12Body body: soapBodies) {
             body.accept(this);
             ensureUniqueParts(partMap, body, bindingOutput);
         }
     }
     
-    private void ensureUniqueParts(Map<MessagePart, SOAPMessageBase> partsMap,
-                                   SOAPBody elem,
+    private void ensureUniqueParts(Map<MessagePart, SOAP12MessageBase> partsMap,
+                                   SOAP12Body elem,
                                    WSDLComponent parent) {
         
         // Obtain the Message definition whose part this SOAPBody element extends
@@ -667,12 +668,12 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
                 if (!partsMap.containsKey(msgpart)) {
                     partsMap.put(msgpart, elem);
                 } else {
-                    SOAPMessageBase conflictElem = partsMap.get(msgpart);
+                    SOAP12MessageBase conflictElem = partsMap.get(msgpart);
                     results.add(new Validator.ResultItem(
                         mValidator,
                         Validator.ResultType.ERROR,
                         elem,
-                        NbBundle.getMessage(SOAPComponentVisitor.class,
+                        NbBundle.getMessage(SOAP12ComponentVisitor.class,
                             "SOAPBodyValidator.Part_already_in_use_by_elem",
                             name,
                             msg.getName(),
@@ -682,7 +683,7 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
         }
     }
     
-    private void ensureUniqueParts(Map<MessagePart, SOAPMessageBase> partsMap, SOAPHeaderBase elem) {
+    private void ensureUniqueParts(Map<MessagePart, SOAP12MessageBase> partsMap, SOAP12HeaderBase elem) {
         NamedComponentReference<Message> comp = elem.getMessage();
         
         // Let wsdl validator catch undefined message for operation input or output
@@ -697,12 +698,12 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
             if (!partsMap.containsKey(msgpart)) {
                 partsMap.put(msgpart, elem);
             } else {
-                SOAPMessageBase conflictElem = partsMap.get(msgpart);
+                SOAP12MessageBase conflictElem = partsMap.get(msgpart);
                 results.add(new Validator.ResultItem(
                     mValidator,
                     Validator.ResultType.ERROR,
                     elem,
-                    NbBundle.getMessage(SOAPComponentVisitor.class,
+                    NbBundle.getMessage(SOAP12ComponentVisitor.class,
                         "SOAPHeaderValidator.Part_already_in_use_by_elem",
                         part,
                         msg.getName(),
