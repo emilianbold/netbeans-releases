@@ -80,7 +80,7 @@ class SVGListElementCodeFooter extends CodeClassInitHeaderFooterPresenter {
                 section.getWriter().write("int index = " + CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ".getSelectionModel().getSelectedIndex();\n"); //NOI18N
                 section.getWriter().write("switch (index) {\n"); //NOI18N
                 section.getWriter().commit();
-                section.switchToEditable(getComponent().getComponentID() + "action"); //NOI18N
+                section.switchToEditable(getComponent().getComponentID() + "-action"); //NOI18N
                 section.getWriter().commit();
                 initBlock = Boolean.TRUE;
             }
@@ -88,30 +88,33 @@ class SVGListElementCodeFooter extends CodeClassInitHeaderFooterPresenter {
                 section.switchToGuarded();
                 section.getWriter().write("case " + component.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue().toString() + ":\n"); //NOI18N
                 section.getWriter().commit();
-                section.switchToEditable(component.getComponentID() + "beforeSwitch"); //NOI18N
+                section.switchToEditable(component.getComponentID() + "-beforeSwitch"); //NOI18N
                 section.getWriter().write("//Some action before switch\n"); // NOI18N
                 section.getWriter().commit();
                 section.switchToGuarded();
                 CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode(section, eventHandler);
                 section.getWriter().commit();
-                section.switchToEditable(component.getComponentID() + "afterSwitch"); //NOI18N
+                section.switchToEditable(component.getComponentID() + "-afterSwitch"); //NOI18N
                 section.getWriter().write("//Some action after switch\n"); // NOI18N
                 section.getWriter().commit();
             } else {
                 section.switchToGuarded();
-                 section.getWriter().write("case " + component.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue().toString() + ":\n"); //NOI18N
+                section.getWriter().write("case " + component.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue().toString() + ":\n"); //NOI18N
                 section.getWriter().commit();
-                section.switchToEditable(component.getComponentID() + "beforeSwitch"); //NOI18N
+                section.switchToEditable(component.getComponentID() + "-beforeSwitch"); //NOI18N
                 section.getWriter().write("//Some action before exit Midlet\n"); // NOI18N
+                section.getWriter().commit();
+                section.switchToGuarded();
+                CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode(section, eventHandler);
+                section.getWriter().commit();
+                section.switchToEditable(getComponent().getComponentID() + "-exit"); //NOI18N
                 section.getWriter().commit();
             }
 
         }
 
-
         if (initBlock) {
             section.switchToGuarded();
-            CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode(section, eventHandler);
             section.getWriter().write("}\n"); // NOI18N
             section.getWriter().write("}\n"); // NOI18N
             section.getWriter().write("});\n"); //NOI18N

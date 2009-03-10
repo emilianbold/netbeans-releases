@@ -43,6 +43,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -60,12 +62,18 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.NameType;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.midp.actions.GoToSourceAction;
+import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
+import org.netbeans.modules.vmd.midp.actions.GoToSourceSupport;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
+import org.netbeans.modules.vmd.midp.flow.FlowListElementPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
@@ -115,65 +123,45 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
     @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, InspectorPositionPresenter.class);
+        MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, true, true, true);
         super.gatherPresenters(presenters);
     }
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
-                
                 //delete
                 new DeletePresenter() {
-
-            @Override
-            protected void delete() {
-                PropertyValue arrayValue = getComponent().getParentComponent().readProperty(SVGListCD.PROP_ELEMENTS);
-                if (arrayValue.getArray() != null) {
-                    for (PropertyValue value : arrayValue.getArray()) {
-                        if (value.getComponent() == getComponent()) {
-                            ArraySupport.remove(getComponent().getParentComponent(), SVGListCD.PROP_ELEMENTS, getComponent());
+                    @Override
+                    protected void delete() {
+                        PropertyValue arrayValue = getComponent().getParentComponent().readProperty(SVGListCD.PROP_ELEMENTS);
+                        if (arrayValue.getArray() != null) {
+                            for (PropertyValue value : arrayValue.getArray()) {
+                                if (value.getComponent() == getComponent()) {
+                                    ArraySupport.remove(getComponent().getParentComponent(), SVGListCD.PROP_ELEMENTS, getComponent());
+                                }
+                            }
                         }
                     }
-                }
-            }
-        },
+                },
                 // info
                 InfoPresenter.create(new SVGListElementresolver()),
                 //properties
                 createPropertiesPresenter(),
                 //flow
-                new FlowEventSourcePinPresenter() {
-
-            @Override
-            protected DesignComponent getComponentForAttachingPin() {
-                return getComponent().getParentComponent().getParentComponent();
-            }
-
-            @Override
-            protected String getDisplayName() {
-                return getName(getComponent());
-            }
-
-            @Override
-            protected String getOrder() {
-                return SVGFormCD.SVGListElementOrderCategory.CATEGORY_ID;
-            }
-
-            @Override
-            protected DesignEventFilter getEventFilter() {
-                return super.getEventFilter().addParentFilter(getComponent(), 1, false);
-            }
-        },
+                new SVGListElementFlowEventSourcePinPresenter(),
                 //inspector
-                InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)));
-                
-
+                InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)),
+                         // general
+                new GoToSourcePresenter () {
+                    protected boolean matches (GuardedSection section) {
+                        return MultiGuardedSection.matches(section, getComponent().getParentComponent().getComponentID() + "-getter" , 1); // NOI18N
+                    }
+                }
+                );
     }
 
     private static String getName(DesignComponent component) {
-       
-
         return (String) component.readProperty(PROP_STRING).getPrimitiveValue();
-
     }
 
     private class SVGListElementresolver implements InfoPresenter.Resolver {
@@ -201,4 +189,41 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
             return ICON;
         }
     }
+
+    private class SVGListElementFlowEventSourcePinPresenter  extends   FlowEventSourcePinPresenter {
+                protected DesignComponent getComponentForAttachingPin () {
+                    if (getComponent().getParentComponent() == null) {
+                        return null;
+                    }
+                    return getComponent().getParentComponent().getParentComponent();
+                }
+
+                protected String getDisplayName() {
+                    return MidpValueSupport.getHumanReadableString (getComponent ().readProperty (PROP_STRING));
+                }
+
+                protected String getOrder() {
+                    return SVGFlowListElementPinOrderPresenter.CATEGORY_ID;
+                }
+
+                @Override
+                protected boolean canRename () {
+                    return getComponent () != null;
+                }
+
+                @Override
+                protected String getRenameName() {
+                    return (String) getComponent ().readProperty (PROP_STRING).getPrimitiveValue ();
+                }
+
+                @Override
+                protected void setRenameName(String name) {
+                    getComponent ().writeProperty (PROP_STRING, MidpTypes.createStringValue (name));
+                }
+
+                @Override
+                protected DesignEventFilter getEventFilter() {
+                    return super.getEventFilter ().addParentFilter (getComponent (), 1, false);
+                }
+            }
 }
