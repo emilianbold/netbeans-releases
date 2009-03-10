@@ -21,6 +21,7 @@ import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
@@ -108,7 +109,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     }
 
     private static RemotePathMap getRemotePathMap(String hkey) {
-        return RemotePathMap.getRemotePathMapInstance(hkey);
+        return RemotePathMap.getRemotePathMapInstance(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
     }
 
     private synchronized void initTableModel(final String hkey) {
