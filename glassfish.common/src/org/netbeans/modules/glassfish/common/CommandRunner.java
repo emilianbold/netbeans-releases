@@ -161,16 +161,21 @@ public class CommandRunner extends BasicTask<OperationState> {
     public Map<String, String> getResourceData(String name) {
         try {
             GetPropertyCommand cmd;
+            String query;
             if (null != name) {
-                cmd = new ServerCommand.GetPropertyCommand("resources.*."+name+".*"); // NOI18N
+                query = "resources.*."+name+".*"; // NOI18N
             } else {
-                cmd = new ServerCommand.GetPropertyCommand("resources.*"); // NOI18N
+                query = "resources.*"; // NOI18N
             }
+            cmd = new ServerCommand.GetPropertyCommand(query); // NOI18N
             serverCmd = cmd;
             Future<OperationState> task = executor().submit(this);
             OperationState state = task.get();
             if (state == OperationState.COMPLETED) {
-                return cmd.getData();
+                Map<String,String> retVal = cmd.getData();
+                if (retVal.isEmpty())
+                    Logger.getLogger("glassfish").log(Level.INFO, null, new IllegalStateException(query+" has no data"));  // NOI18N
+                return retVal;
             }
         } catch (InterruptedException ex) {
             Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
