@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -141,7 +142,8 @@ public class GeneratedSourceRootTest extends NbTestCase {
         // check also dynamic changes in set of gensrc roots:
         FileObject moreStuff = FileUtil.createFolder(d, "build/generated-sources/morestuff");
         FileObject ygen = FileUtil.createData(moreStuff, "net/nowhere/YGen.java");
-        assertEquals(Arrays.asList(src, stuff, moreStuff), Arrays.asList(SourceForBinaryQuery.findSourceRoots(classes).getRoots()));
+        assertEquals(new HashSet<FileObject>(Arrays.asList(src, stuff, moreStuff)),
+                new HashSet<FileObject>(Arrays.asList(SourceForBinaryQuery.findSourceRoots(classes).getRoots())));
         assertEquals(Collections.singletonList(classes), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(moreStuff.getURL()).getRoots()));
         // XXX should previously created Result objects fire changes? ideally yes, but probably unnecessary
         assertEquals("1.5", SourceLevelQuery.getSourceLevel(moreStuff));

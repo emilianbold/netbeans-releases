@@ -41,22 +41,33 @@
 
 package org.netbeans.modules.debugger.ui.views;
 
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.Shape;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
 import javax.swing.JMenuItem;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Position.Bias;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -66,6 +77,8 @@ import org.netbeans.spi.debugger.SessionProvider;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
@@ -76,8 +89,11 @@ import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.Models.CompoundModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.PasteType;
 
 
 /**
@@ -116,6 +132,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private Image viewIcon;
     private SessionProvider providerToDisplay;
     private List<ViewModelListener> subListeners = new ArrayList<ViewModelListener>();
+
+    private Preferences preferences = NbPreferences.forModule(ContextProvider.class).node("variables_view");
+    private ViewPreferenceChangeListener prefListener = new ViewPreferenceChangeListener();
     
     // <RAVE>
     // Store the propertiesHelpID to pass to the Model object that is
@@ -143,6 +162,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             DebuggerManager.PROP_CURRENT_ENGINE,
             this
         );
+        preferences.addPreferenceChangeListener(prefListener);
         updateModel ();
     }
 
@@ -151,6 +171,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             DebuggerManager.PROP_CURRENT_ENGINE,
             this
         );
+        preferences.removePreferenceChangeListener(prefListener);
         models.clear();
         treeModels = null;
         treeModelFilters = null;
@@ -226,6 +247,21 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         columnModels =          cp.lookup (viewPath, ColumnModel.class);
         mm =                    cp.lookup (viewPath, Model.class);
         rp = (e != null) ? e.lookupFirst(null, RequestProcessor.class) : null;
+
+        if ("LocalsView".equals(viewType)) {
+            if (preferences.getBoolean(VariablesViewButtons.SHOW_WATCHES, false)) {
+                TreeModelFilter showWatchesFilter = createWatchesViewCompoundModel(cp);
+                treeModelFilters.add(showWatchesFilter);
+                nodeModelFilters.add(showWatchesFilter);
+                nodeActionsProviderFilters.add(showWatchesFilter);
+            }
+//            if (preferences.getBoolean(VariablesViewButtons.SHOW_EVALUTOR_RESULT, false)) {
+//                TreeModelFilter showResultFilter = createResultViewCompoundModel(cp);
+//                treeModelFilters.add(showResultFilter);
+//                nodeModelFilters.add(showResultFilter);
+//                nodeActionsProviderFilters.add(showResultFilter);
+//            }
+        }
 
         buttons = cp.lookup(viewPath, javax.swing.AbstractButton.class);
         tabbedPane = cp.lookupFirst(viewPath, javax.swing.JTabbedPane.class);
@@ -334,8 +370,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 }
                 //GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(5, 5, 5, 5), 0, 0);
                 //buttonsPane.add(new javax.swing.JPanel(), c); // Push-panel
-                GridBagConstraints c = new GridBagConstraints(1, 0, 1, i + 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0);
-                buttonsPane.add(new javax.swing.JSeparator(SwingConstants.VERTICAL), c); // Components separator, border-like
+
+                // [TODO]
+                //GridBagConstraints c = new GridBagConstraints(1, 0, 1, i + 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0);
+                //buttonsPane.add(new javax.swing.JSeparator(SwingConstants.VERTICAL), c); // Components separator, border-like
             }
         }
         
@@ -458,6 +496,291 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     
     // innerclasses ............................................................
 
+    private TreeModelFilter createWatchesViewCompoundModel (ContextProvider cp) {
+        List treeModels;
+        List treeModelFilters;
+        List treeExpansionModels;
+        List nodeModels;
+        List nodeModelFilters;
+        List tableModels;
+        List tableModelFilters;
+        List nodeActionsProviders;
+        List nodeActionsProviderFilters;
+        List columnModels;
+        List mm;
+        String viewName = View.WATCHES_VIEW_NAME;
+        treeModels =            cp.lookup (viewName, TreeModel.class);
+        treeModelFilters =      cp.lookup (viewName, TreeModelFilter.class);
+        treeExpansionModels =   cp.lookup (viewName, TreeExpansionModel.class);
+        nodeModels =            cp.lookup (viewName, NodeModel.class);
+        nodeModelFilters =      cp.lookup (viewName, NodeModelFilter.class);
+        tableModels =           cp.lookup (viewName, TableModel.class);
+        tableModelFilters =     cp.lookup (viewName, TableModelFilter.class);
+        nodeActionsProviders =  cp.lookup (viewName, NodeActionsProvider.class);
+        nodeActionsProviderFilters = cp.lookup (viewName, NodeActionsProviderFilter.class);
+        columnModels =          cp.lookup (viewName, ColumnModel.class);
+        mm =                    cp.lookup (viewName, Model.class);
+
+        List treeNodeModelsCompound = new ArrayList(11);
+        treeNodeModelsCompound.add(treeModels);
+        treeNodeModelsCompound.add(treeModelFilters);
+        treeNodeModelsCompound.add(Collections.EMPTY_LIST); // TreeExpansionModel
+        treeNodeModelsCompound.add(nodeModels);
+        treeNodeModelsCompound.add(nodeModelFilters);
+        treeNodeModelsCompound.add(Collections.EMPTY_LIST); // TableModel
+        treeNodeModelsCompound.add(Collections.EMPTY_LIST); // TableModelFilter
+        treeNodeModelsCompound.add(nodeActionsProviders);
+        treeNodeModelsCompound.add(nodeActionsProviderFilters);
+        treeNodeModelsCompound.add(Collections.EMPTY_LIST); // ColumnModel
+        treeNodeModelsCompound.add(Collections.EMPTY_LIST); // Model
+
+        CompoundModel treeNodeModel = Models.createCompoundModel(treeNodeModelsCompound);
+        List nodeModelsCompound = new ArrayList(11);
+        nodeModelsCompound.add(nodeModels);
+        // nodeModelsCompound.add(new ArrayList()); // An empty tree model will be added
+//        for (int i = 0; i < 2; i++) {
+//            nodeModelsCompound.add(Collections.EMPTY_LIST);
+//        }
+//        nodeModelsCompound.add(nodeModels);
+//        for (int i = 0; i < 7; i++) {
+//            nodeModelsCompound.add(Collections.EMPTY_LIST);
+//        }
+//        CompoundModel nodeModel = Models.createCompoundModel(nodeModelsCompound);
+
+        TreeModelFilter nestedTreeModel = new NestedTreeModelFilter(
+                treeNodeModel, treeNodeModel, treeNodeModel, false);
+
+        return nestedTreeModel;
+    }
+
+    private TreeModelFilter createResultViewCompoundModel (ContextProvider cp) {
+        List treeModels;
+        List treeModelFilters;
+        List treeExpansionModels;
+        List nodeModels;
+        List nodeModelFilters;
+        List tableModels;
+        List tableModelFilters;
+        List nodeActionsProviders;
+        List nodeActionsProviderFilters;
+        List columnModels;
+        List mm;
+        String viewName = View.RESULTS_VIEW_NAME;
+        treeModels =            cp.lookup (viewName, TreeModel.class);
+        treeModelFilters =      cp.lookup (viewName, TreeModelFilter.class);
+        treeExpansionModels =   cp.lookup (viewName, TreeExpansionModel.class);
+        nodeModels =            cp.lookup (viewName, NodeModel.class);
+        nodeModelFilters =      cp.lookup (viewName, NodeModelFilter.class);
+        tableModels =           cp.lookup (viewName, TableModel.class);
+        tableModelFilters =     cp.lookup (viewName, TableModelFilter.class);
+        nodeActionsProviders =  cp.lookup (viewName, NodeActionsProvider.class);
+        nodeActionsProviderFilters = cp.lookup (viewName, NodeActionsProviderFilter.class);
+        columnModels =          cp.lookup (viewName, ColumnModel.class);
+        mm =                    cp.lookup (viewName, Model.class);
+
+        List treeNodeModelsCompound = new ArrayList(11);
+        treeNodeModelsCompound.add(treeModels);
+        treeNodeModelsCompound.add(treeModelFilters != null ? treeModelFilters : Collections.EMPTY_LIST);
+        treeNodeModelsCompound.add(Collections.EMPTY_LIST); // TreeExpansionModel
+        treeNodeModelsCompound.add(nodeModels != null ? nodeModels : Collections.EMPTY_LIST);
+        treeNodeModelsCompound.add(Collections.EMPTY_LIST);
+        treeNodeModelsCompound.add(tableModels != null ? tableModels : Collections.EMPTY_LIST); // TableModel
+        treeNodeModelsCompound.add(tableModelFilters != null ? tableModelFilters : Collections.EMPTY_LIST); // TableModelFilter
+        treeNodeModelsCompound.add(Collections.EMPTY_LIST);
+        treeNodeModelsCompound.add(Collections.EMPTY_LIST);
+        treeNodeModelsCompound.add(Collections.EMPTY_LIST); // ColumnModel
+        treeNodeModelsCompound.add(Collections.EMPTY_LIST); // Model
+
+        CompoundModel treeNodeModel = Models.createCompoundModel(treeNodeModelsCompound);
+        List nodeModelsCompound = new ArrayList(11);
+        nodeModelsCompound.add(nodeModels);
+        // nodeModelsCompound.add(new ArrayList()); // An empty tree model will be added
+//        for (int i = 0; i < 2; i++) {
+//            nodeModelsCompound.add(Collections.EMPTY_LIST);
+//        }
+//        nodeModelsCompound.add(nodeModels);
+//        for (int i = 0; i < 7; i++) {
+//            nodeModelsCompound.add(Collections.EMPTY_LIST);
+//        }
+//        CompoundModel nodeModel = Models.createCompoundModel(nodeModelsCompound);
+
+        TreeModelFilter nestedTreeModel = new NestedTreeModelFilter(
+                treeNodeModel, treeNodeModel, treeNodeModel, false);
+
+        return nestedTreeModel;
+    }
+
+    private static class NestedTreeModelFilter implements TreeModelFilter, ExtendedNodeModelFilter,
+        NodeActionsProviderFilter {
+
+        protected CompoundModel treeModel;
+        protected CompoundModel nodeModel;
+        protected CompoundModel actionModel;
+        private boolean isResultModel;
+
+        NestedTreeModelFilter (CompoundModel treeModel, CompoundModel nodeModel,
+                CompoundModel actionModel, boolean isResultModel) {
+            this.treeModel = treeModel;
+            this.nodeModel = nodeModel;
+            this.actionModel = actionModel;
+            this.isResultModel = isResultModel;
+        }
+
+        public Object getRoot(TreeModel original) {
+            return original.getRoot();
+        }
+
+        public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
+            Object[] children = original.getChildren(parent, from, to);
+            if (parent == TreeModel.ROOT) {
+//                if (isResultModel) {
+//                    Object[] wChildren = treeModel.getChildren(parent, from, to);
+//                    Object[] union = new Object[children.length + wChildren.length];
+//                    System.arraycopy(wChildren, 0, union, 0, wChildren.length);
+//                    System.arraycopy(children, 0, union, wChildren.length, children.length);
+//                    children = union;
+//                } else {
+                    Object[] wChildren = treeModel.getChildren(parent, from, to);
+                    Object[] union = new Object[children.length + wChildren.length];
+                    System.arraycopy(children, 0, union, 0, children.length);
+                    System.arraycopy(wChildren, 0, union, children.length, wChildren.length);
+                    children = union;
+//                }
+            }
+            return children;
+        }
+
+        public int getChildrenCount(TreeModel original, Object node) throws UnknownTypeException {
+            return Integer.MAX_VALUE; // [TODO]
+        }
+
+        public boolean isLeaf(TreeModel original, Object node) throws UnknownTypeException {
+            try {
+                return treeModel.isLeaf(node);
+            } catch (UnknownTypeException e) {
+                return original.isLeaf(node);
+            }
+        }
+
+        public void addModelListener(ModelListener listener) {
+            treeModel.addModelListener(listener);
+        }
+
+        public void removeModelListener(ModelListener listener) {
+            treeModel.removeModelListener(listener);
+        }
+
+        public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+            try {
+                return nodeModel.canRename(node);
+            } catch (UnknownTypeException e) {
+                return original.canRename(node);
+            }
+        }
+
+        public boolean canCopy(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+            try {
+                return nodeModel.canCopy(node);
+            } catch (UnknownTypeException e) {
+                return original.canCopy(node);
+            }
+        }
+
+        public boolean canCut(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+            try {
+                return nodeModel.canCut(node);
+            } catch (UnknownTypeException e) {
+                return original.canCut(node);
+            }
+        }
+
+        public Transferable clipboardCopy(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
+            try {
+                return nodeModel.clipboardCopy(node);
+            } catch (UnknownTypeException e) {
+                return original.clipboardCopy(node);
+            }
+        }
+
+        public Transferable clipboardCut(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
+            try {
+                return nodeModel.clipboardCut(node);
+            } catch (UnknownTypeException e) {
+                return original.clipboardCut(node);
+            }
+        }
+
+        public PasteType[] getPasteTypes(ExtendedNodeModel original, Object node, Transferable t) throws UnknownTypeException {
+            try {
+                return nodeModel.getPasteTypes(node, t);
+            } catch (UnknownTypeException e) {
+                return original.getPasteTypes(node, t);
+            }
+        }
+
+        public void setName(ExtendedNodeModel original, Object node, String name) throws UnknownTypeException {
+            try {
+                nodeModel.setName(node, name);
+            } catch (UnknownTypeException e) {
+                original.setName(node, name);
+            }
+        }
+
+        public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+            try {
+                return nodeModel.getIconBaseWithExtension(node);
+            } catch (UnknownTypeException e) {
+                return original.getIconBaseWithExtension(node);
+            }
+        }
+
+        public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
+            try {
+                return nodeModel.getDisplayName(node);
+            } catch (UnknownTypeException e) {
+                return original.getDisplayName(node);
+            }
+        }
+
+        public String getIconBase(NodeModel original, Object node) throws UnknownTypeException {
+            try {
+                return nodeModel.getIconBase(node);
+            } catch (UnknownTypeException e) {
+                return original.getIconBase(node);
+            }
+        }
+
+        public String getShortDescription(NodeModel original, Object node) throws UnknownTypeException {
+            try {
+                return nodeModel.getShortDescription(node);
+            } catch (UnknownTypeException e) {
+                return original.getShortDescription(node);
+            }
+        }
+
+        public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
+            try {
+                actionModel.performDefaultAction(node);
+            } catch (UnknownTypeException e) {
+                original.performDefaultAction(node);
+            }
+        }
+
+        public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
+            Action[] origActions = original.getActions(node);
+            try {
+                Action[] actions = actionModel.getActions(node);
+                Action[] result = new Action[origActions.length + actions.length];
+                System.arraycopy(origActions, 0, result, 0, origActions.length);
+                System.arraycopy(actions, 0, result, origActions.length, actions.length);
+                return result;
+            } catch (UnknownTypeException e) {
+                return origActions;
+            }
+        }
+
+    }
+
     private class ModelsChangeRefresher implements PropertyChangeListener, Runnable {
         
         private RequestProcessor.Task task;
@@ -474,4 +797,17 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
         
     }
+
+    private class ViewPreferenceChangeListener implements PreferenceChangeListener {
+
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String key = evt.getKey();
+            if (VariablesViewButtons.SHOW_WATCHES.equals(key) ||
+                    VariablesViewButtons.SHOW_EVALUTOR_RESULT.equals(key)) {
+                updateModel();
+            }
+        }
+
+    }
+
 }
