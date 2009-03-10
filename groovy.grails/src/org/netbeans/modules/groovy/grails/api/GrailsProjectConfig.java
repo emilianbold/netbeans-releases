@@ -70,6 +70,8 @@ public final class GrailsProjectConfig {
 
     public static final String GRAILS_PROJECT_PLUGINS_DIR_PROPERTY = "grails.project.plugins.dir"; // NOI18N
 
+    public static final String GRAILS_GLOBAL_PLUGINS_DIR_PROPERTY = "grails.global.plugins.dir"; // NOI18N
+
     private static final String DEFAULT_PORT = "8080"; // NOI18N
 
     private final Project prj;
@@ -265,7 +267,7 @@ public final class GrailsProjectConfig {
 
     public File getProjectPluginsDir() {
         synchronized (settings) {
-            String value = settings.getProjectPluginDirForProject(prj);
+            String value = settings.getProjectPluginsDirForProject(prj);
             if (value != null) {
                 return new File(value);
             }
@@ -276,13 +278,33 @@ public final class GrailsProjectConfig {
     public void setProjectPluginsDir(File dir) {
         assert FileUtil.normalizeFile(dir).equals(dir);
         
-        // TODO
         File oldValue;
         synchronized (this) {
             oldValue = getProjectPluginsDir();
-            settings.setProjectPluginDirForProject(prj, dir.getAbsolutePath());
+            settings.setProjectPluginsDirForProject(prj, dir.getAbsolutePath());
         }
         propertyChangeSupport.firePropertyChange(GRAILS_PROJECT_PLUGINS_DIR_PROPERTY, oldValue, dir);
+    }
+
+    public File getGlobalPluginsDir() {
+        synchronized (settings) {
+            String value = settings.getGlobalPluginsDirForProject(prj);
+            if (value != null) {
+                return new File(value);
+            }
+            return null;
+        }
+    }
+
+    public void setGlobalPluginsDir(File dir) {
+        assert FileUtil.normalizeFile(dir).equals(dir);
+
+        File oldValue;
+        synchronized (this) {
+            oldValue = getGlobalPluginsDir();
+            settings.setGlobalPluginsDirForProject(prj, dir.getAbsolutePath());
+        }
+        propertyChangeSupport.firePropertyChange(GRAILS_GLOBAL_PLUGINS_DIR_PROPERTY, oldValue, dir);
     }
     
 }
