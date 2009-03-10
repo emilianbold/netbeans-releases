@@ -8,6 +8,7 @@ Searchable Keys:
   field : verbose|STATIC
   fqn : Migration
   global : $global
+  require : classvar
 
 Not Searchable Keys:
   attrs : |CLASS|

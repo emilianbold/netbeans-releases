@@ -46,13 +46,13 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.javascript.editing.AstUtilities;
+import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.hints.infrastructure.JsAstRule;
 import org.netbeans.modules.javascript.hints.infrastructure.JsRuleContext;
 import org.openide.util.NbBundle;
@@ -76,7 +76,7 @@ public class DuplicateLabelHint extends JsAstRule {
     }
 
     public void run(JsRuleContext context, List<Hint> result) {
-        CompilationInfo info = context.compilationInfo;
+        JsParseResult info = AstUtilities.getParseResult(context.parserResult);
         Node node = context.node;
 
         Object[] properties = (Object[]) node.getProp(Node.OBJECT_IDS_PROP);
@@ -124,7 +124,7 @@ public class DuplicateLabelHint extends JsAstRule {
                         OffsetRange range = AstUtilities.getNameRange(duplicate);
                         List<HintFix> fixList = Collections.emptyList();
                         String displayName = getDisplayName();
-                        Hint desc = new Hint(this, displayName, info.getFileObject(), range, fixList, 1500);
+                        Hint desc = new Hint(this, displayName, info.getSnapshot().getSource().getFileObject(), range, fixList, 1500);
                         result.add(desc);
                     }
                 }

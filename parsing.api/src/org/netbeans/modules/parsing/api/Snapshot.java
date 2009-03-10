@@ -118,10 +118,10 @@ public final class Snapshot {
             });
         else {
             newCurrentToOriginal.add (new int[] {
-                0, currentToOriginal [i - 1] [1] + offset
+                0, currentToOriginal [i - 1] [1] + offset - currentToOriginal [i - 1] [0]
             });
             newOriginalToCurrent.add (new int[] {
-                currentToOriginal [i - 1] [1] + offset, 0
+                currentToOriginal [i - 1] [1] + offset - currentToOriginal [i - 1] [0], 0
             });
         }
         for (; i < currentToOriginal.length && currentToOriginal [i] [0] < offset + length; i++) {
@@ -130,11 +130,11 @@ public final class Snapshot {
             });
             if (currentToOriginal [i] [1] >= 0)
                 newOriginalToCurrent.add (new int[] {
-                    currentToOriginal [i] [1], currentToOriginal [i] [0] - offset
+                    originalToCurrent [i] [0], originalToCurrent [i] [1] - offset
                 });
             else
                 newOriginalToCurrent.add (new int[] {
-                    newOriginalToCurrent.get (i - 1) [0] + newCurrentToOriginal.get (i) [0] - newCurrentToOriginal.get (i - 1) [0], -1
+                    originalToCurrent [i] [0], -1
                 });
         }
         if (newOriginalToCurrent.get (newOriginalToCurrent.size () - 1) [1] >= 0)

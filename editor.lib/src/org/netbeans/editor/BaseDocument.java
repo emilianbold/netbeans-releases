@@ -2156,7 +2156,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return toString();
     }
 
-    private void incrementDocVersion() {
+    /* package */ void incrementDocVersion() {
         ((AtomicLong) getProperty(VERSION_PROP)).incrementAndGet();
     }
 

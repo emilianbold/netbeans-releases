@@ -38,7 +38,8 @@
  */
 package org.netbeans.modules.ruby.elements;
 
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyType;
 import org.openide.filesystems.FileObject;
@@ -49,16 +50,16 @@ public final class IndexedConstant extends IndexedElement {
     private String name;
     private String in;
 
-    private IndexedConstant(String name, RubyIndex index, String fileUrl, String classFQN,
+    private IndexedConstant(String name, RubyIndex index, IndexResult result, String classFQN,
             String require, int flags, FileObject context, RubyType type) {
-        super(index, fileUrl, classFQN, classFQN, require, null, flags, context, type);
+        super(index, result, classFQN, classFQN, require, null, flags, context, type);
         this.name = name;
     }
 
     public static IndexedConstant create(RubyIndex index, String name,
-            String classFQn, String fileUrl, String require,
+            String classFQn, IndexResult result, String require,
             int flags, FileObject context, RubyType type) {
-        return new IndexedConstant(name, index, fileUrl, classFQn, require, flags, context, type);
+        return new IndexedConstant(name, index, result, classFQn, require, flags, context, type);
     }
 
     public ElementKind getKind() {
@@ -82,16 +83,17 @@ public final class IndexedConstant extends IndexedElement {
         this.smart = smart;
     }
 
-    @Override
-    public String getIn() {
-        if (in == null) {
-            if (fileUrl != null) {
-                in = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
-            }
-        }
-
-        return in;
-    }
+    // XXX - Parsing API
+//    @Override
+//    public String getIn() {
+//        if (in == null) {
+//            if (fileUrl != null) {
+//                in = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+//            }
+//        }
+//
+//        return in;
+//    }
 
     @Override
     public boolean equals(Object obj) {

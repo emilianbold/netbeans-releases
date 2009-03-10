@@ -42,32 +42,33 @@ package org.netbeans.modules.ruby.elements;
 
 import java.util.Set;
 
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.openide.filesystems.FileObject;
 
-
 /**
- * A class describing a Ruby class that is rin "textual form" (signature, filename, etc.)
- * obtained from the code index.
+ * A class describing a Ruby class that is rin "textual form" (signature,
+ * filename, etc.) obtained from the code index.
  *
  * @author Tor Norbye
  */
 public final class IndexedClass extends IndexedElement implements ClassElement {
+    
     /** This class is a module rather than a proper class */
     public static final int MODULE = 1 << 6;
 
     private String in;
 
-    protected IndexedClass(RubyIndex index, String fileUrl, String fqn,
+    protected IndexedClass(RubyIndex index, IndexResult result, String fqn,
         String clz, String require, String attributes, int flags, FileObject context) {
-        super(index, fileUrl, fqn, clz, require, attributes, flags, context);
+        super(index, result, fqn, clz, require, attributes, flags, context);
     }
 
-    public static IndexedClass create(RubyIndex index, String clz, String fqn, String fileUrl,
+    public static IndexedClass create(RubyIndex index, String clz, String fqn, IndexResult result,
         String require, String attributes, int flags, FileObject context) {
         IndexedClass c =
-            new IndexedClass(index, fileUrl, fqn, clz, require, attributes, flags, context);
+            new IndexedClass(index, result, fqn, clz, require, attributes, flags, context);
 
         return c;
     }
@@ -103,17 +104,17 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
         return null;
     }
     
-    @Override 
-    public boolean equals(Object o) {
-        //return ((IndexedClass)o).fqn.equals(fqn);
-        return super.equals(o);
-    }
-    
-    @Override
-    public int hashCode() {
-        //return fqn.hashCode();
-        return super.hashCode();
-    }
+//    @Override
+//    public boolean equals(Object o) {
+//        //return ((IndexedClass)o).fqn.equals(fqn);
+//        return super.equals(o);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        //return fqn.hashCode();
+//        return super.hashCode();
+//    }
     
     /** Return the length of the documentation for this class, in characters */
     @Override
