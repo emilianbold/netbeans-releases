@@ -45,6 +45,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
@@ -173,8 +174,8 @@ public class RemoteServerList implements ServerList {
         return sa;
     }
 
-    public Collection<ExecutionEnvironment> getEnvironments() {
-        Collection<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(items.size());
+    public List<ExecutionEnvironment> getEnvironments() {
+        List<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(items.size());
         for (RemoteServerRecord item : items) {
             result.add(item.getExecutionEnvironment());
         }
