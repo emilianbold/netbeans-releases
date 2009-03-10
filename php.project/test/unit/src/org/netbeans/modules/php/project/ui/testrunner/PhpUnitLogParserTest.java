@@ -174,6 +174,30 @@ public class PhpUnitLogParserTest extends NbTestCase {
         assertSame(1, testCase.getStacktrace().length);
     }
 
+    public void testParseLogIssue159876() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "phpunit-log-issue159876.xml")));
+        TestSessionVO testSession = new TestSessionVO();
+
+        PhpUnitLogParser.parse(reader, testSession);
+
+        assertSame(2, testSession.getTestSuites().size());
+        TestSuiteVO testSuite = testSession.getTestSuites().get(0);
+        assertEquals("LoginTest: Firefox on Windows", testSuite.getName());
+        assertEquals("/Library/WebServer/Documents/acalog/tests/EmptyTest.php", testSuite.getFile());
+
+        assertSame(1, testSuite.getTestCases().size());
+        TestCaseVO testCase = testSuite.getTestCases().get(0);
+        assertEquals("testLogin", testCase.getName());
+
+        testSuite = testSession.getTestSuites().get(1);
+        assertEquals("LoginTest: Internet Explorer on Windows", testSuite.getName());
+        assertEquals("/Library/WebServer/Documents/acalog/tests/EmptyTest.php", testSuite.getFile());
+
+        assertSame(1, testSuite.getTestCases().size());
+        testCase = testSuite.getTestCases().get(0);
+        assertEquals("testLogin", testCase.getName());
+    }
+
     private File getLogForMoreSuites() throws Exception {
         File xmlLog = new File(getDataDir(), "phpunit-log-more-suites.xml");
         assertTrue(xmlLog.isFile());
