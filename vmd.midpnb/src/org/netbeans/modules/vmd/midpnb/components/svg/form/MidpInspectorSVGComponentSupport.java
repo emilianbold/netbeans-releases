@@ -70,9 +70,7 @@ public final class MidpInspectorSVGComponentSupport {
                 icon,
                 filtersTypeID,
                 parentTypeID,
-                orderingControllers
-                        .toArray(new InspectorOrderingController[orderingControllers
-                                .size()]));
+                orderingControllers.toArray(new InspectorOrderingController[orderingControllers.size()]));
     }
 
     // Default Ordering inside
@@ -80,7 +78,7 @@ public final class MidpInspectorSVGComponentSupport {
 
         return createComponentCategory(
                 NbBundle.getMessage(MidpInspectorSVGComponentSupport.class,
-                        "DISP_FlowCategory_SVGComponents"), // NOI18N
+                        "DISP_InspectorCategory_SVGComponents"), // NOI18N
                 TYPEID_CATEGORY_SVG_COMPONENTS, ICON_CATEGORY, Collections
                         .<InspectorOrderingController> emptyList(), null,
                 SVGButtonCD.TYPEID, SVGCheckBoxCD.TYPEID, SVGRadioButtonCD.TYPEID,

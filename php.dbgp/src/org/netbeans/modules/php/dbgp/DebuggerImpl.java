@@ -47,11 +47,11 @@ import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.project.api.Pair;
 import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
-import org.openide.util.RequestProcessor;
 
 /**
  * @author Radek Matous
@@ -66,13 +66,15 @@ public class DebuggerImpl implements XDebugStarter {
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.Debugger#debug()
      */
-    public void start(Project project, Callable<Cancellable> run, FileObject startFile, boolean closeSession) {
+    public void start(Project project, Callable<Cancellable> run, FileObject startFile, boolean closeSession, Pair<String, String> pathMapping) {
         assert startFile != null;
         SessionId sessionId = getSessionId(project);
         if (sessionId == null) {
             sessionId = new SessionId(startFile);
             DebuggerOptions options = new DebuggerOptions();
             options.debugForFirstPageOnly = closeSession;
+            options.pathMapping = pathMapping;
+
             debug(sessionId, options, run);
             long started = System.currentTimeMillis();
             if (!sessionId.isInitialized(true)) {
