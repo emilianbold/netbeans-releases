@@ -217,7 +217,7 @@ public class MakeConfiguration extends Configuration {
     }
 
     public PlatformInfo getPlatformInfo() {
-        PlatformInfo platformInfo = PlatformInfo.getDefault(getDevelopmentHost().getName());
+        PlatformInfo platformInfo = PlatformInfo.getDefault(getDevelopmentHost().getExecutionEnvironment());
 //        assert platformInfo.getPlatform() == getPlatform().getValue();
         return platformInfo;
 

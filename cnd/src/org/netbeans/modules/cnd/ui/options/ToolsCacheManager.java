@@ -44,7 +44,6 @@ import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
@@ -190,11 +189,6 @@ public final class ToolsCacheManager {
             copiedManagers.put(env, out);
         }
         return out;
-    }
-
-    /** TODO: deprecate and remove */
-    public synchronized CompilerSetManager getCompilerSetManagerCopy(String hKey) {
-        return getCompilerSetManagerCopy(ExecutionEnvironmentFactory.getExecutionEnvironment(hKey));
     }
 
     public void addCompilerSetManager(CompilerSetManager newCsm) {

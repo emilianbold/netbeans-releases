@@ -56,17 +56,12 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 public class RemoteInteractiveCommandProvider implements InteractiveCommandProvider {
 
-    public RemoteInteractiveCommandProvider(String hkey) {
-        executionEnvironment = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
+    public RemoteInteractiveCommandProvider(ExecutionEnvironment execEnv) {
+        executionEnvironment = execEnv;
     }
     
     private RemoteInteractiveCommandSupport support;
     private ExecutionEnvironment executionEnvironment;
-
-    /** TODO: deprecate and remove */
-    public boolean run(String hkey, String cmd, Map<String, String> env) {
-        return run(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), cmd, env);
-    }
 
     public boolean run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
         support = new RemoteInteractiveCommandSupport(execEnv, cmd, env);
