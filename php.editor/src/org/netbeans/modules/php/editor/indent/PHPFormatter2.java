@@ -41,18 +41,15 @@
 package org.netbeans.modules.php.editor.indent;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -62,8 +59,6 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.lexer.LexUtilities;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
@@ -78,9 +73,7 @@ import org.openide.util.Exceptions;
  */
 public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
 
-    private static final Logger LOG = Logger.getLogger(PHPFormatter2.class.getName());
-    private static final Set<PHPTokenId> IGNORE_BREAK_IN = new HashSet<PHPTokenId>(Arrays.asList(
-            PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_DO));
+    private static final Logger LOG = Logger.getLogger(PHPFormatter.class.getName());
 
     public PHPFormatter2() {
         LOG.fine("PHP Formatter: " + this); //NOI18N
@@ -90,14 +83,36 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
         return true;
     }
 
-    public void reindent(Context context) {
-        // Make sure we're not reindenting HTML content
-        reindent(context, null, true);
+    public void reindent(final Context context) {
+        // performance optimization: do nth unless caret is within actual PHP code
+        // TODO: this may not be correct for indenting multiple lines
+        String mimeType = getMimeTypeAtOffset(context.document(), context.caretOffset());
+        System.err.println("mimeType=" + mimeType);
+
+        if (!PHPLanguage.PHP_MIME_TYPE.equals(mimeType)){
+            return;
+        }
+
+
+        FileObject file = NavUtils.getFile(context.document());
+        try {
+            SourceModelFactory.getInstance().getModel(file).runUserActionTask(new CancellableTask<CompilationInfo>() {
+
+                public void cancel() {
+                }
+
+                public void run(CompilationInfo parameter) throws Exception {
+                    astReindent(context, parameter);
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public void reformat(Context context, CompilationInfo info) {
-        prettyPrint(context);
-        reindent(context, info, false);
+        prettyPrint(context, info);
+        astReindent(context, info);
     }
 
     public int indentSize() {
@@ -108,110 +123,7 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
         return CodeStyle.get((Document) null).getContinuationIndentSize();
     }
 
-    public static int getTokenBalanceDelta(BaseDocument doc, Token<? extends PHPTokenId> token, TokenSequence<? extends PHPTokenId> ts, boolean includeKeywords) {
-        if (token.id() == PHPTokenId.PHP_VARIABLE) {
-            // In some cases, the [ shows up as an identifier, for example in this expression:
-            //  for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
-            if (token.length() == 1) {
-                char c = token.text().charAt(0);
-                if (c == '[') {
-                    return 1;
-                } else if (c == ']') {
-                    // I've seen "]" come instead of a RBRACKET too - for example in RHTML:
-                    // <%if session[:user]%>
-                    return -1;
-                }
-            }
-        } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
-            return 1;
-        } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
-            return -1;
-        } else if (token.id() == PHPTokenId.PHP_CASE || token.id() == PHPTokenId.PHP_DEFAULT) {
-            return 1;
-        } else if (token.id() == PHPTokenId.PHP_BREAK) {
-            return getIndentAfterBreak(doc, ts);
-        } else if (token.id() == PHPTokenId.PHP_TOKEN) {
-            if (LexUtilities.textEquals(token.text(), '(') || LexUtilities.textEquals(token.text(), '[')) {
-                return 1;
-            } else if (LexUtilities.textEquals(token.text(), ')') || LexUtilities.textEquals(token.text(), ']')) {
-                return -1;
-            }
-        } else if (includeKeywords) {
-            if (LexUtilities.isIndentBeginToken(token.id())) {
-                return 1;
-            } else if (LexUtilities.isIndentEndToken(token.id())) {
-                return -1;
-            }
-        }
-
-        return 0;
-    }
-
-    // return indent if we are not in switch/case, otherwise return 0
-    private static int getIndentAfterBreak(BaseDocument doc, TokenSequence<? extends PHPTokenId> ts) {
-        // we are inside a block
-        final int index = ts.index();
-        final int breakOffset = ts.offset();
-        int indent = 0;
-        int balance = 0;
-        while (ts.movePrevious()) {
-            Token<? extends PHPTokenId> token = ts.token();
-            if (token.id() == PHPTokenId.PHP_CURLY_OPEN || LexUtilities.textEquals(token.text(), '(') || LexUtilities.textEquals(token.text(), '[')) {
-                // out of the block
-                balance--;
-            } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE || LexUtilities.textEquals(token.text(), ')') || LexUtilities.textEquals(token.text(), ']')) {
-                // some block => ignore it
-                balance++;
-            } else if (balance == -1 && IGNORE_BREAK_IN.contains(token.id())) {
-                // out of the block
-                indent = 0;
-                break;
-            } else if (balance == 0 && token.id() == PHPTokenId.PHP_CASE) {
-                // in the same block
-                CodeStyle codeStyle = CodeStyle.get(doc);
-                int tplIndentSize = codeStyle.getIndentSize();
-                if (tplIndentSize > 0) {
-                    try {
-                        int caseIndent = Utilities.getRowIndent(doc, ts.offset());
-                        int breakIndent = Utilities.getRowIndent(doc, breakOffset);
-                        indent = (caseIndent - breakIndent) / tplIndentSize;
-                    } catch (BadLocationException ignored) {
-                        LOG.log(Level.FINE, "Incorrect offset?!", ignored);
-                    }
-                }
-                break;
-            }
-        }
-        // return to the original token
-        ts.moveIndex(index);
-        ts.moveNext();
-        return indent;
-    }
-
-    // TODO RHTML - there can be many discontiguous sections, I've gotta process all of them on the given line
-    public static int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords) {
-        int balance = 0;
-
-        TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, begin);
-        if (ts == null) {
-            return 0;
-        }
-
-        ts.move(begin);
-
-        if (!ts.moveNext()) {
-            return 0;
-        }
-
-        do {
-            Token<?extends PHPTokenId> token = ts.token();
-            balance += getTokenBalanceDelta(doc, token, ts, includeKeywords);
-        } while (ts.moveNext() && (ts.offset() < end));
-
-        return balance;
-    }
-
-    private void prettyPrint(final Context context) {
+    private void prettyPrint(final Context context, final CompilationInfo info) {
         final BaseDocument doc = (BaseDocument) context.document();
         final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
 
@@ -223,20 +135,9 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
 
             public void run() {
                 final WSTransformer wsTransformer = new WSTransformer(context);
-                FileObject file = NavUtils.getFile(doc);
-                try {
-                    SourceModelFactory.getInstance().getModel(file).runUserActionTask(new CancellableTask<CompilationInfo>() {
+                PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
+                result.getProgram().accept(wsTransformer);
 
-                        public void cancel() {}
-
-                        public void run(CompilationInfo parameter) throws Exception {
-                            PHPParseResult result = (PHPParseResult) parameter.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
-                            result.getProgram().accept(wsTransformer);
-                        }
-                    }, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
 
                 for (WSTransformer.Replacement replacement : wsTransformer.getReplacements()){
                     if (replacement.offset() < context.startOffset()
@@ -259,38 +160,18 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
         });
     }
 
-    private void reindent(final Context context, CompilationInfo info, final boolean indentOnly) {
-        Document document = context.document();
-        int startOffset = context.startOffset();
-        int endOffset = context.endOffset();
-        document.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE); //NOI18N
+    private void astReindent(final Context context, CompilationInfo info) {
+        final BaseDocument doc = (BaseDocument)context.document();
+        doc.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE); //NOI18N
 
         try {
-            final BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
-
-            if (endOffset > doc.getLength()) {
-                endOffset = doc.getLength();
-            }
-
-            startOffset = Utilities.getRowStart(doc, startOffset);
+            final int startOffset = Utilities.getRowStart(doc, context.startOffset());
+            final int endOffset = Utilities.getRowEnd(doc, context.endOffset());
             final int firstLine = Utilities.getLineOffset(doc, startOffset);
             final Map<Integer, Integer> indentLevels = new LinkedHashMap<Integer, Integer>();
             final IndentLevelCalculator indentCalc = new IndentLevelCalculator(doc, indentLevels);
-            FileObject file = NavUtils.getFile(doc);
-            try {
-                SourceModelFactory.getInstance().getModel(file).runUserActionTask(new CancellableTask<CompilationInfo>() {
-
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationInfo parameter) throws Exception {
-                        PHPParseResult result = (PHPParseResult) parameter.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
-                        result.getProgram().accept(indentCalc);
-                    }
-                }, true);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
+            result.getProgram().accept(indentCalc);
 
             doc.runAtomic(new Runnable() {
 
@@ -307,8 +188,8 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
                             int firstNonWSBefore = Utilities.getFirstNonWhiteBwd(doc, point);
 
                             if (firstNonWSBefore >= rowStart){
-                                lineNumber ++;
-                            }
+                                    lineNumber ++;
+                                }
 
                             Integer lineDelta = indentDeltaByLine.get(lineNumber);
                             indentDeltaByLine.put(lineNumber, lineDelta == null
@@ -320,19 +201,19 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
                             Integer lineDelta = indentDeltaByLine.get(i);
                             System.err.println("lineDelta[" + i + "]=" + lineDelta);
 
+                            if (i == firstLine){
+                                // TODO: do it also if there was HTML block in the middle
+                                // and this is the first line after the HTML
+                                indentBias = lineStart == 0 ? 0: currentIndent - GsfUtilities.getLineIndent(doc, lineStart-1);
+                            }
+
                             if (lineDelta != null) {
                                 currentIndent += lineDelta;
                                 assert currentIndent >= 0;
                             }
 
-                            if (i == firstLine){
-                                // TODO: do it also if there was HTML block in the middle
-                                // and this is the first line after the HTML
-                                indentBias = currentIndent - GsfUtilities.getLineIndent(doc, lineStart);
-                            }
-
                             //TODO:
-                            if (lineStart >= context.startOffset() && lineStart <= context.endOffset()){
+                            if (lineStart >= startOffset && lineStart <= endOffset){
                                 int actualIndent = 0;
 
                                 if (currentIndent > indentBias){
@@ -351,5 +232,16 @@ public class PHPFormatter2 implements org.netbeans.modules.gsf.api.Formatter {
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
+    }
+
+    private static String getMimeTypeAtOffset(Document doc, int offset){
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        List<TokenSequence<?>> tsl = th.embeddedTokenSequences(offset, false);
+        if (tsl != null && tsl.size() > 0) {
+            TokenSequence<?> tokenSequence = tsl.get(tsl.size() - 1);
+            return tokenSequence.language().mimeType();
+        }
+
+        return null;
     }
 }
