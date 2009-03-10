@@ -83,6 +83,7 @@ final class OnePassCompileWorker extends CompileWorker {
     ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Iterable<? extends Indexable> files) {
         final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.cpInfo);
         final Map<URI, List<String>> file2FQNs = new HashMap<URI, List<String>>();
+        final Set<ElementHandle<TypeElement>> addedTypes = new HashSet<ElementHandle<TypeElement>>();
         final Set<Indexable> finished = new HashSet<Indexable>();
         final Map<URL, Set<URL>> root2Rebuild = new HashMap<URL, Set<URL>>();
 
@@ -150,7 +151,7 @@ final class OnePassCompileWorker extends CompileWorker {
             }
 
             if (stopAfterParse) {
-                return new ParsingOutput(false, file2FQNs, Collections.<File>emptyList(), finished, root2Rebuild);
+                return new ParsingOutput(false, file2FQNs, addedTypes, Collections.<File>emptyList(), finished, root2Rebuild);
             }
 
             CompileTuple active = null;
@@ -159,25 +160,24 @@ final class OnePassCompileWorker extends CompileWorker {
                     active = unit.second;
                     if (mem.isLowMemory()) {
                         System.gc();
-                        return new ParsingOutput(false, file2FQNs, Collections.<File>emptyList()/*XXX*/, finished, root2Rebuild);
+                        return new ParsingOutput(false, file2FQNs, addedTypes, Collections.<File>emptyList()/*XXX*/, finished, root2Rebuild);
                     }
                     Iterable<? extends TypeElement> types = jt.enterTrees(Collections.singletonList(unit.first));
                     if (mem.isLowMemory()) {
                         System.gc();
-                        return new ParsingOutput(false, file2FQNs, Collections.<File>emptyList()/*XXX*/, finished, root2Rebuild);
+                        return new ParsingOutput(false, file2FQNs, addedTypes, Collections.<File>emptyList()/*XXX*/, finished, root2Rebuild);
                     }
                     jt.analyze(types);
                     if (mem.isLowMemory()) {
                         System.gc();
-                        return new ParsingOutput(false, file2FQNs, Collections.<File>emptyList()/*XXX*/, finished, root2Rebuild);
+                        return new ParsingOutput(false, file2FQNs, addedTypes, Collections.<File>emptyList()/*XXX*/, finished, root2Rebuild);
                     }
-                    Set<ElementHandle<TypeElement>> added = new HashSet<ElementHandle<TypeElement>>();
                     boolean[] main = new boolean[1];
-                    javaContext.sa.analyse(Collections.singleton(unit.first), jt, fileManager, false, true, active.jfo, added, main);
+                    javaContext.sa.analyse(Collections.singleton(unit.first), jt, fileManager, false, true, active.jfo, addedTypes, main);
                     ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.jfo.toUri().toURL(), main[0]);
                     if (mem.isLowMemory()) {
                         System.gc();
-                        return new ParsingOutput(false, file2FQNs, Collections.<File>emptyList()/*XXX*/, finished, root2Rebuild);
+                        return new ParsingOutput(false, file2FQNs, addedTypes, Collections.<File>emptyList()/*XXX*/, finished, root2Rebuild);
                     }
                     if (!context.isSupplementaryFilesIndexing()) {
                         for (Map.Entry<URL, Collection<URL>> toRebuild : RebuildOraculum.findFilesToRebuild(context.getRootURI(), active.jfo.toUri().toURL(), javaContext.cpInfo, jt.getElements(), types).entrySet()) {
@@ -192,7 +192,7 @@ final class OnePassCompileWorker extends CompileWorker {
                     TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), dc.getDiagnostics(active.jfo));
                     finished.add(active.indexable);
                 }
-                return new ParsingOutput(true, file2FQNs, Collections.<File>emptyList(), finished, root2Rebuild);
+                return new ParsingOutput(true, file2FQNs, addedTypes, Collections.<File>emptyList(), finished, root2Rebuild);
             } catch (Throwable t) {
                 if (JavaCustomIndexer.LOG.isLoggable(Level.FINEST)) {
                     final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
@@ -234,7 +234,7 @@ final class OnePassCompileWorker extends CompileWorker {
                     }
                 }
             }
-            return new ParsingOutput(false, file2FQNs, Collections.<File>emptyList(), finished, root2Rebuild);
+            return new ParsingOutput(false, file2FQNs, addedTypes, Collections.<File>emptyList(), finished, root2Rebuild);
         } finally {
             LowMemoryNotifier.getDefault().removeLowMemoryListener(mem);
         }

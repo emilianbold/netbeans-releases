@@ -62,7 +62,6 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -219,9 +218,8 @@ final class MultiPassCompileWorker extends CompileWorker {
                         System.gc();
                         continue;
                     }
-                    Set<ElementHandle<TypeElement>> added = new HashSet<ElementHandle<TypeElement>>();
                     boolean[] main = new boolean[1];
-                    javaContext.sa.analyse(trees, jt, fileManager, false, true, active.jfo, added, main);
+                    javaContext.sa.analyse(trees, jt, fileManager, false, true, active.jfo, previous.addedTypes, main);
 //                        if (activeTuple.file != null) {
                     //When the active file is not set (generated virtual source) ignore executable flag
                     ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.jfo.toUri().toURL(), main[0]);
@@ -322,7 +320,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         } finally {
             LowMemoryNotifier.getDefault().removeLowMemoryListener(mem);
         }
-        return new ParsingOutput(true, previous.file2FQNs, previous.createdFiles, finished, previous.root2Rebuild);
+        return new ParsingOutput(true, previous.file2FQNs, previous.addedTypes, previous.createdFiles, finished, previous.root2Rebuild);
     }
 
     private void dumpSymFiles(JavaFileManager jfm, JavacTaskImpl jti) throws IOException {
