@@ -62,15 +62,16 @@ import org.openide.util.NbPreferences;
  */
 public class RemotePathMap implements PathMap {
 
-    private final static Map<String, RemotePathMap> pmtable = new HashMap<String, RemotePathMap>();
+    private final static Map<ExecutionEnvironment, RemotePathMap> pmtable =
+            new HashMap<ExecutionEnvironment, RemotePathMap>();
 
-    public static RemotePathMap getRemotePathMapInstance(String hkey) {
-        RemotePathMap pathmap = pmtable.get(hkey);
+    public static RemotePathMap getRemotePathMapInstance(ExecutionEnvironment env) {
+        RemotePathMap pathmap = pmtable.get(env);
 
         if (pathmap == null) {
             synchronized (pmtable) {
-                pathmap = new RemotePathMap(hkey);
-                pmtable.put(hkey, pathmap);
+                pathmap = new RemotePathMap(env);
+                pmtable.put(env, pathmap);
             }
         }
         return pathmap;
@@ -83,10 +84,10 @@ public class RemotePathMap implements PathMap {
     //
 
     private final HashMap<String, String> map = new HashMap<String, String>();
-    private final String hkey;
+    private final ExecutionEnvironment execEnv;
 
-    private RemotePathMap(String hkey) {
-        this.hkey = hkey;
+    private RemotePathMap(ExecutionEnvironment execEnv) {
+        this.execEnv = execEnv;
         init();
     }
 
@@ -96,7 +97,7 @@ public class RemotePathMap implements PathMap {
      */
     public void init() {
         synchronized ( map ) {
-            String list = getPreferences(hkey);
+            String list = getPreferences(execEnv);
 
             if (list == null) {
                 // 1. Developers entry point
@@ -123,7 +124,7 @@ public class RemotePathMap implements PathMap {
                     }
                 } else {
                     // 2. Automated mappings gathering entry point
-                    HostMappingsAnalyzer ham = new HostMappingsAnalyzer(hkey);
+                    HostMappingsAnalyzer ham = new HostMappingsAnalyzer(execEnv);
                     map.putAll(ham.getMappings());
                     // TODO: what about consequent runs. User may share something, we need to check it
                 }
@@ -190,7 +191,7 @@ public class RemotePathMap implements PathMap {
         }
 
         // check if local path is mirrored by remote path
-        if (validateMapping(hkey, lpath, lpath)) {
+        if (validateMapping(execEnv, lpath, lpath)) {
             synchronized (map) {
                 map.put(lpath, lpath);
             }
@@ -198,7 +199,7 @@ public class RemotePathMap implements PathMap {
         }
 
         if (fixMissingPaths) {
-            return EditPathMapDialog.showMe(hkey, lpath) && isRemote(lpath, false);
+            return EditPathMapDialog.showMe(ExecutionEnvironmentFactory.getHostKey(execEnv), lpath) && isRemote(lpath, false);
         } else {
             return false;
         }
@@ -223,7 +224,7 @@ public class RemotePathMap implements PathMap {
                 sb.append( remotePath );
                 sb.append(DELIMITER);
             }
-            setPreferences(hkey, sb.toString());
+            setPreferences(sb.toString());
         }
     }
 
@@ -253,16 +254,18 @@ public class RemotePathMap implements PathMap {
     private static final String REMOTE_PATH_MAP = "remote-path-map"; // NOI18N
     private static final String DELIMITER = "\n"; // NOI18N
 
-    private static String getPreferences(String hkey) {
-        return NbPreferences.forModule(RemotePathMap.class).get(REMOTE_PATH_MAP + hkey, null);
+    private static String getPreferences(ExecutionEnvironment execEnv) {
+        return NbPreferences.forModule(RemotePathMap.class).get(
+                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.getHostKey(execEnv), null);
     }
 
-    private static void setPreferences(String hkey, String newValue) {
-        NbPreferences.forModule(RemotePathMap.class).put(REMOTE_PATH_MAP + hkey, newValue);
+    private void setPreferences(String newValue) {
+        NbPreferences.forModule(RemotePathMap.class).put(
+                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.getHostKey(execEnv), newValue);
     }
 
-    static boolean validateMapping(String hkey, String rpath, String lpath) {
-        if (!PlatformInfo.getDefault(hkey).isWindows() && !PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).isWindows()) {
+    static boolean validateMapping(ExecutionEnvironment exexEnv, String rpath, String lpath) {
+        if (!PlatformInfo.getDefault(exexEnv).isWindows() && !PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).isWindows()) {
             File path = new File(lpath);
             if (path.exists() && path.isDirectory()) {
                 File validationFile = null;
@@ -274,8 +277,7 @@ public class RemotePathMap implements PathMap {
                         String validationLine = Double.toString(Math.random());
                         out.write(validationLine);
                         out.close();
-                        ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
-                        if (0 == RemoteCommandSupport.run(env, "cat " + rpath + "/" + validationFile.getName() + " | grep " + validationLine)) { // NOI18N
+                        if (0 == RemoteCommandSupport.run(exexEnv, "cat " + rpath + "/" + validationFile.getName() + " | grep " + validationLine)) { // NOI18N
                             return true;
                         }
                     }
@@ -295,8 +297,8 @@ public class RemotePathMap implements PathMap {
     public final static boolean useRsync = Boolean.getBoolean("cnd.remote.useRsync");
     public static final String REMOTE_BASE_PATH = "NetBeansProjects/remote"; //NOI18N
 
-    public static PathMap getPathMap(String hkey) {
-        return useRsync ? rsyncMapper : getRemotePathMapInstance(hkey);
+    public static PathMap getPathMap(ExecutionEnvironment env) {
+        return useRsync ? rsyncMapper : getRemotePathMapInstance(env);
     }
 
     private static PathMap rsyncMapper = new RsyncPathMap();

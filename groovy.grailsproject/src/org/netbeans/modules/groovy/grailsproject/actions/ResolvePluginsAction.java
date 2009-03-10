@@ -27,15 +27,19 @@
  */
 package org.netbeans.modules.groovy.grailsproject.actions;
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.modules.groovy.grailsproject.ProgressSupport;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 public class ResolvePluginsAction extends AbstractAction {
-
-    private static final Logger LOG = Logger.getLogger(ResolvePluginsAction.class.getName());
 
     private final GrailsProject prj;
 
@@ -51,6 +55,32 @@ public class ResolvePluginsAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        // FIXME
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ResolvePluginsAction.class, "LBL_Resolving_Project_Plugins_progress"));
+
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(
+                ProgressSupport.createProgressDialog(NbBundle.getMessage(ResolvePluginsAction.class, "LBL_Resolving_Project_Plugins"),
+                handle, null));
+
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                try {
+                    handle.start();
+                    handle.progress(NbBundle.getMessage(ResolvePluginsAction.class, "LBL_Resolving_Project_Plugins_progress"));
+                    prj.getBuildConfig().reload();
+                } finally {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            dialog.setVisible(false);
+                            dialog.dispose();
+                            handle.finish();
+                        }
+                    });
+                }
+            }
+        });
+        
+        dialog.setVisible(true);
+
     }
 }

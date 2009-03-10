@@ -48,11 +48,14 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
@@ -114,7 +117,12 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
 
     public final RunConfig createConfigForDefaultAction(String actionName, Project project, Lookup lookup) {
         FileObject[] fos = extractFileObjectsfromLookup(lookup);
+        @SuppressWarnings("unchecked")
         Map<String, String> replaceMap = lookup.lookup(Map.class);
+        if (replaceMap == null) { //#159698
+            replaceMap = new HashMap<String, String>();
+            Logger.getLogger(AbstractMavenActionsProvider.class.getName()).log(Level.FINE, "Missing replace tokens map when executing maven build. Could lead to problems with execution. See issue #159698 for details.", new Exception()); //NOI18N
+        }
         FileObject fo = null;
         if (fos.length > 0) {
             fo = fos[0];

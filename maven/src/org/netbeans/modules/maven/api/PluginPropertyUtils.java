@@ -49,6 +49,8 @@ import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
+import org.apache.maven.model.ReportPlugin;
+import org.apache.maven.model.ReportSet;
 import org.apache.maven.model.Repository;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -131,6 +133,49 @@ public class PluginPropertyUtils {
         }
         return toRet;
     }
+
+    /**
+     * tries to figure out if the property of the given report plugin is customized in the
+     * current project and returns it's value if so, otherwise null
+     */
+    public static String getReportPluginProperty(Project prj, String groupId, String artifactId, String property, String report) {
+        NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
+        assert project != null : "Requires a maven project instance"; //NOI18N
+        return getReportPluginProperty(project.getOriginalMavenProject(), groupId, artifactId, property, report);
+    }
+
+    /**
+     * tries to figure out if the property of the given report plugin is customized in the
+     * current project and returns it's value if so, otherwise null
+     */
+    public static String getReportPluginProperty(MavenProject prj, String groupId, String artifactId, String property, String report) {
+        String toRet = null;
+        if (prj.getReportPlugins() == null) {
+            return toRet;
+        }
+        for (Object obj : prj.getReportPlugins()) {
+            ReportPlugin plug = (ReportPlugin)obj;
+            if (artifactId.equals(plug.getArtifactId()) &&
+                   groupId.equals(plug.getGroupId())) {
+                if (plug.getReportSets() != null) {
+                    for (Object obj2 : plug.getReportSets()) {
+                        ReportSet exe = (ReportSet)obj2;
+                        if (exe.getReports().contains(report)) {
+                            toRet = checkConfiguration(prj, exe.getConfiguration(), property);
+                            if (toRet != null) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (toRet == null) {
+                    toRet = checkConfiguration(prj, plug.getConfiguration(), property);
+                }
+            }
+        }
+        return toRet;
+    }
+
 
     /**
      * tries to figure out if the a plugin is defined in the project
@@ -235,6 +280,9 @@ public class PluginPropertyUtils {
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
                 (Constants.PLUGIN_COMPILER.equals(artifactId) || //NOI18N
                  Constants.PLUGIN_SUREFIRE.equals(artifactId) || //NOI18N
+                 Constants.PLUGIN_EAR.equals(artifactId) || //NOI18N
+                 Constants.PLUGIN_JAR.equals(artifactId) || //NOI18N
+                 Constants.PLUGIN_WAR.equals(artifactId) || //NOI18N
                  Constants.PLUGIN_RESOURCES.equals(artifactId))) {  //NOI18N
             if (prj.getPluginManagement() != null) {
                 for (Object obj : prj.getPluginManagement().getPlugins()) {

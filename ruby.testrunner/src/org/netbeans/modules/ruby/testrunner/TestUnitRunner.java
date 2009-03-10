@@ -67,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.rubyproject.RubyTestingSettings;
 
 /**
@@ -208,6 +209,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         taskDescriptor.addAdditionalEnv(env);
         Manager manager = Manager.getInstance();
         final TestRunnerLineConvertor testConvertor = new TestRunnerLineConvertor(manager, session, new TestUnitHandlerFactory());
+        session.setOutputLineHandler(new RubyOutputLineHandler(session.getFileLocator()));
         taskDescriptor.addStandardRecognizers();
         taskDescriptor.addOutConvertor(testConvertor);
         taskDescriptor.addErrConvertor(testConvertor);

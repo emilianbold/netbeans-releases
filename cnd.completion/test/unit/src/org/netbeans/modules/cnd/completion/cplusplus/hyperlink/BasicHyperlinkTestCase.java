@@ -564,7 +564,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#151705 : Unresolved ids in function call in case of empty macro
         performTest("IZ151705.cc", 9, 15, "IZ151705.cc", 6, 1);
     }
-    
+
     public void testIZ151045() throws Exception {
         // IZ#151045 : Unresolved cast to macro type
         performTest("IZ151045.cc", 11, 21, "IZ151045.cc", 3, 5);
@@ -573,6 +573,17 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ158816() throws Exception {
         // IZ#158816 : No hyperlink for ids after short macros
         performTest("IZ158816.cc", 8, 16, "IZ158816.cc", 2, 5);
+    }
+
+    public void testIZ150884() throws Exception {
+        // IZ#150884 : Unresolved elements in local definition of type
+        performTest("IZ150884.cc", 3, 11, "IZ150884.cc", 3, 9);
+        performTest("IZ150884.cc", 3, 28, "IZ150884.cc", 3, 24);
+        performTest("IZ150884.cc", 3, 54, "IZ150884.cc", 3, 51);
+        performTest("IZ150884.cc", 9, 20, "IZ150884.cc", 2, 5);
+        performTest("IZ150884.cc", 12, 17, "IZ150884.cc", 3, 9);
+        performTest("IZ150884.cc", 14, 39, "IZ150884.cc", 3, 24);
+        performTest("IZ150884.cc", 16, 19, "IZ150884.cc", 3, 51);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

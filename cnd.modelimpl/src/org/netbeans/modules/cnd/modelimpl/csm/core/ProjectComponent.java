@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.DataInput;
@@ -61,55 +60,67 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  *
  * @author Vladimir Kvashin
  */
-
 public abstract class ProjectComponent implements Persistent, SelfPersistent {
-    
-    private Key key;
-    
-    public ProjectComponent(Key key) {
-	this.key = key;
+
+    private final Key key;
+    private final boolean hangInRepository;
+
+    public ProjectComponent(Key key, boolean hangInRepository) {
+        this.key = key;
+        this.hangInRepository = hangInRepository;
     }
-    
+
     public ProjectComponent(DataInput in) throws IOException {
-	key = KeyFactory.getDefaultFactory().readKey(in);
-	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) System.err.printf("< ProjectComponent: Reading %s key %s\n", this, key);
+        key = KeyFactory.getDefaultFactory().readKey(in);
+        hangInRepository = in.readBoolean();
+        if (TraceFlags.TRACE_PROJECT_COMPONENT_RW) {
+            System.err.printf("< ProjectComponent: Reading %s key %s\n", this, key);
+        }
     }
-    
+
     public Key getKey() {
-	return key;
+        return key;
     }
-    
+
     public void put() {
-	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) {System.err.printf("> ProjectComponent: Hanging %s by key %s\n", this, key);}
-	RepositoryUtils.hang(key, this);
+        if (TraceFlags.TRACE_PROJECT_COMPONENT_RW) {
+            System.err.printf("> ProjectComponent: Hanging %s by key %s\n", this, key);
+        }
+        if (hangInRepository) {
+            RepositoryUtils.hang(key, this);
+        } else {
+            RepositoryUtils.put(key, this);
+        }
     }
 
 //    private void putImpl() {
 //	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) System.err.printf("> ProjectComponent: Putting %s by key %s\n", this, key);
 //	RepositoryUtils.put(key, this);
 //    }
-    
     public void write(DataOutput out) throws IOException {
-	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) {System.err.printf("> ProjectComponent: Writing %s by key %s\n", this, key);}
-	writeKey(key, out);
+        if (TraceFlags.TRACE_PROJECT_COMPONENT_RW) {
+            System.err.printf("> ProjectComponent: Writing %s by key %s\n", this, key);
+        }
+        writeKey(key, out);
+        out.writeBoolean(hangInRepository);
     }
-    
+
     public static Key readKey(DataInput in) throws IOException {
-	return KeyFactory.getDefaultFactory().readKey(in);
+        return KeyFactory.getDefaultFactory().readKey(in);
     }
-    
+
     public static void writeKey(Key key, DataOutput out) throws IOException {
-	KeyFactory.getDefaultFactory().writeKey(key, out);
+        KeyFactory.getDefaultFactory().writeKey(key, out);
     }
-    
+
     public static void setStable(Key key) {
-	Persistent p = RepositoryUtils.tryGet(key);
-	if( p != null ) {
-	    assert p instanceof  ProjectComponent;
-	    //ProjectComponent pc = (ProjectComponent) p;
+        Persistent p = RepositoryUtils.tryGet(key);
+        if (p != null) {
+            assert p instanceof ProjectComponent;
+            //ProjectComponent pc = (ProjectComponent) p;
             // A workaround for #131701
-	    //pc.putImpl();
-	}
+            //pc.putImpl();
+        }
     }
 }
 

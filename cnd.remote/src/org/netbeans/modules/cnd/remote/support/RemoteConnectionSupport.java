@@ -63,7 +63,7 @@ public abstract class RemoteConnectionSupport {
     private JSch jsch;
     /** TODO: deprecate and remove */
     protected final String key;
-    private final ExecutionEnvironment executionEnvironment;
+    protected final ExecutionEnvironment executionEnvironment;
     protected Session session;
     protected Channel channel;
     private int exit_status;
@@ -120,7 +120,7 @@ public abstract class RemoteConnectionSupport {
             }
         } while (retry);
     }
-    
+
     public Channel getChannel() {
         return channel;
     }

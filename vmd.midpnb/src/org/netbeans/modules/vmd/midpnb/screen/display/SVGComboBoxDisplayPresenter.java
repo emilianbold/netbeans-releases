@@ -38,9 +38,13 @@
  */
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
+import java.util.List;
 import javax.microedition.m2g.SVGImage;
 import org.netbeans.modules.mobility.svgcore.util.Util;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.PropertyValue.Kind;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComboBoxCD;
 import org.w3c.dom.svg.SVGElement;
 
 /**
@@ -60,15 +64,36 @@ public class SVGComboBoxDisplayPresenter extends UpdatableSVGComponentDisplayPre
 
     private void updateTitle(SVGImage svgImage, DesignComponent svgComponent,
             String componentId) {
-        String id = componentId + TITLE_SUFFIX; // NOI18N
+        String id = componentId + TITLE_SUFFIX;
 
-        String value = getFirstListModelElement(svgComponent); //NOI18N
+        String value = getFirstListModelElement(svgComponent);
 
         SVGElement element = Util.getElementById(svgImage, id);
 
         if (element != null) {
             element.setTrait(TRAIT_TEXT, value);
         }
+    }
+
+    private String getFirstListModelElement(DesignComponent svgComponent) {
+        String value = ""; // NOI18N
+        if (SVGComboBoxCD.TYPEID != svgComponent.getType()) {
+            return value;
+        }
+        PropertyValue model = svgComponent.readProperty(SVGComboBoxCD.PROP_MODEL);
+        if (model == null) {
+            return value;
+        }
+        if (model.getKind().equals(Kind.USERCODE)) {
+            value = USERCODE;
+        } else {
+            List<PropertyValue> list = model.getArray();
+            if ( list == null || list.isEmpty() ){
+                return value;
+            }
+            value = list.get(0).getPrimitiveValue().toString();
+        }
+        return value;
     }
 
 }

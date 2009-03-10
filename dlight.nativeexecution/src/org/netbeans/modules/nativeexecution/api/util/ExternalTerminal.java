@@ -38,9 +38,22 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.ExternalTerminalAccessor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.netbeans.modules.nativeexecution.support.TerminalProfile;
+import org.openide.util.Exceptions;
+import org.openide.windows.InputOutput;
 
 /**
  * NativeProcessBuilder can create a process that is executed in an external
@@ -54,7 +67,6 @@ public final class ExternalTerminal {
     private final TerminalProfile profile;
     private String title = null;
     private String prompt = "Press [Enter] to close the terminal ..."; // NOI18N
-
 
     static {
         ExternalTerminalAccessor.setDefault(new ExternalTerminalAccessorImpl());
@@ -100,6 +112,8 @@ public final class ExternalTerminal {
 
     private static class ExternalTerminalAccessorImpl
             extends ExternalTerminalAccessor {
+        private final static ConcurrentHashMap<ExecutionEnvironment, String> execCache =
+                new ConcurrentHashMap<ExecutionEnvironment, String>();
 
         @Override
         public TerminalProfile getTerminalProfile(ExternalTerminal terminal) {
@@ -107,7 +121,7 @@ public final class ExternalTerminal {
         }
 
         @Override
-        public List<String> wrapCommand(
+        public List<String> wrapCommand(ExecutionEnvironment execEnv,
                 ExternalTerminal terminal, String... args) {
             String t = terminal.title;
 
@@ -121,7 +135,37 @@ public final class ExternalTerminal {
             }
 
 
-            return terminal.profile.wrapCommand(t, args);
+            String exec = execCache.get(execEnv);
+
+            if (exec == null) {
+                exec = findPath(execEnv,
+                        terminal.profile.getSearchPaths(),
+                        terminal.profile.getCommand());
+                String execPath = execCache.putIfAbsent(execEnv, exec);
+
+                if (execPath != null) {
+                    exec = execPath;
+                }
+            }
+
+            ArrayList<String> result = new ArrayList<String>();
+
+            result.add(exec);
+
+            for (String arg : terminal.profile.getArguments()) {
+                if ("$@".equals(arg)) { // NOI18N
+                    result.addAll(Arrays.asList(args));
+                    continue;
+                }
+
+                if (arg.contains("$title")) { // NOI18N
+                    arg = arg.replace("$title", terminal.title); // NOI18N
+                }
+
+                result.add(arg);
+            }
+
+            return result;
         }
 
         @Override
@@ -132,6 +176,36 @@ public final class ExternalTerminal {
         @Override
         public String getTitle(ExternalTerminal terminal) {
             return terminal.title;
+        }
+
+        private String findPath(ExecutionEnvironment execEnv,
+                List<String> searchPaths, String command) {
+
+            StringBuilder cmd = new StringBuilder("which " + command); // NOI18N
+
+            for (String s : searchPaths) {
+                cmd.append(" || /bin/ls " + s + "/" + command); // NOI18N
+            }
+
+            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, cmd.toString());
+            StringWriter result = new StringWriter();
+
+            ExecutionDescriptor descriptor =
+                    new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));
+            ExecutionService execService = ExecutionService.newService(
+                    npb, descriptor, "Searching for " + command); // NOI18N
+
+            Future<Integer> res = execService.run();
+
+            try {
+                res.get();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            return result.toString().trim();
         }
     }
 }

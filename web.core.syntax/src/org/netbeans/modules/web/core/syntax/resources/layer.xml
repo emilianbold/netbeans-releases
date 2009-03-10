@@ -73,6 +73,7 @@ made subject to such option by the copyright holder.
             <folder name="x-jsp">
                 <folder name="text">
                     <folder name="x-java">
+                        <file name="org-netbeans-modules-web-core-syntax-indent-JspJavaIndentTaskFactory.instance"/>
                         <folder name="CodeTemplates">
                             <folder name="Defaults">
                                 <file name="codetemplates.shadow">

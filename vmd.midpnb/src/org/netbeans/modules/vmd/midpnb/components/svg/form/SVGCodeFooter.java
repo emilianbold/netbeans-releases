@@ -49,6 +49,7 @@ import org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.components.handlers.ExitMidletEventHandlerCD;
 
+
 class SVGCodeFooter extends CodeClassInitHeaderFooterPresenter {
     
     SVGCodeFooter( TypeID typeId ){
