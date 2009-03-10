@@ -107,7 +107,7 @@ import org.openide.util.Lookup;
             // it's a remote toolchain
             CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
             if (provider != null) {
-                provider.run(tool.getHostKey(),
+                provider.run(tool.getExecutionEnvironment(),
                         path + " " + getVersionFlags() + " 2>&1", // NOI18N
                         Collections.<String, String>emptyMap());
                 version = extractVersion(new StringReader(provider.getOutput()));

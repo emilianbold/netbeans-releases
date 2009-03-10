@@ -48,6 +48,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -141,7 +142,8 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
                 String hkey = (String) jmi.getClientProperty(HOST_KEY);
                 MakeConfiguration mconf = (MakeConfiguration) jmi.getClientProperty(CONF);
                 if (mconf != null && hkey != null) {
-                    DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(hkey);
+                    DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(
+                            ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
                     mconf.setDevelopmentHost(dhc);
                     mconf.setCompilerSet(new CompilerSet2Configuration(dhc));
                 }
