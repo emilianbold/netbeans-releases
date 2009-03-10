@@ -48,12 +48,13 @@ package org.netbeans.modules.versioning.util;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JComponent;
+import javax.swing.event.DocumentListener;
 
 /**
  *
  * @author tomas
  */
-public class ExportDiffPanel extends javax.swing.JPanel implements ActionListener {
+public class ExportDiffPanel extends ExportDiffSupport.AbstractExportDiffPanel implements ActionListener {
     private JComponent attachComponent;
 
     /** Creates new form ExportDiffPanel */
@@ -165,6 +166,31 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
             attachComponent.setEnabled(true);
             fileTextField.setEnabled(false);
         }
+    }
+
+    @Override
+    public String getOutputFileText() {
+        return fileTextField.getText();
+    }
+
+    @Override
+    public void setOutputFileText(String text) {
+        fileTextField.setText(text);
+    }
+
+    @Override
+    public void addOutputFileTextDocumentListener(DocumentListener list) {
+        fileTextField.getDocument().addDocumentListener(list);
+    }
+
+    @Override
+    public void addBrowseActionListener(ActionListener actionListener) {
+        browseButton.addActionListener(actionListener);
+    }
+
+    @Override
+    public boolean isFileOutputSelected() {
+        return asFileRadioButton.isSelected();
     }
 
 }

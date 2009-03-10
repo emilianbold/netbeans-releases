@@ -131,15 +131,15 @@ public class ExportDiffChangesAction extends ContextAction {
             @Override
             public void writeDiffFile(final File toFile) {
                 HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParent()); // NOI18N
-                    File root = HgUtils.getRootFile(context);
-                    RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
-                    HgProgressSupport ps = new HgProgressSupport() {
-                        protected void perform() {
-                            OutputLogger logger = getLogger();
-                            async(this, context, toFile, logger);
-                        }
-                    };
-                    ps.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffChangesAction.class, "LBL_ExportChanges_Progress"));
+                File root = HgUtils.getRootFile(context);
+                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
+                HgProgressSupport ps = new HgProgressSupport() {
+                    protected void perform() {
+                        OutputLogger logger = getLogger();
+                        async(this, context, toFile, logger);
+                    }
+                };
+                ps.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffChangesAction.class, "LBL_ExportChanges_Progress")).waitFinished();
             }
         };
         exportDiffSupport.export();
