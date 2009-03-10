@@ -195,7 +195,7 @@ public class TaskManagerImpl extends TaskManager {
         }
     }
     
-    public Iterable<? extends FileTaskScanner> getFileScanners() {
+    Iterable<? extends FileTaskScanner> getFileScanners() {
         return ScannerList.getFileScannerList().getScanners();
     }
     
