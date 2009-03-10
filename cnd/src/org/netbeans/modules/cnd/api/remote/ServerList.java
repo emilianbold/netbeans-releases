@@ -64,9 +64,6 @@ public interface ServerList {
 
     public List<ExecutionEnvironment> getEnvironments();
 
-    /** TODO: deprecate and remove */
-    public ServerRecord get(String key);
-
     public ServerRecord get(ExecutionEnvironment env);
     
     public ServerRecord getDefaultRecord();
@@ -80,9 +77,6 @@ public interface ServerList {
     public void removeServer(ServerRecord record);
 
     public boolean show(ToolsCacheManager cacheManager);
-
-    /** TODO: deprecate and remove */
-    public boolean isValidExecutable(String hkey, String path);
 
     public boolean isValidExecutable(ExecutionEnvironment env, String path);
 }
