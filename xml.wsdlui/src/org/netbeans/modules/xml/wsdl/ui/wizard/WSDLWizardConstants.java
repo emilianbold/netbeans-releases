@@ -37,43 +37,64 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
-
-import java.util.List;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.openide.nodes.ChildFactory;
-import org.openide.nodes.Node;
+package org.netbeans.modules.xml.wsdl.ui.wizard;
 
 /**
  *
  * @author skini
  */
-public class WSDLChildFactory extends ChildFactory<WSDLComponent> implements Refreshable {
-
-    private WSDLComponent component;
-    private NodesFactory nodeFactory;
-
-    public WSDLChildFactory(NodesFactory factory, WSDLComponent component) {
-        super();
-        this.component = component;
-        this.nodeFactory = factory;
-        
-    }
+public interface WSDLWizardConstants {
     
-    @Override
-    protected boolean createKeys(List<WSDLComponent> wsdlCompList) {
-        wsdlCompList.addAll(component.getChildren());
-        return true;
-    }
-
-    @Override
-    protected Node createNodeForKey(WSDLComponent wsdlComp) {
-        return nodeFactory.create(wsdlComp);
-    }
+    //Constants used in abstract configuration.
+    public static final String PORTTYPE_NAME = "PORTTYPE_NAME";
     
-    public void refreshChildren(boolean immediate) {
-        refresh(true);
-    }
+    public static final String OPERATION_NAME = "OPERATION_NAME";
+    
+    public static final String OPERATION_TYPE = "OPERATION_TYPE";
+   
+    public static final String OPERATION_INPUT = "OPERATION_INPUT";
+    
+    public static final String OPERATION_OUTPUT = "OPERATION_OUTPUT";
+    
+    public static final String OPERATION_FAULT = "OPERATION_FAULT";
+    
+    public static final String OPERATION_INPUT_MESSAGE = "OPERATION_INPUT_MESSAGE";
 
+    public static final String OPERATION_OUTPUT_MESSAGE = "OPERATION_OUTPUT_MESSAGE";
+    
+    public static final String OPERATION_FAULT_MESSAGE = "OPERATION_FAULT_MESSAGE";
+
+    
+    public static final String NAMESPACE_TO_PREFIX_MAP = "NAMESPACE_TO_PREFIX_MAP";
+    
+    public static final String TEMP_WSDLMODEL = "TEMP_WSDLMODEL";
+    
+    public static final String TEMP_WSDLFILE = "TEMP_WSDLFILE";
+    
+    public static final String PORTTYPE = "PORTTYPE";
+
+    public static final String IS_FROM_WIZARD = "IS_FROM_WIZARD";
+    
+    public static final String AUTOGEN_PARTNERLINKTYPE = "AUTOGEN_PARTNERLINKTYPE";
+    
+    
+    /** Constants used in Concrete configuration*/
+    public static final String BINDING_NAME = "BINDING_NAME";
+    
+    public static final String BINDING_TYPE = "BINDING_TYPE";
+    
+    public static final String BINDING_SUBTYPE = "BINDING_SUBTYPE";
+
+    public static final String SERVICE_NAME = "SERVICE_NAME";
+
+    public static final String SERVICEPORT_NAME = "SERVICEPORT_NAME";
+    
+    public static final String BINDING = "BINDING";
+
+    public static final String SERVICE = "SERVICE";
+    
+    public static final String PORT = "PORT";
+    
+    public static final String AUTO_CREATE_SERVICEPORT = "AUTO_CREATE_SERVICEPORT";
 
 }

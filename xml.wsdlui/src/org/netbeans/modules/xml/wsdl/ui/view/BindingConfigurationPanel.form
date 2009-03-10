@@ -17,22 +17,27 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="bindingSubtypeLabel" alignment="0" max="32767" attributes="1"/>
-                  <Component id="bindingNameLabel" alignment="0" max="32767" attributes="1"/>
-                  <Component id="bindingTypeLabel" alignment="0" max="32767" attributes="1"/>
-                  <Component id="serviceNameLabel" alignment="0" max="32767" attributes="1"/>
-                  <Component id="portNameLabel" alignment="0" max="32767" attributes="1"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="bindingSubtypePanel" pref="288" max="32767" attributes="0"/>
-                  <Component id="bindingTypeComboBox" alignment="1" pref="288" max="32767" attributes="2"/>
-                  <Component id="bindingNameTextField" alignment="1" pref="288" max="32767" attributes="2"/>
-                  <Component id="serviceNameTextField" alignment="0" pref="288" max="32767" attributes="0"/>
-                  <Component id="servicePortTextField" alignment="0" pref="288" max="32767" attributes="0"/>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="bindingConfigurationPanel" alignment="0" pref="431" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="bindingNameLabel" min="-2" max="-2" attributes="1"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="bindingNameTextField" pref="359" max="32767" attributes="2"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="serviceNameLabel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="portNameLabel" alignment="0" max="32767" attributes="1"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="serviceNameTextField" alignment="0" pref="358" max="32767" attributes="0"/>
+                          <Component id="servicePortTextField" alignment="0" pref="358" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Component id="bindingConfigurationLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -46,27 +51,21 @@
                   <Component id="bindingNameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="bindingNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="bindingTypeComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="bindingTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="bindingSubtypeLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="bindingSubtypePanel" pref="14" max="32767" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="serviceNameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="serviceNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="servicePortTextField" min="-2" max="-2" attributes="0"/>
                   <Component id="portNameLabel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="108" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="bindingConfigurationLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="bindingConfigurationPanel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -91,54 +90,6 @@
         <Property name="name" type="java.lang.String" value="bindingNameTextField" noResource="true"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="bindingTypeLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="bindingTypeComboBox"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="BindingConfigurationPanel.bindingTypeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="BindingConfigurationPanel.bindingTypeLabel.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="name" type="java.lang.String" value="bindingTypeLabel" noResource="true"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="bindingTypeComboBox">
-      <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor" preCode="DefaultComboBoxModel model = new DefaultComboBoxModel(protocols);&#xa;model.setSelectedItem(defaultSelection);">
-          <Connection code="model" type="code"/>
-        </Property>
-        <Property name="name" type="java.lang.String" value="bindingTypeComboBox" noResource="true"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bindingTypeComboBoxActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="bindingSubtypeLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="bindingSubtypePanel"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="BindingConfigurationPanel.bindingSubtypeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="BindingConfigurationPanel.bindingSubtypeLabel.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="name" type="java.lang.String" value="bindingSubtypeLabel" noResource="true"/>
-      </Properties>
-    </Component>
-    <Container class="javax.swing.JPanel" name="bindingSubtypePanel">
-      <Properties>
-        <Property name="name" type="java.lang.String" value="bindingSubtypePanel" noResource="true"/>
-      </Properties>
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout">
-        <Property name="axis" type="int" value="0"/>
-      </Layout>
-    </Container>
     <Component class="javax.swing.JLabel" name="serviceNameLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
@@ -177,5 +128,20 @@
         <Property name="name" type="java.lang.String" value="servicePortTextField" noResource="true"/>
       </Properties>
     </Component>
+    <Component class="javax.swing.JLabel" name="bindingConfigurationLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="BindingConfigurationPanel.bindingConfigurationLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="name" type="java.lang.String" value="bindingConfigurationLabel" noResource="true"/>
+      </Properties>
+    </Component>
+    <Container class="javax.swing.JPanel" name="bindingConfigurationPanel">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="bindingConfigurationPanel" noResource="true"/>
+      </Properties>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+    </Container>
   </SubComponents>
 </Form>

@@ -40,7 +40,7 @@
  */
 
 /*
- * WizardPortTypeConfigurationStep.java
+ * WSDLWizardConstants.java
  *
  * Created on August 31, 2006, 3:02 PM
  *
@@ -50,16 +50,14 @@
 
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardContext;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardDescriptorPanel;
 import java.awt.Component;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -77,6 +75,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.OperationConfigurationPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationType;
 import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
@@ -88,45 +87,14 @@ import org.openide.util.NbBundle;
  *
  * @author radval
  */
-public class WizardPortTypeConfigurationStep implements WizardDescriptor.FinishablePanel {
+public class WizardAbstractConfigurationStep extends WSDLWizardDescriptorPanel implements WSDLWizardConstants {
     
-    public static final String PORTTYPE_NAME = "PORTTYPE_NAME";
-    
-    public static final String OPERATION_NAME = "OPERATION_NAME";
-    
-    public static final String OPERATION_TYPE = "OPERATION_TYPE";
-   
-    public static final String OPERATION_INPUT = "OPERATION_INPUT";
-    
-    public static final String OPERATION_OUTPUT = "OPERATION_OUTPUT";
-    
-    public static final String OPERATION_FAULT = "OPERATION_FAULT";
-    
-    public static final String OPERATION_INPUT_MESSAGE = "OPERATION_INPUT_MESSAGE";
-
-    public static final String OPERATION_OUTPUT_MESSAGE = "OPERATION_OUTPUT_MESSAGE";
-    
-    public static final String OPERATION_FAULT_MESSAGE = "OPERATION_FAULT_MESSAGE";
-
-    
-    public static final String NAMESPACE_TO_PREFIX_MAP = "NAMESPACE_TO_PREFIX_MAP";
-    
-    public static final String TEMP_WSDLMODEL = "TEMP_WSDLMODEL";
-    
-    public static final String TEMP_WSDLFILE = "TEMP_WSDLFILE";
-    
-    public static final String PORTTYPE = "PORTTYPE";
-
-    public static final String IS_FROM_WIZARD = "IS_FROM_WIZARD";
-    
-    public static final String AUTOGEN_PARTNERLINKTYPE = "AUTOGEN_PARTNERLINKTYPE";
+ 
     
     
     private OperationConfigurationPanel mPanel;
     
     private Project project;
-    
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     private String mErrorMessage;
     
@@ -140,36 +108,43 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
     
     private Collection<Import> mImports = null;
     
-    /** Creates a new instance of WizardPortTypeConfigurationStep */
-    public WizardPortTypeConfigurationStep(Project project) {
-        this.project = project;
-
+    private String fileName;
+    private WSDLModel mTempModel;
+    private boolean isFinishable;
+    
+    /** Creates a new instance of WSDLWizardConstants */
+    public WizardAbstractConfigurationStep(WSDLWizardContext context, boolean hasFinish) {
+        super(context);
+        isFinishable = hasFinish;
     }
 
-    public void addChangeListener(ChangeListener l) {
-        listeners.add(l);
+    public String getName() {
+        return NbBundle.getMessage(WizardAbstractConfigurationStep.class, "LBL_WizardPortTypeConfigurationStep");
     }
+    
+    
 
-    public void removeChangeListener(ChangeListener l) {
-        listeners.remove(l);
-    }
-
+    @Override
     public Component getComponent() {
         if (mPanel == null) {
-            this.mPanel = new OperationConfigurationPanel(project);
-            this.mPanel.setName(NbBundle.getMessage(WizardPortTypeConfigurationStep.class, "LBL_WizardPortTypeConfigurationStep"));
+            this.mPanel = new OperationConfigurationPanel(project, false, mTempModel, true);
+            this.mPanel.setPortTypeName(fileName + "PortType"); //NOI18N
+            this.mPanel.setOperationName(fileName + "Operation"); //NOI18N
             TextChangeListener listener  = new TextChangeListener();
             
             this.mPanel.getPortTypeNameTextField().getDocument().addDocumentListener(listener);
             this.mPanel.getOperationNameTextField().getDocument().addDocumentListener(listener);
+            //getWSDLWizardContext().setHasNext(false);
         }
         return this.mPanel;
     }
 
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(WizardPortTypeConfigurationStep.class);
+        return new HelpCtx(WizardAbstractConfigurationStep.class);
     }
 
+    @Override
     public boolean isValid() {
 /*        String errorMessage = null;
         //This should be good enough to disable html code.
@@ -178,30 +153,26 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
             errorMessage = "<html>" + Utility.escapeHtml(mErrorMessage) + "</html>";
         }*/
         
-        wiz.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, mErrorMessage); // NOI18N
+        wiz.putProperty ("WizardPanel_errorMessage", mErrorMessage); // NOI18N
         return this.mErrorMessage == null;
         
     }
 
     
+    @Override
     public void readSettings(Object settings) {
         TemplateWizard templateWizard = (TemplateWizard)settings;
         this.wiz = templateWizard;
-        String fileName = (String) templateWizard.getProperty(WsdlPanel.FILE_NAME);
-        if(this.mPanel.getPortTypeName() == null || this.mPanel.getPortTypeName().trim().equals("")) {
-            this.mPanel.setPortTypeName(fileName + "PortType"); //NOI18N
-        }
-        
-        if(this.mPanel.getOperationName() == null || this.mPanel.getOperationName().trim().equals("")) {
-            this.mPanel.setOperationName(fileName + "Operation"); //NOI18N
-        }
-            
+        fileName = (String) templateWizard.getProperty(WsdlPanel.FILE_NAME);
+        project = Templates.getProject(wiz);
+        mTempModel = (WSDLModel) templateWizard.getProperty(WizardAbstractConfigurationStep.TEMP_WSDLMODEL);
         
     }
 
+    @Override
     public void storeSettings(Object settings) {
         TemplateWizard templateWizard = (TemplateWizard)settings;
-        WSDLModel tempModel = (WSDLModel) templateWizard.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL);
+        WSDLModel tempModel = (WSDLModel) templateWizard.getProperty(WizardAbstractConfigurationStep.TEMP_WSDLMODEL);
         Object option = templateWizard.getValue();
         if(option == NotifyDescriptor.CANCEL_OPTION || option == WizardDescriptor.PREVIOUS_OPTION) {
             DataObject dobj = ActionHelper.getDataObject(tempModel);
@@ -213,7 +184,7 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
                     //ignore
                 }
             }
-            templateWizard.putProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, null);
+            templateWizard.putProperty(WizardAbstractConfigurationStep.TEMP_WSDLMODEL, null);
             mPortType = null;
             mNewMessageList = null;
             mPartnerLinkTypeElement = null;
@@ -278,17 +249,17 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
 
             Map configurationMap = new HashMap();
             //portType
-            configurationMap.put(WizardPortTypeConfigurationStep.PORTTYPE_NAME, portTypeName);
-            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_NAME, operationName);
-            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_TYPE, ot);
-            configurationMap.put(WizardPortTypeConfigurationStep.AUTOGEN_PARTNERLINKTYPE, autoGenPLT);
+            configurationMap.put(WizardAbstractConfigurationStep.PORTTYPE_NAME, portTypeName);
+            configurationMap.put(WizardAbstractConfigurationStep.OPERATION_NAME, operationName);
+            configurationMap.put(WizardAbstractConfigurationStep.OPERATION_TYPE, ot);
+            configurationMap.put(WizardAbstractConfigurationStep.AUTOGEN_PARTNERLINKTYPE, autoGenPLT);
 
             //opertion type
-            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_INPUT, inputMessageParts);
-            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_OUTPUT, outputMessageParts);
-            configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_FAULT, faultMessageParts);
-            configurationMap.put(WizardPortTypeConfigurationStep.NAMESPACE_TO_PREFIX_MAP, namespaceToPrefixMap);
-            configurationMap.put(WizardPortTypeConfigurationStep.IS_FROM_WIZARD, Boolean.TRUE);
+            configurationMap.put(WizardAbstractConfigurationStep.OPERATION_INPUT, inputMessageParts);
+            configurationMap.put(WizardAbstractConfigurationStep.OPERATION_OUTPUT, outputMessageParts);
+            configurationMap.put(WizardAbstractConfigurationStep.OPERATION_FAULT, faultMessageParts);
+            configurationMap.put(WizardAbstractConfigurationStep.NAMESPACE_TO_PREFIX_MAP, namespaceToPrefixMap);
+            configurationMap.put(WizardAbstractConfigurationStep.IS_FROM_WIZARD, Boolean.TRUE);
 
             templateWizard.putProperty(PORTTYPE_NAME, portTypeName);
             templateWizard.putProperty(OPERATION_NAME, operationName);
@@ -329,32 +300,25 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
     private void validate() {
         boolean validPortType = isValidName(this.mPanel.getPortTypeNameTextField().getDocument());
         if(!validPortType) {
-            fireChangeEvent();
+            fireChange();
             return;
         }
         
         boolean validOperation = isValidName(this.mPanel.getOperationNameTextField().getDocument());
         
         if(!validOperation) {
-            fireChangeEvent();
+            fireChange();
             return;
         }
         
-        fireChangeEvent();
+        fireChange();
     }
     
-    private void fireChangeEvent() {
-        Iterator<ChangeListener> it = this.listeners.iterator();
-        ChangeEvent e = new ChangeEvent(this);
-        while(it.hasNext()) {
-            ChangeListener l = it.next();
-            l.stateChanged(e);
-        }
-    }
-
+    @Override
     public boolean isFinishPanel() {
-        return true;
+        return isFinishable;
     }
+    
     class TextChangeListener implements DocumentListener {
      
          public void changedUpdate(DocumentEvent e) {

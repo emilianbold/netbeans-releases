@@ -40,7 +40,7 @@
  */
 
 /*
- * WizardBindingConfigurationStep.java
+ * WSDLWizardConstants.java
  *
  * Created on August 31, 2006, 3:24 PM
  *
@@ -55,17 +55,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
+import org.netbeans.modules.xml.wsdl.bindingsupport.configeditor.ConfigurationEditorProviderFactory;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementConfigurationEditorProvider;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ValidationInfo;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardContext;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardDescriptorPanel;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplate;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -74,7 +75,6 @@ import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
-import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.BindingConfigurationPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
 import org.openide.NotifyDescriptor;
@@ -89,34 +89,13 @@ import org.openide.windows.IOProvider;
  *
  * @author radval
  */
-public class WizardBindingConfigurationStep implements WizardDescriptor.FinishablePanel {
-    
-    public static final String BINDING_NAME = "BINDING_NAME";
-    
-    public static final String BINDING_TYPE = "BINDING_TYPE";
-    
-    public static final String BINDING_SUBTYPE = "BINDING_SUBTYPE";
-
-    public static final String SERVICE_NAME = "SERVICE_NAME";
-
-    public static final String SERVICEPORT_NAME = "SERVICEPORT_NAME";
-    
-    public static final String BINDING = "BINDING";
-
-    public static final String SERVICE = "SERVICE";
-    
-    public static final String PORT = "PORT";
-    
-    public static final String AUTO_CREATE_SERVICEPORT = "AUTO_CREATE_SERVICEPORT";
-    
+public class WizardConcreteConfigurationStep extends WSDLWizardDescriptorPanel implements WSDLWizardConstants  {
     
     private BindingConfigurationPanel mPanel;
     
     private String mErrorMessage;
     
     private String mBindingSubTypeError;
-    
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     private WizardDescriptor wiz = null;
    
@@ -129,29 +108,32 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
     private Service mService;
     
     private Port mPort;
+    private boolean hasNextStep = true;
+    private String fileName;
     
-    /** Creates a new instance of WizardBindingConfigurationStep */
-    public WizardBindingConfigurationStep() {
-    }
-
-    public void addChangeListener(ChangeListener l) {
-        listeners.add(l);
-    }
-
-    public void removeChangeListener(ChangeListener l) {
-        listeners.remove(l);
+    /** Creates a new instance of WSDLWizardConstants */
+    public WizardConcreteConfigurationStep(WSDLWizardContext context) {
+        super(context);
     }
 
     public Component getComponent() {
         if (mPanel == null) {
             this.mPanel = new BindingConfigurationPanel();
-            this.mPanel.setName(NbBundle.getMessage(WizardBindingConfigurationStep.class, "LBL_WizardBindingConfigurationStep"));
+            
             TextChangeListener listener  = new TextChangeListener();
             this.mPanel.getBindingNameTextField().getDocument().addDocumentListener(listener);
             this.mPanel.getServiceNameTextField().getDocument().addDocumentListener(listener);
             this.mPanel.getServicePortTextField().getDocument().addDocumentListener(listener);
-            BindingConfigurationListener propListener = new BindingConfigurationListener();
-            this.mPanel.addPropertyChangeListener(propListener);
+                    
+            if (this.mPanel.getBindingName() == null || this.mPanel.getBindingName().trim().equals("")) {
+                this.mPanel.setBindingName(fileName + "Binding"); //NOI18N
+            }
+            if (this.mPanel.getServiceName() == null || this.mPanel.getServiceName().trim().equals("")) {
+                this.mPanel.setServiceName(fileName + "Service"); //NOI18N
+            }
+            if (this.mPanel.getServicePortName() == null || this.mPanel.getServicePortName().trim().equals("")) {
+                this.mPanel.setServicePortName(fileName + "Port"); //NOI18N
+            }
             
         }
         return this.mPanel;
@@ -160,7 +142,7 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
     
     
     public HelpCtx getHelp() {
-        return new HelpCtx(WizardBindingConfigurationStep.class);
+        return new HelpCtx(WizardConcreteConfigurationStep.class);
     }
 
     public boolean isValid() {
@@ -171,7 +153,7 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
             errorMessage = "<html>" + Utility.escapeHtml(mErrorMessage) + "</html>";
         }*/
         
-        wiz.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, mErrorMessage); // NOI18N
+        wiz.putProperty ("WizardPanel_errorMessage", mErrorMessage); // NOI18N
         return this.mErrorMessage == null;
 
     }
@@ -179,22 +161,14 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
     public void readSettings(Object settings) {
         TemplateWizard templateWizard = (TemplateWizard)settings;
         wiz = templateWizard;
-        String fileName = (String) templateWizard.getProperty(WsdlPanel.FILE_NAME);
-        if(this.mPanel.getBindingName() == null || this.mPanel.getBindingName().trim().equals("")) {
-            this.mPanel.setBindingName(fileName + "Binding"); //NOI18N
-        }
-        if(this.mPanel.getServiceName() == null || this.mPanel.getServiceName().trim().equals("")) {
-            this.mPanel.setServiceName(fileName + "Service"); //NOI18N
-        }
-        if(this.mPanel.getServicePortName() == null || this.mPanel.getServicePortName().trim().equals("")) {
-            this.mPanel.setServicePortName(fileName + "Port"); //NOI18N
-        }
+        fileName = (String) templateWizard.getProperty(WsdlPanel.FILE_NAME);
         
-        this.mPortType = (PortType) templateWizard.getProperty(WizardPortTypeConfigurationStep.PORTTYPE);
-        this.mTempModel = (WSDLModel) templateWizard.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL);
+        this.mPortType = (PortType) templateWizard.getProperty(WizardAbstractConfigurationStep.PORTTYPE);
+        this.mTempModel = (WSDLModel) templateWizard.getProperty(WizardAbstractConfigurationStep.TEMP_WSDLMODEL);
+        LocalizedTemplateGroup group = (LocalizedTemplateGroup) templateWizard.getProperty(BINDING_TYPE);
+        LocalizedTemplate template = (LocalizedTemplate) templateWizard.getProperty(BINDING_SUBTYPE);
+        processBindingSubType(group, template, true);
         
-        LocalizedTemplate bindingSubType = this.mPanel.getBindingSubType();
-        processBindingSubType(bindingSubType, true);
     }
 
     public void storeSettings(Object settings) {
@@ -209,26 +183,22 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
             cleanUpBindings();
             mTempModel.endTransaction();
             templateWizard.putProperty(BINDING_NAME, null);
-            templateWizard.putProperty(BINDING_TYPE, null);
-            templateWizard.putProperty(BINDING_SUBTYPE, null);
             templateWizard.putProperty(SERVICE_NAME, null);
             templateWizard.putProperty(SERVICEPORT_NAME, null);
             return;
         }
+        LocalizedTemplateGroup group = (LocalizedTemplateGroup) templateWizard.getProperty(BINDING_TYPE);
+        LocalizedTemplate template = (LocalizedTemplate) templateWizard.getProperty(BINDING_SUBTYPE);
+        processBindingSubType(group, template, false);
+        
         
         String bindingName = this.mPanel.getBindingName();
-        LocalizedTemplateGroup bindingType = this.mPanel.getBindingType();
-        LocalizedTemplate bindingSubType = this.mPanel.getBindingSubType();
         String serviceName = this.mPanel.getServiceName();
         String servicePortName = this.mPanel.getServicePortName();
         
         templateWizard.putProperty(BINDING_NAME, bindingName);
-        templateWizard.putProperty(BINDING_TYPE, bindingType);
-        templateWizard.putProperty(BINDING_SUBTYPE, bindingSubType);
         templateWizard.putProperty(SERVICE_NAME, serviceName);
         templateWizard.putProperty(SERVICEPORT_NAME, servicePortName);
-        
-        processBindingSubType(bindingSubType);
     }
     
     void cleanup() {
@@ -266,7 +236,7 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
                 mErrorMessage = null;
             }
             
-            fireChangeEvent();
+            fireChange();
         }  catch(Exception ex) {
             ex.printStackTrace();
         }
@@ -275,70 +245,63 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
     }
     
     private void validate() {
-        boolean isValidBinding = isValidName(this.mPanel.getBindingNameTextField().getDocument());
-        if(!isValidBinding) {
-            fireChangeEvent();
-            return;
-        }
-        
-        boolean isValidService = isValidName(this.mPanel.getServiceNameTextField().getDocument());
-        if(!isValidService) {
-            fireChangeEvent();
-            return;
-        }
-        
-        boolean isValidPort = isValidName(this.mPanel.getServicePortTextField().getDocument());
-        if(!isValidPort) {
-            fireChangeEvent();
-            return;
+        if (mPanel != null) {
+            boolean isValidBinding = isValidName(this.mPanel.getBindingNameTextField().getDocument());
+            if (!isValidBinding) {
+                fireChange();
+                return;
+            }
+
+            boolean isValidService = isValidName(this.mPanel.getServiceNameTextField().getDocument());
+            if (!isValidService) {
+                fireChange();
+                return;
+            }
+
+            boolean isValidPort = isValidName(this.mPanel.getServicePortTextField().getDocument());
+            if (!isValidPort) {
+                fireChange();
+                return;
+            }
         }
         
         if(this.mBindingSubTypeError != null) {
             this.mErrorMessage = this.mBindingSubTypeError;
-            fireChangeEvent();
+            fireChange();
             return;
         }
         
-        fireChangeEvent();
+        fireChange();
     }
     
-    private void fireChangeEvent() {
-        Iterator<ChangeListener> it = this.listeners.iterator();
-        ChangeEvent e = new ChangeEvent(this);
-        while(it.hasNext()) {
-            ChangeListener l = it.next();
-            l.stateChanged(e);
-        }
-    }
-
     public boolean isFinishPanel() {
         return true;
     }
     
-    private void processBindingSubType(LocalizedTemplate bindingSubType) {
-        processBindingSubType(bindingSubType, false);
-    }
-    
-    private void processBindingSubType(LocalizedTemplate bindingSubType, boolean validateOnly) {
+    private void processBindingSubType(LocalizedTemplateGroup group, LocalizedTemplate bindingSubType, boolean validateOnly) {
         if(bindingSubType != null) {
-            String bindingName = this.mPanel.getBindingName();
-            LocalizedTemplateGroup bindingType = this.mPanel.getBindingType();
-            
-            
+            String bindingName = "binding1";
             //service and port
-            String serviceName = this.mPanel.getServiceName();
-            String servicePortName = this.mPanel.getServicePortName();
+            String serviceName = "service1";
+            String servicePortName = "port1";
+            if (mPanel != null) {
+                bindingName = this.mPanel.getBindingName();
+                //service and port
+                serviceName = this.mPanel.getServiceName();
+                servicePortName = this.mPanel.getServicePortName();
+            }
+
             
             Map configurationMap = new HashMap();
-            configurationMap.put(WizardBindingConfigurationStep.BINDING_NAME, bindingName);
-            configurationMap.put(WizardBindingConfigurationStep.BINDING_TYPE, bindingType);
+            configurationMap.put(WizardConcreteConfigurationStep.BINDING_NAME, bindingName);
+            configurationMap.put(WizardConcreteConfigurationStep.BINDING_TYPE, group);
            
             //this could be null for a binding which does not have a sub type
-            configurationMap.put(WizardBindingConfigurationStep.BINDING_SUBTYPE, bindingSubType);
+            configurationMap.put(WizardConcreteConfigurationStep.BINDING_SUBTYPE, bindingSubType);
             
             //service and port
-            configurationMap.put(WizardBindingConfigurationStep.SERVICE_NAME, serviceName);
-            configurationMap.put(WizardBindingConfigurationStep.SERVICEPORT_NAME, servicePortName);
+            configurationMap.put(WizardConcreteConfigurationStep.SERVICE_NAME, serviceName);
+            configurationMap.put(WizardConcreteConfigurationStep.SERVICEPORT_NAME, servicePortName);
             
             this.mTempModel.startTransaction();
             cleanUpBindings();
@@ -394,6 +357,9 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
             } else {
                 mTempModel.endTransaction();
             }
+            String namespace = bindingSubType.getTemplateGroup().getNamespace();
+            ExtensibilityElementConfigurationEditorProvider configurationProvider = ConfigurationEditorProviderFactory.getDefault().getConfigurationProvider(namespace);
+            hasNextStep = configurationProvider != null;
         }
     }
     
@@ -413,16 +379,9 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
     
     }
     
-    class BindingConfigurationListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            String propertyName = evt.getPropertyName();
-            if(BindingConfigurationPanel.PROP_BINDING_SUBTYPE.equals(propertyName)) {
-                LocalizedTemplate bindingSubType = (LocalizedTemplate) evt.getNewValue();
-                processBindingSubType(bindingSubType, true);
-            } else if(BindingConfigurationPanel.PROP_BINDING_TYPE.equals(propertyName)) {
-                processBindingSubType(mPanel.getBindingSubType(), true);
-            }
-        }
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(WizardConcreteConfigurationStep.class, "LBL_WizardBindingConfigurationStep");
     }
 }
 

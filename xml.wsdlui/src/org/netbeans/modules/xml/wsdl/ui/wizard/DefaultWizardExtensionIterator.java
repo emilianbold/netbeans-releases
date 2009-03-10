@@ -36,44 +36,81 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.xml.wsdl.ui.wizard;
 
-package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
-
-import java.util.List;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.openide.nodes.ChildFactory;
-import org.openide.nodes.Node;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardContext;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardDescriptorPanel;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardExtensionIterator;
 
 /**
  *
  * @author skini
  */
-public class WSDLChildFactory extends ChildFactory<WSDLComponent> implements Refreshable {
+public class DefaultWizardExtensionIterator extends WSDLWizardExtensionIterator {
 
-    private WSDLComponent component;
-    private NodesFactory nodeFactory;
+    private WSDLWizardDescriptorPanel[] steps;
+    private int currentStepIndex = -1;
+    private String[] stepNames;
 
-    public WSDLChildFactory(NodesFactory factory, WSDLComponent component) {
-        super();
-        this.component = component;
-        this.nodeFactory = factory;
-        
+    public DefaultWizardExtensionIterator(WSDLWizardContext context) {
+        super(context);
     }
-    
+
     @Override
-    protected boolean createKeys(List<WSDLComponent> wsdlCompList) {
-        wsdlCompList.addAll(component.getChildren());
+    public WSDLWizardDescriptorPanel current() {
+        return steps[currentStepIndex];
+    }
+
+    @Override
+    public boolean hasNext() {
+        return currentStepIndex < steps.length - 1;
+    }
+
+    @Override
+    public boolean hasPrevious() {
         return true;
     }
 
     @Override
-    protected Node createNodeForKey(WSDLComponent wsdlComp) {
-        return nodeFactory.create(wsdlComp);
-    }
-    
-    public void refreshChildren(boolean immediate) {
-        refresh(true);
+    public void nextPanel() {
+        currentStepIndex++;
     }
 
+    @Override
+    public void previousPanel() {
+        currentStepIndex--;
+    }
+
+    @Override
+    public String[] getSteps() {
+        return stepNames;
+    }
+
+    @Override
+    public void setTemplateName(String templateName) {
+        currentStepIndex = -1;
+        WSDLWizardContext context = getWSDLWizardContext();
+        if (templateName == null) {
+            steps = new WSDLWizardDescriptorPanel[]{
+                        new WizardAbstractConfigurationStep(context, true)
+                    };
+            
+        } else {
+            steps = new WSDLWizardDescriptorPanel[]{
+                        new WizardAbstractConfigurationStep(context, false),
+                        new WizardConcreteConfigurationStep(context)
+                    };
+        }
+        stepNames = new String[steps.length];
+        int i = 0;
+        for (WSDLWizardDescriptorPanel panel : steps) {
+            stepNames[i++] = panel.getName();
+        }
+    }
+
+    @Override
+    public boolean commit() {
+        return true;
+    }
 
 }

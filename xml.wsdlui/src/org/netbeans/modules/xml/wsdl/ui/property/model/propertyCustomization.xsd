@@ -105,7 +105,7 @@ made subject to such option by the copyright holder.
                             <xsd:element name="DependsOnCustomizer">
                                 <xsd:annotation>
                                     <xsd:documentation xml:lang="en-US">Use a built-in customizer whose value(s) depend on some other attribute 
-                                        of the the same element or some other source.                                        
+                                        of the same element or some other source.                                        
                                     </xsd:documentation>
                                 </xsd:annotation>
                                 <xsd:complexType>
