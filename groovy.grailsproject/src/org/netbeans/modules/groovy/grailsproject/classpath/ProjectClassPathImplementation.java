@@ -202,8 +202,6 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         }
     }
 
-
-
     // XXX I am handling plugin sources as 'library' for owning project, is that correct?
     private static void addSources(File root, List<PathResourceImplementation> result) {
         SourceRoots sourceRoots = new SourceRoots(FileUtil.toFileObject(root));
