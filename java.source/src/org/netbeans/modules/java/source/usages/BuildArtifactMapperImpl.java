@@ -349,7 +349,7 @@ public class BuildArtifactMapperImpl {
             out = new FileOutputStream(target);
 
             FileUtil.copy(ins, out);
-            target.setLastModified(MINIMAL_TIMESTAMP);
+            //target.setLastModified(MINIMAL_TIMESTAMP); see 156153
         } finally {
             if (ins != null) {
                 try {
