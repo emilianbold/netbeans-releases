@@ -363,9 +363,12 @@ public class RetoucheUtils {
     
     public static String getPackageName(FileObject folder) {
         assert folder.isFolder() : "argument must be folder";
-        return ClassPath.getClassPath(
-                folder, ClassPath.SOURCE)
-                .getResourceName(folder, '.', false);
+        ClassPath cp = ClassPath.getClassPath(folder, ClassPath.SOURCE);
+        if (cp == null) {
+            // see http://www.netbeans.org/issues/show_bug.cgi?id=159228
+            throw new IllegalStateException(String.format("No classpath for %s.", folder)); // NOI18N
+        }
+        return cp.getResourceName(folder, '.', false);
     }
     
     public static String getPackageName(CompilationUnitTree unit) {
