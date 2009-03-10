@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandle;
@@ -63,70 +64,119 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
 
 /**
- *
+ * 
  * @author Tomas Stupka
  */
 public abstract class ExportDiffSupport {
-    private ExportDiffPanel panel;
+    private AbstractExportDiffPanel panel;
     private DialogDescriptor dd;
     private Preferences preferences;
     private Dialog dialog;
-    private ExportDiffProvider edp;
+    private ExportDiffProvider exportDiffProvider;
+    private File[] files;
 
     public ExportDiffSupport(File[] files, final Preferences preferences) {
         this.preferences = preferences;
-        edp = Lookup.getDefault().lookup(ExportDiffProvider.class);
+        this.files = files;
+    }
+
+    /**
+     * Override this to provide your own top diff dialog.
+     * This dialog will be displayed if any registered ExportDiffProvider is found.
+     * @param insidePanel an inside panel with diff provider UI components, include this panel inside yor provided top panel
+     */
+    protected void createComplexDialog (AbstractExportDiffPanel insidePanel) {
+        dd = new DialogDescriptor(insidePanel, NbBundle.getMessage(ExportDiffSupport.class, "CTL_Export_Title"));
+    }
+
+    /**
+     * Override this to provide your own implementation of the simple dialog.
+     * This dialog will be displayed if no registered ExportDiffProvider has been found.
+     * <strong></strong>
+     * @param currentFilePath folder location to save diff into as it is present in user configuration
+     * @return simple export file diff panel
+     */
+    protected AbstractExportDiffPanel createSimpleDialog(final String currentFilePath) {
+        dd = new DialogDescriptor(createFileChooser(new File(currentFilePath)), NbBundle.getMessage(ExportDiffSupport.class, "CTL_Export_Title"));
+        dd.setOptions(new Object[0]);
+        // XXX try better
+        panel = new ExportDiffPanel(new JPanel());
+        panel.setOutputFileText("");
+        return panel;
+    }
+
+    /**
+     * Override this to provide the descriptor of the top panel.
+     * @return the descriptor of the top dialog
+     */
+    protected DialogDescriptor getDialogDescriptor () {
+        return dd;
+    }
+
+    private void initializePanels() {
+        exportDiffProvider = Lookup.getDefault().lookup(ExportDiffProvider.class);
         String currentFilePath = preferences.get("ExportDiff.saveFolder", System.getProperty("user.home"));
-        if(edp == null) {
-            dd = new DialogDescriptor(createFileChooser(new File(currentFilePath)), NbBundle.getMessage(ExportDiffSupport.class, "CTL_Export_Title"));
-            dd.setOptions(new Object[0]);
+        if(exportDiffProvider == null) {
+            panel = createSimpleDialog(currentFilePath);
+            dd = getDialogDescriptor();
         } else {
-            edp.setContext(files);
-            panel = new ExportDiffPanel(edp.getComponent());
-            panel.fileTextField.setText(currentFilePath);
-            panel.browseButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    onChooseFile(new File(panel.fileTextField.getText()));
-                }
-            });
-            dd = new DialogDescriptor(panel, NbBundle.getMessage(ExportDiffSupport.class, "CTL_Export_Title"));
-            edp.addPropertyChangeListener(new PropertyChangeListener() {
+            exportDiffProvider.setContext(files);
+            ExportDiffPanel edPanel = new ExportDiffPanel(exportDiffProvider.getComponent());
+            edPanel.setOutputFileText(currentFilePath);
+
+            exportDiffProvider.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if(evt.getPropertyName().equals(ExportDiffProvider.EVENT_DATA_CHANGED)) {
                         validate();
                     }
                 }
             });
-            panel.fileTextField.getDocument().addDocumentListener(new DocumentListener() {
-                public void insertUpdate(DocumentEvent e)  { validate(); }
-                public void removeUpdate(DocumentEvent e)  { validate(); }
-                public void changedUpdate(DocumentEvent e) { validate(); }
-            });
-            panel.asFileRadioButton.addActionListener(new ActionListener() {
+            edPanel.asFileRadioButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) { validate(); }
             });
-            panel.attachRadioButton.addActionListener(new ActionListener() {
+            edPanel.attachRadioButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) { validate(); }
             });
+            panel = edPanel;
+            createComplexDialog(panel);
+            dd = getDialogDescriptor();
         }
-        validate();
+        panel.addOutputFileTextDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                validate();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                validate();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                validate();
+            }
+        });
+        panel.addBrowseActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onChooseFile(new File(panel.getOutputFileText()));
+            }
+        });
     }
 
     private void validate() {
         assert panel != null;
-        if(panel.asFileRadioButton.isSelected()) {
-            dd.setValid(!panel.fileTextField.getText().trim().equals(""));
+        if (exportDiffProvider == null || panel.isFileOutputSelected()) {
+            dd.setValid(!panel.getOutputFileText().trim().equals(""));
         } else {
-            dd.setValid(edp.isValid());
+            dd.setValid(exportDiffProvider.isValid());
         }
     }
 
     public void export() {
+        initializePanels();
+        validate();
+
         dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
         if(dd.getValue() == DialogDescriptor.OK_OPTION) {
-            if(edp == null || panel.asFileRadioButton.isSelected()) {
-                final File toFile = new File(panel.fileTextField.getText());
+            if(exportDiffProvider == null || ((ExportDiffPanel)panel).asFileRadioButton.isSelected()) {
+                final File toFile = new File(panel.getOutputFileText());
                 Utils.createTask(new Runnable() {
                     public void run() {
                         writeDiffFile(toFile);
@@ -149,14 +199,14 @@ public abstract class ExportDiffSupport {
                         try {
                             File toFile;
                             try {
-                                toFile = File.createTempFile("vcs-diff.patch", null);
+                                toFile = File.createTempFile("vcs-diff", ".patch");
                             } catch (IOException ex) {
                                 // XXX
                                 return;
                             }
                             toFile.deleteOnExit();
                             writeDiffFile(toFile);
-                            edp.handeDiffFile(toFile);
+                            exportDiffProvider.handeDiffFile(toFile);
                         } finally {
                             handle.finish();
                         }
@@ -176,9 +226,9 @@ public abstract class ExportDiffSupport {
     private void onChooseFile(File currentDir) {
         final JFileChooser chooser = createFileChooser(currentDir);
 
-        DialogDescriptor dd = new DialogDescriptor(chooser, NbBundle.getMessage(ExportDiffSupport.class, "CTL_Export_Title"));
-        dd.setOptions(new Object[0]);
-        dialog = DialogDisplayer.getDefault().createDialog(dd);
+        DialogDescriptor chooseFileDescriptor = new DialogDescriptor(chooser, NbBundle.getMessage(ExportDiffSupport.class, "CTL_Export_Title"));
+        chooseFileDescriptor.setOptions(new Object[0]);
+        dialog = DialogDisplayer.getDefault().createDialog(chooseFileDescriptor);
         dialog.setVisible(true);
     }
 
@@ -228,7 +278,9 @@ public abstract class ExportDiffSupport {
                         }
                     }
                     preferences.put("ExportDiff.saveFolder", destination.getParent()); // NOI18N
-                    panel.fileTextField.setText(destination.getAbsolutePath());
+                    panel.setOutputFileText(destination.getAbsolutePath());
+                } else {
+                    dd.setValue(null);
                 }
                 if(dialog != null) {
                     dialog.dispose();
@@ -279,6 +331,45 @@ public abstract class ExportDiffSupport {
         }
         public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
             support.addPropertyChangeListener(listener);
+        }
+    }
+
+    /**
+     * Abstract ancestor of an output diff panel.
+     * @author Ondra Vrabec
+     */
+    public static abstract class AbstractExportDiffPanel extends JPanel {
+
+        /**
+         * Implement this method to access diff output file path field's text.
+         * @return value of the diff output file path field.
+         */
+        public abstract String getOutputFileText();
+
+        /**
+         * Implement this to set the diff output file path field' text.
+         * @param text
+         */
+        public abstract void setOutputFileText(final String text);
+
+        /**
+         * Implement this to add a listener to the diff output file path field.
+         * @param list
+         */
+        public abstract void addOutputFileTextDocumentListener(final DocumentListener list);
+
+        /**
+         * Implement to add a listener on the browse button
+         * @param actionListener
+         */
+        public abstract void addBrowseActionListener(ActionListener actionListener);
+
+        /**
+         * Override to specify if the diff output is set to file. Implicitly returns true
+         * @return true if the file output is selected, false otherwise
+         */
+        public boolean isFileOutputSelected() {
+            return true;
         }
     }
 }
