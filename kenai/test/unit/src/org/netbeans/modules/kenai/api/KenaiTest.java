@@ -342,12 +342,43 @@ public class KenaiTest extends NbTestCase {
         System.out.println("createFeature");
         String name = "unittestfeature01";
         String displayName = "Feature 1";
-        String description = "Test Description";
+        String description = "Test Description - FORUM";
         KenaiProject project = instance.getProject(UNITTESTUNIQUENAME);
         try {
             KenaiProjectFeature feature = project.createProjectFeature(name, displayName, description, KenaiFeature.FORUM.getId(), null, null, null);
             assert feature.getName().equals(name);
             assert feature.getDisplayName().equals(displayName);
+
+            name = "unittestfeature02";
+            displayName = "Feature 2";
+            description = "Test Description - JIRA";
+            feature = project.createProjectFeature(name, displayName, description, "jira", null, null, null);
+            assert feature.getName().equals(name);
+            assert feature.getDisplayName().equals(displayName);
+
+            name = "unittestfeature03";
+            displayName = "Feature 3";
+            description = "Test Description - LISTS";
+            feature = project.createProjectFeature(name, displayName, description, KenaiFeature.LISTS.getId(), null, null, null);
+            assert feature.getName().equals(name);
+            assert feature.getDisplayName().equals(displayName);
+
+            name = "unittestfeature04";
+            displayName = "Feature 4";
+            description = "Test Description - HG";
+            feature = project.createProjectFeature(name, displayName, description, "mercurial", null, null, null);
+            assert feature.getName().equals(name);
+            assert feature.getDisplayName().equals(displayName);
+
+            try { // Wiki should be only one - this test should fail...
+                name = "unittestfeature05";
+                displayName = "Feature 5";
+                description = "Test Description - WIKI";
+                feature = project.createProjectFeature(name, displayName, description, KenaiFeature.WIKI.getId(), null, null, null);
+                fail("Second wiki feature was created for the project!");
+            } catch (Throwable _t) {
+                // expected result
+            }
         } catch (KenaiErrorMessage kem) {
             System.out.println(kem.getAsString());
             throw kem;
