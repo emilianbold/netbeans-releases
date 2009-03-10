@@ -48,9 +48,9 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
  *
  * @author Vladimir Voskresensky
  */
-public class NamespaceDeclararationContainerKey extends NamespaceKey {
+public class NamespaceDeclarationContainerKey extends NamespaceKey {
 
-    public NamespaceDeclararationContainerKey(CsmNamespace ns) {
+    public NamespaceDeclarationContainerKey(CsmNamespace ns) {
         super(ns);
     }
 
@@ -70,7 +70,7 @@ public class NamespaceDeclararationContainerKey extends NamespaceKey {
         super.write(aStream);
     }
 
-    /*package*/ NamespaceDeclararationContainerKey(DataInput aStream) throws IOException {
+    /*package*/ NamespaceDeclarationContainerKey(DataInput aStream) throws IOException {
         super(aStream);
     }
 }

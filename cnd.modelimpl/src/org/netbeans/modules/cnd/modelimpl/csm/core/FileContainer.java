@@ -107,7 +107,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
     /** Creates a new instance of FileContainer */
     public FileContainer(ProjectBase project) {
-	super(new FileContainerKey(project.getUniqueName().toString()));
+	super(new FileContainerKey(project.getUniqueName().toString()), true);
 	put();
     }
     
@@ -120,7 +120,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
     // only for creating EMPTY stub
     private FileContainer() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null);
+        super((org.netbeans.modules.cnd.repository.spi.Key) null, true);
     }
 
     /*package*/ static FileContainer empty() {
