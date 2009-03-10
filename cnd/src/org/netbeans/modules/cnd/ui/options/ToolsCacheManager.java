@@ -170,11 +170,6 @@ public final class ToolsCacheManager {
         return serverList != null;
     }
 
-    /** TODO: deprecate and remove */
-    public String getDefaultHostKey() {
-        return serverList.getDefaultRecord().getName();
-    }
-
     public ExecutionEnvironment getDefaultHostEnvironment() {
         return serverList.getDefaultRecord().getExecutionEnvironment();
     }
