@@ -72,7 +72,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -586,6 +586,14 @@ public class BugzillaIssue extends Issue {
     void addAttachment(File f, String comment, String desc, String contentType, boolean patch) throws HttpException, IOException, CoreException  {
         assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(f);
+        if (contentType == null) {
+            String ct = FileUtil.getMIMEType(FileUtil.toFileObject(f));
+            if ((ct != null) && (!"content/unknown".equals(ct))) { // NOI18N
+                contentType = ct;
+            } else {
+                contentType = FileTaskAttachmentSource.getContentTypeFromFilename(f.getName());
+            }
+        }
         attachmentSource.setContentType(contentType);
         BugzillaTaskAttachmentHandler.AttachmentPartSource source = new BugzillaTaskAttachmentHandler.AttachmentPartSource(attachmentSource);
 
