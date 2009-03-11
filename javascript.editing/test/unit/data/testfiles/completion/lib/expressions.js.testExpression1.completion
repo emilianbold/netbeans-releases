@@ -1,6 +1,6 @@
 Code completion result for source line:
 /regexp/.|escape("myexpr")
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     exec(str) : void                           RegExp
 METHOD     test(str) : Boolean                        RegExp
 METHOD     toSource() : void                          RegExp

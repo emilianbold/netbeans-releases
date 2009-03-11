@@ -6,3 +6,4 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/gsf/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/gsf/GsfModuleInstaller.class
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module-Provides: org.netbeans.modules.gsf
+OpenIDE-Module-Deprecated: true

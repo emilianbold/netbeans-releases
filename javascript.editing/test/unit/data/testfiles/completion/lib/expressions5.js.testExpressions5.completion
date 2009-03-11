@@ -1,6 +1,6 @@
 Code completion result for source line:
 dur.|t
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     toExponential(fractionDigits)              Number
 METHOD     toFixed(digits) : String                   Number
 METHOD     toLocaleString() : void                    Number

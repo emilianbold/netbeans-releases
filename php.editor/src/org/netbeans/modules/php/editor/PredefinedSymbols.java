@@ -49,7 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
@@ -80,8 +80,8 @@ public class PredefinedSymbols {
         return ifnc;
     }
     static class MagicIndexedFunction extends IndexedFunction {
-        public MagicIndexedFunction(String name, String in, PHPIndex index, String fileUrl, String arguments, int offset, int flags, ElementKind kind) {
-            super(name, in, index, fileUrl, arguments, offset, flags, kind);
+        public MagicIndexedFunction(String name, String in, PHPIndex index, String fileURL, String arguments, int offset, int flags, ElementKind kind) {
+            super(name, in, index, fileURL, arguments, offset, flags, kind);
         }
     }
 

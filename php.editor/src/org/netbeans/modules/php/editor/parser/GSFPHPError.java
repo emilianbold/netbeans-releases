@@ -38,14 +38,14 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
-import org.netbeans.modules.gsf.api.Severity;
+import org.netbeans.modules.csl.api.Severity;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class GSFPHPError implements org.netbeans.modules.gsf.api.Error {
+public class GSFPHPError implements org.netbeans.modules.csl.api.Error {
 
     private final String displayName;
     private final FileObject file;

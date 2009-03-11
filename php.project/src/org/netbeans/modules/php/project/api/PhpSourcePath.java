@@ -57,6 +57,8 @@ import org.openide.util.Parameters;
  * @since 2.1
  */
 public final class PhpSourcePath {
+    public static final String BOOT_CP = "classpath/php-boot"; //NOI18N
+    public static final String SOURCE_CP = "classpath/php-source"; //NOI18N
     public static final String  MIME_TYPE = "text/x-php5"; // NOI18N
 
     private static final DefaultPhpSourcePath DEFAULT_PHP_SOURCE_PATH = new DefaultPhpSourcePath();

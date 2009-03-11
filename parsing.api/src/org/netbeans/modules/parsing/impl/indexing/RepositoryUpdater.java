@@ -96,6 +96,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.TopologicalSortException;
 
@@ -771,6 +772,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 final List<URL> newRoots = new LinkedList<URL>();
                 newRoots.addAll(PathRegistry.getDefault().getSources());
                 newRoots.addAll(PathRegistry.getDefault().getLibraries());
+                newRoots.addAll(PathRegistry.getDefault().getUnknownRoots());
+
                 ctx.newBinaries.addAll(PathRegistry.getDefault().getBinaryLibraries());
                 for (Iterator<URL> it = ctx.newBinaries.iterator(); it.hasNext();) {
                     if (ctx.oldBinaries.remove(it.next())) {
