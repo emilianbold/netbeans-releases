@@ -46,13 +46,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import org.netbeans.api.diff.Diff;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -134,14 +132,9 @@ public interface HudsonSCM {
          * @return the string value, or null
          */
         public static String xpath(String expr, Element xml) {
-            try {
-                return xpath.evaluate(expr, xml);
-            } catch (XPathExpressionException x) {
-                LOG.log(Level.FINE, "cannot evaluate '" + expr + "'", x);
-                return null;
-            }
+            // XXX just move to some other API package?
+            return Utilities.xpath(expr, xml);
         }
-        private static final XPath xpath = XPathFactory.newInstance().newXPath();
 
         /**
          * Display a diff window for a file.

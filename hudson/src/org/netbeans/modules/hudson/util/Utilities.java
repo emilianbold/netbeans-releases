@@ -43,7 +43,13 @@ package org.netbeans.modules.hudson.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import org.netbeans.modules.hudson.api.HudsonVersion;
+import org.w3c.dom.Element;
 
 /**
  * Helper utility class
@@ -80,5 +86,21 @@ public class Utilities {
             throw (IllegalArgumentException) new IllegalArgumentException(x.toString()).initCause(x);
         }
     }
+
+        /**
+         * Evaluate an XPath expression.
+         * @param expr an XPath expression
+         * @param xml a DOM context
+         * @return the string value, or null
+         */
+        public static synchronized String xpath(String expr, Element xml) {
+            try {
+                return xpath.evaluate(expr, xml);
+            } catch (XPathExpressionException x) {
+                Logger.getLogger(Utilities.class.getName()).log(Level.FINE, "cannot evaluate '" + expr + "'", x);
+                return null;
+            }
+        }
+        private static final XPath xpath = XPathFactory.newInstance().newXPath();
 
 }

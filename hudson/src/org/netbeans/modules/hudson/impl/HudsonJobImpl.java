@@ -44,6 +44,7 @@ package org.netbeans.modules.hudson.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonView;
 import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
@@ -254,6 +255,14 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     @Override
     public String toString() {
         return getUrl();
+    }
+
+    private Collection<? extends HudsonJobBuild> builds;
+    public synchronized Collection<? extends HudsonJobBuild> getBuilds() {
+        if (builds == null) {
+            builds = getLookup().lookup(HudsonInstanceImpl.class).getConnector().getBuilds(this);
+        }
+        return builds;
     }
     
     private class HudsonJobProperty extends PropertySupport<String> {

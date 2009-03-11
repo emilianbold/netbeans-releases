@@ -70,11 +70,5 @@ public class HudsonXmlApiConstants {
     public static final String XML_API_LAST_SUCCESSFUL_BUILD_ELEMENT = "lastSuccessfulBuild";
     public static final String XML_API_LAST_FAILED_BUILD_ELEMENT = "lastFailedBuild";
     public static final String XML_API_LAST_COMPLETED_BUILD_ELEMENT = "lastCompletedBuild";
-    
-    // Hudson Job Build Elements
-    public static final String XML_API_BUILDING_ELEMENT = "building";
-    public static final String XML_API_DURATION_ELEMENT = "duration";
-    public static final String XML_API_TIMESTAMP_ELEMENT = "timestamp";
-    public static final String XML_API_RESULT_ELEMENT = "result";
 
 }

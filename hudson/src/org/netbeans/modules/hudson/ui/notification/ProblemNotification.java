@@ -45,6 +45,7 @@ import java.io.CharConversionException;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
 import org.netbeans.modules.hudson.ui.actions.ShowFailures;
 import org.openide.awt.Notification;
@@ -87,8 +88,13 @@ class ProblemNotification implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
-        Action delegate = failed ? new ShowBuildConsole(job, build) : new ShowFailures(job, build);
-        delegate.actionPerformed(e);
+        for (HudsonJobBuild b : job.getBuilds()) {
+            if (b.getNumber() == build) {
+                Action delegate = failed ? new ShowBuildConsole(b) : new ShowFailures(b);
+                delegate.actionPerformed(e);
+                break;
+            }
+        }
     }
 
     private Priority getPriority() {

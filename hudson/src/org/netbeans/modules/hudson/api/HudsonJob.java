@@ -154,6 +154,12 @@ public interface HudsonJob extends Lookup.Provider, Comparable<HudsonJob> {
     public int getLastCompletedBuild();
 
     /**
+     * Obtains a list of recorded builds for the job.
+     * @return a possibly empty set of builds
+     */
+    Collection<? extends HudsonJobBuild> getBuilds();
+
+    /**
      * Starts Hudson job
      */
     public void start();

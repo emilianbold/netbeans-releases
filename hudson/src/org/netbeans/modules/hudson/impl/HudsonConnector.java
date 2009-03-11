@@ -47,7 +47,9 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,12 +58,12 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.HudsonJobBuild.Result;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
-import static org.netbeans.modules.hudson.constants.HudsonJobBuildConstants.*;
 import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
-import org.netbeans.modules.hudson.impl.HudsonJobBuild.Result;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -147,39 +149,23 @@ public class HudsonConnector {
      * Gets general information about a build.
      * The changelog ({@code <changeSet>}) can be interpreted separately by {@link HudsonJobBuild#getChanges}.
      */
-    public synchronized HudsonJobBuild getJobBuild(HudsonJob job, int build) {
-        Document docBuild = getDocument(job.getUrl() + build + "/" + XML_API_URL +
-                // Exclude <changeSet> because it can be pretty big and slow to download.
-                // To exclude also <culprit> etc., could make an includes list
-                // based on those root element names we actually expect to interpret.
-                "?xpath=*/*[name()!='changeSet']&wrapper=root");
-        
-        if (null == docBuild)
-            return null;
-        
-        // Get build details
-        NodeList buildDetails = docBuild.getDocumentElement().getChildNodes();
-        
-        HudsonJobBuild result = new HudsonJobBuild(this, job, build);
-        
-        for (int i = 0 ; i < buildDetails.getLength() ; i++) {
-            Node n = buildDetails.item(i);
-            
-            if (n.getNodeType() == Node.ELEMENT_NODE) {
-                if (n.getNodeName().equals(XML_API_BUILDING_ELEMENT)) {
-                    result.putProperty(JOB_BUILD_BUILDING, Boolean.parseBoolean(n.getFirstChild().getTextContent()));
-                } else if (n.getNodeName().equals(XML_API_DURATION_ELEMENT)) {
-                    result.putProperty(JOB_BUILD_DURATION, Long.parseLong(n.getFirstChild().getTextContent()));
-                } else if (n.getNodeName().equals(XML_API_TIMESTAMP_ELEMENT)) {
-                    result.putProperty(JOB_BUILD_TIMESTAMP, Long.parseLong(n.getFirstChild().getTextContent()));
-                } else if (!result.isBuilding() && n.getNodeName().equals(XML_API_RESULT_ELEMENT)) {
-                    result.putProperty(JOB_BUILD_RESULT, (n.getFirstChild().getTextContent().
-                            equals("SUCCESS")) ? Result.SUCCESS : Result.FAILURE);
-                }
-            }
+    Collection<? extends HudsonJobBuild> getBuilds(HudsonJob job) {
+        Document docBuild = getDocument(job.getUrl() + XML_API_URL +
+                // XXX no good way to only include what you _do_ want without using XSLT
+                "?depth=1&xpath=/*/build&wrapper=root&exclude=//artifact&exclude=//action&exclude=//changeSet&exclude=//culprit");
+        if (docBuild == null) {
+            return Collections.emptySet();
         }
-
-        return result;
+        List<HudsonJobBuildImpl> builds = new ArrayList<HudsonJobBuildImpl>();
+        NodeList buildDetails = docBuild.getElementsByTagName("build"); // HUDSON-3267: might be root elt
+        for (int i = 0; i < buildDetails.getLength(); i++) {
+            Element build = (Element) buildDetails.item(i);
+            int number = Integer.parseInt(Utilities.xpath("number", build));
+            boolean building = Boolean.valueOf(Utilities.xpath("building", build));
+            Result result = building ? Result.NOT_BUILT : Result.valueOf(Utilities.xpath("result", build));
+            builds.add(new HudsonJobBuildImpl(this, job, number, building, result));
+        }
+        return builds;
     }
     
     protected synchronized HudsonVersion getHudsonVersion() {

@@ -44,8 +44,8 @@ import java.awt.event.ActionEvent;
 import java.io.FileNotFoundException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -63,17 +63,15 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class ShowFailures extends AbstractAction implements Runnable {
 
-    private final HudsonJob job;
-    private final int buildNumber;
+    private final HudsonJobBuild build;
 
-    public ShowFailures(HudsonJob job, int buildNumber) {
-        this.job = job;
-        this.buildNumber = buildNumber;
+    public ShowFailures(HudsonJobBuild build) {
+        this.build = build;
         putValue(NAME, "Show Test Failures"); // XXX I18N
     }
 
     public void actionPerformed(ActionEvent e) {
-        new RequestProcessor(job.toString() + buildNumber + "/testReport").post(this); // NOI18N
+        new RequestProcessor(build + "testReport").post(this); // NOI18N
     }
 
     public void run() {
@@ -82,10 +80,10 @@ public class ShowFailures extends AbstractAction implements Runnable {
             parser.setContentHandler(new DefaultHandler() {
                 InputOutput io;
                 StringBuilder buf;
-                Hyperlinker hyperlinker = new Hyperlinker(job);
+                Hyperlinker hyperlinker = new Hyperlinker(build.getJob());
                 private void prepareOutput() {
                     if (io == null) {
-                        String title = job.getDisplayName() + " #" + buildNumber + " Test Failures"; // XXX I18N
+                        String title = build.getJob().getDisplayName() + " #" + build.getNumber() + " Test Failures"; // XXX I18N
                         io = IOProvider.getDefault().getIO(title, new Action[0]);
                         io.select();
                     }
@@ -119,8 +117,8 @@ public class ShowFailures extends AbstractAction implements Runnable {
                 }
             });
             // Requires Hudson 1.281 or later:
-            String url = job.getUrl() + buildNumber + "/testReport/api/xml?xpath=//suite[case/errorStackTrace]&wrapper=failures"; // NOI18N
-            InputSource source = new InputSource(new ConnectionBuilder().job(job).url(url).connection().getInputStream());
+            String url = build.getUrl() + "testReport/api/xml?xpath=//suite[case/errorStackTrace]&wrapper=failures"; // NOI18N
+            InputSource source = new InputSource(new ConnectionBuilder().job(build.getJob()).url(url).connection().getInputStream());
             source.setSystemId(url);
             parser.parse(source);
         } catch (FileNotFoundException x) {

@@ -50,8 +50,8 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -64,22 +64,20 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(ShowBuildConsole.class.getName());
 
-    private final HudsonJob job;
-    private final int buildNumber;
+    private final HudsonJobBuild build;
 
-    public ShowBuildConsole(HudsonJob job, int buildNumber) {
-        this.job = job;
-        this.buildNumber = buildNumber;
+    public ShowBuildConsole(HudsonJobBuild build) {
+        this.build = build;
         putValue(NAME, "Show Console"); // XXX I18N
     }
 
     public void actionPerformed(ActionEvent e) {
-        new RequestProcessor(job.getName() + " #" + buildNumber + " console").post(this); // NOI18N
+        new RequestProcessor(build + "console").post(this); // NOI18N
     }
 
     public void run() {
-        Hyperlinker hyperlinker = new Hyperlinker(job);
-        String name = job.getDisplayName() + " #" + buildNumber;
+        Hyperlinker hyperlinker = new Hyperlinker(build.getJob());
+        String name = build.getJob().getDisplayName() + " #" + build.getNumber();
         LOG.log(Level.FINE, "{0} started", name);
         InputOutput io = IOProvider.getDefault().getIO(name, new Action[] {/* XXX abort build button? */});
         io.select();
@@ -90,7 +88,7 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
         }
          */
         int start = 0;
-        String url = job.getUrl() + buildNumber + "/progressiveLog?start="; // NOI18N
+        String url = build.getUrl() + "progressiveLog?start="; // NOI18N
         OutputWriter out = io.getOut();
         OutputWriter err = io.getErr();
         try {
@@ -100,7 +98,7 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
                     LOG.log(Level.FINE, "{0} stopped", name);
                     break;
                 }
-                URLConnection conn = new ConnectionBuilder().job(job).url(url + start).
+                URLConnection conn = new ConnectionBuilder().job(build.getJob()).url(url + start).
                         header("Accept-Encoding", "gzip"). // NOI18N
                         connection();
                 boolean moreData = Boolean.parseBoolean(conn.getHeaderField("X-More-Data"));

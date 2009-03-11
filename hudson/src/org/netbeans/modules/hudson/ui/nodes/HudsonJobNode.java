@@ -48,11 +48,9 @@ import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
-import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
-import org.netbeans.modules.hudson.ui.actions.ShowChanges;
-import org.netbeans.modules.hudson.ui.actions.ShowFailures;
 import org.netbeans.modules.hudson.ui.actions.StartJobAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
@@ -90,15 +88,19 @@ public class HudsonJobNode extends AbstractNode {
 
     private static Children makeChildren(final HudsonJob job) {
         return Children.create(new ChildFactory<Object>() {
-            @Override
+            final Object WORKSPACE = new Object();
             protected boolean createKeys(List<Object> toPopulate) {
+                toPopulate.addAll(job.getBuilds());
                 // XXX would be nicer to avoid adding this in case there is no remote workspace...
-                toPopulate.add(new Object());
+                toPopulate.add(WORKSPACE);
                 return true;
             }
-            @Override
-            protected Node createNodeForKey(Object key) {
-                return new HudsonWorkspaceNode(job);
+            protected @Override Node createNodeForKey(Object key) {
+                if (key == WORKSPACE) {
+                    return new HudsonWorkspaceNode(job);
+                } else {
+                    return new HudsonJobBuildNode((HudsonJobBuild) key);
+                }
             }
         }, false);
     }
@@ -112,16 +114,6 @@ public class HudsonJobNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
         actions.add(SystemAction.get(StartJobAction.class));
-        actions.add(null);
-        int last = job.getLastBuild();
-        if (last >= 0) {
-            actions.add(new ShowChanges(job, last));
-            actions.add(new ShowBuildConsole(job, last));
-        }
-        int lastCompleted = job.getLastCompletedBuild();
-        if (lastCompleted >= 0 && lastCompleted != job.getLastStableBuild()) {
-            actions.add(new ShowFailures(job, lastCompleted));
-        }
         actions.add(null);
         actions.add(SystemAction.get(OpenUrlAction.class));
         actions.add(SystemAction.get(PropertiesAction.class));

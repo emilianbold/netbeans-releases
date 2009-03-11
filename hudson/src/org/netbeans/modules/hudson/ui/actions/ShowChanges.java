@@ -46,9 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.hudson.api.HudsonJob;
-import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
-import org.netbeans.modules.hudson.impl.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
 import org.openide.util.RequestProcessor;
@@ -64,36 +62,23 @@ public class ShowChanges extends AbstractAction implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(ShowChanges.class.getName());
 
-    private final HudsonJob job;
-    private final int buildNumber;
+    private final HudsonJobBuild build;
 
-    public ShowChanges(HudsonJob job, int buildNumber) {
+    public ShowChanges(HudsonJobBuild build) {
         super("Show Changes"); // XXX I18N
-        this.job = job;
-        this.buildNumber = buildNumber;
+        this.build = build;
     }
 
     public void actionPerformed(ActionEvent e) {
-        new RequestProcessor(job.getName() + " #" + buildNumber + " changes").post(this); // NOI18N
+        new RequestProcessor(build + "changes").post(this); // NOI18N
     }
 
     public void run() {
-        HudsonInstanceImpl instance = job.getLookup().lookup(HudsonInstanceImpl.class);
-        if (instance == null) {
-            return;
-        }
-        String name = job.getDisplayName() + " #" + buildNumber + " changes"; // XXX I18N
+        String name = build.getJob().getDisplayName() + " #" + build.getNumber() + " changes"; // XXX I18N
         InputOutput io = IOProvider.getDefault().getIO(name, new Action[0]);
         io.select();
         OutputWriter out = io.getOut();
         OutputWriter err = io.getErr();
-        HudsonJobBuild build = instance.getConnector().getJobBuild(job, buildNumber);
-        if (build == null) {
-            out.println("Could not retrieve build information."); // XXX I18N
-            out.close();
-            err.close();
-            return;
-        }
         Collection<? extends HudsonJobChangeItem> changes = build.getChanges();
         boolean first = true;
         for (HudsonJobChangeItem item : changes) {

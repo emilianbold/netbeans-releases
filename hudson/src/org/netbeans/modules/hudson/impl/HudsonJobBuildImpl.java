@@ -44,66 +44,58 @@ package org.netbeans.modules.hudson.impl;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.constants.HudsonXmlApiConstants;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
-import static org.netbeans.modules.hudson.constants.HudsonJobBuildConstants.*;
-import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
+import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.openide.util.Lookup;
 import org.w3c.dom.Document;
 
-/**
- * Information about one build of a job.
- */
-public class HudsonJobBuild {
+public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
 
-    private final HudsonConnector connector;
     private final HudsonJob job;
     private final int build;
+    private final boolean building;
+    private final Result result;
+    private final HudsonConnector connector;
 
-    HudsonJobBuild(HudsonConnector connector, HudsonJob job, int build) {
+    HudsonJobBuildImpl(HudsonConnector connector, HudsonJob job, int build, boolean building, Result result) {
         this.connector = connector;
         this.job = job;
         this.build = build;
+        this.building = building;
+        this.result = result;
     }
     
-    public enum Result {
-        SUCCESS, FAILURE
+    public HudsonJob getJob() {
+        return job;
     }
-    
-    private final HudsonPropertiesSupport properties = new HudsonPropertiesSupport();
-    
-    public void putProperty(String name, Object o) {
-        properties.putProperty(name, o);
+
+    public int getNumber() {
+        return build;
     }
-    
+
+    public String getUrl() {
+        return job.getUrl() + build + "/"; // NOI18N
+    }
+
+    public @Override String toString() {
+        return getUrl();
+    }
+
     public boolean isBuilding() {
-        Boolean building = properties.getProperty(JOB_BUILD_BUILDING, Boolean.class);
-        return building != null ? building : false;
-    }
-    
-    public int getDuration() {
-        return (int) (properties.getProperty(JOB_BUILD_DURATION, Long.class) / 60000);
-    }
-    
-    public Date getDate() {
-        return new Date(properties.getProperty(JOB_BUILD_TIMESTAMP, Long.class));
+        return building;
     }
     
     public Result getResult() {
-        return properties.getProperty(JOB_BUILD_RESULT, Result.class);
+        return result;
     }
 
     private Collection<? extends HudsonJobChangeItem> changes;
-    /**
-     * Gets a changelog for the build.
-     * This requires SCM-specific parsing using {@link HudsonSCM#parseChangeSet}.
-     * @return a list of changes, possibly empty (including if it could not be parsed)
-     */
     public Collection<? extends HudsonJobChangeItem> getChanges() {
         if (changes == null) {
-            Document changeSet = connector.getDocument(job.getUrl() + build + "/" +
+            Document changeSet = connector.getDocument(getUrl() +
                     HudsonXmlApiConstants.XML_API_URL + "?xpath=/*/changeSet");
             if (changeSet != null) {
                 for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
@@ -119,5 +111,5 @@ public class HudsonJobBuild {
         }
         return changes;
     }
-    
+
 }
