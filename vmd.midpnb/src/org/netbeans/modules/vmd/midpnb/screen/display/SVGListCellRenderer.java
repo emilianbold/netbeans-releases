@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
-import com.sun.jmx.mbeanserver.MetaData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
