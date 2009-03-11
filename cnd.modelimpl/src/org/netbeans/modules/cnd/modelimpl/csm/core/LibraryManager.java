@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -374,7 +375,7 @@ public final class LibraryManager {
     /*package-local*/ void readProjectLibraries(CsmUID<CsmProject> project, DataInput aStream) throws IOException {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         assert aStream != null;
-        Collection<CharSequence> res = PersistentUtils.readCollectionStrings(aStream, null);
+        Collection<CharSequence> res = PersistentUtils.readCollectionStrings(aStream, FilePathCache.getManager());
         for (CharSequence folder : res) {
             LibraryEntry entry = getOrCreateLibrary(model, folder.toString());
             entry.addProject(project);

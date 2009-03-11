@@ -221,12 +221,22 @@ public class PersistentUtils {
     }
     private static final int UTF_LIMIT = 65535;
 
+    private static final String NULL_STRING = new String(new char[]{0});
+
     public static void writeUTF(CharSequence st, DataOutput aStream) throws IOException {
-        aStream.writeUTF(st.toString());
+        if (st == null) {
+            aStream.writeUTF(NULL_STRING);
+        } else {
+            aStream.writeUTF(st.toString());
+        }
     }
 
     public static CharSequence readUTF(DataInput aStream, APTStringManager manager) throws IOException {
-        return manager.getString(aStream.readUTF());
+        String s = aStream.readUTF();
+        if (s.length()==1 && s.charAt(0)==0) {
+            return null;
+        }
+        return manager.getString(s);
     }
 
     public static void writeLongUTF(CharSequence st, DataOutput aStream) throws IOException {
