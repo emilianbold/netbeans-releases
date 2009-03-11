@@ -590,7 +590,7 @@ public class BugzillaIssue extends Issue {
 
 
     void addAttachment(final File file, final String comment, final String desc, String contentType, final boolean patch) throws HttpException, IOException, CoreException  {
-        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
         final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
         if (contentType == null) {
             String ct = FileUtil.getMIMEType(FileUtil.toFileObject(file));
@@ -633,7 +633,7 @@ public class BugzillaIssue extends Issue {
 
     // XXX carefull - implicit refresh
     public void addComment(String comment, boolean close) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
         if(comment == null && !close) {
             return;
         }
@@ -677,13 +677,13 @@ public class BugzillaIssue extends Issue {
     }
 
     void submit() throws CoreException {
-        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
         RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
         // XXX evaluate rr
     }
 
     public void refresh() {
-        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
         try {
             TaskData td = BugzillaUtil.getTaskData(repository, getID());
             getRepository().getIssueCache().setIssueData(getID(), td); // XXX
@@ -814,7 +814,7 @@ public class BugzillaIssue extends Issue {
         }
 
         public void getAttachementData(OutputStream os) throws MalformedURLException, IOException, CoreException {
-            assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
+            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
             Bugzilla.getInstance().getClient(repository).getAttachmentData(id, os, new NullProgressMonitor());
         }
     }

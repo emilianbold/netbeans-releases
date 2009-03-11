@@ -125,7 +125,7 @@ public class BugzillaQuery extends Query {
     public void refresh() { // XXX sync???
 
         assert urlParameters != null;
-        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
 
         executeQuery(new Runnable() {
             public void run() {

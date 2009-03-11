@@ -152,7 +152,7 @@ public class BugzillaRepository extends Repository {
     }
 
     public Issue getIssue(final String id) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
 
         final TaskData[] taskData = new TaskData[1];
         BugzillaCommand cmd = new BugzillaCommand() {
@@ -176,7 +176,7 @@ public class BugzillaRepository extends Repository {
     @Override
     // XXX create repo wih product if kenai project and use in queries
     public Issue[] simpleSearch(final String criteria) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
         String[] keywords = criteria.split(" ");
 
         List<Issue> issues = new ArrayList<Issue>();
@@ -206,7 +206,7 @@ public class BugzillaRepository extends Repository {
 
     private List<Issue> executeQuery(String queryUrl)  {
         assert taskRepository != null;
-        assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
         final List<Issue> issues = new ArrayList<Issue>();
         TaskDataCollector collector = new TaskDataCollector() {
             public void accept(TaskData taskData) {
