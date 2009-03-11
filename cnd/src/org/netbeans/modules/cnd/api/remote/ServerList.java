@@ -59,12 +59,6 @@ public interface ServerList {
     /** Set the index of the default development server */
     public void setDefaultIndex(int defaultIndex);
     
-    /**
-     * A String[] containing the names of all currently defined development servers
-     * TODO: deprecate and remove
-     */
-    public String[] getServerNames();
-
     public List<ExecutionEnvironment> getEnvironments();
 
     public ServerRecord get(ExecutionEnvironment env);
@@ -74,10 +68,6 @@ public interface ServerList {
     public void clear();
 
     public ServerRecord addServer(ExecutionEnvironment env, boolean asDefault, boolean connect);
-
-    public void removeServer(int idx);
-    
-    public void removeServer(ServerRecord record);
 
     public boolean show(ToolsCacheManager cacheManager);
 

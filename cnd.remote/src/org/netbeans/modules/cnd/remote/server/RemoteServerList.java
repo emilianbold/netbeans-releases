@@ -154,15 +154,6 @@ public class RemoteServerList implements ServerList {
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
     }
     
-    public synchronized String[] getServerNames() {
-        String[] sa;
-        sa = new String[items.size()];
-        for (int i = 0; i < items.size(); i++) {
-            sa[i] = items.get(i).getName();
-        }
-        return sa;
-    }
-
     public List<ExecutionEnvironment> getEnvironments() {
         List<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(items.size());
         for (RemoteServerRecord item : items) {
@@ -234,17 +225,9 @@ public class RemoteServerList implements ServerList {
         return record;
     }
 
-    public synchronized void removeServer(int idx) {
-        if (idx >= 0 && idx < items.size()) {
-            RemoteServerRecord record = items.remove(idx);
-            removeFromPreferences(record.getName());
-            refresh();
-        }
-    }
-
     public synchronized void removeServer(ServerRecord record) {
         if (items.remove(record)) {
-            removeFromPreferences(record.getName());
+            removeFromPreferences(record);
             refresh();
         }
     }
@@ -258,14 +241,15 @@ public class RemoteServerList implements ServerList {
         items.clear();
     }
 
-    private void removeFromPreferences(String hkey) {
-        StringBuilder sb = new StringBuilder();
-        
+    private void removeFromPreferences(ServerRecord recordToRemove) {
+        StringBuilder sb = new StringBuilder();        
         for (RemoteServerRecord record : items) {
-            sb.append(record.getName());
-            sb.append(',');
+            if (!recordToRemove.equals(record)) {
+                sb.append(record.getName());
+                sb.append(',');
+            }
         }
-        getPreferences().put(REMOTE_SERVERS, sb.substring(0, sb.length() - 1));
+        getPreferences().put(REMOTE_SERVERS, sb.toString());
     }
 
     public boolean show(ToolsCacheManager cacheManager) {
