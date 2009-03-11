@@ -331,6 +331,10 @@ public class JsModelTest extends JsTestBase {
                 "<script type=\"text/javascript\" src=\"javascripts/prototype.js\">^</script>");
     }
 
+    public void testInlinedJavascriptWithTemplatings() throws Exception {
+        checkJavaScriptTranslation("testfiles/embedding/inlined-javascript-templating.rhtml");
+    }
+
 // XXX: parsingapi
 //    public void testIncrementalUpdate1() throws Exception {
 //        Pair<JsTranslatedSource,String> pair = checkIncrementalUpdate("testfiles/embedding/rails-index.html", UpdateState.COMPLETED,

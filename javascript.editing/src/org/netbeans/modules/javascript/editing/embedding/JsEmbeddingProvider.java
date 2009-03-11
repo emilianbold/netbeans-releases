@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javascript.editing.embedding;
 
 import java.util.ArrayList;
@@ -58,7 +57,6 @@ import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 
-
 /**
  *
  * @author vita
@@ -68,12 +66,11 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     // ------------------------------------------------------------------------
     // EmbeddingProvider implementation
     // ------------------------------------------------------------------------
-
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         if (sourceMimeType.equals(snapshot.getMimeType())) {
             List<Embedding> embeddings = translator.translate(snapshot);
-            if(embeddings.isEmpty()) {
+            if (embeddings.isEmpty()) {
                 return Collections.<Embedding>emptyList();
             } else {
                 return Collections.singletonList(Embedding.create(embeddings));
@@ -97,13 +94,15 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     // ------------------------------------------------------------------------
     // TaskFactory implementation
     // ------------------------------------------------------------------------
-
     public static final class Factory extends TaskFactory {
+
         public Factory() {
             // no-op
         }
 
-        public @Override Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        public
+        @Override
+        Collection<? extends SchedulerTask> create(Snapshot snapshot) {
             Translator t = translators.get(snapshot.getMimeType());
             if (t != null) {
                 return Collections.singleton(new JsEmbeddingProvider(snapshot.getMimeType(), t));
@@ -116,25 +115,21 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     // ------------------------------------------------------------------------
     // Public implementation
     // ------------------------------------------------------------------------
-
     public static boolean isGeneratedIdentifier(String ident) {
         return GENERATED_IDENTIFIER.trim().equals(ident);
     }
-
     // ------------------------------------------------------------------------
     // Private implementation
     // ------------------------------------------------------------------------
-
     private static final Logger LOG = Logger.getLogger(JsEmbeddingProvider.class.getName());
-    
     private static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     private static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
     private static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
     //private static final String GSP_TAG_MIME_TYPE = "application/x-gsp"; // NOI18N
-
     private static final Map<String, Translator> translators = new HashMap<String, Translator>();
+
     static {
         translators.put(JSP_MIME_TYPE, new JspTranslator());
         translators.put(TAG_MIME_TYPE, new JspTranslator());
@@ -142,14 +137,12 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         translators.put(HTML_MIME_TYPE, new HtmlTranslator());
         translators.put(PHP_MIME_TYPE, new PhpTranslator());
     }
-
     // If you change this, update the testcase reference
     // in javascript.hints/test/unit/data/testfiles/generated.js
     // Also sync Rhino's Parser.java patched class
     private static final String GENERATED_IDENTIFIER = " __UNKNOWN__ "; // NOI18N
     /** PHPTokenId's T_INLINE_HTML name */
     private static final String T_INLINE_HTML = "T_INLINE_HTML";
-
     private final String sourceMimeType;
     private final Translator translator;
 
@@ -159,10 +152,12 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     }
 
     private interface Translator {
+
         public List<Embedding> translate(Snapshot snapshot);
     } // End of Translator interface
 
     private static final class JspTranslator implements Translator {
+
         /** Create a JavaScript model of the given JSP buffer.
          * @todo Make this more general purpose (so it can be used from HTML, JSP etc.)
          * @param outputBuffer The buffer to emit the translation to
@@ -172,7 +167,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         public List<Embedding> translate(Snapshot snapshot) {
             TokenSequence<? extends TokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
             List<Embedding> embeddings = new ArrayList<Embedding>();
-            
+
             //TODO - implement the "classpath" import for other projects
             //how is the javascript classpath done????????/
 
@@ -188,9 +183,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                     }
                     extractJavaScriptFromHtml(snapshot, ts, state, embeddings);
 
-                } else if (token.id().primaryCategory().equals("expression-language")
-                        || token.id().primaryCategory().equals("scriptlet")
-                        || token.id().primaryCategory().equals("symbol") && "/>".equals(token.text().toString())) { // NOI18N
+                } else if (token.id().primaryCategory().equals("expression-language") || token.id().primaryCategory().equals("scriptlet") || token.id().primaryCategory().equals("symbol") && "/>".equals(token.text().toString())) { // NOI18N
                     //The test for jsp /> symbol means
                     //that we just encountered an end of jsp tag without body
                     //so it is possible/likely the tag generates something
@@ -217,6 +210,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     } // End JspTranslator class
 
     private static final class PhpTranslator implements Translator {
+
         public List<Embedding> translate(Snapshot snapshot) {
             TokenSequence<? extends TokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
             List<Embedding> embeddings = new ArrayList<Embedding>();
@@ -262,50 +256,51 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     } // End of PhpTranslator class
 
     private static final class RhtmlTranslator implements Translator {
+
         public List<Embedding> translate(Snapshot snapshot) {
             TokenSequence<? extends TokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
             List<Embedding> embeddings = new ArrayList<Embedding>();
 
             // Add a super class such that code completion, goto declaration etc.
             // knows where to pull the various link_to etc. methods from
-    //        // Pretend that this code is an extension to ActionView::Base such that
-    //        // code completion, go to declaration etc. sees the inherited methods from
-    //        // ActionView -- link_to and friends.
-    //        buffer.append("class ActionView::Base\n"); // NOI18N
-    //        // TODO Try to include the helper class as well as the controller fields too;
-    //        // for now this logic is hardcoded into Js's code completion engine (CodeCompleter)
-    //
-    //        // Erubis uses _buf; I've seen eruby using something else (_erbout?)
-    //        buffer.append("_buf='';"); // NOI18N
-    //        codeBlocks.add(new CodeBlockData(0, 0, 0, buffer.length()));
+            //        // Pretend that this code is an extension to ActionView::Base such that
+            //        // code completion, go to declaration etc. sees the inherited methods from
+            //        // ActionView -- link_to and friends.
+            //        buffer.append("class ActionView::Base\n"); // NOI18N
+            //        // TODO Try to include the helper class as well as the controller fields too;
+            //        // for now this logic is hardcoded into Js's code completion engine (CodeCompleter)
+            //
+            //        // Erubis uses _buf; I've seen eruby using something else (_erbout?)
+            //        buffer.append("_buf='';"); // NOI18N
+            //        codeBlocks.add(new CodeBlockData(0, 0, 0, buffer.length()));
     /* This could be a huge bottleneck - see http://www.netbeans.org/issues/show_bug.cgi?id=134329
             FileObject fo = GsfUtilities.findFileObject(doc);
             if (fo != null) {
-                Project project = FileOwnerQuery.getOwner(fo);
-                if (project != null) {
-                    StringBuilder sb = new StringBuilder();
-                    FileObject javascriptFolder = project.getProjectDirectory().getFileObject("public/javascripts"); // NOI18N
-                    if (javascriptFolder != null) {
-                        addJavaScriptFiles(javascriptFolder, sb);
-                        if (sb.length() > 0) {
-                            // Insert a file link
-                            //int sourceStart = ts.offset();
-                            int sourceStart = 0;
-                            String path = sb.toString();
-                            String insertText = JsAnalyzer.NETBEANS_IMPORT_FILE + "(" + path + ");\n"; // NOI18N
-                            // This corresponds to a 0-size block in the source
-                            int sourceEnd = sourceStart;
-                            int generatedStart = buffer.length();
-                            buffer.append(insertText);
-                            int generatedEnd = buffer.length();
-                            CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
-                                    generatedEnd);
-                            codeBlocks.add(blockData);
-                        }
-                    }
-                }
+            Project project = FileOwnerQuery.getOwner(fo);
+            if (project != null) {
+            StringBuilder sb = new StringBuilder();
+            FileObject javascriptFolder = project.getProjectDirectory().getFileObject("public/javascripts"); // NOI18N
+            if (javascriptFolder != null) {
+            addJavaScriptFiles(javascriptFolder, sb);
+            if (sb.length() > 0) {
+            // Insert a file link
+            //int sourceStart = ts.offset();
+            int sourceStart = 0;
+            String path = sb.toString();
+            String insertText = JsAnalyzer.NETBEANS_IMPORT_FILE + "(" + path + ");\n"; // NOI18N
+            // This corresponds to a 0-size block in the source
+            int sourceEnd = sourceStart;
+            int generatedStart = buffer.length();
+            buffer.append(insertText);
+            int generatedEnd = buffer.length();
+            CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
+            generatedEnd);
+            codeBlocks.add(blockData);
             }
-    */
+            }
+            }
+            }
+             */
 
             JsAnalyzerState state = new JsAnalyzerState();
 
@@ -366,29 +361,28 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                 }
             }
 
-    //        // Close off the class
-    //        // eruby also ends with this statement: _buf.to_s
-    //        String end = "\nend\n"; // NOI18N
-    //        buffer.append(end);
-    //        if (doc != null) {
-    //            codeBlocks.add(new CodeBlockData(doc.getLength(), doc.getLength(), buffer.length()-end.length(), buffer.length()));
-    //        }
+            //        // Close off the class
+            //        // eruby also ends with this statement: _buf.to_s
+            //        String end = "\nend\n"; // NOI18N
+            //        buffer.append(end);
+            //        if (doc != null) {
+            //            codeBlocks.add(new CodeBlockData(doc.getLength(), doc.getLength(), buffer.length()-end.length(), buffer.length()));
+            //        }
 
             return embeddings;
         }
     } // End of RhtmlTranslator class
 
-
     private static final class HtmlTranslator implements Translator {
+
         public List<Embedding> translate(Snapshot snapshot) {
             TokenSequence<? extends TokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
             List<Embedding> embeddings = new ArrayList<Embedding>();
             JsAnalyzerState state = new JsAnalyzerState();
-
             @SuppressWarnings("unchecked")
             TokenSequence<? extends HTMLTokenId> htmlTokenSequence = (TokenSequence<? extends HTMLTokenId>) tokenSequence;
             extractJavaScriptFromHtml(snapshot, htmlTokenSequence, state, embeddings);
-            
+
             return embeddings;
         }
     } // End of HtmlTranslator class
@@ -426,8 +420,6 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                         text = text.substring(lineEnd);
                     }
                 }
-
-//                int sourceEnd = sourceStart + text.length();
 
                 embeddings.add(snapshot.create(sourceStart, text.length(), JsTokenId.JAVASCRIPT_MIME_TYPE));
 // XXX: need better support in parsing api for this
@@ -498,167 +490,98 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                             }
 
                             // Insert a file link
-//                            int sourceStart = ts.offset();
                             String insertText = JsAnalyzer.NETBEANS_IMPORT_FILE + "('" + src + "');\n"; // NOI18N
-                            // This corresponds to a 0-size block in the source
-//                            int sourceEnd = sourceStart;
-
-//                            embeddings.add(snapshot.create(sourceStart, 0, JsTokenId.JAVASCRIPT_MIME_TYPE));
                             embeddings.add(snapshot.create(insertText, JsTokenId.JAVASCRIPT_MIME_TYPE));
-//                            int generatedStart = buffer.length();
-////                            if (buffer.length() > 0 && !Character.isWhitespace(buffer.charAt(buffer.length()-1))) {
-////                                buffer.append("\n");
-////                            }
-//                            buffer.append(insertText);
-//                            int generatedEnd = buffer.length();
-//                            CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
-//                                    generatedEnd);
-//                            codeBlocks.add(blockData);
                         }
                     }
                 }
 
             } else if (state.in_javascript && htmlId == HTMLTokenId.TEXT) {
-//                int sourceStart = ts.offset();
-//                String text = htmlToken.text().toString();
-//                int sourceEnd = sourceStart + text.length();
-
                 embeddings.add(snapshot.create(ts.offset(), htmlToken.length(), JsTokenId.JAVASCRIPT_MIME_TYPE));
-//                int generatedStart = buffer.length();
-//                buffer.append(text);
-//                int generatedEnd = buffer.length();
-//                CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
-//                        generatedEnd);
-//                codeBlocks.add(blockData);
             } else if (htmlId == HTMLTokenId.VALUE_JAVASCRIPT) {
 
                 int sourceStart = ts.offset();
-                int sourceEnd = sourceStart + htmlToken.length();
+                int sourceEnd = sourceStart + ts.token().length();
 
-                // Look for well known attribute names that are associated
-                // with JavaScript event handlers
-                String value = htmlToken.toString();
-                // Strip surrounding "'s
-                if (value.length() >= 1 ) {
-                    char fch = value.charAt(0);
-//                    char lch = value.charAt(value.length() -1);
-                    if((fch == '\'' || fch == '"') && !state.in_inlined_javascript) {
-                        state.opening_quotation_stripped = true;
-                        value = value.substring(1);
-                        sourceStart++; //skip the quotation
-                        sourceEnd--; //skip the quotation
+                if (!state.in_inlined_javascript) {
+                    //first inlined javascript token
+
+                    String value = htmlToken.toString();
+                    // Strip opening "'s
+                    if (value.length() > 0) {
+                        char fch = value.charAt(0); //get first char
+                        if (fch == '\'' || fch == '"') {
+                            state.opening_quotation_stripped = true;
+                            sourceStart++; //skip the quotation
+                        }
                     }
-                }
 
-//              if (htmlId == HTMLTokenId.ARGUMENT) {
-//                String name = htmlToken.toString();
-//                if (EVENT_HANDLER_NAMES.contains(name)) {
-//                    // Look for VALUE, possibly skipping OPERATOR and WS
-//                    // Spit out the attribute value in a function
-//                    String value = null;
-//                    while (ts.moveNext()) {
-//                        TokenId tid = ts.token().id();
-//                        if (tid == HTMLTokenId.VALUE) {
-//                            value = ts.token().text().toString();
-//                            break;
-//                        } else if (tid != HTMLTokenId.WS && tid != HTMLTokenId.OPERATOR) {
-//                            ts.movePrevious();
-//                            continue tokens;
-//                        }
-//                    }
-//                    if (value == null) {
-//                        continue;
-//                    }
-//                    if (value.length() > 2 &&
-//                            value.charAt(0) == '"' && value.charAt(value.length()-1) == '"') {
-//                        value = value.substring(1, value.length()-1);
-//                    }
-//                }
-
-                int ampIndex = value.indexOf('&');
-                if (ampIndex != -1) {
-                    // XML attributes are escaped
-                    // TODO - worry about case here? &AMP; etc?
-                    value = value.replace("&lt;", "<");
-                    value = value.replace("&apos;", "'");
-                    value = value.replace("&quot;", "\"");
-                    value = value.replace("&amp;", "&");
-                }
-
-
-                String text = value;
-//                int sourceEnd = sourceStart + text.length();
-
-
-                if(!state.in_inlined_javascript) {
                     //first inlined JS section - add the prelude
-
                     // Add a function context around the event handler
                     // such that it gets proper function context (e.g.
                     // it can return values, the way event handlers can)
-
                     embeddings.add(snapshot.create(";function(){\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
-//                    int beforePrelude = buffer.length();
-//                    buffer.append(";function(){\n"); // NOI18N
-//                    // TODO: Assign "this = " some kind of object type
-//                    // based on where we are
-//                    int afterPrelude = buffer.length();
-//                    codeBlocks.add(new CodeBlockData(sourceStart, sourceStart, beforePrelude,
-//                            afterPrelude));
                 }
 
                 state.in_inlined_javascript = true;
 
-                //subsequent inlined section - just copy the js code
-                // Emit the block verbatim
-                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, JsTokenId.JAVASCRIPT_MIME_TYPE));
-//                int generatedStart = buffer.length();
-//                buffer.append(text);
-//                int generatedEnd = buffer.length();
-//                CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd,
-//                        generatedStart, generatedEnd);
-//                codeBlocks.add(blockData);
-//
-//                state.lastCodeBlock = blockData;
+                state.lastInlinedJavascriptToken = ts.token();
+                state.lastInlinedJavscriptEmbedding = snapshot.create(sourceStart, sourceEnd - sourceStart, JsTokenId.JAVASCRIPT_MIME_TYPE);
 
-            } else if(state.in_inlined_javascript && htmlId != HTMLTokenId.VALUE_JAVASCRIPT) {
+                //add the embedding
+                embeddings.add(state.lastInlinedJavscriptEmbedding);
+
+                state.inlined_javascript_pieces++;
+
+            } else if (state.in_inlined_javascript && htmlId != HTMLTokenId.VALUE_JAVASCRIPT) {
+
+                //we left the inlined javascript section
+                //need to check if the last inlined javascript section endded
+                //with a quotation and if so, strip it from the virtual source
+
+                assert state.lastInlinedJavscriptEmbedding != null;
+                assert state.lastInlinedJavascriptToken != null;
+
+                int sourceStart = state.lastInlinedJavascriptToken.offset(snapshot.getTokenHierarchy());
+                int sourceLength = state.lastInlinedJavascriptToken.length();
+                CharSequence value = state.lastInlinedJavascriptToken.text();
+
+                //strip closing quotation
+                if (state.opening_quotation_stripped) {
+                    if (value.length() > 0) {
+                        char fch = value.charAt(value.length() - 1);
+                        if (fch == '\'' || fch == '"') {
+                            sourceLength--;
+
+                            //if there is only one inlined javascript piece, and starting quotation has been stripped,
+                            //we need to do that again in the reentered embedding
+                            if(state.inlined_javascript_pieces == 1) {
+                                sourceStart++;
+                                sourceLength--;
+                            }
+
+                            //need to adjust the last embedding
+                            //1. remove the embedding from the list
+                            assert embeddings.remove(state.lastInlinedJavscriptEmbedding);
+
+                            //2. create new embedding with the adjusted length
+                            embeddings.add(snapshot.create(sourceStart, sourceLength, JsTokenId.JAVASCRIPT_MIME_TYPE));
+                        }
+                    }
+                }
+
                 //end of inlined javascript section - add postlude
-
-// XXX: parsingapi; I'm not sure how this works. The code that strips the opening quotation also
-//  moves the sourceEnd, so why do we do this here?
-//                if(state.opening_quotation_stripped) {
-//                    //remove the ending quotation from the buffer and adjust the last codeblock
-//                    CodeBlockData last = state.lastCodeBlock;
-//                    char lastChar = buffer.charAt(buffer.length() - 1);
-//                    if (lastChar == '\'' || lastChar == '"') {
-//                        //ok, remove the ending quotation
-//                        buffer.deleteCharAt(buffer.length() - 1);
-//                        last.generatedEnd--;
-//                    } else {
-//                        //strange, opening quotation stripped but no ending quotation found???
-//                    }
-//                }
-
                 state.in_inlined_javascript = false;
                 state.opening_quotation_stripped = false;
-//                state.lastCodeBlock = null;
-
-//                int sourceStart = ts.offset();
+                state.lastInlinedJavascriptToken = null;
+                state.lastInlinedJavscriptEmbedding = null;
+                state.inlined_javascript_pieces = 0;
 
                 // Finish the surrounding function context
                 embeddings.add(snapshot.create("\n}\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
-//                int beforePostlude = buffer.length();
-//                // Add a newline to reduce the possiblity of the parser
-//                // error recovery code to get confused (since it tries removing
-//                // the currently edited line from input etc., and we don't want
-//                // it to take out this } )
-//                buffer.append("\n}\n"); // NOI18N
-//                int afterPostlude = buffer.length();
-//                codeBlocks.add(new CodeBlockData(sourceStart, sourceStart, beforePostlude,
-//                        afterPostlude));
+
             } else if (htmlId == HTMLTokenId.TAG_CLOSE && "script".equals(htmlToken.toString())) {
                 embeddings.add(snapshot.create("\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
-//                buffer.append("\n");
             } else {
                 // TODO - stash some other DOM stuff into the JavaScript
                 // file such that I can refer to them from within JavaScript
@@ -668,9 +591,14 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     }
 
     private static final class JsAnalyzerState {
+
+        int inlined_javascript_pieces = 0;
+
         boolean in_javascript = false;
         boolean in_inlined_javascript = false;
         boolean opening_quotation_stripped = false;
-    }
 
+        Token lastInlinedJavascriptToken = null;
+        Embedding lastInlinedJavscriptEmbedding = null;
+    }
 }
