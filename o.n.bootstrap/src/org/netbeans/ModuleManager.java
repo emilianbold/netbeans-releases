@@ -146,7 +146,7 @@ public final class ModuleManager {
             // the following call will set it to the same value.
             classLoader.setSystemClassLoader(
                 moduleFactory.getClasspathDelegateClassLoader(this, 
-                    ClassLoader.getSystemClassLoader()));
+                    ModuleManager.class.getClassLoader()));
         }
     }
 
