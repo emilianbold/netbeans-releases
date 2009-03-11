@@ -93,12 +93,14 @@ public class BugzillaExecutor {
 
     public static boolean isAuthenticate(CoreException ce) {
         IStatus status = ce.getStatus();
-        return status != null && INVALID_USERNAME_OR_PASSWORD.equals(status.getMessage()); // XXX
+        return INVALID_USERNAME_OR_PASSWORD.equals(ce.getMessage()) ||
+               status != null && INVALID_USERNAME_OR_PASSWORD.equals(status.getMessage()); // XXX
     }
 
     public static boolean isNotFound(CoreException ce) {
         IStatus status = ce.getStatus();
-        return status != null && HTTP_ERROR_NOT_FOUND.equals(status.getMessage()); // XXX
+        return HTTP_ERROR_NOT_FOUND.equals(ce.getMessage()) ||
+               status != null && HTTP_ERROR_NOT_FOUND.equals(status.getMessage()); // XXX
     }
 
     public boolean handleException(CoreException ce) {
