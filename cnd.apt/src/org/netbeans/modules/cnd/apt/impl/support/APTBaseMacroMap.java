@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * APTMacroMap base implementation
@@ -157,6 +158,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     } 
 
     public final boolean isDefined(CharSequence token) {
+        token = CharSequenceKey.create(token);
         return getMacro(token) != null;
     } 
 
@@ -166,6 +168,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
 
     protected APTMacro getMacro(CharSequence token) {
+        assert !(token instanceof String) : "must not be String object " + token;
         APTMacro res = active.getMacro(token);
         return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
     }
