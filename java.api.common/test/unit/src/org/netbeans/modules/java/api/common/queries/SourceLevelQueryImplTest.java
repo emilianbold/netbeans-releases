@@ -96,7 +96,6 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         MockLookup.setInstances(
                 AntBasedTestUtil.testAntBasedProjectType(),
                 new TestPlatformProvider());
-        super.setUp();
         this.clearWorkDir();
         Properties p = System.getProperties();
         if (p.getProperty("netbeans.user") == null) {
