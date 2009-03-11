@@ -130,6 +130,7 @@ public class BugzillaIssue extends Issue {
         OS(BugzillaAttribute.OP_SYS.getKey()),
         MILESTONE(BugzillaAttribute.TARGET_MILESTONE.getKey()),
         REPORTER(BugzillaAttribute.REPORTER.getKey()),
+        REPORTER_NAME(BugzillaAttribute.REPORTER_NAME.getKey()),
         ASSIGNED_TO(BugzillaAttribute.ASSIGNED_TO.getKey()),
         ASSIGNED_TO_NAME(BugzillaAttribute.ASSIGNED_TO_NAME.getKey()),
         QA_CONTACT(BugzillaAttribute.QA_CONTACT.getKey()),
@@ -555,7 +556,9 @@ public class BugzillaIssue extends Issue {
         setOperation(BugzillaOperation.reassign);
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.reassign.getInputId());
-        ta.setValue(user);
+        if(ta != null) ta.setValue(user);
+        ta = rta.getMappedAttribute(BugzillaAttribute.ASSIGNED_TO.getKey());
+        if(ta != null) ta.setValue(user);
     }
 
     void verify() {
