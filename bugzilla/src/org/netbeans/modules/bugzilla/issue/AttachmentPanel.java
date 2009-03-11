@@ -147,6 +147,11 @@ public class AttachmentPanel extends javax.swing.JPanel {
 
         patchChoice.setBorder(null);
         patchChoice.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        patchChoice.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                patchChoiceActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -206,6 +211,14 @@ public class AttachmentPanel extends javax.swing.JPanel {
             fileField.setText(attachment.getAbsolutePath());
         }
     }//GEN-LAST:event_browseButtonActionPerformed
+
+    private void patchChoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_patchChoiceActionPerformed
+        fileTypeCombo.setEnabled(!patchChoice.isSelected());
+        if (patchChoice.isSelected()) {
+            // Select text/plain
+            fileTypeCombo.setSelectedIndex(1);
+        }
+    }//GEN-LAST:event_patchChoiceActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
