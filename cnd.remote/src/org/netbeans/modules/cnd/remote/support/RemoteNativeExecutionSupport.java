@@ -64,7 +64,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
     public RemoteNativeExecutionSupport(ExecutionEnvironment execEnv, File dirf, String exe, String args, String[] envp, PrintWriter out, Reader userInput) {
         super(execEnv);
 
-        log.fine("RNES<Init>: Running [" + exe + "] on " + key);
+        log.fine("RNES<Init>: Running [" + exe + "] on " + executionEnvironment);
         try {
             setChannelCommand(dirf, exe, args, envp);
             InputStream is = channel.getInputStream();
