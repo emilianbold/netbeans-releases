@@ -15,6 +15,11 @@
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/>
                     </file>
                 </folder>
+                <folder name="ConfigurationOptions">
+                    <file name="GizmoConfigurationOptions.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions"/>
+                    </file>
+                </folder>
                 <folder name="KnownDataCollectorSources">
                     <provider name="SunStudio" key="SS"/>
                     <provider name="DTrace" key="SS"/>
