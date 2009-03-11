@@ -132,6 +132,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz159615.cpp");
     }
 
+    public void testIZ143044() throws Exception {
+        // IZ#143044 : Wrong overloaded method is not highlighted as error
+        performStaticTest("iz143044.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
