@@ -397,7 +397,8 @@ public class KenaiSearchPanel extends JPanel {
 
     private JPanel createProgressPanel() {
         JPanel panel = preparePanel();
-        progressHandle = ProgressHandleFactory.createHandle("Searching Kenai Projects...");
+        progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiSearchPanel.class,
+                "KenaiSearchPanel.progressLabel"));
         JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
         JLabel progressLabel = ProgressHandleFactory.createMainLabelComponent(progressHandle);
         GridBagConstraints constraints = new GridBagConstraints();
