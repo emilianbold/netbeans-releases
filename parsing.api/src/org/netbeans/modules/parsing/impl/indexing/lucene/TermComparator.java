@@ -37,41 +37,22 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing;
+package org.netbeans.modules.parsing.impl.indexing.lucene;
 
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
-import org.openide.util.Exceptions;
+import java.util.Comparator;
+import org.apache.lucene.index.Term;
 
 /**
  *
  * @author Tomas Zezula
  */
-public abstract class IndexingSPIAccessor {
+class TermComparator implements Comparator<Term> {
 
-    private static IndexingSPIAccessor instance;
-
-    public synchronized static IndexingSPIAccessor getInstance () {
-        if (instance == null) {
-            try {
-                Class.forName(Context.class.getName(),true,Context.class.getClassLoader());
-                assert instance != null;
-            } catch (final ClassNotFoundException e) {
-                Exceptions.printStackTrace(e);
+    public int compare (Term t1, Term t2) {
+            int ret = t1.field().compareTo(t2.field());
+            if (ret == 0) {
+                ret = t1.text().compareTo(t2.text());
             }
+            return ret;
         }
-        return instance;
-    }
-
-    public static void setInstance (final IndexingSPIAccessor _instance) {
-        assert _instance != null;
-        instance = _instance;
-    }
-
-    public abstract void index (EmbeddingIndexer indexer, Parser.Result parserResult, Context ctx);
-
-    public abstract String getIndexerName (Context ctx);
-
-    public abstract int getIndexerVersion (Context ctx);
 }
