@@ -74,6 +74,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.IssueCache;
+import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
@@ -150,17 +151,22 @@ public class BugzillaRepository extends Repository {
         return c.getPassword();
     }
 
-    public Issue getIssue(String id) {
+    public Issue getIssue(final String id) {
         assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
-        TaskData taskData;
-        try {
-            taskData = Bugzilla.getInstance().getRepositoryConnector().getTaskData(taskRepository, id, new NullProgressMonitor());
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+
+        final TaskData[] taskData = new TaskData[1];
+        BugzillaCommand cmd = new BugzillaCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
+                taskData[0] = Bugzilla.getInstance().getRepositoryConnector().getTaskData(taskRepository, id, new NullProgressMonitor());
+            }
+        };
+        getExecutor().execute(cmd);
+        if(taskData[0] == null) {
             return null;
         }
         try {
-            return getIssueCache().setIssueData(id, taskData);
+            return getIssueCache().setIssueData(id, taskData[0]);
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
             return null;

@@ -141,10 +141,16 @@ public class BugzillaExecutor {
         } else if (status instanceof BugzillaStatus) {
             BugzillaStatus bs = (BugzillaStatus) status;
             String msg = bs.getMessage();
-            NotifyDescriptor nd = new NotifyDescriptor(msg, "Error", NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, null, null);
-            DialogDisplayer.getDefault().notify(nd);
+            notifyErrorMessage(msg);
+        } else {
+            String msg = status.getMessage();
+            notifyErrorMessage(msg);
         }
     }
 
+    private void notifyErrorMessage(String msg) {
+        NotifyDescriptor nd = new NotifyDescriptor(msg, NbBundle.getMessage(BugzillaExecutor.class, "LBLError"), NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, null, null);
+        DialogDisplayer.getDefault().notify(nd);
+    }
 }
 
