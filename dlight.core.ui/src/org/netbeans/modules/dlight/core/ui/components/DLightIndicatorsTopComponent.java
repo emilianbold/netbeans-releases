@@ -73,7 +73,9 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         setToolTipText(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "HINT_DLightIndicatorsTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")){
-            WindowManager.getDefault().findMode("navigator").dockInto(this);//NOI18N
+            if (WindowManager.getDefault().findMode("navigator") != null){
+                WindowManager.getDefault().findMode("navigator").dockInto(this);//NOI18N
+            }
         }
 
     }
