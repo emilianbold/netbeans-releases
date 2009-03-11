@@ -45,7 +45,7 @@ import org.netbeans.modules.bugzilla.query.QueryController;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
 public class KenaiQueryController extends QueryController {
     private String product;
@@ -61,5 +61,5 @@ public class KenaiQueryController extends QueryController {
         super.populate(urlParameters);
         disableProduct(product);
     }
-
+    
 }
