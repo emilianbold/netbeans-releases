@@ -72,7 +72,10 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -143,7 +146,8 @@ public class BugzillaIssue extends Issue {
         CREATION(TaskAttribute.DATE_CREATION),
         MODIFICATION(TaskAttribute.DATE_MODIFICATION),
         COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, false),
-        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false);
+        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false),
+        DATE_MODIFICATION(BugzillaAttribute.DELTA_TS.getKey(), false);
 
         private final String key;
         private boolean singleAttribute;
@@ -244,11 +248,14 @@ public class BugzillaIssue extends Issue {
     public Map<String, String> getAttributes() {
         if(attributes == null) {
             attributes = new HashMap<String, String>();
-            attributes.put("id", getID());
             for (IssueField field : IssueField.values()) {
                 String value = getFieldValue(field);
                 if(value != null && !value.trim().equals("")) {
-                    attributes.put(field.key, value);
+                    if(field == IssueField.DATE_MODIFICATION) {
+                        attributes.put(Issue.ATTR_DATE_MODIFICATION, value);
+                    } else {
+                        attributes.put(field.key, value);
+                    }
                 }
             }
         }
@@ -400,23 +407,14 @@ public class BugzillaIssue extends Issue {
             // XXX the issue cache is supposed to be used in a generec way
             // this should be also solved on a higher level then in each
             // particular bugtracking system
-            data = getRemoteTaskData();
+            data = BugzillaUtil.getTaskData(repository, getID());
         } else {
             data = taskData;
         }
         attributes = null; // reset
         ((BugzillaIssueNode)getNode()).fireDataChanged();
         fireDataChanged();
-    }
-
-    private TaskData getRemoteTaskData() {
-        try {
-            return Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), data.getTaskId(), new NullProgressMonitor());
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
+    }    
 
     TaskData getTaskData() {
         return data;
@@ -439,6 +437,14 @@ public class BugzillaIssue extends Issue {
             List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, f.key);
             return "" + ( attrs != null && attrs.size() > 0 ?  attrs.size() : ""); // returning 0 would set status MODIFIED instead of NEW
         }
+    }
+
+    public static String getDateModification(TaskData newData) {
+        TaskAttribute a = newData.getRoot().getMappedAttribute(IssueField.DATE_MODIFICATION.key);
+        if(a==null) {
+            a = newData.getRoot().getMappedAttribute("bug"); // XXX HACK
+        }
+        return a != null ? a.getValue() : "";
     }
 
     /**
@@ -583,9 +589,9 @@ public class BugzillaIssue extends Issue {
     }
 
 
-    void addAttachment(File f, String comment, String desc, String contentType, boolean patch) throws HttpException, IOException, CoreException  {
+    void addAttachment(final File file, final String comment, final String desc, final String contentType, final boolean patch) throws HttpException, IOException, CoreException  {
         assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
-        FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(f);
+        final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
         if (contentType == null) {
             String ct = FileUtil.getMIMEType(FileUtil.toFileObject(f));
             if ((ct != null) && (!"content/unknown".equals(ct))) { // NOI18N
@@ -595,24 +601,22 @@ public class BugzillaIssue extends Issue {
             }
         }
         attachmentSource.setContentType(contentType);
-        BugzillaTaskAttachmentHandler.AttachmentPartSource source = new BugzillaTaskAttachmentHandler.AttachmentPartSource(attachmentSource);
+        final BugzillaTaskAttachmentHandler.AttachmentPartSource source = new BugzillaTaskAttachmentHandler.AttachmentPartSource(attachmentSource);
 
-//        try {
-            Bugzilla.getInstance().getClient(repository).postAttachment(
-                    getID(), 
-                    comment,
-                    desc,
-                    attachmentSource.getContentType(), 
-                    patch,
-                    source, 
-                    new NullProgressMonitor());
-//        } catch (HttpException ex) {
-//            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-//        } catch (IOException ex) {
-//            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-//        } catch (CoreException ex) {
-//            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-//        }
+        BugzillaCommand cmd = new BugzillaCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
+                Bugzilla.getInstance().getClient(repository).postAttachment(
+                                getID(),
+                                comment,
+                                desc,
+                                attachmentSource.getContentType(),
+                                patch,
+                                source,
+                                new NullProgressMonitor());
+            }
+        };
+        repository.getExecutor().execute(cmd);
     }
 
     Comment[] getComments() {
@@ -642,11 +646,14 @@ public class BugzillaIssue extends Issue {
         if(comment != null) {
             addComment(comment);
         }
-        try {
-            submit();
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
+        
+        BugzillaCommand submitCmd = new BugzillaCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
+                submit();
+            }
+        };
+        repository.getExecutor().execute(submitCmd);
     }
 
     public void addComment(String comment) {
@@ -678,7 +685,7 @@ public class BugzillaIssue extends Issue {
     public void refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         try {
-            TaskData td = getRemoteTaskData();
+            TaskData td = BugzillaUtil.getTaskData(repository, getID());
             getRepository().getIssueCache().setIssueData(getID(), td); // XXX
             if (controller != null) {
                 controller.refreshViewData();

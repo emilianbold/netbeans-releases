@@ -63,6 +63,7 @@ public class KenaiQuery extends BugzillaQuery {
 
     @Override
     public void refresh() {
+        getController(); // XXX force table creation
         super.refresh();
     }
 

@@ -44,11 +44,13 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
@@ -79,6 +81,15 @@ public class BugzillaUtil {
         query.setUrl(queryUrl);
         BugzillaRepositoryConnector rc = Bugzilla.getInstance().getRepositoryConnector();
         rc.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
+    }
+
+    public static TaskData getTaskData(BugzillaRepository repository, String id) {
+        try {
+            return Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public static String getKeywords(String label, String keywordsString, BugzillaRepository repository) {

@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugzilla.query;
 
 import java.io.IOException;
+import java.util.Map;
 import org.netbeans.modules.bugzilla.*;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -151,6 +152,7 @@ public class BugzillaQuery extends Query {
                     StringBuffer url = new StringBuffer();
                     url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST);
                     url.append(urlParameters); // XXX encode url?
+                    url.append(BugzillaConstants.QUERY_COLUMN_LIST);
                     TaskRepository taskRepository = repository.getTaskRepository();
                     BugzillaUtil.performQuery(taskRepository, url.toString(), new IssuesCollector(true));
 
@@ -268,7 +270,11 @@ public class BugzillaQuery extends Query {
             String id = BugzillaIssue.getID(taskData);
             BugzillaIssue issue;
             try {
-                issue = (BugzillaIssue) repository.getIssueCache().setIssueData(id, taskData);
+                IssueCache cache = repository.getIssueCache();
+                if(needsToBeComplete(cache, id, taskData)) {
+                    taskData = BugzillaUtil.getTaskData(repository, id);
+                }
+                issue = (BugzillaIssue) cache.setIssueData(id, taskData);
             } catch (IOException ex) {
                 Bugzilla.LOG.log(Level.SEVERE, null, ex);
                 return;
@@ -277,6 +283,27 @@ public class BugzillaQuery extends Query {
                 issues.add(id);
             }
             fireNotifyData(issue); // XXX - !!! triggers getIssues()
+        }
+
+        private boolean needsToBeComplete(IssueCache cache, String id, TaskData taskData) {
+            if(!isSaved()) {
+                return false;
+            }
+            
+            Map<String, String> m = cache.getSeenAttributes(id);
+            if(m == null) {
+                return false;
+            }
+            String newDM = BugzillaIssue.getDateModification(taskData);
+            String oldDM = m.get(Issue.ATTR_DATE_MODIFICATION);
+            if(newDM.equals(oldDM != null ? oldDM : "")) {
+                return false;
+            }
+
+            if(!cache.wasSeen(id)) {
+                return false;
+            }
+            return true;
         }
     };
 }

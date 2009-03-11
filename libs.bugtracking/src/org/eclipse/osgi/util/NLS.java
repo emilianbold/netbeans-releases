@@ -42,6 +42,8 @@ package org.eclipse.osgi.util;
 
 /**
  * @author Maros Sandor
+ *
+ * // XXX need correct message handling
  */
 public class NLS {
     
@@ -59,5 +61,9 @@ public class NLS {
 
     public static String bind(String errorIo, Object[] strings) {
         return null;
+    }
+
+    public static String bind(String errorIo, Object obj1, Object obj2) {
+        return obj2 != null ? obj2.toString() : "";
     }
 }
