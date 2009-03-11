@@ -5,5 +5,9 @@
 <map version="1.0">
     <mapID target="javadev_tbd" url="tbd.html"/>
     <mapID target="about_webapps" url="web/about_webapps.html"/>
+	<mapID target="webapps_idesupport" url="web/webapps_idesupport.html"/>
+	<mapID target="webapps_process" url="web/webapps_process.html"/>
+	<mapID target="webapps_quickref" url="web/webapps_quickref.html"/>
+	<mapID target="webapps_techsupport" url="web/webapps_techsupport.html"/>
 </map>
 
