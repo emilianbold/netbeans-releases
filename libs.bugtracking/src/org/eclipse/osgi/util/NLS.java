@@ -60,4 +60,8 @@ public class NLS {
     public static String bind(String errorIo, Object[] strings) {
         return null;
     }
+
+    public static String bind(String errorIo, Object obj1, Object obj2) {
+        return null;
+    }
 }
