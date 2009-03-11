@@ -59,6 +59,9 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -404,9 +407,9 @@ class CategoryPanelFormatters extends StorablePanel {
     }//GEN-LAST:event_formattersMoveDownButtonActionPerformed
 
     private void variableAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variableAddButtonActionPerformed
-        DefaultTableModel model = (DefaultTableModel) formatChildrenListTable.getModel();
+        final DefaultTableModel model = (DefaultTableModel) formatChildrenListTable.getModel();
         model.addRow(new Object[] { "", "" });
-        int index = model.getRowCount() - 1;
+        final int index = model.getRowCount() - 1;
         formatChildrenListTable.getSelectionModel().setSelectionInterval(index, index);
         formatChildrenListTable.editCellAt(index, 0);
         formatChildrenListTable.requestFocus();
@@ -414,6 +417,24 @@ class CategoryPanelFormatters extends StorablePanel {
         formatChildrenListTable.getCellEditor(index, 0).shouldSelectCell(
                 new ListSelectionEvent(formatChildrenListTable,
                                        index, index, true));
+        formatChildrenListTable.getCellEditor(index, 0).addCellEditorListener(new CellEditorListener() {
+            public void editingStopped(ChangeEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        String value = (String) model.getValueAt(index, 0);
+                        if (value.trim().length() == 0) {
+                            model.removeRow(index);
+                        }
+                    }
+                });
+                formatChildrenListTable.getCellEditor(index, 0).removeCellEditorListener(this);
+            }
+
+            public void editingCanceled(ChangeEvent e) {
+                model.removeRow(index);
+                formatChildrenListTable.getCellEditor(index, 0).removeCellEditorListener(this);
+            }
+        });
     }//GEN-LAST:event_variableAddButtonActionPerformed
 
     private void variableRemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variableRemoveButtonActionPerformed
