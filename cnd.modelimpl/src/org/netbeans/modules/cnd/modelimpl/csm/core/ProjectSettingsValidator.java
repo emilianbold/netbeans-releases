@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.ProjectSettingsValidatorKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -191,30 +192,30 @@ public class ProjectSettingsValidator {
     
     private static class Data implements Persistent, SelfPersistent {
 	
-	private Map<String, Long> map;
+	private Map<CharSequence, Long> map;
 	
 	public Data() {
-	    map = new HashMap<String, Long>();
+	    map = new HashMap<CharSequence, Long>();
 	}
 	
 	public long getCrc(String name) {
-	    Long crc = map.get(name);
+	    Long crc = map.get(DefaultCache.getString(name));
 	    return crc == null ? 0 : crc.longValue();
 	}
 	
 	public boolean exists(String name) {
-	    return map.containsKey(name);
+	    return map.containsKey(DefaultCache.getString(name));
 	}
 	
 	public void setCrc(String name, long crc) {
-	    map.put(name, crc);
+	    map.put(DefaultCache.getString(name), crc);
 	}
 	
 	public Data(DataInput stream) throws IOException {
-	    map = new HashMap<String, Long>();
+	    map = new HashMap<CharSequence, Long>();
 	    int cnt = stream.readInt();
 	    for (int i = 0; i < cnt; i++) {
-		String name = PersistentUtils.readUTF(stream);
+		CharSequence name = PersistentUtils.readUTF(stream, DefaultCache.getManager());
 		long crc = stream.readLong();
 		map.put(name, crc);
 	    }
@@ -222,7 +223,7 @@ public class ProjectSettingsValidator {
 	
 	public void write(DataOutput stream ) throws IOException {
 	    stream.writeInt(map.size());
-	    for( Map.Entry<String, Long> entry : map.entrySet()) {
+	    for( Map.Entry<CharSequence, Long> entry : map.entrySet()) {
 		PersistentUtils.writeUTF(entry.getKey(), stream);
 		stream.writeLong(entry.getValue().longValue());
 	    }

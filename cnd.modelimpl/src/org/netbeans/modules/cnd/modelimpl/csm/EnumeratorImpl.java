@@ -137,7 +137,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     
     public EnumeratorImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
         this.enumerationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // not null UID

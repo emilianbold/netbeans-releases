@@ -122,7 +122,7 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     
     public TemplateParameterImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         this.scope = UIDObjectFactory.getDefaultFactory().readUID(input);
         this.defaultValue = PersistentUtils.readType(input);
     }

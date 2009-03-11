@@ -309,10 +309,10 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         super(input);
         this.isValid = input.readBoolean();
 
-        this.name = NameCache.getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
 
-        this.qualifiedName = QualifiedNameCache.getString(PersistentUtils.readUTF(input));
+        this.qualifiedName = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.qualifiedName != null;
 
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);

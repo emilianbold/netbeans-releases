@@ -236,8 +236,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         int collSize = aStream.readInt();
 
         for (int i = 0; i < collSize; ++i) {
-            CharSequence key = PersistentUtils.readUTF(aStream);
-            key = manager == null ? key : manager.getString(key);
+            CharSequence key = PersistentUtils.readUTF(aStream, manager);
             assert key != null;
             CsmUID<T> uid = readUID(aStream);
             assert uid != null;
@@ -282,8 +281,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         int collSize = aStream.readInt();
 
         for (int i = 0; i < collSize; ++i) {
-            CharSequence key = PersistentUtils.readUTF(aStream);
-            key = manager == null ? key : manager.getString(key);
+            CharSequence key = PersistentUtils.readUTF(aStream, manager);
             assert key != null;
             int arrSize = aStream.readInt();
             if (arrSize == 1) {

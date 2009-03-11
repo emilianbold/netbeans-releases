@@ -108,7 +108,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     }  
     
     protected AbstractFileBuffer(DataInput input) throws IOException {
-        this.absPath = FilePathCache.getString(PersistentUtils.readUTF(input));
+        this.absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
         assert this.absPath != null;
     }    
 }

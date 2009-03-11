@@ -353,7 +353,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 
     public VariableImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
         byte pack = input.readByte();
         this._static = (pack & 1) == 1;

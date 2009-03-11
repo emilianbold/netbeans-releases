@@ -793,7 +793,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     public FunctionImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
@@ -805,12 +805,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         assert !CHECK_SCOPE || this.scopeUID != null;
         this.scopeRef = null;
         
-        this.signature = PersistentUtils.readUTF(input);
-        if (this.signature != null) {
-            this.signature = QualifiedNameCache.getString(this.signature);
-        }
+        this.signature = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         this.flags = input.readByte();
-        this.classTemplateSuffix = NameCache.getString(PersistentUtils.readUTF(input));
+        this.classTemplateSuffix = PersistentUtils.readUTF(input, NameCache.getManager());
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
     }
 }

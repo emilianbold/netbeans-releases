@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * Implements 
@@ -56,7 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
  */
 public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 
-    private String qualifiedNameSuffix = "";
+    private CharSequence qualifiedNameSuffix = "";
 
     private ClassImplSpecialization(AST ast, CsmFile file) {
         super(null, ast, file);
@@ -78,7 +79,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 
         AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         assert qIdToken != null;
-        qualifiedNameSuffix = TemplateUtils.getSpecializationSuffix(qIdToken, getTemplateParameters());
+        qualifiedNameSuffix = NameCache.getString(TemplateUtils.getSpecializationSuffix(qIdToken, getTemplateParameters()));
         initQualifiedName(scope, ast);
 
         if (register) {
@@ -114,7 +115,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 //    }
     @Override
     protected String getQualifiedNamePostfix() {
-        return super.getQualifiedNamePostfix() + qualifiedNameSuffix;
+        return super.getQualifiedNamePostfix() + qualifiedNameSuffix.toString();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -127,11 +128,11 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 
     public ClassImplSpecialization(DataInput input) throws IOException {
         super(input);
-        qualifiedNameSuffix = PersistentUtils.readUTF(input);
+        qualifiedNameSuffix = PersistentUtils.readUTF(input, NameCache.getManager());
     }
 
     @Override
     public String getDisplayName() {
-        return getName() + qualifiedNameSuffix;
+        return getName() + qualifiedNameSuffix.toString();
     }
 }

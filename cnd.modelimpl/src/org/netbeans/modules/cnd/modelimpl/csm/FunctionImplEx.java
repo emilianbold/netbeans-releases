@@ -280,8 +280,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     public FunctionImplEx(DataInput input) throws IOException {
 	super(input);
         // can be null
-        String read = PersistentUtils.readUTF(input);
-        this.qualifiedName = read == null ? null : QualifiedNameCache.getString(read);
+        this.qualifiedName = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         this.classOrNspNames = PersistentUtils.readStrings(input, NameCache.getManager());
     }
 }
