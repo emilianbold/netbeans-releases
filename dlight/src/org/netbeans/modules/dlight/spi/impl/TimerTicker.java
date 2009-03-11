@@ -49,13 +49,12 @@ import org.netbeans.modules.dlight.spi.support.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.util.TimerTaskExecutionService;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 
 public final class TimerTicker
         extends IndicatorDataProvider<TimerIDPConfiguration>
         implements Runnable {
 
-    private static final TimerTaskExecutionService service;
     private static final DataTableMetadata tableMetadata;
     private final Object lock = new String(TimerTicker.class.getName());
     private final IndicatorDataProviderConfiguration configuration;
@@ -64,7 +63,6 @@ public final class TimerTicker
 
 
     static {
-        service = TimerTaskExecutionService.getInstance();
         tableMetadata = new DataTableMetadata(TimerIDPConfiguration.TIME_ID,
                 Arrays.asList(TimerIDPConfiguration.TIME_INFO));
     }
@@ -76,7 +74,8 @@ public final class TimerTicker
     private void targetStarted(DLightTarget target) {
         synchronized (lock) {
             resetIndicators();
-            tickerTask = service.scheduleAtFixedRate(this, 1, TimeUnit.SECONDS, "TimerTicker"); // NOI18N
+            tickerTask = DLightExecutorService.scheduleAtFixedRate(
+                    this, 1, TimeUnit.SECONDS, "TimerTicker"); // NOI18N
             startTime = System.currentTimeMillis();
         }
     }

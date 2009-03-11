@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-<filesystem>
+<?xml version="1.0" encoding="UTF-8"?> <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" 
+"http://www.netbeans.org/dtds/filesystem-1_1.dtd"> <filesystem>
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-oql">
@@ -80,6 +79,11 @@
                         <file name="org-netbeans-modules-editor-preferences.xml" url="preferences.xml"/>
                     </folder>
                 </folder>
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.profiler.oql.language.OQLEditorKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.profiler.oql.language.OQLEditorKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
+                </file>
             </folder>
         </folder>
     </folder>
