@@ -236,7 +236,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     @Override
     public void opened() {
         super.opened();
-        if(!query.wasRun()) {
+        if(query.isSaved() && !query.wasRun()) {
             onRefresh();
         }
     }
