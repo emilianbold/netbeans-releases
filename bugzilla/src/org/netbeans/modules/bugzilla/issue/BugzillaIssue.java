@@ -74,6 +74,7 @@ import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -145,7 +146,8 @@ public class BugzillaIssue extends Issue {
         CREATION(TaskAttribute.DATE_CREATION),
         MODIFICATION(TaskAttribute.DATE_MODIFICATION),
         COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, false),
-        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false);
+        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false),
+        DATE_MODIFICATION(BugzillaAttribute.DELTA_TS.getKey(), false);
 
         private final String key;
         private boolean singleAttribute;
@@ -246,11 +248,14 @@ public class BugzillaIssue extends Issue {
     public Map<String, String> getAttributes() {
         if(attributes == null) {
             attributes = new HashMap<String, String>();
-            attributes.put("id", getID());
             for (IssueField field : IssueField.values()) {
                 String value = getFieldValue(field);
                 if(value != null && !value.trim().equals("")) {
-                    attributes.put(field.key, value);
+                    if(field == IssueField.DATE_MODIFICATION) {
+                        attributes.put(Issue.ATTR_DATE_MODIFICATION, value);
+                    } else {
+                        attributes.put(field.key, value);
+                    }
                 }
             }
         }
@@ -402,23 +407,14 @@ public class BugzillaIssue extends Issue {
             // XXX the issue cache is supposed to be used in a generec way
             // this should be also solved on a higher level then in each
             // particular bugtracking system
-            data = getRemoteTaskData();
+            data = BugzillaUtil.getTaskData(repository, getID());
         } else {
             data = taskData;
         }
         attributes = null; // reset
         ((BugzillaIssueNode)getNode()).fireDataChanged();
         fireDataChanged();
-    }
-
-    private TaskData getRemoteTaskData() {
-        try {
-            return Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), data.getTaskId(), new NullProgressMonitor());
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
+    }    
 
     TaskData getTaskData() {
         return data;
@@ -441,6 +437,14 @@ public class BugzillaIssue extends Issue {
             List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, f.key);
             return "" + ( attrs != null && attrs.size() > 0 ?  attrs.size() : ""); // returning 0 would set status MODIFIED instead of NEW
         }
+    }
+
+    public static String getDateModification(TaskData newData) {
+        TaskAttribute a = newData.getRoot().getMappedAttribute(IssueField.DATE_MODIFICATION.key);
+        if(a==null) {
+            a = newData.getRoot().getMappedAttribute("bug"); // XXX HACK
+        }
+        return a != null ? a.getValue() : "";
     }
 
     /**
@@ -673,7 +677,7 @@ public class BugzillaIssue extends Issue {
     public void refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         try {
-            TaskData td = getRemoteTaskData();
+            TaskData td = BugzillaUtil.getTaskData(repository, getID());
             getRepository().getIssueCache().setIssueData(getID(), td); // XXX
             if (controller != null) {
                 controller.refreshViewData();

@@ -59,7 +59,9 @@ import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 public abstract class Issue {
 
     private final PropertyChangeSupport support;
-    
+
+    public static final String ATTR_DATE_MODIFICATION = "date.modification";
+
     /**
      * Seen property id
      */

@@ -58,6 +58,7 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 public abstract class IssueCache {
 
     private Map<String, IssueEntry> cache;
+    private Map<String, Map<String, String>> lastSeenAttributes;
 
     private String nameSpace;
 
@@ -75,17 +76,17 @@ public abstract class IssueCache {
         Issue issue;
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
-            if(entry == null) {
-                entry = new IssueEntry();
-                getCache().put(id, entry);
 
+            if(entry == null) {
+                entry = createNewEntry(id);
+            }
+
+            if(entry.issue == null) {
                 entry.issue = createIssue(taskData);
                 BugtrackingManager.LOG.log(Level.FINE, "created issue {0} ", new Object[] {id}); // NOI18N
                 readIssue(entry);
-                entry.status = Issue.ISSUE_STATUS_NEW;
-            } else {
-                BugtrackingManager.LOG.log(Level.FINE, "set task data for issue {0} ", new Object[] {id}); // NOI18N
             }
+            
             if(entry.seenAttributes != null) {
                 if(entry.wasSeen()) {
                     BugtrackingManager.LOG.log(Level.FINE, " issue {0} was seen", new Object[] {id}); // NOI18N
@@ -112,8 +113,10 @@ public abstract class IssueCache {
                 }
             }
             issue = entry.issue;
-        }    
+        }
+        BugtrackingManager.LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
         setTaskData(issue, taskData);
+
         return issue;
     }
 
@@ -124,7 +127,10 @@ public abstract class IssueCache {
             final IssueEntry entry = getCache().get(id);
             assert entry != null;
             if(seen) {
+                getLastSeenAttributes().put(id, entry.seenAttributes);
                 entry.seenAttributes = entry.issue.getAttributes();
+            } else {
+                entry.seenAttributes = getLastSeenAttributes().get(id);
             }
             entry.seen = seen;
             storeIssue(entry);
@@ -135,10 +141,34 @@ public abstract class IssueCache {
         IssueEntry entry;
         synchronized(CACHE_LOCK) {
             entry = getCache().get(id);
+            if(entry == null) {
+                entry = createNewEntry(id);
+                readIssue(entry);
+            }
         }
         boolean seen = entry != null ? entry.seen : false;
         BugtrackingManager.LOG.log(Level.FINE, "returning seen {0} for issue {1}", new Object[] {seen, id}); // NOI18N
         return seen;
+    }
+
+    public synchronized Map<String, String> getSeenAttributes(String id) {
+        IssueEntry entry;
+        synchronized(CACHE_LOCK) {
+            entry = getCache().get(id);
+            if(entry == null) {
+                entry = createNewEntry(id);
+                readIssue(entry);
+            }
+            return entry.seenAttributes != null ? entry.seenAttributes : null;
+        }
+    }
+
+    private IssueEntry createNewEntry(String id) {
+        IssueEntry entry = new IssueEntry();
+        entry.id = id;
+        entry.status = Issue.ISSUE_STATUS_NEW;
+        getCache().put(id, entry);
+        return entry;
     }
 
     public Issue getIssue(String id) {
@@ -150,7 +180,7 @@ public abstract class IssueCache {
     public int getStatus(String id) {
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
-            if(entry == null) {
+            if(entry == null ) {
                 BugtrackingManager.LOG.log(Level.FINE, "returning UKNOWN status for issue {0}", new Object[] {id}); // NOI18N
                 return Issue.ISSUE_STATUS_UNKNOWN;
             }
@@ -191,9 +221,11 @@ public abstract class IssueCache {
         return cache;
     }
 
-    public synchronized Map<String, String> getSeenAttributes(String id) {
-        IssueEntry entry = getCache().get(id);
-        return entry.seenAttributes != null ? entry.seenAttributes : null;
+    private Map<String, Map<String, String>> getLastSeenAttributes() {
+        if(lastSeenAttributes == null) {
+            lastSeenAttributes = new HashMap<String, Map<String, String>>();
+        }
+        return lastSeenAttributes;
     }
 
     private synchronized void readIssue(IssueEntry entry) {
@@ -218,7 +250,9 @@ public abstract class IssueCache {
             if(newValue == null && oldValue == null) {
                 continue;
             }
-            if(newValue == null || !newValue.trim().equals(oldValue.trim())) {
+            if(!e.getKey().equals(Issue.ATTR_DATE_MODIFICATION) &&
+               (newValue == null || !newValue.trim().equals(oldValue.trim())))
+            {
                 return true;
             }
         }
@@ -229,11 +263,13 @@ public abstract class IssueCache {
         private Issue issue;
         private Map<String, String> seenAttributes;
         private int status;
-        private boolean seen;
+        private boolean seen = false;
+        private String id;
         IssueEntry() { }
 
         IssueEntry(Issue issue, Map<String, String> seenAttributes, int status, boolean seen) {
             this.issue = issue;
+            this.id = issue.getID();
             this.seenAttributes = seenAttributes;
             this.status = status;
             this.seen = seen;
@@ -255,7 +291,7 @@ public abstract class IssueCache {
             this.seenAttributes = seenAttributes;
         }
         public String getId() {
-            return issue.getID();
+            return id;
         }
     }
 }
