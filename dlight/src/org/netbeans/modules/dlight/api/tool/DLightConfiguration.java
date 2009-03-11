@@ -100,7 +100,7 @@ public final class DLightConfiguration {
     private DLightConfiguration(FileObject configurationRoot, ToolsConfiguration toolsConfiguration) {
         this.toolsConfiguration = toolsConfiguration;
         this.rootFolder = configurationRoot;
-        this.configurationOptions = getConfigurationOptions();
+        this.configurationOptions = null;//getConfigurationOptions();
     }
 
     /**
