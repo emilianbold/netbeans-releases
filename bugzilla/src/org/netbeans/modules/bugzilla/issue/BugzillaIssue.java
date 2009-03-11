@@ -589,15 +589,15 @@ public class BugzillaIssue extends Issue {
     }
 
 
-    void addAttachment(final File file, final String comment, final String desc, final String contentType, final boolean patch) throws HttpException, IOException, CoreException  {
+    void addAttachment(final File file, final String comment, final String desc, String contentType, final boolean patch) throws HttpException, IOException, CoreException  {
         assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
         final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
         if (contentType == null) {
-            String ct = FileUtil.getMIMEType(FileUtil.toFileObject(f));
+            String ct = FileUtil.getMIMEType(FileUtil.toFileObject(file));
             if ((ct != null) && (!"content/unknown".equals(ct))) { // NOI18N
                 contentType = ct;
             } else {
-                contentType = FileTaskAttachmentSource.getContentTypeFromFilename(f.getName());
+                contentType = FileTaskAttachmentSource.getContentTypeFromFilename(file.getName());
             }
         }
         attachmentSource.setContentType(contentType);
