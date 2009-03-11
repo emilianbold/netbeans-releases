@@ -252,62 +252,69 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         //already contain files
         final FileObject fo = fe.getFile();
         final URL root = getOwningSourceRoot(fo);
+        boolean processed = false;
         
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Folder created: " + FileUtil.getFileDisplayName(fo) + " Owner: " + root); //NOI18N
-        }
-
         if ( root != null && VisibilityQuery.getDefault().isVisible(fo)) {
             getWorker().schedule(new FileListWork(root, Collections.singleton(fo), false), false);
+            processed = true;
+        }
+
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Folder created (" + (processed ? "processed" : "ignored") + "): " //NOI18N
+                    + FileUtil.getFileDisplayName(fo) + " Owner: " + root); //NOI18N
         }
     }
 
     public void fileDataCreated(FileEvent fe) {
         final FileObject fo = fe.getFile();
         final URL root = getOwningSourceRoot (fo);
-
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("File created: " + FileUtil.getFileDisplayName(fo) + " Owner: " + root); //NOI18N
-        }
+        boolean processed = false;
 
         if (root != null && VisibilityQuery.getDefault().isVisible(fo) &&
-            FileUtil.getMIMEType(fo, PathRecognizerRegistry.getDefault().getMimeTypesAsArray()) != null)
+            isMonitoredMimeType(fo, PathRecognizerRegistry.getDefault().getMimeTypes()))
         {
             getWorker().schedule(new FileListWork(root, Collections.singleton(fo), false), false);
+            processed = true;
+        }
+
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("File created (" + (processed ? "processed" : "ignored") + "): " //NOI18N
+                    + FileUtil.getFileDisplayName(fo) + " Owner: " + root); //NOI18N
         }
     }
 
     public void fileChanged(FileEvent fe) {
         final FileObject fo = fe.getFile();
         final URL root = getOwningSourceRoot (fo);
-
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("File modified: " + FileUtil.getFileDisplayName(fo) + " Owner: " + root); //NOI18N
-        }
+        boolean processed = false;
 
         if (root != null && VisibilityQuery.getDefault().isVisible(fo) &&
-            FileUtil.getMIMEType(fo, PathRecognizerRegistry.getDefault().getMimeTypesAsArray()) != null)
+            isMonitoredMimeType(fo, PathRecognizerRegistry.getDefault().getMimeTypes()))
         {
             getWorker().schedule(new FileListWork(root, Collections.singleton(fo), false), false);
+            processed = true;
+        }
+
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("File modified (" + (processed ? "processed" : "ignored") + "): " //NOI18N
+                    + FileUtil.getFileDisplayName(fo) + " Owner: " + root); //NOI18N
         }
     }
 
     public void fileDeleted(FileEvent fe) {
         final FileObject fo = fe.getFile();
-        if (fo.isFolder()) {
-            // filtering out deleted folders
-            return;
-        }
-
         final URL root = getOwningSourceRoot (fo);
+        boolean processed = false;
 
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("File deleted: " + FileUtil.getFileDisplayName(fo) + " Owner: " + root); //NOI18N
-        }
-
-        if (root != null &&  VisibilityQuery.getDefault().isVisible(fo)
+        if (root != null &&  VisibilityQuery.getDefault().isVisible(fo) && fo.isData()
             /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
             getWorker().schedule(new DeleteWork(root, fo), false);
+            processed = true;
+        }
+        
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("File deleted (" + (processed ? "processed" : "ignored") + "): " //NOI18N
+                    + FileUtil.getFileDisplayName(fo) + " Owner: " + root); //NOI18N
         }
     }
 
@@ -362,7 +369,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             for(JTextComponent jtc : components) {
                 Document d = jtc.getDocument();
                 FileObject f = NbEditorUtilities.getFileObject(d);
-                if (f != null) {
+                if (f != null && isMonitoredMimeType(f, PathRecognizerRegistry.getDefault().getMimeTypes())) {
                     URL root = getOwningSourceRoot(f);
                     if (root != null) {
                         long version = DocumentUtilities.getDocumentVersion(d);
@@ -413,7 +420,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         Document document = e.getDocument();
 
         FileObject f = NbEditorUtilities.getFileObject(document);
-        if (f != null) {
+        if (f != null && isMonitoredMimeType(f, PathRecognizerRegistry.getDefault().getMimeTypes())) {
             URL root = getOwningSourceRoot(f);
             if (root != null) {
                 if (activeDocument == document) {
@@ -531,6 +538,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
         return null;
+    }
+
+    private static boolean isMonitoredMimeType(FileObject f, Set<String> mimeTypes) {
+        String mimeType = FileUtil.getMIMEType(f, mimeTypes.toArray(new String[mimeTypes.size()]));
+        return mimeType != null && mimeTypes.contains(mimeType);
     }
 
     enum State {CREATED, INITIALIZED, INITIALIZED_AFTER_FIRST_SCAN, CLOSED};
@@ -905,21 +917,38 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     final FileObject archiveOrDirFo = FileUtil.toFileObject(archiveOrDir);
                     assert archiveOrDirFo != null;
 
-                    String mimeType = archiveOrDirFo.isFolder() ? "" : archiveOrDirFo.getMIMEType(); //NOI18N
-                    final Collection<? extends BinaryIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(BinaryIndexerFactory.class);
-                    if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.fine("Using CustomIndexerFactories(" + mimeType + "): " + factories); //NOI18N
+                    String mimeType;
+                    boolean upToDate;
+
+                    TimeStamps timeStamps = TimeStamps.forRoot(root);
+                    try {
+                        if (archiveOrDirFo.isFolder()) {
+                            mimeType = ""; //NOI18N
+                            upToDate = false;
+                        } else {
+                            mimeType = archiveOrDirFo.getMIMEType(); //NOI18N
+                            upToDate = timeStamps.isUpToDate(archiveOrDirFo);
+                        }
+                    } finally {
+                        timeStamps.store();
                     }
 
-                    for(BinaryIndexerFactory f : factories) {
-                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false);
-                        transactionContexts.add(ctx);
-
-                        final BinaryIndexer indexer = f.createIndexer();
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine("Indexing binary " + root + " using " + indexer); //NOI18N
+                    if (!upToDate) {
+                        final Collection<? extends BinaryIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(BinaryIndexerFactory.class);
+                        if (LOGGER.isLoggable(Level.FINER)) {
+                            LOGGER.fine("Using CustomIndexerFactories(" + mimeType + "): " + factories); //NOI18N
                         }
-                        SPIAccessor.getInstance().index(indexer, ctx);
+
+                        for(BinaryIndexerFactory f : factories) {
+                            final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false);
+                            transactionContexts.add(ctx);
+
+                            final BinaryIndexer indexer = f.createIndexer();
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine("Indexing binary " + root + " using " + indexer); //NOI18N
+                            }
+                            SPIAccessor.getInstance().index(indexer, ctx);
+                        }
                     }
                 }
             } finally {
