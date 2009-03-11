@@ -47,6 +47,7 @@ import java.util.List;
 
 import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
+import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
@@ -124,20 +125,28 @@ public class SVGListCD extends ComponentDescriptor{
     }
 
     private List<InspectorOrderingController> getInspectorOrderingControllers() {
-        return Collections.<InspectorOrderingController>singletonList(new InspectorOrderingController() {
-
-            public boolean isTypeIDSupported(DesignDocument document, TypeID typeID) {
-                return SVGListElementEventSourceCD.TYPEID == typeID;
-            }
-
-            public List<InspectorFolder> getOrdered(DesignComponent component, Collection<InspectorFolder> folders) {
-                return new ArrayList<InspectorFolder>(folders);
-            }
-
-            public Integer getOrder() {
-                return 0;
-            }
-        });
+//        return Collections.<InspectorOrderingController>singletonList(new InspectorOrderingController() {
+//
+//            public boolean isTypeIDSupported(DesignDocument document, TypeID typeID) {
+//                return SVGListElementEventSourceCD.TYPEID == typeID;
+//            }
+//
+//            public List<InspectorFolder> getOrdered(DesignComponent component, Collection<InspectorFolder> folders) {
+//                List<InspectorFolder> orderedList = new ArrayList<InspectorFolder>(folders);
+//                for (InspectorFolder folder : folders) {
+//                    DesignComponent fc = component.getDocument().getComponentByUID(folder.getComponentID());
+//                    orderedList.add((Integer)fc.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue(), folder);
+//                }
+//                return orderedList;
+//            }
+//
+//            public Integer getOrder() {
+//                return 0;
+//            }
+//        });
+//    }
+        
+        return Collections.<InspectorOrderingController>singletonList(new ArrayPropertyOrderingController(PROP_ELEMENTS, 0, SVGListElementEventSourceCD.TYPEID));
     }
 
 }

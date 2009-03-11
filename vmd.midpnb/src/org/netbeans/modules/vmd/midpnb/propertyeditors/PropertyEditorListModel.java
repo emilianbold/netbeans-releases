@@ -100,7 +100,7 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
 
     @Override
     public boolean isExecuteInsideWriteTransactionUsed() {
-         if (component.get().getType() == SVGListCD.TYPEID) {
+        if (component.get().getType() == SVGListCD.TYPEID) {
             return true;
         } else {
             return false;
@@ -140,13 +140,14 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
             initComponents();
             initElements(Collections.<PropertyEditorElement>singleton(this));
         }
-        if (component.get().getType() == SVGListCD.TYPEID)
-                component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+        if (component.get().getType() == SVGListCD.TYPEID) {
+            component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
 
                 public void run() {
                     myCustomEditor.setValue(component.get().readProperty(SVGListCD.PROP_ELEMENTS));
                 }
             });
+        }
         return super.getCustomEditor();
     }
 
@@ -204,65 +205,63 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
 
                     public void run() {
                         Integer index = -1;
-                        for (DesignComponent child : component.get().getComponents()) {
-                            if (child.getType() != SVGListElementEventSourceCD.TYPEID) {
-                                continue;
-                            }
-                            Integer currentIndex = (Integer) child.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue();
-                            if (currentIndex == null) {
-                                throw new IllegalArgumentException();
-                            }
-                            if (currentIndex > index) {
-                                index = currentIndex;
-                            }
-                        }
+                        List<PropertyValue> array = component.get().readProperty(SVGListCD.PROP_ELEMENTS).getArray();
                         if (index < myCustomEditor.getValue().size() - 1) {
                             if (index == -1) {
                                 index = 0;
                             } else {
                                 index++;
                             }
-                            
                             for (int i = index; i <= myCustomEditor.getValue().size() - 1; i++) {
                                 DesignComponent element = component.get().getDocument().createComponent(SVGListElementEventSourceCD.TYPEID);
                                 component.get().addComponent(element);
-                                element.writeProperty(SVGListElementEventSourceCD.PROP_INDEX, MidpTypes.createIntegerValue(i));
-                                PropertyValue array = component.get().readProperty(SVGListCD.PROP_ELEMENTS);
-                                if (array == PropertyValue.createNull()) {
+                                //element.writeProperty(SVGListElementEventSourceCD.PROP_INDEX, MidpTypes.createIntegerValue(i));
+                                //array = component.get().readProperty(SVGListCD.PROP_ELEMENTS);
+                                if (array == null) {
                                     component.get().writeProperty(SVGListCD.PROP_ELEMENTS, PropertyValue.createArray(SVGListElementEventSourceCD.TYPEID, new ArrayList<PropertyValue>()));
                                 }
                                 ArraySupport.append(component.get(), SVGListCD.PROP_ELEMENTS, element);
+                                array = component.get().readProperty(SVGListCD.PROP_ELEMENTS).getArray();
                             }
-                            
+
                         } else if (index > myCustomEditor.getValue().size() - 1) {
-                            for (DesignComponent child : component.get().getComponents()) {
+                            for (PropertyValue value : array) {
+                                DesignComponent child = value.getComponent();
                                 if (child.getType() != SVGListElementEventSourceCD.TYPEID) {
                                     continue;
                                 }
-                                Integer currentIndex = (Integer) child.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue();
+                                Integer currentIndex = array.indexOf(value);
                                 if (currentIndex == null) {
                                     throw new IllegalArgumentException();
                                 }
                                 if (currentIndex > myCustomEditor.getValue().size() - 1) {
                                     component.get().getDocument().deleteComponent(child);
-                                    PropertyValue array = component.get().readProperty(SVGListCD.PROP_ELEMENTS);
+                                    PropertyValue array_ = component.get().readProperty(SVGListCD.PROP_ELEMENTS);
                                     if (array != null) {
-                                        ArraySupport.remove(array, child);
+                                        ArraySupport.remove(array_, child);
+                                        array = component.get().readProperty(SVGListCD.PROP_ELEMENTS).getArray();
                                     }
                                 }
                             }
                         }
-                        for (DesignComponent child : component.get().getComponents()) {
+
+                    }
+                });
+                component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+                    public void run() {
+                        List<PropertyValue> array = component.get().readProperty(SVGListCD.PROP_ELEMENTS).getArray();
+                        for (PropertyValue value : array) {
+                            DesignComponent child = value.getComponent();
                             if (child.getType() != SVGListElementEventSourceCD.TYPEID) {
                                 continue;
                             }
                             String string = (String) child.readProperty(SVGListElementEventSourceCD.PROP_STRING).getPrimitiveValue();
-                            Integer childIndex = (Integer) child.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue();
+                            Integer childIndex = array.indexOf(value);
                             if (string == null || !string.equals(myCustomEditor.getValue().get(childIndex))) {
                                 child.writeProperty(SVGListElementEventSourceCD.PROP_STRING, MidpTypes.createStringValue(myCustomEditor.getValue().get(childIndex)));
                             }
                         }
-                        System.out.println(component.get().readProperty(SVGListCD.PROP_ELEMENTS).getArray());
                     }
                 });
             }

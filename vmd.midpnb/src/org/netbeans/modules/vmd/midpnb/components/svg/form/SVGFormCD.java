@@ -193,24 +193,24 @@ public class SVGFormCD extends ComponentDescriptor {
                 //delete
                 new DeleteDependencyPresenter() {
 
-            @Override
-            protected boolean requiresToLive(Collection<DesignComponent> componentsToDelete) {
-                return false;
-            }
+                    @Override
+                    protected boolean requiresToLive(Collection<DesignComponent> componentsToDelete) {
+                        return false;
+                    }
 
-            @Override
-            protected void componentsDeleting(Collection<DesignComponent> componentsToDelete) {
-                DesignComponent svgImage = getComponent().readProperty(PROP_SVG_IMAGE).getComponent();
-                if (svgImage == null || !componentsToDelete.contains(svgImage)) {
-                    return;
-                }
-                SVGFormSupport.removeAllSVGFormComponents(getComponent());
-                getComponent().resetToDefault(PROP_SVG_IMAGE);
-            }
-        },
+                    @Override
+                    protected void componentsDeleting(Collection<DesignComponent> componentsToDelete) {
+                            DesignComponent svgImage = getComponent().readProperty(PROP_SVG_IMAGE).getComponent();
+                            if (svgImage == null || !componentsToDelete.contains(svgImage)) {
+                                return;
+                            }
+                            SVGFormSupport.removeAllSVGFormComponents(getComponent());
+                            getComponent().resetToDefault(PROP_SVG_IMAGE);
+                        }
+                    },
                 //inspector
                 MidpInspectorSVGComponentSupport.createCategory()
-                );
+            );
     }
 
     private class SVGFormPresenterCodeClassInitHeaderFooterPresenter extends CodeClassInitHeaderFooterPresenter {
