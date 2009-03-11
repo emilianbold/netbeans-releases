@@ -417,6 +417,8 @@ class CategoryPanelFormatters extends StorablePanel {
         formatChildrenListTable.getCellEditor(index, 0).shouldSelectCell(
                 new ListSelectionEvent(formatChildrenListTable,
                                        index, index, true));
+        variableAddButton.setEnabled(false);
+        variableRemoveButton.setEnabled(false);
         formatChildrenListTable.getCellEditor(index, 0).addCellEditorListener(new CellEditorListener() {
             public void editingStopped(ChangeEvent e) {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -428,11 +430,15 @@ class CategoryPanelFormatters extends StorablePanel {
                     }
                 });
                 formatChildrenListTable.getCellEditor(index, 0).removeCellEditorListener(this);
+                variableAddButton.setEnabled(true);
+                variableRemoveButton.setEnabled(true);
             }
 
             public void editingCanceled(ChangeEvent e) {
                 model.removeRow(index);
                 formatChildrenListTable.getCellEditor(index, 0).removeCellEditorListener(this);
+                variableAddButton.setEnabled(true);
+                variableRemoveButton.setEnabled(true);
             }
         });
     }//GEN-LAST:event_variableAddButtonActionPerformed
