@@ -107,6 +107,7 @@ public class LandingPagePanel extends javax.swing.JPanel {
         jScrollPane1.setEnabled(false);
 
         messageEditorPane.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
+        messageEditorPane.setBorder(null);
         messageEditorPane.setContentType(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.contentType")); // NOI18N
         messageEditorPane.setEditable(false);
         messageEditorPane.setText(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.text")); // NOI18N
