@@ -2,6 +2,16 @@ Code completion result for source line:
 (1..3).any {println |}
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+PACKAGE    com                                        null
+PACKAGE    groovy                                     null
+PACKAGE    groovyjarjarantlr                          null
+PACKAGE    groovyjarjarasm                            null
+PACKAGE    groovyjarjarcommonscli                     null
+PACKAGE    java                                       null
+PACKAGE    javax                                      null
+PACKAGE    org                                        null
+PACKAGE    sun                                        null
+PACKAGE    sunw                                       null
 CLASS      AbstractCollection                         null
 CLASS      AbstractFactory                            null
 CLASS      AbstractList                               null
