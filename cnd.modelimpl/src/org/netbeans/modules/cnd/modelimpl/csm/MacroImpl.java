@@ -207,9 +207,9 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
 
     public MacroImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
-        this.body = NameCache.getString(PersistentUtils.readUTF(input));
+        this.body = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.body != null;
         this.kind = Kind.values()[input.readByte()];
         CharSequence[] out = PersistentUtils.readStrings(input, NameCache.getManager());

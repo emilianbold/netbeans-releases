@@ -107,7 +107,7 @@ class NamespaceKey extends ProjectNameBasedKey {
 
     /*package*/ NamespaceKey(DataInput aStream) throws IOException {
         super(aStream);
-        fqn = QualifiedNameCache.getString(PersistentUtils.readUTF(aStream));
+        fqn = PersistentUtils.readUTF(aStream, QualifiedNameCache.getManager());
         assert fqn != null;
         hashCode = _hashCode();
     }

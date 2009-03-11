@@ -170,7 +170,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
 
     public FriendClassImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
         this.nameParts = PersistentUtils.readStrings(input, NameCache.getManager());
         this.parentUID = UIDObjectFactory.getDefaultFactory().readUID(input);

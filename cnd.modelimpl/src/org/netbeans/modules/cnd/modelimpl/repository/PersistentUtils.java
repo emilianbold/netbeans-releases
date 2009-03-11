@@ -163,7 +163,7 @@ public class PersistentUtils {
         FileBuffer buffer;
         int handler = input.readInt();
         assert handler == FILE_BUFFER_FILE;
-        CharSequence absPath = FilePathCache.getString(PersistentUtils.readUTF(input));
+        CharSequence absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
         buffer = new FileBufferFile(new File(absPath.toString()));
         return buffer;
     }
@@ -202,9 +202,7 @@ public class PersistentUtils {
         if (len != AbstractObjectFactory.NULL_POINTER) {
             arr = new CharSequence[len];
             for (int i = 0; i < len; i++) {
-                String str = PersistentUtils.readUTF(input);
-                assert str != null;
-                arr[i] = manager.getString(str);
+                arr[i] = manager.getString(PersistentUtils.readUTF(input, manager));
             }
         }
         return arr;
@@ -216,13 +214,7 @@ public class PersistentUtils {
         if (len != AbstractObjectFactory.NULL_POINTER) {
             arr = new ArrayList<CharSequence>(len);
             for (int i = 0; i < len; i++) {
-                String str = PersistentUtils.readUTF(input);
-                assert str != null;
-                if (manager != null) {
-                    arr.add(manager.getString(str));
-                } else {
-                    arr.add(str);
-                }
+                arr.add(PersistentUtils.readUTF(input, manager));
             }
         }
         return arr;
@@ -233,8 +225,8 @@ public class PersistentUtils {
         aStream.writeUTF(st.toString());
     }
 
-    public static String readUTF(DataInput aStream) throws IOException {
-        return aStream.readUTF();
+    public static CharSequence readUTF(DataInput aStream, APTStringManager manager) throws IOException {
+        return manager.getString(aStream.readUTF());
     }
 
     public static void writeLongUTF(CharSequence st, DataOutput aStream) throws IOException {

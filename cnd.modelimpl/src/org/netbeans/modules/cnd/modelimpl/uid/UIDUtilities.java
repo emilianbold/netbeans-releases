@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * utilities to create CsmUID for CsmObjects
@@ -528,11 +529,11 @@ public class UIDUtilities {
 
     /* package */ static final class UnresolvedClassUID<T> extends UnresolvedUIDBase<CsmClass> {
 
-        private String name;
+        private CharSequence name;
 
         public UnresolvedClassUID(String name, CsmProject project) {
             super(project);
-            this.name = name;
+            this.name = NameCache.getString(name);
         }
 
         public CsmClass getObject() {
@@ -541,7 +542,7 @@ public class UIDUtilities {
 
         public UnresolvedClassUID(DataInput input) throws IOException {
             super(input);
-            name = PersistentUtils.readUTF(input);
+            name = PersistentUtils.readUTF(input, NameCache.getManager());
         }
 
         @Override

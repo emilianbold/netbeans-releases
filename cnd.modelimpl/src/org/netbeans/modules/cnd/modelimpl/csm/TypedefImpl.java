@@ -298,7 +298,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
 
     public TypedefImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
         typeUnnamed = input.readBoolean();
         this.type = PersistentUtils.readType(input);

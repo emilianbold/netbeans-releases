@@ -155,7 +155,7 @@ public class BuiltinTypes {
     }
 
     public static ObjectBasedUID readUID(DataInput aStream) throws IOException {
-        CharSequence name = PersistentUtils.readUTF(aStream); // no need for text manager
+        CharSequence name = PersistentUtils.readUTF(aStream, QualifiedNameCache.getManager()); // no need for text manager
         CsmBuiltIn builtIn = BuiltinTypes.getBuiltIn(name);
         ObjectBasedUID anUID = (ObjectBasedUID) UIDs.get(builtIn);
         assert anUID != null;

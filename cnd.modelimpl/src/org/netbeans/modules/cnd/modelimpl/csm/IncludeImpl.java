@@ -172,7 +172,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
 
     public IncludeImpl(DataInput input) throws IOException {
         super(input);
-        this.name = FileNameCache.getManager().getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, FileNameCache.getManager());
         assert this.name != null;
         this.system = input.readBoolean();
         this.includeFileUID = UIDObjectFactory.getDefaultFactory().readUID(input);

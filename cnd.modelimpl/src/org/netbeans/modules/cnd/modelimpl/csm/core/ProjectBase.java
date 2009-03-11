@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -1779,7 +1780,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * it does not gather statistics!
      * @param nameTokens name
      */
-    public final CsmClass getDummyForUnresolved(String name) {
+    public final CsmClass getDummyForUnresolved(CharSequence name) {
         return getUnresolved().getDummyForUnresolved(name);
     }
 
@@ -2526,10 +2527,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null : "default UID factory can not be bull";
 
-        this.name = ProjectNameCache.getManager().getString(PersistentUtils.readUTF(aStream));
+        this.name = PersistentUtils.readUTF(aStream, ProjectNameCache.getManager());
         assert this.name != null : "project name can not be null";
 
-        String unitName = PersistentUtils.readUTF(aStream);
+        CharSequence unitName = PersistentUtils.readUTF(aStream, DefaultCache.getManager());
 
         this.globalNamespaceUID = aFactory.readUID(aStream);
         assert globalNamespaceUID != null : "globalNamespaceUID can not be null";
@@ -2548,7 +2549,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         classifierStorageKey = ProjectComponent.readKey(aStream);
         assert classifierStorageKey != null : "classifierStorageKey can not be null";
 
-        this.uniqueName = PersistentUtils.readUTF(aStream);
+        this.uniqueName = PersistentUtils.readUTF(aStream, DefaultCache.getManager());
         assert uniqueName != null : "uniqueName can not be null";
         this.uniqueName = ProjectNameCache.getManager().getString(this.uniqueName);
 

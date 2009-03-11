@@ -199,9 +199,9 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
     
     public NamespaceAliasImpl(DataInput input) throws IOException {
         super(input);
-        this.alias = NameCache.getString(PersistentUtils.readUTF(input));
+        this.alias = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.alias != null;
-        this.namespace = QualifiedNameCache.getString(PersistentUtils.readUTF(input));
+        this.namespace = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.namespace != null;
         this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
         

@@ -57,11 +57,11 @@ import org.netbeans.modules.cnd.repository.spi.Key;
  */
 public final class LibProjectImpl extends ProjectBase {
 
-    private final String includePath;
+    private final CharSequence includePath;
 
     private LibProjectImpl(ModelImpl model, String includePathName) {
         super(model, includePathName, includePathName);
-        this.includePath = includePathName;
+        this.includePath = FilePathCache.getString(includePathName);
         this.projectRoots.fixFolder(includePathName);
         assert this.includePath != null;
     }
@@ -89,7 +89,7 @@ public final class LibProjectImpl extends ProjectBase {
 
     }
 
-    protected String getPath() {
+    protected CharSequence getPath() {
         return includePath;
     }
 
@@ -178,7 +178,7 @@ public final class LibProjectImpl extends ProjectBase {
 
     public LibProjectImpl(DataInput aStream) throws IOException {
         super(aStream);
-        this.includePath = FilePathCache.getString(PersistentUtils.readUTF(aStream)).toString();
+        this.includePath = PersistentUtils.readUTF(aStream, FilePathCache.getManager());
         assert this.includePath != null;
         setPlatformProject(this.includePath);
     }

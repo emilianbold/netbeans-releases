@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -1597,7 +1598,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.readOffsetSortedToUIDMap(this.declarations, input, null);
         factory.readUIDCollection(this.includes, input);
-        factory.readNameSortedToUIDMap(this.macros, input, null);
+        factory.readNameSortedToUIDMap(this.macros, input, DefaultCache.getManager());
         factory.readUIDCollection(this.fakeRegistrationUIDs, input);
         //state = State.valueOf(input.readUTF());
         fileType = input.readInt();
@@ -1771,7 +1772,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         public OffsetSortedKey(DataInput input) throws IOException {
             start = input.readInt();
-            name = NameCache.getString(PersistentUtils.readUTF(input));
+            name = PersistentUtils.readUTF(input, NameCache.getManager());
         }
     }
 
@@ -1829,7 +1830,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         public NameSortedKey(DataInput input) throws IOException {
             start = input.readInt();
-            name = NameCache.getString(PersistentUtils.readUTF(input));
+            name = PersistentUtils.readUTF(input, NameCache.getManager());
         }
     }
 

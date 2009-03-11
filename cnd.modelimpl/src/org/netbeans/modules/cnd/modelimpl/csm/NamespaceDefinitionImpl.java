@@ -279,7 +279,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         assert this.namespaceUID != null;
         this.namespaceRef = null;    
         
-        this.name = NameCache.getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
 
         if (getName().length() == 0) {
