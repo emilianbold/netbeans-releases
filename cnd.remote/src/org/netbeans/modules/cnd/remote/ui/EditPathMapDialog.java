@@ -11,6 +11,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -25,6 +26,7 @@ import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -42,7 +44,12 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     }
 
     public static boolean showMe(String hkey, String pathToValidate) {
-        return showMe(hkey, pathToValidate, RemoteServerList.getInstance().getServerNames());
+            List<ExecutionEnvironment> envs = RemoteServerList.getInstance().getEnvironments();
+            String[] keys = new String[envs.size()];
+            for (int i = 0; i < keys.length; i++) {
+                keys[i] = ExecutionEnvironmentFactory.getHostKey(envs.get(i));
+            }
+        return showMe(hkey, pathToValidate, keys);
     }
 
     private static boolean showMe(String hkey, String pathToValidate, String[] hostsList) {

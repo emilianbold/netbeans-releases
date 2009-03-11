@@ -117,8 +117,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
 
         if (cache == null) {
             ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-            for (String hkey : registry.getServerNames()) {
-                model.addElement(hkey);
+            for (ExecutionEnvironment env : registry.getEnvironments()) {
+                model.addElement(ExecutionEnvironmentFactory.getHostKey(env));
             }
             defaultIndex = registry.getDefaultIndex();
         } else {

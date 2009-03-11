@@ -49,7 +49,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -127,7 +127,8 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
 
             public void actionPerformed(ActionEvent event) {
                 ToolsCacheManager cacheManager = new ToolsCacheManager();
-                if (Lookup.getDefault().lookup(ServerList.class).show(cacheManager)) {
+                ServerListDisplayer d = Lookup.getDefault().lookup(ServerListDisplayer.class);
+                if (d != null && d.showServerListDialog(cacheManager)) {
                     cacheManager.applyChanges();
                 }
             }
