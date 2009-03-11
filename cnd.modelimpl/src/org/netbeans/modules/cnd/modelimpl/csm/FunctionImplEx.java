@@ -152,7 +152,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     @Override
     public CharSequence getQualifiedName() {
         if( qualifiedName == null ) {
-            qualifiedName = QualifiedNameCache.getString(findQualifiedName());
+            qualifiedName = QualifiedNameCache.getManager().getString(findQualifiedName());
         }
         return qualifiedName;
     }
@@ -234,7 +234,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 DiagnosticExceptoins.register(e);
             }
         } else {
-            CharSequence newQname = QualifiedNameCache.getString(findQualifiedName());
+            CharSequence newQname = QualifiedNameCache.getManager().getString(findQualifiedName());
             if (!newQname.equals(qualifiedName)) {
                 ProjectBase aProject = ((FileImpl) getContainingFile()).getProjectImpl(true);
                 aProject.unregisterDeclaration(this);

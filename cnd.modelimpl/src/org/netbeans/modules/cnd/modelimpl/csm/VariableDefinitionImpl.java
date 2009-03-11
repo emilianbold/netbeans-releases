@@ -132,7 +132,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     @Override
     public CharSequence getQualifiedName() {
 	if( qualifiedName == null ) {
-	    qualifiedName = QualifiedNameCache.getString(findQualifiedName());
+	    qualifiedName = QualifiedNameCache.getManager().getString(findQualifiedName());
 	}
 	return qualifiedName;
     }
@@ -249,7 +249,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.ID ) {
                     if( token.getNextSibling() != null ) {
-                        l.add(NameCache.getString(token.getText()));
+                        l.add(NameCache.getManager().getString(token.getText()));
                     }
                 }
             }

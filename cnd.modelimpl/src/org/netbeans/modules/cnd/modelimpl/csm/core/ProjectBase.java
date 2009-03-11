@@ -227,8 +227,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         String result;
         if (platformProject instanceof NativeProject) {
             result = ((NativeProject) platformProject).getProjectRoot() + 'N';
-        } else if (platformProject instanceof String) {
-            result = (String) platformProject + 'L';
+        } else if (platformProject instanceof CharSequence) {
+            result = ((CharSequence)platformProject).toString() + 'L';
         } else if (platformProject == null) {
             throw new IllegalArgumentException("Incorrect platform project: null"); // NOI18N
         } else {
@@ -930,7 +930,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected final APTPreprocHandler createEmptyPreprocHandler(File file) {
-        StartEntry startEntry = new StartEntry(FileContainer.getFileKey(file, true),
+        StartEntry startEntry = new StartEntry(FileContainer.getFileKey(file, true).toString(),
                 RepositoryUtils.UIDtoKey(getUID()));
         return APTHandlersSupport.createEmptyPreprocHandler(startEntry);
     }
@@ -951,7 +951,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<String> origSysIncludePaths = nativeFile.getSystemIncludePaths();
         List<CharSequence> userIncludePaths = FilePathCache.asList(origUserIncludePaths);
         List<CharSequence> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
-        StartEntry startEntry = new StartEntry(FileContainer.getFileKey(nativeFile.getFile(), true),
+        StartEntry startEntry = new StartEntry(FileContainer.getFileKey(nativeFile.getFile(), true).toString(),
                 RepositoryUtils.UIDtoKey(getUID()));
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths);
     }
@@ -2091,7 +2091,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 // for testing remember restored file
                 long time = REMEMBER_RESTORED ? System.currentTimeMillis() : 0;
                 int stackSize = inclStack.size();
-                APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false));
+                APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false).toString());
                 walker.visit();
                 if (preprocHandler.isValid()) {
                     if (REMEMBER_RESTORED) {

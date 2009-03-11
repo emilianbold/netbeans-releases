@@ -64,7 +64,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
     
     protected AbstractFileBuffer(File file) {
-        this.absPath = FilePathCache.getString(file.getAbsolutePath());
+        this.absPath = FilePathCache.getManager().getString(file.getAbsolutePath());
     }
 
     public void addChangeListener(ChangeListener listener) {

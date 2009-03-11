@@ -56,7 +56,7 @@ public final class ErrorDirectiveImpl extends OffsetableBase implements CsmError
     private final CharSequence msg;
     private ErrorDirectiveImpl(CsmFile file, String text, CsmOffsetable offs) {
         super(file, offs);
-        this.msg = DefaultCache.getString(text);
+        this.msg = DefaultCache.getManager().getString(text);
     }
 
     public static ErrorDirectiveImpl create(CsmFile file, String msg, CsmOffsetable offs) {

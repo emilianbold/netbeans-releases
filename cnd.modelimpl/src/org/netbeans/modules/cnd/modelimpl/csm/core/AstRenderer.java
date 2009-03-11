@@ -974,7 +974,7 @@ public class AstRenderer {
                         sb.append(namePart.getText());
                     }
                 }
-                return TextCache.getString(sb.toString());
+                return TextCache.getManager().getString(sb.toString());
             }
         }
         return "";
@@ -987,7 +987,7 @@ public class AstRenderer {
                 List<CharSequence> l = new ArrayList<CharSequence>();
                 for (AST namePart = qid.getFirstChild(); namePart != null; namePart = namePart.getNextSibling()) {
                     if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID) {
-                        l.add(NameCache.getString(namePart.getText()));
+                        l.add(NameCache.getManager().getString(namePart.getText()));
                     } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
                         // the beginning of template parameters
                         templateDepth++;

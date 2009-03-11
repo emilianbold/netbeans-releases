@@ -546,11 +546,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             declarationsLock.writeLock().lock();
             uids = declarations.values();
             declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
-            staticFunctionDeclarationUIDs.clear();
-            staticVariableUIDs.clear();
             sortedDeclarations = null;
         } finally {
             declarationsLock.writeLock().unlock();
+        }
+        try {
+            staticLock.writeLock().lock();
+            staticFunctionDeclarationUIDs.clear();
+            staticVariableUIDs.clear();
+        } finally {
+            staticLock.writeLock().unlock();
         }
         clearFakeRegistrations();
 
@@ -1580,7 +1585,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         output.writeLong(lastParsed);
-        output.writeInt(state.ordinal());
+        output.writeByte((byte)state.ordinal());
         try {
             staticLock.readLock().lock();
             UIDObjectFactory.getDefaultFactory().writeUIDCollection(staticFunctionDeclarationUIDs, output, false);
@@ -1614,7 +1619,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         assert fileBuffer != null;
         assert fileBuffer.isFileBased();
         lastParsed = input.readLong();
-        state = State.values()[input.readInt()];
+        state = State.values()[input.readByte()];
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input);
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticVariableUIDs, input);
     }
@@ -1737,7 +1742,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         private OffsetSortedKey(int offset, String name) {
             start = offset;
-            this.name = NameCache.getString(name);
+            this.name = NameCache.getManager().getString(name);
         }
 
         public int compareTo(OffsetSortedKey o) {
@@ -1787,7 +1792,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         private NameSortedKey(CharSequence name, int start) {
             this.start = start;
-            this.name = NameCache.getString(name);
+            this.name = NameCache.getManager().getString(name);
         }
 
         public int compareTo(NameSortedKey o) {

@@ -69,7 +69,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
 
     public EnumeratorImpl(AST ast, EnumImpl enumeration) {
         super(ast, enumeration.getContainingFile());
-        this.name = NameCache.getString(ast.getText());
+        this.name = NameCache.getManager().getString(ast.getText());
         // set parent enum, do it in constructor to have final fields
         this.enumerationUID = UIDCsmConverter.declarationToUID((CsmEnum)enumeration);
         this.enumerationRef = null;

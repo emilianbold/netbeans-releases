@@ -647,7 +647,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
             }
             for (int i = 0; i < size; i++) {
 
-                String value = FilePathCache.getString(stream.readUTF()).toString();
+                String value = FilePathCache.getManager().getString(stream.readUTF()).toString();
                 cache.add(value);
 
                 // timestamp from master index -> unit2timestamp

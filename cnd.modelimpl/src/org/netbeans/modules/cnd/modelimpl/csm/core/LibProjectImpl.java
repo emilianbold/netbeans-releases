@@ -61,7 +61,7 @@ public final class LibProjectImpl extends ProjectBase {
 
     private LibProjectImpl(ModelImpl model, String includePathName) {
         super(model, includePathName, includePathName);
-        this.includePath = FilePathCache.getString(includePathName);
+        this.includePath = FilePathCache.getManager().getString(includePathName);
         this.projectRoots.fixFolder(includePathName);
         assert this.includePath != null;
     }

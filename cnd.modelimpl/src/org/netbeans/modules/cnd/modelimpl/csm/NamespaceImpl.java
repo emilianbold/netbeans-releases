@@ -123,7 +123,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private static final boolean CHECK_PARENT = false;
     
     public NamespaceImpl(ProjectBase project, NamespaceImpl parent, String name, String qualifiedName) {
-        this.name = NameCache.getString(name);
+        this.name = NameCache.getManager().getString(name);
         this.global = false;
         assert project != null;
         
@@ -131,7 +131,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert this.projectUID != null;
 
         this.projectRef = new WeakReference<ProjectBase>(project);
-        this.qualifiedName = QualifiedNameCache.getString(qualifiedName);
+        this.qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
         // TODO: rethink once more
         // now all classes do have namespaces
 //        // TODO: this makes parent-child relationships assymetric, that's bad;

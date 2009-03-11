@@ -421,7 +421,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         
         public IncludeInfoImpl(final DataInput input) throws IOException {
             assert input != null;
-            this.path = FilePathCache.getString(input.readUTF());
+            this.path = FilePathCache.getManager().getString(input.readUTF());
             
             directiveLine = input.readInt();
             

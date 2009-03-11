@@ -46,30 +46,22 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  *
  * @author Alexander Simon
  */
-public class DefaultCache {
-    private static final APTStringManager instance = new APTStringManager(){
-        @Override
-        public CharSequence getString(CharSequence text) {
-            return DefaultCache.getString(text);
-        }
-        @Override
-        public void dispose() {
-        }
-    };
+public class DefaultCache extends APTStringManager {
+    private static final APTStringManager manager = new DefaultCache();
     private DefaultCache() {
     }
 
-    public static CharSequence getString(CharSequence text) {
-        if (text == null) {
+    public CharSequence getString(CharSequence text) {
+        if (text == null){
             return text;
         }
         return CharSequenceKey.create(text);
     }
 
-    public static void dispose() {
+    public void dispose() {
     }
 
     public static APTStringManager getManager() {
-        return instance;
+        return manager;
     }
 }

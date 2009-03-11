@@ -92,7 +92,7 @@ public class AstUtil {
         for( ; token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.ID:
-                    l.add(NameCache.getString(token.getText()));
+                    l.add(NameCache.getManager().getString(token.getText()));
                     break;
                 case CPPTokenTypes.SCOPE:
                     break;

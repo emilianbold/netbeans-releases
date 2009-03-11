@@ -791,7 +791,7 @@ public class TraceModel extends TraceModelBase {
                     File pathFile = new File(dirFile, path.toString());
                     path = pathFile.getAbsolutePath();
                 }
-                qInc.add(FilePathCache.getString(path));
+                qInc.add(FilePathCache.getManager().getString(path));
             }
         }
         StartEntry startEntry = new StartEntry(file.getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
