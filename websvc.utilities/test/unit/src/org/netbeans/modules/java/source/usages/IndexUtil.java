@@ -44,6 +44,8 @@ package org.netbeans.modules.java.source.usages;
 
 
 import java.io.File;
+import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.openide.filesystems.FileUtil;
 
 /**
  * <i>Copied from java/source, the package needs to be <code>org.netbeans.modules.java.source.usages</code>
@@ -53,7 +55,7 @@ import java.io.File;
 public class IndexUtil {
 
     public static void setCacheFolder (final File cacheFolder) {
-        Index.setCacheFolder(cacheFolder);
+        CacheFolder.setCacheFolder(FileUtil.toFileObject(cacheFolder));
     }
 
 }

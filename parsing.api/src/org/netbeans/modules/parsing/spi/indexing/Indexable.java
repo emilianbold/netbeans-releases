@@ -41,7 +41,13 @@ package org.netbeans.modules.parsing.spi.indexing;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
+import java.net.URL;
+import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
+import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
+import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -51,28 +57,24 @@ import java.net.URI;
 //@NotThreadSafe
 public final class Indexable {
 
-    private final URI file;
-    private final URI root;
-    private final long lastModified;
-    private String name;
+    static {
+        SPIAccessor.setInstance(new MyAccessor());
+    }
 
-    Indexable(final URI file, final URI root, final long lastModified) {
-        assert root != null;
-        assert file != null;
-        assert root.isAbsolute();
-        assert file.isAbsolute();
-        this.file = file;
-        this.root = root;
-        this.lastModified = lastModified;
+    private IndexableImpl delegate;
+
+    Indexable(final IndexableImpl delegate) {
+        assert delegate != null;
+        this.delegate = delegate;
     }
 
     /**
      * Returns a relative path from root to the
      * represented file.
-     * @return the relative URI
+     * @return the relative path from root
      */
-    public URI getRelativePath () {
-        return file.relativize(this.root);
+    public String getRelativePath () {
+        return delegate.getRelativePath();
     }
 
     /**
@@ -80,20 +82,15 @@ public final class Indexable {
      * @return a name
      */
     public String getName () {
-        if (name == null) {
-            String path = file.getPath();
-            int index = path.lastIndexOf('/');  //NOI18N
-            name = index < 0 ? path : path.substring(index+1);
-        }
-        return name;
+        return this.delegate.getName();
     }
 
     /**
-     * Returns absolute URI of the represente file
+     * Returns absolute URL of the represented file
      * @return uri
      */
-    public URI getURI () {
-        return this.file;
+    public URL getURL () {
+        return delegate.getURL();
     }
 
     /**
@@ -103,7 +100,7 @@ public final class Indexable {
      * or 0L if the file does not exist or if an I/O error occurs
      */
     public long getLastModified () {
-        return this.lastModified;
+        return this.delegate.getLastModified();
     }
 
     /**
@@ -113,7 +110,86 @@ public final class Indexable {
      * @throws java.io.IOException
      */
     public InputStream openInputStream () throws IOException {
-        throw new UnsupportedOperationException("todo");
+        return this.delegate.openInputStream();
+    }
+
+    @Override
+    public String toString() {
+        final URL url = this.delegate.getURL();
+        return String.format("Indexable[%s]", url == null ? "null" : url.toString());
+    }
+
+    private static class MyAccessor extends SPIAccessor {
+
+        @Override
+        public Indexable create(IndexableImpl delegate) {
+            return new Indexable(delegate);
+        }
+
+        @Override
+        public void index(BinaryIndexer indexer, Context context) {
+            assert indexer != null;
+            assert context != null;
+            indexer.index(context);
+        }
+
+        @Override
+        public void index(CustomIndexer indexer, Iterable<? extends Indexable> files, Context context) {
+            assert indexer != null;
+            assert files != null;
+            assert context != null;
+            indexer.index(files, context);
+        }
+
+        @Override
+        public Context createContext(FileObject indexFolder, URL rootURL, 
+                String indexerName, int indexerVersion, IndexFactoryImpl factory,
+                boolean followUpJob) throws IOException {
+            return new Context(indexFolder, rootURL, indexerName, indexerVersion, factory, followUpJob);
+        }
+
+        @Override
+        public String getIndexerName(Context ctx) {
+            assert ctx != null;
+            return ctx.getIndexerName();
+        }
+
+        @Override
+        public int getIndexerVersion(Context ctx) {
+            assert ctx != null;
+            return ctx.getIndexerVersion();
+        }
+
+        @Override
+        public void index(EmbeddingIndexer indexer, Indexable indexable, Result parserResult, Context ctx) {
+            assert indexer != null;
+            assert indexable != null;
+            assert parserResult != null;
+            assert ctx != null;
+            indexer.index(indexable, parserResult, ctx);
+        }
+
+        @Override
+        public String getIndexerPath(final String indexerName, final int indexerVersion) {
+            assert indexerName != null;
+            return Context.getIndexerPath(indexerName, indexerVersion);
+        }
+
+        @Override
+        public IndexFactoryImpl getIndexFactory(Context ctx) {
+            assert ctx != null;
+            return ctx.factory;
+        }
+
+        @Override
+        public void context_attachIndexingSupport(Context context, IndexingSupport support) {
+            context.attachIndexingSupport(support);
+        }
+
+        @Override
+        public IndexingSupport context_getAttachedIndexingSupport(Context context) {
+            return context.getAttachedIndexingSupport();
+        }
     }
 
 }
