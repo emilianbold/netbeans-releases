@@ -2505,8 +2505,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null;
         assert this.name != null;
-        aStream.writeUTF(this.name.toString());
-        aStream.writeUTF(RepositoryUtils.getUnitName(getUID()).toString());
+        PersistentUtils.writeUTF(name, aStream);
+        PersistentUtils.writeUTF(RepositoryUtils.getUnitName(getUID()), aStream);
         aFactory.writeUID(this.globalNamespaceUID, aStream);
         aFactory.writeStringToUIDMap(this.namespaces, aStream, false);
 
@@ -2526,10 +2526,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null : "default UID factory can not be bull";
 
-        this.name = ProjectNameCache.getManager().getString(aStream.readUTF());
+        this.name = ProjectNameCache.getManager().getString(PersistentUtils.readUTF(aStream));
         assert this.name != null : "project name can not be null";
 
-        String unitName = aStream.readUTF();
+        String unitName = PersistentUtils.readUTF(aStream);
 
         this.globalNamespaceUID = aFactory.readUID(aStream);
         assert globalNamespaceUID != null : "globalNamespaceUID can not be null";

@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
@@ -172,12 +173,12 @@ public final class LibProjectImpl extends ProjectBase {
     public void write(DataOutput aStream) throws IOException {
         super.write(aStream);
         assert this.includePath != null;
-        aStream.writeUTF(this.includePath);
+        PersistentUtils.writeUTF(includePath, aStream);
     }
 
     public LibProjectImpl(DataInput aStream) throws IOException {
         super(aStream);
-        this.includePath = FilePathCache.getString(aStream.readUTF()).toString();
+        this.includePath = FilePathCache.getString(PersistentUtils.readUTF(aStream)).toString();
         assert this.includePath != null;
         setPlatformProject(this.includePath);
     }

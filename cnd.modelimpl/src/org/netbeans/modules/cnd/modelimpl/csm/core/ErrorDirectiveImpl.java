@@ -45,6 +45,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  *
@@ -92,12 +93,12 @@ public final class ErrorDirectiveImpl extends OffsetableBase implements CsmError
     @SuppressWarnings("unchecked")
     public ErrorDirectiveImpl(DataInput input) throws IOException {
         super(input);
-        this.msg = input.readUTF();
+        this.msg = PersistentUtils.readUTF(input);
     }
 
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        output.writeUTF(msg);
+        PersistentUtils.writeUTF(msg, output);
     }
 }
