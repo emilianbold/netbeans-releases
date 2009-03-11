@@ -95,18 +95,18 @@ public class IOExtensionsTest extends NbTestCase {
     }
 
     public void testSetDefColors() throws IOException {
-        /*IOColors.setColor(io, IOColors.OUTPUT, Color.GRAY);
-        IOColors.setColor(io, IOColors.ERROR, Color.PINK);
-        IOColors.setColor(io, IOColors.HYPERLINK, Color.MAGENTA);
-        IOColors.setColor(io, IOColors.HYPERLINK_IMPORTANT, Color.GREEN);*/
+        IOColors.setColor(io, IOColors.OutputType.OUTPUT, Color.GRAY);
+        IOColors.setColor(io, IOColors.OutputType.ERROR, Color.PINK);
+        IOColors.setColor(io, IOColors.OutputType.HYPERLINK, Color.MAGENTA);
+        IOColors.setColor(io, IOColors.OutputType.HYPERLINK_IMPORTANT, Color.GREEN);
         io.getOut().println("Test out");
         io.getErr().println("Test err");
         io.getOut().println("Test hyperlink", new L(), false);
         io.getOut().println("Test important hyperlink", new L(), true);
-        IOColors.setColor(io, IOColors.OUTPUT, Color.BLACK);
-        IOColors.setColor(io, IOColors.ERROR, Color.RED);
-        IOColors.setColor(io, IOColors.HYPERLINK, Color.BLUE);
-        IOColors.setColor(io, IOColors.HYPERLINK_IMPORTANT, Color.MAGENTA);
+        IOColors.setColor(io, IOColors.OutputType.OUTPUT, Color.BLACK);
+        IOColors.setColor(io, IOColors.OutputType.ERROR, Color.RED);
+        IOColors.setColor(io, IOColors.OutputType.HYPERLINK, Color.BLUE);
+        IOColors.setColor(io, IOColors.OutputType.HYPERLINK_IMPORTANT, Color.MAGENTA);
     }
 
     public void testVertScroll() {

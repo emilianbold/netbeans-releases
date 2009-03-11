@@ -41,7 +41,6 @@
 
 package org.openide.text;
 
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -64,6 +63,11 @@ import org.openide.windows.*;
 public class CloneableEditor extends CloneableTopComponent implements CloneableEditorSupport.Pane {
     private static final String HELP_ID = "editing.editorwindow"; // !!! NOI18N
     static final long serialVersionUID = -185739563792410059L;
+
+    private static final RequestProcessor RP = new RequestProcessor("org.openide.text Editor Initialization");
+    
+    /** Thread for postprocessing work in CloneableEditor.DoInitialize.initRest */
+    private static final RequestProcessor RPPostprocessing = new RequestProcessor("org.openide.text Document Postprocessing");
 
     /** editor pane  */
     protected JEditorPane pane;
@@ -217,7 +221,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             this.tmpComp = initLoading();
             new Timer(1000, this).start();
             if (newInitialize()) {
-                task = CloneableEditorSupport.RP.create(this);
+                task = RP.create(this);
                 task.setPriority(Thread.MIN_PRIORITY + 2);
                 task.schedule(0);
             } else {
@@ -250,7 +254,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             
             int phaseNow = phase;
             switch (phase++) {
-            case 0: 
+            case 0:
                 initNonVisual();
                 if (newInitialize()) {
                     WindowManager.getDefault().invokeWhenUIReady(this);
@@ -524,7 +528,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         private void initRest() {
             //#132662 Post this task to another worker private thread
             //to avoid deadlock.
-            CloneableEditorSupport.RPPostprocessing.post(new Runnable() {
+            RPPostprocessing.post(new Runnable() {
                 public void run() {
                     support.ensureAnnotationsLoaded();
                 }
