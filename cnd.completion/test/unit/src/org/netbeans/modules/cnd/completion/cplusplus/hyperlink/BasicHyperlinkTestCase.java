@@ -496,7 +496,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testIZ136731() throws Exception {
         // IZ#136731 : No hyper link on local extern function
-        performTest("IZ136731_local_extern_function.cc", 4, 18, "IZ136731_local_extern_function.cc", 3, 5);
+        performTest("IZ136731_local_extern_function.cc", 4, 18, "IZ136731_local_extern_function.cc", 3, 16);
         performTest("IZ136731_local_extern_function.cc", 3, 40, "IZ136731_local_extern_function.cc", 3, 32);
     }
 
