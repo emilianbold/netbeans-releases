@@ -66,6 +66,7 @@ import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorListModel;
+import org.netbeans.modules.vmd.midpnb.screen.display.SVGListDisplayPresenter;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,7 +77,7 @@ public class SVGListCD extends ComponentDescriptor{
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGList"); // NOI18N
     
-    public static final String PROP_MODEL = "listModel"; // NOI18N
+    public static final String PROP_ELEMENTS = "listElements"; // NOI18N
     private static final String ICON_PATH = "org/netbeans/modules/mobility/svgcore/resources/palette/form/list_16.png"; // NOI18N
 
     static {
@@ -96,23 +97,14 @@ public class SVGListCD extends ComponentDescriptor{
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList (
-                new PropertyDescriptor(PROP_MODEL, 
-                        MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType(), 
-                        PropertyValue.createNull(), true, true, 
-                        MidpVersionable.MIDP_2)
-                );
+                new PropertyDescriptor(PROP_ELEMENTS, SVGListElementEventSourceCD.TYPEID.getArrayType(), PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
+        );
     }
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty(NbBundle.getMessage(SVGRadioButtonCD.class, 
-                         "DISP_ListModel"), 
-                  PropertyEditorListModel.createInstance( 
-                          NbBundle.getMessage( SVGListCD.class, 
-                                  "LBL_ListModel"),
-                                  NbBundle.getMessage( SVGListCD.class, 
-                                          "TXT_ListModel")), PROP_MODEL); // NOI18N
+                .addProperty(NbBundle.getMessage(SVGRadioButtonCD.class, "DISP_ListModel"), PropertyEditorListModel.createInstance( NbBundle.getMessage( SVGListCD.class, "LBL_ListModel"), NbBundle.getMessage( SVGListCD.class, "TXT_ListModel")), PROP_ELEMENTS); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters () {
@@ -122,11 +114,12 @@ public class SVGListCD extends ComponentDescriptor{
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
-                //new SVGCodeFooter( SVGListEventSourceCD.TYPEID ),
                 new SVGListModelFooter(),
+                new SVGListElementCodeFooter(SVGListElementEventSourceCD.TYPEID),
                 //inspector
                 new SVGComponentInspectorFolderPresenter(),
-                MidpInspectorSupport.createComponentElementsCategory(NbBundle.getMessage (ListCD.class, "DISP_InspectorCategory_Elements"), getInspectorOrderingControllers(), SVGListElementEventSourceCD.TYPEID) //NOI18N
+                MidpInspectorSupport.createComponentElementsCategory(NbBundle.getMessage (ListCD.class, "DISP_InspectorCategory_Elements"), getInspectorOrderingControllers(), SVGListElementEventSourceCD.TYPEID), //NOI18N
+                new SVGListDisplayPresenter()
         );
     }
 

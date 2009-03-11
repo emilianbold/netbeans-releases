@@ -344,6 +344,13 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     public void startup(int persistMechanismVersion) {
     }
 
+    public void debugDistribution() {
+        for (Unit unit : units.values()){
+            System.err.println("UNIT "+unit.getName());
+            unit.debugDistribution();
+        }
+    }
+
     static private class RemovedPersistent implements Persistent {
     }
 

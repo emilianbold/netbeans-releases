@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.support;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
@@ -51,9 +52,9 @@ public class ShellUtils {
     private ShellUtils() {
     }
 
-    public static String wrapCommand(String hkey, String command) {
+    public static String wrapCommand(ExecutionEnvironment env, String command) {
         StringBuilder wrappedCmd = new StringBuilder();
-        wrappedCmd.append(ShellUtils.getPrefix(hkey)).append("bash -c '"); //NOI18N
+        wrappedCmd.append(ShellUtils.getPrefix(env)).append("bash -c '"); //NOI18N
         wrappedCmd.append(command.replace('\\', '/')); //NOI18N
         wrappedCmd.append("'"); //NOI18N
         return wrappedCmd.toString();
@@ -80,8 +81,8 @@ public class ShellUtils {
     private static final String cshBinz = "setenv PATH /bin:/usr/bin:$PATH; "; //NOI18N
     private static final String shBinz = "PATH=/bin:/usr/bin:$PATH "; //NOI18N
 
-    static String getPrefix(String hkey) {
-        return RemoteHostInfoProvider.getHostInfo(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey)).isCshShell() ? cshBinz : shBinz;
+    static String getPrefix(ExecutionEnvironment env) {
+        return RemoteHostInfoProvider.getHostInfo(env).isCshShell() ? cshBinz : shBinz;
     }
 
     static String prepareExportString(boolean isCshShell, String[] envp) {

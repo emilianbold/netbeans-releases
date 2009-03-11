@@ -127,7 +127,7 @@ public final class ToolsCacheManager {
                 liveServers = new ArrayList<String>();
                 serverList.clear();
                 for (String key : serverUpdateCache.getHostKeyList()) {
-                    serverList.addServer(key, false, false);
+                    serverList.addServer(ExecutionEnvironmentFactory.getExecutionEnvironment(key), false, false);
                     liveServers.add(key);
                 }
                 serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
@@ -171,11 +171,6 @@ public final class ToolsCacheManager {
         return serverList != null;
     }
 
-    /** TODO: deprecate and remove */
-    public String getDefaultHostKey() {
-        return serverList.getDefaultRecord().getName();
-    }
-
     public ExecutionEnvironment getDefaultHostEnvironment() {
         return serverList.getDefaultRecord().getExecutionEnvironment();
     }
@@ -190,11 +185,6 @@ public final class ToolsCacheManager {
             copiedManagers.put(env, out);
         }
         return out;
-    }
-
-    /** TODO: deprecate and remove */
-    public synchronized CompilerSetManager getCompilerSetManagerCopy(String hKey) {
-        return getCompilerSetManagerCopy(ExecutionEnvironmentFactory.getExecutionEnvironment(hKey));
     }
 
     public void addCompilerSetManager(CompilerSetManager newCsm) {

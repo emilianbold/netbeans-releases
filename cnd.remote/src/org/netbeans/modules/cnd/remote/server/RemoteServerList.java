@@ -45,6 +45,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
@@ -99,11 +100,12 @@ public class RemoteServerList implements ServerList {
         unlisted = new ArrayList<RemoteServerRecord>();
         
         // Creates the "localhost" record and any remote records cached in remote.preferences
-        addServer(CompilerSetManager.LOCALHOST, false, RemoteServerRecord.State.ONLINE);
+        addServer(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), false, RemoteServerRecord.State.ONLINE);
         if (slist != null) {
             for (String hkey : slist.split(",")) { // NOI18N
-                if (!CompilerSetManager.LOCALHOST.equals(hkey)) {
-                    addServer(hkey, false, RemoteServerRecord.State.OFFLINE);
+                ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
+                if (env.isRemote()) {
+                    addServer(env, false, RemoteServerRecord.State.OFFLINE);
                 }
             }
         }
@@ -111,22 +113,10 @@ public class RemoteServerList implements ServerList {
     }
 
     /**
-     * Get a ServerRecord pertaining to hkey. If needed, create the record.
-     *
-     * @param hkey The host key (either "localhost" or "user@host")
-     * @return A RemoteServerRecord for hkey
-     *
-     * TODO: deprecate and remove
-     */
-    public synchronized ServerRecord get(String hkey) {
-        return get(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
-    }
-
-    /**
-     * Get a ServerRecord pertaining to hkey. If needed, create the record.
+     * Get a ServerRecord pertaining to env. If needed, create the record.
      * 
-     * @param hkey The host key (either "localhost" or "user@host")
-     * @return A RemoteServerRecord for hkey
+     * @param env specvifies the host
+     * @return A RemoteServerRecord for env
      */
     public synchronized ServerRecord get(ExecutionEnvironment env) {
 
@@ -173,26 +163,26 @@ public class RemoteServerList implements ServerList {
         return sa;
     }
 
-    public Collection<ExecutionEnvironment> getEnvironments() {
-        Collection<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(items.size());
+    public List<ExecutionEnvironment> getEnvironments() {
+        List<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(items.size());
         for (RemoteServerRecord item : items) {
             result.add(item.getExecutionEnvironment());
         }
         return result;
     }
     
-    private void addServer(final String name, boolean asDefault, RemoteServerRecord.State state) {
-        RemoteServerRecord addServer = (RemoteServerRecord) addServer(name, asDefault, false);
+    private void addServer(ExecutionEnvironment execEnv, boolean asDefault, RemoteServerRecord.State state) {
+        RemoteServerRecord addServer = (RemoteServerRecord) addServer(execEnv, asDefault, false);
         addServer.setState(state);
     }
 
 
-    public synchronized ServerRecord addServer(final String name, boolean asDefault, boolean connect) {
+    public synchronized ServerRecord addServer(final ExecutionEnvironment execEnv, boolean asDefault, boolean connect) {
         RemoteServerRecord record = null;
         
         // First off, check if we already have this record
         for (RemoteServerRecord r : items) {
-            if (r.getName().equals(name)) {
+            if (r.getExecutionEnvironment().equals(execEnv)) {
                 if (asDefault) {
                     defaultIndex = items.indexOf(r);
                     getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
@@ -203,14 +193,14 @@ public class RemoteServerList implements ServerList {
         
         // Now see if its unlisted (created in Tools->Options but cancelled with no OK)
         for (RemoteServerRecord r : unlisted) {
-            if (r.getName().equals(name)) {
+            if (r.getExecutionEnvironment().equals(execEnv)) {
                 record = r;
                 break;
             }
         }
         
         if (record == null) {
-            record = new RemoteServerRecord(name, connect);
+            record = new RemoteServerRecord(execEnv, connect);
         } else {
             record.setDeleted(false);
             unlisted.remove(record);
@@ -225,18 +215,19 @@ public class RemoteServerList implements ServerList {
         // TODO: Save the state as well as name. On restart, only try connecting to
         // ONLINE hosts.
         String slist = getPreferences().get(REMOTE_SERVERS, null);
+        String preferencesKey = ExecutionEnvironmentFactory.getHostKey(execEnv);
         if (slist == null) {
-            getPreferences().put(REMOTE_SERVERS, name);
+            getPreferences().put(REMOTE_SERVERS, preferencesKey);
         } else {
             boolean do_add = true;
             for (String server : slist.split(",")) { // NOI18N
-                if (server.equals(name)) {
+                if (server.equals(preferencesKey)) {
                     do_add = false;
                     break;
                 }
             }
             if (do_add) {
-                getPreferences().put(REMOTE_SERVERS, slist + ',' + name);
+                getPreferences().put(REMOTE_SERVERS, slist + ',' + preferencesKey);
             }
         }
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
@@ -299,23 +290,8 @@ public class RemoteServerList implements ServerList {
         cs.fireChange();
     }
     
-    public synchronized boolean contains(String hkey) {
-        for (RemoteServerRecord record : items) {
-            if (hkey.equals(record.getName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public synchronized RemoteServerRecord getLocalhostRecord() {
         return items.get(0);
-    }
-
-    //TODO: why this is here?
-    //TODO: deprecate and remove
-    public boolean isValidExecutable(String hkey, String path) {
-        return isValidExecutable(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), path);
     }
 
     //TODO: why this is here?

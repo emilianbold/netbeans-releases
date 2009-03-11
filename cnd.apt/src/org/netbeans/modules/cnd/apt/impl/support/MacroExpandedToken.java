@@ -126,11 +126,11 @@ public class MacroExpandedToken implements APTToken, Serializable {
         throw new UnsupportedOperationException("setText must not be used"); // NOI18N
     }
 
-    public int getTextID() {
+    public CharSequence getTextID() {
         return to.getTextID();
     }
 
-    public void setTextID(int id) {
+    public void setTextID(CharSequence id) {
         throw new UnsupportedOperationException("setTextID must not be used"); // NOI18N
     }
 

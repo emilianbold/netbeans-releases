@@ -107,7 +107,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
     /** Creates a new instance of FileContainer */
     public FileContainer(ProjectBase project) {
-	super(new FileContainerKey(project.getUniqueName().toString()));
+	super(new FileContainerKey(project.getUniqueName().toString()), false);
 	put();
     }
     
@@ -120,7 +120,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
     // only for creating EMPTY stub
     private FileContainer() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null);
+        super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
     }
 
     /*package*/ static FileContainer empty() {
@@ -412,7 +412,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         while (setIterator.hasNext()) {
             final Map.Entry<CharSequence, MyFile> anEntry = setIterator.next();
 
-            output.writeUTF(anEntry.getKey().toString());
+            PersistentUtils.writeUTF(anEntry.getKey(), output);
             assert anEntry.getValue() != null;
             anEntry.getValue().write(output);
         }
@@ -430,8 +430,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         final int size = input.readInt();
         
         for (int i = 0; i < size; i++) {
-            String key = input.readUTF();
-            key = pathManager == null? key: pathManager.getString(key).toString();
+            CharSequence key = PersistentUtils.readUTF(input, pathManager);
             MyFile value = new MyFile(input);
             
             assert key != null;
@@ -463,54 +462,53 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             assert value != null;
             assert ((value instanceof CharSequence) || (value instanceof CharSequence[]));
             
-            output.writeUTF(key.toString());
+            PersistentUtils.writeUTF(key, output);
             
             if (value instanceof CharSequence ) {
                 output.writeInt(1);
-                output.writeUTF((String)value);
+                PersistentUtils.writeUTF((CharSequence)value, output);
             } else if (value instanceof CharSequence[]) {
                 
                 final CharSequence[] array = (CharSequence[]) value;
                 
                 output.writeInt(array.length);
                 for (int j = 0; j < array.length; j++) {
-                    output.writeUTF(array[j].toString());
+                    PersistentUtils.writeUTF(array[j], output);
                 }
             }
         }
     }
     
-    private static void readStringToStringsArrMap (
+    private static void readStringToStringsArrMap(
             final DataInput input, Map<CharSequence, Object/*CharSequence or CharSequence[]*/> aMap) throws IOException {
         assert input != null;
         assert aMap != null;
-        
+
         final APTStringManager pathManager = FilePathCache.getManager();
-        
+
         aMap.clear();
-        
+
         final int size = input.readInt();
-        
+
         for (int i = 0; i < size; i++) {
-            CharSequence key = pathManager.getString(input.readUTF());
+            CharSequence key = PersistentUtils.readUTF(input, pathManager);
             assert key != null;
-            
+
             final int arraySize = input.readInt();
             assert arraySize != 0;
-            
-	    if( arraySize == 1 ) {
-		aMap.put(key, input.readUTF());
-	    }
-	    else {
-		final CharSequence[] value = new String[arraySize];
-		for (int j = 0; j < arraySize; j++) {
-		    CharSequence path = pathManager.getString(input.readUTF());
-		    assert path != null;
 
-		    value[j] = path;
-		}
-		aMap.put(key, value);
-	    }
+            if (arraySize == 1) {
+                aMap.put(key, PersistentUtils.readUTF(input, pathManager));
+            } else {
+                final CharSequence[] value = new String[arraySize];
+                for (int j = 0; j < arraySize; j++) {
+                    CharSequence path = PersistentUtils.readUTF(input, pathManager);
+                    assert path != null;
+
+                    value[j] = path;
+                }
+                aMap.put(key, value);
+            }
         }
     }
 
@@ -581,7 +579,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         @SuppressWarnings("unchecked")
         private MyFile (final DataInput input) throws IOException {
             fileNew = UIDObjectFactory.getDefaultFactory().readUID(input);
-            canonical = input.readUTF();
+            canonical = PersistentUtils.readUTF(input, FilePathCache.getManager());
             modCount = input.readInt();
             if (input.readBoolean()) {
                 int cnt = input.readInt();
@@ -613,7 +611,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         
         public void write(final DataOutput output) throws IOException {
             UIDObjectFactory.getDefaultFactory().writeUID(fileNew, output);
-            output.writeUTF(canonical.toString());
+            PersistentUtils.writeUTF(canonical, output);
             output.writeInt(modCount);
             Object aData = data;
             output.writeBoolean(aData != null);

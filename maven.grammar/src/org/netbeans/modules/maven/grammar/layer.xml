@@ -48,9 +48,15 @@ made subject to such option by the copyright holder.
         <folder name="Panels">
             <folder name="text">
                 <folder name="x-maven-pom+xml">
-                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
-                    <file name="org-netbeans-modules-maven-navigator-POMInheritanceNavigator.instance"/>
-                    <file name="org-netbeans-modules-maven-navigator-POMModelNavigator.instance"/>
+                    <file name="org-netbeans-modules-maven-navigator-POMModelNavigator.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-netbeans-modules-maven-navigator-POMInheritanceNavigator.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
                 </folder>
                 <folder name="x-maven-profile+xml">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>

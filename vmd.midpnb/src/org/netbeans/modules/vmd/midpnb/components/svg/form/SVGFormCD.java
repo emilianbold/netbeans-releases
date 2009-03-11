@@ -189,7 +189,7 @@ public class SVGFormCD extends ComponentDescriptor {
                 new SVGFormFileChangePresenter(),
                 //flow
                 new SVGComponentEventSourceOrder(),
-                new SVGListElementOrderCategory(),
+                new SVGFlowListElementPinOrderPresenter(),
                 //delete
                 new DeleteDependencyPresenter() {
 
@@ -327,26 +327,26 @@ public class SVGFormCD extends ComponentDescriptor {
         }
     }
 
-    class SVGListElementOrderCategory extends FlowPinOrderPresenter {
-
-        static final String CATEGORY_ID = "SVGListElement"; //NOI18N
-
-        @Override
-        public String getCategoryID() {
-            return CATEGORY_ID;
-        }
-
-        @Override
-        public String getCategoryDisplayName() {
-            return "SVG List Elements";
-        }
-
-        @Override
-        public List<FlowPinDescriptor> sortCategory(final ArrayList<FlowPinDescriptor> descriptors) {
-
-
-            return descriptors;
-        }
-    }
+//    class SVGListElementOrderCategory extends FlowPinOrderPresenter {
+//
+//        static final String CATEGORY_ID = "SVGListElement"; //NOI18N
+//
+//        @Override
+//        public String getCategoryID() {
+//            return CATEGORY_ID;
+//        }
+//
+//        @Override
+//        public String getCategoryDisplayName() {
+//            return "SVG List Elements";
+//        }
+//
+//        @Override
+//        public List<FlowPinDescriptor> sortCategory(final ArrayList<FlowPinDescriptor> descriptors) {
+//
+//
+//            return descriptors;
+//        }
+//    }
 
 }

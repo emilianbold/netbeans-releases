@@ -42,19 +42,29 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.text.MessageFormat;
 import java.util.*;
+import javax.swing.text.Position.Bias;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
+import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.*;
+import org.openide.filesystems.FileObject;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -77,15 +87,35 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         super(refactoring);
         this.refactoring = refactoring;
     }
-//
-//    @Override
-//    protected Collection<CsmObject> getRefactoredObjects() {
-//        return referencedObjects;
-//    }
 
-    @Override
+    private Collection<CsmObject> getRefactoredObjects() {
+        return referencedObjects == null ? Collections.<CsmObject>emptyList() : Collections.unmodifiableCollection(referencedObjects);
+    }
+
+    private CsmFile getStartCsmFile() {
+        CsmFile startFile = CsmRefactoringUtils.getCsmFile(getStartReferenceObject());
+        if (startFile == null) {
+            if (getEditorContext() != null) {
+                startFile = getEditorContext().getFile();
+            }
+        }
+        return startFile;
+    }
+
     protected Collection<CsmFile> getRefactoredFiles() {
-        return Collections.emptySet();
+        Collection<? extends CsmObject> objs = getRefactoredObjects();
+        if (objs == null || objs.size() == 0) {
+            return Collections.emptySet();
+        }
+        Collection<CsmFile> files = new HashSet<CsmFile>();
+        CsmFile startFile = getStartCsmFile();
+        for (CsmObject obj : objs) {
+            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(obj, true);
+            CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
+            refactoring.getContext().add(ar);
+            files.addAll(getRelevantFiles(startFile, obj, refactoring));
+        }
+        return files;
     }
 
     @Override
@@ -145,6 +175,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         }
         return out;
     }
+
     /**
      * Returns list of problems. For the change method signature, there are two
      * possible warnings - if the method is overriden or if it overrides
@@ -199,7 +230,54 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
     }
 
     @Override
-    protected void processFile(CsmFile csmFile, ModificationResult mr) {
+    protected final void processFile(CsmFile csmFile, ModificationResult mr) {
+        Collection<? extends CsmObject> refObjects = getRefactoredObjects();
+        assert refObjects != null && refObjects.size() > 0 : "method must be called for resolved element";
+        FileObject fo = CsmUtilities.getFileObject(csmFile);
+        Collection<CsmReference> refs = new LinkedHashSet<CsmReference>();
+        for (CsmObject obj : refObjects) {
+            // do not interrupt refactoring
+            Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL, null);
+            refs.addAll(curRefs);
+        }
+        if (refs.size() > 0) {
+            List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
+            Collections.sort(sortedRefs, new Comparator<CsmReference>() {
 
+                public int compare(CsmReference o1, CsmReference o2) {
+                    return o1.getStartOffset() - o2.getStartOffset();
+                }
+            });
+            CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
+            processRefactoredReferences(sortedRefs, fo, ces, mr);
+        }
+    }
+
+    private void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr) {
+        ParameterInfo[] parameterInfo = refactoring.getParameterInfo();
+        for (CsmReference ref : sortedRefs) {
+            String oldName = ref.getText().toString();
+            String descr = getDescription(ref, oldName);
+            Difference diff = changeFunRef(ref, ces, oldName, parameterInfo, descr);
+            assert diff != null;
+            mr.addDifference(fo, diff);
+        }
+    }
+
+    private String getDescription(CsmReference ref, String targetName) {
+        String out = NbBundle.getMessage(CsmRenameRefactoringPlugin.class, "UpdateRef", targetName);
+        return out;
+    }
+
+    private Difference changeFunRef(CsmReference ref, CloneableEditorSupport ces,
+            String oldName, ParameterInfo[] parameterInfo, String descr) {
+        if (oldName == null) {
+            oldName = ref.getText().toString();
+        }
+        assert oldName != null;
+        PositionRef startPos = ces.createPositionRef(ref.getStartOffset(), Bias.Forward);
+        PositionRef endPos = ces.createPositionRef(ref.getEndOffset(), Bias.Backward);
+        Difference diff = new Difference(Difference.Kind.CHANGE, ref, startPos, endPos, oldName, oldName + "$1", descr); // NOI18N
+        return diff;
     }
 }

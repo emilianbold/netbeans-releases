@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -77,7 +78,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
         super(ast, file);
         assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
-        name = NameCache.getManager().getString(ast.getText());
+        name = NameCache.getString(ast.getText());
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
         
         // set parent ns, do it in constructor to have final fields
@@ -91,7 +92,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public static NamespaceDefinitionImpl findNamespaceDefionition(MutableDeclarationsContainer container, AST ast) {
         int start = getStartOffset(ast);
         int end = getEndOffset(ast);
-        CharSequence name = NameCache.getManager().getString(ast.getText()); // otherwise equals returns false
+        CharSequence name = NameCache.getString(ast.getText()); // otherwise equals returns false
         for (CsmDeclaration decl : container.getDeclarations()) {
             if (CsmKindUtilities.isNamespaceDefinition(decl)) {
                 NamespaceDefinitionImpl candidate = (NamespaceDefinitionImpl) decl;
@@ -261,7 +262,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         factory.writeUID(this.namespaceUID, output);
         
         assert this.name != null;
-        output.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, output);
 
         if (getName().length() == 0) {
             writeUID(output);
@@ -278,7 +279,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         assert this.namespaceUID != null;
         this.namespaceRef = null;    
         
-        this.name = NameCache.getManager().getString(input.readUTF());
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
 
         if (getName().length() == 0) {

@@ -54,12 +54,16 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
@@ -190,10 +194,17 @@ public class CsmStatementResolver {
         CsmDeclaration decl = CsmOffsetUtilities.findObject(decls, context, offset);
         if (decl != null && (decls.size() == 1 || !CsmOffsetUtilities.sameOffsets(stmt, decl))) {
             print("we have declarator " + decl); //NOI18N
-            if (CsmKindUtilities.isClass(decl)) {
-                findInner((CsmClass)decl, offset, context);
+            if (CsmKindUtilities.isTypedef(decl)) {
+                CsmClassifier classifier = ((CsmTypedef)decl).getType().getClassifier();
+                if (CsmOffsetUtilities.isInObject(decl, classifier) && !CsmOffsetUtilities.sameOffsets(decl, classifier)) {
+                    decl = classifier;
+                }
             }
-            if (CsmKindUtilities.isFunction(decl)) {
+            if (CsmKindUtilities.isEnum(decl)) {
+                findInner((CsmEnum)decl, offset, context);
+            } else if (CsmKindUtilities.isClass(decl)) {
+                findInner((CsmClass)decl, offset, context);
+            } else  if (CsmKindUtilities.isFunction(decl)) {
                 CsmFunction fun = (CsmFunction) decl;
 
                 // check if offset in parameters
@@ -217,6 +228,15 @@ public class CsmStatementResolver {
             return true;
         }
         return false;
+    }
+
+    private static boolean findInner(CsmEnum enumm, int offset, CsmContext context) {
+        CsmContextUtilities.updateContext(enumm, offset, context);
+        CsmEnumerator enumerator = CsmOffsetUtilities.findObject(enumm.getEnumerators(), context, offset);
+        if (enumerator != null && !CsmOffsetUtilities.sameOffsets(enumm, enumerator)) {
+            CsmContextUtilities.updateContext(enumerator, offset, context);
+        }
+        return true;
     }
 
     private static boolean findInner(CsmClass clazz, int offset, CsmContext context) {

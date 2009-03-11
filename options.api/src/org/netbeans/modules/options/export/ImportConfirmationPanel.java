@@ -56,6 +56,8 @@ public class ImportConfirmationPanel extends javax.swing.JPanel {
     public ImportConfirmationPanel() {
         initComponents();
         Mnemonics.setLocalizedText(cbRestart, NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.cbRestart.text"));
+        String message = NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.lblMessage.text"); // NOI18N
+        lblMessage.setText("<html>" + message + "</html>");  //NOI18N
     }
 
     /** Opens confirmation dialog. */
@@ -95,51 +97,31 @@ public class ImportConfirmationPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        txtMessage = new javax.swing.JTextPane();
         cbRestart = new javax.swing.JCheckBox();
+        lblMessage = new javax.swing.JLabel();
 
-        jScrollPane1.setBorder(null);
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        jScrollPane1.setOpaque(false);
-
-        txtMessage.setBorder(null);
-        txtMessage.setEditable(false);
-        txtMessage.setText(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.txtMessage.text")); // NOI18N
-        txtMessage.setOpaque(false);
-        jScrollPane1.setViewportView(txtMessage);
+        setPreferredSize(new java.awt.Dimension(332, 40));
+        setLayout(new java.awt.BorderLayout());
 
         cbRestart.setSelected(true);
         cbRestart.setText(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.cbRestart.text")); // NOI18N
+        add(cbRestart, java.awt.BorderLayout.SOUTH);
+        cbRestart.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.cbRestart.AN")); // NOI18N
+        cbRestart.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.cbRestart.AD")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, cbRestart, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(5, 5, 5)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbRestart)
-                .addContainerGap(15, Short.MAX_VALUE))
-        );
+        lblMessage.setText(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.lblMessage.text")); // NOI18N
+        add(lblMessage, java.awt.BorderLayout.NORTH);
+        lblMessage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.lblMessage.text")); // NOI18N
+        lblMessage.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.lblMessage.AD")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.AN")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.AD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbRestart;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextPane txtMessage;
+    private javax.swing.JLabel lblMessage;
     // End of variables declaration//GEN-END:variables
 
 }

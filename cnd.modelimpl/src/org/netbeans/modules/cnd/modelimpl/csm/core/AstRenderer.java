@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.AstRendererException;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -979,14 +980,14 @@ public class AstRenderer {
         return "";
     }
 
-    public static String[] getNameTokens(AST qid) {
+    public static CharSequence[] getNameTokens(AST qid) {
         if (qid != null && (qid.getType() == CPPTokenTypes.CSM_QUALIFIED_ID || qid.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {
             int templateDepth = 0;
             if (qid.getNextSibling() != null) {
-                List<String> l = new ArrayList<String>();
+                List<CharSequence> l = new ArrayList<CharSequence>();
                 for (AST namePart = qid.getFirstChild(); namePart != null; namePart = namePart.getNextSibling()) {
                     if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID) {
-                        l.add(namePart.getText());
+                        l.add(NameCache.getString(namePart.getText()));
                     } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
                         // the beginning of template parameters
                         templateDepth++;
@@ -1007,10 +1008,10 @@ public class AstRenderer {
                         }
                     }
                 }
-                return l.toArray(new String[l.size()]);
+                return l.toArray(new CharSequence[l.size()]);
             }
         }
-        return new String[0];
+        return new CharSequence[0];
     }
 
     public static TypeImpl renderType(AST tokType, CsmFile file) {
@@ -1047,7 +1048,7 @@ public class AstRenderer {
         try {
         Resolver resolver = new Resolver(file, ((CsmAST) tokType.getFirstChild()).getOffset());
         // gather name components into string array
-        // for example, for std::vector new String[] { "std", "vector" }
+        // for example, for std::vector new CharSequence[] { "std", "vector" }
         List l = new ArrayList();
         for( AST namePart = tokType.getFirstChild(); namePart != null; namePart = namePart.getNextSibling() ) {
         if( namePart.getType() == CPPTokenTypes.ID ) {
@@ -1057,7 +1058,7 @@ public class AstRenderer {
         assert namePart.getType() == CPPTokenTypes.SCOPE;
         }
         }
-        CsmObject o = resolver.resolve((String[]) l.toArray(new String[l.size()]));
+        CsmObject o = resolver.resolve((String[]) l.toArray(new CharSequence[l.size()]));
         if( o instanceof CsmClassifier ) {
         classifier = (CsmClassifier) o;
         }

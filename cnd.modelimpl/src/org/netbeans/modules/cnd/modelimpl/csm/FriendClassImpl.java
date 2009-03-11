@@ -70,7 +70,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         super(ast, file);
         this.parentUID = UIDs.get(parent);
         AST qid = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-        name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
+        name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
         if (register) {
             registerInProject();
@@ -128,11 +128,11 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         return null;
     }
     
-    private String[] initNameParts(AST qid) {
+    private CharSequence[] initNameParts(AST qid) {
         if( qid != null ) {
             return AstRenderer.getNameTokens(qid);
         }
-        return new String[0];
+        return new CharSequence[0];
     }
     
     private CsmObject resolve(Resolver resolver) {
@@ -161,7 +161,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, output);
         PersistentUtils.writeStrings(this.nameParts, output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.parentUID, output);    
         UIDObjectFactory.getDefaultFactory().writeUID(this.friendUID, output);    
@@ -170,7 +170,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
 
     public FriendClassImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getManager().getString(input.readUTF());
+        this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
         this.nameParts = PersistentUtils.readStrings(input, NameCache.getManager());
         this.parentUID = UIDObjectFactory.getDefaultFactory().readUID(input);

@@ -345,12 +345,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
             referencedObj = ((CsmInstantiation)referencedObj).getTemplateDeclaration();
         }
         if (targetDecl.equals(referencedObj) || (targetDef != null && targetDef.equals(referencedObj))) {
-            if (kinds == CsmReferenceKind.ALL) {
-                accept = true;
-            } else { 
-                CsmReferenceKind kind = ref.getKind();
-                accept = kinds.contains(kind);
-            }
+            accept = CsmReferenceResolver.getDefault().isKindOf(ref, kinds);
         }
         return accept;
     }   

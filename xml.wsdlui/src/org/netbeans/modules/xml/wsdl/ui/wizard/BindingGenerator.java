@@ -120,7 +120,7 @@ public class BindingGenerator implements Command {
     
     public void execute() {
         //binding
-        String bindingName = (String) this.mConfigurationMap.get(WizardBindingConfigurationStep.BINDING_NAME);
+        String bindingName = (String) this.mConfigurationMap.get(WSDLWizardConstants.BINDING_NAME);
         if (bindingName == null) {
             return;
         }
@@ -131,9 +131,9 @@ public class BindingGenerator implements Command {
         NamedComponentReference<PortType> ptRef = b.createReferenceTo(this.mPortType, PortType.class);
         b.setType(ptRef);
 
-        //Not used LocalizedTemplateGroup bindingType = (LocalizedTemplateGroup) this.mConfigurationMap.get(WizardBindingConfigurationStep.BINDING_TYPE);
+        //Not used LocalizedTemplateGroup bindingType = (LocalizedTemplateGroup) this.mConfigurationMap.get(WSDLWizardConstants.BINDING_TYPE);
         //this could be null for a binding which does not have a sub type
-        LocalizedTemplate bindingSubType = (LocalizedTemplate) this.mConfigurationMap.get(WizardBindingConfigurationStep.BINDING_SUBTYPE);
+        LocalizedTemplate bindingSubType = (LocalizedTemplate) this.mConfigurationMap.get(WSDLWizardConstants.BINDING_SUBTYPE);
         if (bindingSubType != null) {
             //binding protocol
             createAndAddBindingProtocol(b, bindingSubType);
@@ -155,15 +155,15 @@ public class BindingGenerator implements Command {
 
         }
 
-        Boolean autoCreateServicePort = (Boolean) mConfigurationMap.get(WizardBindingConfigurationStep.AUTO_CREATE_SERVICEPORT);
+        Boolean autoCreateServicePort = (Boolean) mConfigurationMap.get(WSDLWizardConstants.AUTO_CREATE_SERVICEPORT);
 
         if (autoCreateServicePort != null && !autoCreateServicePort.booleanValue()) {
             return;
         }
 
         //service and port
-        String serviceName = (String) this.mConfigurationMap.get(WizardBindingConfigurationStep.SERVICE_NAME);
-        String servicePortName = (String) this.mConfigurationMap.get(WizardBindingConfigurationStep.SERVICEPORT_NAME);
+        String serviceName = (String) this.mConfigurationMap.get(WSDLWizardConstants.SERVICE_NAME);
+        String servicePortName = (String) this.mConfigurationMap.get(WSDLWizardConstants.SERVICEPORT_NAME);
 
         Collection<Service> services = mModel.getDefinitions().getServices();
         Service service = null;

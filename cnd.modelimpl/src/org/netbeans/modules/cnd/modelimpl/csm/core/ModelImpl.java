@@ -643,8 +643,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     private void cleanCaches() {
         TextCache.dispose();
         FilePathCache.dispose();
-        QualifiedNameCache.getManager().dispose();
-        NameCache.getManager().dispose();
+        QualifiedNameCache.dispose();
+        NameCache.dispose();
         UniqueNameCache.getManager().dispose();
         FileNameCache.getManager().dispose();
         ProjectNameCache.getManager().dispose();

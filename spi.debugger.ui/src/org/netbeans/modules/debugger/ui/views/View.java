@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import javax.swing.JComponent;
+import javax.swing.JToolBar;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.spi.viewmodel.Models;
 
@@ -110,9 +112,16 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
             //tree = Models.createView (Models.EMPTY_MODEL);
             contentComponent.setName (NbBundle.getMessage (View.class, toolTipResource));
             add (contentComponent, BorderLayout.CENTER);  //NOI18N
-            buttonsPane = new javax.swing.JPanel();
-            buttonsPane.setLayout(new GridBagLayout());
-            add(buttonsPane, BorderLayout.WEST);
+            JToolBar toolBar = new JToolBar(JToolBar.VERTICAL);
+            toolBar.setFloatable(false);
+            toolBar.setRollover(true);
+            toolBar.setBorderPainted(false);
+            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                toolBar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            }
+            //toolBar.setLayout(new GridBagLayout());
+            add(toolBar, BorderLayout.WEST);
+            buttonsPane = toolBar;
         } else {
             buttonsPane = (JComponent) ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.WEST);
         }

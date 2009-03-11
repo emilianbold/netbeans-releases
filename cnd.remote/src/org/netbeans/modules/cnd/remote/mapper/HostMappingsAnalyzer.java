@@ -42,8 +42,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
@@ -54,13 +55,13 @@ public class HostMappingsAnalyzer {
     private final PlatformInfo secondPI;
     private final PlatformInfo firstPI;
 
-    public HostMappingsAnalyzer(String remoteHkey) {
-        this(remoteHkey, CompilerSetManager.LOCALHOST);
+    public HostMappingsAnalyzer(ExecutionEnvironment remoteExecEnv) {
+        this(remoteExecEnv, ExecutionEnvironmentFactory.getLocalExecutionEnvironment());
     }
 
-    public HostMappingsAnalyzer(String secondHkey, String firstHkey) {
-        secondPI = PlatformInfo.getDefault(secondHkey);
-        firstPI = PlatformInfo.getDefault(firstHkey);
+    public HostMappingsAnalyzer(ExecutionEnvironment secondEnv, ExecutionEnvironment firstEnv) {
+        secondPI = PlatformInfo.getDefault(secondEnv);
+        firstPI = PlatformInfo.getDefault(firstEnv);
     }
 
     public Map<String, String> getMappings() {

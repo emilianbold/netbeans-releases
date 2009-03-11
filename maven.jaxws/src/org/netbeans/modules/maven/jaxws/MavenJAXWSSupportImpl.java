@@ -88,7 +88,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
     public void addService(JaxWsService service) {
         services.add(service);
 
-        if (!WSUtils.isJsr109Supported(prj)) {
+        if (service.isServiceProvider() && !WSUtils.isJsr109Supported(prj)) {
 
             if (generateNonJsr109Stuff == null) {
                 FileObject ddFolder = getDeploymentDescriptorFolder();
@@ -151,7 +151,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
                 }
             }
         }
-        if (!WSUtils.isJsr109Supported(prj)) {
+        if (service.isServiceProvider() && !WSUtils.isJsr109Supported(prj)) {
 
             // modify web.xml file
             try {

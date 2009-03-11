@@ -152,7 +152,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     @Override
     public CharSequence getQualifiedName() {
         if( qualifiedName == null ) {
-            qualifiedName = QualifiedNameCache.getManager().getString(findQualifiedName());
+            qualifiedName = QualifiedNameCache.getString(findQualifiedName());
         }
         return qualifiedName;
     }
@@ -234,7 +234,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 DiagnosticExceptoins.register(e);
             }
         } else {
-            CharSequence newQname = QualifiedNameCache.getManager().getString(findQualifiedName());
+            CharSequence newQname = QualifiedNameCache.getString(findQualifiedName());
             if (!newQname.equals(qualifiedName)) {
                 ProjectBase aProject = ((FileImpl) getContainingFile()).getProjectImpl(true);
                 aProject.unregisterDeclaration(this);
@@ -280,8 +280,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     public FunctionImplEx(DataInput input) throws IOException {
 	super(input);
         // can be null
-        String read = PersistentUtils.readUTF(input);
-        this.qualifiedName = read == null ? null : QualifiedNameCache.getManager().getString(read);
+        this.qualifiedName = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         this.classOrNspNames = PersistentUtils.readStrings(input, NameCache.getManager());
     }
 }

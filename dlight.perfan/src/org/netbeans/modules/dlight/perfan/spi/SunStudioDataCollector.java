@@ -82,7 +82,6 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.util.TimerTaskExecutionService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
@@ -208,8 +207,8 @@ public class SunStudioDataCollector
         try {
             os = HostInfoUtils.getOS(execEnv);
 
-            if (!"SunOS".equals(os)) { // NOI18N
-                return ValidationStatus.invalidStatus("SunStudioDataCollector works on SunOS only."); // NOI18N
+            if (os == null || !"SunOS".equals(os) || os.indexOf("Linux") == -1) { // NOI18N
+                return ValidationStatus.invalidStatus("SunStudioDataCollector works on SunOS  and Linux only."); // NOI18N
             }
 
             Collection<? extends SunStudioLocatorFactory> factories = Lookup.getDefault().lookupAll(SunStudioLocatorFactory.class);
@@ -369,17 +368,16 @@ public class SunStudioDataCollector
 
             if (collectedInfoList.contains(SunStudioDCConfiguration.CollectedInfo.SYNCSUMMARY)) {
                 resetIndicators();
-                TimerTaskExecutionService service =
-                    TimerTaskExecutionService.getInstance();
-                statisticsTask = service.scheduleAtFixedRate(
-                    new SummaryDataFetchingTask(), 1, TimeUnit.SECONDS, "SYNCSUMMARY"); // NOI18N
+                statisticsTask = DLightExecutorService.scheduleAtFixedRate(
+                        new SummaryDataFetchingTask(), 1, TimeUnit.SECONDS,
+                        "SYNCSUMMARY"); // NOI18N
             }
+            
             if (collectedInfoList.contains(SunStudioDCConfiguration.CollectedInfo.MEMSUMMARY)) {
                 resetIndicators();
-                TimerTaskExecutionService service =
-                    TimerTaskExecutionService.getInstance();
-                memoryStatisticsTask = service.scheduleAtFixedRate(
-                    new SummaryLeaksDataFetchingTask(), 1, TimeUnit.SECONDS, "MEMSUMMARY"); // NOI18N
+                memoryStatisticsTask = DLightExecutorService.scheduleAtFixedRate(
+                        new SummaryLeaksDataFetchingTask(), 1, TimeUnit.SECONDS,
+                        "MEMSUMMARY"); // NOI18N
             }
 
         }

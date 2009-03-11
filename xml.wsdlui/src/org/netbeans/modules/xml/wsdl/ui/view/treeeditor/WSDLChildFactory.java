@@ -40,7 +40,6 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.util.List;
-import java.util.logging.Logger;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;

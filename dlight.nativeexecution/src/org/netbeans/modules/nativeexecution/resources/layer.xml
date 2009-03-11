@@ -5,6 +5,7 @@
       <folder name="ExtTerminalSupport">
           <file name="gnome-terminal" url="terminalsupport/gnome-terminal.xml"/>
           <file name="xterm" url="terminalsupport/xterm.xml"/>
+          <file name="konsole" url="terminalsupport/kde-konsole.xml"/>
       </folder>
   </folder>
 </filesystem>

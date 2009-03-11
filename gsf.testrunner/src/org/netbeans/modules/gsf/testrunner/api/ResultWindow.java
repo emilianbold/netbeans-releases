@@ -49,7 +49,10 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import org.openide.util.Exceptions;
@@ -58,6 +61,9 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import org.openide.windows.IOContainer;
+import org.openide.windows.IOContainer.CallBacks;
+
 
 /**
  *
@@ -240,6 +246,82 @@ final class ResultWindow extends TopComponent {
      */
     private Object readResolve() throws java.io.ObjectStreamException {
         return ResultWindow.getDefault();
+    }
+
+    private boolean activated;
+    private JComponent outputComp;
+    private JComponent outputTab;
+    private IOContainer ioContainer;
+
+    IOContainer getIOContainer() {
+        if (ioContainer == null) {
+            ioContainer = IOContainer.create(new IOContainerImpl());
+        }
+        return ioContainer;
+    }
+
+    void setOutputComp(JComponent comp) {
+        outputComp = comp;
+    }
+
+    @Override
+    protected void componentActivated() {
+        activated = true;
+    }
+
+    @Override
+    protected void componentDeactivated() {
+        activated = false;
+    }
+
+    private class IOContainerImpl implements IOContainer.Provider {
+
+        public void remove(JComponent comp) {
+            outputTab = null;
+            outputComp.remove(comp);
+            ResultWindow.getInstance().close();
+        }
+
+        public void select(JComponent comp) {
+        }
+
+        public JComponent getSelected() {
+            return outputTab;
+        }
+
+        public boolean isActivated() {
+            return activated;
+        }
+
+        public void open() {
+        }
+
+        public void requestActive() {
+        }
+
+        public void requestVisible() {
+        }
+
+        public void setIcon(JComponent comp, Icon icon) {
+        }
+
+        public void setTitle(JComponent comp, String name) {
+        }
+
+        public void setToolTipText(JComponent comp, String name) {
+        }
+
+        public void add(JComponent comp, CallBacks cb) {
+            outputTab = comp;
+            outputComp.add(comp);
+        }
+
+        public void setToolbarActions(JComponent comp, Action[] toolbarActions) {
+        }
+
+        public boolean isCloseable(JComponent comp) {
+            return false;
+        }
     }
 
     private static final class PrevNextFailure extends AbstractAction {

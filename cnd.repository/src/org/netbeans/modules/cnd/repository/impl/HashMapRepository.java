@@ -56,6 +56,9 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
  */
 public class HashMapRepository implements Repository {
 
+    public void debugDistribution() {
+    }
+
     /** repersents a single unit */
     private static class Unit {
         

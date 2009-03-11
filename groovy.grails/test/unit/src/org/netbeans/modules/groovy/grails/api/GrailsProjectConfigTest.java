@@ -85,28 +85,4 @@ public class GrailsProjectConfigTest extends NbTestCase {
         config.setEnvironment(env);
         assertEquals(env, config.getEnvironment());
     }
-
-    public void testDeployDir() throws IOException {
-        Project project = new TestProject("test", FileUtil.toFileObject(
-                FileUtil.normalizeFile(getWorkDir())));
-        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
-
-        assertNull(config.getDeployDir());
-        config.setDeployDir("deploy_1");
-        assertEquals("deploy_1", config.getDeployDir());
-        config.setDeployDir("deploy_2");
-        assertEquals("deploy_2", config.getDeployDir());
-    }
-
-    public void testAutoDeployFlag() throws IOException {
-        Project project = new TestProject("test", FileUtil.toFileObject(
-                FileUtil.normalizeFile(getWorkDir())));
-        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
-
-        assertFalse(config.getAutoDeployFlag());
-        config.setAutoDeployFlag(true);
-        assertTrue(config.getAutoDeployFlag());
-        config.setAutoDeployFlag(false);
-        assertFalse(config.getAutoDeployFlag());
-    }
 }

@@ -166,6 +166,10 @@ public final class UnitImpl implements Unit {
         cache.clearSoftRefs();
     }
 
+    public void debugDistribution() {
+        cache.printDistribution();
+    }
+
     private static void traceKey(String msg, Key key) {
         if (key.getDepth() == 3 && 
                 ("argc".contentEquals(key.getAt(2)) || // NOI18N

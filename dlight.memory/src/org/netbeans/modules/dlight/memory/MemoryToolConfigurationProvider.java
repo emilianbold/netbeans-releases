@@ -74,11 +74,11 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
      * if it is false, we use DTrace-based indicator data provider
      */
     private static final boolean useLLIndicatorDataProvider =
-            Util.getBoolean("dlight.memory.LL", true); // NOI18N
+            Util.getBoolean("dlight.memory.LL", false); // NOI18N
 
 //    private static final boolean USE_SUNSTUDIO =
 //            Boolean.getBoolean("gizmo.mem.sunstudio"); // NOI18N
-    private static boolean USE_SUNSTUDIO = NbPreferences.forModule(DLightToolConfigurationProvider.class).getBoolean(SUNSTUDIO_COLLECTORS, Boolean.getBoolean("gizmo.mem.sunstudio"));
+    private static boolean USE_SUNSTUDIO = false;//NbPreferences.forModule(DLightToolConfigurationProvider.class).getBoolean(SUNSTUDIO_COLLECTORS, Boolean.getBoolean("gizmo.mem.sunstudio"));
     private static final String TOOL_NAME = loc("MemoryTool.ToolName"); // NOI18N
     private static final Column totalColumn;
     private static final DataTableMetadata rawTableMetadata;

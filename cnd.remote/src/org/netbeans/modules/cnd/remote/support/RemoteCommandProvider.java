@@ -54,11 +54,6 @@ public class RemoteCommandProvider implements CommandProvider {
     
     private RemoteCommandSupport support;
 
-    /** TODO: deprecate and remove */
-    public int run(String hkey, String cmd, Map<String, String> env) {
-        return run(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), cmd, env);
-    }
-
     public int run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
         support = new RemoteCommandSupport(execEnv, cmd, env);
         return support.run();
