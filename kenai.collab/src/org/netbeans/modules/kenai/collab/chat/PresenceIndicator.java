@@ -102,9 +102,14 @@ public class PresenceIndicator {
 
     
     private PresenceIndicator() {
-        helper = new MouseL();
         label = new JLabel(OFFLINE, JLabel.HORIZONTAL);
-        label.addMouseListener(helper);
+        /*
+        * TODO: delete this
+        */
+        if (Boolean.parseBoolean(System.getProperty(("kenai.chat.enabled"), "false"))) {
+            helper = new MouseL();
+            label.addMouseListener(helper);
+        }
     }
 
     void showPopup() {
