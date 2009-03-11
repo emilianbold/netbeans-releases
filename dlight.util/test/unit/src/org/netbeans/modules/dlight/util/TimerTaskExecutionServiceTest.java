@@ -58,14 +58,13 @@ public class TimerTaskExecutionServiceTest {
             workers.add(new Worker(i));
         }
 
-        final TimerTaskExecutionService service = TimerTaskExecutionService.getInstance();
         final Random r = new Random();
 
         Runnable runnable = new Runnable() {
 
             public void run() {
                 for (Worker worker : workers) {
-                    tasks.add(service.scheduleAtFixedRate(worker, r.nextInt(4) + 1, TimeUnit.SECONDS, "testRegisterTimerTask"));
+                    tasks.add(DLightExecutorService.scheduleAtFixedRate(worker, r.nextInt(4) + 1, TimeUnit.SECONDS, "testRegisterTimerTask"));
                 }
             }
         };

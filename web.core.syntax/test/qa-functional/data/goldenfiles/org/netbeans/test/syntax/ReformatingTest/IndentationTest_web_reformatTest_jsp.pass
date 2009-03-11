@@ -4,11 +4,11 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="f" %>
 <html>
     <head>
-    <title>Localized Dates</title></head>
+        <title>Localized Dates</title></head>
     <body bgcolor="white">
         <jsp:useBean id="locales" scope="application"
                      class="mypkg.MyLocales"/>
-        
+
         <%
         switch(Integer.MAX_INT){
     case 10:
@@ -18,7 +18,7 @@ break;
 default:
 
 }
-        
+
         %>
         <form name="localeForm" action="index.jsp" method="post">
             <c:set var="selectedLocaleString" value="${param.locale}" />
@@ -47,7 +47,7 @@ default:
             </select>
             <input type="submit" name="Submit" value="Get Date">
         </form>
-        
+
         <c:if test="${selectedFlag}" >
             <jsp:setProperty name="locales"
                              property="selectedLocaleString"
@@ -58,18 +58,18 @@ default:
             <b>Date: </b>${date.date}
         </c:if>
         <%! public int fce(int a, int b, int c){/*COMMENT */
-        return 0;
-       }
+            return 0;
+           }
         %>
-        
+
         <%
-            if ((Integer.MAX_VALUE == Integer.MIN_VALUE) && (Boolean.TRUE == Boolean.FALSE)) {
-                for (int i = 0; i < Integer.MAX_VALUE; ++i) {
-                    if (i > Byte.SIZE) {
-                        out.println("i:" + i);
+                    if ((Integer.MAX_VALUE == Integer.MIN_VALUE) && (Boolean.TRUE == Boolean.FALSE)) {
+                        for (int i = 0; i < Integer.MAX_VALUE; ++i) {
+                            if (i > Byte.SIZE) {
+                                out.println("i:" + i);
+                            }
+                        }
                     }
-                }
-            }
         %>
     </body>
 </html> 

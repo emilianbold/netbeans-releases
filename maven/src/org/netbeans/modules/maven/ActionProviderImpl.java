@@ -74,7 +74,7 @@ import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.MavenExecutor;
 import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
-import org.netbeans.modules.maven.options.MavenExecutionSettings;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
@@ -227,7 +227,7 @@ public class ActionProviderImpl implements ActionProvider {
 
 
 
-        if (checkShowDialog && MavenExecutionSettings.getDefault().isShowRunDialog()) {
+        if (checkShowDialog && MavenSettings.getDefault().isShowRunDialog()) {
             RunGoalsPanel pnl = new RunGoalsPanel();
             DialogDescriptor dd = new DialogDescriptor(pnl, org.openide.util.NbBundle.getMessage(MavenExecutor.class, "TIT_Run_maven"));
             pnl.readConfig(config);
@@ -395,7 +395,7 @@ public class ActionProviderImpl implements ActionProvider {
         public void actionPerformed(java.awt.event.ActionEvent e) {
             if (!showUI) {
                 ModelRunConfig rc = new ModelRunConfig(project, mapping, mapping.getActionName(), null);
-                rc.setShowDebug(MavenExecutionSettings.getDefault().isShowDebug());
+                rc.setShowDebug(MavenSettings.getDefault().isShowDebug());
                 rc.setTaskDisplayName(NbBundle.getMessage(ActionProviderImpl.class, "TXT_Build"));
 
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
@@ -407,7 +407,7 @@ public class ActionProviderImpl implements ActionProvider {
             DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(ActionProviderImpl.class, "TIT_Run_Maven"));
             ActionToGoalMapping maps = ActionToGoalUtils.readMappingsFromFileAttributes(project.getProjectDirectory());
             pnl.readMapping(mapping, project, maps);
-            pnl.setShowDebug(MavenExecutionSettings.getDefault().isShowDebug());
+            pnl.setShowDebug(MavenSettings.getDefault().isShowDebug());
             pnl.setOffline(MavenSettingsSingleton.getInstance().createUserSettingsModel().isOffline());
             pnl.setRecursive(true);
             Object retValue = DialogDisplayer.getDefault().notify(dd);

@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.openide.util.Exceptions;
 
 /**
@@ -145,7 +146,7 @@ public final class ClassIndexManager {
         }        
         ClassIndexImpl qi = this.instances.get (root);
         if (qi == null) {  
-            qi = PersistentClassIndex.create (root, Index.getDataFolder(root), source);
+            qi = PersistentClassIndex.create (root, JavaIndex.getIndex(root), source);//XXX
             this.instances.put(root,qi);
             if (added != null) {
                 added.add (root);
@@ -154,7 +155,7 @@ public final class ClassIndexManager {
         else if (source && !qi.isSource()){
             //Wrongly set up freeform project, which is common for it, prefer source
             qi.close ();
-            qi = PersistentClassIndex.create (root, Index.getDataFolder(root), source);
+            qi = PersistentClassIndex.create (root, JavaIndex.getIndex(root), source);//XXX
             this.instances.put(root,qi);
             if (added != null) {
                 added.add (root);

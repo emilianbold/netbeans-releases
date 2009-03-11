@@ -43,14 +43,16 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ElementHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
@@ -101,7 +103,7 @@ public abstract class ClassIndexImpl {
     
     public abstract String getSourceName (String binaryName) throws IOException;
     
-    public abstract void setDirty (JavaSource js);
+    public abstract void setDirty (URL url);
 
     public abstract boolean isSource ();
     
@@ -125,6 +127,13 @@ public abstract class ClassIndexImpl {
         }
     }
     
+    public void typesEvent (final Iterable<? extends ElementHandle<TypeElement>> added, final Iterable<? extends ElementHandle<TypeElement>> removed, final Iterable<? extends ElementHandle<TypeElement>> changed) {
+        final ClassIndexImplEvent a = added != null ? new ClassIndexImplEvent(this, added) : null;
+        final ClassIndexImplEvent r = removed != null ? new ClassIndexImplEvent(this, removed) : null;
+        final ClassIndexImplEvent ch = changed != null ? new ClassIndexImplEvent(this, changed) : null;
+        typesEvent(a, r, ch);
+    }
+
     public void typesEvent (final ClassIndexImplEvent added, final ClassIndexImplEvent removed, final ClassIndexImplEvent changed) {
         WeakReference<ClassIndexImplListener>[] _listeners;
         synchronized (this.listeners) {

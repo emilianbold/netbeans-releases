@@ -48,7 +48,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.project.PhpProject;
@@ -314,7 +313,7 @@ class ConfigActionTest extends ConfigAction {
             super(info);
         }
 
-        public Project getProject() {
+        public PhpProject getProject() {
             assert info.startFile != null : "Only particular test files can be debugged";
             return project;
         }

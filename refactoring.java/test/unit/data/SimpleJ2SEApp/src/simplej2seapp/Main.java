@@ -9,7 +9,7 @@ package simplej2seapp;
  *
  * @author pflaska
  */
-public class Main {
+public class Main extends Object {
 
     /**
      * @param args the command line arguments
@@ -18,4 +18,12 @@ public class Main {
         // TODO code application logic here
     }
 
+    static class A extends Main {
+    }
+
+    static class B extends Main {
+    }
+
+    static class Aa extends A {
+    }
 }

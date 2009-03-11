@@ -45,6 +45,7 @@ package org.netbeans.modules.parsing.impl.indexing;
  */
 public enum PathKind {
     SOURCE,
-    BINARY,
+    LIBRARY,
+    BINARY_LIBRARY,
     UNKNOWN_SOURCE
 }

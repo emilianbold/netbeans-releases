@@ -143,6 +143,12 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.ide.kit</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.options.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -311,7 +317,7 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
-                     <test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.jemmy</code-name-base>
                         <compile-dependency/>
                     </test-dependency>

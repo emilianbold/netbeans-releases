@@ -279,11 +279,16 @@ final class MIMESupport extends Object {
         }
 
         public String getMIMEType(String... withinMIMETypes) {
-            if (mimeType == null) {
-                mimeType = resolveMIME(withinMIMETypes);
+            String type = mimeType;
+
+            if (type == null) {
+                type = resolveMIME(withinMIMETypes);
+                if (!type.equals("content/unknown") || withinMIMETypes.length == 0) { //NOI18N
+                    mimeType = type;
+                }
             }
 
-            return mimeType;
+            return type;
         }
 
         /** Decides whether given MIMEResolver is capable to resolve at least
