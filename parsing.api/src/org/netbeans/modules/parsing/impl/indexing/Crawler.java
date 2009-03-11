@@ -54,9 +54,9 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
  */
 public abstract class Crawler {
 
-    protected Crawler (final URL root) throws IOException {
+    protected Crawler (final URL root, boolean checkTimeStamps) throws IOException {
         this.root = root;
-        this.timeStamps = TimeStamps.forRoot(root);
+        this.timeStamps = checkTimeStamps ? TimeStamps.forRoot(root) : null;
     }
 
 //    public final synchronized String getDigest () throws IOException {
@@ -96,10 +96,12 @@ public abstract class Crawler {
     private void init () throws IOException {
         if (this.cache == null) {
             this.cache = collectResources(PathRecognizerRegistry.getDefault().getMimeTypes());
-            final Set<String> unseen = timeStamps.store();
-            deleted = new ArrayList<Indexable>(unseen.size());
-            for (String u : unseen) {
-                deleted.add(SPIAccessor.getInstance().create(new DeletedIndexable(root, u)));
+            if (timeStamps != null) {
+                final Set<String> unseen = timeStamps.store();
+                deleted = new ArrayList<Indexable>(unseen.size());
+                for (String u : unseen) {
+                    deleted.add(SPIAccessor.getInstance().create(new DeletedIndexable(root, u)));
+                }
             }
         }
     }
