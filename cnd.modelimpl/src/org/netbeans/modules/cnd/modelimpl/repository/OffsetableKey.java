@@ -117,7 +117,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         aStream.writeInt(this.endOffset);
         aStream.writeInt(this.hashCode);
         assert this.name != null;
-        aStream.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, aStream);
     }
 
     protected OffsetableKey(DataInput aStream) throws IOException {
@@ -125,7 +125,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         this.startOffset = aStream.readInt();
         this.endOffset = aStream.readInt();
         this.hashCode = aStream.readInt();
-        this.name = NameCache.getString(aStream.readUTF());
+        this.name = NameCache.getString(PersistentUtils.readUTF(aStream));
         assert this.name != null;
     }
 

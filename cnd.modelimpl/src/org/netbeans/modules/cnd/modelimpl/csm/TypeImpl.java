@@ -562,7 +562,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         byte pack = (byte) ((this.reference ? 1 : 0) | (this._const ? 2 : 0));
         output.writeByte(pack);
         assert this.classifierText != null;
-        output.writeUTF(classifierText.toString());
+        PersistentUtils.writeUTF(classifierText, output);
 
         PersistentUtils.writeStrings(qname, output);
         PersistentUtils.writeTypes(instantiationParams, output);
@@ -576,7 +576,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         byte pack = input.readByte();
         this.reference = (pack & 1) == 1;
         this._const = (pack & 2) == 2;
-        this.classifierText = NameCache.getString(input.readUTF());
+        this.classifierText = NameCache.getString(PersistentUtils.readUTF(input));
         assert this.classifierText != null;
 
         this.qname = PersistentUtils.readStrings(input, NameCache.getManager());

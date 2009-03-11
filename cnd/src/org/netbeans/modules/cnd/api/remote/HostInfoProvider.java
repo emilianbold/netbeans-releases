@@ -43,6 +43,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * Interface for a remote host information utility provider which can/will be implemented in another module.
@@ -169,7 +170,13 @@ public abstract class HostInfoProvider {
         @Override
         public boolean fileExists(ExecutionEnvironment execEnv, String path) {
             if (execEnv.isLocal()) {
-                return new File(path).exists();
+                if (new File(path).exists()) {
+                    return true;
+                }
+                if (Utilities.isWindows() && !path.endsWith(".lnk")) { //NOI18N
+                    return new File(path+".lnk").exists(); //NOI18N
+                }
+                return false;
             } else if (provider != null) {
                 return provider.fileExists(execEnv, path);
             } else {

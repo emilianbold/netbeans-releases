@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.ProjectSettingsValidatorKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -213,7 +214,7 @@ public class ProjectSettingsValidator {
 	    map = new HashMap<String, Long>();
 	    int cnt = stream.readInt();
 	    for (int i = 0; i < cnt; i++) {
-		String name = stream.readUTF();
+		String name = PersistentUtils.readUTF(stream);
 		long crc = stream.readLong();
 		map.put(name, crc);
 	    }
@@ -222,7 +223,7 @@ public class ProjectSettingsValidator {
 	public void write(DataOutput stream ) throws IOException {
 	    stream.writeInt(map.size());
 	    for( Map.Entry<String, Long> entry : map.entrySet()) {
-		stream.writeUTF(entry.getKey());
+		PersistentUtils.writeUTF(entry.getKey(), stream);
 		stream.writeLong(entry.getValue().longValue());
 	    }
 	}

@@ -161,7 +161,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, output);
         PersistentUtils.writeStrings(this.nameParts, output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.parentUID, output);    
         UIDObjectFactory.getDefaultFactory().writeUID(this.friendUID, output);    
@@ -170,7 +170,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
 
     public FriendClassImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getString(input.readUTF());
+        this.name = QualifiedNameCache.getString(PersistentUtils.readUTF(input));
         assert this.name != null;
         this.nameParts = PersistentUtils.readStrings(input, NameCache.getManager());
         this.parentUID = UIDObjectFactory.getDefaultFactory().readUID(input);

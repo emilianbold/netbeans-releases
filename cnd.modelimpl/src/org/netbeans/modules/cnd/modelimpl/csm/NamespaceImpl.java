@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -605,9 +606,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         theFactory.writeUID(this.parentUID, output);
         
         assert this.name != null;
-        output.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, output);
         assert this.qualifiedName != null;
-        output.writeUTF(this.qualifiedName.toString());
+        PersistentUtils.writeUTF(qualifiedName, output);
 
         theFactory.writeStringToUIDMap(this.nestedNamespaces, output, true);
         ProjectComponent.writeKey(this.declarationsSorageKey, output);
@@ -634,9 +635,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.parentRef = null;
        
 
-        this.name = NameCache.getString(input.readUTF());
+        this.name = NameCache.getString(PersistentUtils.readUTF(input));
         assert this.name != null;
-        this.qualifiedName = QualifiedNameCache.getString(input.readUTF());
+        this.qualifiedName = QualifiedNameCache.getString(PersistentUtils.readUTF(input));
         assert this.qualifiedName != null;
         theFactory.readStringToUIDMap(this.nestedNamespaces, input, QualifiedNameCache.getManager());
         declarationsSorageKey = ProjectComponent.readKey(input);
