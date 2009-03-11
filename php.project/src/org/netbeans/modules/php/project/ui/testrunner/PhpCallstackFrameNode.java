@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,27 +31,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.jellytools.actions;
 
-import org.netbeans.jellytools.Bundle;
+package org.netbeans.modules.php.project.ui.testrunner;
 
-/** Used to call "Window|Output|Output" main menu item or
- * "org.netbeans.core.output.OutputWindowAction".
- * @see Action
- */
-public class OutputWindowViewAction extends Action {
-    private static final String menu =
-        Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle",
-                                "Menu/Window") +
-        "|" +
-        Bundle.getStringTrimmed("org.netbeans.core.io.ui.Bundle", "Menu/Window/Output")+
-        "|" +
-        Bundle.getStringTrimmed("org.netbeans.core.output2.Bundle",
-                                "OutputWindow");
+import javax.swing.Action;
+import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
 
-    /** Creates new instance. */    
-    public OutputWindowViewAction() {
-        super(menu, null, "org.netbeans.core.output2.OutputWindowAction");
+public class PhpCallstackFrameNode extends CallstackFrameNode {
+    private final String frameInfo;
+
+    public PhpCallstackFrameNode(String frameInfo, String displayName) {
+        super(frameInfo, displayName);
+        this.frameInfo = frameInfo;
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return new JumpToCallStackAction(frameInfo);
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[] {new JumpToCallStackAction(frameInfo)};
     }
 }

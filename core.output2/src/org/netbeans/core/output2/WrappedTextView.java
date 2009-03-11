@@ -262,7 +262,7 @@ public class WrappedTextView extends View {
                     int lineEnd = doc.getLineEnd (i);
                     int length = lineEnd - lineStart;
 
-                    g.setColor(lines.getColorForLine(lineStart)); //XXX should not always be 'true'
+                    g.setColor(lines.getColorForLine(i));
 
                     // get number of logical lines
                     int logicalLines = length <= charsPerLine ? 1 : 

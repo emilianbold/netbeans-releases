@@ -76,9 +76,7 @@ public class FileEncodingQueryTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         ClassLoader l = this.getClass().getClassLoader();
-        MockLookup.setLookup(
-                Lookups.fixed(l, new DummyXMLEncodingImpl()),
-                Lookups.metaInfServices(l));
+        MockLookup.setInstances(l, new DummyXMLEncodingImpl());
         super.setUp();
         this.clearWorkDir();
         File wd = getWorkDir();
