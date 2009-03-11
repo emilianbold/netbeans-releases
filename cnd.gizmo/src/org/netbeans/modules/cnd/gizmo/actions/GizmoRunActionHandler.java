@@ -106,6 +106,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
                 }
             }
         }
+        targetConf.setIO(io);
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
         target.addTargetListener(this);
         final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(target, "Gizmo"); // NOI18N
