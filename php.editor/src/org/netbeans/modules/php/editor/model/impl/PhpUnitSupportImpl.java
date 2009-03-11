@@ -100,7 +100,10 @@ public class PhpUnitSupportImpl implements PhpUnitSupport {
                     PHPIndex index = PHPIndex.get(parameter.getIndex(PHPLanguage.PHP_MIME_TYPE));
                     Collection<IndexedClass> classes = index.getClasses(null, clsName, NameKind.EXACT_NAME, EnumSet.of(SearchScope.SOURCE,SearchScope.DEPENDENCIES));
                     for (IndexedClass indexedClass : classes) {
-                        retval.add(indexedClass.getFileObject());
+                        FileObject fo = indexedClass.getFileObject();
+                        if (fo != null) {
+                            retval.add(fo);
+                        }
                     }
                 }
                 public void cancel() {}
