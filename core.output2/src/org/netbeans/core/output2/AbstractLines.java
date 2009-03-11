@@ -701,8 +701,8 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         DEF_COLORS = new Color[]{out, err, hyperlink, hyperlinkImp};
     }
 
-    public void setDefColor(int type, Color color) {
-        curDefColors[type] = color;
+    public void setDefColor(IOColors.OutputType type, Color color) {
+        curDefColors[type.ordinal()] = color;
     }
 
     Color getDefColor(int type) {
@@ -719,9 +719,9 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         boolean important = hyperlink ? isImportantHyperlink(line) : false;
         boolean isErr = isErr(line);
         if (hyperlink) {
-            return important ? curDefColors[IOColors.HYPERLINK_IMPORTANT] : curDefColors[IOColors.HYPERLINK];
+            return important ? curDefColors[IOColors.OutputType.HYPERLINK_IMPORTANT.ordinal()] : curDefColors[IOColors.OutputType.HYPERLINK.ordinal()];
         }
-        return isErr ? curDefColors[IOColors.ERROR] : curDefColors[IOColors.OUTPUT];
+        return isErr ? curDefColors[IOColors.OutputType.ERROR.ordinal()] : curDefColors[IOColors.OutputType.OUTPUT.ordinal()];
     }
 
     private String lastSearchString = null;
