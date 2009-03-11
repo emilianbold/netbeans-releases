@@ -87,7 +87,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         initInitialValue(ast);
         _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
-        this.name = NameCache.getString(name);
+        this.name = NameCache.getManager().getString(name);
         this.type = type;
         _setScope(scope);
         if (registerInProject) {
@@ -106,7 +106,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         super(file, pos);
         this._static = _static;
         this._extern = _extern;
-        this.name = NameCache.getString(name);
+        this.name = NameCache.getManager().getString(name);
         this.type = type;
         _setScope(scope);
         if (registerInProject) {

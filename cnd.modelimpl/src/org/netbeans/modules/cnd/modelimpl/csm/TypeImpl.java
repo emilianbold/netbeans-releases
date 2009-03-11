@@ -306,7 +306,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         else {
             StringBuilder sb = new StringBuilder();
             addText(sb, AstRenderer.getFirstSiblingSkipQualifiers(node));
-            return TextCache.getString(sb.toString());
+            return TextCache.getManager().getString(sb.toString());
 //            return sb.toString();
         }
     }
@@ -452,7 +452,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                 int templateDepth = 0;
                 for (AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling()) {
                     if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID) {
-                        l.add(NameCache.getString(namePart.getText()));
+                        l.add(NameCache.getManager().getString(namePart.getText()));
                     } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
                         // the beginning of template parameters
                         templateDepth++;

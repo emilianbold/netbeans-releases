@@ -115,7 +115,7 @@ public class Utils {
     public static CharSequence[] splitQualifiedName(String qualified) {
         List<CharSequence> v = new ArrayList<CharSequence>();
         for (StringTokenizer t = new StringTokenizer(qualified, ": \t\n\r\f", false); t.hasMoreTokens(); ) {// NOI18N 
-            v.add(NameCache.getString(t.nextToken()));
+            v.add(NameCache.getManager().getString(t.nextToken()));
         }
         return v.toArray(new CharSequence[v.size()]);
     }   

@@ -107,7 +107,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
         
-        name = QualifiedNameCache.getString(initName(ast));
+        name = QualifiedNameCache.getManager().getString(initName(ast));
         rawName = AstUtil.getRawNameInChildren(ast);
 
         AST child = ast.getFirstChild();
@@ -334,7 +334,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     protected final void setName(CharSequence name) {
-        this.name = QualifiedNameCache.getString(name);
+        this.name = QualifiedNameCache.getManager().getString(name);
     }
     
     public CharSequence getQualifiedName() {
@@ -554,7 +554,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     public CharSequence getSignature() {
         if( signature == null ) {
-            signature = QualifiedNameCache.getString(createSignature());
+            signature = QualifiedNameCache.getManager().getString(createSignature());
         }
         return signature;
     }

@@ -95,7 +95,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
             // We want to avoid NPE (see IZ#143591).
             return ""; // NOI18N
         } else {
-            return TextCache.getString(cs);
+            return TextCache.getManager().getString(cs);
         }
     }
 

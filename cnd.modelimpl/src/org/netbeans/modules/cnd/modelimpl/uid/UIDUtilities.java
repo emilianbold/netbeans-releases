@@ -533,7 +533,7 @@ public class UIDUtilities {
 
         public UnresolvedClassUID(String name, CsmProject project) {
             super(project);
-            this.name = NameCache.getString(name);
+            this.name = NameCache.getManager().getString(name);
         }
 
         public CsmClass getObject() {

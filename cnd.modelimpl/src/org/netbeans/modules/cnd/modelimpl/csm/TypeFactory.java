@@ -235,7 +235,7 @@ public class TypeFactory {
                         for( AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling() ) {
                             if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID ) {
                                 sb.append(namePart.getText());
-                                l.add(NameCache.getString(namePart.getText()));
+                                l.add(NameCache.getManager().getString(namePart.getText()));
                                 //l.add(namePart.getText());
                             } else if( namePart.getType() == CPPTokenTypes.LESSTHAN ) {
                                 // the beginning of template parameters
@@ -248,7 +248,7 @@ public class TypeFactory {
                                 if( templateDepth == 0) {
                                     if (namePart.getType() == CPPTokenTypes.SCOPE) {
                                         // We're done here, start filling nested type
-                                        type.classifierText = QualifiedNameCache.getString(sb);
+                                        type.classifierText = QualifiedNameCache.getManager().getString(sb);
                                         type.qname = l.toArray(new CharSequence[l.size()]);
                                         type = createType(namePart.getNextSibling(), file, ptrOperator, arrayDepth, TemplateUtils.checkTemplateType(type, scope), scope);
                                         break;
@@ -275,7 +275,7 @@ public class TypeFactory {
                             }
                         }
                         if (type.classifierText == null) {
-                            type.classifierText = QualifiedNameCache.getString(sb);
+                            type.classifierText = QualifiedNameCache.getManager().getString(sb);
                             type.qname = l.toArray(new CharSequence[l.size()]);
                         }
                     }

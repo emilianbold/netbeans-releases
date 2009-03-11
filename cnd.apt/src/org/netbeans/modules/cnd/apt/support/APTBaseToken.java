@@ -136,7 +136,7 @@ public class APTBaseToken implements APTToken {
     }
 
     public void setText(String t) {
-        text = TextCache.getString(t);
+        text = TextCache.getManager().getString(t);
     }
 
     public int getLine() {

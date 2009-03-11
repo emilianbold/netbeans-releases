@@ -282,7 +282,7 @@ public final class Unresolved implements Disposable {
     
     @SuppressWarnings("unchecked")
     public CsmClass getDummyForUnresolved(CharSequence name) {
-        name = NameCache.getString(name);
+        name = NameCache.getManager().getString(name);
         Reference<UnresolvedClass> ref = dummiesForUnresolved.get(name);
         UnresolvedClass cls = ref == null ? null : ref.get();
         if( cls == null ) {

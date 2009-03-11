@@ -199,16 +199,16 @@ public class ProjectSettingsValidator {
 	}
 	
 	public long getCrc(String name) {
-	    Long crc = map.get(DefaultCache.getString(name));
+	    Long crc = map.get(DefaultCache.getManager().getString(name));
 	    return crc == null ? 0 : crc.longValue();
 	}
 	
 	public boolean exists(String name) {
-	    return map.containsKey(DefaultCache.getString(name));
+	    return map.containsKey(DefaultCache.getManager().getString(name));
 	}
 	
 	public void setCrc(String name, long crc) {
-	    map.put(DefaultCache.getString(name), crc);
+	    map.put(DefaultCache.getManager().getString(name), crc);
 	}
 	
 	public Data(DataInput stream) throws IOException {

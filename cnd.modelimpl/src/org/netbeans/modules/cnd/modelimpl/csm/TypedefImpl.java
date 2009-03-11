@@ -102,7 +102,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         if (name.length()==0) {
             name = fixBuiltInTypedef(ast);
         }
-        this.name = QualifiedNameCache.getString(name);
+        this.name = QualifiedNameCache.getManager().getString(name);
         if (!global) {
             Utils.setSelfUID(this);
         }
