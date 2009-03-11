@@ -919,7 +919,14 @@ public class IssuePanel extends javax.swing.JPanel {
                 try {
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
                         try {
-                            issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
+                            if (attachment.file.exists()) {
+                                if (attachment.description.trim().length() == 0) {
+                                    attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
+                                }
+                                issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
+                            } else {
+                                // PENDING notify user
+                            }
                         } catch (HttpException hex) {
                             hex.printStackTrace();
                         } catch (IOException ioex) {
