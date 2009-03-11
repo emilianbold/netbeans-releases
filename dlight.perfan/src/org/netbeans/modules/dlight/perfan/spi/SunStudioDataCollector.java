@@ -375,7 +375,7 @@ public class SunStudioDataCollector
             
             if (collectedInfoList.contains(SunStudioDCConfiguration.CollectedInfo.MEMSUMMARY)) {
                 resetIndicators();
-                statisticsTask = DLightExecutorService.scheduleAtFixedRate(
+                memoryStatisticsTask = DLightExecutorService.scheduleAtFixedRate(
                         new SummaryLeaksDataFetchingTask(), 1, TimeUnit.SECONDS,
                         "MEMSUMMARY"); // NOI18N
             }
