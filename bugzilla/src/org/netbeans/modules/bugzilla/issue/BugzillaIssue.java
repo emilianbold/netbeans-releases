@@ -414,7 +414,10 @@ public class BugzillaIssue extends Issue {
             // XXX the issue cache is supposed to be used in a generec way
             // this should be also solved on a higher level then in each
             // particular bugtracking system
-            data = BugzillaUtil.getTaskData(repository, getID());
+            TaskData td = BugzillaUtil.getTaskData(repository, getID());
+            if(td != null) {
+                data = td;
+            }
         } else {
             data = taskData;
         }

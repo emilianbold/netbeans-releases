@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.bugzilla.util;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -54,6 +56,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -83,13 +86,22 @@ public class BugzillaUtil {
         rc.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
     }
 
-    public static TaskData getTaskData(BugzillaRepository repository, String id) {
-        try {
-            return Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
-        return null;
+    /**
+     * Returns TaskData for the given issue id or null if an error occured
+     * @param repository
+     * @param id
+     * @return
+     */
+    public static TaskData getTaskData(final BugzillaRepository repository, final String id) {
+        final TaskData[] taskData = new TaskData[1];
+        BugzillaCommand cmd = new BugzillaCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
+                taskData[0] = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
+            }
+        };
+        repository.getExecutor().execute(cmd);
+        return taskData[0];
     }
 
     public static String getKeywords(String label, String keywordsString, BugzillaRepository repository) {

@@ -154,19 +154,12 @@ public class BugzillaRepository extends Repository {
     public Issue getIssue(final String id) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
 
-        final TaskData[] taskData = new TaskData[1];
-        BugzillaCommand cmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                taskData[0] = Bugzilla.getInstance().getRepositoryConnector().getTaskData(taskRepository, id, new NullProgressMonitor());
-            }
-        };
-        getExecutor().execute(cmd);
-        if(taskData[0] == null) {
+        TaskData taskData = BugzillaUtil.getTaskData(BugzillaRepository.this, id);
+        if(taskData == null) {
             return null;
         }
         try {
-            return getIssueCache().setIssueData(id, taskData[0]);
+            return getIssueCache().setIssueData(id, taskData);
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
             return null;
