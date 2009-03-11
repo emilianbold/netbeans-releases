@@ -539,7 +539,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     }
 
     private String checkForInfos() {
-        if (!isLoggedIn()) {
+        if (!Utilities.isLoggedIn()) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.needLogin");
         } else if (getProjectName().trim().equals("")) {
@@ -594,13 +594,6 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     }
 
     // ----------
-
-    private boolean isLoggedIn() {
-        if (Kenai.getDefault().getPasswordAuthentication() == null) {
-            return false;
-        }
-        return true;
-    }
 
     private void refreshUsername() {
         PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();

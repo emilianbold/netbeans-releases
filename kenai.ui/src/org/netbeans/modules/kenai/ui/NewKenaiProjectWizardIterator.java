@@ -87,7 +87,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
     private Logger logger = Logger.getLogger("org.netbeans.modules.kenai");
 
-    public Set<KenaiProject> instantiate(ProgressHandle handle) throws IOException {
+    public Set<CreatedProjectInfo> instantiate(ProgressHandle handle) throws IOException {
 
         handle.start();
 
@@ -113,10 +113,9 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                     ", Title: " + newPrjTitle + ", Description: " + newPrjDesc + ", License: " + newPrjLicense);
 
             Kenai.getDefault().createProject(newPrjName, newPrjTitle,
-                    newPrjDesc, new String[] { newPrjLicense }, /*no tags*/ null); // NOI18N
+                    newPrjDesc, new String[] { newPrjLicense }, /*no tags*/ null);
 
         } catch (KenaiException kex) {
-            //handle.finish();
             throw new IOException(getErrorMessage(kex, NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
                     "NewKenaiProject.progress.projectCreationFailed")));
         }
@@ -137,7 +136,6 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                         displayName, description, newPrjScmType, /*ext issues URL*/ null, extScmUrl, /*browse repo URL*/ null);
 
             } catch (KenaiException kex) {
-                //handle.finish();
                 throw new IOException(getErrorMessage(kex, NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
                         "NewKenaiProject.progress.repoCreationFailed")));
             }
@@ -160,7 +158,6 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                 Kenai.getDefault().getProject(newPrjName).createProjectFeature(newPrjName + newPrjIssues,
                     displayName, description, newPrjIssues, extIssuesUrl, /*ext repo URL*/ null, /*browse repo URL*/ null);
             } catch (KenaiException kex) {
-                //handle.finish();
                 throw new IOException(getErrorMessage(kex, NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
                         "NewKenaiProject.progress.issuesCreationFailed")));
             }
@@ -175,11 +172,11 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         
 
         // Open the project in Dashboard
-        Set<KenaiProject> set = new HashSet<KenaiProject>();
+        Set<CreatedProjectInfo> set = new HashSet<CreatedProjectInfo>();
         try {
             KenaiProject project = Kenai.getDefault().getProject(newPrjName);
             Dashboard.getDefault().addProject(new ProjectHandleImpl(project));
-            set.add(project);
+            set.add(new CreatedProjectInfo(project, newPrjScmLocal));
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -237,6 +234,20 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     public void addChangeListener(ChangeListener l) { }
 
     public void removeChangeListener(ChangeListener l) { }
+
+    // ----------
+
+    public static class CreatedProjectInfo {
+
+        public KenaiProject project;
+        public String localRepoPath;
+
+        public CreatedProjectInfo(KenaiProject prj, String pth) {
+            project = prj;
+            localRepoPath = pth;
+        }
+
+    }
 
     // ----------
 
@@ -315,7 +326,6 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     // ----------
 
     private WizardDescriptor.Panel[] getPanels() {
-
         if (panels == null) {
             panels = createPanels();
             String[] steps = new String[panels.length];
@@ -338,7 +348,6 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
             }
         }
         return panels;
-
     }
 
     private WizardDescriptor.Panel[] createPanels() {

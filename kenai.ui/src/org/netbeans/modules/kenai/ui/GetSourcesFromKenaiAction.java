@@ -86,7 +86,6 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
         
         if (options[0].equals(option)) {
             
-            // Run the checkout with progress !!!
             final PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
             final GetSourcesInfo sourcesInfo = getSourcesPanel.getSelectedSourcesInfo();
             final KenaiProjectFeature feature = sourcesInfo.feature;

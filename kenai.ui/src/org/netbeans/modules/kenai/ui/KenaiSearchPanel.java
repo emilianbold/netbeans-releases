@@ -387,7 +387,12 @@ public class KenaiSearchPanel extends JPanel {
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.insets = new Insets(0, 0, 20, 0);
         panel.add(label, constraints);
-        return panel;
+        JScrollPane scrlPane = new JScrollPane();
+        scrlPane.setViewportView(panel);
+        JPanel pnl = new JPanel();
+        pnl.setLayout(new BorderLayout());
+        pnl.add(scrlPane, BorderLayout.CENTER);
+        return pnl;
     }
 
     private JPanel createProgressPanel() {
@@ -407,7 +412,12 @@ public class KenaiSearchPanel extends JPanel {
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.insets = new Insets(0, 40, 20, 40);
         panel.add(progressComponent, constraints);
-        return panel;
+        JScrollPane scrlPane = new JScrollPane();
+        scrlPane.setViewportView(panel);
+        JPanel pnl = new JPanel();
+        pnl.setLayout(new BorderLayout());
+        pnl.add(scrlPane, BorderLayout.CENTER);
+        return pnl;
     }
 
     private JPanel preparePanel() {
@@ -415,8 +425,6 @@ public class KenaiSearchPanel extends JPanel {
         panel.setLayout(new GridBagLayout());
         Color bgColor = UIManager.getColor("window"); // NOI18N
         panel.setBackground(bgColor != null ? bgColor : Color.WHITE);
-        // XXX setting border like this doesn't work on Metal L&F
-        //panel.setBorder(UIManager.getBorder("ScrollPane.border")); // NOI18N
         return panel;
     }
 

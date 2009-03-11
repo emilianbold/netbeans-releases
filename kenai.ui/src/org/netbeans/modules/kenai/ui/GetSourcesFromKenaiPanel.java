@@ -69,8 +69,6 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -96,6 +94,8 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 
     private ProjectAndFeature prjAndFeature;
     private boolean localFolderPathEdited = false;
+
+    private DefaultComboBoxModel comboModel;
 
     public GetSourcesFromKenaiPanel(ProjectAndFeature prjFtr) {
 
@@ -337,7 +337,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             if (null != selProject && selProject.length > 0) {
                 KenaiProjectFeature features[] = selProject[0].getFeatures(KenaiFeature.SOURCE);
                 for (KenaiProjectFeature feature : features) {
-                    //kenaiRepoComboBox.getModel()
+                    getComboModel().addElement(new KenaiFeatureListItem(selProject[0], feature));
                 }
             }
         }
@@ -478,8 +478,9 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     }
 
     private void updateRepoPath() {
-        if (!localFolderPathEdited) {
-            String urlString = ((KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem()).feature.getLocation().toExternalForm();
+        KenaiFeatureListItem selItem = (KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem();
+        if (!localFolderPathEdited && selItem != null) {
+            String urlString = selItem.feature.getLocation().toExternalForm();
             String repoName = urlString.substring(urlString.lastIndexOf("/") + 1); // NOI18N
             localFolderTextField.setText(Utilities.getDefaultRepoFolder().getPath() + File.separator + repoName);
         }
@@ -526,27 +527,41 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     }
 
     private void setupCombo() {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                Iterator<KenaiProject> myProjectsIter = null;
-                try {
-                    myProjectsIter = Kenai.getDefault().getMyProjects().iterator();
-                } catch (KenaiException ex) {
-                    // XXX
-                    Exceptions.printStackTrace(ex);
-                }
-                final ComboBoxModel model = (ComboBoxModel) new KenaiRepositoriesModel(myProjectsIter);
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        kenaiRepoComboBox.setModel(model);
-                        updatePanelUI();
-                        updateRepoPath();
+        if (Utilities.isLoggedIn()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    Iterator<KenaiProject> myProjectsIter = null;
+                    try {
+                        myProjectsIter = Kenai.getDefault().getMyProjects().iterator();
+                    } catch (KenaiException ex) {
+                        // XXX
+                        Exceptions.printStackTrace(ex);
                     }
-                });
-            }
-        });
+                    final ComboBoxModel model = (ComboBoxModel) new KenaiRepositoriesModel(myProjectsIter);
+                    //setComboModel((DefaultComboBoxModel) new KenaiRepositoriesModel(myProjectsIter));
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            kenaiRepoComboBox.setModel(model);
+                            updatePanelUI();
+                            updateRepoPath();
+                        }
+                    });
+                }
+            });
+        } else { // user not logged in
+            setComboModel(new DefaultComboBoxModel());
+        }
+
         KenaiFeatureCellRenderer renderer = new KenaiFeatureCellRenderer();
         kenaiRepoComboBox.setRenderer(renderer);
+    }
+
+    private synchronized void setComboModel(DefaultComboBoxModel model) {
+        comboModel = model;
+    }
+
+    private synchronized DefaultComboBoxModel getComboModel() {
+        return comboModel;
     }
 
     private void enableFolderToGetUI(boolean enable) {

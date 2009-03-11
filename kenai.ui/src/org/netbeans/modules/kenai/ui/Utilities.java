@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.ui;
 
 import java.io.File;
 import javax.swing.filechooser.FileSystemView;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -71,6 +72,13 @@ public class Utilities {
             }
         }
         return FileUtil.normalizeFile(new File(System.getProperty("user.home")));
+    }
+
+    public static boolean isLoggedIn() {
+        if (Kenai.getDefault().getPasswordAuthentication() == null) {
+            return false;
+        }
+        return true;
     }
 
 }

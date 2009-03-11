@@ -45,15 +45,36 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.text.MessageFormat;
+import org.openide.util.NbBundle;
+
 /**
  *
- * @author Milan
+ * @author Milan Kubec
  */
 public class LandingPagePanel extends javax.swing.JPanel {
 
+    private String projectName;
+    private String repoPath;
+
     /** Creates new form LandingPagePanel */
-    public LandingPagePanel() {
+    public LandingPagePanel(String prjName, String path) {
+
+        projectName = prjName;
+        repoPath = path;
+
         initComponents();
+
+        String repoMessage = "";
+        if (repoPath != null || !"".equals(repoPath)) {
+            String repoPattern = NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.repoMessage");
+            repoMessage = MessageFormat.format(repoPattern, repoPath);
+        }
+
+        String messagePattern = NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.message");
+        String message = MessageFormat.format(messagePattern, projectName, repoMessage);
+        messageEditorPane.setText(message);
+        
     }
 
     /** This method is called from within the constructor to
@@ -66,30 +87,30 @@ public class LandingPagePanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
+        iconLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jEditorPane1 = new javax.swing.JEditorPane();
+        messageEditorPane = new javax.swing.JEditorPane();
 
         setPreferredSize(new java.awt.Dimension(450, 300));
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai_logo.png"))); // NOI18N
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.jLabel1.text")); // NOI18N
+        iconLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai_logo.png"))); // NOI18N
+        iconLabel.setText(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.iconLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(24, 24, 20, 30);
-        add(jLabel1, gridBagConstraints);
+        add(iconLabel, gridBagConstraints);
 
         jScrollPane1.setBorder(null);
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane1.setEnabled(false);
 
-        jEditorPane1.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
-        jEditorPane1.setContentType(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.jEditorPane1.contentType")); // NOI18N
-        jEditorPane1.setEditable(false);
-        jEditorPane1.setText(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.jEditorPane1.text")); // NOI18N
-        jScrollPane1.setViewportView(jEditorPane1);
+        messageEditorPane.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
+        messageEditorPane.setContentType(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.contentType")); // NOI18N
+        messageEditorPane.setEditable(false);
+        messageEditorPane.setText(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.text")); // NOI18N
+        jScrollPane1.setViewportView(messageEditorPane);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -100,9 +121,9 @@ public class LandingPagePanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JEditorPane jEditorPane1;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel iconLabel;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JEditorPane messageEditorPane;
     // End of variables declaration//GEN-END:variables
 
 }
