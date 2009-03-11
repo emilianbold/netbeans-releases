@@ -54,6 +54,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -429,8 +430,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         viewLabel = new javax.swing.JLabel();
         buttonsPanel = new javax.swing.JPanel();
         resolveButtonPanel = new javax.swing.JPanel();
-        resolveButton = new javax.swing.JButton();
         hidingPanel = new javax.swing.JPanel();
+        resolveButton = new javax.swing.JButton();
         addProjectButton = new javax.swing.JButton();
         addClusterButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
@@ -551,6 +552,9 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
         resolveButtonPanel.setLayout(new java.awt.CardLayout());
 
+        hidingPanel.setLayout(null);
+        resolveButtonPanel.add(hidingPanel, "card3");
+
         resolveButton.setForeground(java.awt.Color.red);
         org.openide.awt.Mnemonics.setLocalizedText(resolveButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ResolveButton")); // NOI18N
         resolveButton.setToolTipText(org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ResolveButtonTooltip")); // NOI18N
@@ -560,7 +564,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
         });
         resolveButtonPanel.add(resolveButton, "card2");
-        resolveButtonPanel.add(hidingPanel, "card3");
 
         buttonsPanel.add(resolveButtonPanel);
 
@@ -1445,12 +1448,16 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
 
         FixInfo fixInfo = new FixInfo();
+        Collection<UniverseModule> scannedModules = sortedModules.values();
+
         RESTART:
         for (;;) {
-            for (UniverseModule m : sortedModules.values()) {
+            for (Iterator<UniverseModule> it = scannedModules.iterator(); it.hasNext();) {
+                UniverseModule m = it.next();
                 if (excluded.contains(m)) {
                     continue;
                 }
+                fixInfo.resetCurrentAdditions();
                 boolean warningFound = findWarning(m, sortedModules, providers, excluded, fixInfo);
                 if (! warningFound)    // no missing dep for this module
                     continue;
@@ -1459,9 +1466,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 }
                 if (!fixInfo.isEmpty()) {
                     assert fixInfo.fixable;
-                    // fixable dep, sortedModules, providers and excluded already updated, restart
-                    // XXX if slow, may only restart with copy of tailMap starting at either
-                    // successor of m or 1st member of fixInfo.toAdd, whichever comes sooner in sortedModules
+                    // fixable dep, sortedModules, providers and excluded already updated, 
+                    // restart with copy of tailMap starting at either successor of m or 1st member of fixInfo.toAdd,
+                    // whichever comes sooner in sorted modules
+                    String additionCNB = (it.hasNext() ? it.next() : m).getCodeNameBase();
+                    scannedModules = sortedModules.tailMap(fixInfo.getRestartPointFor(additionCNB)).values();
                     continue RESTART;
                 }
             }
@@ -1534,11 +1543,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     System.arraycopy(fi.warning, 1, args, 0, args.length);
                     category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
                     resolveFixInfo = fi;
-                    resolveButton.setEnabled(true);
-                    cl.first(resolveButtonPanel);
+                    resolveButton.setEnabled(fi.fixable);
+                    cl.last(resolveButtonPanel);
                 } else {
                     category.setErrorMessage(null);
-                    cl.last(resolveButtonPanel);
+                    cl.first(resolveButtonPanel);
                 }
             }
         });
@@ -1556,6 +1565,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             if (fi.warning == null)
                 fi.warning = warning;
             fi.toAdd.add(cnb);
+            fi.currentAdditions.add(cnb);
         }
 
         private static void putUnfixable(FixInfo fi, String[] warning) {
@@ -1566,9 +1576,23 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         String[] warning;
         boolean fixable = true;
         Set<String> toAdd = new HashSet<String>();
+        private SortedSet<String> currentAdditions = new TreeSet<String>();
 
         private boolean isEmpty() {
             return warning == null;
+        }
+
+        public SortedSet<String> getCurrentAdditions() {
+            return currentAdditions;
+        }
+
+        private void resetCurrentAdditions() {
+            currentAdditions.clear();
+        }
+
+        public String getRestartPointFor(String additionCNB)  {
+            currentAdditions.add(additionCNB);
+            return currentAdditions.first();
         }
     }
 
