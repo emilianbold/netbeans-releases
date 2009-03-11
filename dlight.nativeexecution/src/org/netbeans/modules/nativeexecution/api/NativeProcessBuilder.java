@@ -129,7 +129,13 @@ public final class NativeProcessBuilder implements Callable<Process> {
             process = new RemoteNativeProcess(info);
         } else {
             if (externalTerminal != null) {
-                process = new TerminalLocalNativeProcess(externalTerminal, info);
+                boolean available = externalTerminal.isAvailable(info.getExecutionEnvironment());
+                if (available) {
+                    process = new TerminalLocalNativeProcess(externalTerminal, info);
+                } else {
+                    System.err.println("Unable to find external terminal"); // NOI18N
+                    process = new LocalNativeProcess(info);
+                }
             } else {
                 process = new LocalNativeProcess(info);
             }
