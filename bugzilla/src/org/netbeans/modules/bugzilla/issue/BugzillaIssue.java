@@ -551,7 +551,7 @@ public class BugzillaIssue extends Issue {
         ta.setValue(id);
     }
 
-    void reassigne(String user) {
+    void reassign(String user) {
         setOperation(BugzillaOperation.reassign);
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.reassign.getInputId());
