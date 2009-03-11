@@ -45,7 +45,7 @@ import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.management.api.DLightSessionListener;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
-import org.netbeans.modules.dlight.util.TimerTaskExecutionService;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 
 /**
  *
@@ -53,8 +53,6 @@ import org.netbeans.modules.dlight.util.TimerTaskExecutionService;
 final class OnTimerRefreshVisualizerHandler
         implements SessionStateListener, DLightSessionListener {
 
-    private final static TimerTaskExecutionService service =
-            TimerTaskExecutionService.getInstance();
     private final OnTimerTask task;
     private final long period;
     private final TimeUnit unit;
@@ -90,13 +88,13 @@ final class OnTimerRefreshVisualizerHandler
             return;
         }
 
-        scheduledTask = service.scheduleAtFixedRate(
+        scheduledTask = DLightExecutorService.scheduleAtFixedRate(
                 new Runnable() {
 
                     public void run() {
                         task.onTimer();
                     }
-                }, period, unit, "OnTimerRefreshVisualizerHandler");
+                }, period, unit, "OnTimerRefreshVisualizerHandler"); // NOI18N
     }
 
     synchronized void stopTimer() {

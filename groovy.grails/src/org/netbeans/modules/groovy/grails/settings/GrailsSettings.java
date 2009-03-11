@@ -67,6 +67,8 @@ public final class GrailsSettings {
 
     private static final String GRAILS_PROJECT_PLUGINS_DIR_KEY = "grailsPrj-ProjectPluginsDir-"; // NOI18N
 
+    private static final String GRAILS_GLOBAL_PLUGINS_DIR_KEY = "grailsPrj-GlobalPluginsDir-"; // NOI18N
+
     private static GrailsSettings instance;
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -178,16 +180,28 @@ public final class GrailsSettings {
         getPreferences().putBoolean(getDisplayBrowserKey(prj), displayBrowser);
     }
 
-    public String getProjectPluginDirForProject(Project prj) {
+    public String getProjectPluginsDirForProject(Project prj) {
         assert prj != null;
 
-        return getPreferences().get(getProjectPluginDirKey(prj), null);
+        return getPreferences().get(getProjectPluginsDirKey(prj), null);
     }
 
-    public void setProjectPluginDirForProject(Project prj, String dir) {
+    public void setProjectPluginsDirForProject(Project prj, String dir) {
         assert prj != null;
 
-        getPreferences().put(getProjectPluginDirKey(prj), dir);
+        getPreferences().put(getProjectPluginsDirKey(prj), dir);
+    }
+
+    public String getGlobalPluginsDirForProject(Project prj) {
+        assert prj != null;
+
+        return getPreferences().get(getGlobalPluginsDirKey(prj), null);
+    }
+
+    public void setGlobalPluginsDirForProject(Project prj, String dir) {
+        assert prj != null;
+
+        getPreferences().put(getGlobalPluginsDirKey(prj), dir);
     }
 
     private String getProjectName(Project prj) {
@@ -223,9 +237,14 @@ public final class GrailsSettings {
         return GRAILS_DISPLAY_BROWSER_KEY + getProjectName(prj);
     }
 
-    private String getProjectPluginDirKey(Project prj) {
+    private String getProjectPluginsDirKey(Project prj) {
         assert prj != null;
         return GRAILS_PROJECT_PLUGINS_DIR_KEY + getProjectName(prj);
+    }
+
+    private String getGlobalPluginsDirKey(Project prj) {
+        assert prj != null;
+        return GRAILS_GLOBAL_PLUGINS_DIR_KEY + getProjectName(prj);
     }
 
     private Preferences getPreferences() {
