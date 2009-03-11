@@ -118,7 +118,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
 //    }
 
     public void testFields() throws Throwable {
-        // WARNING: the test assumes that there are more than one value
+        // WARNING: the test assumes that there is more than one value
         // for atributes like platform, versions etc.
 
         long ts = System.currentTimeMillis();
@@ -135,20 +135,20 @@ public class IssueTest extends NbTestCase implements TestConstants {
 
 
         String keyword = getKeyword(issue);
-        String milestone = getMilestone(issue);
+//        String milestone = getMilestone(issue);
         String platform = getPlatform(issue);
         String priority = getPriority(issue);
         String resolution = getResolution(issue);
         String version = getVersion(issue);
-        String assignee = "dil@dil.com";
-        String reporter = "dil@dil.com";
-        String qaContact = "dil@dil.com";
-        String assigneeName = "dilino";
-        String qaContactName = "dilino";
+        String assignee = "unittest@unit.test";
+        String reporter = "unittest@unit.test";
+        String qaContact = "unittest@unit.test";
+        String assigneeName = REPO_USER_NAME;
+        String qaContactName = REPO_USER_NAME;
         String blocks = "1";
         String depends = "2";
-        String newcc = "dil@dil.com";
-        String cc = "dil@dil.com";
+        String newcc = "unittest@unit.test";
+        String cc = "unittest@unit.test";
         String url = "http://new.ulr";
         String component = getComponent(issue);
         String severity = getSeverity(issue);
@@ -159,7 +159,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         issue.setFieldValue(IssueField.COMPONENT, component);
         issue.setFieldValue(IssueField.DEPENDS_ON, depends);
         issue.setFieldValue(IssueField.KEYWORDS, keyword);
-        issue.setFieldValue(IssueField.MILESTONE,milestone);
+//        issue.setFieldValue(IssueField.MILESTONE,milestone);
         issue.setFieldValue(IssueField.PLATFORM,platform);
         issue.setFieldValue(IssueField.PRIORITY, priority);
         issue.setFieldValue(IssueField.QA_CONTACT, qaContact);
@@ -195,7 +195,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         assertEquals(component, issue.getFieldValue(IssueField.COMPONENT));
         assertEquals(depends, issue.getFieldValue(IssueField.DEPENDS_ON));
         assertEquals(keyword, issue.getFieldValue(IssueField.KEYWORDS));
-        assertEquals(milestone, issue.getFieldValue(IssueField.MILESTONE));
+//        assertEquals(milestone, issue.getFieldValue(IssueField.MILESTONE));
         assertEquals(platform, issue.getFieldValue(IssueField.PLATFORM));
         assertEquals(priority, issue.getFieldValue(IssueField.PRIORITY));
         assertEquals(qaContact, issue.getFieldValue(IssueField.QA_CONTACT));
@@ -235,16 +235,16 @@ public class IssueTest extends NbTestCase implements TestConstants {
         setSeen(issue); // reset status
 
         keyword = keyword + "," + getKeyword(issue);
-        milestone = getMilestone(issue);
+//        milestone = getMilestone(issue);
         platform = getPlatform(issue);
         priority = getPriority(issue);
         resolution = getResolution(issue);
         version = getVersion(issue);
-        qaContact = "dil2@dil.com";
-        qaContactName = "dilino2";
+        qaContact = REPO_USER2;
+        qaContactName = REPO_USER2_NAME;
         blocks = "1,3";
         depends = "2,4";
-        newcc = "dil2@dil.com";
+        newcc = REPO_USER2;
         url = "http://evennewer.ulr";
         component = getComponent(issue);
         severity = getSeverity(issue);
@@ -253,7 +253,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         issue.setFieldValue(IssueField.COMPONENT, component);
         issue.setFieldValue(IssueField.DEPENDS_ON, depends);
         issue.setFieldValue(IssueField.KEYWORDS, keyword);
-        issue.setFieldValue(IssueField.MILESTONE, milestone);
+//        issue.setFieldValue(IssueField.MILESTONE, milestone);
         issue.setFieldValue(IssueField.PLATFORM, platform);
         issue.setFieldValue(IssueField.PRIORITY, priority);
         issue.setFieldValue(IssueField.QA_CONTACT, qaContact);
@@ -348,52 +348,52 @@ public class IssueTest extends NbTestCase implements TestConstants {
         setSeen(issue); // reset status
 
         // add a cc
-        issue.setFieldValue(IssueField.NEWCC, "dil@dil.com");
+        issue.setFieldValue(IssueField.NEWCC, REPO_USER);
         submit(issue);
-        assertEquals("dil@dil.com", issue.getFieldValue(IssueField.CC));
+        assertEquals(REPO_USER, issue.getFieldValue(IssueField.CC));
         assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.CC);
         setSeen(issue); // reset status
 
         // add new cc
-        issue.setFieldValue(IssueField.NEWCC, "dil2@dil.com");
+        issue.setFieldValue(IssueField.NEWCC, REPO_USER2);
         submit(issue);
         List<String> ccs = issue.getFieldValues(IssueField.CC);
         assertEquals(2, ccs.size());
-        assertTrue(ccs.contains("dil@dil.com"));
-        assertTrue(ccs.contains("dil2@dil.com"));
+        assertTrue(ccs.contains(REPO_USER));
+        assertTrue(ccs.contains(REPO_USER2));
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.CC);
 
         // add two cc-s at once
-        issue.setFieldValue(IssueField.NEWCC, "dil3@dil.com, dil4@dil.com");
+        issue.setFieldValue(IssueField.NEWCC, REPO_USER3 + ", " + REPO_USER4);
         submit(issue);
         ccs = issue.getFieldValues(IssueField.CC);
         assertEquals(4, ccs.size());
-        assertTrue(ccs.contains("dil@dil.com"));
-        assertTrue(ccs.contains("dil2@dil.com"));
-        assertTrue(ccs.contains("dil3@dil.com"));
-        assertTrue(ccs.contains("dil4@dil.com"));
+        assertTrue(ccs.contains(REPO_USER));
+        assertTrue(ccs.contains(REPO_USER2));
+        assertTrue(ccs.contains(REPO_USER3));
+        assertTrue(ccs.contains(REPO_USER4));
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.CC);
 
         setSeen(issue); // reset status
 
         // remove a cc
         ccs = new ArrayList<String>();
-        ccs.add("dil4@dil.com");
-        ccs.add("dil@dil.com");
+        ccs.add(REPO_USER4);
+        ccs.add(REPO_USER);
         issue.setFieldValues(IssueField.REMOVECC, ccs);
         submit(issue);
         ccs = issue.getFieldValues(IssueField.CC);
         assertEquals(2, ccs.size());
-        assertTrue(ccs.contains("dil2@dil.com"));
-        assertTrue(ccs.contains("dil3@dil.com"));
+        assertTrue(ccs.contains(REPO_USER2));
+        assertTrue(ccs.contains(REPO_USER3));
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.CC);
 
         setSeen(issue); // reset status
 
         // remove all
         ccs = new ArrayList<String>();
-        ccs.add("dil3@dil.com");
-        ccs.add("dil2@dil.com");
+        ccs.add(REPO_USER3);
+        ccs.add(REPO_USER2);
         issue.setFieldValues(IssueField.REMOVECC, ccs);
         submit(issue);
         ccs = issue.getFieldValues(IssueField.CC);
@@ -432,7 +432,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         assertEquals("CLOSED", issue.getFieldValue(IssueField.STATUS));
         assertEquals("FIXED", issue.getFieldValue(IssueField.RESOLUTION));
 
-        // we do not support this yet
+        // we do not support this yet - DUPLICATE RESOLVED
 //        issue.duplicate("1");
 //        submit(issue);
 //        assertEquals("RESOLVED", issue.getFieldValue(IssueField.STATUS));
@@ -533,12 +533,12 @@ public class IssueTest extends NbTestCase implements TestConstants {
         BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
         assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
         assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
-        assertEquals("dil@dil.com", issue.getFieldValue(IssueField.ASSIGNED_TO));
+        assertEquals(REPO_USER, issue.getFieldValue(IssueField.ASSIGNED_TO));
 
-        issue.reassigne("dil2@dil.com");
+        issue.reassign(REPO_USER2);
         submit(issue);
 
-        assertEquals("dil2@dil.com", issue.getFieldValue(IssueField.ASSIGNED_TO));
+        assertEquals(REPO_USER2, issue.getFieldValue(IssueField.ASSIGNED_TO));
     }
 
     public void testComment() throws Throwable {
@@ -548,7 +548,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
         assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
         assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
-        assertEquals("dil@dil.com", issue.getFieldValue(IssueField.ASSIGNED_TO));
+        assertEquals(REPO_USER, issue.getFieldValue(IssueField.ASSIGNED_TO));
 
         setSeen(issue);
 
@@ -579,7 +579,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
         assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
         assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
-        assertEquals("dil@dil.com", issue.getFieldValue(IssueField.ASSIGNED_TO));
+        assertEquals(REPO_USER, issue.getFieldValue(IssueField.ASSIGNED_TO));
 
         String comment = "koment";
         issue.addComment(comment, true);
@@ -602,7 +602,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
             BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
             assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
             assertEquals("NEW", issue.getFieldValue(IssueField.STATUS));
-            assertEquals("dil@dil.com", issue.getFieldValue(IssueField.ASSIGNED_TO));
+            assertEquals(REPO_USER, issue.getFieldValue(IssueField.ASSIGNED_TO));
 
             setSeen(issue);
 
@@ -696,57 +696,57 @@ public class IssueTest extends NbTestCase implements TestConstants {
 
     private String getKeyword(BugzillaIssue issue) throws IOException, CoreException {
         List<String> l = Bugzilla.getInstance().getKeywords(getRepository());
-        return getDifferentServerValue(l, issue.getFieldValue(IssueField.KEYWORDS));
+        return getDifferentServerValue(l, issue.getFieldValue(IssueField.KEYWORDS), IssueField.KEYWORDS.getKey());
     }
 
     private String getMilestone(BugzillaIssue issue) throws IOException, CoreException {
         List<String> l = Bugzilla.getInstance().getTargetMilestones(getRepository(), TEST_PROJECT);
-        return getDifferentServerValue(l, issue.getFieldValue(IssueField.MILESTONE));
+        return getDifferentServerValue(l, issue.getFieldValue(IssueField.MILESTONE), IssueField.MILESTONE.getKey());
     }
 
     private String getPlatform(BugzillaIssue issue) throws IOException, CoreException {
         List<String> l = Bugzilla.getInstance().getPlatforms(getRepository());
-        return getDifferentServerValue(l, issue.getFieldValue(IssueField.PLATFORM));
+        return getDifferentServerValue(l, issue.getFieldValue(IssueField.PLATFORM), IssueField.PLATFORM.getKey());
     }
 
     private String getProduct(BugzillaIssue issue) throws IOException, CoreException {
         List<String> l = Bugzilla.getInstance().getProducts(getRepository());
-        return getDifferentServerValue(l, issue.getFieldValue(IssueField.PRODUCT));
+        return getDifferentServerValue(l, issue.getFieldValue(IssueField.PRODUCT), IssueField.PRODUCT.getKey());
     }
 
     private String getPriority(BugzillaIssue issue) throws IOException, CoreException {
         List<String> l = Bugzilla.getInstance().getPriorities(getRepository());
-        return getDifferentServerValue(l, issue.getFieldValue(IssueField.PRIORITY));
+        return getDifferentServerValue(l, issue.getFieldValue(IssueField.PRIORITY), IssueField.PRIORITY.getKey());
     }
 
     private String getVersion(BugzillaIssue issue) throws IOException, CoreException {
         List<String> l = Bugzilla.getInstance().getVersions(getRepository(), TEST_PROJECT);
-        return getDifferentServerValue(l, issue.getFieldValue(IssueField.VERSION));
+        return getDifferentServerValue(l, issue.getFieldValue(IssueField.VERSION), IssueField.VERSION.getKey());
     }
 
     private String getSeverity(BugzillaIssue issue) throws IOException, CoreException {
         List<String> l = Bugzilla.getInstance().getSeverities(getRepository());
-        return getDifferentServerValue(l, issue.getFieldValue(IssueField.SEVERITY));
+        return getDifferentServerValue(l, issue.getFieldValue(IssueField.SEVERITY), IssueField.SEVERITY.getKey());
     }
 
     private String getResolution(BugzillaIssue issue) throws IOException, CoreException {
         List<String> l = Bugzilla.getInstance().getResolutions(getRepository());
-        return getDifferentServerValue(l, issue.getFieldValue(IssueField.RESOLUTION));
+        return getDifferentServerValue(l, issue.getFieldValue(IssueField.RESOLUTION), IssueField.RESOLUTION.getKey());
     }
 
     private String getComponent(BugzillaIssue issue) throws IOException, CoreException {
         List<String> l = Bugzilla.getInstance().getComponents(getRepository(), TEST_PROJECT);
-        return getDifferentServerValue(l, issue.getFieldValue(IssueField.RESOLUTION));
+        return getDifferentServerValue(l, issue.getFieldValue(IssueField.COMPONENT), IssueField.COMPONENT.getKey());
     }
 
-    private String getDifferentServerValue(List<String> l, String v) {
+    private String getDifferentServerValue(List<String> l, String v, String field) {
         if(v != null) {
             for (String s : l) {
                 if(!s.equals(v)) {
                     return s;
                 }
             }
-            fail("there is no different value then [" + v + "] on the server.");
+            fail("there is no different value for field " + field + "  then [" + v + "] on the server.");
         }
         return l.get(0);
     }
