@@ -65,7 +65,7 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -152,8 +152,8 @@ public class ClassIndexTest extends NbTestCase {
     public void testEvents () throws Exception {
         GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[] {bootPath});
         GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] {compilePath});
-        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {sourcePath});        
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcRoot, srcRoot).await();
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {sourcePath});
+        IndexingManager.getDefault().refreshIndexAndWait(srcRoot.getURL(), null);
         final ClasspathInfo cpi = ClasspathInfo.create(srcRoot);
         final ClassIndex index = cpi.getClassIndex();
         index.getPackageNames("org", true, EnumSet.of(ClassIndex.SearchScope.SOURCE));

@@ -90,6 +90,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -905,7 +906,7 @@ out:                    for (URL e : roots) {
                         for (URL mainClass : mainClasses) {
                             File mainFo = new File (URI.create(mainClass.toExternalForm()));
                             if (mainFo.exists()) {
-                                classes.addAll(org.netbeans.modules.java.source.usages.RepositoryUpdater.getRelatedFiles(mainFo, rootFile));
+                                classes.addAll(JavaCustomIndexer.getRelatedTypes(mainFo, rootFile));
                             }
                         }
                         for (ElementHandle<TypeElement> cls : classes) {
