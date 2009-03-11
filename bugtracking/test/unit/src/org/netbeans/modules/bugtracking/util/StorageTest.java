@@ -163,11 +163,6 @@ public class StorageTest extends NbTestCase {
         }
 
         @Override
-        public BugtrackingController getControler() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public IssueNode getNode() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
