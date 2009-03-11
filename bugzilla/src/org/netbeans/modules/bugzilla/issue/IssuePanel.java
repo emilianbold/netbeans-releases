@@ -94,6 +94,7 @@ public class IssuePanel extends javax.swing.JPanel {
         reportedField.setBackground(getBackground());
         modifiedField.setBackground(getBackground());
         resolutionField.setBackground(getBackground());
+        productField.setBackground(getBackground());
         Font font = headerLabel.getFont();
         headerLabel.setFont(font.deriveFont((float)(font.getSize()*1.7)));
         duplicateLabel.setVisible(false);
@@ -137,6 +138,16 @@ public class IssuePanel extends javax.swing.JPanel {
         try {
             initCombos();
             reloadForm(true);
+            GroupLayout layout = (GroupLayout)getLayout();
+            if (issue.getTaskData().isNew()) {
+                if (productCombo.getParent() == null) {
+                    layout.replace(productField, productCombo);
+                }
+            } else {
+                if (productField.getParent() == null) {
+                    layout.replace(productCombo, productField);
+                }
+            }
         } catch (CoreException cex) {
             cex.printStackTrace();
         } catch (IOException ioex) {
@@ -150,6 +161,7 @@ public class IssuePanel extends javax.swing.JPanel {
         String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
         headerLabel.setText(headerTxt);
         reloadField(force, productCombo, BugzillaIssue.IssueField.PRODUCT);
+        reloadField(force, productField, BugzillaIssue.IssueField.PRODUCT);
         reloadField(force, componentCombo, BugzillaIssue.IssueField.COMPONENT);
         reloadField(force, versionCombo, BugzillaIssue.IssueField.VERSION);
         reloadField(force, platformCombo, BugzillaIssue.IssueField.PLATFORM);
@@ -363,6 +375,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private void initComponents() {
 
         resolutionField = new javax.swing.JTextField();
+        productField = new javax.swing.JTextField();
         productLabel = new javax.swing.JLabel();
         componentLabel = new javax.swing.JLabel();
         versionLabel = new javax.swing.JLabel();
@@ -424,6 +437,9 @@ public class IssuePanel extends javax.swing.JPanel {
 
         resolutionField.setEditable(false);
         resolutionField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        productField.setEditable(false);
+        productField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
@@ -1050,6 +1066,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JComboBox priorityCombo;
     private javax.swing.JLabel priorityLabel;
     private javax.swing.JComboBox productCombo;
+    private javax.swing.JTextField productField;
     private javax.swing.JLabel productLabel;
     private javax.swing.JTextField qaContactField;
     private javax.swing.JLabel qaContactLabel;
