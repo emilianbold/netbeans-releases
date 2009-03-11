@@ -207,8 +207,8 @@ public class SunStudioDataCollector
         try {
             os = HostInfoUtils.getOS(execEnv);
 
-            if (!"SunOS".equals(os)) { // NOI18N
-                return ValidationStatus.invalidStatus("SunStudioDataCollector works on SunOS only."); // NOI18N
+            if (os == null || !"SunOS".equals(os) || os.indexOf("Linux") == -1) { // NOI18N
+                return ValidationStatus.invalidStatus("SunStudioDataCollector works on SunOS  and Linux only."); // NOI18N
             }
 
             Collection<? extends SunStudioLocatorFactory> factories = Lookup.getDefault().lookupAll(SunStudioLocatorFactory.class);
