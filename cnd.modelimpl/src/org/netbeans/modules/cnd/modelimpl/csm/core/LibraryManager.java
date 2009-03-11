@@ -46,12 +46,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -374,7 +375,7 @@ public final class LibraryManager {
     /*package-local*/ void readProjectLibraries(CsmUID<CsmProject> project, DataInput aStream) throws IOException {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         assert aStream != null;
-        Collection<CharSequence> res = PersistentUtils.readCollectionStrings(aStream, null);
+        Collection<CharSequence> res = PersistentUtils.readCollectionStrings(aStream, FilePathCache.getManager());
         for (CharSequence folder : res) {
             LibraryEntry entry = getOrCreateLibrary(model, folder.toString());
             entry.addProject(project);
@@ -385,11 +386,11 @@ public final class LibraryManager {
 
         private String folder;
         private CsmUID<CsmProject> libraryUID;
-        private Set<CsmUID<CsmProject>> dependentProjects;
+        private ConcurrentMap<CsmUID<CsmProject>, Boolean> dependentProjects;
 
         private LibraryEntry(String folder) {
             this.folder = folder;
-            dependentProjects = Collections.synchronizedSet(new HashSet<CsmUID<CsmProject>>());
+            dependentProjects = new ConcurrentHashMap<CsmUID<CsmProject>, Boolean>();
         }
 
         private String getFolder() {
@@ -416,11 +417,11 @@ public final class LibraryManager {
         }
 
         private boolean containsProject(CsmUID<CsmProject> project) {
-            return dependentProjects.contains(project);
+            return dependentProjects.containsKey(project);
         }
 
         private void addProject(CsmUID<CsmProject> project) {
-            dependentProjects.add(project);
+            dependentProjects.put(project, Boolean.TRUE);
         }
 
         private void removeProject(CsmUID<CsmProject> project) {

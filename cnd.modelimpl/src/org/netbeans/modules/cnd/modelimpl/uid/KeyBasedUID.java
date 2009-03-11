@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.uid;
 
 import java.io.DataInput;
@@ -56,13 +55,14 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * @author Vladimir Voskresensky
  */
 public abstract class KeyBasedUID<T> implements CsmUID<T>, KeyHolder, SelfPersistent, Comparable<CsmUID<T>> {
+
     private final Key key;
-    
+
     protected KeyBasedUID(Key key) {
         assert key != null;
         this.key = key;
     }
-    
+
     public T getObject() {
         return RepositoryUtils.get(this);
     }
@@ -70,11 +70,11 @@ public abstract class KeyBasedUID<T> implements CsmUID<T>, KeyHolder, SelfPersis
     public Key getKey() {
         return key;
     }
-    
+
     @Override
     public String toString() {
         String retValue;
-        
+
         retValue = key.toString();
         return "KeyBasedUID on " + retValue; // NOI18N
     }
@@ -82,7 +82,7 @@ public abstract class KeyBasedUID<T> implements CsmUID<T>, KeyHolder, SelfPersis
     @Override
     public int hashCode() {
         int retValue;
-        
+
         retValue = key.hashCode();
         return retValue;
     }
@@ -95,7 +95,7 @@ public abstract class KeyBasedUID<T> implements CsmUID<T>, KeyHolder, SelfPersis
         if (obj == null || obj.getClass() != this.getClass()) {
             return false;
         }
-        KeyBasedUID other = (KeyBasedUID)obj;
+        KeyBasedUID other = (KeyBasedUID) obj;
         return this.key.equals(other.key);
     }
 
@@ -111,8 +111,8 @@ public abstract class KeyBasedUID<T> implements CsmUID<T>, KeyHolder, SelfPersis
     public int compareTo(CsmUID<T> o) {
         assert o != null;
         assert o instanceof KeyBasedUID;
-        Comparable o1 = (Comparable)this.key;
-        Comparable o2 = (Comparable)((KeyBasedUID)o).key;
+        Comparable o1 = (Comparable) this.key;
+        Comparable o2 = (Comparable) ((KeyBasedUID) o).key;
         return o1.compareTo(o2);
     }
 }    

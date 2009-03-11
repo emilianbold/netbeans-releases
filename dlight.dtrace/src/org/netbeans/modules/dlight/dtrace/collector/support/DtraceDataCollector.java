@@ -96,19 +96,19 @@ import org.openide.windows.InputOutput;
  * {@link org.netbeans.modules.dlight.dtrace.collector.DtraceParser}
  */
 public final class DtraceDataCollector
-        extends IndicatorDataProvider<DTDCConfiguration>
-        implements DataCollector<DTDCConfiguration> {
+    extends IndicatorDataProvider<DTDCConfiguration>
+    implements DataCollector<DTDCConfiguration> {
 
     private static final List<String> ultimateDTracePrivilegesList =
-            Arrays.asList(
-            new String[]{
-                DTDCConfiguration.DTRACE_KERNEL,
-                DTDCConfiguration.DTRACE_PROC,
-                DTDCConfiguration.DTRACE_USER
-            });
+        Arrays.asList(
+        new String[]{
+            DTDCConfiguration.DTRACE_KERNEL,
+            DTDCConfiguration.DTRACE_PROC,
+            DTDCConfiguration.DTRACE_USER
+        });
     private static final String cmd_dtrace = "/usr/sbin/dtrace"; // NOI18N
     private static final Logger log =
-            DLightLogger.getLogger(DtraceDataCollector.class);
+        DLightLogger.getLogger(DtraceDataCollector.class);
     private List<String> requiredPrivilegesList;
     private DataTableMetadata tableMetaData = null;
     private String localScriptPath;
@@ -117,9 +117,9 @@ public final class DtraceDataCollector
     private Future<Integer> dtraceTask = null;
     private DTDCConfiguration configuration;
     private ValidationStatus validationStatus =
-            ValidationStatus.initialStatus();
+        ValidationStatus.initialStatus();
     private List<ValidationListener> validationListeners =
-            Collections.synchronizedList(new ArrayList<ValidationListener>());
+        Collections.synchronizedList(new ArrayList<ValidationListener>());
     private String command;
     private String argsTemplate;
     private DataStorage storage;
@@ -129,27 +129,28 @@ public final class DtraceDataCollector
     private boolean isSlave;
     private int indicatorFiringFactor;
     private ProcessLineCallback callback = new ProcessLineCallBackImpl();
+    private IndicatorDataProvideHandler handler;
 
     DtraceDataCollector(DTDCConfiguration configuration) {
         this.command = cmd_dtrace;
         this.argsTemplate = null;
 
         final DTDCConfigurationAccessor cfgInfo =
-                DTDCConfigurationAccessor.getDefault();
+            DTDCConfigurationAccessor.getDefault();
 
         this.dataTablesMetadata = cfgInfo.getDatatableMetadata(configuration);
 
         this.tableMetaData =
-                (dataTablesMetadata != null && dataTablesMetadata.size() > 0)
-                ? dataTablesMetadata.get(0)
-                : null;
+            (dataTablesMetadata != null && dataTablesMetadata.size() > 0)
+            ? dataTablesMetadata.get(0)
+            : null;
 
         if (cfgInfo.isStackSupportEnabled(configuration)) {
             this.parser = new DtraceDataAndStackParser(tableMetaData);
         } else {
             this.parser = cfgInfo.getParser(configuration) == null
-                    ? (tableMetaData != null ? new DtraceParser(tableMetaData)
-                    : (DtraceParser) null) : cfgInfo.getParser(configuration);
+                ? (tableMetaData != null ? new DtraceParser(tableMetaData)
+                : (DtraceParser) null) : cfgInfo.getParser(configuration);
         }
 
         // super(cmd_dtrace, null,
@@ -165,21 +166,23 @@ public final class DtraceDataCollector
         this.extraArgs = cfgInfo.getArgs(configuration);
 
         this.requiredPrivilegesList =
-                cfgInfo.getRequiredPrivileges(configuration) == null
-                ? ultimateDTracePrivilegesList
-                : cfgInfo.getRequiredPrivileges(configuration);
+            cfgInfo.getRequiredPrivileges(configuration) == null
+            ? ultimateDTracePrivilegesList
+            : cfgInfo.getRequiredPrivileges(configuration);
 
         this.configuration = configuration;
 
         this.indicatorFiringFactor =
-                cfgInfo.getIndicatorFiringFactor(configuration);
+            cfgInfo.getIndicatorFiringFactor(configuration);
+    }
+
+    void setIndicatorDataProviderHanlder(IndicatorDataProvideHandler handler) {
+        this.handler = handler;
     }
 
     public String getName() {
         return "DTrace";//NOI18N
     }
-
-
 
     void setProcessLineCallback(ProcessLineCallback callback) {
         this.callback = callback;
@@ -214,7 +217,7 @@ public final class DtraceDataCollector
     public Collection<DataStorageType> getSupportedDataStorageTypes() {
         DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
         DataStorageType dst =
-                dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE);
+            dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE);
 
         return Arrays.asList(dst);
     }
@@ -243,7 +246,7 @@ public final class DtraceDataCollector
             scriptPath = "/tmp/" + script.getName(); // NOI18N
 
             Future<Integer> copyResult = CommonTasksSupport.uploadFile(
-                        localScriptPath, execEnv, scriptPath, 777, null);
+                localScriptPath, execEnv, scriptPath, 777, null);
             try {
                 copyResult.get();
             } catch (InterruptedException ex) {
@@ -280,7 +283,7 @@ public final class DtraceDataCollector
                 // finished and, depending on command-line utility, it may exit
                 // as well... But, if not - terminate it.
                 log.fine("Stopping DtraceDataCollector: " + // NOI18N
-                        dtraceTask.toString());
+                    dtraceTask.toString());
 
                 dtraceTask.cancel(true);
                 dtraceTask = null;
@@ -289,7 +292,13 @@ public final class DtraceDataCollector
 
         synchronized (indicatorDataBuffer) {
             if (!indicatorDataBuffer.isEmpty()) {
-                notifyIndicators(indicatorDataBuffer);
+                if (isSlave) {
+                    if (handler != null) {
+                        handler.notify(indicatorDataBuffer);
+                    }
+                } else {
+                    notifyIndicators(indicatorDataBuffer);
+                }
                 indicatorDataBuffer.clear();
             }
         }
@@ -318,8 +327,8 @@ public final class DtraceDataCollector
                 result = ValidationStatus.validStatus();
             } else {
                 result = ValidationStatus.invalidStatus(
-                        loc("ValidationStatus.CommandNotFound", // NOI18N
-                        command));
+                    loc("ValidationStatus.CommandNotFound", // NOI18N
+                    command));
             }
         } else {
             ConnectionManager mgr = ConnectionManager.getInstance();
@@ -334,8 +343,8 @@ public final class DtraceDataCollector
             AsynchronousAction connectAction = mgr.getConnectToAction(execEnv, doOnConnect);
 
             result = ValidationStatus.unknownStatus(
-                    loc("ValidationStatus.HostNotConnected"), // NOI18N
-                    connectAction);
+                loc("ValidationStatus.HostNotConnected"), // NOI18N
+                connectAction);
         }
 
         if (!result.isValid()) {
@@ -363,12 +372,12 @@ public final class DtraceDataCollector
                 }
             };
 
-        AsynchronousAction requestPrivilegesAction = sps.getRequestPrivilegesAction(
+            AsynchronousAction requestPrivilegesAction = sps.getRequestPrivilegesAction(
                 requiredPrivilegesList, onPrivilegesGranted);
 
             result = result.merge(ValidationStatus.unknownStatus(
-                    loc("DTraceDataCollector_Status_NotEnoughPrivileges"), // NOI18N
-                    requestPrivilegesAction));
+                loc("DTraceDataCollector_Status_NotEnoughPrivileges"), // NOI18N
+                requestPrivilegesAction));
         }
 
         return result;
@@ -376,22 +385,22 @@ public final class DtraceDataCollector
 
     public Future<ValidationStatus> validate(final DLightTarget target) {
         Callable<ValidationStatus> valiationTask =
-                new Callable<ValidationStatus>() {
+            new Callable<ValidationStatus>() {
 
-                    public ValidationStatus call() throws Exception {
-                        if (validationStatus.isValid()) {
-                            return validationStatus;
-                        }
-
-                        ValidationStatus oldStatus = validationStatus;
-                        ValidationStatus newStatus = doValidation(target);
-
-                        notifyStatusChanged(oldStatus, newStatus);
-
-                        validationStatus = newStatus;
-                        return newStatus;
+                public ValidationStatus call() throws Exception {
+                    if (validationStatus.isValid()) {
+                        return validationStatus;
                     }
-                };
+
+                    ValidationStatus oldStatus = validationStatus;
+                    ValidationStatus newStatus = doValidation(target);
+
+                    notifyStatusChanged(oldStatus, newStatus);
+
+                    validationStatus = newStatus;
+                    return newStatus;
+                }
+            };
 
         return DLightExecutorService.submit(valiationTask, "Validation of DTraceDataCollector " + configuration.getID()); // NOI18N
     }
@@ -429,12 +438,12 @@ public final class DtraceDataCollector
         descr = descr.inputOutput(InputOutput.NULL);
 
         ExecutionService execService = ExecutionService.newService(
-                npb, descr, "DTraceDataCollector " + taskCommand); // NOI18N
+            npb, descr, "DTraceDataCollector " + taskCommand); // NOI18N
 
         dtraceTask = execService.run();
 
         log.fine("DtraceDataCollector (" + dtraceTask.toString() + // NOI18N
-                ") for " + taskCommand + " STARTED"); // NOI18N
+            ") for " + taskCommand + " STARTED"); // NOI18N
     }
 
     public void addValidationListener(ValidationListener listener) {
@@ -448,13 +457,13 @@ public final class DtraceDataCollector
     }
 
     protected void notifyStatusChanged(
-            ValidationStatus oldStatus, ValidationStatus newStatus) {
+        ValidationStatus oldStatus, ValidationStatus newStatus) {
         if (oldStatus.equals(newStatus)) {
             return;
         }
 
         ValidationListener[] ll =
-                validationListeners.toArray(new ValidationListener[0]);
+            validationListeners.toArray(new ValidationListener[0]);
 
         for (ValidationListener l : ll) {
             l.validationStateChanged(this, oldStatus, newStatus);
@@ -462,7 +471,7 @@ public final class DtraceDataCollector
     }
 
     public void targetStateChanged(
-            DLightTarget source, State oldState, State newState) {
+        DLightTarget source, State oldState, State newState) {
 
         switch (newState) {
             case RUNNING:
@@ -490,13 +499,19 @@ public final class DtraceDataCollector
             if (dataRow != null) {
                 if (storage != null && tableMetaData != null) {
                     storage.addData(
-                            tableMetaData.getName(), Arrays.asList(dataRow));
+                        tableMetaData.getName(), Arrays.asList(dataRow));
                 }
                 synchronized (indicatorDataBuffer) {
                     indicatorDataBuffer.add(dataRow);
                     if (indicatorDataBuffer.size() >= indicatorFiringFactor) {
-                        notifyIndicators(indicatorDataBuffer);
-                        indicatorDataBuffer.clear();
+                        if (isSlave) {
+                            if (handler != null) {
+                                handler.notify(indicatorDataBuffer);
+                            }
+                        } else {
+                            notifyIndicators(indicatorDataBuffer);
+                            indicatorDataBuffer.clear();
+                        }
                     }
                 }
             }
@@ -523,10 +538,16 @@ public final class DtraceDataCollector
     }
 
     private static class StdErrRedirectorFactory
-            implements InputProcessorFactory {
+        implements InputProcessorFactory {
 
         public InputProcessor newInputProcessor(InputProcessor p) {
             return InputProcessors.copying(new OutputStreamWriter(System.err));
         }
     }
+
+    interface IndicatorDataProvideHandler {
+
+        void notify(List<DataRow> list);
+    }
+
 }

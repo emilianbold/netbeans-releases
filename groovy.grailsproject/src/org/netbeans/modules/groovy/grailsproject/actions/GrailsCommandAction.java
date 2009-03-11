@@ -53,31 +53,26 @@ import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
-import org.netbeans.modules.groovy.grailsproject.actions.ConfigurationSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 
 /**
  *
  * @author Petr Hejl
  */
-public class GrailsCommandAction extends AbstractAction {
-
-    private final GrailsProject project;
-
-    public GrailsCommandAction(Project project) {
-        super(NbBundle.getMessage(GrailsCommandAction.class, "CTL_GrailsCommandAction"));
-        this.project = (GrailsProject) project;
-    }
+public class GrailsCommandAction extends CallableSystemAction {
 
     @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    public void actionPerformed(ActionEvent arg0) {
+    public void performAction() {
         final GrailsPlatform runtime = GrailsPlatform.getDefault();
         if (!runtime.isConfigured()) {
             ConfigurationSupport.showConfigurationWarning(runtime);
+            return;
+        }
+
+        final GrailsProject project = GrailsProject.inferGrailsProject();
+        if (project == null) {
             return;
         }
 
@@ -133,6 +128,28 @@ public class GrailsCommandAction extends AbstractAction {
         }
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
+    }
+
+    @Override
+    protected void initialize() {
+        super.initialize();
+        // see org.openide.util.actions.SystemAction.iconResource() Javadoc for more details
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+    
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(GrailsCommandAction.class, "CTL_GrailsCommandAction");
     }
 
 }

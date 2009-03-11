@@ -42,11 +42,13 @@ package org.netbeans.modules.dlight.tools.impl;
 import java.io.File;
 
 /**
- * An utility class that helps working with native mmonitor and magent
+ * An utility class that helps working with native prof_monitor and prof_agent
  * @author Vladimir Kvashin
  */
 // package-local
 class NativeToolsUtil {
+
+    private NativeToolsUtil() {}
 
     public static String getExecutable(String name) {
         return getPlatformBinary(name);

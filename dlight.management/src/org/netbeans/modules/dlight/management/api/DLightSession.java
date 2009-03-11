@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
+import org.netbeans.modules.dlight.api.execution.DLightSessionContext;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
 import java.util.ArrayList;
@@ -48,9 +50,10 @@ import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
+import org.netbeans.modules.dlight.api.impl.DLightSessionContextAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
-import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
+import org.netbeans.modules.dlight.api.impl.DLightToolAccessor;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
@@ -77,6 +80,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private String description = null;
     private List<ExecutionContextListener> contextListeners;
     private boolean isActive;
+    private final DLightSessionContext sessionContext;
 
     public enum SessionState {
 
@@ -115,7 +119,13 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     DLightSession() {
         this.state = SessionState.CONFIGURATION;
         sessionID = sessionCount++;
+        sessionContext = DLightSessionContextAccessor.getDefault().newContext();
     }
+
+    public DLightSessionContext getSessionContext() {
+        return sessionContext;
+    }
+
 
     void addExecutionContext(ExecutionContext context) {
         contexts.add(context);
@@ -281,8 +291,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         }
 
         for (DLightTool tool : validTools) {
-            if (tool.collectorsTurnedOn()) {
-                List<DataCollector> toolCollectors = tool.getCollectors();
+            if (DLightToolAccessor.getDefault().collectorsTurnedOn(tool)) {
+                List<DataCollector> toolCollectors = DLightToolAccessor.getDefault().getCollectors(tool);
                 //TODO: no algorithm here:) should be better
                 for (DataCollector c : toolCollectors) {
                     if (!collectors.contains(c)) {
@@ -291,7 +301,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 }
             } else {
                 //should remove if any
-                List<DataCollector> toolCollectors = tool.getCollectors();
+                List<DataCollector> toolCollectors = DLightToolAccessor.getDefault().getCollectors(tool);
                 //TODO: no algorithm here:) should be better
                 for (DataCollector c : toolCollectors) {
                     collectors.remove(c);

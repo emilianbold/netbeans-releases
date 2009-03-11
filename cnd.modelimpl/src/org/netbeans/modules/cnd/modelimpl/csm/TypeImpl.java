@@ -445,14 +445,14 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
 
                 //Resolver resolver = ResolverFactory.createResolver(getContainingFile(), firstOffset);
                 // gather name components into string array
-                // for example, for std::vector new String[] { "std", "vector" }
+                // for example, for std::vector new CharSequence[] { "std", "vector" }
 
                 //TODO: we have AstRenderer.getNameTokens, it is better to use it here
-                List<String> l = new ArrayList<String>();
+                List<CharSequence> l = new ArrayList<CharSequence>();
                 int templateDepth = 0;
                 for (AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling()) {
                     if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID) {
-                        l.add(namePart.getText());
+                        l.add(NameCache.getString(namePart.getText()));
                     } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
                         // the beginning of template parameters
                         templateDepth++;
@@ -482,7 +482,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                         }
                     }
                 }
-                qname = l.toArray(new String[l.size()]);
+                qname = l.toArray(new CharSequence[l.size()]);
             /*CsmObject o = resolver.resolve(qname);
             if( CsmKindUtilities.isClassifier(o) ) {
             result = (CsmClassifier) o;
@@ -562,7 +562,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         byte pack = (byte) ((this.reference ? 1 : 0) | (this._const ? 2 : 0));
         output.writeByte(pack);
         assert this.classifierText != null;
-        output.writeUTF(classifierText.toString());
+        PersistentUtils.writeUTF(classifierText, output);
 
         PersistentUtils.writeStrings(qname, output);
         PersistentUtils.writeTypes(instantiationParams, output);
@@ -576,7 +576,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         byte pack = input.readByte();
         this.reference = (pack & 1) == 1;
         this._const = (pack & 2) == 2;
-        this.classifierText = NameCache.getManager().getString(input.readUTF());
+        this.classifierText = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.classifierText != null;
 
         this.qname = PersistentUtils.readStrings(input, NameCache.getManager());

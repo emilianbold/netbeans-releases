@@ -100,7 +100,9 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             terminal = terminal.setTitle(commandLine);
         }
 
-        List<String> command = terminalInfo.wrapCommand(terminal,
+        List<String> command = terminalInfo.wrapCommand(
+                info.getExecutionEnvironment(),
+                terminal,
                 dorunScript,
                 "-p", pidFileName, // NOI18N
                 "-x", terminalInfo.getPrompt(terminal), // NOI18N

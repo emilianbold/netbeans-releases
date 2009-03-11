@@ -44,6 +44,7 @@ import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.DefaultTestRunnerNodeFactory;
 import org.openide.util.Parameters;
+import org.openide.windows.OutputWriter;
 
 /**
  * Represents a test session, i.e. a single run of tests (e.g. all the tests
@@ -96,6 +97,17 @@ public class TestSession {
     private RerunHandler rerunHandler;
 
     /**
+     * The line handler to use for printing output.
+     */
+    private OutputLineHandler lineHandler;
+
+    private static final OutputLineHandler DEFAULT_LINE_HANDLER = new OutputLineHandler() {
+
+        public void handleLine(OutputWriter out, String text) {
+            out.println(text);
+        }
+    };
+    /**
      * Constructs a new session.
      * 
      * @param name the name for the session.
@@ -144,6 +156,27 @@ public class TestSession {
     public void setRerunHandler(RerunHandler rerunHandler) {
         Parameters.notNull("rerunHandler", rerunHandler);
         this.rerunHandler = rerunHandler;
+    }
+
+    /**
+     * Gets the line handler for printing output. If no line handler is set, will
+     * return the default handler that prints lines without any output listeners
+     * (so that e.g. file locations are not clickable).
+     * 
+     * @return the line handler for printing; never <code>null</code>.
+     */
+    OutputLineHandler getOutputLineHandler() {
+        return lineHandler != null ? lineHandler : DEFAULT_LINE_HANDLER;
+    }
+
+    /**
+     * Sets the line handler to use for printing.
+     * 
+     * @param lineHandler the handler to use.
+     */
+    public void setOutputLineHandler(OutputLineHandler lineHandler) {
+        Parameters.notNull("lineHandler", lineHandler);
+        this.lineHandler = lineHandler;
     }
 
     /**

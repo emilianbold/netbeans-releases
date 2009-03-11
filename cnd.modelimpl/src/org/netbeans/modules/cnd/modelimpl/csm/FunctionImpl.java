@@ -107,7 +107,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
         
-        name = QualifiedNameCache.getManager().getString(initName(ast));
+        name = QualifiedNameCache.getString(initName(ast));
         rawName = AstUtil.getRawNameInChildren(ast);
 
         AST child = ast.getFirstChild();
@@ -334,7 +334,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     protected final void setName(CharSequence name) {
-        this.name = QualifiedNameCache.getManager().getString(name);
+        this.name = QualifiedNameCache.getString(name);
     }
     
     public CharSequence getQualifiedName() {
@@ -554,7 +554,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     public CharSequence getSignature() {
         if( signature == null ) {
-            signature = QualifiedNameCache.getManager().getString(createSignature());
+            signature = QualifiedNameCache.getString(createSignature());
         }
         return signature;
     }
@@ -606,23 +606,26 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return l;
     }
     
-    private String createSignature() {
+    private CharSequence createSignature() {
         // TODO: this fake implementation for Deimos only!
         // we should resolve parameter types and provide
         // kind of canonical representation here
         StringBuilder sb = new StringBuilder(getName());
-        sb.append(createTemplateSignature());
-        sb.append(createParametersSignature(getParameters()));
+        appendTemplateSignature(sb);
+        appendParametersSignature(getParameters(), sb);
         if( isConst() ) {
             sb.append(" const"); // NOI18N
         }
-        return sb.toString();
+        return sb;
     }
 
-    /*package*/static String createParametersSignature(Collection<CsmParameter> params) {
-        StringBuilder sb = new StringBuilder();
+    /*package*/static void appendParametersSignature(Collection<CsmParameter> params, StringBuilder sb) {
         sb.append('(');
+        int paramLimit = Short.MAX_VALUE / 2;
         for (Iterator<CsmParameter> iter = params.iterator(); iter.hasNext();) {
+            if (sb.length()>paramLimit) {
+                break;
+            }
             CsmParameter param = iter.next();
             CsmType type = param.getType();
             if (type != null) {
@@ -635,10 +638,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             }
         }
         sb.append(')');
-       return sb.toString();
     }
     
-    private String createTemplateSignature() {
+    private void appendTemplateSignature(StringBuilder sb) {
         List<CsmTemplateParameter> allTemplateParams = getTemplateParameters();
         List<CsmTemplateParameter> params = new ArrayList<CsmTemplateParameter>();
         if(allTemplateParams != null) {
@@ -653,14 +655,17 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 }
             }
         }
-        return createTemplateParamsSignature(params);
+        appendTemplateParamsSignature(params, sb);
     }
     
-    private String createTemplateParamsSignature(List<CsmTemplateParameter> params) {
-        StringBuilder sb = new StringBuilder("");
+    private void appendTemplateParamsSignature(List<CsmTemplateParameter> params, StringBuilder sb) {
         if(params != null && params.size() > 0) {
+            int paramLimit = Short.MAX_VALUE / 4;
             sb.append('<');
             for (Iterator iter = params.iterator(); iter.hasNext();) {
+                if (sb.length()>paramLimit) {
+                    break;
+                }
                 CsmTemplateParameter param = (CsmTemplateParameter) iter.next();
                 if (CsmKindUtilities.isVariableDeclaration(param)) {
                     CsmVariable var = (CsmVariable) param;
@@ -676,7 +681,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                     CsmClassifier classifier = (CsmClassifier) param;
                     sb.append("class"); // NOI18N // Name of parameter does not matter
                     if (CsmKindUtilities.isTemplate(param)) {
-                        sb.append(createTemplateParamsSignature(((CsmTemplate)classifier).getTemplateParameters()));
+                        appendTemplateParamsSignature(((CsmTemplate)classifier).getTemplateParameters(), sb);
                     }                    
                     if (iter.hasNext()) {
                         sb.append(',');
@@ -685,7 +690,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             }
             sb.append('>');
         }
-        return sb.toString();
     }
     
     @Override
@@ -771,7 +775,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, output);
         PersistentUtils.writeType(this.returnType, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         PersistentUtils.writeParameterList(this.parameterList, output);
@@ -783,13 +787,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         PersistentUtils.writeUTF(this.signature, output);
         output.writeByte(flags);
-        output.writeUTF(this.getScopeSuffix().toString());
+        PersistentUtils.writeUTF(getScopeSuffix(), output);
         PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
     }
 
     public FunctionImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getManager().getString(input.readUTF());
+        this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
@@ -801,12 +805,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         assert !CHECK_SCOPE || this.scopeUID != null;
         this.scopeRef = null;
         
-        this.signature = PersistentUtils.readUTF(input);
-        if (this.signature != null) {
-            this.signature = QualifiedNameCache.getManager().getString(this.signature);
-        }
+        this.signature = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         this.flags = input.readByte();
-        this.classTemplateSuffix = NameCache.getManager().getString(input.readUTF());
+        this.classTemplateSuffix = PersistentUtils.readUTF(input, NameCache.getManager());
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
     }
 }

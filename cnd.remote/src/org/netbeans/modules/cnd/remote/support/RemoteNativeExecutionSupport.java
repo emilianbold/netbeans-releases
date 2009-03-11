@@ -48,7 +48,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -102,7 +102,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
     private void setChannelCommand(File dirf, String exe, String args, String[] envp) throws JSchException {
         String dircmd;
-        String path = RemotePathMap.getPathMap(key).getRemotePath(dirf.getAbsolutePath());
+        String path = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(dirf.getAbsolutePath());
 
         if (path != null) {
             dircmd = "cd \"" + path + "\"; "; // NOI18N
@@ -131,7 +131,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         command.append(exe).append(" ").append(args).append(" 2>&1"); // NOI18N
         command.insert(0, dircmd);
 
-        String theCommand = ShellUtils.wrapCommand(key, command.toString());
+        String theCommand = ShellUtils.wrapCommand(executionEnvironment, command.toString());
 
         channel = createChannel();
         log.finest("RNES: running command: " + theCommand);
@@ -143,7 +143,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
     private static String getDisplayString() {
         if (displayString == null) {
             try {
-                String localDisplay = PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).getEnv().get("DISPLAY"); //NOI18N
+                String localDisplay = PlatformInfo.getDefault(ExecutionEnvironmentFactory.getLocalExecutionEnvironment()).getEnv().get("DISPLAY"); //NOI18N
                 if (localDisplay == null) {
                     localDisplay = ":.0"; //NOI18N
                 }

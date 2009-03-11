@@ -90,23 +90,24 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
     }
     
     public void testFormat2() throws Exception {
+        // this test fails for me because of #159952
         reformatFileContents("testfiles/format2.rhtml");
     }
-    
+
     public void testFormat2b() throws Exception {
         // Same as format2.rhtml, but flushed left to ensure that
         // we're not reformatting correctly just by luck
         reformatFileContents("testfiles/format2b.rhtml");
     }
-    
+
     public void testFormat3() throws Exception {
         reformatFileContents("testfiles/format3.rhtml");
     }
-    
+
     public void testFormat4() throws Exception {
         reformatFileContents("testfiles/format4.rhtml");
     }
-    
+
 //    public void testFormat5() throws Exception {
 //        format("<%\ndef foo\nwhatever\nend\n%>\n",
 //                "<%\ndef foo\n  whatever\nend\n%>\n", null);

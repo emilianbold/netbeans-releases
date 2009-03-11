@@ -44,8 +44,10 @@ import java.text.MessageFormat;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -130,7 +132,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
 
     static final String PROP_CACHE_MANAGER = "cachemanager"; //NOI18N
 
-    public static String invokeMe(ToolsCacheManager cacheManager) {
+    public static ExecutionEnvironment invokeMe(ToolsCacheManager cacheManager) {
         WizardDescriptor.Iterator<WizardDescriptor> iterator = new CreateHostWizardIterator();
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); //NOI18N
@@ -146,11 +148,11 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
             if (r != null) {
                 r.run();
             }
-            return (String)wizardDescriptor.getProperty(CreateHostWizardPanel2.PROP_HOSTKEY);
+            String key = (String)wizardDescriptor.getProperty(CreateHostWizardPanel2.PROP_HOSTKEY);
+            return ExecutionEnvironmentFactory.getExecutionEnvironment(key);
         } else {
             return null;
         }
-
     }
 
     static String getString(String key) {

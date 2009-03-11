@@ -81,7 +81,6 @@ import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
@@ -178,7 +177,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 cbDevHost.addItem(key);
             }
         } else {
-            cbDevHost.addItem(CompilerSetManager.LOCALHOST);
+            cbDevHost.addItem(ExecutionEnvironmentFactory.getHostKey(ExecutionEnvironmentFactory.getLocalExecutionEnvironment()));
         }
 
         if (model.getSelectedDevelopmentHost() != null) {
@@ -231,7 +230,9 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
 
     private void addCompilerSet() {
         AddCompilerSetPanel panel = new AddCompilerSetPanel(csm);
-        String title = isRemoteHostSelected() ? getString("NEW_TOOL_SET_TITLE_REMOTE", csm.getHost()) : getString("NEW_TOOL_SET_TITLE");
+        String title = isRemoteHostSelected() ? 
+            getString("NEW_TOOL_SET_TITLE_REMOTE", ExecutionEnvironmentFactory.getHostKey(csm.getExecutionEnvironment())) :
+            getString("NEW_TOOL_SET_TITLE");
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
         panel.setDialogDescriptor(dialogDescriptor);
         DialogDisplayer.getDefault().notify(dialogDescriptor);
@@ -444,7 +445,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
 //                // always return true in remote mode, instead of call to very expensive operation
 //                return true;
 //            } else {
-//                return serverList.isValidExecutable(hkey, txt);
+//                return serverList.isValidExecutable(execEnv, txt);
 //            }
         }
     }
@@ -526,7 +527,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     }
 
     private boolean isRemoteHostSelected() {
-        return !RemoteUtils.isLocalhost((String)cbDevHost.getSelectedItem());
+        return ExecutionEnvironmentFactory.getExecutionEnvironment((String)cbDevHost.getSelectedItem()).isRemote();
     }
 
     private ExecutionEnvironment getSelectedEnvironment() {

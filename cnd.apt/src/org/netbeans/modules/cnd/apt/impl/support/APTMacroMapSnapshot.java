@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author gorrus
  */
 public final class APTMacroMapSnapshot {
-    /*package*/ final Map<String/*getTokenTextKey(token)*/, APTMacro> macros = new HashMap<String, APTMacro>();
+    /*package*/ final Map<CharSequence/*getTokenTextKey(token)*/, APTMacro> macros = new HashMap<CharSequence, APTMacro>();
     /*package*/ final APTMacroMapSnapshot parent;
 
     public APTMacroMapSnapshot(APTMacroMapSnapshot parent) {
@@ -65,10 +65,11 @@ public final class APTMacroMapSnapshot {
     }
     
     public final APTMacro getMacro(APTToken token) {
-        return getMacro(token.getText());
+        return getMacro(token.getTextID());
     }
     
-    public final APTMacro getMacro(String key) {
+    /*package*/ final APTMacro getMacro(CharSequence key) {
+        assert !(key instanceof String) : "string can't be here " + key;
         APTMacroMapSnapshot currentSnap = this;
         while (currentSnap != null) {
             APTMacro macro = currentSnap.macros.get(key);
@@ -82,16 +83,16 @@ public final class APTMacroMapSnapshot {
     
     @Override
     public String toString() {
-        Map<String, APTMacro> tmpMap = new HashMap<String, APTMacro>();
+        Map<CharSequence, APTMacro> tmpMap = new HashMap<CharSequence, APTMacro>();
         addAllMacros(this, tmpMap);
         return APTUtils.macros2String(tmpMap);
     }
     
-    public static void addAllMacros(APTMacroMapSnapshot snap, Map<String, APTMacro> out) {
+    public static void addAllMacros(APTMacroMapSnapshot snap, Map<CharSequence, APTMacro> out) {
         if (snap.parent != null) {
             addAllMacros(snap.parent, out);
         }
-        for (Map.Entry<String, APTMacro> cur : snap.macros.entrySet()) {
+        for (Map.Entry<CharSequence, APTMacro> cur : snap.macros.entrySet()) {
             if (cur.getValue() != UNDEFINED_MACRO) {
                 out.put(cur.getKey(), cur.getValue());
             } else {

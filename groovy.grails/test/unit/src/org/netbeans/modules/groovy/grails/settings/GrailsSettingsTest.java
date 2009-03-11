@@ -85,26 +85,4 @@ public class GrailsSettingsTest extends NbTestCase {
         settings.setEnvForProject(project, GrailsEnvironment.DEV);
         assertEquals(GrailsEnvironment.DEV, settings.getEnvForProject(project));
     }
-
-    public void testAutoDeployFlagForProject() throws IOException {
-        final GrailsSettings settings = GrailsSettings.getInstance();
-        final Project project = new TestProject("test",
-                FileUtil.toFileObject(FileUtil.normalizeFile(this.getWorkDir())));
-        assertFalse(settings.getAutoDeployFlagForProject(project));
-        settings.setAutoDeployFlagForProject(project, true);
-        assertTrue(settings.getAutoDeployFlagForProject(project));
-        settings.setAutoDeployFlagForProject(project, false);
-        assertFalse(settings.getAutoDeployFlagForProject(project));
-    }
-
-    public void testDeployDirForProject() throws IOException {
-        final GrailsSettings settings = GrailsSettings.getInstance();
-        final Project project = new TestProject("test",
-                FileUtil.toFileObject(FileUtil.normalizeFile(this.getWorkDir())));
-        assertNull(settings.getDeployDirForProject(project));
-        settings.setDeployDirForProject(project, "directory1");
-        assertEquals("directory1", settings.getDeployDirForProject(project));
-        settings.setDeployDirForProject(project, "directory2");
-        assertEquals("directory2", settings.getDeployDirForProject(project));
-    }
 }

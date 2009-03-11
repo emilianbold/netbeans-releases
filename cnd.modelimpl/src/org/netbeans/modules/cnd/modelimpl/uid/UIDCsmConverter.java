@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.uid;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
@@ -63,13 +62,12 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  * @author Vladimir Voskresensky
  */
 public final class UIDCsmConverter {
-   
+
     private UIDCsmConverter() {
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // UID -> Object
-    
 //    private static int lastHash = 0;
     public static boolean isIdentifiable(Object obj) {
         return obj instanceof CsmIdentifiable;
@@ -93,20 +91,20 @@ public final class UIDCsmConverter {
             return result;
         } catch (StackOverflowError ex) {
             // needed to analyze IZ99230; it's fixed!
-	    Exception ex2 = new Exception("StackOverflowError for UID " + uid); // NOI18N
-	    ex2.setStackTrace(ex.getStackTrace());
-	    DiagnosticExceptoins.register(ex2);
+            Exception ex2 = new Exception("StackOverflowError for UID " + uid); // NOI18N
+            ex2.setStackTrace(ex.getStackTrace());
+            DiagnosticExceptoins.register(ex2);
             return null;
         }
     }
-    
+
     public static <T> T UIDtoCsmObject(CsmUID<T> uid) {
         return uid == null ? null : uid.getObject();
-    }    
+    }
 
     public static CsmNamespace UIDtoNamespace(CsmUID<CsmNamespace> uid) {
         return uid == null ? null : uid.getObject();
-    }    
+    }
 
     public static CsmProject UIDtoProject(CsmUID<CsmProject> uid) {
         return uid == null ? null : uid.getObject();
@@ -114,8 +112,8 @@ public final class UIDCsmConverter {
 
     public static <T extends CsmDeclaration> T UIDtoDeclaration(CsmUID<T> uid) {
         return uid == null ? null : uid.getObject();
-    } 
-    
+    }
+
     public static CsmScope UIDtoScope(CsmUID<CsmScope> uid) {
         return uid == null ? null : uid.getObject();
     }
@@ -123,12 +121,12 @@ public final class UIDCsmConverter {
     public static CsmClass UIDtoClass(CsmUID<CsmClass> uid) {
         return uid == null ? null : uid.getObject();
     }
-    
+
     public static <T> Collection<T> UIDsToNamespaces(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, false);
         return out;
     }
-    
+
     public static <T extends CsmDeclaration> Collection<T> UIDsToDeclarations(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, false);
         return out;
@@ -142,7 +140,7 @@ public final class UIDCsmConverter {
         Collection<T> out = UIDsToList(uids, true);
         return out;
     }
-    
+
     public static <T> Collection<T> UIDsToMacros(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, false);
         return out;
@@ -151,7 +149,7 @@ public final class UIDCsmConverter {
     public static <T> Iterator<T> UIDsToMacros(Collection<CsmUID<T>> uids, CsmFilter filter) {
         return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
     }
-    
+
     public static <T> Collection<T> UIDsToIncludes(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, false);
         return out;
@@ -174,25 +172,24 @@ public final class UIDCsmConverter {
     public static <T> Iterator<T> UIDsToDeclarations(Collection<CsmUID<T>> nonSharedCollection, CsmFilter filter) {
         return new LazyCsmCollection<T, T>(nonSharedCollection, true).iterator(filter);
     }
-    
+
     public static <T> T UIDtoIdentifiable(CsmUID<T> uid) {
         return uid == null ? null : uid.getObject();
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // Object -> UID
-    
     public static CsmUID<CsmFile> fileToUID(CsmFile file) {
         return file == null ? null : UIDs.get(file);
     }
-    
+
     public static CsmUID<CsmNamespace> namespaceToUID(CsmNamespace ns) {
         return ns == null ? null : UIDs.get(ns);
-    }    
+    }
 
     public static CsmUID<CsmProject> projectToUID(CsmProject project) {
         return project == null ? null : UIDs.get(project);
-    }  
+    }
 
     public static <T extends CsmDeclaration> CsmUID<T> declarationToUID(T decl) {
         return decl == null ? null : UIDs.get(decl);
@@ -201,14 +198,14 @@ public final class UIDCsmConverter {
     public static CsmUID<CsmScope> scopeToUID(CsmScope scope) {
         return scope == null ? null : UIDs.get(scope);
     }
-    
+
     public static <T> CsmUID<T> identifiableToUID(CsmIdentifiable obj) {
         if (obj == null) {
             return null;
         } else {
             // we need to cast from ? to the exact type
             @SuppressWarnings("unchecked") // checked
-            CsmUID<T> res = (CsmUID<T>)obj.getUID();
+            CsmUID<T> res = (CsmUID<T>) obj.getUID();
             return res;
         }
     }
@@ -220,7 +217,7 @@ public final class UIDCsmConverter {
             return UIDs.get(obj);
         }
     }
-    
+
     public static <T extends CsmObject> Collection<CsmUID<T>> objectsToUIDs(Collection<T> objs) {
         if (objs == null) {
             return null;

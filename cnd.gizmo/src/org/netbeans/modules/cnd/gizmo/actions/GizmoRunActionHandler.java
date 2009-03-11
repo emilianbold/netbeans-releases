@@ -46,7 +46,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -107,6 +106,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
                 }
             }
         }
+        targetConf.setIO(io);
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
         target.addTargetListener(this);
         final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(target, "Gizmo"); // NOI18N

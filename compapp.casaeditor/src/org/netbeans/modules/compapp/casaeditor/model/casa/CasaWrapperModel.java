@@ -77,7 +77,6 @@ import org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateGroup;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplate;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
 import org.netbeans.modules.xml.wsdl.ui.wizard.BindingGenerator;
-import org.netbeans.modules.xml.wsdl.ui.wizard.WizardBindingConfigurationStep;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ValidationInfo;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
@@ -91,6 +90,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.wsdl.ui.wizard.WSDLWizardConstants;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -791,10 +791,10 @@ public class CasaWrapperModel extends CasaModel {
         }
 
         Map<String, Object> configurationMap = new HashMap<String, Object>();
-        configurationMap.put(WizardBindingConfigurationStep.BINDING_NAME, bindingName);
-        configurationMap.put(WizardBindingConfigurationStep.BINDING_TYPE, bindingType);
-        configurationMap.put(WizardBindingConfigurationStep.SERVICE_NAME, serviceName);
-        configurationMap.put(WizardBindingConfigurationStep.SERVICEPORT_NAME, servicePortName);
+        configurationMap.put(WSDLWizardConstants.BINDING_NAME, bindingName);
+        configurationMap.put(WSDLWizardConstants.BINDING_TYPE, bindingType);
+        configurationMap.put(WSDLWizardConstants.SERVICE_NAME, serviceName);
+        configurationMap.put(WSDLWizardConstants.SERVICEPORT_NAME, servicePortName);
 
         wsdlModel.startTransaction();
         try {
@@ -809,7 +809,7 @@ public class CasaWrapperModel extends CasaModel {
             for (int k = 0; (k < templates.length) && invalidBinding; k++) {
                 bindingSubType = templates[k];
                 configurationMap.put(
-                        WizardBindingConfigurationStep.BINDING_SUBTYPE,
+                        WSDLWizardConstants.BINDING_SUBTYPE,
                         bindingSubType);
 
                 if (binding != null) {

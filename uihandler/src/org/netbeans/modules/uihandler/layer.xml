@@ -8,6 +8,7 @@
                 <attr name="component" methodvalue="org.netbeans.modules.exceptions.ReporterResultTopComponent.findInstance"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.exceptions.Bundle#CTL_ReporterResultAction"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/exceptions/reporter.png"/>
             </file>
         </folder>
     </folder>

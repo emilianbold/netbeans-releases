@@ -27,6 +27,8 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 
+                <file name="org-netbeans-modules-css-editor-indent-CssIndentTaskFactory.instance"/>
+
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-css-editor-CssBracesMatcherFactory.instance">
                         <attr name="position" intvalue="45"/>

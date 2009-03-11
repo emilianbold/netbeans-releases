@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -122,7 +123,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private static final boolean CHECK_PARENT = false;
     
     public NamespaceImpl(ProjectBase project, NamespaceImpl parent, String name, String qualifiedName) {
-        this.name = NameCache.getManager().getString(name);
+        this.name = NameCache.getString(name);
         this.global = false;
         assert project != null;
         
@@ -130,7 +131,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert this.projectUID != null;
 
         this.projectRef = new WeakReference<ProjectBase>(project);
-        this.qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
+        this.qualifiedName = QualifiedNameCache.getString(qualifiedName);
         // TODO: rethink once more
         // now all classes do have namespaces
 //        // TODO: this makes parent-child relationships assymetric, that's bad;
@@ -605,9 +606,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         theFactory.writeUID(this.parentUID, output);
         
         assert this.name != null;
-        output.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, output);
         assert this.qualifiedName != null;
-        output.writeUTF(this.qualifiedName.toString());
+        PersistentUtils.writeUTF(qualifiedName, output);
 
         theFactory.writeStringToUIDMap(this.nestedNamespaces, output, true);
         ProjectComponent.writeKey(this.declarationsSorageKey, output);
@@ -634,9 +635,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.parentRef = null;
        
 
-        this.name = NameCache.getManager().getString(input.readUTF());
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
-        this.qualifiedName = QualifiedNameCache.getManager().getString(input.readUTF());
+        this.qualifiedName = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.qualifiedName != null;
         theFactory.readStringToUIDMap(this.nestedNamespaces, input, QualifiedNameCache.getManager());
         declarationsSorageKey = ProjectComponent.readKey(input);

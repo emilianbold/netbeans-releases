@@ -48,24 +48,26 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * help class to share deserialized project names
  * @author Vladimir Voskresensky
  */
-public class QualifiedNameCache extends APTStringManager {
-    private static final APTStringManager manager = new QualifiedNameCache();
-    private final APTStringManager instance = 
+public class QualifiedNameCache {
+    private static final APTStringManager instance =
             APTStringManager.instance("Shared Qualified Names",APTStringManager.CacheKind.Sliced); // NOI18N;
 
     private QualifiedNameCache() {
     }
     
-    public CharSequence getString(CharSequence text) {
+    public static CharSequence getString(CharSequence text) {
+        if (text == null) {
+            throw new NullPointerException("null string is illegal to share"); // NOI18N
+        }
         text = CharSequenceKey.create(text);
         return instance.getString(text);
     }
     
-    public void dispose() {
+    public static void dispose() {
         instance.dispose();
     }
     
     public static APTStringManager getManager() {
-        return manager;
+        return instance;
     }
 }

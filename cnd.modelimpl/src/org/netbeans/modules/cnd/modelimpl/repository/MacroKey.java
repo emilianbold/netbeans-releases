@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 final class MacroKey extends OffsetableKey {
     
     public MacroKey(CsmMacro obj) {
-	super(obj, Utils.getCsmDeclarationKindkey(Kind.MACRO), NameCache.getManager().getString(obj.getName())); // NOI18N
+	super(obj, Utils.getCsmDeclarationKindkey(Kind.MACRO), NameCache.getString(obj.getName())); // NOI18N
     }
     
     /*package*/ MacroKey(DataInput aStream) throws IOException {

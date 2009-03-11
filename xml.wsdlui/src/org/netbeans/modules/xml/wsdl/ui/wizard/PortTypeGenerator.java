@@ -122,7 +122,7 @@ public class PortTypeGenerator implements Command {
     public void execute() {
         if(mModel != null) {
             //portType
-            String portTypeName = (String) this.mConfigurationMap.get(WizardPortTypeConfigurationStep.PORTTYPE_NAME);
+            String portTypeName = (String) this.mConfigurationMap.get(WSDLWizardConstants.PORTTYPE_NAME);
             if (portTypeName == null) return;
             
             this.mPortType = mModel.getFactory().createPortType();
@@ -136,7 +136,7 @@ public class PortTypeGenerator implements Command {
             mImports.addAll(og.getImports());
             
             
-            Boolean autoGenPLT = (Boolean) mConfigurationMap.get(WizardPortTypeConfigurationStep.AUTOGEN_PARTNERLINKTYPE);
+            Boolean autoGenPLT = (Boolean) mConfigurationMap.get(WSDLWizardConstants.AUTOGEN_PARTNERLINKTYPE);
             if (autoGenPLT != null && !autoGenPLT) {
                 return;
             }
