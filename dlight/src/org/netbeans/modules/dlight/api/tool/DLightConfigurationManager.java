@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.api;
+package org.netbeans.modules.dlight.api.tool;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,15 +45,16 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * This class
+ * This class is manager for DLight Configuration
  */
-final class DLightConfigurationManager {
+public final class DLightConfigurationManager {
   private static DLightConfigurationManager instance = null;
   private String selectedConfigurationName = null;
 
 
   private  DLightConfigurationManager() {
   }
+  
   private final FileObject getToolsFSRoot() {
     FileObject fsRoot  = FileUtil.getConfigRoot();
     return fsRoot.getFileObject(getToolsFSRootPath());
@@ -67,7 +68,12 @@ final class DLightConfigurationManager {
     this.selectedConfigurationName = configurationName;
   }
 
-  DLightConfiguration getConfigurationByName(String configurationName){
+  /**
+   * Returns DLightConfiguration by name if exists, <code>null</code> otherwise
+   * @param configurationName configuration name
+   * @return DLightConfiguration by name if exists, <code>null</code> otherwise
+   */
+  public DLightConfiguration getConfigurationByName(String configurationName){
     List<DLightConfiguration> toolConfigurations = getDLightConfigurations();
     for (DLightConfiguration conf : toolConfigurations){
       if (conf.getConfigurationName().equals(configurationName)){
@@ -108,7 +114,11 @@ final class DLightConfigurationManager {
     return tools.get(0);
   }
 
-  static final DLightConfigurationManager getInstance(){
+  /**
+   * 
+   * @return
+   */
+  public static synchronized  final DLightConfigurationManager getInstance(){
     if (instance == null){
       instance = new DLightConfigurationManager();
     }

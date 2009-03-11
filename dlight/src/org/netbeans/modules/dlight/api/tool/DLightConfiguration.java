@@ -37,13 +37,12 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.api;
+package org.netbeans.modules.dlight.api.tool;
 
 import java.util.List;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
+import org.openide.util.NbPreferences;
 
 /**
  * Represents D-Light Configuration. Register your D-Light in D-Light filesystem.
@@ -99,6 +98,15 @@ public final class DLightConfiguration {
    */
   public List<DLightTool> getToolsSet(){
     return toolsConfiguration.getToolsSet();
+  }
+
+  public void turnCollectorsState(boolean turnState){
+    NbPreferences.forModule(DLightConfiguration.class).putBoolean(getConfigurationName(), turnState);
+  }
+
+
+  public boolean getCollectorsState(){
+      return NbPreferences.forModule(DLightConfiguration.class).getBoolean(getConfigurationName(), false);
   }
 
   public String getConfigurationName(){

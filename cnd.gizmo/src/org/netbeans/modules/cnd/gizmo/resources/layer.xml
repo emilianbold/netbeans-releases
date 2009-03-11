@@ -15,6 +15,10 @@
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/>
                     </file>
                 </folder>
+                <folder name="KnownDataCollectorSources">
+                    <provider name="SunStudio" key="SS"/>
+                    <provider name="DTrace" key="SS"/>
+                </folder>
             </folder>
         </folder>
     </folder>

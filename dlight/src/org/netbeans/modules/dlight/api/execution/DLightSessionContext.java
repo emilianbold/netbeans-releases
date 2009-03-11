@@ -37,34 +37,68 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.tool;
+package org.netbeans.modules.dlight.api.execution;
 
-import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.netbeans.modules.dlight.api.impl.DLightSessionContextAccessor;
 
 /**
- * Implement this interface whenever you want to create new {@link org.netbeans.modules.dlight.api.tool.DLightToolConfiguration} which
- * is used  DLightTool instance will be created for.
- * <p>
- * To register your D-Light tool configuration provider add the following to the D-Light filesystem
- * (layer.xml file).
-  <pre>
-  &lt;filesystem&gt;
-    &lt;folder name="DLight"&gt;
-        &lt;folder name="ToolConfigurationProviders"&gt;
-            &lt;file name="MyDLightToolConfigurationProvider.instance"&gt;
-               &lt;attr name="instanceClass" stringvalue="org.netbeans.mytool.MyDLightToolConfigurationProvider"/&gt;
-            &lt;/file&gt;
-        &lt;/folder&gt;
-    &lt;/folder&gt;
-&lt;/filesystem&gt;
-  </pre>
+ * This class represents DLight Session context
+ * The following keys are supported:
+ * <ul>
+ * <li>executable</li>
+ *  <li>line</li>
+ *  <li>os</li>
+ *  <li>offset</li>
+ *  <li>useCollectors</li>
+ *  <li>collectors</li>
+ * </ul>
+ *
  */
- 
-public interface DLightToolConfigurationProvider {
-  /**
-   * Please be aware that instance returned by this method should be
-   * new every time this method is invoked
-   * @return new instance of {@link org.netbeans.modules.dlight.api.tool.DLightToolConfiguration}
-   */
-  public DLightToolConfiguration create();
+public final class DLightSessionContext {
+    private final Map<String, String> map;
+
+    static{
+        DLightSessionContextAccessor.setDefault(new DLightSessionContextAccessorImpl());
+    }
+
+    private DLightSessionContext(){
+        map = new ConcurrentHashMap<String, String>();
+        //by default we now have the following: collectors
+        map.put("useCollectors", "false");//NOI18N
+        map.put("collectors", "SunStudio");//NOI18N
+    }
+
+    public String get(String key){
+        return map.get(key);
+    }
+
+    String put(String key, String value){
+        return map.put(key, value);
+    }
+
+    void clear(){
+        map.clear();
+    }
+
+    private static class DLightSessionContextAccessorImpl extends DLightSessionContextAccessor{
+
+        @Override
+        public void clear(DLightSessionContext context) {
+            context.clear();
+        }
+
+        @Override
+        public String put(DLightSessionContext context, String key, String value) {
+            return context.put(key, value);
+        }
+
+        @Override
+        public DLightSessionContext newContext() {
+            return new DLightSessionContext();
+        }
+
+    }
 }
