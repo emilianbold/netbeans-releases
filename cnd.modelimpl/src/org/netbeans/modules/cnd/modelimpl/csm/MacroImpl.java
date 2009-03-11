@@ -197,9 +197,9 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     public @Override void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, output);
         assert this.body != null;
-        output.writeUTF(this.body.toString());
+        PersistentUtils.writeUTF(body, output);
         output.writeByte((byte)this.kind.ordinal());
         CharSequence[] out = this.params == null?null:this.params.toArray(new CharSequence[params.size()]);
         PersistentUtils.writeStrings(out, output);
@@ -207,9 +207,9 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
 
     public MacroImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getString(input.readUTF());
+        this.name = NameCache.getString(PersistentUtils.readUTF(input));
         assert this.name != null;
-        this.body = NameCache.getString(input.readUTF());
+        this.body = NameCache.getString(PersistentUtils.readUTF(input));
         assert this.body != null;
         this.kind = Kind.values()[input.readByte()];
         CharSequence[] out = PersistentUtils.readStrings(input, NameCache.getManager());

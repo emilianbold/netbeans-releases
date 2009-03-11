@@ -153,7 +153,7 @@ public class PersistentUtils {
             // always write as file buffer file
             output.writeInt(FILE_BUFFER_FILE);
             File file = buffer.getFile();
-            output.writeUTF(file.getAbsolutePath());
+            PersistentUtils.writeUTF(file.getAbsolutePath(), output);
         } else {
             throw new IllegalArgumentException("instance of unknown FileBuffer " + buffer);  //NOI18N
         }
@@ -163,7 +163,7 @@ public class PersistentUtils {
         FileBuffer buffer;
         int handler = input.readInt();
         assert handler == FILE_BUFFER_FILE;
-        CharSequence absPath = FilePathCache.getString(input.readUTF());
+        CharSequence absPath = FilePathCache.getString(PersistentUtils.readUTF(input));
         buffer = new FileBufferFile(new File(absPath.toString()));
         return buffer;
     }
@@ -178,7 +178,7 @@ public class PersistentUtils {
             output.writeInt(len);
             for (int i = 0; i < len; i++) {
                 assert arr[i] != null;
-                output.writeUTF(arr[i].toString());
+                PersistentUtils.writeUTF(arr[i], output);
             }
         }
     }
@@ -191,7 +191,7 @@ public class PersistentUtils {
             output.writeInt(len);
             for (String s : arr) {
                 assert s != null;
-                output.writeUTF(s);
+                PersistentUtils.writeUTF(s, output);
             }
         }
     }
@@ -202,7 +202,7 @@ public class PersistentUtils {
         if (len != AbstractObjectFactory.NULL_POINTER) {
             arr = new CharSequence[len];
             for (int i = 0; i < len; i++) {
-                String str = input.readUTF();
+                String str = PersistentUtils.readUTF(input);
                 assert str != null;
                 arr[i] = manager.getString(str);
             }
@@ -216,7 +216,7 @@ public class PersistentUtils {
         if (len != AbstractObjectFactory.NULL_POINTER) {
             arr = new ArrayList<CharSequence>(len);
             for (int i = 0; i < len; i++) {
-                String str = input.readUTF();
+                String str = PersistentUtils.readUTF(input);
                 assert str != null;
                 if (manager != null) {
                     arr.add(manager.getString(str));
@@ -230,6 +230,14 @@ public class PersistentUtils {
     private static final int UTF_LIMIT = 65535;
 
     public static void writeUTF(CharSequence st, DataOutput aStream) throws IOException {
+        aStream.writeUTF(st.toString());
+    }
+
+    public static String readUTF(DataInput aStream) throws IOException {
+        return aStream.readUTF();
+    }
+
+    public static void writeLongUTF(CharSequence st, DataOutput aStream) throws IOException {
         if (st != null) {
             // write extent count
             // NB: for an empty string, 0 is written
@@ -245,7 +253,7 @@ public class PersistentUtils {
         }
     }
 
-    public static String readUTF(DataInput aStream) throws IOException {
+    public static String readLongUTF(DataInput aStream) throws IOException {
         short cnt = aStream.readShort();
         switch (cnt) {
             case -1:

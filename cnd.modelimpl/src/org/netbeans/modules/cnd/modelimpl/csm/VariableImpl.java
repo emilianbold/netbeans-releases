@@ -341,7 +341,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, output);
         byte pack = (byte) ((this._static ? 1 : 0) | (this._extern ? 2 : 0));
         output.writeByte(pack);
         PersistentUtils.writeExpression(initExpr, output);
@@ -353,7 +353,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 
     public VariableImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getString(input.readUTF());
+        this.name = NameCache.getString(PersistentUtils.readUTF(input));
         assert this.name != null;
         byte pack = input.readByte();
         this._static = (pack & 1) == 1;

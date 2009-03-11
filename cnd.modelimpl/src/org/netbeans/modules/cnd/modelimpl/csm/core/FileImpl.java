@@ -1579,7 +1579,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         output.writeLong(lastParsed);
-        output.writeUTF(state.toString());
+        output.writeInt(state.ordinal());
         try {
             staticLock.readLock().lock();
             UIDObjectFactory.getDefaultFactory().writeUIDCollection(staticFunctionDeclarationUIDs, output, false);
@@ -1613,7 +1613,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         assert fileBuffer != null;
         assert fileBuffer.isFileBased();
         lastParsed = input.readLong();
-        state = State.valueOf(input.readUTF());
+        state = State.values()[input.readInt()];
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input);
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticVariableUIDs, input);
     }
@@ -1766,12 +1766,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         public void write(DataOutput output) throws IOException {
             output.writeInt(start);
-            output.writeUTF(name.toString());
+            PersistentUtils.writeUTF(name, output);
         }
 
         public OffsetSortedKey(DataInput input) throws IOException {
             start = input.readInt();
-            name = NameCache.getString(input.readUTF());
+            name = NameCache.getString(PersistentUtils.readUTF(input));
         }
     }
 
@@ -1824,12 +1824,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         public void write(DataOutput output) throws IOException {
             output.writeInt(start);
-            output.writeUTF(name.toString());
+            PersistentUtils.writeUTF(name, output);
         }
 
         public NameSortedKey(DataInput input) throws IOException {
             start = input.readInt();
-            name = NameCache.getString(input.readUTF());
+            name = NameCache.getString(PersistentUtils.readUTF(input));
         }
     }
 

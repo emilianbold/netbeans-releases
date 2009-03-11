@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -132,13 +133,13 @@ public final class TemplateDescriptor {
 
     public TemplateDescriptor(DataInput input) throws IOException {
         this.templateParams = UIDObjectFactory.getDefaultFactory().readUIDCollection(new ArrayList<CsmUID<CsmTemplateParameter>>(), input);
-        this.templateSuffix = NameCache.getString(input.readUTF());
+        this.templateSuffix = NameCache.getString(PersistentUtils.readUTF(input));
         this.inheritedTemplateParametersNumber = input.readInt();
     }
 
     public void write(DataOutput output) throws IOException {
         UIDObjectFactory.getDefaultFactory().writeUIDCollection(templateParams, output, false);
-        output.writeUTF(this.templateSuffix.toString());
+        PersistentUtils.writeUTF(templateSuffix, output);
         output.writeInt(this.inheritedTemplateParametersNumber);
     }
 }

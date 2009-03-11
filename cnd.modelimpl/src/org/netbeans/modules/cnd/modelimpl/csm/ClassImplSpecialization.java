@@ -47,6 +47,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 
 /**
@@ -121,12 +122,12 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        output.writeUTF(qualifiedNameSuffix);
+        PersistentUtils.writeUTF(qualifiedNameSuffix, output);
     }
 
     public ClassImplSpecialization(DataInput input) throws IOException {
         super(input);
-        qualifiedNameSuffix = input.readUTF();
+        qualifiedNameSuffix = PersistentUtils.readUTF(input);
     }
 
     @Override

@@ -54,11 +54,14 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.execution.LinkSupport;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 public abstract class CCCCompiler extends BasicCompiler {
     private static File tmpFile = null;
@@ -99,57 +102,72 @@ public abstract class CCCCompiler extends BasicCompiler {
         return ""; // NOI18N
     }
     
-    protected void getSystemIncludesAndDefines(String path, String command, boolean stdout) throws IOException {
-            Process process;
-            InputStream is = null;
-            BufferedReader reader;
-            
-            if (path == null) {
-                path = ""; // NOI18N
-            }
-            PlatformInfo pi = PlatformInfo.getDefault(getExecutionEnvironment());
-            Map<String, String> env = pi.getEnv();
-            if (getExecutionEnvironment().isRemote()) {
-                CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-                if (provider != null) {
-                    String newPath = env.get(pi.getPathName());
-                    newPath = newPath == null? "" : newPath + pi.pathSeparator();
-                    newPath += path;
-                    env.put(pi.getPathName(), newPath);
-
-                    provider.run(getExecutionEnvironment(), remote_command(command, stdout), env);
-                    reader = new BufferedReader(new StringReader(provider.getOutput()));
-                } else {
-                    Logger.getLogger("cnd.remote.logger").warning("CommandProvider for remote run is not found"); //NOI18N
-                    return;
+    protected void getSystemIncludesAndDefines(String arguments, boolean stdout) throws IOException {
+        String path = getPath();
+        if (path != null && path.length() == 0) {
+            return;
+        }
+        if (path == null || !PlatformInfo.getDefault(getExecutionEnvironment()).fileExists(path)) {
+            path = getDefaultPath();
+        }
+        String command = path;
+        path = IpeUtils.getDirName(path);
+        if (getExecutionEnvironment().isLocal() && Utilities.isWindows()) {
+            if (!new File(command).exists() && new File(command + ".lnk").exists()) { // NOI18N
+                String resolved = LinkSupport.getOriginalFile(command + ".lnk"); // NOI18N
+                if (resolved != null) {
+                    command = resolved;
                 }
-            } else {
-                List<String> newEnv = new ArrayList<String>();
-                for (Map.Entry<String, String> entry : env.entrySet()) {
-                    String key = entry.getKey();
-                    String value = entry.getValue();
-                    if (key.equals(pi.getPathName())) {
-                        newEnv.add(pi.getPathName() + "=" + path + pi.pathSeparator() + value); // NOI18N
-                    } else {
-                        newEnv.add(key + "=" + (value != null ? value : "")); // NOI18N
-                    }
-                }
-                process = Runtime.getRuntime().exec(command + " " + tmpFile(),newEnv.toArray(new String[newEnv.size()])); // NOI18N
-                if (stdout) {
-                    is = process.getInputStream();
-                } else {
-                    is = process.getErrorStream();
-                }
-                reader = new BufferedReader(new InputStreamReader(is));
-            }
-            parseCompilerOutput(reader);
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException ex) {
             }
         }
+
+        Process process;
+        InputStream is = null;
+        BufferedReader reader;
+
+        PlatformInfo pi = PlatformInfo.getDefault(getExecutionEnvironment());
+        Map<String, String> env = pi.getEnv();
+        if (getExecutionEnvironment().isRemote()) {
+            CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
+            if (provider != null) {
+                String newPath = env.get(pi.getPathName());
+                newPath = newPath == null ? "" : newPath + pi.pathSeparator();
+                newPath += path;
+                env.put(pi.getPathName(), newPath);
+
+                provider.run(getExecutionEnvironment(), remote_command(command + arguments, stdout), env);
+                reader = new BufferedReader(new StringReader(provider.getOutput()));
+            } else {
+                Logger.getLogger("cnd.remote.logger").warning("CommandProvider for remote run is not found"); //NOI18N
+                return;
+            }
+        } else {
+            List<String> newEnv = new ArrayList<String>();
+            for (Map.Entry<String, String> entry : env.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                if (key.equals(pi.getPathName())) {
+                    newEnv.add(pi.getPathName() + "=" + path + pi.pathSeparator() + value); // NOI18N
+                } else {
+                    newEnv.add(key + "=" + (value != null ? value : "")); // NOI18N
+                }
+            }
+            process = Runtime.getRuntime().exec(command + arguments + " " + tmpFile(), newEnv.toArray(new String[newEnv.size()])); // NOI18N
+            if (stdout) {
+                is = process.getInputStream();
+            } else {
+                is = process.getErrorStream();
+            }
+            reader = new BufferedReader(new InputStreamReader(is));
+        }
+        parseCompilerOutput(reader);
+        try {
+            if (is != null) {
+                is.close();
+            }
+        } catch (IOException ex) {
+        }
+    }
     
     //TODO: move to a more convenient place and remove fixed tempfile name
     private String remote_command(String command, boolean use_stdout) {
@@ -165,6 +183,14 @@ public abstract class CCCCompiler extends BasicCompiler {
     
     // To be overridden
     protected abstract void parseCompilerOutput(BufferedReader reader);
+
+    protected String getDefaultPath() {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getNames().length > 0){
+            return compiler.getNames()[0];
+        }
+        return ""; // NOI18N
+    }
     
     /**
      * Determines whether the given macro presents in the list

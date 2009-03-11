@@ -102,12 +102,12 @@ class NamespaceKey extends ProjectNameBasedKey {
     public void write(DataOutput aStream) throws IOException {
         super.write(aStream);
         assert fqn != null;
-        aStream.writeUTF(fqn.toString());
+        PersistentUtils.writeUTF(fqn, aStream);
     }
 
     /*package*/ NamespaceKey(DataInput aStream) throws IOException {
         super(aStream);
-        fqn = QualifiedNameCache.getString(aStream.readUTF());
+        fqn = QualifiedNameCache.getString(PersistentUtils.readUTF(aStream));
         assert fqn != null;
         hashCode = _hashCode();
     }
