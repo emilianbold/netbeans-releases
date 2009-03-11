@@ -115,4 +115,5 @@ public class HtmlLanguage extends DefaultLanguageConfig {
     public KeystrokeHandler getKeystrokeHandler() {
         return new HtmlKeystrokeHandler();
     }
+
 }

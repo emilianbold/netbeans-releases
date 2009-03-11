@@ -94,7 +94,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         }
     }
     
-    DTD getDTD() {
+    public DTD getDTD() {
         String type = getDocType();
         if( type == null ) type = FALLBACK_DOCTYPE;
         

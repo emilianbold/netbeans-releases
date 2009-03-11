@@ -40,15 +40,10 @@
  */
 package org.netbeans.modules.css.editor.test;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.css.editor.Css;
-import org.netbeans.modules.css.lexer.api.CSSTokenId;
-import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.css.gsf.CSSFormatter;
 import org.netbeans.modules.css.gsf.CSSLanguage;
 
 /**
@@ -56,20 +51,10 @@ import org.netbeans.modules.css.gsf.CSSLanguage;
  */
 public class TestBase extends CslTestBase {
 
-//    static {
-//        MockServices.setServices(new Class[] {RepositoryImpl.class});
-//    }
     private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
 
     public TestBase(String name) {
         super(name);
-    }
-
-    protected BaseDocument createDocument() {
-        NbEditorDocument doc = new NbEditorDocument(Css.CSS_MIME_TYPE);
-        doc.putProperty(PROP_MIME_TYPE, Css.CSS_MIME_TYPE);
-        doc.putProperty(Language.class, CSSTokenId.language());
-        return doc;
     }
 
     @Override
@@ -84,16 +69,6 @@ public class TestBase extends CslTestBase {
 
     @Override
     public Formatter getFormatter(IndentPrefs preferences) {
-        if (preferences == null) {
-            preferences = new IndentPrefs(4, 4);
-        }
-
-//        Preferences prefs = MimeLookup.getLookup(MimePath.get(Css.CSS_MIME_TYPE)).lookup(Preferences.class);
-//        prefs.putInt(SimpleValueNames.SPACES_PER_TAB, preferences.getIndentation());
-        // TODO: XXXX
-
-        CSSFormatter formatter = new CSSFormatter();
-
-        return formatter;
+        return null;
     }
 }

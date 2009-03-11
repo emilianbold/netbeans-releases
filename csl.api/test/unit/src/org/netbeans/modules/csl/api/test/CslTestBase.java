@@ -1942,7 +1942,7 @@ public abstract class CslTestBase extends NbTestCase {
 
     public void format(String sourceText, String reformatted, IndentPrefs preferences) throws Exception {
         final Formatter formatter = getFormatter(preferences);
-        assertNotNull("getFormatter must be implemented", formatter);
+        //assertNotNull("getFormatter must be implemented", formatter);
 
         String BEGIN = "%<%"; // NOI18N
         int startPos = sourceText.indexOf(BEGIN);
@@ -1980,7 +1980,7 @@ public abstract class CslTestBase extends NbTestCase {
         //String before = doc.getText(0, doc.getLength());
         
         Formatter formatter = getFormatter(preferences);
-        assertNotNull("getFormatter must be implemented", formatter);
+        //assertNotNull("getFormatter must be implemented", formatter);
 
         setupDocumentIndentation(doc, preferences);
         format(doc, formatter, 0, doc.getLength(), false);

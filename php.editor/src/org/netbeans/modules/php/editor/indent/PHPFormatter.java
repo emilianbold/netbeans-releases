@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +54,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -290,6 +292,11 @@ public class PHPFormatter implements Formatter {
                     id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END ||
                     id == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING ||
                     id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ||
+
+// TODO: please review!! without this line PHP formatter clobers
+// all indentation done by HTML formatter:
+                    id == PHPTokenId.T_INLINE_HTML ||
+
                     id == PHPTokenId.PHP_HEREDOC_TAG
                 ) {
                     // No indentation for literal strings in Ruby, since they can
@@ -647,6 +654,27 @@ public class PHPFormatter implements Formatter {
                 int indent; // The indentation to be used for the current line
 
                 int hangingIndent = continued ? (hiSize) : 0;
+
+                /**
+                 * As most of this code was copy&pasted from JavaScript/Ruby formatter
+                 * I'm copy pasting also intialization of initialIndent as done in Ruby
+                 * formatter.
+                 * TODO: PHP does not seem to have isEmbeddedDoc. is that OK?
+                 */
+                if (/*isEmbeddedDoc &&*/ !indentOnly) {
+                    // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
+                    Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
+                    if (suggestedLineIndents != null) {
+                        Integer ind = suggestedLineIndents.get(Utilities.getLineOffset(doc, offset));
+                        if (ind != null) {
+                            initialIndent = ind.intValue();
+                        } else {
+                            initialIndent = GsfUtilities.getLineIndent(doc, offset);
+                        }
+                    } else {
+                        initialIndent = GsfUtilities.getLineIndent(doc, offset);
+                    }
+                }
 
                 if (isInLiteral(doc, offset)) {
                     // Skip this line - leave formatting as it is prior to reformatting 

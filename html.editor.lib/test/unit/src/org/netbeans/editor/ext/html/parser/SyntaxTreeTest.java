@@ -43,10 +43,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.test.TestBase;
+import org.netbeans.junit.MockServices;
 
 /**
  *
@@ -58,7 +60,14 @@ public class SyntaxTreeTest extends TestBase {
     public SyntaxTreeTest(){
         super("SyntaxTreeTest");
     }
-    
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MockServices.setServices(MockMimeLookup.class);
+    }
+
+
     public void testTrivialCase() throws Exception {
         testSyntaxTree("trivial.html");
     }

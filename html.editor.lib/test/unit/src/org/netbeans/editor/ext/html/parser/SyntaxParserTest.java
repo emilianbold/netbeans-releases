@@ -42,13 +42,14 @@ package org.netbeans.editor.ext.html.parser;
 
 import java.util.List;
 import java.util.logging.Logger;
-import org.netbeans.editor.ext.html.*;
 import java.io.IOException;
 import java.util.logging.Level;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.ext.html.test.TestBase;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.HTMLKit;
 
@@ -68,6 +69,7 @@ public class SyntaxParserTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
         Logger.getLogger(SyntaxParser.class.getName()).setLevel(Level.FINE);
+        MockServices.setServices(MockMimeLookup.class);
     }
 
     public void testOpenTag() throws BadLocationException {

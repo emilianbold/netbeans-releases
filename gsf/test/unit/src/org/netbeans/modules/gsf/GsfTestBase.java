@@ -166,6 +166,8 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.gsf.spi.DefaultError;
 import org.netbeans.modules.gsfret.hints.infrastructure.Pair;
+import org.openide.cookies.EditorCookie;
+import org.openide.util.Lookup;
 
 /**
  * @todo Add stress tests: Test every single position in an occurrences marker,
@@ -394,6 +396,10 @@ public abstract class GsfTestBase extends NbTestCase {
     }
     
     public BaseDocument getDocument(FileObject fo) {
+        return getDocument(fo, getPreferredMimeType(), getPreferredLanguage().getLexerLanguage());
+    }
+
+    protected BaseDocument getDocument(FileObject fo, String mimeType, Language language) {
         try {
 //             DataObject dobj = DataObject.find(fo);
 //             assertNotNull(dobj);
@@ -402,7 +408,7 @@ public abstract class GsfTestBase extends NbTestCase {
 //             assertNotNull(ec);
 //
 //             return (BaseDocument)ec.openDocument();
-            BaseDocument doc = getDocument(readFile(fo));
+            BaseDocument doc = getDocument(readFile(fo), mimeType, language);
             try {
                 DataObject dobj = DataObject.find(fo);
                 doc.putProperty(Document.StreamDescriptionProperty, dobj);
@@ -1981,19 +1987,22 @@ public abstract class GsfTestBase extends NbTestCase {
 
 //        formatter.reformat(doc, startPos, endPos, getInfoForText(source, "unittestdata"));
         final org.netbeans.editor.Formatter f = document.getFormatter();
+        boolean locked = false;
         try {
             f.reformatLock();
+            locked = true;
             int reformattedLen = f.reformat(document, 
                     Math.min(document.getLength(), startPos),
                     Math.min(document.getLength(), endPos));
         } finally {
-            f.reformatUnlock();
+            if (locked) {
+                f.reformatUnlock();
+            }
         }
     }
 
     public void format(String source, String reformatted, IndentPrefs preferences) throws Exception {
         final Formatter formatter = getFormatter(preferences);
-        assertNotNull("getFormatter must be implemented", formatter);
 
         String BEGIN = "%<%"; // NOI18N
         int startPos = source.indexOf(BEGIN);
@@ -2024,14 +2033,17 @@ public abstract class GsfTestBase extends NbTestCase {
 
 
     protected void reformatFileContents(String file, IndentPrefs preferences) throws Exception {
+        reformatFileContents(file, getPreferredMimeType(), getPreferredLanguage().getLexerLanguage(), preferences);
+    }
+
+    protected void reformatFileContents(String file, String mimeType, Language language, IndentPrefs preferences) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
-        BaseDocument doc = getDocument(fo);
+        BaseDocument doc = getDocument(fo, mimeType, language);
         assertNotNull(doc);
         //String before = doc.getText(0, doc.getLength());
         
         Formatter formatter = getFormatter(preferences);
-        assertNotNull("getFormatter must be implemented", formatter);
         setupDocumentIndentation(doc, preferences);
 
         format(doc, formatter, getInfo(fo), 0, doc.getLength(), false);

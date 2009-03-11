@@ -109,16 +109,6 @@ public class CSSLanguage extends DefaultLanguageConfig {
     }
 
     @Override
-    public boolean hasFormatter() {
-        return true;
-    }
-
-    @Override
-    public Formatter getFormatter() {
-        return new CSSFormatter();
-    }
-
-    @Override
     public CodeCompletionHandler getCompletionHandler() {
         return new CSSCompletion();
     }
