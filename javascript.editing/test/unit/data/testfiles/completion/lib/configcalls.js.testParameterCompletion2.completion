@@ -1,5 +1,5 @@
 Code completion result for source line:
 somefunction({}, {}, {|});
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 PARAMETER  ghiconfig1                                 <i>First config</i>
 CALL       somefunction(... , ghi)                    configcalls.js

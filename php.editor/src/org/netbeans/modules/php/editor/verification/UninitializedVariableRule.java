@@ -40,10 +40,10 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collection;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -124,7 +124,7 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
             if (varName != null && !context.variableStack.isVariableDefined(varName)) {
                 // check the globals from included files
                 Collection<IndexedVariable> topLevelVars = context.index.getTopLevelVariables((PHPParseResult) context.parserResult,
-                        "$" + varName, NameKind.EXACT_NAME); //NOI18N
+                        "$" + varName, QuerySupport.Kind.EXACT); //NOI18N
                 
                 for (IndexedConstant topLevelVar : topLevelVars) {
                     if (topLevelVar.isResolved()){
@@ -135,7 +135,7 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
                 OffsetRange range = new OffsetRange(var.getStartOffset(), var.getEndOffset());
 
                 Hint hint = new Hint(UninitializedVariableRule.this, getDisplayName(),
-                        context.compilationInfo.getFileObject(), range, null, 500);
+                        context.parserResult.getSnapshot().getSource().getFileObject(), range, null, 500);
 
                 addResult(hint);
             }

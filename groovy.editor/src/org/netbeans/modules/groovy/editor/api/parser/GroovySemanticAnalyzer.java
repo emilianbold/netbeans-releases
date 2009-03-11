@@ -47,20 +47,23 @@ import java.util.Map;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.SemanticAnalysisVisitor;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  * 
  * @author MArtin Adamek
  */
-public class GroovySemanticAnalyzer implements SemanticAnalyzer {
+// FIXME parsing API - use type parameter
+public class GroovySemanticAnalyzer extends SemanticAnalyzer {
 
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
@@ -85,7 +88,19 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
         cancelled = true;
     }
 
-    public void run(CompilationInfo info) {
+    @Override
+    public int getPriority() {
+        return 0;
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+
+    @Override
+    public void run(Result result, SchedulerEvent event) {
         
         resume();
 
@@ -93,12 +108,12 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
             return;
         }
 
-        GroovyParserResult parserResult = AstUtilities.getParseResult(info);
+        GroovyParserResult parserResult = AstUtilities.getParseResult(result);
         if (parserResult == null) {
             return;
         }
 
-        ASTNode root = AstUtilities.getRoot(info);
+        ASTNode root = AstUtilities.getRoot(parserResult);
 
         if (root == null) {
             return;
@@ -110,10 +125,11 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
         AstPath path = new AstPath();
         path.descend(root);
 
-        BaseDocument doc = (BaseDocument) info.getDocument();
+        BaseDocument doc = LexUtilities.getDocument(parserResult.getSnapshot().getSource(), false);
         if (doc == null) {
             return;
         }
+
         SemanticAnalysisVisitor visitor = new SemanticAnalysisVisitor((ModuleNode) root, doc);
         highlights.putAll(visitor.annotate());
 
@@ -124,17 +140,17 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
         }
 
         if (highlights.size() > 0) {
-            if (parserResult.getTranslatedSource() != null) {
+            // FIXME parsing API
+            //if (parserResult.getTranslatedSource() != null) {
                 Map<OffsetRange, Set<ColoringAttributes>> translated = new HashMap<OffsetRange,Set<ColoringAttributes>>(2*highlights.size());
                 for (Map.Entry<OffsetRange,Set<ColoringAttributes>> entry : highlights.entrySet()) {
-                    OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
+                    OffsetRange range = LexUtilities.getLexerOffsets(parserResult, entry.getKey());
                     if (range != OffsetRange.NONE) {
                         translated.put(range, entry.getValue());
                     }
-                }
-                
+                }  
                 highlights = translated;
-            }
+            //}
             
             this.semanticHighlights = highlights;
         } else {

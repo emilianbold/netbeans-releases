@@ -39,33 +39,32 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Index;
-import org.netbeans.modules.gsf.api.Index.SearchResult;
-import org.netbeans.modules.gsf.api.Index.SearchScope;
-import org.netbeans.modules.gsf.api.NameKind;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.naming.directory.SearchResult;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.URLMapper;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tor Norbye
  */
-public class JsIndex {
+public final class JsIndex {
+
+    private static final Logger LOG = Logger.getLogger(JsIndex.class.getName());
+    
     // Non-final for test suite
     static int MAX_SEARCH_ITEMS = 160;
     
@@ -73,120 +72,79 @@ public class JsIndex {
     //private static final boolean ALL_REACHABLE = Boolean.getBoolean("javascript.findall");
     private static final boolean ALL_REACHABLE = !Boolean.getBoolean("javascript.checkincludes");
 
-    private static String clusterUrl = null;
-    private static final String CLUSTER_URL = "cluster:"; // NOI18N
+//    public static final Set<SearchScope> ALL_SCOPE = EnumSet.allOf(SearchScope.class);
+//    public static final Set<SearchScope> SOURCE_SCOPE = EnumSet.of(SearchScope.SOURCE);
 
-    public static final Set<SearchScope> ALL_SCOPE = EnumSet.allOf(SearchScope.class);
-    public static final Set<SearchScope> SOURCE_SCOPE = EnumSet.of(SearchScope.SOURCE);
+    // XXX: make this accessible from IndexDocument
+    private static final String FIELD_SOURCE_NAME = "_sn";  //NOI18N
     
-    private static final Set<String> TERMS_FQN = Collections.singleton(JsIndexer.FIELD_FQN);
-    private static final Set<String> TERMS_BASE = Collections.singleton(JsIndexer.FIELD_BASE);
-    private static final Set<String> TERMS_EXTEND = Collections.singleton(JsIndexer.FIELD_EXTEND);
+    private static final String [] TERMS_FQN = new String [] { JsIndexer.FIELD_FQN };
+    private static final String [] TERMS_BASE = new String [] { JsIndexer.FIELD_BASE };
+    private static final String [] TERMS_EXTEND = new String [] { JsIndexer.FIELD_EXTEND };
+
+    private static final JsIndex EMPTY = new JsIndex(null);
     
-    private final Index index;
+    private final QuerySupport querySupport;
 
     /** Creates a new instance of JsIndex */
-    public JsIndex(Index index) {
-        this.index = index;
+    private JsIndex(QuerySupport querySupport) {
+        this.querySupport = querySupport;
     }
 
-    public static JsIndex get(Index index) {
-        return new JsIndex(index);
-    }
-
-    private boolean search(String key, String name, NameKind kind, Set<SearchResult> result,
-        Set<SearchScope> scope, Set<String> terms) {
+    public static JsIndex get(Collection<FileObject> roots) {
         try {
-            index.search(key, name, kind, scope, result, terms);
-
-            return true;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("JsIndex for roots: " + roots); //NOI18N
+            }
+            return new JsIndex(QuerySupport.forRoots(JsIndexer.Factory.NAME,
+                    JsIndexer.Factory.VERSION,
+                    roots.toArray(new FileObject[roots.size()])));
         } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-
-            return false;
+            LOG.log(Level.WARNING, null, ioe);
+            return EMPTY;
         }
     }
 
-    
-    static void setClusterUrl(String url) {
-        clusterUrl = url;
-    }
-
-    static String getPreindexUrl(String url) {
-        String s = getClusterUrl();
-
-        if (url.startsWith(s)) {
-            return CLUSTER_URL + url.substring(s.length());
-        }
-
-        return url;
-    }
-
-    /** Get the FileObject corresponding to a URL returned from the index */
-    public static FileObject getFileObject(String url) {
-        try {
-            if (url.startsWith(CLUSTER_URL)) {
-                url = getClusterUrl() + url.substring(CLUSTER_URL.length()); // NOI18N
-            }
-
-            return URLMapper.findFileObject(new URL(url));
-        } catch (MalformedURLException mue) {
-            Exceptions.printStackTrace(mue);
-        }
-
-        return null;
-    }
-
-    static String getClusterUrl() {
-        if (clusterUrl == null) {
-            File f =
-                InstalledFileLocator.getDefault()
-                                    .locate("modules/org-netbeans-modules-javascript-editing.jar", null, false); // NOI18N
-
-            if (f == null) {
-                throw new RuntimeException("Can't find cluster");
-            }
-
-            f = new File(f.getParentFile().getParentFile().getAbsolutePath());
-
+    private Collection<? extends IndexResult> query(
+            final String fieldName, final String fieldValue,
+            final QuerySupport.Kind kind, final String... fieldsToLoad
+    ) {
+        if (querySupport != null) {
             try {
-                f = f.getCanonicalFile();
-                clusterUrl = f.toURI().toURL().toExternalForm();
+                return querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
             } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+                LOG.log(Level.WARNING, null, ioe);
             }
         }
-
-        return clusterUrl;
-    }
-    
-    @SuppressWarnings("unchecked")
-    public Pair<Set<IndexedElement>,Boolean> getConstructors(final String name, NameKind kind,
-        Set<Index.SearchScope> scope) {
-        // TODO - search by the FIELD_CLASS thingy
-        return getUnknownFunctions(name, kind, scope, true, null, true, false);
-    }
-    
-    @SuppressWarnings("unchecked")
-    public Set<IndexedElement> getAllNames(final String name, NameKind kind,
-        Set<Index.SearchScope> scope, JsParseResult context) {
-        // TODO - search by the FIELD_CLASS thingy
-        return getUnknownFunctions(name, kind, scope, false, context, true, true).getA();
+        
+        return Collections.<IndexResult>emptySet();
     }
 
     @SuppressWarnings("unchecked")
-    public Pair<Set<IndexedElement>,Boolean> getAllNamesTruncated(final String name, NameKind kind,
-        Set<Index.SearchScope> scope, JsParseResult context) {
+    public Pair<Set<IndexedElement>,Boolean> getConstructors(final String name, QuerySupport.Kind kind) {
         // TODO - search by the FIELD_CLASS thingy
-        return getUnknownFunctions(name, kind, scope, false, context, true, true);
+        return getUnknownFunctions(name, kind, true, null, true, false);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Set<IndexedElement> getAllNames(final String name, QuerySupport.Kind kind, JsParseResult context) {
+        // TODO - search by the FIELD_CLASS thingy
+        return getUnknownFunctions(name, kind, false, context, true, true).getA();
+    }
+
+    @SuppressWarnings("unchecked")
+    public Pair<Set<IndexedElement>,Boolean> getAllNamesTruncated(final String name, QuerySupport.Kind kind, JsParseResult context) {
+        // TODO - search by the FIELD_CLASS thingy
+        return getUnknownFunctions(name, kind, false, context, true, true);
     }
     
     public Map<String,String> getAllExtends() {
-        final Set<SearchResult> result = new HashSet<SearchResult>();
-        search(JsIndexer.FIELD_EXTEND, "", NameKind.CASE_INSENSITIVE_PREFIX, result, JsIndex.ALL_SCOPE, TERMS_EXTEND);
+        Collection<? extends IndexResult> results = query(
+                JsIndexer.FIELD_EXTEND, "", QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, TERMS_EXTEND); //NOI18N
+
         Map<String,String> classes = new HashMap<String,String>();
-        for (SearchResult map : result) {
-            String[] exts = map.getValues(JsIndexer.FIELD_EXTEND);
+        for (IndexResult d : results) {
+            String[] exts = d.getValues(JsIndexer.FIELD_EXTEND);
             
             if (exts != null) {
                 for (String ext : exts) {
@@ -203,19 +161,20 @@ public class JsIndex {
         return classes;
     }
     
-    public String getExtends(String className, Set<Index.SearchScope> scope) {
-        final Set<SearchResult> result = new HashSet<SearchResult>();
-        search(JsIndexer.FIELD_EXTEND, className.toLowerCase(), NameKind.CASE_INSENSITIVE_PREFIX, result, scope, TERMS_EXTEND);
-        String target = className.toLowerCase()+";";
-        for (SearchResult map : result) {
-            String[] exts = map.getValues(JsIndexer.FIELD_EXTEND);
+    public String getExtends(String className) {
+        Collection<? extends IndexResult> results = query(
+                JsIndexer.FIELD_EXTEND, className.toLowerCase(), QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, TERMS_EXTEND);
+
+        String target = className.toLowerCase() + ";"; //NOI18N
+        for (IndexResult d : results) {
+            String[] exts = d.getValues(JsIndexer.FIELD_EXTEND);
             
             if (exts != null) {
                 for (String ext : exts) {
                     if (ext.startsWith(target)) {
                         // Make sure it's a case match
                         int caseIndex = target.length();
-                        int end = ext.indexOf(';', caseIndex);
+                        int end = ext.indexOf(';', caseIndex); //NOI18N
                         if (className.equals(ext.substring(caseIndex, end))) {
                             return ext.substring(end+1);
                         }
@@ -230,71 +189,69 @@ public class JsIndex {
     /** Return both functions and properties matching the given prefix, of the
      * given (possibly null) type
      */
-    public Set<IndexedElement> getElements(String prefix, String type,
-            NameKind kind, Set<Index.SearchScope> scope, JsParseResult context) {
-        return getByFqn(prefix, type, kind, scope, false, context, true, true, false);
+    public Set<IndexedElement> getElements(String prefix, String type, QuerySupport.Kind kind, JsParseResult context) {
+        return getByFqn(prefix, type, kind, false, context, true, true, false);
     }
 
-    public Set<IndexedElement> getElementsByFqn(String fqn,
-            NameKind kind, Set<Index.SearchScope> scope, JsParseResult context) {
+    public Set<IndexedElement> getElementsByFqn(String fqn, QuerySupport.Kind kind, JsParseResult context) {
         String name = fqn;
-        int dot = name.lastIndexOf('.');
+        int dot = name.lastIndexOf('.'); //NOI18N
         String type = null;
         if (dot != -1) {
             type = name.substring(0, dot);
             name = name.substring(dot+1);
         }
-        return getByFqn(name, type, kind, scope, false, context, true, true, false);
+        return getByFqn(name, type, kind, false, context, true, true, false);
     }
     
-    public Set<IndexedElement> getAllElements(String prefix, String type,
-            NameKind kind, Set<Index.SearchScope> scope, JsParseResult context) {
-        return getByFqn(prefix, type, kind, scope, false, context, true, true, true);
+    public Set<IndexedElement> getAllElements(String prefix, String type, QuerySupport.Kind kind, JsParseResult context) {
+        return getByFqn(prefix, type, kind, false, context, true, true, true);
     }
     
     @SuppressWarnings("unchecked")
-    public Set<IndexedFunction> getFunctions(String name, String in, NameKind kind,
-        Set<Index.SearchScope> scope, JsParseResult context, boolean includeMethods) {
-        return (Set<IndexedFunction>)(Set)getByFqn(name, in, kind, scope, false, context, includeMethods, false, false);
+    public Set<IndexedFunction> getFunctions(String name, String in, QuerySupport.Kind kind, JsParseResult context, boolean includeMethods) {
+        return (Set<IndexedFunction>)(Set)getByFqn(name, in, kind, false, context, includeMethods, false, false);
     }
     
-    private Pair<Set<IndexedElement>,Boolean> getUnknownFunctions(String name, NameKind kind,
-        Set<Index.SearchScope> scope, boolean onlyConstructors, JsParseResult context,
-        boolean includeMethods, boolean includeProperties) {
-        
-        final Set<SearchResult> result = new HashSet<SearchResult>();
-
+    private Pair<Set<IndexedElement>, Boolean> getUnknownFunctions(
+        String name,
+        QuerySupport.Kind kind,
+        boolean onlyConstructors,
+        JsParseResult context,
+        boolean includeMethods, 
+        boolean includeProperties
+    ) {
         String field = JsIndexer.FIELD_BASE;
-        Set<String> terms = TERMS_BASE;
+        String [] terms = TERMS_BASE;
         
-        NameKind originalKind = kind;
-        if (kind == NameKind.EXACT_NAME) {
+        QuerySupport.Kind originalKind = kind;
+        if (kind == QuerySupport.Kind.EXACT) {
             // I can't do exact searches on methods because the method
             // entries include signatures etc. So turn this into a prefix
             // search and then compare chopped off signatures with the name
-            kind = NameKind.PREFIX;
+            kind = QuerySupport.Kind.PREFIX;
         }
         
         String lcname = name.toLowerCase();
-        search(field, lcname, kind, result, scope, terms);
+        Collection<? extends IndexResult> results = query(field, lcname, kind, terms);
 
         final Set<IndexedElement> elements = new HashSet<IndexedElement>();
         String searchUrl = null;
         if (context != null) {
             try {
-                searchUrl = context.getFile().getFileObject().getURL().toExternalForm();
+                searchUrl = context.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
 
-        for (SearchResult map : result) {
-            String[] signatures = map.getValues(field);
+        for (IndexResult d : results) {
+            String[] signatures = d.getValues(field);
             
             if (signatures != null) {
                 // Check if this file even applies
                 if (context != null) {
-                    String fileUrl = map.getPersistentUrl();
+                    String fileUrl = d.getValue(FIELD_SOURCE_NAME);
                     if (searchUrl == null || !searchUrl.equals(fileUrl)) {
                         boolean isLibrary = fileUrl.indexOf("jsstubs") != -1; // TODO - better algorithm
                         if (!isLibrary && !isReachable(context, fileUrl)) {
@@ -305,11 +262,11 @@ public class JsIndex {
                 
                 for (String signature : signatures) {
                     // Lucene returns some inexact matches, TODO investigate why this is necessary
-                    if ((kind == NameKind.PREFIX) && !signature.startsWith(lcname)) {
+                    if ((kind == QuerySupport.Kind.PREFIX) && !signature.startsWith(lcname)) {
                         continue;
-                    } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !signature.regionMatches(true, 0, lcname, 0, lcname.length())) {
+                    } else if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX && !signature.regionMatches(true, 0, lcname, 0, lcname.length())) {
                         continue;
-                    } else if (kind == NameKind.CASE_INSENSITIVE_REGEXP) {
+                    } else if (kind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP) {
                         int end = signature.indexOf(';');
                         assert end != -1;
                         String n = signature.substring(0, end);
@@ -320,7 +277,7 @@ public class JsIndex {
                         } catch (Exception e) {
                             // Silently ignore regexp failures in the search expression
                         }
-                    } else if (originalKind == NameKind.EXACT_NAME) {
+                    } else if (originalKind == QuerySupport.Kind.EXACT) {
                         // Make sure the name matches exactly
                         // We know that the prefix is correct from the first part of
                         // this if clause, by the signature may have more
@@ -331,16 +288,15 @@ public class JsIndex {
                     } // TODO - check camel case here too!
 
                     // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
-                    assert map != null;
 
                     String elementName = null;
-                    int nameEndIdx = signature.indexOf(';');
+                    int nameEndIdx = signature.indexOf(';'); //NOI18N
                     assert nameEndIdx != -1;
                     elementName = signature.substring(0, nameEndIdx);
                     nameEndIdx++;
 
                     String funcIn = null;
-                    int inEndIdx = signature.indexOf(';', nameEndIdx);
+                    int inEndIdx = signature.indexOf(';', nameEndIdx); //NOI18N
                     assert inEndIdx != -1;
                     if (inEndIdx > nameEndIdx+1) {
                         funcIn = signature.substring(nameEndIdx, inEndIdx);
@@ -348,14 +304,14 @@ public class JsIndex {
                     inEndIdx++;
 
                     int startCs = inEndIdx;
-                    inEndIdx = signature.indexOf(';', startCs);
+                    inEndIdx = signature.indexOf(';', startCs); //NOI18N
                     assert inEndIdx != -1;
                     if (inEndIdx > startCs) {
                         // Compute the case sensitive name
                         elementName = signature.substring(startCs, inEndIdx);
-                        if (kind == NameKind.PREFIX && !elementName.startsWith(name)) {
+                        if (kind == QuerySupport.Kind.PREFIX && !elementName.startsWith(name)) {
                             continue;
-                        } else if (kind == NameKind.EXACT_NAME && !elementName.equals(name)) {
+                        } else if (kind == QuerySupport.Kind.EXACT && !elementName.equals(name)) {
                             continue;
                         }
                     }
@@ -367,7 +323,7 @@ public class JsIndex {
                     }
                     
                     String fqn = null; // Compute lazily
-                    IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), fqn, elementName, funcIn, inEndIdx, this, false);
+                    IndexedElement element = IndexedElement.create(signature, fqn, elementName, funcIn, inEndIdx, this, d, false);
                     boolean isFunction = element instanceof IndexedFunction;
                     if (isFunction && !includeMethods) {
                         continue;
@@ -392,24 +348,29 @@ public class JsIndex {
         return new Pair<Set<IndexedElement>,Boolean>(elements, false);
     }
     
-    private Set<IndexedElement> getByFqn(String name, String type, NameKind kind,
-        Set<Index.SearchScope> scope, boolean onlyConstructors, JsParseResult context,
-        boolean includeMethods, boolean includeProperties, boolean includeDuplicates) {
+    private Set<IndexedElement> getByFqn(
+        String name,
+        String type,
+        QuerySupport.Kind kind,
+        boolean onlyConstructors,
+        JsParseResult context,
+        boolean includeMethods,
+        boolean includeProperties,
+        boolean includeDuplicates
+    ) {
         //assert in != null && in.length() > 0;
         
-        final Set<SearchResult> result = new HashSet<SearchResult>();
-
         String field = JsIndexer.FIELD_FQN;
-        Set<String> terms = TERMS_FQN;
-        NameKind originalKind = kind;
-        if (kind == NameKind.EXACT_NAME) {
+        String [] terms = TERMS_FQN;
+        QuerySupport.Kind originalKind = kind;
+        if (kind == QuerySupport.Kind.EXACT) {
             // I can't do exact searches on methods because the method
             // entries include signatures etc. So turn this into a prefix
             // search and then compare chopped off signatures with the name
-            kind = NameKind.PREFIX;
+            kind = QuerySupport.Kind.PREFIX;
         }
         
-        if (kind == NameKind.CASE_INSENSITIVE_PREFIX || kind == NameKind.CASE_INSENSITIVE_REGEXP) {
+        if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX || kind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP) {
             // TODO - can I do anything about this????
             //field = JsIndexer.FIELD_BASE_LOWER;
             //terms = FQN_BASE_LOWER;
@@ -419,7 +380,7 @@ public class JsIndex {
         String searchUrl = null;
         if (context != null) {
             try {
-                searchUrl = context.getFile().getFileObject().getURL().toExternalForm();
+                searchUrl = context.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -440,15 +401,15 @@ public class JsIndex {
             }
 
             String lcfqn = fqn.toLowerCase();
-            search(field, lcfqn, kind, result, scope, terms);
+            Collection<? extends IndexResult> results = query(field, lcfqn, kind, terms);
 
-            for (SearchResult map : result) {
-                String[] signatures = map.getValues(field);
+            for (IndexResult d : results) {
+                String[] signatures = d.getValues(field);
 
                 if (signatures != null) {
                     // Check if this file even applies
                     if (context != null) {
-                        String fileUrl = map.getPersistentUrl();
+                        String fileUrl = d.getValue(FIELD_SOURCE_NAME);
                         if (searchUrl == null || !searchUrl.equals(fileUrl)) {
                             boolean isLibrary = fileUrl.indexOf("jsstubs") != -1; // TODO - better algorithm
                             if (!isLibrary && !isReachable(context, fileUrl)) {
@@ -459,11 +420,11 @@ public class JsIndex {
 
                     for (String signature : signatures) {
                         // Lucene returns some inexact matches, TODO investigate why this is necessary
-                        if ((kind == NameKind.PREFIX) && !signature.startsWith(lcfqn)) {
+                        if ((kind == QuerySupport.Kind.PREFIX) && !signature.startsWith(lcfqn)) {
                             continue;
-                        } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !signature.regionMatches(true, 0, lcfqn, 0, lcfqn.length())) {
+                        } else if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX && !signature.regionMatches(true, 0, lcfqn, 0, lcfqn.length())) {
                             continue;
-                        } else if (kind == NameKind.CASE_INSENSITIVE_REGEXP) {
+                        } else if (kind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP) {
                             int end = signature.indexOf(';');
                             assert end != -1;
                             String n = signature.substring(0, end);
@@ -474,7 +435,7 @@ public class JsIndex {
                             } catch (Exception e) {
                                 // Silently ignore regexp failures in the search expression
                             }
-                        } else if (originalKind == NameKind.EXACT_NAME) {
+                        } else if (originalKind == QuerySupport.Kind.EXACT) {
                             // Make sure the name matches exactly
                             // We know that the prefix is correct from the first part of
                             // this if clause, by the signature may have more
@@ -485,7 +446,6 @@ public class JsIndex {
                         }
 
                         // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
-                        assert map != null;
 
                         String elementName = null;
                         int nameEndIdx = signature.indexOf(';');
@@ -504,9 +464,9 @@ public class JsIndex {
                         if (inEndIdx > startCs) {
                             // Compute the case sensitive name
                             elementName = signature.substring(startCs, inEndIdx);
-                            if (kind == NameKind.PREFIX && !elementName.startsWith(fqn)) {
+                            if (kind == QuerySupport.Kind.PREFIX && !elementName.startsWith(fqn)) {
                                 continue;
-                            } else if (kind == NameKind.EXACT_NAME && !elementName.equals(fqn)) {
+                            } else if (kind == QuerySupport.Kind.EXACT && !elementName.equals(fqn)) {
                                 continue;
                             }
                         }
@@ -526,10 +486,10 @@ public class JsIndex {
                                 }
                                 if (type != null && type.length() > 0) {
                                     String pkg = elementName.substring(type.length()+1, nextDot);
-                                    element = new IndexedPackage(null, pkg, null, this, map.getPersistentUrl(), signature, flags, k);
+                                    element = new IndexedPackage(null, pkg, null, this, d, signature, flags, k);
                                 } else {
                                     String pkg = elementName.substring(0, nextDot);
-                                    element = new IndexedPackage(null, pkg, null, this, map.getPersistentUrl(), signature, flags, k);
+                                    element = new IndexedPackage(null, pkg, null, this, d, signature, flags, k);
                                 }
                             } else {
                                 funcIn = elementName.substring(0, lastDot);
@@ -540,7 +500,7 @@ public class JsIndex {
                             elementName = elementName.substring(lastDot+1);
                         }
                         if (element == null) {
-                            element = IndexedElement.create(signature, map.getPersistentUrl(), null, elementName, funcIn, inEndIdx, this, false);
+                            element = IndexedElement.create(signature, null, elementName, funcIn, inEndIdx, this, d, false);
                         }
                         boolean isFunction = element instanceof IndexedFunction;
                         if (isFunction && !includeMethods) {
@@ -565,7 +525,7 @@ public class JsIndex {
             if (type == null || "Object".equals(type)) { // NOI18N
                 break;
             }
-            type = getExtends(type, scope);
+            type = getExtends(type);
             if (type == null) {
                 type = "Object"; // NOI18N
                 haveRedirected = true;
@@ -602,13 +562,13 @@ public class JsIndex {
         final Set<SearchResult> result = new HashSet<SearchResult>();
 
         String field = JsIndexer.FIELD_BASE;
-        Set<String> terms = TERMS_BASE;
+        String [] terms = TERMS_BASE;
         String lcsymbol = base.toLowerCase();
         assert lcsymbol.length() == baseLength;
-        search(field, lcsymbol, NameKind.PREFIX, result, ALL_SCOPE, terms);
+        Collection<? extends IndexResult> results = query(field, lcsymbol, QuerySupport.Kind.PREFIX, terms);
 
-        for (SearchResult map : result) {
-            String[] signatures = map.getValues(field);
+        for (IndexResult d : results) {
+            String[] signatures = d.getValues(field);
             
             if (signatures != null) {
                 for (String signature : signatures) {
@@ -616,14 +576,14 @@ public class JsIndex {
                     // Make sure the name matches exactly
                     // We know that the prefix is correct from the first part of
                     // this if clause, by the signature may have more
-                    if (!signature.startsWith(lcsymbol) || signature.charAt(baseLength) != ';') {
+                    if (!signature.startsWith(lcsymbol) || signature.charAt(baseLength) != ';') { //NOI18N
                         continue;
                     }
 
                     // Make sure the containing document is one of the superclasses
-                    assert signature.charAt(baseLength) == ';';
+                    assert signature.charAt(baseLength) == ';';//NOI18N
                     int inBegin = baseLength+1;
-                    int inEnd = signature.indexOf(';', inBegin);
+                    int inEnd = signature.indexOf(';', inBegin); //NOI18N
                     if (inEnd == inBegin) {
                         // No in - only qualifies if the target has no in
                         // However, we're currently processing those separately so
@@ -654,10 +614,10 @@ public class JsIndex {
         int typeIndex = 0;
         int section = IndexedElement.TYPE_INDEX;
         for (int i = 0; i < section; i++) {
-            typeIndex = signature.indexOf(';', typeIndex+1);
+            typeIndex = signature.indexOf(';', typeIndex+1); //NOI18N
         }
         typeIndex++;
-        int endIndex = signature.indexOf(';', typeIndex);
+        int endIndex = signature.indexOf(';', typeIndex); //NOI18N
         if (endIndex > typeIndex) {
             return signature.substring(typeIndex, endIndex);
         }
@@ -673,13 +633,13 @@ public class JsIndex {
         final Set<SearchResult> result = new HashSet<SearchResult>();
 
         String field = JsIndexer.FIELD_FQN;
-        Set<String> terms = TERMS_BASE;
+        String [] terms = TERMS_BASE;
         String lcsymbol = fqn.toLowerCase();
         int symbolLength = fqn.length();
-        search(field, lcsymbol, NameKind.PREFIX, result, ALL_SCOPE, terms);
+        Collection<? extends IndexResult> results = query(field, lcsymbol, QuerySupport.Kind.PREFIX, terms);
 
-        for (SearchResult map : result) {
-            String[] signatures = map.getValues(field);
+        for (IndexResult d : results) {
+            String[] signatures = d.getValues(field);
             
             if (signatures != null) {
                 for (String signature : signatures) {
@@ -726,8 +686,8 @@ public class JsIndex {
 
             for (int i = 0, n = imports.size(); i < n; i++) {
                 String imp = imports.get(i);
-                if (imp.indexOf("../") != -1) {
-                    int lastIndex = imp.lastIndexOf("../");
+                if (imp.indexOf("../") != -1) { //NOI18N
+                    int lastIndex = imp.lastIndexOf("../"); //NOI18N
                     imp = imp.substring(lastIndex+3);
                     if (imp.length() == 0) {
                         continue;

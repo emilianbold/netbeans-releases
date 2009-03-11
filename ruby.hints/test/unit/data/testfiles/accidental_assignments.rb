@@ -10,7 +10,7 @@ end
 
 if foo = bar # comment
    puts "equal"
-
+end
 # Make sure that "new" assignments aren't flagged
 if (newvar = bar)
    puts "done"

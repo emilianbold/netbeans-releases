@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.php.editor.index;
 
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.NonNull;
+
 
 /**
  *

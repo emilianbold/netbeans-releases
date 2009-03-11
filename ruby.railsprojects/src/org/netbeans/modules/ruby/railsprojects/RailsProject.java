@@ -46,10 +46,11 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
+import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.railsprojects.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.ruby.railsprojects.queries.RailsProjectEncodingQueryImpl;
@@ -58,11 +59,11 @@ import org.netbeans.modules.ruby.railsprojects.ui.RailsLogicalViewProvider;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
+import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -138,15 +139,15 @@ public class RailsProject extends RubyBaseProject {
     protected @Override void registerClassPath() {
         // register project's classpaths to GlobalPathRegistry
         ClassPathProviderImpl cpProvider = getLookup().lookup(ClassPathProviderImpl.class);
-        GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+        GlobalPathRegistry.getDefault().register(RubyLanguage.BOOT, cpProvider.getProjectClassPaths(RubyLanguage.BOOT));
+        GlobalPathRegistry.getDefault().register(RubyLanguage.SOURCE, cpProvider.getProjectClassPaths(RubyLanguage.SOURCE));
     }
     
     protected @Override void unregisterClassPath() {
         // unregister project's classpaths to GlobalPathRegistry
         ClassPathProviderImpl cpProvider = getLookup().lookup(ClassPathProviderImpl.class);
-        //GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-        GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+        //GlobalPathRegistry.getDefault().unregister(RubyLanguage.BOOT, cpProvider.getProjectClassPaths(RubyLanguage.BOOT));
+        GlobalPathRegistry.getDefault().unregister(RubyLanguage.SOURCE, cpProvider.getProjectClassPaths(RubyLanguage.SOURCE));
     }
 
     /** Mainly for unit tests. */

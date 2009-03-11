@@ -1,5 +1,5 @@
 Code completion result for source line:
 puts "Result is #{@myfield} and #@a|nother."
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 FIELD      another                                    MyTest
 CALL       puts(obj)                                  Kernel

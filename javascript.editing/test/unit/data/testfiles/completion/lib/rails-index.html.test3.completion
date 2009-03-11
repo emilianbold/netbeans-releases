@@ -1,6 +1,6 @@
 Code completion result for source line:
 $$('li:|f');
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 RULE       active                                     <i></i>
 RULE       button                                     <i>All other buttons (type="button")</i>
 RULE       checkbox                                   <i>All checkbox fields (type="checkbox")</i>

@@ -44,30 +44,34 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.mozilla.nb.javascript.Node;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Indexer;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.IndexDocument;
-import org.netbeans.modules.gsf.api.IndexDocumentFactory;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
@@ -99,7 +103,9 @@ import org.openide.util.Exceptions;
  * 
  * @author Tor Norbye
  */
-public class JsIndexer implements Indexer {
+public class JsIndexer extends EmbeddingIndexer {
+    private static final Logger LOG = Logger.getLogger(JsIndexer.class.getName());
+    
     static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
     // I need to be able to search several things:
@@ -124,261 +130,150 @@ public class JsIndexer implements Indexer {
     static final String FIELD_BASE = "base"; //NOI18N
     static final String FIELD_EXTEND = "extend"; //NOI18N
     static final String FIELD_CLASS = "clz"; //NOI18N
-    
-    private FileObject cachedFo;
-    private boolean cachedIndexable;
-    
-    public String getIndexVersion() {
-        return "6.115"; // NOI18N
-    }
 
-    public String getIndexerName() {
-        return "javascript"; // NOI18N
-    }
+    // XXX: use this when getting FileObject for IndexedElement that was created for sdoc
+    static final String FIELD_SDOC_URL = "sdocurl"; //NOI18N
     
-    public boolean isIndexable(ParserFile file) {
-        String extension = file.getExtension();
 
-        if (extension.equals("json")) {
-            // json: not indexed
-            // TODO - skip this check
-            return false;
+// XXX: parsingapi
+//    public boolean acceptQueryPath(String url) {
+//        return url.indexOf("/ruby2/") == -1 && url.indexOf("/gems/") == -1 && url.indexOf("lib/ruby/") == -1 && // NOI18N
+//                url.indexOf("/python1/") == -1; // NOI18N
+//    }
+//
+//    public String getPersistentUrl(File file) {
+//        String url;
+//        try {
+//            url = file.toURI().toURL().toExternalForm();
+//            // Make relative URLs for urls in the libraries
+//            return JsIndex.getPreindexUrl(url);
+//        } catch (MalformedURLException ex) {
+//            Exceptions.printStackTrace(ex);
+//            return file.getPath();
+//        }
+//    }
+
+    public void index(Indexable indexable, Parser.Result result, Context context) {
+        LOG.fine("Indexing: " + indexable.getRelativePath() + ", fullPath: " + result.getSnapshot().getSource().getFileObject().getPath());
+
+        JsParseResult r = AstUtilities.getParseResult(result);
+        if (r == null) {
+            return;
         }
-        if (extension.equals("html")) {
-            if (file.getNameExt().equals("DataTable.js.html")) {
-                // Large file from YUI, skip
-                return false;
-            }
-            return true;
-        } else if (extension.equals("rhtml") || extension.equals("jsp") || extension.equals("php")) { // NOI18N
-            return true;
-        } else if (extension.equals("js"))  {
-            String name = file.getNameExt();
 
-            // Yahoo file that is always minimized and not uaually needed - it's an alias for 
-            // other stuff
-            if (name.equals("utilities.js")) {
-                String relative = file.getRelativePath();
-                if (relative != null && relative.indexOf("yui") != -1) { // NOI18N
-                    return false;
-                }
+        Node root = r.getRootNode();
+        if (root == null && !r.getSnapshot().getSource().getFileObject().getExt().equals("sdoc")) { // NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Indexable " + indexable.getRelativePath() + " has parser errors and is not sdoc"); //NOI18N
             }
-            
-            // Avoid double-indexing files that have multiple versions - e.g. foo.js and foo-min.js
-            // or foo.uncompressed
-            FileObject fo = file.getFileObject();
-            if (fo == null) {
-                return true;
-            }
-            if (name.endsWith("min.js") && name.length() > 6 && !Character.isLetter(name.charAt(name.length()-7))) { // NOI18N
-                // See if we have a corresponding "un-min'ed" version in the same directory;
-                // if so, skip it
-                // Subtrack out the -min part
-                name = name.substring(0, name.length()-7); // NOI18N
-                if (fo.getParent().getFileObject(name, "js") != null) { // NOI18N
-                    // The file has been deleted
-                    // I still need to return yes here such that the file is deleted from the index.
-                    return false;
-                }
-            } else {
-                // PENDING:  http://code.google.com/p/jqueryjs/    -- uses ".min.js" instead of "-min.js"; also has .pack.js
-                
-                // See if we have -uncompressed or -debug - prefer these over the compressed or non-debug versions
-                // TODO - just check for hardcoded "dojo.uncompressed" since that's the common thing? Also crosscheck
-                // this list with the common JavaScript frameworks and make sure we hit all the major patterns
-                // (Perhaps hardcode the list). It would be good if we could check multiple of the loadpath directories
-                // too, not just the same directory since there's a good likelihood (with the library manager) you
-                // have these in different dirs.
-                FileObject parent = fo.getParent();
-                if (parent == null) {
-                    // Unlikely but let's play it safe
-                    return true;
-                }
-                if (!name.endsWith(".uncompressed.js")) { // NOI18N
-                    String base = name.substring(0, name.length()-3);
-                    if (parent.getFileObject(base + ".uncompressed", "js") != null) { // NOI18N
-                        return false;
-                    }
-                }
-                if (!name.endsWith("-debug.js")) { // NOI18N
-                    String base = name.substring(0, name.length()-3);
-                    if (parent.getFileObject(base + "-debug", "js") != null) { // NOI18N
-                        return false;
-                    }
-                }
-                
-                // From here on, no per-file information is checked; these apply to all files in the
-                // same directory (e.g. all files in javascript are skipped if there is a corresponding
-                // sibling javascript_uncompressed, and similarly, if there is an everything.sdoc file,
-                // all the files are skipped in the directory.
-                if (parent == cachedFo) {
-                    return cachedIndexable;
-                }
-                cachedFo = parent;
-                if (parent.getFileObject("everything", "sdoc") != null) {
-                    cachedIndexable = false;
-                    return false;
-                }
-                for (int i = 0; i <= 3 && parent != null; i++, parent = parent.getParent()) {
-                    if (parent.getName().equals("javascript")) { // NOI18N
-                        // Webui has a convention where they place the uncompressed files in a parallel directory
-                        FileObject grandParent = parent.getParent();
-                        if (grandParent != null) {
-                            if (grandParent.getFileObject("javascript_uncompressed") != null) { // NOI18N
-                                cachedIndexable = false;
-                                return false;
-                            }
-                        }
-                        break;
-                    }
-                }
-                cachedIndexable = true;
-            }
-            
-            return true;
-        } else if (extension.equals("sdoc")) {
-            // sdoc indexing
-            return true;
+            return;
+        }
+
+        IndexingSupport support;
+        try {
+            support = IndexingSupport.getInstance(context);
+        } catch (IOException ioe) {
+            LOG.log(Level.WARNING, null, ioe);
+            return;
+        }
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Analyzing: " + indexable.getRelativePath()); //NOI18N
         }
         
-        return false;
-    }
-    
-    public boolean acceptQueryPath(String url) {
-        return url.indexOf("/ruby2/") == -1 && url.indexOf("/gems/") == -1 && url.indexOf("lib/ruby/") == -1 && // NOI18N
-                url.indexOf("/python1/") == -1; // NOI18N
-    }
-
-    public String getPersistentUrl(File file) {
-        String url;
-        try {
-            url = file.toURI().toURL().toExternalForm();
-            // Make relative URLs for urls in the libraries
-            return JsIndex.getPreindexUrl(url);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return file.getPath();
-        }
-    }
-
-    public List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException {
-        JsParseResult r = (JsParseResult)result;
-        Node root = r.getRootNode();
-
-        if (root == null && !result.getFile().getExtension().equals("sdoc")) { // NOI18N
-            return null;
-        }
-
-        TreeAnalyzer analyzer = new TreeAnalyzer(r, factory);
+        TreeAnalyzer analyzer = new TreeAnalyzer(r, support, indexable);
         analyzer.analyze();
         
-        return analyzer.getDocuments();
+        for(IndexDocument d : analyzer.getDocuments()) {
+            support.addDocument(d);
+        }
     }
     
     private static class TreeAnalyzer {
-        private final ParserFile file;
-        private String url;
         private final JsParseResult result;
-        private BaseDocument doc;
-        private IndexDocumentFactory factory;
-        private List<IndexDocument> documents = new ArrayList<IndexDocument>();
+        private final FileObject file;
+        private final IndexingSupport indexingSupport;
+        private final Indexable indexable;
+        private final List<IndexDocument> documents = new ArrayList<IndexDocument>();
+
+        private String url;
         
-        private TreeAnalyzer(JsParseResult result, IndexDocumentFactory factory) {
+        private TreeAnalyzer(JsParseResult result, IndexingSupport indexingSupport, Indexable indexable) {
             this.result = result;
-            this.file = result.getFile();
-            this.factory = factory;
+            this.file = result.getSnapshot().getSource().getFileObject();
+            this.indexingSupport = indexingSupport;
+            this.indexable = indexable;
         }
 
-        List<IndexDocument> getDocuments() {
+        public List<IndexDocument> getDocuments() {
             return documents;
         }
 
-        public void analyze() throws IOException {
-            FileObject fo = file.getFileObject();
-            if (result.getInfo() != null) {
-                this.doc = LexUtilities.getDocument(result.getInfo(), true);
-            } else {
-                this.doc = GsfUtilities.getDocument(fo, true, true);
+        public void analyze() {
+            try {
+                url = file.getURL().toExternalForm();
+
+                // Make relative URLs for urls in the libraries
+                url = getPreindexUrl(url);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
 
-            try {
-                if (doc != null) {
-                    doc.readLock(); // For Utilities.getRowStart() access
-                }
+            if (file.getExt().equals("sdoc")) { // NOI18N
+                indexScriptDoc(result.getSnapshot(), null);
+                return;
+            }
 
-                try {
-                    url = fo.getURL().toExternalForm();
-
-                    // Make relative URLs for urls in the libraries
-                    url = JsIndex.getPreindexUrl(url);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-
-                if (file.getExtension().equals("sdoc")) { // NOI18N
-                    indexScriptDoc(doc, null);
+            if (url.endsWith(".js")) { //NOI18N
+                boolean done = indexRelatedScriptDocs();
+                if (done) {
                     return;
                 }
+            }
 
-                AnalysisResult ar = result.getStructure();
-                List<?extends AstElement> children = ar.getElements();
+            IndexDocument document = indexingSupport.createDocument(indexable);
+            documents.add(document);
 
-                if ((children == null) || (children.size() == 0)) {
-                    return;
-                }
+            AnalysisResult ar = result.getStructure();
+            List<?extends AstElement> children = ar.getElements();
 
-                if (url.endsWith(".js")) {
-                    boolean done = indexRelatedScriptDocs();
-                    if (done) {
-                        return;
+            // Add the fields, etc.. Recursively add the children classes or modules if any
+            for (AstElement child : children) {
+                ElementKind childKind = child.getKind();
+                if (childKind == ElementKind.CONSTRUCTOR || childKind == ElementKind.METHOD) {
+                    String signature = computeSignature(child);
+                    indexFuncOrProperty(child, document, signature);
+                    String name = child.getName();
+                    if (Character.isUpperCase(name.charAt(0))) {
+                        indexClass(child, document, signature);
                     }
+                } else if (childKind == ElementKind.GLOBAL ||
+                        childKind == ElementKind.PROPERTY ||
+                        childKind == ElementKind.CLASS) {
+                    indexFuncOrProperty(child, document, computeSignature(child));
+                } else {
+                    assert false : childKind;
+                }
+                // XXX what about fields, constants, attributes?
+
+                assert child.getChildren().size() == 0;
+            }
+
+            Map<String,String> classExtends = ar.getExtendsMap();
+            if (classExtends != null && classExtends.size() > 0) {
+                for (Map.Entry<String,String> entry : classExtends.entrySet()) {
+                    String clz = entry.getKey();
+                    String superClz = entry.getValue();
+                    document.addPair(FIELD_EXTEND, clz.toLowerCase() + ";" + clz + ";" + superClz, true, true); // NOI18N
                 }
 
-                IndexDocument document = factory.createDocument(40); // TODO - measure!
-                documents.add(document);
-
-                // Add the fields, etc.. Recursively add the children classes or modules if any
-                for (AstElement child : children) {
-                    ElementKind childKind = child.getKind();
-                    if (childKind == ElementKind.CONSTRUCTOR || childKind == ElementKind.METHOD) {
-                        String signature = computeSignature(child);
-                        indexFuncOrProperty(child, document, signature);
-                        String name = child.getName();
-                        if (Character.isUpperCase(name.charAt(0))) {
-                            indexClass(child, document, signature);
-                        }
-                    } else if (childKind == ElementKind.GLOBAL ||
-                            childKind == ElementKind.PROPERTY ||
-                            childKind == ElementKind.CLASS) {
-                        indexFuncOrProperty(child, document, computeSignature(child));
-                    } else {
-                        assert false : childKind;
-                    }
-                    // XXX what about fields, constants, attributes?
-
-                    assert child.getChildren().size() == 0;
-                }
-
-                Map<String,String> classExtends = ar.getExtendsMap();
-                if (classExtends != null && classExtends.size() > 0) {
-                    for (Map.Entry<String,String> entry : classExtends.entrySet()) {
-                        String clz = entry.getKey();
-                        String superClz = entry.getValue();
-                        document.addPair(FIELD_EXTEND, clz.toLowerCase() + ";" + clz + ";" + superClz, true); // NOI18N
-                    }
-
-                    ClassCache.INSTANCE.refresh();
-                }
-            } finally {
-                if (doc != null) {
-                    doc.readUnlock();
-                }
+                ClassCache.INSTANCE.refresh();
             }
         }
 
         private void indexClass(AstElement element, IndexDocument document, String signature) {
             final String name = element.getName();
-            document.addPair(FIELD_CLASS, name+ ";" + signature, true);
+            document.addPair(FIELD_CLASS, name+ ";" + signature, true, true);
         }
 
         private String computeSignature(AstElement element) {
@@ -394,14 +289,9 @@ public class JsIndexer implements Indexer {
             String compatibility = "";
             if (file.getNameExt().startsWith("stub_")) { // NOI18N
                 int astOffset = element.getNode().getSourceStart();
-                int lexOffset = astOffset;
-                TranslatedSource source = result.getTranslatedSource();
-                if (source != null) {
-                    lexOffset = source.getLexicalOffset(astOffset);
-                }
+                CharSequence text = result.getSnapshot().getText();
                 try {
-                    String line = doc.getText(lexOffset,
-                            Utilities.getRowEnd(doc, lexOffset)-lexOffset);
+                    String line = text.subSequence(astOffset, GsfUtilities.getRowEnd(text, astOffset)).toString();
                     int compatIdx = line.indexOf("COMPAT="); // NOI18N
                     if (compatIdx != -1) {
                         compatIdx += "COMPAT=".length(); // NOI18N
@@ -512,7 +402,7 @@ public class JsIndexer implements Indexer {
             base.append(name);
             base.append(';');
             base.append(signature);
-            document.addPair(FIELD_BASE, base.toString(), true);
+            document.addPair(FIELD_BASE, base.toString(), true, true);
             
             StringBuilder fqn = new StringBuilder();
             if (in != null && in.length() > 0) {
@@ -529,7 +419,7 @@ public class JsIndexer implements Indexer {
             fqn.append(name);
             fqn.append(';');
             fqn.append(signature);
-            document.addPair(FIELD_FQN, fqn.toString(), true);
+            document.addPair(FIELD_FQN, fqn.toString(), true, true);
 
             FunctionCache cache = FunctionCache.INSTANCE;
             if (!cache.isEmpty()) {
@@ -539,27 +429,31 @@ public class JsIndexer implements Indexer {
         
         private OffsetRange getDocumentationOffset(AstElement element) {
             int astOffset = element.getNode().getSourceStart();
-            // XXX This is wrong; I should do a
-            //int lexOffset = LexUtilities.getLexerOffset(result, astOffset);
-            // but I don't have the CompilationInfo in the ParseResult handed to the indexer!!
-            int lexOffset = astOffset;
             try {
-                if (lexOffset > doc.getLength()) {
+                if (astOffset > result.getSnapshot().getText().length()) {
                     return OffsetRange.NONE;
                 }
-                lexOffset = Utilities.getRowStart(doc, lexOffset);
+                astOffset = GsfUtilities.getRowStart(result.getSnapshot().getText(), astOffset);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            OffsetRange range = LexUtilities.getCommentBlock(doc, lexOffset, true);
+            OffsetRange range = LexUtilities.getCommentBlock(result.getSnapshot(), astOffset, true);
             if (range != OffsetRange.NONE) {
+                range = LexUtilities.getLexerOffsets(result, range);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("DocOffset: elementStart=" + IndexedElement.encode(element.getNode().getSourceStart())
+                            + ", rowStart=" + IndexedElement.encode(astOffset)
+                            + ", rowStart-in-doc=" + IndexedElement.encode(result.getSnapshot().getOriginalOffset(astOffset))
+                            + " doc=<" + IndexedElement.encode(range.getStart()) + ", " + IndexedElement.encode(range.getEnd()) + ">,"
+                            + " text='" + result.getSnapshot().getText().subSequence(range.getStart(), range.getEnd()) + "'");
+                }
                 return range;
             } else {
                 return OffsetRange.NONE;
             }
         }
         
-        private void indexScriptDoc(BaseDocument doc, String sdocUrl) {
+        private void indexScriptDoc(Snapshot snapshot, String sdocUrl) {
             // I came across the following tags in YUI:
             // @type, @param, @method, @class, @return, @constructor, @namespace, 
             // @static, @private, @event, @property, @extends, @final, @module,
@@ -577,15 +471,16 @@ public class JsIndexer implements Indexer {
             // @propery, @depreciated, @parem, @parm, 
             assert sdocUrl == null || sdocUrl.endsWith(".sdoc") : sdocUrl; // NOI18N
             
-            IndexDocument document = factory.createDocument(40, sdocUrl); // TODO - measure!
+            IndexDocument document = indexingSupport.createDocument(indexable);
             documents.add(document);
+
+            if (sdocUrl != null) {
+                document.addPair(FIELD_SDOC_URL, sdocUrl, true, true);
+            }
 
             // TODO - I need to be able to associate builtin .sdoc files with specific versions found
             // in the libraries
-            if (doc == null) {
-                return;
-            }
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, 0);
+            TokenSequence<? extends JsTokenId> ts = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.language());
             if (ts == null) {
                 return;
             }
@@ -712,7 +607,7 @@ public class JsIndexer implements Indexer {
                             if (superClz.indexOf('.') == -1 && nameSpace != null) {
                                 superClz = nameSpace + "." + superClz;
                             }
-                            document.addPair(FIELD_EXTEND, fqnClz.toLowerCase() + ";" + fqnClz + ";" + superClz, true); // NOI18N
+                            document.addPair(FIELD_EXTEND, fqnClz.toLowerCase() + ";" + fqnClz + ";" + superClz, true, true); // NOI18N
                         }
 
                         if (id != null) {
@@ -788,7 +683,7 @@ public class JsIndexer implements Indexer {
                             base.append(name);
                             base.append(';');
                             base.append(signature);
-                            document.addPair(FIELD_BASE, base.toString(), true);
+                            document.addPair(FIELD_BASE, base.toString(), true, true);
 
                             StringBuilder fqn = new StringBuilder();
                             if (in != null && in.length() > 0) {
@@ -805,7 +700,7 @@ public class JsIndexer implements Indexer {
                             fqn.append(name);
                             fqn.append(';');
                             fqn.append(signature);
-                            document.addPair(FIELD_FQN, fqn.toString(), true);
+                            document.addPair(FIELD_FQN, fqn.toString(), true, true);
                         }
                     }
                 }
@@ -879,8 +774,8 @@ public class JsIndexer implements Indexer {
             }
             
             if (fo.getExt().equals("sdoc")) { // NOI18N
-                BaseDocument urlDoc = GsfUtilities.getDocument(fo, true);
-                indexScriptDoc(urlDoc, url);
+                Source source = Source.create(fo);
+                indexScriptDoc(source.createSnapshot(), url);
             }
         }
         
@@ -925,8 +820,8 @@ public class JsIndexer implements Indexer {
                         if (recurse) {
                             indexScriptDocRecursively(fo, urlString);
                         } else {
-                            BaseDocument urlDoc = GsfUtilities.getDocument(fo, true);
-                            indexScriptDoc(urlDoc, urlString);
+                            Source source = Source.create(fo);
+                            indexScriptDoc(source.createSnapshot(), urlString);
                         }
                     }
                 }
@@ -957,4 +852,207 @@ public class JsIndexer implements Indexer {
 //        return preindexedDb;
         return null;
     }
+
+    private static String clusterUrl = null;
+    private static final String CLUSTER_URL = "cluster:"; // NOI18N
+
+    /* test */ static void setClusterUrl(String url) {
+        clusterUrl = url;
+    }
+
+    private static String getPreindexUrl(String url) {
+        String s = getClusterUrl();
+
+        if (url.startsWith(s)) {
+            return CLUSTER_URL + url.substring(s.length());
+        }
+
+        return url;
+    }
+
+    /** Get the FileObject corresponding to a URL returned from the index */
+    public static FileObject getFileObject(String url) {
+        try {
+            if (url.startsWith(CLUSTER_URL)) {
+                url = getClusterUrl() + url.substring(CLUSTER_URL.length()); // NOI18N
+            }
+
+            return URLMapper.findFileObject(new URL(url));
+        } catch (MalformedURLException mue) {
+            Exceptions.printStackTrace(mue);
+        }
+
+        return null;
+    }
+
+    private static String getClusterUrl() {
+        if (clusterUrl == null) {
+            File f =
+                InstalledFileLocator.getDefault()
+                                    .locate("modules/org-netbeans-modules-javascript-editing.jar", null, false); // NOI18N
+
+            if (f == null) {
+                throw new RuntimeException("Can't find cluster");
+            }
+
+            f = new File(f.getParentFile().getParentFile().getAbsolutePath());
+
+            try {
+                f = f.getCanonicalFile();
+                clusterUrl = f.toURI().toURL().toExternalForm();
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+
+        return clusterUrl;
+    }
+
+    public static final class Factory extends EmbeddingIndexerFactory {
+
+        public static final String NAME = "javascript"; // NOI18N
+        public static final int VERSION = 7;
+
+        @Override
+        public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {
+            boolean b = isIndexable(indexable, snapshot);
+
+            if (LOG.isLoggable(Level.FINE)) {
+                if (b) {
+                    LOG.fine("Creating indexer for: " + indexable.getRelativePath()); //NOI18N
+                } else {
+                    LOG.fine("Ignoring indexable: " + indexable.getRelativePath()); //NOI18N
+                }
+            }
+
+            if (b) {
+                return new JsIndexer();
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public String getIndexerName() {
+            return NAME;
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return VERSION;
+        }
+
+        private FileObject cachedFo;
+        private boolean cachedIndexable;
+
+        private boolean isIndexable(Indexable indexable, Snapshot snapshot) {
+            String name = snapshot.getSource().getFileObject().getNameExt();
+
+            if (name.endsWith(".js"))  {
+                // we are indexing a javascript file (not embedded javascript)
+
+                // Yahoo file that is always minimized and not uaually needed - it's an alias for
+                // other stuff
+                if (name.equals("utilities.js")) {
+                    String relative = indexable.getRelativePath();
+                    if (relative != null && relative.indexOf("yui") != -1) { // NOI18N
+                        return false;
+                    }
+                }
+
+                FileObject fo = snapshot.getSource().getFileObject();
+                if (name.endsWith("min.js") && name.length() > 6 && !Character.isLetter(name.charAt(name.length()-7))) { // NOI18N
+                    // See if we have a corresponding "un-min'ed" version in the same directory;
+                    // if so, skip it
+                    // Subtrack out the -min part
+                    name = name.substring(0, name.length()-7); // NOI18N
+                    if (fo.getParent().getFileObject(name, "js") != null) { // NOI18N
+                        // The file has been deleted
+                        // I still need to return yes here such that the file is deleted from the index.
+                        return false;
+                    }
+                } else {
+                    // PENDING:  http://code.google.com/p/jqueryjs/    -- uses ".min.js" instead of "-min.js"; also has .pack.js
+
+                    // See if we have -uncompressed or -debug - prefer these over the compressed or non-debug versions
+                    // TODO - just check for hardcoded "dojo.uncompressed" since that's the common thing? Also crosscheck
+                    // this list with the common JavaScript frameworks and make sure we hit all the major patterns
+                    // (Perhaps hardcode the list). It would be good if we could check multiple of the loadpath directories
+                    // too, not just the same directory since there's a good likelihood (with the library manager) you
+                    // have these in different dirs.
+                    FileObject parent = fo.getParent();
+                    if (parent == null) {
+                        // Unlikely but let's play it safe
+                        return true;
+                    }
+                    if (!name.endsWith(".uncompressed.js")) { // NOI18N
+                        String base = name.substring(0, name.length()-3);
+                        if (parent.getFileObject(base + ".uncompressed", "js") != null) { // NOI18N
+                            return false;
+                        }
+                    }
+                    if (!name.endsWith("-debug.js")) { // NOI18N
+                        String base = name.substring(0, name.length()-3);
+                        if (parent.getFileObject(base + "-debug", "js") != null) { // NOI18N
+                            return false;
+                        }
+                    }
+
+                    // From here on, no per-file information is checked; these apply to all files in the
+                    // same directory (e.g. all files in javascript are skipped if there is a corresponding
+                    // sibling javascript_uncompressed, and similarly, if there is an everything.sdoc file,
+                    // all the files are skipped in the directory.
+                    if (parent == cachedFo) {
+                        return cachedIndexable;
+                    }
+                    cachedFo = parent;
+                    if (parent.getFileObject("everything", "sdoc") != null) {
+                        cachedIndexable = false;
+                        return false;
+                    }
+                    for (int i = 0; i <= 3 && parent != null; i++, parent = parent.getParent()) {
+                        if (parent.getName().equals("javascript")) { // NOI18N
+                            // Webui has a convention where they place the uncompressed files in a parallel directory
+                            FileObject grandParent = parent.getParent();
+                            if (grandParent != null) {
+                                if (grandParent.getFileObject("javascript_uncompressed") != null) { // NOI18N
+                                    cachedIndexable = false;
+                                    return false;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    cachedIndexable = true;
+                    return true;
+                }
+            }
+
+            return true;
+        }
+
+        @Override
+        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+            try {
+                IndexingSupport is = IndexingSupport.getInstance(context);
+                for(Indexable i : deleted) {
+                    is.removeDocuments(i);
+                }
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+            }
+        }
+
+        @Override
+        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+            try {
+                IndexingSupport is = IndexingSupport.getInstance(context);
+                for(Indexable i : dirty) {
+                    is.markDirtyDocuments(i);
+                }
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+            }
+        }
+    } // End of Factory class
 }

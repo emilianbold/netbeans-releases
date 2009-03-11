@@ -27,8 +27,6 @@
  */
 package org.netbeans.modules.ruby.hints;
 
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.ruby.RubyTestBase;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -38,16 +36,19 @@ import java.util.Set;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.LanguageRegistry;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintsProvider;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.Rule;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
+import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyHintsProvider;
 import org.openide.filesystems.FileObject;
@@ -106,7 +107,7 @@ public abstract class HintTestBase extends RubyTestBase {
         Set<String> fails = new HashSet<String>();
         for (FileObject fileObject : files) {
             ComputedHints r = getHints(this, hint, null, fileObject, null);
-            CompilationInfo info = r.info;
+            ParserResult info = r.info;
             List<Hint> result = r.hints;
             int caretOffset = r.caretOffset;
             if (hint.getDefaultSeverity() == HintSeverity.CURRENT_LINE_WARNING && hint instanceof RubyAstRule) {
@@ -120,7 +121,7 @@ public abstract class HintTestBase extends RubyTestBase {
                     nodeIds[index++] = id;
                 }
                 AstUtilities.addNodesByType(root, nodeIds, nodes);
-                BaseDocument doc = (BaseDocument) info.getDocument();
+                BaseDocument doc = RubyUtils.getDocument(info);
                 assertNotNull(doc);
                 for (Node n : nodes) {
                     int start = AstUtilities.getRange(n).getStart();
@@ -136,7 +137,7 @@ public abstract class HintTestBase extends RubyTestBase {
                 }
             }
 
-            String annotatedSource = annotateHints((BaseDocument)info.getDocument(), result, caretOffset);
+            String annotatedSource = annotateHints(RubyUtils.getDocument(info), result, caretOffset);
             
             if (annotatedSource.length() > 0) {
                 // Check if there's an exception

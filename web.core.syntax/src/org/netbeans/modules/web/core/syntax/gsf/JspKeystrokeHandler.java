@@ -47,11 +47,11 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.OffsetRange;
 
 public class JspKeystrokeHandler implements KeystrokeHandler {
 
@@ -132,7 +132,7 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
         return OffsetRange.NONE;
     }
 
-    public List<OffsetRange> findLogicalRanges(CompilationInfo info, int caretOffset) {
+    public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         return new ArrayList<OffsetRange>();
     }
 

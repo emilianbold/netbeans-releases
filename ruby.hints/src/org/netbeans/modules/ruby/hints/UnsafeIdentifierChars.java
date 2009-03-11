@@ -36,12 +36,12 @@ import javax.swing.JComponent;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
@@ -74,7 +74,7 @@ public class UnsafeIdentifierChars extends RubyAstRule {
     
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
 
         String name = ((INameNode)node).getName();
 
@@ -84,7 +84,7 @@ public class UnsafeIdentifierChars extends RubyAstRule {
             List<HintFix> fixList = Collections.emptyList();
             range = LexUtilities.getLexerOffsets(info, range);
             if (range != OffsetRange.NONE) {
-                Hint desc = new Hint(this, displayName, info.getFileObject(), range, fixList, 600);
+                Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range, fixList, 600);
                 result.add(desc);
             }
         }
