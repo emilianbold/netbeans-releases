@@ -567,7 +567,11 @@ public abstract class NbTopManager {
     public abstract ModuleSystem getModuleSystem();
     
     public static Lookup getModuleLookup() {
-        return org.netbeans.core.startup.Main.getModuleSystem().getManager().getModuleLookup();
+        Lookup l = Lookup.getDefault();
+        if (l instanceof MainLookup) {
+            l = org.netbeans.core.startup.Main.getModuleSystem().getManager().getModuleLookup();
+        }
+        return l;
     }
 
     public static List<File> getModuleJars() {

@@ -136,7 +136,9 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
                     if (f.isFolder()) {
                         delegates.add(new OverFiles(f.getPath()));
                     } else {
-                        items.add(new FOItem(f));
+                        if (f.hasExt("instance") || f.getAttribute("instanceCreate") != null) {
+                            items.add(new FOItem(f));
+                        }
                     }
                 }
 

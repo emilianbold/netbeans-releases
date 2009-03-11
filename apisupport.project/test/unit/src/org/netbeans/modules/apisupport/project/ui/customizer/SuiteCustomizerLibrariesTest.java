@@ -215,16 +215,18 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         Set<SuiteCustomizerLibraries.UniverseModule> modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getSortedModules(), SuiteUtils.getSubProjects(suite), Collections.<ModuleEntry>emptySet());
         Set<File> allClusters = new HashSet<File>(Arrays.asList(
                 new File(install, "somecluster"), new File(install, "anothercluster"), ClusterUtils.getClusterDirectory(suite)));
-        assertEquals(null, join(scl.findWarning(modules, allClusters, Collections.<String>emptySet())));
+        assertEquals(null, join(scl.findWarning(modules, allClusters, Collections.<String>emptySet()).warning));
         assertEquals("[ERR_excluded_dep, baz, anothercluster, Foo Module, somecluster]",
-                join(scl.findWarning(modules, Collections.singleton(new File(install, "anothercluster")), Collections.<String>emptySet())));
-        assertNull(join(scl.findWarning(modules, Collections.singleton(new File(install, "somecluster")), Collections.<String>emptySet())));
+                join(scl.findWarning(modules, Collections.singleton(new File(install, "anothercluster")), Collections.<String>emptySet()).warning));
+        assertNull(join(scl.findWarning(modules, Collections.singleton(new File(install, "somecluster")), Collections.<String>emptySet()).warning));
         assertEquals("[ERR_excluded_dep, Module Three, suite, bar, somecluster]",
-                join(scl.findWarning(modules, Collections.singleton(ClusterUtils.getClusterDirectory(suite)), Collections.<String>emptySet())));
+                join(scl.findWarning(modules, allClusters, Collections.singleton("bar")).warning));
         assertEquals("[ERR_only_excluded_providers, tok1, bar, somecluster, Foo Module, somecluster]",
-                join(scl.findWarning(modules, allClusters, Collections.singleton("foo"))));
+                join(scl.findWarning(modules, Collections.singleton(ClusterUtils.getClusterDirectory(suite)), Collections.<String>emptySet()).warning));
+        assertEquals("[ERR_only_excluded_providers, tok1, bar, somecluster, Foo Module, somecluster]",
+                join(scl.findWarning(modules, allClusters, Collections.singleton("foo")).warning));
         assertEquals("[ERR_only_excluded_providers, tok1b, bar2, somecluster, foo2, somecluster]",
-                join(scl.findWarning(modules, allClusters, Collections.singleton("foo2"))));
+                join(scl.findWarning(modules, allClusters, Collections.singleton("foo2")).warning));
         // XXX much more could be tested; check coverage results
     }
     
