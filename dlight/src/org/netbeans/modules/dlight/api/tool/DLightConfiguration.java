@@ -36,12 +36,19 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.tool;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -49,69 +56,143 @@ import org.openide.util.NbPreferences;
  * Use the following example:
  * <pre>
  * &lt;filesystem&gt;
-  &lt;folder name="DLight"&gt;
-    &lt;folder name="Configurations"&gt;
-      &lt;folder name="MyFavoriteConfiguration"&gt;
-        &lt;folder name="KnownToolsConfigurationProviders"&gt;
-          &lt;file name="MyDLightToolConfigurationProvider.shadow"&gt;
-            &lt;attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MyDLightToolConfigurationProvider.instance"/&gt;
-          &lt;/file&gt;
-          &lt;file name="MemoryToolConfigurationProvider.shadow"&gt;
-            &lt;attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/&gt;
-          &lt;/file&gt;
-          &lt;file name="SyncToolConfigurationProvider.shadow"&gt;
-            &lt;attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/SyncToolConfigurationProvider.instance"/&gt;
-          &lt;/file&gt;
-        &lt;/folder&gt;
-      &lt;/folder&gt;
-    &lt;/folder&gt;
-  &lt;/folder&gt;
+&lt;folder name="DLight"&gt;
+&lt;folder name="Configurations"&gt;
+&lt;folder name="MyFavoriteConfiguration"&gt;
+&lt;folder name="KnownToolsConfigurationProviders"&gt;
+&lt;file name="MyDLightToolConfigurationProvider.shadow"&gt;
+&lt;attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MyDLightToolConfigurationProvider.instance"/&gt;
+&lt;/file&gt;
+&lt;file name="MemoryToolConfigurationProvider.shadow"&gt;
+&lt;attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/&gt;
+&lt;/file&gt;
+&lt;file name="SyncToolConfigurationProvider.shadow"&gt;
+&lt;attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/SyncToolConfigurationProvider.instance"/&gt;
+&lt;/file&gt;
+&lt;/folder&gt;
+&lt;/folder&gt;
+&lt;/folder&gt;
+&lt;/folder&gt;
 &lt;/filesystem&gt;
 </pre>
  */
 public final class DLightConfiguration {
-  private final FileObject rootFolder;
-  private final ToolsConfiguration toolsConfiguration;
 
+    private static final String CONFIGURATION_OPTIONS = "ConfigurationOptions";//NOI18N
+    private final FileObject rootFolder;
+    private final ToolsConfiguration toolsConfiguration;
+    private final DLightConfigurationOptions configurationOptions;
 
- static DLightConfiguration create(FileObject configurationRoot){
-   return new DLightConfiguration(configurationRoot);
- }
+    static DLightConfiguration create(FileObject configurationRoot) {
+        return new DLightConfiguration(configurationRoot);
+    }
 
- static DLightConfiguration createDefault(){
-    FileObject fsRoot  = FileUtil.getConfigRoot();//epository.getDefault().getDefaultFileSystem();
-    FileObject toolConfigurations =  fsRoot.getFileObject("DLight/ToolConfigurationProviders");//NOI18N
-    return new DLightConfiguration(fsRoot.getFileObject("DLight"),ToolsConfiguration.createDefault(toolConfigurations));//NOI18N
- }
-  private DLightConfiguration(FileObject configurationRoot) {
-    this(configurationRoot, ToolsConfiguration.create(configurationRoot));
-  }
+    static DLightConfiguration createDefault() {
+        FileObject fsRoot = FileUtil.getConfigRoot();//epository.getDefault().getDefaultFileSystem();
+        FileObject toolConfigurations = fsRoot.getFileObject("DLight/ToolConfigurationProviders");//NOI18N
+        return new DLightConfiguration(fsRoot.getFileObject("DLight"), ToolsConfiguration.createDefault(toolConfigurations));//NOI18N
+    }
 
-  private DLightConfiguration(FileObject configurationRoot, ToolsConfiguration  toolsConfiguration){
-    this.toolsConfiguration = toolsConfiguration;
-    this.rootFolder = configurationRoot;
-  }
+    private DLightConfiguration(FileObject configurationRoot) {
+        this(configurationRoot, ToolsConfiguration.create(configurationRoot));
+    }
 
-  /**
-   * This method returns the list of tools for the current configuration
-   * @return list of tools used in the current configuration
-   */
-  public List<DLightTool> getToolsSet(){
-    return toolsConfiguration.getToolsSet();
-  }
+    private DLightConfiguration(FileObject configurationRoot, ToolsConfiguration toolsConfiguration) {
+        this.toolsConfiguration = toolsConfiguration;
+        this.rootFolder = configurationRoot;
+        this.configurationOptions = getConfigurationOptions();
+    }
 
-  public void turnCollectorsState(boolean turnState){
-    NbPreferences.forModule(DLightConfiguration.class).putBoolean(getConfigurationName(), turnState);
-  }
+    /**
+     * This method returns the list of tools for the current configuration
+     * @return list of tools used in the current configuration
+     */
+    public List<DLightTool> getToolsSet() {
+        return toolsConfiguration.getToolsSet();
+    }
 
+    public DLightConfigurationOptions getConfigurationOptions(boolean template) {
+        if (template) {
+            getConfigurationOptions();
+        }
+        return configurationOptions;
+    }
 
-  public boolean getCollectorsState(){
-      return NbPreferences.forModule(DLightConfiguration.class).getBoolean(getConfigurationName(), false);
-  }
+    private DLightConfigurationOptions getConfigurationOptions() {
+        FileObject configurationsFolder = rootFolder.getFileObject(CONFIGURATION_OPTIONS);
 
-  public String getConfigurationName(){
-    return rootFolder.getName();
-  }
+        if (configurationsFolder == null) {
+            return new DefaultConfigurationOption();
+        }
 
+        FileObject[] children = configurationsFolder.getChildren();
+
+        if (children == null || children.length == 0) {
+            return new DefaultConfigurationOption();
+        }
+
+        for (FileObject child : children) {
+
+            DataObject dobj = null;
+            try {
+                dobj = DataObject.find(child);
+            } catch (DataObjectNotFoundException ex) {
+                Logger.getLogger(ToolsConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
+            if (ic == null) {
+                String message = "D-Light tool configuration " + child.getName() + " not found";
+                Logger.getLogger(ToolsConfiguration.class.getName()).log(Level.SEVERE, message, new Exception(message));
+                continue;
+            }
+            try {
+                @SuppressWarnings("unchecked")
+                Class<? extends DLightConfigurationOptions> clazz = (Class<? extends DLightConfigurationOptions>) ic.instanceClass();
+                DLightConfigurationOptions configurationProvider = clazz.getConstructor().newInstance();
+                return configurationProvider;
+//                result.add(DLightToolAccessor.getDefault().newDLightTool(configurationProvider.create()));
+//        Class<? extends DLightTool.Configuration> clazz = (Class<? extends DLightTool>) ic.instanceClass();
+//        result.add(clazz.getConstructor().newInstance());
+            } catch (InstantiationException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return null;
+    }
+
+    public String getConfigurationName() {
+        return rootFolder.getName();
+    }
+
+    private class DefaultConfigurationOption implements DLightConfigurationOptions {
+
+        public void setup() {
+            //throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void turnCollectorsState(boolean turnState) {
+            // throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean getCollectorsState() {
+            return false;
+        //throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
 
 }

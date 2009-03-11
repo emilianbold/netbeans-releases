@@ -223,7 +223,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         } catch (ConnectException ex) {
             Exceptions.printStackTrace(ex);
         }
-        session.setExecutionContext(new ExecutionContext(target, configuration.getToolsSet()));
+        session.setExecutionContext(new ExecutionContext(target, configuration));
         sessions.add(session);
         List<Indicator> indicators = session.getIndicators();
         for (Indicator ind : indicators) {
