@@ -84,7 +84,6 @@ public class AttachmentsPanel extends JPanel {
         removeAll();
 
         GroupLayout layout = new GroupLayout(this);
-        setLayout(layout);
         GroupLayout.ParallelGroup horizontalGroup = layout.createParallelGroup(GroupLayout.LEADING);
         GroupLayout.SequentialGroup verticalGroup = layout.createSequentialGroup();
         ResourceBundle bundle = NbBundle.getBundle(AttachmentsPanel.class);
@@ -179,6 +178,7 @@ public class AttachmentsPanel extends JPanel {
         layout.setHorizontalGroup(horizontalGroup);
         layout.setVerticalGroup(verticalGroup);
         ((CreateNewAction)createNewButton.getAction()).setLayoutGroups(horizontalGroup, newVerticalGroup);
+        setLayout(layout);
     }
 
     private void updateCreateNewButton(boolean noAttachments) {
