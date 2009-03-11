@@ -41,22 +41,23 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <terminaldefinition xmlns="http://www.netbeans.org/ns/nativeexecution-terminal-definition/1">
-    <terminal id="gnome-terminal" platforms="solaris,linux"/>
+    <terminal id="konsole" platforms="solaris,linux"/>
     <searchpaths>
         <path>/usr/bin</path>
         <path>/bin</path>
-        <path>/opt/gnome/bin</path>
+        <path>/opt/kde/bin</path>
+        <path>/opt/kde3/bin</path>
+        <path>/opt/kde4/bin</path>
         <path>/usr/openwin/bin</path>
         <path>/usr/X/bin</path>
         <path>/usr/X11/bin</path>
         <path>/usr/X11R6/bin</path>
     </searchpaths>
-    <command stringvalue="gnome-terminal"/>
+    <command stringvalue="konsole"/>
     <arguments>
-        <arg>--hide-menubar</arg>
-        <arg>--disable-factory</arg>
-        <arg>--title=$title</arg>
-        <arg>--execute</arg>
+        <arg>--notabbar</arg>
+        <arg>-T $title</arg>
+        <arg>-e</arg>
         <arg>$@</arg>
     </arguments>
 </terminaldefinition>
