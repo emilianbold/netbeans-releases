@@ -64,6 +64,8 @@ public class MappingsTestCase extends RemoteTestBase {
             final Map<String, String> mappings = ham.getMappings();
             assert mappings != null;
             System.err.println(mappings);
+        } else {
+            System.err.println("Remote tests are not configured.");
         }
     }
 
