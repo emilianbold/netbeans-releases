@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.php.project.util;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
@@ -49,8 +52,15 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.text.Line;
+import org.openide.text.Line.Set;
+import org.openide.util.Mutex;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
@@ -59,6 +69,7 @@ import org.xml.sax.XMLReader;
  * @author Tomas Mysik
  */
 public final class PhpProjectUtils {
+    private static final Logger LOGGER = Logger.getLogger(PhpProjectUtils.class.getName());
 
     private PhpProjectUtils() {
     }
@@ -133,5 +144,45 @@ public final class PhpProjectUtils {
             return Collections.<String>emptyList();
         }
         return Arrays.asList(string.split(Pattern.quote(delimiter)));
+    }
+
+    /**
+     * Opens the file and set cursor to the line. This action is always run in AWT thread.
+     * @param path path of a file to open
+     * @param line line of a file to set cursor to
+     */
+    public static void openFile(String path, int line) {
+        assert path != null;
+
+        FileObject fileObject = FileUtil.toFileObject(new File(path));
+        if (fileObject == null) {
+            LOGGER.info("FileObject not found for " + path);
+            return;
+        }
+
+        DataObject dataObject;
+        try {
+            dataObject = DataObject.find(fileObject);
+        } catch (DataObjectNotFoundException ex) {
+            LOGGER.info("DataObject not found for " + path);
+            return;
+        }
+
+        LineCookie lineCookie = dataObject.getCookie(LineCookie.class);
+        if (lineCookie == null) {
+            LOGGER.info("LineCookie not found for " + path);
+            return;
+        }
+        Set lineSet = lineCookie.getLineSet();
+        try {
+            final Line currentLine = lineSet.getCurrent(line - 1);
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    currentLine.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                }
+            });
+        } catch (IndexOutOfBoundsException exc) {
+            LOGGER.log(Level.FINE, null, exc);
+        }
     }
 }
