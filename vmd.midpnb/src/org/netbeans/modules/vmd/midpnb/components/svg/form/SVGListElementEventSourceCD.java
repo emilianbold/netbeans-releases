@@ -85,7 +85,6 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
     private static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/element_16.png"; // NOI18N
     private static final Image ICON = ImageUtilities.loadImage(ICON_PATH);
 
-    //public static final String PROP_INDEX = "index"; //NOI18N
     public static final String PROP_STRING = "name"; //NOI18N
 
 
@@ -105,7 +104,6 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                //new PropertyDescriptor(PROP_INDEX, MidpTypes.TYPEID_INT, PropertyValue.createNull(), false, false, MidpVersionable.MIDP),
                 new PropertyDescriptor(PROP_STRING, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), false, false, MidpVersionable.MIDP)
         );
     }
