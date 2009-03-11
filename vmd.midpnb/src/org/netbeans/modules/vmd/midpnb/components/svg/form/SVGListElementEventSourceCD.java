@@ -62,9 +62,7 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.NameType;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
-import org.netbeans.modules.vmd.midp.actions.GoToSourceAction;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
-import org.netbeans.modules.vmd.midp.actions.GoToSourceSupport;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
@@ -73,7 +71,6 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
-import org.netbeans.modules.vmd.midp.flow.FlowListElementPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
@@ -88,8 +85,8 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
     private static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/element_16.png"; // NOI18N
     private static final Image ICON = ImageUtilities.loadImage(ICON_PATH);
 
-    public static final String PROP_INDEX = "index";
-    public static final String PROP_STRING = "name";
+    //public static final String PROP_INDEX = "index"; //NOI18N
+    public static final String PROP_STRING = "name"; //NOI18N
 
 
     static {
@@ -108,7 +105,7 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_INDEX, MidpTypes.TYPEID_INT, PropertyValue.createNull(), false, false, MidpVersionable.MIDP),
+                //new PropertyDescriptor(PROP_INDEX, MidpTypes.TYPEID_INT, PropertyValue.createNull(), false, false, MidpVersionable.MIDP),
                 new PropertyDescriptor(PROP_STRING, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), false, false, MidpVersionable.MIDP)
         );
     }
@@ -124,6 +121,7 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, InspectorPositionPresenter.class);
         MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, true, true, true);
+        MidpActionsSupport.addMoveActionPresenter(presenters, SVGListCD.PROP_ELEMENTS);
         super.gatherPresenters(presenters);
     }
 
@@ -151,7 +149,7 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
                 new SVGListElementFlowEventSourcePinPresenter(),
                 //inspector
                 InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)),
-                         // general
+                // general
                 new GoToSourcePresenter () {
                     protected boolean matches (GuardedSection section) {
                         return MultiGuardedSection.matches(section, getComponent().getParentComponent().getComponentID() + "-getter" , 1); // NOI18N
@@ -191,39 +189,39 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
     }
 
     private class SVGListElementFlowEventSourcePinPresenter  extends   FlowEventSourcePinPresenter {
-                protected DesignComponent getComponentForAttachingPin () {
-                    if (getComponent().getParentComponent() == null) {
-                        return null;
-                    }
-                    return getComponent().getParentComponent().getParentComponent();
-                }
-
-                protected String getDisplayName() {
-                    return MidpValueSupport.getHumanReadableString (getComponent ().readProperty (PROP_STRING));
-                }
-
-                protected String getOrder() {
-                    return SVGFlowListElementPinOrderPresenter.CATEGORY_ID;
-                }
-
-                @Override
-                protected boolean canRename () {
-                    return getComponent () != null;
-                }
-
-                @Override
-                protected String getRenameName() {
-                    return (String) getComponent ().readProperty (PROP_STRING).getPrimitiveValue ();
-                }
-
-                @Override
-                protected void setRenameName(String name) {
-                    getComponent ().writeProperty (PROP_STRING, MidpTypes.createStringValue (name));
-                }
-
-                @Override
-                protected DesignEventFilter getEventFilter() {
-                    return super.getEventFilter ().addParentFilter (getComponent (), 1, false);
-                }
+        protected DesignComponent getComponentForAttachingPin () {
+            if (getComponent().getParentComponent() == null) {
+                return null;
             }
+            return getComponent().getParentComponent().getParentComponent();
+        }
+
+        protected String getDisplayName() {
+            return MidpValueSupport.getHumanReadableString (getComponent ().readProperty (PROP_STRING));
+        }
+
+        protected String getOrder() {
+            return SVGFlowListElementPinOrderPresenter.CATEGORY_ID;
+        }
+
+        @Override
+        protected boolean canRename () {
+            return getComponent () != null;
+        }
+
+        @Override
+        protected String getRenameName() {
+            return (String) getComponent ().readProperty (PROP_STRING).getPrimitiveValue ();
+        }
+
+        @Override
+        protected void setRenameName(String name) {
+            getComponent ().writeProperty (PROP_STRING, MidpTypes.createStringValue (name));
+        }
+
+        @Override
+        protected DesignEventFilter getEventFilter() {
+            return super.getEventFilter().setGlobal(true);
+        }
+    }
 }
