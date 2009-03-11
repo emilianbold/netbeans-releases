@@ -27,11 +27,10 @@ shift `expr $OPTIND - 1`
 
 trap "rmPidFile; exit" 1 2 15 EXIT
 
-cat << EOF | /bin/sh
-echo \$\$>${PIDFILE} && exec $@
-EOF
+/bin/sh -c "echo \$\$>${PIDFILE} && exec $@"
 
 rmPidFile
+
 if [ "${PROMPT}" != "NO" ]; then
   /bin/echo "${PROMPT}"
   read X
