@@ -63,8 +63,7 @@ public class NewUncaughtExceptionTest extends ErrorHintsTestBase {
                             "        }\n" +
                             "    }",
                             "Add throws clause for java.lang.InstantiationException",
-                            "Surround Statement with try-catch",
-                            "Surround Block with try-catch");
+                            "Surround Statement with try-catch");
     }
     
     @Override
