@@ -72,6 +72,8 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
+import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -583,28 +585,26 @@ public class BugzillaIssue extends Issue {
     }
 
 
-    void addAttachment(File f, String comment, String desc, String contentType, boolean patch) throws HttpException, IOException, CoreException  {
+    void addAttachment(final File file, final String comment, final String desc, final String contentType, final boolean patch) throws HttpException, IOException, CoreException  {
         assert !SwingUtilities.isEventDispatchThread() : "Accesing remote host. Do not call in awt";
-        FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(f);
+        final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
         attachmentSource.setContentType(contentType);
-        BugzillaTaskAttachmentHandler.AttachmentPartSource source = new BugzillaTaskAttachmentHandler.AttachmentPartSource(attachmentSource);
+        final BugzillaTaskAttachmentHandler.AttachmentPartSource source = new BugzillaTaskAttachmentHandler.AttachmentPartSource(attachmentSource);
 
-//        try {
-            Bugzilla.getInstance().getClient(repository).postAttachment(
-                    getID(), 
-                    comment,
-                    desc,
-                    attachmentSource.getContentType(), 
-                    patch,
-                    source, 
-                    new NullProgressMonitor());
-//        } catch (HttpException ex) {
-//            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-//        } catch (IOException ex) {
-//            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-//        } catch (CoreException ex) {
-//            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-//        }
+        BugzillaCommand cmd = new BugzillaCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
+                Bugzilla.getInstance().getClient(repository).postAttachment(
+                                getID(),
+                                comment,
+                                desc,
+                                attachmentSource.getContentType(),
+                                patch,
+                                source,
+                                new NullProgressMonitor());
+            }
+        };
+        repository.getExecutor().execute(cmd);
     }
 
     Comment[] getComments() {
@@ -634,11 +634,14 @@ public class BugzillaIssue extends Issue {
         if(comment != null) {
             addComment(comment);
         }
-        try {
-            submit();
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
+        
+        BugzillaCommand submitCmd = new BugzillaCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
+                submit();
+            }
+        };
+        repository.getExecutor().execute(submitCmd);
     }
 
     public void addComment(String comment) {
@@ -653,12 +656,12 @@ public class BugzillaIssue extends Issue {
         refresh();
         try {
             addAttachment(file, null, description, null, true);
-            refresh();
+        refresh();
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
+    }
     }
 
     void submit() throws CoreException {
