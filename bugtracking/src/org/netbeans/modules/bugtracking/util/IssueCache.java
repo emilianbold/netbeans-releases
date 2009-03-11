@@ -61,6 +61,8 @@ public abstract class IssueCache {
 
     private String nameSpace;
 
+    private final Object CACHE_LOCK = new Object();
+
     public IssueCache(String nameSpace) {
         this.nameSpace = nameSpace;
     }
@@ -70,99 +72,116 @@ public abstract class IssueCache {
     protected abstract void setTaskData(Issue issue, TaskData taskData);
 
     public synchronized Issue setIssueData(String id, TaskData taskData) throws IOException {
-        IssueEntry entry = getCache().get(id);
-        if(entry == null) {
-            entry = new IssueEntry();
-            getCache().put(id, entry);
+        Issue issue;
+        synchronized(CACHE_LOCK) {
+            IssueEntry entry = getCache().get(id);
+            if(entry == null) {
+                entry = new IssueEntry();
+                getCache().put(id, entry);
 
-            entry.issue = createIssue(taskData);
-            BugtrackingManager.LOG.log(Level.FINE, "created issue {0} ", new Object[] {id}); // NOI18N
-            readIssue(entry);
-            entry.status = Issue.ISSUE_STATUS_NEW;
-        } else {
-            setTaskData(entry.issue, taskData);
-            BugtrackingManager.LOG.log(Level.FINE, "set task data for issue {0} ", new Object[] {id}); // NOI18N
-        }
-        if(entry.seenAttributes != null) {
-            if(entry.wasSeen()) {
-                BugtrackingManager.LOG.log(Level.FINE, " issue {0} was seen", new Object[] {id}); // NOI18N
-                if(isChanged(entry.seenAttributes, entry.issue.getAttributes())) {
-                    BugtrackingManager.LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
-                    storeIssue(entry);
-                    entry.seen = false;
-                    entry.status= Issue.ISSUE_STATUS_MODIFIED;
-                } else {
-                    BugtrackingManager.LOG.log(Level.FINE, " issue {0} isn't changed", new Object[] {id}); // NOI18N
-                    // keep old values
-                }
+                entry.issue = createIssue(taskData);
+                BugtrackingManager.LOG.log(Level.FINE, "created issue {0} ", new Object[] {id}); // NOI18N
+                readIssue(entry);
+                entry.status = Issue.ISSUE_STATUS_NEW;
             } else {
-                if(isChanged(entry.seenAttributes, entry.issue.getAttributes())) {
-                    BugtrackingManager.LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
-                    entry.seen = false; 
-                    entry.status= Issue.ISSUE_STATUS_MODIFIED;
+                BugtrackingManager.LOG.log(Level.FINE, "set task data for issue {0} ", new Object[] {id}); // NOI18N
+            }
+            if(entry.seenAttributes != null) {
+                if(entry.wasSeen()) {
+                    BugtrackingManager.LOG.log(Level.FINE, " issue {0} was seen", new Object[] {id}); // NOI18N
+                    if(isChanged(entry.seenAttributes, entry.issue.getAttributes())) {
+                        BugtrackingManager.LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
+                        storeIssue(entry);
+                        entry.seen = false;
+                        entry.status= Issue.ISSUE_STATUS_MODIFIED;
+                    } else {
+                        BugtrackingManager.LOG.log(Level.FINE, " issue {0} isn't changed", new Object[] {id}); // NOI18N
+                        // keep old values
+                    }
                 } else {
-                    BugtrackingManager.LOG.log(Level.FINE, " issue {0} isn't changed", new Object[] {id}); // NOI18N
-                    entry.seenAttributes = null;
-                    entry.seen = false;
-                    entry.status= Issue.ISSUE_STATUS_NEW;
+                    if(isChanged(entry.seenAttributes, entry.issue.getAttributes())) {
+                        BugtrackingManager.LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
+                        entry.seen = false;
+                        entry.status= Issue.ISSUE_STATUS_MODIFIED;
+                    } else {
+                        BugtrackingManager.LOG.log(Level.FINE, " issue {0} isn't changed", new Object[] {id}); // NOI18N
+                        entry.seenAttributes = null;
+                        entry.seen = false;
+                        entry.status= Issue.ISSUE_STATUS_NEW;
+                    }
                 }
             }
-        } 
-        return entry.issue;
+            issue = entry.issue;
+        }    
+        setTaskData(issue, taskData);
+        return issue;
     }
 
-    public synchronized void setSeen(String id, boolean seen) throws IOException {
+    public void setSeen(String id, boolean seen) throws IOException {
         BugtrackingManager.LOG.log(Level.FINE, "setting seen {0} for issue {1}", new Object[] {seen, id}); // NOI18N
         assert !SwingUtilities.isEventDispatchThread();
-        final IssueEntry entry = getCache().get(id);
-        assert entry != null;
-        if(seen) {
-            entry.seenAttributes = entry.issue.getAttributes();
-        } 
-        entry.seen = seen;
-        storeIssue(entry);
+        synchronized(CACHE_LOCK) {
+            final IssueEntry entry = getCache().get(id);
+            assert entry != null;
+            if(seen) {
+                entry.seenAttributes = entry.issue.getAttributes();
+            }
+            entry.seen = seen;
+            storeIssue(entry);
+        }
     }
 
-    public synchronized boolean wasSeen(String id) {
-        IssueEntry entry = getCache().get(id);
+    public boolean wasSeen(String id) {
+        IssueEntry entry;
+        synchronized(CACHE_LOCK) {
+            entry = getCache().get(id);
+        }
         boolean seen = entry != null ? entry.seen : false;
         BugtrackingManager.LOG.log(Level.FINE, "returning seen {0} for issue {1}", new Object[] {seen, id}); // NOI18N
         return seen;
     }
 
-    public synchronized Issue getIssue(String id) {
-        return getCache().get(id).issue;
-    }
-
-    public synchronized int getStatus(String id) {
-        IssueEntry entry = getCache().get(id);
-        if(entry == null) {
-            BugtrackingManager.LOG.log(Level.FINE, "returning UKNOWN status for issue {0}", new Object[] {id}); // NOI18N
-            return Issue.ISSUE_STATUS_UNKNOWN;
-        }
-        if(entry.seen) {
-            BugtrackingManager.LOG.log(Level.FINE, "returning SEEN status for issue {0}", new Object[] {id}); // NOI18N
-            return Issue.ISSUE_STATUS_SEEN;
-        }
-        BugtrackingManager.LOG.log(Level.FINE, "returning status {0} for issue {1}", new Object[] {entry.status, id}); // NOI18N
-        return entry.status;
-    }
-
-    public synchronized void storeQuery(String name, String[] ids) {
-        try {
-            IssueStorage.getInstance().storeQuery(nameSpace, name, ids);
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+    public Issue getIssue(String id) {
+        synchronized(CACHE_LOCK) {
+            return getCache().get(id).issue;
         }
     }
 
-    public synchronized List<String> readQuery(String name) {
-        try {
-            return IssueStorage.getInstance().readQuery(nameSpace, name);
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+    public int getStatus(String id) {
+        synchronized(CACHE_LOCK) {
+            IssueEntry entry = getCache().get(id);
+            if(entry == null) {
+                BugtrackingManager.LOG.log(Level.FINE, "returning UKNOWN status for issue {0}", new Object[] {id}); // NOI18N
+                return Issue.ISSUE_STATUS_UNKNOWN;
+            }
+            if(entry.seen) {
+                BugtrackingManager.LOG.log(Level.FINE, "returning SEEN status for issue {0}", new Object[] {id}); // NOI18N
+                return Issue.ISSUE_STATUS_SEEN;
+            }
+            BugtrackingManager.LOG.log(Level.FINE, "returning status {0} for issue {1}", new Object[] {entry.status, id}); // NOI18N
+            return entry.status;
         }
-        return new ArrayList<String>(0);
+    }
+
+    public void storeQuery(String name, String[] ids) {
+        synchronized(CACHE_LOCK) {
+            try {
+                IssueStorage.getInstance().storeQuery(nameSpace, name, ids);
+            } catch (IOException ex) {
+                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    public List<String> readQuery(String name) {
+        synchronized(CACHE_LOCK) {
+            try {
+                return IssueStorage.getInstance().readQuery(nameSpace, name);
+            } catch (IOException ex) {
+                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            }
+            return new ArrayList<String>(0);
+        }
     }
 
     private Map<String, IssueEntry> getCache() {
