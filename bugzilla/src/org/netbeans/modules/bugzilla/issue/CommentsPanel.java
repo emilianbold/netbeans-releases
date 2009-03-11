@@ -128,10 +128,8 @@ public class CommentsPanel extends JPanel {
 
     public void setIssue(BugzillaIssue issue) {
         removeAll();
-        setVisible(false);
         this.issue = issue;
         GroupLayout layout = new GroupLayout(this);
-        setLayout(layout);
         GroupLayout.ParallelGroup horizontalGroup = layout.createParallelGroup(GroupLayout.LEADING);
         layout.setHorizontalGroup(layout.createSequentialGroup()
             .addContainerGap()
@@ -140,20 +138,20 @@ public class CommentsPanel extends JPanel {
         GroupLayout.SequentialGroup verticalGroup = layout.createSequentialGroup();
         verticalGroup.addContainerGap();
         layout.setVerticalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(verticalGroup));
-        addSection(issue.getFieldValue(BugzillaIssue.IssueField.DESCRIPTION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER), issue.getFieldValue(BugzillaIssue.IssueField.CREATION), horizontalGroup, verticalGroup, true);
+        addSection(layout, issue.getFieldValue(BugzillaIssue.IssueField.DESCRIPTION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER), issue.getFieldValue(BugzillaIssue.IssueField.CREATION), horizontalGroup, verticalGroup, true);
         for (BugzillaIssue.Comment comment : issue.getComments()) {
             String when = DateFormat.getDateTimeInstance().format(comment.getWhen());
-            addSection(comment.getText(), comment.getWho(), when, horizontalGroup, verticalGroup, false);
+            addSection(layout, comment.getText(), comment.getWho(), when, horizontalGroup, verticalGroup, false);
         }
         verticalGroup.addContainerGap();
-        setVisible(true);
+        setLayout(layout);
     }
 
     public void setNewCommentHandler(NewCommentHandler handler) {
         newCommentHandler = handler;
     }
 
-    private void addSection(String text, String author, String dateTimeString,
+    private void addSection(GroupLayout layout, String text, String author, String dateTimeString,
             GroupLayout.ParallelGroup horizontalGroup, GroupLayout.SequentialGroup verticalGroup, boolean description) {
         JTextPane textPane = new JTextPane();
         JLabel leftLabel = new JLabel();
@@ -176,7 +174,6 @@ public class CommentsPanel extends JPanel {
         setupTextPane(textPane, text);
 
         // Layout
-        GroupLayout layout = (GroupLayout)getLayout();
         horizontalGroup.add(layout.createSequentialGroup()
             .add(leftLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(LayoutStyle.RELATED)
