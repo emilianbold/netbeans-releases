@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
+import java.util.Collection;
+
 
 /**
  * Factory class to create indexers
@@ -52,7 +54,23 @@ public abstract class CustomIndexerFactory {
      * @return an indexer
      */
     public abstract CustomIndexer createIndexer ();
-    
+
+    /**
+     * Called by indexing infrastructure to allow indexer to clean indexes for deleted files.
+     * @param deleted the collection of deleted {@link Indexable}s
+     * @param context an indexing context
+     */
+    public abstract void filesDeleted (Collection<? extends Indexable> deleted, Context context);
+
+    /**
+     * Called by indexing infrastructure to notify indexer that a file was modified and so its
+     * index may contain stale data.
+     * 
+     * @param dirty the collection of dirty {@link Indexable}s
+     * @param context an indexing context
+     * @since 1.4
+     */
+    public abstract void filesDirty (Collection<? extends Indexable> dirty, Context context);
     
     /**
      * Return the name of this indexer. This name should be unique because GSF
@@ -64,6 +82,8 @@ public abstract class CustomIndexerFactory {
      */
     public abstract String getIndexerName ();
 
+
+    public abstract boolean supportsEmbeddedIndexers ();
 
     /**
      * Return the version stamp of the schema that is currently being stored

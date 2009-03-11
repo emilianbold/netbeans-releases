@@ -75,10 +75,10 @@ public final class IndexDocument {
      *   as searchable; the same key must always be referenced with the same
      *   value for searchable when pairs are added (per document).
      */
-    public void addPair( /*@NonNull*/ String key, /*@NonNull*/ String value, boolean searchable) {
+    public void addPair( /*@NonNull*/ String key, /*@NonNull*/ String value, boolean searchable, boolean stored) {
         Parameters.notNull("key", key); //NOI18N
         Parameters.notEmpty("key", key);    //NOI18N
         Parameters.notNull("value", value); //NOI18N
-        this.spi.addPair(key, value, searchable);
-    }
+        this.spi.addPair(key, value, searchable, stored);
+    }    
 }
