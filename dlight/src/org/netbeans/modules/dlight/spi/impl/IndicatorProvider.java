@@ -17,7 +17,7 @@ import org.openide.util.Lookup;
  */
 public final class IndicatorProvider {
 
-    private static IndicatorProvider instance = new IndicatorProvider();
+    private static final IndicatorProvider instance = new IndicatorProvider();
 
     private IndicatorProvider() {
     }

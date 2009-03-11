@@ -197,6 +197,8 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         if (externalTerminal != null) {
             pb = pb.useExternalTerminal(externalTerminal);
             descr = descr.inputVisible(false);
+        } else {
+            descr = descr.inputVisible(true);
         }
 
         if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null) {
@@ -204,6 +206,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         }
 
         if (io != null) {
+            io.setInputVisible(true);
             descr = descr.inputOutput(io);
         }
 
