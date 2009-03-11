@@ -61,6 +61,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.commons.httpclient.HttpException;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
+import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -909,7 +912,14 @@ public class IssuePanel extends javax.swing.JPanel {
                     }
                     issue.submit();
                 } catch (CoreException cex) {
-                    System.out.println(cex.getStatus().getMessage());
+                    IStatus status = cex.getStatus();
+                    if (!(status instanceof BugzillaStatus)) {
+                        System.err.println(status.getMessage());
+                    }
+                    if (status instanceof RepositoryStatus) {
+                        RepositoryStatus rStatus = (RepositoryStatus)status;
+                        System.err.println(rStatus.getHtmlMessage());
+                    }
                     cex.printStackTrace();
                 } finally {
                     issue.refresh();
