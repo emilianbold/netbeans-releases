@@ -1646,7 +1646,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
   <!-- keep this target name at least for a while for backward compat -jglick -->
   <target name="commitValidation" depends="all-commitValidation,check-commit-validation" if="run.validation">
-    <property name="build.test.results.dir" location="build/test/results"/>
+    <property name="build.test.results.dir" location="build/test/commit-validation/results"/>
     <property name="test.type" value="test"/>
     <delete dir="${build.test.results.dir}"/>
     <mkdir dir="${build.test.results.dir}"/>

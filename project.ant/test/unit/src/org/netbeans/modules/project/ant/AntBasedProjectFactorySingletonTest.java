@@ -71,6 +71,10 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Services");
+        if (fo != null) {
+            fo.delete();
+        }
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");
