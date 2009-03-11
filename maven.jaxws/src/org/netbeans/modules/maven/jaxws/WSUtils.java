@@ -662,6 +662,7 @@ public class WSUtils {
             // add new clients
             for (JaxWsService newClient : newClients) {
                 if (!commonNames.contains(newClient.getLocalWsdl())) {
+                    newClient.setWsdlUrl(getOriginalWsdlUrl(prj, jaxWsSupport, newClient.getLocalWsdl(), false));
                     jaxWsSupport.addService(newClient);
                 }
             }
@@ -684,6 +685,7 @@ public class WSUtils {
                     if (candidate.getHandlerFile() != null) {
                         client.setHandlerBindingFile(candidate.getHandlerFile());
                     }
+                    client.setWsdlUrl(getOriginalWsdlUrl(prj, jaxWsSupport, wsdlPath, false));
                     jaxWsSupport.addService(client);
                 }
             }
@@ -729,6 +731,22 @@ public class WSUtils {
         FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
         if (wsdlFolder!=null) {
             return wsdlFolder.getFileObject(localWsdlPath);
+        }
+        return null;
+    }
+
+    public static String getOriginalWsdlUrl(Project prj, JAXWSLightSupport jaxWsSupport, String localWsdl, boolean forService) {
+        FileObject wsdlFo = WSUtils.getLocalWsdl(jaxWsSupport, localWsdl);
+        if (wsdlFo != null) {
+            Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class, true);
+            if (prefs != null) {
+                // remember original WSDL URL for service
+                if (forService) {
+                    return prefs.get(MavenWebService.SERVICE_PREFIX+wsdlFo.getName(), null);
+                } else {
+                    return prefs.get(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), null);
+                }
+            }
         }
         return null;
     }
