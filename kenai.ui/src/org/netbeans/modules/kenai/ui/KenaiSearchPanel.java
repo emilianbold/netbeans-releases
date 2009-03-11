@@ -294,7 +294,8 @@ public class KenaiSearchPanel extends JPanel {
                 }
                 if (projectsIterator != null && projectsIterator.hasNext()) {
                     // XXX createModel
-                    final ListModel listModel = new KenaiProjectsListModel(projectsIterator, searchPattern);
+                    final KenaiProjectsListModel listModel = new KenaiProjectsListModel(projectsIterator, searchPattern);
+                    setListModel(listModel);
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             kenaiProjectsList.setModel(listModel);
@@ -321,20 +322,51 @@ public class KenaiSearchPanel extends JPanel {
 
     }
 
+    private KenaiProjectsListModel listModel;
+
+    private synchronized void setListModel(KenaiProjectsListModel model) {
+        listModel = model;
+    }
+
+    private synchronized KenaiProjectsListModel getListModel() {
+        return listModel;
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        // cancel running tasks
+        getListModel().cancel();
+    }
+
     // ----------
 
-    private static class KenaiProjectsListModel extends DefaultListModel {
+    private static class KenaiProjectsListModel extends DefaultListModel implements Runnable {
 
-        public KenaiProjectsListModel(final Iterator<KenaiProject> projects, final String pattern) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    if (projects != null) {
-                        while(projects.hasNext()) {
-                            addElement(new KenaiProjectSearchInfo(projects.next(), pattern));
-                        }
+        private Iterator<KenaiProject> projects;
+        private String pattern;
+
+        private RequestProcessor.Task task;
+
+        public KenaiProjectsListModel(Iterator<KenaiProject> projects, final String pattern) {
+            this.projects = projects;
+            this.pattern = pattern;
+            task = RequestProcessor.getDefault().post(this);
+        }
+
+        public void run() {
+            if (projects != null) {
+                while(projects.hasNext()) {
+                    addElement(new KenaiProjectSearchInfo(projects.next(), pattern));
+                    if (Thread.interrupted()) {
+                        return;
                     }
                 }
-            });
+            }
+        }
+
+        public void cancel() {
+            task.cancel();
         }
 
     }
