@@ -918,6 +918,9 @@ public class IssuePanel extends javax.swing.JPanel {
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
                         try {
                             if (attachment.file.exists()) {
+                                if (attachment.description.trim().length() == 0) {
+                                    attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
+                                }
                                 issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
                             } else {
                                 // PENDING notify user
