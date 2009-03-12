@@ -100,7 +100,7 @@ public class SunStudioDataCollector
     implements DataCollector<SunStudioDCConfiguration> {
 
     private static final String ID = "PerfanDataStorage"; // NOI18N
-    private static Pattern lineStartsWithIntegerPattern = Pattern.compile("^ *([0-9]+).*$");
+    private static Pattern lineStartsWithIntegerPattern = Pattern.compile("^ *([0-9]+).*$"); // NOI18N
     // Below are FULL DataTableMetadata objects...
     private static final DataTableMetadata cpuInfoTable;
     private static final DataTableMetadata syncInfoTable;
@@ -413,7 +413,6 @@ public class SunStudioDataCollector
                 memoryStatisticsTask = null;
             }
         }
-
     }
 
     public Collection<DataStorageType> getSupportedDataStorageTypes() {
@@ -504,7 +503,7 @@ public class SunStudioDataCollector
                 if (warmUpTask == null) {
                     // Re-start
                     warmUpTask = new FutureTask<Boolean>(new WarmUpTask(execEnv, experimentDir));
-                    warmUpTask.run();
+                    DLightExecutorService.submit(warmUpTask, "SunStudio collector warm-up"); // NOI18N
                 }
                 return;
             case RUNNING:
@@ -560,6 +559,13 @@ public class SunStudioDataCollector
             this.execEnv = execEnv;
         }
 
+        private static void stopIfInterrupted() throws InterruptedException {
+            Thread.yield();
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException("Warmup interrupted"); // NOI18N
+            }
+        }
+
         public Boolean call() throws Exception {
             boolean status = true;
 
@@ -572,6 +578,7 @@ public class SunStudioDataCollector
             try {
                 rmResult = rmFuture.get();
             } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
             } catch (ExecutionException ex) {
             }
 
@@ -581,6 +588,8 @@ public class SunStudioDataCollector
                 status = false;
             }
 
+            stopIfInterrupted();
+            
             File lockFile = new File(new File(dirName).getParentFile(), "_collector_directory_lock"); // NOI18N
             rmFuture = CommonTasksSupport.rmFile(execEnv, lockFile.getPath(), null);
 
@@ -600,50 +609,63 @@ public class SunStudioDataCollector
 
     private final class SummaryDataFetchingTask implements Runnable {
 
-        private List<String> colNames = new ArrayList<String>();
+        private final List<String> colNames;
 
         public SummaryDataFetchingTask() {
+            ArrayList<String> names = new ArrayList<String>();
+
             for (CollectedInfo info : collectedInfoList) {
                 if (info == CollectedInfo.SYNCSUMMARY) {
-                    colNames.add(SunStudioDCConfiguration.c_ulockSummary.getColumnName());
+                    names.add(SunStudioDCConfiguration.c_ulockSummary.getColumnName());
                 }
             }
+
+            colNames = Collections.unmodifiableList(names);
         }
 
         public void run() {
-            System.out.println("!!!!!!!!!!!!!! Receive Indicator Data from SunStudio er_print!!!!!");
-
             if (colNames.isEmpty()) {
                 return;
             }
 
             List data = storage.fetchSummaryData(colNames);
-            SunStudioDataCollector.this.notifyIndicators(Arrays.asList(new DataRow(colNames, data)));
+            DataRow row = new DataRow(colNames, data);
+            SunStudioDataCollector.this.notifyIndicators(Arrays.asList(row));
         }
     }
 
     private final class SummaryLeaksDataFetchingTask implements Runnable {
+        private final Metrics metrics;
+        private final List<String> colNames;
 
         public SummaryLeaksDataFetchingTask() {
+            metrics = Metrics.constructFrom(
+                    Arrays.asList(SunStudioDCConfiguration.c_leakSize),
+                    Arrays.asList(SunStudioDCConfiguration.c_leakSize));
+
+            colNames = Collections.unmodifiableList(Arrays.asList(
+                    SunStudioDCConfiguration.c_leakSize.getColumnName()));
         }
 
         public void run() {
-            System.out.println("))))))))))0START SummaryLeaksDataFetchingTask ");
-            String[] result =
-                storage.getTopFunctions(Metrics.constructFrom(Arrays.asList(SunStudioDCConfiguration.c_leakSize), Arrays.asList(SunStudioDCConfiguration.c_leakSize)), 1);
+            String[] result = storage.getTopFunctions(metrics, 1);
+
             if (result == null || result.length == 0) {
                 return;
             }
+
             Matcher m = lineStartsWithIntegerPattern.matcher(result[0]);
+
             if (!m.matches()) {
                 return;
             }
-            try {
 
+            try {
                 String value = m.group(1);
                 System.out.println("result[0]=" + result[0] + " value=" + value);
                 if (value != null){
-                    SunStudioDataCollector.this.notifyIndicators(Arrays.asList(new DataRow(Arrays.asList(SunStudioDCConfiguration.c_leakSize.getColumnName()), Arrays.asList(Long.valueOf(value)))));
+                    DataRow row = new DataRow(colNames, Arrays.asList(Long.valueOf(value)));
+                    SunStudioDataCollector.this.notifyIndicators(Arrays.asList(row));
                 }
             } catch (Throwable e) {
                 e.printStackTrace();
