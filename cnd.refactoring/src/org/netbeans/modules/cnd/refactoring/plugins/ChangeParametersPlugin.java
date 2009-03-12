@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
@@ -237,7 +238,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
     }
 
     @Override
-    protected final void processFile(CsmFile csmFile, ModificationResult mr) {
+    protected final void processFile(CsmFile csmFile, ModificationResult mr, AtomicReference<Problem> outProblem) {
         Collection<? extends CsmObject> refObjects = getRefactoredObjects();
         assert refObjects != null && refObjects.size() > 0 : "method must be called for resolved element";
         FileObject fo = CsmUtilities.getFileObject(csmFile);
@@ -256,7 +257,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
                 }
             });
             CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
-            processRefactoredReferences(sortedRefs, fo, ces, mr);
+            processRefactoredReferences(sortedRefs, fo, ces, mr, outProblem);
         }
     }
 
@@ -265,12 +266,12 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         return true;
     }
 
-    private void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr) {
+    private void processRefactoredReferences(List<CsmReference> sortedRefs, FileObject fo, CloneableEditorSupport ces, ModificationResult mr, AtomicReference<Problem> outProblem) {
         ParameterInfo[] parameterInfo = refactoring.getParameterInfo();
         for (CsmReference ref : sortedRefs) {
             String oldName = ref.getText().toString();
             String descr = getDescription(ref, oldName);
-            Difference diff = changeFunRef(ref, ces, oldName, parameterInfo, descr);
+            Difference diff = changeFunRef(ref, ces, oldName, parameterInfo, descr, outProblem);
             assert diff != null;
             mr.addDifference(fo, diff);
         }
@@ -283,7 +284,12 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
     }
 
     private Difference changeFunRef(CsmReference ref, CloneableEditorSupport ces,
-            String oldName, ParameterInfo[] parameterInfo, String descr) {
+            String oldName, ParameterInfo[] parameterInfo, String descr, AtomicReference<Problem> outProblem) {
+//        if (outProblem.get() == null) {
+//            Problem problem = createProblem(outProblem.get(), false, "something is broken " + ref);
+//            outProblem.set(problem);
+//            descr = "<html><b>" + descr + "</b></html>";
+//        }
         final Document document = ces.getDocument();
         FunctionInfo funInfo = prepareFunctionInfo(ref, document);
         Difference diff;
@@ -311,14 +317,14 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             for (int i = 0; i < parameterInfo.length; i++) {
                 if (i > 0) {
                     newText.append(","); // NOI18N
-                    if (needSpaceAfterComma()) {
-                        newText.append(" "); // NOI18N
-                    }
                 }
                 ParameterInfo pi = parameterInfo[i];
                 int originalIndex = pi.getOriginalIndex();
                 CharSequence text;
                 if (originalIndex == -1) {
+                    if (i > 0 && needSpaceAfterComma()) {
+                        newText.append(" "); // NOI18N
+                    }
                     // new parameter
                     if (decl) {
                         // in declaration add parameter
@@ -328,11 +334,16 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
                         newText.append(pi.getDefaultValue());
                     }
                 } else if (funInfo.hasParam(originalIndex)) {
-                    newText.append(funInfo.getParameter(originalIndex));
+                    CharSequence origText = funInfo.getParameter(originalIndex);
+                    if (i > 0 && needSpaceAfterComma() && !Character.isWhitespace(origText.charAt(0))) {
+                        newText.append(" "); // NOI18N
+                    }
+                    newText.append(origText);
                 }
             }
             newText.append(")");// NOI18N
         }
+        assert startOffset <= endOffset;
         PositionRef startPos = ces.createPositionRef(startOffset, Bias.Forward);
         PositionRef endPos = ces.createPositionRef(endOffset, Bias.Backward);
         diff = new Difference(Difference.Kind.CHANGE, ref, startPos, endPos, oldText.toString(), newText.toString(), descr); // NOI18N
@@ -375,7 +386,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         }
 
         private void addParam(String param) {
-            paramText.add(param.trim());
+            paramText.add(param);
         }
 
         public void setStartOffsetIfNeeded(int startOffset) {
@@ -398,7 +409,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         }
 
         private void setEndOffset(int offset) {
-            endOffset = offset + 1;
+            endOffset = offset;
         }
 
     }
@@ -412,6 +423,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         private BlockConsumer blockConsumer;
         private final FunctionInfo funInfo;
         private final Document doc;
+        private Boolean inPP = null;
         private int curParamStartOffset = -1;
         private FunParamsTokenProcessor(Document doc) {
             funInfo = new FunctionInfo();
@@ -432,6 +444,18 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
                     blockConsumer = null;
                 }
                 return false;
+            }
+            if (inPP == null) {
+                if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+                    inPP = Boolean.TRUE;
+                    return true;
+                } else {
+                    inPP = Boolean.FALSE;
+                }
+            } else if (inPP == Boolean.FALSE) {
+                if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+                    return false;
+                }
             }
             switch (state) {
                 case START:
@@ -504,11 +528,13 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             assert curParamStartOffset > 0;
             try {
                 String paramText = (offset - 1 <= curParamStartOffset) ? "" : doc.getText(curParamStartOffset, offset - curParamStartOffset); // NOI18N
-                funInfo.addParam(paramText);
+                if (!funInfo.paramText.isEmpty() || paramText.trim().length() != 0) {
+                    funInfo.addParam(paramText);
+                }
             } catch (BadLocationException ex) {
                 //skip;
             }
-            funInfo.setEndOffset(offset);
+            funInfo.setEndOffset(offset+1);
         }
 
         private void startParam(int offset) {
