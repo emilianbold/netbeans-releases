@@ -135,7 +135,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
             String s = c.getName();
             if (s != null) {
                 s += "  ";
-                setTitleAt(getComponentCount() - 1, s);
+                setTitleAt(getTabCount()-1, s);
             }
         }
         return result;
@@ -155,6 +155,17 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         setMouseOverCloseButtonIndex(-1);
         setPressedCloseButtonIndex(-1);
         draggedOut = false;
+    }
+
+    private Component findTabAt(int index) {
+        int componentIndex = -1;
+        for( Component c : getComponents() ) {
+            if( c instanceof UIResource )
+                continue;
+            if( ++componentIndex == index )
+                return c;
+        }
+        return null;
     }
 
     private Rectangle getCloseButtonBoundsAt(int i) {
@@ -474,10 +485,9 @@ final class CloseButtonTabbedPane extends JTabbedPane {
                             || (e.getButton() == MouseEvent.BUTTON2 && index == tab.pressedCloseButtonIndex)) {
                         
                         Component tc = null;
-                        Component[] components = tab.getComponents();
                         if( tab.pressedCloseButtonIndex >= 0
-                                && tab.pressedCloseButtonIndex < components.length ) {
-                            tc = components[tab.pressedCloseButtonIndex];
+                                && tab.pressedCloseButtonIndex < tab.getComponentCount() ) {
+                            tc = tab.findTabAt( tab.pressedCloseButtonIndex );
                         }
                         tab.reset();
                         if( null != tc )

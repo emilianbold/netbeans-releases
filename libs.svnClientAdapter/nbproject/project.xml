@@ -82,7 +82,6 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/svnkit.jar</runtime-relative-path>
                 <binary-origin>external/svnjavahl-1.5.0.jar</binary-origin>
             </class-path-extension-->
-
         </data>
     </configuration>
 </project>
