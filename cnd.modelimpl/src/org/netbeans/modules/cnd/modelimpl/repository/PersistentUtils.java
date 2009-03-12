@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterTypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
 /**
  *
@@ -226,7 +227,7 @@ public class PersistentUtils {
         if (st == null) {
             aStream.writeUTF(NULL_STRING);
         } else {
-            assert !(st instanceof String);
+            assert st instanceof TinyCharSequence;
             aStream.writeUTF(st.toString());
         }
     }
@@ -237,7 +238,7 @@ public class PersistentUtils {
             return null;
         }
         CharSequence res = manager.getString(s);
-        assert !(res instanceof String);
+        assert res instanceof TinyCharSequence;
         return res;
     }
 

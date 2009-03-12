@@ -91,7 +91,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     private TemplateDescriptor templateDescriptor = null;
     
-    protected CharSequence classTemplateSuffix;
+    protected final CharSequence classTemplateSuffix;
     
     private static final byte FLAGS_VOID_PARMLIST = 1 << 0;
     private static final byte FLAGS_STATIC = 1 << 1;
@@ -152,8 +152,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         boolean _const = initConst(ast);
         setFlags(FLAGS_CONST, _const);
-        classTemplateSuffix = new StringBuilder();
-        templateDescriptor = createTemplateDescriptor(ast, this, (StringBuilder)classTemplateSuffix, global);
+        StringBuilder clsTemplateSuffix = new StringBuilder();
+        templateDescriptor = createTemplateDescriptor(ast, this, clsTemplateSuffix, global);
+        classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
         if(type != null) {
             returnType = type;
         } else {
@@ -249,7 +250,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     protected CharSequence getScopeSuffix() {
-        return classTemplateSuffix != null ? classTemplateSuffix : "";
+        return classTemplateSuffix != null ? classTemplateSuffix : CharSequenceKey.empty();
     }
 
     protected String initName(AST node) {
