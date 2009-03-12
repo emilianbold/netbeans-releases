@@ -53,7 +53,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -67,7 +66,6 @@ import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -119,85 +117,6 @@ public final class TestUtilities {
         catch (TimeoutException timeoutEx) {
         }
         return false;
-    }
-    
-    /**
-     * Schedules compilation of the folder inside the source root. May be used by tests
-     * which need to fill data into {@link ClassIndex} or need to work on the group of java files.
-     * @param folder to be compiled, has to be either the root itself or must be subfolder of the root.
-     * @param root owning the folder. There must be boot, compile and source ClassPath for it
-     * available by {@link ClassPath#getClassPah} method - there must be {@link ClassPathProvider} handling
-     * the root registered in the global {@link Lookup}. There must be also source level provided for the root - 
-     * {@link SourceLevelImplementation} registered in the global {@link Lookup}.  
-     * @return CountDownLatch which may be used to wait to the end of asynchronous compilation, {@see CountDownLatch#await}
-     * @throws java.io.IOException when folder or root is not valid
-     */
-    public static CountDownLatch scheduleCompilation (final FileObject folder, final FileObject root) throws IOException {
-        assert folder != null;
-        assert root != null;
-        assert folder.equals(root) || FileUtil.isParentOf(root, folder);
-        return RepositoryUpdater.getDefault().scheduleCompilationAndWait(folder, root);
-    }
-    
-    /**
-     * Schedules compilation of the folder inside the source root. May be used by tests
-     * which need to fill data into {@link ClassIndex} or need to work on the group of java files.
-     * @param folder to be compiled, has to be either the root itself or must be subfolder of the root.
-     * @param root owning the folder. There must be boot, compile and source ClassPath for it
-     * available by {@link ClassPath#getClassPah} method - there must be {@link ClassPathProvider} handling
-     * the root registered in the global {@link Lookup}. There must be also source level provided for the root - 
-     * {@link SourceLevelImplementation} registered in the global {@link Lookup}.  
-     * @return CountDownLatch which may be used to wait to the end of asynchronous compilation, {@see CountDownLatch#await}
-     * @throws java.io.IOException when folder or root is not valid
-     */
-    public static CountDownLatch scheduleCompilation (final File folder, final File root) throws IOException {
-        assert folder != null;
-        assert root != null;
-        final FileObject rootFo = FileUtil.toFileObject(root);
-        final FileObject folderFo = FileUtil.toFileObject(folder);
-        return RepositoryUpdater.getDefault().scheduleCompilationAndWait(folderFo, rootFo);
-    }
-    
-    /**
-     * Schedules compilation of the folder inside the source root and blocks until it finishes. May be used by tests
-     * which need to fill data into {@link ClassIndex} or need to work on the group of java files.
-     * @param folder to be compiled, has to be either the root itself or must be subfolder of the root.
-     * @param root owning the folder. There must be boot, compile and source ClassPath for it
-     * available by {@link ClassPath#getClassPah} method - there must be {@link ClassPathProvider} handling
-     * the root registered in the global {@link Lookup}. There must be also source level provided for the root - 
-     * a {@link SourceLevelImplementation} registered in the global {@link Lookup}.  
-     * @param timeout the maximum time to wait
-     * @param unit the time unit of the timeout argument
-     * @return false if the timeout elapsed before the end of compilation
-     * @throws java.io.IOException when folder or root is not valid
-     * @throws InterruptedException when the thread is interrupted
-     */
-    public static boolean scheduleCompilationAndWait (final FileObject folder, final FileObject root,
-            final long timeout, final TimeUnit unit) throws IOException, InterruptedException {
-        assert unit != null;
-        final CountDownLatch latch = scheduleCompilation(folder, root);
-        return latch.await(timeout, unit);
-    }
-    
-    /**
-     * Schedules compilation of the folder inside the source root and blocks until it finishes. May be used by tests
-     * which need to fill data into {@link ClassIndex} or need to work on the group of java files.
-     * @param folder to be compiled, has to be either the root itself or must be subfolder of the root.
-     * @param root owning the folder. There must be boot, compile and source ClassPath for it
-     * available by {@link ClassPath#getClassPah} method - there must be {@link ClassPathProvider} handling
-     * the root registered in the global {@link Lookup}. There must be also source level provided for the root - 
-     * a {@link SourceLevelImplementation} registered in the global {@link Lookup}.  
-     * @param timeout the maximum time to wait
-     * @param unit the time unit of the timeout argument
-     * @return false if the timeout elapsed before the end of compilation
-     * @throws java.io.IOException when folder or root is not valid
-     * @throws InterruptedException when the thread is interrupted
-     */
-    public static boolean scheduleCompilationAndWait (final File folder, final File root,
-            final long timeout, final TimeUnit unit) throws IOException, InterruptedException {
-        assert unit != null;
-        final CountDownLatch latch = scheduleCompilation(folder, root);
-        return latch.await(timeout, unit);
     }
     
     /**

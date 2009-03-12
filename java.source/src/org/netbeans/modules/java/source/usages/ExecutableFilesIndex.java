@@ -49,6 +49,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
 
@@ -138,7 +139,7 @@ public class ExecutableFilesIndex {
         }
 
         try {
-            mainSources = unwrap(RepositoryUpdater.getAttribute(root, "executable-files", "")); //NOI18N
+            mainSources = unwrap(JavaIndex.getAttribute(root, "executable-files", "")); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             mainSources = new HashSet<String>();
@@ -149,7 +150,7 @@ public class ExecutableFilesIndex {
 
     private void save(URL root) {
         try {
-            RepositoryUpdater.setAttribute(root, "executable-files", wrap(mainSources)); //NOI18N
+            JavaIndex.setAttribute(root, "executable-files", wrap(mainSources)); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
