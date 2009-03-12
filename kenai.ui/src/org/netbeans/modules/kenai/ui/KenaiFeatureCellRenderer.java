@@ -162,6 +162,4 @@ public class KenaiFeatureCellRenderer extends JPanel implements ListCellRenderer
         g2d.drawLine(0, h - 1, w, h - 1);
     }
 
-
-
 }
