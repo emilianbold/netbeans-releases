@@ -47,13 +47,17 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiProjectFeature;
 import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiPanel.KenaiFeatureListItem;
@@ -94,7 +98,7 @@ public class KenaiFeatureCellRenderer extends JPanel implements ListCellRenderer
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(2, 2, 0, 0);
+        gridBagConstraints.insets = new Insets(2, 4, 0, 0);
         add(projectNameLabel, gridBagConstraints);
 
         projectRepoLabel.setForeground(Color.blue);
@@ -105,7 +109,7 @@ public class KenaiFeatureCellRenderer extends JPanel implements ListCellRenderer
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 2, 2, 0);
+        gridBagConstraints.insets = new Insets(0, 4, 4, 0);
         add(projectRepoLabel, gridBagConstraints);
 
         repoTypeLabel.setText(NbBundle.getMessage(KenaiFeatureCellRenderer.class, "KenaiFeatureCellRenderer.repoTypeLabel.text")); // NOI18N
@@ -115,7 +119,7 @@ public class KenaiFeatureCellRenderer extends JPanel implements ListCellRenderer
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 4, 2, 0);
+        gridBagConstraints.insets = new Insets(0, 4, 4, 0);
         add(repoTypeLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -144,19 +148,23 @@ public class KenaiFeatureCellRenderer extends JPanel implements ListCellRenderer
             repoTypeLabel.setText("(" + feature.getService() + ")"); // NOI18N
         }
 
-        if (isSelected) {
-            setBackground(list.getSelectionBackground());
-            setForeground(list.getSelectionForeground());
-        } else {
-            if (index % 2 == 0) {
-                setBackground(list.getBackground());
-            } else {
-                setBackground(list.getBackground().darker());
-            }
-            setForeground(list.getForeground());
-        }
+        setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+        setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
 
         return this;
+        
     }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        int w = getWidth();
+        int h = getHeight();
+        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.drawLine(0, h - 1, w, h - 1);
+    }
+
+
 
 }
