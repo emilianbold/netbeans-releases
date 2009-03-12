@@ -255,7 +255,8 @@ public class JspIndenterTest extends TestBase2 {
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>a\n^</jsp:useBean>", "<jsp:body>\n    <html>\n        <jsp:useBean>a\n\n        ^</jsp:useBean>", null);
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>a^</jsp:useBean>", "<jsp:body>\n    <html>\n        <jsp:useBean>a\n        ^</jsp:useBean>", null);
 
-        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>^", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>\n    ^", null);
+        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>^",
+                      "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>\n    ^", null);
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^</html>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    ^</html>", null);
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^<table>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n        ^<table>", null);
 
