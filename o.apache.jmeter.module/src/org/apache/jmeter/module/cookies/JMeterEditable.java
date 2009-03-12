@@ -58,7 +58,7 @@ public class JMeterEditable implements Node.Cookie {
   public void edit(FileObject primaryFile) {
     final TopComponent currentComponent = TopComponent.getRegistry().getActivated();
     try {
-      currentComponent.setCursor(org.openide.util.Utilities.createProgressCursor(currentComponent));
+      currentComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
       Process prc = JMeterIntegrationEngine.getDefault().externalEdit(FileUtil.toFile(primaryFile).getCanonicalPath());
     } catch (Exception e) {
       ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
