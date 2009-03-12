@@ -209,12 +209,13 @@ class OQLLexer implements Lexer<OQLTokenId> {
                 case CLASS_ALIAS: {
                     String lastToken = input.readText().toString().toUpperCase();
 
-                    if ("SELECT".startsWith(lastToken) ||
-                        "FROM".startsWith(lastToken) ||
-                        "INSTANCEOF".startsWith(lastToken) ||
-                        "WHERE".startsWith(lastToken)) {
+                    if ("SELECT".equals(lastToken) ||
+                        "FROM".equals(lastToken) ||
+                        "INSTANCEOF".equals(lastToken) ||
+                        "WHERE".equals(lastToken)) {
                         state = State.ERROR;
                         input.backup(lastToken.length());
+                        break;
                     }
                     if (Character.isWhitespace(actChar)) {
                         if (lastToken.trim().length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
@@ -304,7 +305,17 @@ class OQLLexer implements Lexer<OQLTokenId> {
                 }
             }
             case CLASS_ALIAS: {
-                return tokenFactory.createToken(OQLTokenId.IDENTIFIER);
+                String lastToken = input.readText().toString().toUpperCase();
+
+                if ("SELECT".equals(lastToken) ||
+                    "FROM".equals(lastToken) ||
+                    "INSTANCEOF".equals(lastToken) ||
+                    "WHERE".equals(lastToken)) {
+                    state = State.ERROR;
+                    input.backup(lastToken.length());
+                } else {
+                    return tokenFactory.createToken(OQLTokenId.IDENTIFIER);
+                }
             }
             case IN_WHERE: {
                 return tokenFactory.createToken(OQLTokenId.KEYWORD, input.readLength(), PartType.START);
