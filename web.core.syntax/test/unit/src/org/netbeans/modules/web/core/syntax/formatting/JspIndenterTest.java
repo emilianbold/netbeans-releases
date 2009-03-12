@@ -235,6 +235,10 @@ public class JspIndenterTest extends TestBase2 {
         reformatFileContents("FormattingProject/web/issue89174.jsp",new IndentPrefs(4,4));
     }
 
+    public void testFormattingIssue160098() throws Exception {
+        reformatFileContents("FormattingProject/web/issue160098.jsp",new IndentPrefs(4,4));
+    }
+
     public void testIndentation() throws Exception {
 //        insertNewline("<style>\n     h1 {\n        <%= System.\n   somth() ^%>",
 //                      "<style>\n     h1 {\n        <%= System.\n   somth() \n        ^%>", null);
