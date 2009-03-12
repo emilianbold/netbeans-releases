@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -100,7 +101,7 @@ public class SourceIndexer {
                         public void run(ResultIterator resultIterator) throws Exception {
                             final String mimeType = src.getMimeType();
                             final EmbeddingIndexerFactory indexer = findIndexer (mimeType);
-                            LOG.fine("Indexing " + fileObject.getPath() + "; using " + indexer + "; mimeType='" + mimeType + "'");
+                            LOG.fine("Indexing " + fileObject.getPath() + "; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
                             visit(resultIterator,indexer);
                         }
 
@@ -114,7 +115,13 @@ public class SourceIndexer {
                                 
                                 final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty,resultIterator.getSnapshot());
                                 if (indexer != null) {
-                                    SPIAccessor.getInstance().index(indexer, dirty, resultIterator.getParserResult(), context);
+                                    try {
+                                        SPIAccessor.getInstance().index(indexer, dirty, resultIterator.getParserResult(), context);
+                                    } catch (ThreadDeath td) {
+                                        throw td;
+                                    } catch (Throwable t) {
+                                        LOG.log(Level.WARNING, null, t);
+                                    }
                                 }
                             }
                             Iterable<? extends Embedding> embeddings = resultIterator.getEmbeddings();
