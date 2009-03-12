@@ -19,6 +19,12 @@ public abstract class ProjectHandle implements Comparable<ProjectHandle> {
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
     /**
+     * The name of property which when fired will force a complete refresh of
+     * all project related info.
+     * The property value is undefined.
+     */
+    public static final String PROP_CONTENT = "content";
+    /**
      * The name of property which is fired when the list of builds for this project
      * has changed (builds added/removed/renamed).
      * The property value should ideally be the new list of BuildHandles.
