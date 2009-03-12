@@ -215,12 +215,12 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="severityLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="severityCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="severityCombo" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="targetMilestoneLabel" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="targetMilestoneCombo" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="targetMilestoneCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="dummyLabel1" linkSize="2" min="-2" max="-2" attributes="0"/>

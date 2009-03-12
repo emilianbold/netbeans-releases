@@ -88,6 +88,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private int resolvedIndex;
     private Map<BugzillaIssue.IssueField,String> initialValues = new HashMap<BugzillaIssue.IssueField,String>();
     private boolean reloading;
+    private boolean usingTargetMilestones;
 
     public IssuePanel() {
         initComponents();
@@ -183,7 +184,9 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         reloadField(force, priorityCombo, BugzillaIssue.IssueField.PRIORITY);
         reloadField(force, severityCombo, BugzillaIssue.IssueField.SEVERITY);
-        reloadField(force, targetMilestoneCombo, BugzillaIssue.IssueField.MILESTONE);
+        if (usingTargetMilestones) {
+            reloadField(force, targetMilestoneCombo, BugzillaIssue.IssueField.MILESTONE);
+        }
         reloadField(force, urlField, BugzillaIssue.IssueField.URL);
         reloadField(force, keywordsField, BugzillaIssue.IssueField.KEYWORDS);
         format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
@@ -208,9 +211,7 @@ public class IssuePanel extends javax.swing.JPanel {
         String currentValue = null;
         if (!force) {
             if (component instanceof JComboBox) {
-                // XXX HOTFIXING NPE
-                Object item  = ((JComboBox)component).getSelectedItem();
-                currentValue = item != null ? item.toString() : "";
+                currentValue  = ((JComboBox)component).getSelectedItem().toString();
             } else if (component instanceof JTextField) {
                 currentValue = ((JTextField)component).getText();
             }
@@ -758,7 +759,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 19, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {dummyLabel1, dummyLabel2, targetMilestoneCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {dummyLabel1, dummyLabel2, severityCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         layout.linkSize(new java.awt.Component[] {assignedLabel, blocksLabel, ccLabel, componentLabel, dependsLabel, keywordsLabel, osLabel, platformLabel, priorityLabel, productLabel, qaContactLabel, resolutionLabel, severityLabel, statusCombo, statusLabel, targetMilestoneLabel, urlLabel, versionLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
@@ -832,11 +833,17 @@ public class IssuePanel extends javax.swing.JPanel {
             Object targetMilestone = targetMilestoneCombo.getSelectedItem();
             componentCombo.setModel(toComboModel(bugzilla.getComponents(repository, product)));
             versionCombo.setModel(toComboModel(bugzilla.getVersions(repository, product)));
-            targetMilestoneCombo.setModel(toComboModel(bugzilla.getTargetMilestones(repository, product)));
+            List<String> targetMilestones = bugzilla.getTargetMilestones(repository, product);
+            usingTargetMilestones = (targetMilestones.size() != 0);
+            targetMilestoneCombo.setModel(toComboModel(targetMilestones));
             // Attempt to keep selection
             componentCombo.setSelectedItem(component);
             versionCombo.setSelectedItem(version);
-            targetMilestoneCombo.setSelectedItem(targetMilestone);
+            if (usingTargetMilestones) {
+                targetMilestoneCombo.setSelectedItem(targetMilestone);
+            }
+            targetMilestoneLabel.setVisible(usingTargetMilestones);
+            targetMilestoneCombo.setVisible(usingTargetMilestones);
         } catch (CoreException cex) {
             cex.printStackTrace();
         } catch (IOException ioex) {
@@ -898,7 +905,9 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         storeFieldValue(BugzillaIssue.IssueField.PRIORITY, priorityCombo);
         storeFieldValue(BugzillaIssue.IssueField.SEVERITY, severityCombo);
-        storeFieldValue(BugzillaIssue.IssueField.MILESTONE, targetMilestoneCombo);
+        if (usingTargetMilestones) {
+            storeFieldValue(BugzillaIssue.IssueField.MILESTONE, targetMilestoneCombo);
+        }
         storeFieldValue(BugzillaIssue.IssueField.URL, urlField);
         storeFieldValue(BugzillaIssue.IssueField.KEYWORDS, keywordsField);
         storeFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO, assignedField);
