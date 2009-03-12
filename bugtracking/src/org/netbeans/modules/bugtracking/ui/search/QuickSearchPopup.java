@@ -210,7 +210,6 @@ public class QuickSearchPopup extends javax.swing.JPanel
             evalTask.removeTaskListener(this);
         }
         evalTask = rp.create(r);
-        System.out.println("run task " + evalTask);
         evalTask.addTaskListener(this);
         // start waiting on all providers execution
         rp.post(evalTask);
