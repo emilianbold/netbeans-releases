@@ -175,7 +175,7 @@ public class APTUtils {
         try {
             for (APTToken token = (APTToken)ts.nextToken();!isEOF(token);) {
                 assert(token != null) : "list of tokens must not have 'null' elements"; // NOI18N
-                retValue.append(token.getText());
+                retValue.append(token.getTextID());
                 APTToken next =(APTToken)ts.nextToken();
                 if (!isEOF(next) && !inIncludeDirective) { // disable for IZ#124635
                     // if tokens were without spaces => no space
@@ -268,8 +268,8 @@ public class APTUtils {
         return ttype == APTTokenTypes.EOF;
     }
     
-    public static boolean isVaArgsToken(Token token) {
-        return token != null && token.getText().equals(VA_ARGS_TOKEN.getText());
+    public static boolean isVaArgsToken(APTToken token) {
+        return token != null && token.getTextID().equals(VA_ARGS_TOKEN.getTextID());
     }
     
     public static boolean isStartCondition(Token token) {

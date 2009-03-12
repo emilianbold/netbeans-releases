@@ -237,7 +237,7 @@ public final class APTDefineNode extends APTMacroBaseNode
             return false;
         }
         for (APTToken param : params) {
-            if (param.getText().equals(id.getText())) {
+            if (param.getTextID().equals(id.getTextID())) {
                 return true;
             }
         }

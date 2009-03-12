@@ -114,7 +114,7 @@ public class APTBaseToken implements APTToken {
     }
 
     public int getEndOffset() {
-        return getOffset() + getText().length();
+        return getOffset() + getTextID().length();
     }
 
     public void setEndOffset(int end) {
@@ -158,11 +158,11 @@ public class APTBaseToken implements APTToken {
 
     @Override
     public String toString() {
-        return "[\"" + getText() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename(); // NOI18N
+        return "[\"" + getTextID() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename(); // NOI18N
     }
 
     public int getEndColumn() {
-        return getColumn() + getText().length();
+        return getColumn() + getTextID().length();
     }
 
     public void setEndColumn(int c) {
