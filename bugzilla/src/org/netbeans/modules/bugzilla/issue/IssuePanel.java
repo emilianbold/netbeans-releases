@@ -131,6 +131,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
                         reloadForm(false);
+                    } else if (Issue.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
+                        updateFieldStatuses();
                     }
                 }
             });
@@ -944,7 +946,7 @@ public class IssuePanel extends javax.swing.JPanel {
                             cex.printStackTrace();
                         }
                     }
-                    issue.submit();
+                    issue.submitAndRefresh();
                 } catch (CoreException cex) {
                     IStatus status = cex.getStatus();
                     if (!(status instanceof BugzillaStatus)) {

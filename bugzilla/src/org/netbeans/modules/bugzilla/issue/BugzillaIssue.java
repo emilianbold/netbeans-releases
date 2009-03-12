@@ -76,6 +76,7 @@ import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -667,7 +668,7 @@ public class BugzillaIssue extends Issue {
         BugzillaCommand submitCmd = new BugzillaCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
-                submit();
+                submitAndRefresh();
             }
         };
         repository.getExecutor().execute(submitCmd);
@@ -693,10 +694,24 @@ public class BugzillaIssue extends Issue {
         }
     }
 
-    void submit() throws CoreException {
+    void submitAndRefresh() throws CoreException {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
+
+        boolean wasSeenAlready = repository.getIssueCache().wasSeen(getID());
+
         RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
         // XXX evaluate rr
+
+        refresh();
+
+        // it was the user who made the changes, so preserve the seen status if seen already
+        if(wasSeenAlready) {
+            try {
+                repository.getIssueCache().setSeen(getID(), true);
+            } catch (IOException ex) {
+                Bugzilla.LOG.log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     public void refresh() {
