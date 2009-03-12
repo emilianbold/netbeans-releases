@@ -579,7 +579,7 @@ public class ProjectUtil
         
         final ExplorerManager manager =
                 ((ExplorerManager.Provider)tc).getExplorerManager();
-        tc.setCursor( Utilities.createProgressCursor( tc ) );
+        tc.setCursor( Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) );
         tc.open();
         tc.requestActive();
         
