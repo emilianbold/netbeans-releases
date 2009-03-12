@@ -123,8 +123,11 @@ public abstract class DLightTarget {
                 DLightExecutorService.submit(new Runnable() {
 
                     public void run() {
-                        l.targetStateChanged(DLightTarget.this, oldState, newState);
-                        doneFlag.countDown();
+                        try {
+                            l.targetStateChanged(DLightTarget.this, oldState, newState);
+                        } finally {
+                            doneFlag.countDown();
+                        }
                     }
                 }, "Notifying " + l); // NOI18N
             }
