@@ -47,7 +47,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import org.openide.util.Lookup.Template;
 import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.AbstractLookup.Pair;
 
 /** A lookup that represents content of a Node.getCookie and the node itself.
  *
@@ -75,7 +74,7 @@ final class NodeLookup extends AbstractLookup {
         super();
 
         this.node = n;
-        addPair(new LookupItem(n));
+        addPair(new CookieSetLkp.SimpleItem<Node>(n));
     }
 
     /** Calls into Node to find out if it has a cookie of given class.
@@ -105,7 +104,14 @@ final class NodeLookup extends AbstractLookup {
                 return;
             }
 
-            pairs = Collections.singleton((AbstractLookup.Pair)new LookupItem(res));
+            CookieSetLkp.SimpleItem<Object> orig = new CookieSetLkp.SimpleItem<Object>(res);
+            AbstractLookup.Pair p;
+            if (res instanceof Node) {
+                p = orig;
+            } else {
+                p = new CookieSet.PairWrap(orig);
+            }
+            pairs = Collections.singleton(p);
         }
 
         collection.addAll(pairs);
@@ -120,6 +126,7 @@ final class NodeLookup extends AbstractLookup {
     /** Notifies subclasses that a query is about to be processed.
      * @param template the template
      */
+    @Override
     protected final void beforeLookup(Template template) {
         Class type = template.getType();
 
@@ -173,7 +180,7 @@ final class NodeLookup extends AbstractLookup {
             fromPairToQueryClass = new java.util.LinkedHashMap<AbstractLookup.Pair, Class>();
 
             java.util.Iterator<Class> it = /* #74334 */new ArrayList<Class>(queriedCookieClasses).iterator();
-            LookupItem nodePair = new LookupItem(node);
+            CookieSetLkp.SimpleItem<Node> nodePair = new CookieSetLkp.SimpleItem<Node>(node);
             instances.add(nodePair);
             fromPairToQueryClass.put(nodePair, Node.class);
 
@@ -237,49 +244,4 @@ final class NodeLookup extends AbstractLookup {
         }
     }
 
-    /** Simple Pair to hold cookies and nodes */
-    private static class LookupItem extends AbstractLookup.Pair {
-        private Object instance;
-
-        public LookupItem(Object instance) {
-            this.instance = instance;
-        }
-
-        public String getDisplayName() {
-            return getId();
-        }
-
-        public String getId() {
-            return instance.toString();
-        }
-
-        public Object getInstance() {
-            return instance;
-        }
-
-        public Class getType() {
-            return instance.getClass();
-        }
-
-        public boolean equals(Object object) {
-            if (object instanceof LookupItem) {
-                return instance == ((LookupItem) object).getInstance();
-            }
-
-            return false;
-        }
-
-        public int hashCode() {
-            return instance.hashCode();
-        }
-
-        protected boolean creatorOf(Object obj) {
-            return instance == obj;
-        }
-
-        protected boolean instanceOf(Class c) {
-            return c.isInstance(instance);
-        }
-    }
-     // End of LookupItem class
 }
