@@ -115,7 +115,7 @@ public class MeasureWebServiceActionTest extends PerformanceTestCase {
     public void initialize() {
         // open a java file in the editor
         openFile = new Node(new ProjectsTabOperator().getProjectRootNode(
-                "TestApplication-WebModule"),"Web Services|TestWebService");
+                "TestApplication-war"),"Web Services|TestWebService");
         new OpenAction().performAPI(openFile);
         editor = new EditorWindowOperator().getEditor("TestWebServiceImpl.java");
         new org.netbeans.jemmy.EventTool().waitNoEvent(5000);

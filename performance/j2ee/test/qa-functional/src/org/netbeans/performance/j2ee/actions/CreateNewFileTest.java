@@ -54,6 +54,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -107,7 +108,7 @@ public class CreateNewFileTest extends PerformanceTestCase {
         doMeasurement();
     }
 
-    public void testCreateNewEntityBean() {
+/*    public void testCreateNewEntityBean() {
         WAIT_AFTER_OPEN = 10000;
         project = "TestApplication-ejb";
         category = "Enterprise";
@@ -116,29 +117,19 @@ public class CreateNewFileTest extends PerformanceTestCase {
         packageName = "test.newfiles";
         isEntity = true;
         doMeasurement();
-    }
-    
-    public void testCreateNewWebService() {
-        WAIT_AFTER_OPEN = 10000;
-        project = "TestApplication-ejb";
-        category = "Web Services";
-        fileType = "Web Service";
-        fileName = "NewWebService";
-        packageName = "test.newfiles";
-        doMeasurement();
-    }
+    }*/
+
 
     @Override
     public void initialize() {
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"), "Source Packages|test|TestSessionRemote.java"));
     }
     
     @Override
     public void shutdown() {
-        new EditorOperator("TestSessionRemote.java").closeDiscard();
     }
     
     public void prepare() {
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         new NewFileAction().performMenu();
         wizard = new NewFileWizardOperator();
         wizard.selectProject(project);
@@ -151,22 +142,22 @@ public class CreateNewFileTest extends PerformanceTestCase {
         else
              eBname = new JTextFieldOperator(wizard);
         eBname.setText(fileName+CommonUtilities.getTimeIndex());
-        new JComboBoxOperator(wizard,1).enterText(packageName);
+        new JComboBoxOperator(wizard,1).typeText(packageName);//.enterText(packageName);
+                JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+
     }
 
     public ComponentOperator open() {
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        if (System.getProperty("os.name").indexOf("Windows")!=-1) wizard.finish();
-        return new EditorOperator(fileName);
+        repaintManager().addRegionFilter(repaintManager().IGNORE_STATUS_LINE_FILTER);
+        wizard.finish();
+        return null;
     }
     
     @Override
     public void close() {
         repaintManager().resetRegionFilters();
-        if (testedComponentOperator != null){
-            ((EditorOperator)testedComponentOperator).save();
-            ((EditorOperator)testedComponentOperator).close();
-        }    
+        EditorOperator.closeDiscardAll();
     }
     
 }
