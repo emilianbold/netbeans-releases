@@ -136,12 +136,12 @@ public class LLDataCollector
                 if (agentLibraryLocal != null) {
                 CommonTasksSupport.uploadFile(
                         agentLibraryLocal.getAbsolutePath(), env,
-                        getRemotePath(agentLibraryLocal), 644, null).get();
+                        getRemotePath(env, agentLibraryLocal), 644, null).get();
                 }
                 File monitorExecutableLocal = locateMonitorExecutable(env);
                 CommonTasksSupport.uploadFile(
                         monitorExecutableLocal.getAbsolutePath(), env,
-                        getRemotePath(agentLibraryLocal), 755, null).get();
+                        getRemotePath(env, agentLibraryLocal), 755, null).get();
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
@@ -169,14 +169,18 @@ public class LLDataCollector
         String ldPreloadName = NativeToolsUtil.getLdPreloadName(HostInfoUtils.getOS(env));
         File agentLibraryLocal = locateAgentLibrary(env);
         if (agentLibraryLocal != null) {
-            return Collections.singletonMap(ldPreloadName, getRemotePath(agentLibraryLocal));
+            return Collections.singletonMap(ldPreloadName, getRemotePath(env, agentLibraryLocal));
         } else {
             return Collections.emptyMap();
         }
     }
 
-    private String getRemotePath(File localPath) {
-        return "/tmp/" + localPath.getName(); // NOI18N
+    private String getRemotePath(ExecutionEnvironment env, File localPath) {
+        if (env.isLocal()) {
+            return localPath.getAbsolutePath();
+        } else {
+            return "/tmp/" + localPath.getName(); // NOI18N
+        }
     }
 
     private File locateAgentLibrary(ExecutionEnvironment env) {
@@ -197,7 +201,8 @@ public class LLDataCollector
 
     private void startMonitor() {
         AttachableTarget at = (AttachableTarget) target;
-        NativeProcessBuilder npb = new NativeProcessBuilder(target.getExecEnv(), getRemotePath(locateMonitorExecutable(target.getExecEnv())));
+        ExecutionEnvironment env = target.getExecEnv();
+        NativeProcessBuilder npb = new NativeProcessBuilder(env, getRemotePath(env, locateMonitorExecutable(env)));
         StringBuilder flags = new StringBuilder("-"); // NOI18N
         if (collectedData.contains(LLDataCollectorConfiguration.CollectedData.CPU)) {
             flags.append('c'); // NOI18N
