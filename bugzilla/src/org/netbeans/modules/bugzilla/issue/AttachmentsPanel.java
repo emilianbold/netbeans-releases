@@ -68,6 +68,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -207,6 +208,7 @@ public class AttachmentsPanel extends JPanel {
     private JPopupMenu menuFor(Attachment attachment) {
         JPopupMenu menu = new JPopupMenu();
         menu.add(new DefaultAttachmentAction(attachment));
+        menu.add(new SaveAttachmentAction(attachment));
         return menu;
     }
 
@@ -309,7 +311,7 @@ public class AttachmentsPanel extends JPanel {
     }
 
     static class DefaultAttachmentAction extends AbstractAction {
-        private BugzillaIssue.Attachment attachment;
+        private Attachment attachment;
 
         public DefaultAttachmentAction(Attachment attachment) {
             this.attachment = attachment;
@@ -350,6 +352,34 @@ public class AttachmentsPanel extends JPanel {
                     }
                 }
             });
+        }
+
+    }
+
+    static class SaveAttachmentAction extends AbstractAction {
+        private Attachment attachment;
+
+        public SaveAttachmentAction(Attachment attachment) {
+            this.attachment = attachment;
+            putValue(Action.NAME, NbBundle.getMessage(SaveAttachmentAction.class, "AttachmentsPanel.SaveAttachmentAction.name")); // NOI18N
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            final File file = new FileChooserBuilder(AttachmentsPanel.class)
+                    .setFilesOnly(true).showSaveDialog();
+            if (file != null) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            attachment.getAttachementData(new FileOutputStream(file));
+                        } catch (IOException ioex) {
+                            ioex.printStackTrace();
+                        } catch (CoreException cex) {
+                            cex.printStackTrace();
+                        }
+                    }
+                });
+            }
         }
 
     }
