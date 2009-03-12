@@ -242,4 +242,10 @@ public final class NativeProcessBuilder implements Callable<Process> {
         result.externalTerminal = terminal;
         return result;
     }
+
+    public NativeProcessBuilder unbufferOutput(boolean unbuffer) {
+        NativeProcessBuilder result = new NativeProcessBuilder(this);
+        result.info.setUnbuffer(unbuffer);
+        return result;
+    }
 }

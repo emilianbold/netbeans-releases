@@ -62,11 +62,14 @@ public final class NativeProcessInfo {
     private final String command;
     private final List<String> arguments = new ArrayList<String>();
     private String workingDirectory;
+    private boolean unbuffer;
     protected final MacroExpander macroExpander;
     private Collection<ChangeListener> listeners = null;
 
     public NativeProcessInfo(NativeProcessInfo info) {
-        this(info.execEnv, info.command);
+        execEnv = info.execEnv;
+        command = info.command;
+        macroExpander = MacroExpanderFactory.getExpander(execEnv);
         workingDirectory = info.workingDirectory;
         envVariables.putAll(info.envVariables);
         arguments.addAll(info.arguments);
@@ -74,11 +77,15 @@ public final class NativeProcessInfo {
         if (info.listeners != null) {
             listeners = new ArrayList<ChangeListener>(info.listeners);
         }
+        
+        unbuffer = info.unbuffer;
     }
 
     public NativeProcessInfo(ExecutionEnvironment execEnv, String command) {
         this.execEnv = execEnv;
         this.command = command;
+        this.unbuffer = false;
+        this.workingDirectory = null;
         macroExpander = MacroExpanderFactory.getExpander(execEnv);
     }
 
@@ -92,6 +99,14 @@ public final class NativeProcessInfo {
 
     public void setWorkingDirectory(String workingDirectory) {
         this.workingDirectory = workingDirectory;
+    }
+
+    public void setUnbuffer(boolean unbuffer) {
+        this.unbuffer = unbuffer;
+    }
+
+    public boolean isUnbuffer() {
+        return unbuffer;
     }
 
     /**

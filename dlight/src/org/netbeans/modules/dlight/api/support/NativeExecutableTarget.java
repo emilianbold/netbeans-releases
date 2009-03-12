@@ -199,6 +199,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             pb = pb.useExternalTerminal(externalTerminal);
             descr = descr.inputVisible(false);
         } else {
+            pb = pb.unbufferOutput(true);
             descr = descr.inputVisible(true);
         }
 
