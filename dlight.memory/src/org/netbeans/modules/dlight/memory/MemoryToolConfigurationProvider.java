@@ -75,16 +75,16 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
      */
     private static final boolean useLLIndicatorDataProvider =
             Util.getBoolean("dlight.memory.LL", false); // NOI18N
-
+    private static final String SUNSTUDIO = "sunstudio"; // NOI18N
 //    private static final boolean USE_SUNSTUDIO =
 //            Boolean.getBoolean("gizmo.mem.sunstudio"); // NOI18N
-    private static boolean USE_SUNSTUDIO = false;//NbPreferences.forModule(DLightToolConfigurationProvider.class).getBoolean(SUNSTUDIO_COLLECTORS, Boolean.getBoolean("gizmo.mem.sunstudio"));
+ //   private static boolean USE_SUNSTUDIO = false;//NbPreferences.forModule(DLightToolConfigurationProvider.class).getBoolean(SUNSTUDIO_COLLECTORS, Boolean.getBoolean("gizmo.mem.sunstudio"));
     private static final String TOOL_NAME = loc("MemoryTool.ToolName"); // NOI18N
     private static final Column totalColumn;
     private static final DataTableMetadata rawTableMetadata;
 //    /** this is for the case of using DTrace for indicator only  */
 //    private static final DataTableMetadata indicatorTableMetadata;
-
+String collector = System.getProperty("dlight.memory.collector", "dtrace");//NOI188N
 
     static {
         final Column timestampColumn = new Column("timestamp", Long.class, loc("MemoryTool.ColumnName.timestamp"), null); // NOI18N
@@ -121,9 +121,9 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
     public DLightToolConfiguration create() {
         DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(TOOL_NAME);
-
+        
         if (useCollector) {
-            if (USE_SUNSTUDIO) {
+            if (collector.equals(SUNSTUDIO)) {
                 DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
                 toolConfiguration.addDataCollectorConfiguration(dcc);
 //            }else if (useLLIndicatorDataProvider) {
@@ -137,7 +137,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             }
         }
         // TODO: replace with just "else" after fixing #159681 (It is impossible to use DTrace as indicator data provider)
-        if (!(useCollector && USE_SUNSTUDIO)) {
+        if (!(useCollector && collector.equals(SUNSTUDIO))) {
             // AK: Disable indicator data provider until issue with USR1 signal is resolved;
             // VK: (in other words: don't use LL monitor since it breaks collect with SIGUSR1)
             // VK: if we use DTrace collector, it will act as indicator data provider as well!
@@ -148,7 +148,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             }
         }
 
-        if (USE_SUNSTUDIO){
+        if (collector.equals(SUNSTUDIO)){
             toolConfiguration.addIndicatorDataProviderConfiguration(initSunStudioIndicatorDataProviderConfiguration());
 
         }else if (useLLIndicatorDataProvider) {
@@ -213,7 +213,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
     private IndicatorConfiguration initIndicatorConfiguration() {
         IndicatorMetadata indicatorMetadata = null;
-        if (USE_SUNSTUDIO) {
+        if (collector.equals(SUNSTUDIO)) {
             indicatorMetadata = new IndicatorMetadata(Arrays.asList(SunStudioDCConfiguration.c_leakSize));
         } else if (useLLIndicatorDataProvider){
             indicatorMetadata = new IndicatorMetadata(LLDataCollectorConfiguration.MEM_TABLE.getColumns());
@@ -225,7 +225,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             new MemoryIndicatorConfiguration(indicatorMetadata); // NOI18N
 
         if (useCollector) {
-            if (USE_SUNSTUDIO) {
+            if (collector.equals(SUNSTUDIO)) {
                 DataTableMetadata detailedViewTableMetadata =
                     SunStudioDCConfiguration.getMemTableMetadata(
                     SunStudioDCConfiguration.c_name,
