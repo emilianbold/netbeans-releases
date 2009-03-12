@@ -127,7 +127,7 @@ public class JaxWsClientCreator implements ClientCreator {
                 DialogDisplayer.getDefault().notify(desc);
             }
             if (wsdlFo != null) {
-                MavenModelUtils.addJaxws21Library(project);
+                final boolean libraryAdded = MavenModelUtils.addJaxws21Library(project);
                 final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
                 final String clientName = wsdlFo.getName();
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
@@ -141,6 +141,9 @@ public class JaxWsClientCreator implements ClientCreator {
                             MavenModelUtils.addWarPlugin(model);
                         } else { // J2SE Project
                             MavenModelUtils.addWsdlResources(model);
+                        }
+                        if (libraryAdded) {
+                            MavenModelUtils.updateLibraryScope(project, model);
                         }
                     }
                 };

@@ -101,8 +101,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private byte flags;
     
     private static final boolean CHECK_SCOPE = false;
-    
+
     public FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
+        this(ast, file, null, scope, register, global);
+    }
+    
+    public FunctionImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
@@ -150,8 +154,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         setFlags(FLAGS_CONST, _const);
         classTemplateSuffix = new StringBuilder();
         templateDescriptor = createTemplateDescriptor(ast, this, (StringBuilder)classTemplateSuffix, global);
-        returnType = initReturnType(ast);
+        if(type != null) {
+            returnType = type;
+        } else {
+            returnType = initReturnType(ast);
+        }
 
+                
         // set parameters, do it in constructor to have final fields
         this.parameterList = createParameterList(ast, !global);
         if (this.parameterList == null || this.parameterList.isEmpty()) {
@@ -619,13 +628,16 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return sb;
     }
 
+    private static final int PARAMETERS_LIMIT = 1000; // do not produce too long signature
+
     /*package*/static void appendParametersSignature(Collection<CsmParameter> params, StringBuilder sb) {
         sb.append('(');
-        int paramLimit = Short.MAX_VALUE / 2;
+        int limit = 0;
         for (Iterator<CsmParameter> iter = params.iterator(); iter.hasNext();) {
-            if (sb.length()>paramLimit) {
+            if (limit >= PARAMETERS_LIMIT) {
                 break;
             }
+            limit++;
             CsmParameter param = iter.next();
             CsmType type = param.getType();
             if (type != null) {
@@ -660,12 +672,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     private void appendTemplateParamsSignature(List<CsmTemplateParameter> params, StringBuilder sb) {
         if(params != null && params.size() > 0) {
-            int paramLimit = Short.MAX_VALUE / 4;
             sb.append('<');
+            int limit = 0;
             for (Iterator iter = params.iterator(); iter.hasNext();) {
-                if (sb.length()>paramLimit) {
+                if (limit >= PARAMETERS_LIMIT) {
                     break;
                 }
+                limit++;
                 CsmTemplateParameter param = (CsmTemplateParameter) iter.next();
                 if (CsmKindUtilities.isVariableDeclaration(param)) {
                     CsmVariable var = (CsmVariable) param;

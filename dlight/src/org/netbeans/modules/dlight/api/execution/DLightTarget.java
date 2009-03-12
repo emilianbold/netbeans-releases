@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.api.execution;
 
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -204,9 +205,12 @@ public abstract class DLightTarget {
         /**
          * Returns enviroment variables map (name - value) which should
          * be set up before DLightTarget is started
+         * @param target  target that is going to start
          * @return enviroment variables map to set up before target is starting
+         * @throws ConnectException in case connection to target host is needed,
+         *      but the host is not connected yet
          */
-        Map<String, String> getExecutionEnv();
+        Map<String, String> getExecutionEnv(DLightTarget target) throws ConnectException;
     }
 
     private static final class DLightTargetAccessorImpl extends DLightTargetAccessor {

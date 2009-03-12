@@ -48,6 +48,7 @@ import java.util.List;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -55,6 +56,7 @@ import org.openide.util.Exceptions;
 public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     private final static String dorunScript;
+    private final static boolean isWindows;
     private final InputStream processOutput;
     private final InputStream processError;
     private final OutputStream processInput;
@@ -68,12 +70,16 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         InstalledFileLocator fl = InstalledFileLocator.getDefault();
         File file = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
         dorunScript = file.toString();
-        try {
-            new ProcessBuilder("/bin/chmod", "+x", dorunScript).start().waitFor(); // NOI18N
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        isWindows = Utilities.isWindows();
+
+        if (!isWindows) {
+            try {
+                new ProcessBuilder("/bin/chmod", "+x", dorunScript).start().waitFor(); // NOI18N
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
@@ -100,13 +106,21 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             terminal = terminal.setTitle(commandLine);
         }
 
+        String cmd = commandLine;
+
+        if (isWindows) {
+            pidFileName = pidFileName.replaceAll("\\\\", "/");
+            cmd = cmd.replaceAll("\\\\", "/");
+        }
+
+
         List<String> command = terminalInfo.wrapCommand(
                 info.getExecutionEnvironment(),
                 terminal,
                 dorunScript,
                 "-p", pidFileName, // NOI18N
                 "-x", terminalInfo.getPrompt(terminal), // NOI18N
-                commandLine);
+                cmd);
 
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.environment().putAll(info.getEnvVariables());
@@ -128,8 +142,9 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     @Override
     public void cancel() {
         try {
+            String cmd = isWindows ? "kill" : "/bin/kill"; // NOI18N
             ProcessBuilder pb =
-                    new ProcessBuilder("/bin/kill", "-9", "" + getPID()); // NOI18N
+                    new ProcessBuilder(cmd, "-9", "" + getPID()); // NOI18N
             pb.start().waitFor();
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
@@ -140,10 +155,25 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     public int waitResult() throws InterruptedException {
-        File f = new File("/proc/" + getPID()); // NOI18N
+        if (isWindows) {
+            ProcessBuilder pb = new ProcessBuilder("kill", "-0", "" + getPID()); // NOI18N
+            while (true) {
+                try {
+                    int status = pb.start().waitFor();
+                    if (status != 0) {
+                        break;
+                    } else {
+                        Thread.sleep(500);
+                    }
+                } catch (IOException ex) {
+                }
+            }
+        } else {
+            File f = new File("/proc/" + getPID()); // NOI18N
 
-        while (f.exists()) {
-            Thread.sleep(300);
+            while (f.exists()) {
+                Thread.sleep(300);
+            }
         }
 
         try {

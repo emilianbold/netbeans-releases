@@ -11,7 +11,7 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-FUNCTION assert_arg [2:1/1-5:6/146] FunctionImpl SCOPE: $Global$ 
+FUNCTION assert_arg [2:1/1-5:7/147] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE assert_arg<class>(assert_arg_pred<Pred>::type)
     UNIQUE NAME F:assert_arg<class>(assert_arg_pred<Pred>::type)
@@ -20,7 +20,7 @@ FUNCTION assert_arg [2:1/1-5:6/146] FunctionImpl SCOPE: $Global$
     RETURNS ************$unresolved$::failed TEXT=failed************  [3:1/27-3:40/66]
 
 ========== Dumping model of PROJECT DummyProject
-FUNCTION assert_arg [2:1/1-5:6/146] FunctionImpl SCOPE: $Global$ 
+FUNCTION assert_arg [2:1/1-5:7/147] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE assert_arg<class>(assert_arg_pred<Pred>::type)
     UNIQUE NAME F:assert_arg<class>(assert_arg_pred<Pred>::type)

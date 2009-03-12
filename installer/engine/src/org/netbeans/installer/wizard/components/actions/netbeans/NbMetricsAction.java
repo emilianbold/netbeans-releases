@@ -44,6 +44,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.helper.DetailedStatus;
+import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.wizard.components.WizardAction;
 
 /**
@@ -66,8 +67,9 @@ public class NbMetricsAction extends WizardAction {
             if (uid.equals("nb-base")) {
                 File location = product.getInstallationLocation();
                 try {
-                    LogManager.log("Enable usage statistics of NetBeans at " + location);
-                    NetBeansUtils.setUsageStatistics(location, true);
+                    boolean metricsEnabled = Boolean.getBoolean(ENABLE_NETBEANS_METRICS_PROPERTY);
+                    LogManager.log("Set usage statistics enabled of NetBeans at " + location + " to " + metricsEnabled);
+                    NetBeansUtils.setUsageStatistics(location, metricsEnabled);
                 } catch (IOException e) {
                     LogManager.log(e);
                 }
@@ -78,7 +80,7 @@ public class NbMetricsAction extends WizardAction {
 
     @Override
     public boolean canExecuteForward() {
-        return Boolean.getBoolean(ENABLE_NETBEANS_METRICS_PROPERTY);
+        return UiMode.getCurrentUiMode() != UiMode.SILENT;
     }
 
     @Override

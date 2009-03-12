@@ -156,6 +156,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         for( AST token = last; token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
+                case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
                 case CPPTokenTypes.CSM_QUALIFIED_ID:
                 case CPPTokenTypes.CSM_ARRAY_DECLARATION:
                     return AstUtil.getLastChildRecursively(last);

@@ -183,7 +183,7 @@ public class WSITModelSupport {
         return null;
     }
     
-    protected static WSDLModel getModelFromFO(FileObject wsdlFO, boolean editable) {
+    public static WSDLModel getModelFromFO(FileObject wsdlFO, boolean editable) {
         WSDLModel model = null;
         ModelSource ms = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(wsdlFO, editable);
         try {

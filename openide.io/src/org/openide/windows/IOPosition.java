@@ -43,6 +43,22 @@ import org.openide.util.Lookup;
 
 /**
  * Navigation in IO component
+  * <p>
+ * Client usage:
+ * <pre>
+ *  InputOutput io = ...;
+ *  // store current position of IO
+ *  IOPosition.Position pos = IOPosition.currentPosition(io);
+ *  ...
+ *  // scroll to stored position
+ *  pos.scrollTo();
+ * </pre>
+ * How to support {@link IOPosition} in own {@link IOProvider} implementation:
+ * <ul>
+ *   <li> {@link InputOutput} provided by {@link IOProvider} has to implement <a href="@org-openide-util@/org/openide/util/Lookup.Provider.html"><code>Lookup.Provider</code></a>
+ *   <li> Extend {@link IOPosition} and implement its abstract methods
+ *   <li> Place instance of {@link IOPosition} to {@link Lookup} provided by {@link InputOutput}
+ * </ul>
  * @since 1.16
  * @author Tomas Holy
  */
