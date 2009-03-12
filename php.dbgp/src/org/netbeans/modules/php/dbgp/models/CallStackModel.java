@@ -213,7 +213,7 @@ public class CallStackModel extends ViewModelSupport
             if (line != null) {
                 Mutex.EVENT.readAccess(new Runnable () {
                     public void run() {
-                        line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FRONT);
+                        line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
                     }
                 });
             }

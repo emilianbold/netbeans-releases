@@ -90,7 +90,7 @@ public abstract class AbstractIDEBridge {
 
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FRONT);
+                    line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
                 }
             });
         }
