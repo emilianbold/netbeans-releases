@@ -136,16 +136,20 @@ public final class EditorContextDispatcher {
     
     private String lastFiredMIMEType = null;
     private Map<String, Object> lastMIMETypeEvents = new HashMap<String, Object>();
-    
+
+    private static final Reference<FileObject> NO_FILE = new WeakReference<FileObject>(null);
+    private static final Reference<EditorCookie> NO_COOKIE = new WeakReference<EditorCookie>(null);
+    private static final Reference<JEditorPane> NO_EDITOR = new WeakReference<JEditorPane>(null);
+
     private String currentURL;
-    private FileObject currentFile = null;
-    private EditorCookie currentEditorCookie = null;
-    private JEditorPane currentOpenedPane = null;
+    private Reference<FileObject> currentFile = NO_FILE;
+    private Reference<EditorCookie> currentEditorCookie = NO_COOKIE;
+    private Reference<JEditorPane> currentOpenedPane = NO_EDITOR;
     
     // Most recent in editor:
-    private Reference<FileObject> mostRecentFileRef = new WeakReference<FileObject>(null);
-    private Reference<EditorCookie> mostRecentEditorCookieRef = new WeakReference<EditorCookie>(null);
-    private Reference<JEditorPane> mostRecentOpenedPaneRef = new WeakReference<JEditorPane>(null);
+    private Reference<FileObject> mostRecentFileRef = NO_FILE;
+    private Reference<EditorCookie> mostRecentEditorCookieRef = NO_COOKIE;
+    private Reference<JEditorPane> mostRecentOpenedPaneRef = NO_EDITOR;
     
     private EditorContextDispatcher() {
         refreshProcessor = new RequestProcessor("Refresh Editor Context", 1);   // NOI18N
@@ -169,7 +173,7 @@ public final class EditorContextDispatcher {
      * @return The current file or <code>null</code> when there is no active file.
      */
     public synchronized FileObject getCurrentFile() {
-        return currentFile;
+        return currentFile.get();
     }
     
     /**
@@ -198,8 +202,8 @@ public final class EditorContextDispatcher {
      *         <code>null</code> when there is no currently edited file.
      */
     private synchronized EditorCookie getCurrentEditorCookie() {
-        if (currentOpenedPane != null) {
-            return currentEditorCookie;
+        if (getCurrentEditor() != null) {
+            return currentEditorCookie.get();
         } else {
             return null;
         }
@@ -211,7 +215,7 @@ public final class EditorContextDispatcher {
      *         <code>null</code> when there is no currently edited file.
      */
     public synchronized JEditorPane getCurrentEditor() {
-        return currentOpenedPane;
+        return currentOpenedPane.get();
     }
     
     /**
@@ -360,9 +364,9 @@ public final class EditorContextDispatcher {
         synchronized (pcsByMIMEType) {
             Set<String> MIMETypes = new HashSet(pcsByMIMEType.keySet());
             for (String MIMEType : MIMETypes) {
-                PropertyChangeSupport pcs = pcsByMIMEType.get(MIMEType);
-                pcs.removePropertyChangeListener(l);
-                if (pcs.getPropertyChangeListeners().length == 0) {
+                PropertyChangeSupport _pcs = pcsByMIMEType.get(MIMEType);
+                _pcs.removePropertyChangeListener(l);
+                if (_pcs.getPropertyChangeListeners().length == 0) {
                     pcsByMIMEType.remove(MIMEType);
                 }
             }
@@ -376,15 +380,15 @@ public final class EditorContextDispatcher {
      * @param l The PropertyChangeListener
      */
     public void addPropertyChangeListener(String MIMEType, PropertyChangeListener l) {
-        PropertyChangeSupport pcs;
+        PropertyChangeSupport _pcs;
         synchronized (pcsByMIMEType) {
-            pcs = pcsByMIMEType.get(MIMEType);
-            if (pcs == null) {
-                pcs = new PropertyChangeSupport(this);
-                pcsByMIMEType.put(MIMEType, pcs);
+            _pcs = pcsByMIMEType.get(MIMEType);
+            if (_pcs == null) {
+                _pcs = new PropertyChangeSupport(this);
+                pcsByMIMEType.put(MIMEType, _pcs);
             }
         }
-        pcs.addPropertyChangeListener(l);
+        _pcs.addPropertyChangeListener(l);
     }
     
     /*public void removePropertyChangeListener(String MIMEType, PropertyChangeListener l) {
@@ -503,16 +507,16 @@ public final class EditorContextDispatcher {
                 FileObject oldFile;
                 FileObject newFile;
                 synchronized (EditorContextDispatcher.this) {
-                    oldFile = currentFile;
+                    oldFile = currentFile.get();
                     if (fos.size() == 0) {
-                        currentFile = null;
+                        newFile = null;
                     } else if (fos.size() == 1) {
-                        currentFile = fos.iterator().next();
+                        newFile = fos.iterator().next();
                     } else {
-                        currentFile = findPrimary(fos);
+                        newFile = findPrimary(fos);
                     }
                     //System.err.println("\nCURRENT FILES = "+fos+"\n");
-                    newFile = currentFile;
+                    currentFile = newFile == null ? NO_FILE : new WeakReference<FileObject>(newFile);
                     currentURL = null;
                     /*if (newFile != null) {  - NO, we need the last file in editor.
                         mostRecentFileRef = new WeakReference(newFile);
@@ -526,22 +530,22 @@ public final class EditorContextDispatcher {
                 final EditorCookie newEditor;
                 final EditorCookie oldEditor;
                 synchronized (EditorContextDispatcher.this) {
-                    oldEditor = currentEditorCookie;
-                    if (currentEditorCookie instanceof EditorCookie.Observable) {
-                        ((EditorCookie.Observable) currentEditorCookie).removePropertyChangeListener(this);
+                    oldEditor = currentEditorCookie.get();
+                    if (oldEditor instanceof EditorCookie.Observable) {
+                        ((EditorCookie.Observable) oldEditor).removePropertyChangeListener(this);
                     }
                     if (ecs.size() == 0) {
-                        currentEditorCookie = null;
+                        newEditor = null;
                     } else {
-                        currentEditorCookie = ecs.iterator().next();
+                        newEditor = ecs.iterator().next();
                     }
-                    if (currentEditorCookie instanceof EditorCookie.Observable) {
-                        ((EditorCookie.Observable) currentEditorCookie).addPropertyChangeListener(this);
+                    if (newEditor instanceof EditorCookie.Observable) {
+                        ((EditorCookie.Observable) newEditor).addPropertyChangeListener(this);
                     }
-                    newEditor = currentEditorCookie;
-                    if (currentFile != null) {
+                    currentEditorCookie = newEditor == null ? NO_COOKIE : new WeakReference<EditorCookie>(newEditor);
+                    if (currentFile.get() != null) {
                         if (newEditor != null) {
-                            mostRecentEditorCookieRef = new WeakReference(newEditor);
+                            mostRecentEditorCookieRef = new WeakReference<EditorCookie>(newEditor);
                         }
                     }
                 }
@@ -590,26 +594,27 @@ public final class EditorContextDispatcher {
             String MIMEType = null;
             synchronized (EditorContextDispatcher.this) {
                 boolean isSetPane = false;
-                if ((source == null || source == currentEditorCookie)) {
-                    oldEditor = currentOpenedPane;
-                    if (currentEditorCookie != null && activeComponnet != null) {
-                        if (currentEditorCookie.getDocument() == null &&  // !currentEditorCookie.prepareDocument().isFinished() &&
-                            (currentEditorCookie instanceof EditorCookie.Observable)) {
+                EditorCookie ec = currentEditorCookie.get();
+                if ((source == null || source == ec)) {
+                    oldEditor = currentOpenedPane.get();
+                    if (ec != null && activeComponnet != null) {
+                        if (ec.getDocument() == null &&  // !currentEditorCookie.prepareDocument().isFinished() &&
+                            (ec instanceof EditorCookie.Observable)) {
                             // Document is not yet loaded, wait till we're notified that it is.
                             // See issue #147988
-                            logger.fine("Document "+currentEditorCookie+" NOT yet loaded...");  // NOI18N
+                            logger.fine("Document "+ ec +" NOT yet loaded...");  // NOI18N
                             return ;
                         }
-                        logger.fine("Document "+currentEditorCookie+" loaded, updating...");  // NOI18N
+                        logger.fine("Document " + ec + " loaded, updating...");  // NOI18N
                         long t1 = System.nanoTime();
-                        JEditorPane[] openedPanes = currentEditorCookie.getOpenedPanes();
+                        JEditorPane[] openedPanes = ec.getOpenedPanes();
                         long t2 = System.nanoTime();
                         logger.fine("Time to find opened panes = "+(t2 - t1)+" ns = "+(t2 - t1)/1000000+" ms.");  // NOI18N
                         if (openedPanes != null && openedPanes.length >= 1) {
                             for (JEditorPane openedPane : openedPanes) {
                                 if (activeComponnet.isAncestorOf(openedPane)) {
                                     //System.err.println("\n"+newComponnet+".isAncestorOf("+openedPane+")\n");
-                                    currentOpenedPane = openedPane;
+                                    newEditor = openedPane;
                                     isSetPane = true;
                                     break;
                                 }
@@ -617,16 +622,17 @@ public final class EditorContextDispatcher {
                         }
                     }
                     if (!isSetPane && source == null) {
-                        currentOpenedPane = null;
+                        newEditor = null;
                     }
-                    newEditor = currentOpenedPane;
-                    if (currentFile != null) {
-                        MIMEType = currentFile.getMIMEType();
+                    currentOpenedPane = newEditor == null ? NO_EDITOR : new WeakReference<JEditorPane>(newEditor);
+                    FileObject f = currentFile.get();
+                    if (f != null) {
+                        MIMEType = f.getMIMEType();
                         if (newEditor != null) {
-                            mostRecentOpenedPaneRef = new WeakReference(newEditor);
-                            mostRecentFileRef = new WeakReference(currentFile);
-                            if (currentEditorCookie != null) {
-                                mostRecentEditorCookieRef = new WeakReference(currentEditorCookie);
+                            mostRecentOpenedPaneRef = new WeakReference<JEditorPane>(newEditor);
+                            mostRecentFileRef = new WeakReference<FileObject>(f);
+                            if (ec != null) {
+                                mostRecentEditorCookieRef = new WeakReference<EditorCookie>(ec);
                             }
                         }
                     } else {
