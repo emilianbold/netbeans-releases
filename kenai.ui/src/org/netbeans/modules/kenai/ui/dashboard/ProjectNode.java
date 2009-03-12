@@ -45,6 +45,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
@@ -81,9 +83,21 @@ public class ProjectNode extends TreeListNode {
 
     private final Object LOCK = new Object();
 
-    public ProjectNode( ProjectHandle project ) {
+    private final PropertyChangeListener projectListener;
+
+    public ProjectNode( final ProjectHandle project ) {
         super( true, null );
+        this.projectListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if( ProjectHandle.PROP_CONTENT.equals( evt.getPropertyName()) ) {
+                    refreshChildren();
+                    if( null != lbl )
+                        lbl.setText(project.getDisplayName());
+                }
+            }
+        };
         this.project = project;
+        this.project.addPropertyChangeListener( projectListener );
         this.accessor = ProjectAccessor.getDefault();
         regFont = new JLabel().getFont();
         boldFont = regFont.deriveFont(Font.BOLD);
@@ -146,5 +160,11 @@ public class ProjectNode extends TreeListNode {
         this.isMemberProject = isMemberProject;
         fireContentChanged();
         refreshChildren();
+    }
+
+    protected void dispose() {
+        super.dispose();
+        if( null != project )
+            project.removePropertyChangeListener( projectListener );
     }
 }

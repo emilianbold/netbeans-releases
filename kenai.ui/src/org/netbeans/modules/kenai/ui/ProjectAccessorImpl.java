@@ -39,10 +39,12 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -53,6 +55,7 @@ import org.netbeans.modules.kenai.ui.spi.LoginHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -94,7 +97,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
     @Override
     public ActionListener getDetailsAction(final ProjectHandle project) {
-        return new URLDisplayerAction(org.openide.util.NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getKenaiProject().getWebLocation());
+        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getKenaiProject().getWebLocation());
     }
 
     @Override
@@ -103,10 +106,15 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public Action[] getPopupActions(ProjectHandle project) {
+    public Action[] getPopupActions(final ProjectHandle project) {
         Action[] actions = new Action[]{
             (Action) getDetailsAction(project),
             new RemoveProjectAction(project),
+            new AbstractAction( NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_RefreshProject") ) {
+                public void actionPerformed( ActionEvent e ) {
+                    project.firePropertyChange(ProjectHandle.PROP_CONTENT, null, project);
+                }
+            }
         };
         return actions;
     }
