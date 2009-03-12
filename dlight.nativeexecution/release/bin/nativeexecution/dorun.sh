@@ -8,8 +8,9 @@ fail() {
   exit 1
 }
 
-rmPidFile() {
+doExit() {
   test -f ${PIDFILE} && rm ${PIDFILE}
+  exit ${STATUS}
 }
 
 [ $# -lt 1 ] && fail $USAGE
@@ -25,11 +26,14 @@ done
 
 shift `expr $OPTIND - 1`
 
-trap "rmPidFile; exit" 1 2 15 EXIT
 
+trap "doExit" 1 2 15 EXIT
+
+STATUS=-1
 /bin/sh -c "echo \$\$>${PIDFILE} && exec $@"
+STATUS=$?
+echo ${STATUS} > ${PIDFILE}.res
 
-rmPidFile
 
 if [ "${PROMPT}" != "NO" ]; then
   /bin/echo "${PROMPT}"
