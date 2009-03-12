@@ -511,7 +511,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
     }
     
-    public static String getSortKey(CsmNamespaceDefinition def) {
+    public static CharSequence getSortKey(CsmNamespaceDefinition def) {
         StringBuilder sb = new StringBuilder(def.getContainingFile().getAbsolutePath());
         int start = ((CsmOffsetable) def).getStartOffset();
         String s = Integer.toString(start);
@@ -521,7 +521,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
         sb.append(s);
         sb.append(def.getName());
-        return sb.toString();
+        return QualifiedNameCache.getManager().getString(sb.toString());
     }
     
     @SuppressWarnings("unchecked")
