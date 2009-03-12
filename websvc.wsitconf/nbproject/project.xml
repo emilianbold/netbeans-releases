@@ -408,9 +408,10 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.websvc.metro.samples</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
+                <friend>org.netbeans.modules.websvc.metro.model</friend>
+                <friend>org.netbeans.modules.websvc.metro.samples</friend>
                 <friend>org.netbeans.modules.websvc.wsitest</friend>
                 <package>org.netbeans.modules.websvc.wsitconf.api</package>
                 <package>org.netbeans.modules.websvc.wsitconf.spi</package>
