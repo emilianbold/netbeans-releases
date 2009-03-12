@@ -53,9 +53,13 @@ import org.netbeans.spi.lexer.TokenFactory;
 
 /**
  *
- * @author Jan Jancura
+ * @author Jaroslav Bachorik
  */
 class OQLLexer implements Lexer<OQLTokenId> {
+    private static final String TOKEN_FROM = "FROM"; // NOI18N
+    private static final String TOKEN_INSTANCEOF = "INSTANCEOF"; // NOI18N
+    private static final String TOKEN_SELECT = "SELECT"; // NOI18N
+    private static final String TOKEN_WHERE = "WHERE"; // NOI18N
 
     enum State {
         INIT,
@@ -75,7 +79,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
     private TokenFactory<OQLTokenId>
                                 tokenFactory;
     private State               state = State.INIT;
-    final private Pattern       classPattern = Pattern.compile("(\\[*)[a-z]+(?:[a-z 0-9]*)(?:[\\. \\$][a-z 0-9]+)*(\\[\\])*", Pattern.CASE_INSENSITIVE);
+    final private Pattern       classPattern = Pattern.compile("(\\[*)[a-z]+(?:[a-z 0-9]*)(?:[\\. \\$][a-z 0-9]+)*(\\[\\])*", Pattern.CASE_INSENSITIVE); // NOI18N
 
 
     OQLLexer (LexerRestartInfo<OQLTokenId> info) {
@@ -98,7 +102,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
                         return tokenFactory.createToken(OQLTokenId.WHITESPACE);
                     } else {
                         input.backup(lastToken.length());
-                        if ("SELECT".startsWith(lastToken.trim())) {
+                        if (TOKEN_SELECT.startsWith(lastToken.trim())) {
                             state = State.IN_SELECT;
                         } else {
                             state = State.PLAIN_JS;
@@ -112,7 +116,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
 
                     if (Character.isWhitespace(actChar)) {
                         if (trimmed.length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
-                        if ("SELECT".equals(trimmed)) {
+                        if (TOKEN_SELECT.equals(trimmed)) {
                             state = State.JSBLOCK;
                             return tokenFactory.createToken(OQLTokenId.KEYWORD);
                         } else {
@@ -120,7 +124,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
                             input.backup(lastToken.length());
                         }
                     } else {
-                        if (!"SELECT".startsWith(trimmed)) {
+                        if (!TOKEN_SELECT.startsWith(trimmed)) {
                             input.backup(lastToken.length());
                             state = State.PLAIN_JS;
                         }
@@ -132,7 +136,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
                     if (Character.isWhitespace(actChar)) {
                         String lastToken = input.readText().toString().toUpperCase();
                         if (lastToken.trim().length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
-                        if ("FROM".equals(lastToken.trim())) {
+                        if (TOKEN_FROM.equals(lastToken.trim())) {
                             state = State.FROM;
                             return tokenFactory.createToken(OQLTokenId.KEYWORD, lastToken.length(), PartType.COMPLETE);
                         } else {
@@ -145,7 +149,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
 
                 case FROM: {
                     String lastToken = input.readText().toString().toUpperCase();
-                    if ("INSTANCEOF".startsWith(lastToken.trim())) {
+                    if (TOKEN_INSTANCEOF.startsWith(lastToken.trim())) {
                         state = State.FROM_INSTANCEOF;
                         input.backup(lastToken.length());
                     } else {
@@ -157,13 +161,13 @@ class OQLLexer implements Lexer<OQLTokenId> {
                 case FROM_INSTANCEOF: {
                     String lastToken = input.readText().toString().toUpperCase();
                     String trimmed = lastToken.trim();
-                    if (!"INSTANCEOF".startsWith(trimmed)) {
+                    if (!TOKEN_INSTANCEOF.startsWith(trimmed)) {
                         state = State.IN_CLASSNAME;
                         input.backup(lastToken.length());
                     }
                     if (Character.isWhitespace(actChar)) {
                         if (trimmed.length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
-                        if ("INSTANCEOF".equals(trimmed)) {
+                        if (TOKEN_INSTANCEOF.equals(trimmed)) {
                             state = State.IN_CLASSNAME;
                             return tokenFactory.createToken(OQLTokenId.KEYWORD);
                         } else {
@@ -178,11 +182,11 @@ class OQLLexer implements Lexer<OQLTokenId> {
                     if (Character.isWhitespace(actChar)) {
                         String lastToken = input.readText().toString().toUpperCase();
                         String trimmed = lastToken.trim();
-                        if (trimmed.endsWith("FROM")) {
+                        if (trimmed.endsWith(TOKEN_FROM)) {
                             state = State.IN_FROM;
                             input.backup(5);
                             return tokenFactory.createToken(OQLTokenId.JSBLOCK, lastToken.length() - 5);
-                        } else if ("SELECT".equals(trimmed) || "INSTANCEOF".equals(trimmed) || "WHERE".equals(trimmed)) {
+                        } else if (TOKEN_SELECT.equals(trimmed) || TOKEN_INSTANCEOF.equals(trimmed) || TOKEN_WHERE.equals(trimmed)) {
                             state = State.ERROR;
                             input.backup(lastToken.length());
                         }
@@ -209,10 +213,10 @@ class OQLLexer implements Lexer<OQLTokenId> {
                 case CLASS_ALIAS: {
                     String lastToken = input.readText().toString().toUpperCase();
 
-                    if ("SELECT".equals(lastToken) ||
-                        "FROM".equals(lastToken) ||
-                        "INSTANCEOF".equals(lastToken) ||
-                        "WHERE".equals(lastToken)) {
+                    if (TOKEN_SELECT.equals(lastToken) ||
+                        TOKEN_FROM.equals(lastToken) ||
+                        TOKEN_INSTANCEOF.equals(lastToken) ||
+                        TOKEN_WHERE.equals(lastToken)) {
                         state = State.ERROR;
                         input.backup(lastToken.length());
                         break;
@@ -234,13 +238,13 @@ class OQLLexer implements Lexer<OQLTokenId> {
                     String lastToken = input.readText().toString().toUpperCase();
                     String trimmed = lastToken.trim();
 
-                    if (!"WHERE".startsWith(trimmed)) {
+                    if (!TOKEN_WHERE.startsWith(trimmed)) {
                         state = State.ERROR;
                         input.backup(lastToken.length());
                     }
                     if (Character.isWhitespace(actChar)) {
                         if (trimmed.length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
-                        if ("WHERE".equals(trimmed)) {
+                        if (TOKEN_WHERE.equals(trimmed)) {
                             state = State.JSBLOCK;
                             return tokenFactory.createToken(OQLTokenId.KEYWORD);
                         } else {
@@ -270,7 +274,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
             }
             case JSBLOCK: {
                 String lastToken = input.readText().toString().trim().toUpperCase();
-                if (lastToken.endsWith("FROM")) {
+                if (lastToken.endsWith(TOKEN_FROM)) {
                     state = State.IN_FROM;
                     input.backup(5);
                     return tokenFactory.createToken(OQLTokenId.JSBLOCK, lastToken.length() - 5);
@@ -307,10 +311,10 @@ class OQLLexer implements Lexer<OQLTokenId> {
             case CLASS_ALIAS: {
                 String lastToken = input.readText().toString().toUpperCase();
 
-                if ("SELECT".equals(lastToken) ||
-                    "FROM".equals(lastToken) ||
-                    "INSTANCEOF".equals(lastToken) ||
-                    "WHERE".equals(lastToken)) {
+                if (TOKEN_SELECT.equals(lastToken) ||
+                    TOKEN_FROM.equals(lastToken) ||
+                    TOKEN_INSTANCEOF.equals(lastToken) ||
+                    TOKEN_WHERE.equals(lastToken)) {
                     state = State.ERROR;
                     input.backup(lastToken.length());
                 } else {
@@ -327,13 +331,6 @@ class OQLLexer implements Lexer<OQLTokenId> {
                 return tokenFactory.createToken(OQLTokenId.UNKNOWN);
             }
         }
-//
-//        if (id != null) {
-//            if (input.readLength() > 0) {
-//                return tokenFactory.createToken(id, input.readLength(), part);
-//            }
-//            return null;
-//        }
     }
 
     final private static boolean isEmpty(String string) {
