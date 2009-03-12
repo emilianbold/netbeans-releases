@@ -55,12 +55,14 @@
                 </file>
             </folder>
             <folder name="navigator">
-                <file name="DLightIndicatorsTopComponent.wstcref" url="DLightIndicatorsTopComponentWstcref.xml"/>
+                <file name="DLightIndicatorsTopComponent.wstcref" url="DLightIndicatorsTopComponentWstcref.xml">
+                    <attr name="position" intvalue="300"/>
+                </file>
             </folder>
             <folder name="rightSlidingSide">
                 <file name="DLightSessionsTopComponent.wstcref" url="DLightSessionsTopComponentWstcref.xml">
                     <attr name="position" intvalue="1500"/>
-                 </file>
+                </file>
             </folder>
 <!--            <folder name="explorer">
 
@@ -88,6 +90,7 @@
         <folder name="Window">
             <file name="DLightIndicatorsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-dlight-core-ui-components-DLightIndicatorsAction.instance"/>
+                <attr name="position" intvalue="0"/>
             </file>
         </folder>
     </folder>

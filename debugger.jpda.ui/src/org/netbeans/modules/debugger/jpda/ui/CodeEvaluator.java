@@ -476,9 +476,10 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                     }
                     if (result != null) {
                         resultView.open();
+                        resultView.requestActive();
                     }
-                    resultView.requestActive();
                 }
+                getInstance().requestActive();
                 //viewModelListener.updateModel();
                 fireResultChange();
             }

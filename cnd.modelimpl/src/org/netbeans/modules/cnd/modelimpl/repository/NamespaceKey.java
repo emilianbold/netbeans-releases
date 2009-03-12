@@ -85,6 +85,7 @@ class NamespaceKey extends ProjectNameBasedKey {
 
     private int _hashCode() {
         int key = super.hashCode();
+        key = 37*KeyObjectFactory.KEY_NAMESPACE_KEY +key;
         key = 17 * key + fqn.hashCode();
         return key;
     }

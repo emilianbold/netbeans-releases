@@ -275,9 +275,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         List<DLightTool> validTools = new ArrayList<DLightTool>();
 
         for (DLightTool tool : context.getTools()) {
-            if (tool.getValidationStatus().isValid()) {
+//            if (tool.getValidationStatus().isValid()) {//it is not quite correct, should run anyway
                 validTools.add(tool);
-            }
+  //          }
         }
 
         if (validTools.isEmpty()) {
@@ -295,8 +295,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 List<DataCollector> toolCollectors = DLightToolAccessor.getDefault().getCollectors(tool);
                 //TODO: no algorithm here:) should be better
                 for (DataCollector c : toolCollectors) {
-                    if (!collectors.contains(c)) {
-                        collectors.add(c);
+                    if (c.getValidationStatus().isValid()){//for valid collectors only
+                        if (!collectors.contains(c)) {
+                            collectors.add(c);
+                        }
                     }
                 }
             } else {
@@ -341,20 +343,22 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             List<IndicatorDataProvider> idps = DLightToolAccessor.getDefault().getIndicatorDataProviders(tool);
             if (idps != null) {
                 for (IndicatorDataProvider idp : idps) {
-                    if (idp instanceof DLightTarget.ExecutionEnvVariablesProvider) {
-                        context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) idp);
-                    }
-                    if (idp instanceof DataCollector) {
-                        if (notAttachableDataCollector == null && !((DataCollector) idp).isAttachable()) {
-                            notAttachableDataCollector = ((DataCollector) idp);
+                    if (idp.getValidationStatus().isValid()){
+                        if (idp instanceof DLightTarget.ExecutionEnvVariablesProvider) {
+                            context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) idp);
                         }
-                    }
-                    List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
-                    for (Indicator i : indicators) {
-                        boolean wasSubscribed = idp.subscribe(i);
-                        if (wasSubscribed) {
-                            target.addTargetListener(idp);
-                            log.info("I have subscribed indicator " + i + " to indicatorDataProvider " + idp);
+                        if (idp instanceof DataCollector) {
+                            if (notAttachableDataCollector == null && !((DataCollector) idp).isAttachable()) {
+                                notAttachableDataCollector = ((DataCollector) idp);
+                            }
+                        }
+                        List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
+                        for (Indicator i : indicators) {
+                            boolean wasSubscribed = idp.subscribe(i);
+                            if (wasSubscribed) {
+                                target.addTargetListener(idp);
+                                log.info("I have subscribed indicator " + i + " to indicatorDataProvider " + idp);
+                            }
                         }
                     }
                 }

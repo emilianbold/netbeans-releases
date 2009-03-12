@@ -120,6 +120,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
     }
     
     public boolean putClassifier(CsmClassifier decl) {
+        boolean put = false;
         CharSequence qn = decl.getQualifiedName();
         Map<CharSequence, CsmUID<CsmClassifier>> map;
         try {
@@ -134,12 +135,15 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
                 assert uid != null;
                 map.put(qn, uid);
                 assert (UIDCsmConverter.UIDtoDeclaration(uid) != null);
-                return true;
+                put = true;
             }
         } finally {
             declarationsLock.writeLock().unlock();
         }
-        return false;
+        if (put) {
+            put();
+        }
+        return put;
     }
 
     public void removeClassifier(CsmDeclaration decl) {
@@ -157,6 +161,9 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
             declarationsLock.writeLock().unlock();
         }
         assert (uid == null) || (UIDCsmConverter.UIDtoCsmObject(uid) != null) : " no object for UID " + uid;
+        if (uid != null) {
+            put();
+        }
     }
 
     //public void clearClassifiers() {

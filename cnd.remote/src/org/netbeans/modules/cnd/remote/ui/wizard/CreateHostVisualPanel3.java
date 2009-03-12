@@ -44,7 +44,6 @@ import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -59,13 +58,12 @@ public final class CreateHostVisualPanel3 extends JPanel {
         return CreateHostWizardIterator.getString("CreateHostVisualPanel3.Title");//NOI18N
     }
 
-    private String hkey;
+    private ExecutionEnvironment execEnv;
     private ToolsCacheManager cacheManager;
 
-    void init(String hkey, ToolsCacheManager cacheManager) {
+    void init(ExecutionEnvironment execEnv, ToolsCacheManager cacheManager) {
+        this.execEnv = execEnv;
         this.cacheManager = cacheManager;
-        this.hkey = hkey;
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
         textHostDisplayName.setText(execEnv.getHost());
         CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(execEnv);
         labelPlatformValue.setText(PlatformTypes.toString(csm.getPlatform()));

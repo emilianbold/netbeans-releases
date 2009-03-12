@@ -677,9 +677,11 @@ abstract class Lookup implements ContextProvider {
                     Object instance = null;
                     if (lookupItem != null) {
                         instance = lookupItem.getInstance();
+                        //System.err.println("Lookup.LazyInstance.getEntry(): have instance = "+instance+" for lookupItem = "+lookupItem);
                         if (instance instanceof ContextAwareService) {
                             ContextAwareService cas = (ContextAwareService) instance;
                             instance = cas.forContext(Lookup.MetaInf.this.context);
+                            //System.err.println("  "+cas+".forContext("+Lookup.MetaInf.this.context+") = "+instance);
                             lookupItem = null;
                         }
                     }
@@ -702,7 +704,7 @@ abstract class Lookup implements ContextProvider {
                         } catch (ClassCastException cce) {
                             Exceptions.printStackTrace(Exceptions.attachMessage(
                                     cce,
-                                    "Can not cast instance "+instance+" registered in '"+folder+"' folder to "+service));
+                                    "Can not cast instance "+instance+" registered in '"+folder+"' folder to "+service+". className = "+className+", lookupItem = "+lookupItem));
                             return null;
                         } finally {
                             listenOn(instance.getClass().getClassLoader());

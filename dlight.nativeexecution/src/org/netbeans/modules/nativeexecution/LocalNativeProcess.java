@@ -45,13 +45,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.text.ParseException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
@@ -89,7 +93,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                 env.putAll(pb.environment());
             } else {
                 try {
-                    Process p = new ProcessBuilder(shell, "-c", "/bin/env").start();
+                    Process p = new ProcessBuilder(shell, "-c", "/bin/env").start(); // NOI18N
                     BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
                     String s;
                     while (true) {
@@ -140,6 +144,25 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         } else {
             pb = new ProcessBuilder(shell, "-c", // NOI18N
                     "/bin/echo $$ && exec " + info.getCommandLine()); // NOI18N
+
+            String unbuffer = null; // NOI18N
+
+            try {
+                unbuffer = info.macroExpander.expandPredefinedMacros(
+                        "bin/nativeexecution/$osname-$platform/unbuffer.$soext"); // NOI18N
+            } catch (ParseException ex) {
+            }
+
+            if (unbuffer != null) {
+                InstalledFileLocator fl = InstalledFileLocator.getDefault();
+                File file = fl.locate(unbuffer, null, false); // NOI18N
+                if (file != null && file.exists()) {
+                    String ldPreload = env.get("LD_PRELOAD"); // NOI18N
+                    ldPreload = ((ldPreload == null) ? "" : ldPreload + ":") + // NOI18N
+                            file.getAbsolutePath(); // NOI18N
+                    env.put("LD_PRELOAD", ldPreload); // NOI18N
+                }
+            }
         }
 
         pb.environment().putAll(env);

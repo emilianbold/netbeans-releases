@@ -46,6 +46,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -58,7 +60,6 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
@@ -118,12 +119,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         if (cache == null) {
             ServerList registry = Lookup.getDefault().lookup(ServerList.class);
             for (ExecutionEnvironment env : registry.getEnvironments()) {
-                model.addElement(ExecutionEnvironmentFactory.getHostKey(env));
+                model.addElement(env);
             }
             defaultIndex = registry.getDefaultIndex();
         } else {
-            for (String hkey : cache.getHostKeyList()) {
-                model.addElement(hkey);
+            for (ExecutionEnvironment env : cache.getHosts()) {
+                model.addElement(env);
             }
             defaultIndex = cache.getDefaultIndex();
         }
@@ -197,12 +198,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         this.desc = desc;
     }
 
-    public String[] getHostKeyList() {
-        String[] hklist = new String[model.getSize()];
-        for (int i = 0; i < hklist.length; i++) {
-            hklist[i] = (String) model.get(i);
+    public List<ExecutionEnvironment> getHosts() {
+        List<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(model.getSize());
+        for (int i = 0; i < model.getSize(); i++) {
+            result.add((ExecutionEnvironment) model.get(i));
         }
-        return hklist;
+        return result;
     }
 
     public int getDefaultIndex() {
@@ -210,7 +211,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
 
     private void showPathMapper() {
-        EditPathMapDialog.showMe((String) lstDevHosts.getSelectedValue(), getHostKeyList());
+        EditPathMapDialog.showMe((ExecutionEnvironment) lstDevHosts.getSelectedValue(), getHosts());
     }
 
     private void setButtons(boolean enable) {
@@ -277,11 +278,10 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             if (b.getActionCommand().equals("Add")) { // NOI18N
                 ExecutionEnvironment execEnv = CreateHostWizardIterator.invokeMe(cacheManager);
                 if (execEnv != null) {
-                    String hkey = ExecutionEnvironmentFactory.getHostKey(execEnv);
-                    if (!model.contains(hkey)) {
+                    if (!model.contains(execEnv)) {
                         Lookup.getDefault().lookup(ServerList.class).addServer(execEnv, false, false);
-                        model.addElement(hkey);
-                        lstDevHosts.setSelectedValue(hkey, true);
+                        model.addElement(execEnv);
+                        lstDevHosts.setSelectedValue(execEnv, true);
                     }
                 }
             } else if (b.getActionCommand().equals("Remove")) { // NOI18N
@@ -305,8 +305,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
 
     private ExecutionEnvironment getSelectedEnvironment() {
-        String hkey = (String) lstDevHosts.getSelectedValue();
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
+        ExecutionEnvironment env = (ExecutionEnvironment) lstDevHosts.getSelectedValue();
         return env;
     }
 

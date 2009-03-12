@@ -40,10 +40,13 @@ package org.netbeans.modules.dlight.spi.impl;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.ValidationListener;
+import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.spi.support.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
@@ -52,8 +55,8 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 
 public final class TimerTicker
-        extends IndicatorDataProvider<TimerIDPConfiguration>
-        implements Runnable {
+    extends IndicatorDataProvider<TimerIDPConfiguration>
+    implements Runnable {
 
     private static final DataTableMetadata tableMetadata;
     private final Object lock = new String(TimerTicker.class.getName());
@@ -64,7 +67,7 @@ public final class TimerTicker
 
     static {
         tableMetadata = new DataTableMetadata(TimerIDPConfiguration.TIME_ID,
-                Arrays.asList(TimerIDPConfiguration.TIME_INFO));
+            Arrays.asList(TimerIDPConfiguration.TIME_INFO));
     }
 
     TimerTicker(TimerIDPConfiguration configuration) {
@@ -75,7 +78,7 @@ public final class TimerTicker
         synchronized (lock) {
             resetIndicators();
             tickerTask = DLightExecutorService.scheduleAtFixedRate(
-                    this, 1, TimeUnit.SECONDS, "TimerTicker"); // NOI18N
+                this, 1, TimeUnit.SECONDS, "TimerTicker"); // NOI18N
             startTime = System.currentTimeMillis();
         }
     }
@@ -91,7 +94,7 @@ public final class TimerTicker
 
     public void run() {
         DataRow data = new DataRow(Arrays.asList(TimerIDPConfiguration.TIME_ID),
-                Arrays.<Object>asList(System.currentTimeMillis() - startTime));
+            Arrays.<Object>asList(System.currentTimeMillis() - startTime));
 
         notifyIndicators(Arrays.asList(data));
     }
@@ -102,7 +105,7 @@ public final class TimerTicker
     }
 
     public void targetStateChanged(
-            DLightTarget source, State oldState, State newState) {
+        DLightTarget source, State oldState, State newState) {
 
         switch (newState) {
             case RUNNING:
@@ -121,5 +124,37 @@ public final class TimerTicker
                 targetFinished(source);
                 return;
         }
+    }
+
+    public Future<ValidationStatus> validate(DLightTarget objectToValidate) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+        Callable<ValidationStatus> validationTask =
+            new Callable<ValidationStatus>() {
+
+                public ValidationStatus call() throws Exception {
+                    return ValidationStatus.validStatus();
+
+                }
+            };
+
+        return DLightExecutorService.submit(
+            validationTask, "Validate.."); // NOI18N
+    }
+
+    public void invalidate() {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ValidationStatus getValidationStatus() {
+        // throw new UnsupportedOperationException("Not supported yet.");
+        return ValidationStatus.validStatus();
+    }
+
+    public void addValidationListener(ValidationListener listener) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeValidationListener(ValidationListener listener) {
+        // throw new UnsupportedOperationException("Not supported yet.");
     }
 }

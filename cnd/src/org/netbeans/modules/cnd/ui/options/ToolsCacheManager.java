@@ -44,7 +44,6 @@ import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -71,16 +70,11 @@ public final class ToolsCacheManager {
         return serverUpdateCache;
     }
 
-    public String[] getHostKeyList() {
+    public List<ExecutionEnvironment> getHosts() {
         if (serverUpdateCache != null) {
-            return serverUpdateCache.getHostKeyList();
+            return serverUpdateCache.getHosts();
         } else if (isRemoteAvailable()) {
-            List<ExecutionEnvironment> envs = serverList.getEnvironments();
-            String[] result = new String[envs.size()];
-            for (int i = 0; i < result.length; i++) {
-                result[i] = ExecutionEnvironmentFactory.getHostKey(envs.get(i));
-            }
-            return result;
+            return serverList.getEnvironments();
         } else {
             return null;
         }
@@ -96,11 +90,11 @@ public final class ToolsCacheManager {
         }
     }
 
-    public void setHostKeyList(String[] list) {
+    public void setHosts(List<ExecutionEnvironment> list) {
         if (serverUpdateCache == null) {
             serverUpdateCache = new ServerUpdateCache();
         }
-        serverUpdateCache.setHostKeyList(list);
+        serverUpdateCache.setHosts(list);
     }
 
     public void setDefaultIndex(int index) {
@@ -111,7 +105,7 @@ public final class ToolsCacheManager {
         return serverUpdateCache != null;
     }
 
-    private void saveCompileSetManagers(List<String> liveServers) {
+    private void saveCompileSetManagers(List<ExecutionEnvironment> liveServers) {
         Collection<CompilerSetManager> allCSMs = new ArrayList<CompilerSetManager>();
         for (ExecutionEnvironment copiedServer : copiedManagers.keySet()) {
             if (liveServers == null || liveServers.contains(copiedServer)) {
@@ -127,14 +121,14 @@ public final class ToolsCacheManager {
     }
     
     public void applyChanges(int selectedIndex) {
-        List<String> liveServers = null;
+        List<ExecutionEnvironment> liveServers = null;
         if (isRemoteAvailable()) {
             if (serverUpdateCache != null) {
-                liveServers = new ArrayList<String>();
+                liveServers = new ArrayList<ExecutionEnvironment>();
                 serverList.clear();
-                for (String key : serverUpdateCache.getHostKeyList()) {
-                    serverList.addServer(ExecutionEnvironmentFactory.getExecutionEnvironment(key), false, false);
-                    liveServers.add(key);
+                for (ExecutionEnvironment env : serverUpdateCache.getHosts()) {
+                    serverList.addServer(env, false, false);
+                    liveServers.add(env);
                 }
                 serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
                 serverUpdateCache = null;

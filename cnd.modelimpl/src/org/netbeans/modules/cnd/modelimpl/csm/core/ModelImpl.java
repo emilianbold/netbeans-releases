@@ -176,6 +176,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             boolean fireOpened = false;
             synchronized (lock) {
                 if (state != CsmModelState.ON) {
+                    if (TraceFlags.TRACE_MODEL_STATE) {
+                        System.err.println("project " + name + " wasn't added because model is " + state + "\n\t" + id);
+                    }
                     return null;
                 }
                 prj = obj2Project(id);

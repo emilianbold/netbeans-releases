@@ -198,7 +198,7 @@ public class RemotePathMap implements PathMap {
         }
 
         if (fixMissingPaths) {
-            return EditPathMapDialog.showMe(ExecutionEnvironmentFactory.getHostKey(execEnv), lpath) && isRemote(lpath, false);
+            return EditPathMapDialog.showMe(execEnv, lpath) && isRemote(lpath, false);
         } else {
             return false;
         }

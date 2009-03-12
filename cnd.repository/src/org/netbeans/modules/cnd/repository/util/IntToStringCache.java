@@ -43,10 +43,10 @@ package org.netbeans.modules.cnd.repository.util;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 
 
@@ -82,7 +82,7 @@ public class IntToStringCache {
 	int size = stream.readInt();
 	
 	for (int i = 0; i < size; i++) {
-	    String value = FilePathCache.getManager().getString(stream.readUTF()).toString();
+	    String value = getFileKey(stream.readUTF());
 	    if (value.equals("")) {
 		value = null;
 	    }
@@ -118,7 +118,7 @@ public class IntToStringCache {
      * This is a simple cache that keeps last found index by string.
      * Cache reduces method consuming time in 10 times (on huge projects).
      */
-    private Object oneItemCacheLock = new Object(); // Cache lock
+    private final Object oneItemCacheLock = new Object(); // Cache lock
     private String oneItemCacheString; // Cached last string
     private int oneItemCacheInt; // Cached last index
     
@@ -154,6 +154,7 @@ public class IntToStringCache {
      * synchronization is controlled by calling getId() method
      */
     protected int makeId(String value) {
+        value = getFileKey(value);
 	cache.add(value);
 	return cache.indexOf(value);
     }
@@ -180,5 +181,10 @@ public class IntToStringCache {
     
     public long getTimestamp() {
         return timestamp;
+    }
+
+    protected String getFileKey(String str) {
+        // use name shared by filesystem
+        return new File(str).getPath();
     }
 }

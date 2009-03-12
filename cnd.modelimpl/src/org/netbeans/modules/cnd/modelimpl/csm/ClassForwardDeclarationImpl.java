@@ -176,7 +176,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
             if (scopeQName != null && scopeQName.length() > 0) {
                 List<CharSequence> l = new ArrayList<CharSequence>();
                 for (StringTokenizer stringTokenizer = new StringTokenizer(scopeQName.toString()); stringTokenizer.hasMoreTokens();) {
-                    l.add(stringTokenizer.nextToken());
+                    l.add(NameCache.getManager().getString(stringTokenizer.nextToken()));
                 }
                 for (int i = 0; i < nameParts.length; i++) {
                     l.add(nameParts[i]);
