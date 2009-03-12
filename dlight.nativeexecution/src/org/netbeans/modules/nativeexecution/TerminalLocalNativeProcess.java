@@ -38,9 +38,11 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -94,7 +96,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         final File wdir =
                 workingDirectory == null ? null : new File(workingDirectory);
 
-        pidFile = File.createTempFile("termexec", "pid"); // NOI18N
+        pidFile = File.createTempFile("dlight", "termexec"); // NOI18N
         pidFile.deleteOnExit();
 
         String pidFileName = pidFile.toString();
@@ -132,11 +134,14 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         processError = new ByteArrayInputStream(new byte[0]);
         processInput = null;
 
-        while (!pidFile.exists() || pidFile.length() == 0) {
+        File realPidFile = new File(pidFileName); // NOI18N
+        while (!realPidFile.exists() || realPidFile.length() == 0) {
             Thread.yield();
         }
 
-        readPID(new FileInputStream(pidFile));
+        InputStream pidIS = new FileInputStream(realPidFile);
+        readPID(pidIS);
+        pidIS.close();
     }
 
     @Override
@@ -188,7 +193,17 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             Exceptions.printStackTrace(ex);
         }
 
-        return 999;
+        int exitCode = -1;
+        
+        try {
+            File resFile = new File(pidFile.getAbsolutePath() + ".res");
+            resFile.deleteOnExit();
+            exitCode = Integer.parseInt(new BufferedReader(new FileReader(resFile)).readLine().trim());
+        } catch (IOException ex) {
+        } catch (NumberFormatException ex) {
+        }
+
+        return exitCode;
     }
 
     @Override
