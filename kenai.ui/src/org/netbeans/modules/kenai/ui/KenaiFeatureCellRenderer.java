@@ -63,11 +63,10 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Milan
+ * @author Milan Kubec
  */
 public class KenaiFeatureCellRenderer extends JPanel implements ListCellRenderer {
 
-    /** Creates new form KenaiFeatureCellRenderer */
     public KenaiFeatureCellRenderer() {
         initComponents();
     }
