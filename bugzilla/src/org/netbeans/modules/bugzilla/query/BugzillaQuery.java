@@ -112,6 +112,11 @@ public class BugzillaQuery extends Query {
         return controller;
     }
 
+    @Override
+    public BugzillaRepository getRepository() {
+        return repository;
+    }
+
     protected QueryController createControler(BugzillaRepository r, BugzillaQuery q, String parameters) {
         return new QueryController(r, q, parameters);
     }
@@ -269,10 +274,14 @@ public class BugzillaQuery extends Query {
         public void accept(TaskData taskData) {
             String id = BugzillaIssue.getID(taskData);
             BugzillaIssue issue;
+            TaskData td;
             try {
                 IssueCache cache = repository.getIssueCache();
                 if(needsToBeComplete(cache, id, taskData)) {
-                    taskData = BugzillaUtil.getTaskData(repository, id);
+                    td = BugzillaUtil.getTaskData(repository, id);
+                    if(td != null) {
+                        taskData = td;
+                    }
                 }
                 issue = (BugzillaIssue) cache.setIssueData(id, taskData);
             } catch (IOException ex) {

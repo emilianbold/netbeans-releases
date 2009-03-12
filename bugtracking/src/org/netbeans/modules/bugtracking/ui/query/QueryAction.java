@@ -83,7 +83,7 @@ public class QueryAction extends SystemAction {
             public void run() {
                 TopComponent tc = null;
                 if(query != null) {
-                    tc = WindowManager.getDefault().findTopComponent(query.getDisplayName());
+                    tc = QueryTopComponent.find(query);
                 }
                 if(tc == null) {
                     tc = new QueryTopComponent(query, repository);

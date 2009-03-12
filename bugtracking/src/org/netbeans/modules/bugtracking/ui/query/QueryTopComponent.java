@@ -55,13 +55,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.MissingResourceException;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JSeparator;
@@ -85,6 +86,9 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     private static QueryTopComponent instance;
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
+
+    /** Set of opened {@code QueryTopComponent}s. */
+    private static Set<QueryTopComponent> openQueries = new HashSet<QueryTopComponent>();
 
     private static final String PREFERRED_ID = "QueryTopComponent";
     private Query query; // XXX synchronized
@@ -163,6 +167,10 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
             queriesPanel.setVisible(false);
             
         }
+    }
+
+    private Query getQuery() {
+        return query;
     }
 
     /** This method is called from within the constructor to
@@ -357,6 +365,21 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
         return getDefault();
     }
 
+    /**
+     * Returns top-component that should display the given query.
+     *
+     * @param query query for which the top-component should be found.
+     * @return top-component that should display the given query.
+     */
+    public static synchronized QueryTopComponent find(Query query) {
+        for (QueryTopComponent tc : openQueries) {
+            if (query.equals(tc.getQuery())) {
+                return tc;
+            }
+        }
+        return null;
+    }
+
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
@@ -364,6 +387,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
 
     @Override
     public void componentOpened() {
+        openQueries.add(this);
         if(query != null) {
             query.getController().opened();
         }
@@ -371,6 +395,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
 
     @Override
     public void componentClosed() {
+        openQueries.remove(this);
         if(query != null) {
             query.getController().closed();
             query.removePropertyChangeListener(this);
@@ -466,8 +491,8 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if(query != null && query.getDisplayName() != null) {
-                    setName(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getDisplayName()}));
-                    setToolTipText(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getTooltip()}));
+                    setName(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getDisplayName(), query.getDisplayName()}));
+                    setToolTipText(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getDisplayName(), query.getTooltip()}));
                 } else {
                     setName(NbBundle.getMessage(QueryTopComponent.class, "CTL_QueryTopComponent"));
                     setToolTipText(NbBundle.getMessage(QueryTopComponent.class, "HINT_QueryTopComponent"));
