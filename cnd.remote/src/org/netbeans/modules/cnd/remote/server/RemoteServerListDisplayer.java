@@ -64,7 +64,7 @@ public class RemoteServerListDisplayer implements ServerListDisplayer {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            cacheManager.setHostKeyList(dlg.getHostKeyList());
+            cacheManager.setHosts(dlg.getHosts());
             cacheManager.setDefaultIndex(dlg.getDefaultIndex());
             return true;
         } else {
