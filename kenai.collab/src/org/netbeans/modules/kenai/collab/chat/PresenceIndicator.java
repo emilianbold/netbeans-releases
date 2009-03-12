@@ -91,11 +91,13 @@ public class PresenceIndicator {
     public static synchronized PresenceIndicator getDefault() {
         if (instance == null) {
             instance = new PresenceIndicator();
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    KenaiConnection.getDefault();
-                }
-            });
+            if (Boolean.parseBoolean(System.getProperty(("kenai.chat.enabled"), "false"))) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        KenaiConnection.getDefault();
+                    }
+                });
+            }
         }
         return instance;
     }
