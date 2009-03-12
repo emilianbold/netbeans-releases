@@ -73,6 +73,10 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public void removeChangeListener(ChangeListener listener) {
     }
 
+    public CharSequence getAbsolutePath() {
+        return absPath;
+    }
+
     public File getFile() {
         return new File(absPath.toString());
     }

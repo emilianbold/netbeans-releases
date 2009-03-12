@@ -147,7 +147,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         aStream.writeInt(collSize);
 
         for (Map.Entry<CharSequence, CsmUID<T>> anEntry : aMap.entrySet()) {
-            String key = anEntry.getKey().toString();
+            CharSequence key = anEntry.getKey();
             assert key != null;
             PersistentUtils.writeUTF(key, aStream);
             CsmUID anUID = anEntry.getValue();
@@ -195,7 +195,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         aStream.writeInt(collSize);
 
         for (Map.Entry<CharSequence, Object> anEntry : aMap.entrySet()) {
-            String key = anEntry.getKey().toString();
+            CharSequence key = anEntry.getKey();
             assert key != null;
             PersistentUtils.writeUTF(key, aStream);
             Object o = anEntry.getValue();

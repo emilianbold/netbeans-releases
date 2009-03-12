@@ -152,8 +152,7 @@ public class PersistentUtils {
         if (buffer instanceof AbstractFileBuffer) {
             // always write as file buffer file
             output.writeInt(FILE_BUFFER_FILE);
-            File file = buffer.getFile();
-            PersistentUtils.writeUTF(file.getAbsolutePath(), output);
+            PersistentUtils.writeUTF(((AbstractFileBuffer)buffer).getAbsolutePath(), output);
         } else {
             throw new IllegalArgumentException("instance of unknown FileBuffer " + buffer);  //NOI18N
         }
@@ -183,13 +182,13 @@ public class PersistentUtils {
         }
     }
 
-    public static void writeCollectionStrings(Collection<String> arr, DataOutput output) throws IOException {
+    public static void writeCollectionStrings(Collection<CharSequence> arr, DataOutput output) throws IOException {
         if (arr == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else {
             int len = arr.size();
             output.writeInt(len);
-            for (String s : arr) {
+            for (CharSequence s : arr) {
                 assert s != null;
                 PersistentUtils.writeUTF(s, output);
             }
@@ -227,6 +226,7 @@ public class PersistentUtils {
         if (st == null) {
             aStream.writeUTF(NULL_STRING);
         } else {
+            assert !(st instanceof String);
             aStream.writeUTF(st.toString());
         }
     }
@@ -236,7 +236,9 @@ public class PersistentUtils {
         if (s.length()==1 && s.charAt(0)==0) {
             return null;
         }
-        return manager.getString(s);
+        CharSequence res = manager.getString(s);
+        assert !(res instanceof String);
+        return res;
     }
 
     public static void writeLongUTF(CharSequence st, DataOutput aStream) throws IOException {

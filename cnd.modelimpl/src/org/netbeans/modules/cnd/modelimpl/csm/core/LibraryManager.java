@@ -360,10 +360,10 @@ public final class LibraryManager {
      */
     /*package-local*/ void writeProjectLibraries(CsmUID<CsmProject> project, DataOutput aStream) throws IOException {
         assert aStream != null;
-        Set<String> res = new HashSet<String>();
+        Set<CharSequence> res = new HashSet<CharSequence>();
         for (LibraryEntry entry : librariesEntries.values()) {
             if (entry.containsProject(project)) {
-                res.add(entry.getFolder());
+                res.add(FilePathCache.getManager().getString(entry.getFolder()));
             }
         }
         PersistentUtils.writeCollectionStrings(res, aStream);

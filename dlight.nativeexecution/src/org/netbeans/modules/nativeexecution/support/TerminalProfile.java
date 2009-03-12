@@ -62,7 +62,7 @@ public final class TerminalProfile {
     }
 
     public void setCommand(String command) {
-        this.command = command;
+        this.command = command.trim();
     }
 
     public void setID(String id) {

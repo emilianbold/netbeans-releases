@@ -49,7 +49,9 @@ import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModel;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -118,6 +120,13 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     @Override
     public CsmFile getCsmFile(FileObject file) {
+        CsmModelState modelState = CsmModelAccessor.getModelState();
+        if (modelState != CsmModelState.ON) {
+            if (TRACE) {
+                trace("model is %s, no extra work for %s", modelState, file.getPath());  //NOI18N
+            }
+            return null;
+        }
         File javaIoFile = FileUtil.toFile(file);
         if (javaIoFile == null) {
             return null;
