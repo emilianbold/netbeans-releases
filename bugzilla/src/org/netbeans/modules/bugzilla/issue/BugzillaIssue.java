@@ -148,8 +148,7 @@ public class BugzillaIssue extends Issue {
         CREATION(TaskAttribute.DATE_CREATION),
         MODIFICATION(TaskAttribute.DATE_MODIFICATION),
         COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, false),
-        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false),
-        DATE_MODIFICATION(BugzillaAttribute.DELTA_TS.getKey(), false);
+        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false);
 
         private final String key;
         private boolean singleAttribute;
@@ -256,19 +255,12 @@ public class BugzillaIssue extends Issue {
                     case REPORTER_NAME:
                     case QA_CONTACT_NAME:
                     case ASSIGNED_TO_NAME:
-                        continue;
-                    case DATE_MODIFICATION:
-                        value = getDateModification(data);
-                        break;
+                        continue;                    
                     default:    
                         value = getFieldValue(field);
                 }
-                if(value != null && !value.trim().equals("")) {
-                    if(field == IssueField.DATE_MODIFICATION) {
-                        attributes.put(Issue.ATTR_DATE_MODIFICATION, value);
-                    } else {
-                        attributes.put(field.key, value);
-                    }
+                if(value != null && !value.trim().equals("")) {                    
+                    attributes.put(field.key, value);
                 }
             }
         }
@@ -414,22 +406,15 @@ public class BugzillaIssue extends Issue {
     }
 
     public void setTaskData(TaskData taskData) {
-        if(data != null && !data.isPartial() && taskData.isPartial()) {
-            // XXX something (a query perhaps) set new partial taskdata, yet this
-            // issue contains already complete ones. Refresh!
-            // XXX the issue cache is supposed to be used in a generec way
-            // this should be also solved on a higher level then in each
-            // particular bugtracking system
-            TaskData td = BugzillaUtil.getTaskData(repository, getID());
-            if(td != null) {
-                data = td;
-            }
-        } else {
-            data = taskData;
-        }
+        assert !taskData.isPartial();
+        data = taskData;
         attributes = null; // reset
-        ((BugzillaIssueNode)getNode()).fireDataChanged();
-        fireDataChanged();
+        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                ((BugzillaIssueNode)getNode()).fireDataChanged();
+                fireDataChanged();
+            }
+        });
     }    
 
     TaskData getTaskData() {
@@ -453,14 +438,6 @@ public class BugzillaIssue extends Issue {
             List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, f.key);
             return "" + ( attrs != null && attrs.size() > 0 ?  attrs.size() : ""); // returning 0 would set status MODIFIED instead of NEW
         }
-    }
-
-    public static String getDateModification(TaskData newData) {
-        TaskAttribute a = newData.getRoot().getMappedAttribute(IssueField.DATE_MODIFICATION.key);
-        if(a == null) {
-            a = newData.getRoot().getMappedAttribute("bug"); // XXX HACK
-        }
-        return a != null ? a.getValue() : "";
     }
 
     /**

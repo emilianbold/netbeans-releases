@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -102,6 +103,27 @@ public class BugzillaUtil {
         };
         repository.getExecutor().execute(cmd);
         return taskData[0];
+    }
+
+    /**
+     * Retrieves the TaskData for al given issue ids
+     * 
+     * @param repository
+     * @param ids
+     * @param collector
+     */
+    public static void getMultiTaskData(final BugzillaRepository repository, final Set<String> ids, final TaskDataCollector collector) {
+        BugzillaCommand cmd = new BugzillaCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
+            Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().getMultiTaskData(
+                    repository.getTaskRepository(),
+                    ids,
+                    collector,
+                    new NullProgressMonitor());
+            }
+        };
+        repository.getExecutor().execute(cmd);
     }
 
     public static String getKeywords(String label, String keywordsString, BugzillaRepository repository) {

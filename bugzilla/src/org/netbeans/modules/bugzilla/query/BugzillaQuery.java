@@ -40,7 +40,6 @@
 package org.netbeans.modules.bugzilla.query;
 
 import java.io.IOException;
-import java.util.Map;
 import org.netbeans.modules.bugzilla.*;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -136,46 +135,41 @@ public class BugzillaQuery extends Query {
             public void run() {
                 Bugzilla.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name, urlParameters});
                 try {
+
+                    Set<String> queryIssues = new HashSet<String>();
                     if(isSaved()) {
                         if(!wasRun()) {
                             if(issues.size() != 0) {
                                 Bugzilla.LOG.warning("query " + getDisplayName() + " supposed to be run for the first time yet already contains issues.");
                                 assert false;
                             }
-                            obsoleteIssues.addAll(repository.getIssueCache().readQuery(BugzillaQuery.this.getDisplayName()));
+                            queryIssues.addAll(repository.getIssueCache().readQuery(BugzillaQuery.this.getDisplayName()));
                         } else {
                             // store all you got
                             issues.addAll(obsoleteIssues);
-                            repository.getIssueCache().storeQuery(BugzillaQuery.this.getDisplayName(), issues.toArray(new String[issues.size()]));
                             obsoleteIssues.clear();
-                            obsoleteIssues.addAll(issues);
+                            repository.getIssueCache().storeQuery(BugzillaQuery.this.getDisplayName(), issues.toArray(new String[issues.size()]));
+                            queryIssues.addAll(issues);
                         }
                     }
                     issues.clear();
                     firstRun = false;
 
+                    TaskRepository taskRepository = repository.getTaskRepository();
+
+                    // run query to know what matches the criteria
                     StringBuffer url = new StringBuffer();
                     url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST);
                     url.append(urlParameters); // XXX encode url?
-                    url.append(BugzillaConstants.QUERY_COLUMN_LIST);
-                    TaskRepository taskRepository = repository.getTaskRepository();
-                    BugzillaUtil.performQuery(taskRepository, url.toString(), new IssuesCollector(true));
+                    // IssuesIdCollector will populate the issues set
+                    BugzillaUtil.performQuery(taskRepository, url.toString(), new IssuesIdCollector());
+                    obsoleteIssues.removeAll(issues);
 
-                    if(isSaved()) {
-                        obsoleteIssues.removeAll(issues);
-                        if(obsoleteIssues.size() > 0) {
-                            url = new StringBuffer();
-                            url.append(BugzillaConstants.URL_BUG_IDS);
-                            int i = 0;
-                            for (String id : obsoleteIssues) {
-                                url.append(id);
-                                if(i++ < obsoleteIssues.size() - 1) {
-                                    url.append(",");
-                                }
-                            }
-                            BugzillaUtil.performQuery(taskRepository, url.toString(), new IssuesCollector(false));
-                        }
-                    } 
+                    if(!isSaved()) {
+                        queryIssues.addAll(issues);
+                    }
+                    BugzillaUtil.getMultiTaskData(repository, queryIssues, new IssuesCollector());
+
                 } finally {
                     Bugzilla.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name, urlParameters});
                 }
@@ -264,55 +258,26 @@ public class BugzillaQuery extends Query {
         return !firstRun;
     }
 
-    private class IssuesCollector extends TaskDataCollector {
-        private boolean collect = true;
-
-        public IssuesCollector(boolean collect) {
-            this.collect = collect;
+    private class IssuesIdCollector extends TaskDataCollector {
+        public IssuesIdCollector() {}
+        public void accept(TaskData taskData) {
+            String id = BugzillaIssue.getID(taskData);
+            issues.add(id);
         }
-
+    };
+    private class IssuesCollector extends TaskDataCollector {
+        public IssuesCollector() {}
         public void accept(TaskData taskData) {
             String id = BugzillaIssue.getID(taskData);
             BugzillaIssue issue;
-            TaskData td;
             try {
                 IssueCache cache = repository.getIssueCache();
-                if(needsToBeComplete(cache, id, taskData)) {
-                    td = BugzillaUtil.getTaskData(repository, id);
-                    if(td != null) {
-                        taskData = td;
-                    }
-                }
                 issue = (BugzillaIssue) cache.setIssueData(id, taskData);
             } catch (IOException ex) {
                 Bugzilla.LOG.log(Level.SEVERE, null, ex);
                 return;
             }
-            if(collect) {
-                issues.add(id);
-            }
             fireNotifyData(issue); // XXX - !!! triggers getIssues()
-        }
-
-        private boolean needsToBeComplete(IssueCache cache, String id, TaskData taskData) {
-            if(!isSaved()) {
-                return false;
-            }
-            
-            Map<String, String> m = cache.getSeenAttributes(id);
-            if(m == null) {
-                return false;
-            }
-            String newDM = BugzillaIssue.getDateModification(taskData);
-            String oldDM = m.get(Issue.ATTR_DATE_MODIFICATION);
-            if(newDM.equals(oldDM != null ? oldDM : "")) {
-                return false;
-            }
-
-            if(!cache.wasSeen(id)) {
-                return false;
-            }
-            return true;
         }
     };
 }
