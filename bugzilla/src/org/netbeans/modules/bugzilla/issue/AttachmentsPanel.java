@@ -45,6 +45,8 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.LinkedList;
@@ -54,10 +56,19 @@ import javax.swing.AbstractAction;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+import org.eclipse.core.runtime.CoreException;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
+import org.openide.awt.HtmlBrowser;
+import org.openide.cookies.OpenCookie;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -148,7 +159,9 @@ public class AttachmentsPanel extends JPanel {
                 Date date = attachment.getDate();
                 String author = attachment.getAuthor();
                 descriptionLabel = new JLabel(description);
-                LinkButton filenameButton = new LinkButton(filename);
+                LinkButton filenameButton = new LinkButton();
+                filenameButton.setAction(new DefaultAttachmentAction(attachment));
+                filenameButton.setText(filename);
                 dateLabel = new JLabel(DateFormat.getDateInstance().format(date));
                 authorLabel = new JLabel(author);
                 descriptionGroup.add(descriptionLabel);
@@ -275,6 +288,51 @@ public class AttachmentsPanel extends JPanel {
             }
             newAttachments.add(attachment);
             revalidate();
+        }
+
+    }
+
+    static class DefaultAttachmentAction extends AbstractAction {
+        private BugzillaIssue.Attachment attachment;
+
+        public DefaultAttachmentAction(Attachment attachment) {
+            this.attachment = attachment;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        String filename = attachment.getFilename();
+                        int index = filename.lastIndexOf('.'); // NOI18N
+                        String prefix = (index == -1) ? filename : filename.substring(0, index);
+                        String suffix = (index == -1) ? null : filename.substring(index+1);
+                        File file = File.createTempFile(prefix, suffix);
+                        attachment.getAttachementData(new FileOutputStream(file));
+                        String contentType = attachment.getContentType();
+                        if ("image/png".equals(contentType) // NOI18N
+                                || "image/gif".equals(contentType) // NOI18N
+                                || "image/jpeg".equals(contentType)) { // NOI18N
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURL());
+                        } else {
+                            FileObject fob = FileUtil.toFileObject(file);
+                            DataObject dob = DataObject.find(fob);
+                            OpenCookie open = dob.getCookie(OpenCookie.class);
+                            if (open != null) {
+                                open.open();
+                            } else {
+                                // PENDING
+                            }
+                        }
+                    } catch (DataObjectNotFoundException dnfex) {
+                        dnfex.printStackTrace();
+                    } catch (CoreException cex) {
+                        cex.printStackTrace();
+                    } catch (IOException ioex) {
+                        ioex.printStackTrace();
+                    }
+                }
+            });
         }
 
     }
