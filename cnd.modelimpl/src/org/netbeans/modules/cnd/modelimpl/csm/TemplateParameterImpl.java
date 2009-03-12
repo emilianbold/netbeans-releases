@@ -115,14 +115,14 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output); 
-        output.writeUTF(name.toString());
+        PersistentUtils.writeUTF(name, output);
         UIDObjectFactory.getDefaultFactory().writeUID(scope, output);
         PersistentUtils.writeType(defaultValue, output);
     }
     
     public TemplateParameterImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getManager().getString(input.readUTF());
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         this.scope = UIDObjectFactory.getDefaultFactory().readUID(input);
         this.defaultValue = PersistentUtils.readType(input);
     }

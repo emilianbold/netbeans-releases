@@ -93,7 +93,7 @@ public class ExtProcessRemoteCommandSupport extends RemoteConnectionSupport {
         }
         cmdline.append(cmd);
 
-        echannel.setCommand(ShellUtils.wrapCommand(key, cmdline.toString()));
+        echannel.setCommand(ShellUtils.wrapCommand(executionEnvironment, cmdline.toString()));
         echannel.connect();
         return echannel;
     }

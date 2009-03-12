@@ -88,7 +88,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
     
     /** Creates a new instance of ClassifierContainer */
     public ClassifierContainer(ProjectBase project) {
-        super(new ClassifierContainerKey(project.getUniqueName().toString()));
+        super(new ClassifierContainerKey(project.getUniqueName().toString()), false);
         put();
     }
 
@@ -99,7 +99,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
     // only for EMPTY static field
     private ClassifierContainer() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null);
+        super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
     }
     
     public CsmClassifier getClassifier(CharSequence qualifiedName) {

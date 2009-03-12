@@ -40,11 +40,13 @@
  */
 package org.netbeans.core.output2;
 
+import java.awt.Color;
 import org.openide.windows.OutputListener;
 
 import javax.swing.event.ChangeListener;
 import java.io.IOException;
 import java.util.regex.Matcher;
+import org.openide.windows.IOColors;
 
 /**
  * An interface representing the data written to an OutWriter, in terms of lines of text, with
@@ -95,6 +97,20 @@ public interface Lines {
      *  is associated with this line
      */
     OutputListener getListenerForLine (int line);
+
+    /**
+     * Get color for specified line
+     * @param line A line number
+     * @return Color for specified line or null if no color is associated with this line
+     */
+    Color getColorForLine(int line);
+
+    /**
+     * Sets default colors
+     * @param type line type
+     * @param color color
+     */
+    void setDefColor(IOColors.OutputType type, Color color);
 
     /**
      * Get the index of the first line which has a listener

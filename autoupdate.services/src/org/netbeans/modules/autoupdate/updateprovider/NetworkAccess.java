@@ -126,7 +126,7 @@ public class NetworkAccess {
                        sb.append("    " + (field==null ? "Status" : field )+ ": " + map.get(field) + "\n");
                     }
                     sb.append("\n");
-                    err.log(Level.INFO, sb.toString());
+                    err.log(Level.FINE, sb.toString());
                     return new BufferedInputStream (is);
                 }
             };

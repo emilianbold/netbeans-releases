@@ -29,7 +29,8 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.util.concurrent.Callable;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.filesystems.FileObject;
@@ -59,7 +60,7 @@ public class DebugScript  extends RunScript {
                 run();
             }
         } else {
-            dbgStarter.start(provider.getProject(), callable, provider.getStartFile(), true);
+            dbgStarter.start(provider.getProject(), callable, provider.getStartFile(), true, ProjectPropertiesSupport.getEncodedDebugPathMapping(provider.getProject()));
         }
     }
 
@@ -80,7 +81,7 @@ public class DebugScript  extends RunScript {
     }
 
     public interface Provider extends RunScript.Provider {
-        Project getProject();
+        PhpProject getProject();
         FileObject getStartFile();
     }
 }

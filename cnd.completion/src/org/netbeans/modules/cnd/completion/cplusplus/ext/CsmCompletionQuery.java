@@ -1166,21 +1166,27 @@ abstract public class CsmCompletionQuery {
                                 } else { // not last item or finding type
                                     // find type of variable
                                     if (nextKind != ExprKind.SCOPE) {
-                                        lastType = findExactVarType(var, varPos);
+                                        if (first && !findType) {
+                                            lastType = findExactVarType(var, varPos);
+                                        }
                                         if (lastType == null) {
                                             // try to find with resolver
                                             CompletionResolver.Result res = null;
-                                            compResolver.setResolveTypes(CompletionResolver.RESOLVE_VARIABLES);
+                                            compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                                             if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
                                                 res = compResolver.getResult();
                                                 List<? extends CsmObject> vars = new ArrayList<CsmObject>();
                                                 res.addResulItemsToCol(vars);
-                                                if (vars.size() > 0) {
-                                                    // get the first
-                                                    CsmObject firstElem = vars.get(0);
+                                                for (CsmObject firstElem : vars) {
                                                     if (CsmKindUtilities.isVariable(firstElem)) {
                                                         CsmVariable varElem = (CsmVariable) firstElem;
                                                         lastType = varElem.getType();
+                                                    } else if (findType && CsmKindUtilities.isClassifier(firstElem)) {
+                                                        lastType = CsmCompletion.getType((CsmClassifier) firstElem, 0);
+                                                    }
+                                                    // stop on the first
+                                                    if (lastType != null) {
+                                                        break;
                                                     }
                                                 }
                                             }
@@ -1275,7 +1281,10 @@ abstract public class CsmCompletionQuery {
                                             lastType = null;
                                             cont = false;
                                         } else {
-                                            List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly && !memberPointer, false, true, this.scopeAccessedClassifier, skipConstructors, sort);
+                                            // IZ#143044
+                                            // There is no need for searching in parents for global declarations/definitions
+                                            boolean inspectParentClasses = (this.contextElement != null);
+                                            List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly && !memberPointer, false, inspectParentClasses, this.scopeAccessedClassifier, skipConstructors, sort);
                                             List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, openingSource, true, sort);
                                             res.addAll(nestedClassifiers);
                                             // add base classes as well
@@ -1723,7 +1732,10 @@ abstract public class CsmCompletionQuery {
                                     CsmClassifier classifier = extractLastTypeClassifier(kind);
                                     // try to find method in last resolved class appropriate for current context
                                     if (CsmKindUtilities.isClass(classifier)) {
-                                        mtdList.addAll(finder.findMethods(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, true, scopeAccessedClassifier, this.sort));
+                                        // IZ#143044
+                                        // There is no need for searching in parents for global declarations/definitions
+                                        boolean inspectParentClasses = (this.contextElement != null);
+                                        mtdList.addAll(finder.findMethods(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, inspectParentClasses, scopeAccessedClassifier, this.sort));
                                         if ((!last || findType) && (mtdList == null || mtdList.size() == 0)) {
                                             // could be pointer to function-type field
                                             lastType = null;

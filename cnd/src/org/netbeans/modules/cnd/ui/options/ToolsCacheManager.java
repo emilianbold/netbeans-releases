@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -74,7 +75,12 @@ public final class ToolsCacheManager {
         if (serverUpdateCache != null) {
             return serverUpdateCache.getHostKeyList();
         } else if (isRemoteAvailable()) {
-            return serverList.getServerNames();
+            List<ExecutionEnvironment> envs = serverList.getEnvironments();
+            String[] result = new String[envs.size()];
+            for (int i = 0; i < result.length; i++) {
+                result[i] = ExecutionEnvironmentFactory.getHostKey(envs.get(i));
+            }
+            return result;
         } else {
             return null;
         }
@@ -127,7 +133,7 @@ public final class ToolsCacheManager {
                 liveServers = new ArrayList<String>();
                 serverList.clear();
                 for (String key : serverUpdateCache.getHostKeyList()) {
-                    serverList.addServer(key, false, false);
+                    serverList.addServer(ExecutionEnvironmentFactory.getExecutionEnvironment(key), false, false);
                     liveServers.add(key);
                 }
                 serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
@@ -148,7 +154,9 @@ public final class ToolsCacheManager {
     public boolean show() {
         assert isRemoteAvailable();
         // Show the Dev Host Manager dialog
-        return serverList.show(this);
+        ServerListDisplayer d = Lookup.getDefault().lookup(ServerListDisplayer.class);
+        assert d != null;
+        return d.showServerListDialog(this);
     }
 
     //TODO: we should be ensured already....check
@@ -171,11 +179,6 @@ public final class ToolsCacheManager {
         return serverList != null;
     }
 
-    /** TODO: deprecate and remove */
-    public String getDefaultHostKey() {
-        return serverList.getDefaultRecord().getName();
-    }
-
     public ExecutionEnvironment getDefaultHostEnvironment() {
         return serverList.getDefaultRecord().getExecutionEnvironment();
     }
@@ -190,11 +193,6 @@ public final class ToolsCacheManager {
             copiedManagers.put(env, out);
         }
         return out;
-    }
-
-    /** TODO: deprecate and remove */
-    public synchronized CompilerSetManager getCompilerSetManagerCopy(String hKey) {
-        return getCompilerSetManagerCopy(ExecutionEnvironmentFactory.getExecutionEnvironment(hKey));
     }
 
     public void addCompilerSetManager(CompilerSetManager newCsm) {

@@ -152,8 +152,7 @@ public class PersistentUtils {
         if (buffer instanceof AbstractFileBuffer) {
             // always write as file buffer file
             output.writeInt(FILE_BUFFER_FILE);
-            File file = buffer.getFile();
-            output.writeUTF(file.getAbsolutePath());
+            PersistentUtils.writeUTF(((AbstractFileBuffer)buffer).getAbsolutePath(), output);
         } else {
             throw new IllegalArgumentException("instance of unknown FileBuffer " + buffer);  //NOI18N
         }
@@ -163,7 +162,7 @@ public class PersistentUtils {
         FileBuffer buffer;
         int handler = input.readInt();
         assert handler == FILE_BUFFER_FILE;
-        CharSequence absPath = FilePathCache.getString(input.readUTF());
+        CharSequence absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
         buffer = new FileBufferFile(new File(absPath.toString()));
         return buffer;
     }
@@ -178,20 +177,20 @@ public class PersistentUtils {
             output.writeInt(len);
             for (int i = 0; i < len; i++) {
                 assert arr[i] != null;
-                output.writeUTF(arr[i].toString());
+                PersistentUtils.writeUTF(arr[i], output);
             }
         }
     }
 
-    public static void writeCollectionStrings(Collection<String> arr, DataOutput output) throws IOException {
+    public static void writeCollectionStrings(Collection<CharSequence> arr, DataOutput output) throws IOException {
         if (arr == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else {
             int len = arr.size();
             output.writeInt(len);
-            for (String s : arr) {
+            for (CharSequence s : arr) {
                 assert s != null;
-                output.writeUTF(s);
+                PersistentUtils.writeUTF(s, output);
             }
         }
     }
@@ -202,9 +201,7 @@ public class PersistentUtils {
         if (len != AbstractObjectFactory.NULL_POINTER) {
             arr = new CharSequence[len];
             for (int i = 0; i < len; i++) {
-                String str = input.readUTF();
-                assert str != null;
-                arr[i] = manager.getString(str);
+                arr[i] = manager.getString(PersistentUtils.readUTF(input, manager));
             }
         }
         return arr;
@@ -216,20 +213,35 @@ public class PersistentUtils {
         if (len != AbstractObjectFactory.NULL_POINTER) {
             arr = new ArrayList<CharSequence>(len);
             for (int i = 0; i < len; i++) {
-                String str = input.readUTF();
-                assert str != null;
-                if (manager != null) {
-                    arr.add(manager.getString(str));
-                } else {
-                    arr.add(str);
-                }
+                arr.add(PersistentUtils.readUTF(input, manager));
             }
         }
         return arr;
     }
     private static final int UTF_LIMIT = 65535;
 
+    private static final String NULL_STRING = new String(new char[]{0});
+
     public static void writeUTF(CharSequence st, DataOutput aStream) throws IOException {
+        if (st == null) {
+            aStream.writeUTF(NULL_STRING);
+        } else {
+            assert !(st instanceof String);
+            aStream.writeUTF(st.toString());
+        }
+    }
+
+    public static CharSequence readUTF(DataInput aStream, APTStringManager manager) throws IOException {
+        String s = aStream.readUTF();
+        if (s.length()==1 && s.charAt(0)==0) {
+            return null;
+        }
+        CharSequence res = manager.getString(s);
+        assert !(res instanceof String);
+        return res;
+    }
+
+    public static void writeLongUTF(CharSequence st, DataOutput aStream) throws IOException {
         if (st != null) {
             // write extent count
             // NB: for an empty string, 0 is written
@@ -245,7 +257,7 @@ public class PersistentUtils {
         }
     }
 
-    public static String readUTF(DataInput aStream) throws IOException {
+    public static String readLongUTF(DataInput aStream) throws IOException {
         short cnt = aStream.readShort();
         switch (cnt) {
             case -1:

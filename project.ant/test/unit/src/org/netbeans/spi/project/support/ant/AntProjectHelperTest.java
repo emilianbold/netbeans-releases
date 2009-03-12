@@ -108,7 +108,10 @@ public class AntProjectHelperTest extends NbTestCase {
     private File antJar;
     
     protected @Override void setUp() throws Exception {
-        super.setUp();
+        FileObject fo = FileUtil.getConfigFile("Services");
+        if (fo != null) {
+            fo.delete();
+        }
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");

@@ -52,13 +52,26 @@ public enum Status {
     STOPPED,
     RUNNING,
     BREAK;
-    
-    @Override
-    public String toString()
-    {
-        return super.toString().toLowerCase();
+
+    public boolean isStarting() {
+        return STARTING.equals(this);
     }
-    
+    public boolean isStopping() {
+        return STOPPING.equals(this);
+    }
+    public boolean isStopped() {
+        return STOPPED.equals(this);
+    }
+    public boolean isRunning() {
+        return RUNNING.equals(this);
+    }
+    public boolean isBreak() {
+        return BREAK.equals(this);
+    }
+    @Override
+    public String toString() {
+        return super.toString().toLowerCase();
+    }    
     public static Status forString( String str ) {
         Status[] statuses = Status.values();
         for (Status status : statuses) {
@@ -68,5 +81,4 @@ public enum Status {
         }
         return null;
     }
-
 }

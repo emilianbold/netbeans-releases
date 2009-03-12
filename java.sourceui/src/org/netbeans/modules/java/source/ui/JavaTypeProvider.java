@@ -55,14 +55,13 @@ import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -242,7 +241,7 @@ public class JavaTypeProvider implements TypeProvider {
         ArrayList<JavaTypeDescription> types = new ArrayList<JavaTypeDescription>(cache.size() * 20);
         
         // is scan in progress? If so, provide a message to user.
-        boolean scanInProgress = RepositoryUpdater.getDefault().isScanInProgress();
+        boolean scanInProgress = SourceUtils.isScanInProgress();
         if (scanInProgress) {
             // ui message
             String message = NbBundle.getMessage(JavaTypeProvider.class, "LBL_ScanInProgress_warning");

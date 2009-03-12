@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.DeclarationContainerKey;
-import org.netbeans.modules.cnd.modelimpl.repository.NamespaceDeclararationContainerKey;
+import org.netbeans.modules.cnd.modelimpl.repository.NamespaceDeclarationContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -101,13 +101,13 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     /** Creates a new instance of ProjectDeclarations */
     public DeclarationContainer(ProjectBase project) {
-        super(new DeclarationContainerKey(project.getUniqueName().toString()));
+        super(new DeclarationContainerKey(project.getUniqueName().toString()), false);
         put();
     }
 
     /** Creates a new instance of ProjectDeclarations */
     public DeclarationContainer(CsmNamespace ns) {
-        super(new NamespaceDeclararationContainerKey(ns));
+        super(new NamespaceDeclarationContainerKey(ns), false);
         put();
     }
 
@@ -118,7 +118,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     // only for EMPTY static field
     private DeclarationContainer() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null);
+        super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
     }
 
     public static DeclarationContainer empty() {

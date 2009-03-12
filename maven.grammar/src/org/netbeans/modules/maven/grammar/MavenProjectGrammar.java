@@ -82,7 +82,6 @@ import org.netbeans.modules.xml.api.model.HintContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -584,6 +583,11 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     }
 
     private Enumeration<GrammarResult> collectGoals(ArtifactInfoHolder info, HintContext virtualTextCtx) {
+
+        if (info.getGroupId() == null || info.getArtifactId() == null || info.getVersion() == null) {
+            //#159317
+            return null;
+        }
         @SuppressWarnings("unchecked")
         Set<String> goals;
         try {

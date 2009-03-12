@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -183,8 +184,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (o != null) {
             assert o instanceof ProjectBase;
             ProjectBase impl = (ProjectBase) o;
-            if (!impl.name.equals(name)) {
-                impl.setName(name);
+            CharSequence aName = ProjectNameCache.getManager().getString(name);
+            if (!impl.name.equals(aName)) {
+                impl.setName(aName);
             }
             impl.init(model, platformProject);
             if (TraceFlags.TIMING) {
@@ -206,7 +208,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return name;
     }
 
-    protected final void setName(String name) {
+    protected final void setName(CharSequence name) {
         this.name = name;
     }
 
@@ -226,8 +228,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         String result;
         if (platformProject instanceof NativeProject) {
             result = ((NativeProject) platformProject).getProjectRoot() + 'N';
-        } else if (platformProject instanceof String) {
-            result = (String) platformProject + 'L';
+        } else if (platformProject instanceof CharSequence) {
+            result = ((CharSequence)platformProject).toString() + 'L';
         } else if (platformProject == null) {
             throw new IllegalArgumentException("Incorrect platform project: null"); // NOI18N
         } else {
@@ -929,7 +931,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected final APTPreprocHandler createEmptyPreprocHandler(File file) {
-        StartEntry startEntry = new StartEntry(FileContainer.getFileKey(file, true),
+        StartEntry startEntry = new StartEntry(FileContainer.getFileKey(file, true).toString(),
                 RepositoryUtils.UIDtoKey(getUID()));
         return APTHandlersSupport.createEmptyPreprocHandler(startEntry);
     }
@@ -950,7 +952,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<String> origSysIncludePaths = nativeFile.getSystemIncludePaths();
         List<CharSequence> userIncludePaths = FilePathCache.asList(origUserIncludePaths);
         List<CharSequence> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
-        StartEntry startEntry = new StartEntry(FileContainer.getFileKey(nativeFile.getFile(), true),
+        StartEntry startEntry = new StartEntry(FileContainer.getFileKey(nativeFile.getFile(), true).toString(),
                 RepositoryUtils.UIDtoKey(getUID()));
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths);
     }
@@ -1779,7 +1781,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * it does not gather statistics!
      * @param nameTokens name
      */
-    public final CsmClass getDummyForUnresolved(String name) {
+    public final CsmClass getDummyForUnresolved(CharSequence name) {
         return getUnresolved().getDummyForUnresolved(name);
     }
 
@@ -2090,7 +2092,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 // for testing remember restored file
                 long time = REMEMBER_RESTORED ? System.currentTimeMillis() : 0;
                 int stackSize = inclStack.size();
-                APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false));
+                APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false).toString());
                 walker.visit();
                 if (preprocHandler.isValid()) {
                     if (REMEMBER_RESTORED) {
@@ -2505,8 +2507,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null;
         assert this.name != null;
-        aStream.writeUTF(this.name.toString());
-        aStream.writeUTF(RepositoryUtils.getUnitName(getUID()).toString());
+        PersistentUtils.writeUTF(name, aStream);
+        //PersistentUtils.writeUTF(RepositoryUtils.getUnitName(getUID()), aStream);
         aFactory.writeUID(this.globalNamespaceUID, aStream);
         aFactory.writeStringToUIDMap(this.namespaces, aStream, false);
 
@@ -2526,10 +2528,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null : "default UID factory can not be bull";
 
-        this.name = ProjectNameCache.getManager().getString(aStream.readUTF());
+        this.name = PersistentUtils.readUTF(aStream, ProjectNameCache.getManager());
         assert this.name != null : "project name can not be null";
 
-        String unitName = aStream.readUTF();
+        //CharSequence unitName = PersistentUtils.readUTF(aStream, DefaultCache.getManager());
 
         this.globalNamespaceUID = aFactory.readUID(aStream);
         assert globalNamespaceUID != null : "globalNamespaceUID can not be null";
@@ -2548,7 +2550,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         classifierStorageKey = ProjectComponent.readKey(aStream);
         assert classifierStorageKey != null : "classifierStorageKey can not be null";
 
-        this.uniqueName = PersistentUtils.readUTF(aStream);
+        this.uniqueName = PersistentUtils.readUTF(aStream, DefaultCache.getManager());
         assert uniqueName != null : "uniqueName can not be null";
         this.uniqueName = ProjectNameCache.getManager().getString(this.uniqueName);
 

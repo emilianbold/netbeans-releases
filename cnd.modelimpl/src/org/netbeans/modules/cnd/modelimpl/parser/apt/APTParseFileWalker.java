@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.SimpleOffsetableImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * implementation of walker used when parse files/collect macromap
@@ -170,13 +171,13 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     private MacroImpl createMacro(APTDefine define) {
 
-        List<String> params = null;
+        List<CharSequence> params = null;
         Collection<APTToken> paramTokens = define.getParams();
         if (paramTokens != null) {
-            params = new ArrayList<String>();
+            params = new ArrayList<CharSequence>();
             for (APTToken elem : paramTokens) {
                 if (APTUtils.isID(elem)) {
-                    params.add(elem.getText());
+                    params.add(NameCache.getManager().getString(elem.getText()));
                 }
             }
         }

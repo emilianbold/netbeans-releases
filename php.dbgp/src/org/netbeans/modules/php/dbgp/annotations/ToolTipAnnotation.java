@@ -52,8 +52,8 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
 import org.netbeans.modules.php.dbgp.SessionId;
+import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.UnsufficientValueException;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.packets.EvalCommand;
@@ -306,7 +306,7 @@ public class ToolTipAnnotation extends Annotation
         if (id == null) {
             return null;
         }
-        DebugSession session = StartActionProviderImpl.getInstance()
+        DebugSession session = SessionManager.getInstance()
                 .getCurrentSession(id);
         return session; 
     }

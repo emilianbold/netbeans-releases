@@ -47,14 +47,16 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
+import org.netbeans.modules.css.formatting.api.LexUtilities;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
 
 /**
  *
@@ -79,7 +81,46 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
 
     //not used. HTMLKit coveres this functionality
     public int beforeBreak(Document doc, int caretOffset, JTextComponent target) throws BadLocationException {
-        return  -1;
+        TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HTMLTokenId.language());
+        if (ts == null) {
+            return -1;
+        }
+        ts.move(caretOffset);
+        String closingTagName = null;
+        int end = -1;
+        if (ts.moveNext() && ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL &&
+                ts.token().text().toString().equals("</")) {
+            if (ts.moveNext() && ts.token().id() == HTMLTokenId.TAG_CLOSE) {
+                closingTagName = ts.token().text().toString();
+                end = ts.offset()+ts.token().text().length();
+                ts.movePrevious();
+                ts.movePrevious();
+            }
+        }
+        if (closingTagName == null) {
+            return  -1;
+        }
+        boolean foundOpening = false;
+        if (ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL &&
+                ts.token().text().toString().equals(">")) {
+            while (ts.movePrevious()) {
+                if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
+                    if (ts.token().text().toString().equals(closingTagName)) {
+                        foundOpening = true;
+                    }
+                    break;
+                }
+            }
+        }
+        if (foundOpening) {
+            final Indent indent = Indent.get(doc);
+            doc.insertString(caretOffset, "\n", null); //NOI18N
+            //move caret
+            target.getCaret().setDot(caretOffset);
+            //and indent the line
+            indent.reindent(caretOffset + 1, end);
+        }
+        return -1;
     }
 
     //not used. HTMLBracesMatching coveres this functionality

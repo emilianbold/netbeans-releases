@@ -61,10 +61,7 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///docs/metro-1.4-doc.zip!/</resource>
     </volume>
     <volume>
-        <type>maven-pom</type>        
-        <resource>http://download.java.net/maven/1/javax.activation/poms/activation-1.1.pom</resource>
+        <type>maven-pom</type>
         <resource>http://download.java.net/maven/2/com/sun/xml/ws/webservices-rt/1.4/webservices-rt-1.4.pom</resource>
-        <resource>http://download.java.net/maven/2/javax/xml/webservices-api/1.4/webservices-api-1.4.pom</resource>
-        <resource>http://download.java.net/maven/2/com/sun/tools/ws/webservices-tools/1.4/webservices-tools-1.4.pom</resource>
     </volume>
 </library>

@@ -92,12 +92,12 @@ public class APTTestToken extends TokenImpl implements APTToken {
         // do nothing
     }
     
-    public int getTextID() {
-        return textID;
+    public CharSequence getTextID() {
+        return getText();
     }
     
-    public void setTextID(int textID) {
-        this.textID = textID;
+    public void setTextID(CharSequence textID) {
+        setText(textID == null ? null : textID.toString());
     }
   
     @Override

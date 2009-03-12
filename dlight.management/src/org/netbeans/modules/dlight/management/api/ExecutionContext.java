@@ -39,6 +39,8 @@
 package org.netbeans.modules.dlight.management.api;
 
 
+import java.net.ConnectException;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,9 +51,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTarget.ExecutionEnvVariablesProvider;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.management.api.ExecutionContextEvent.Type;
-import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
+import org.netbeans.modules.dlight.api.impl.DLightToolAccessor;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
@@ -67,9 +71,9 @@ final class ExecutionContext {
     private final List<DLightTool> tools = Collections.synchronizedList(new ArrayList<DLightTool>());
     private List<ExecutionContextListener> listeners = null;
 
-    ExecutionContext(final DLightTarget target, final List<DLightTool> tools) {
+    ExecutionContext(final DLightTarget target, DLightConfiguration dlightConfiguration) {
         this.target = target;
-        this.tools.addAll(tools);
+        this.tools.addAll(dlightConfiguration.getToolsSet());
         envProvider = new DLightTargetExecutionEnvProviderCollection();
     }
 
@@ -221,24 +225,28 @@ final class ExecutionContext {
         return tools;
     }
 
-    final class DLightTargetExecutionEnvProviderCollection implements DLightTarget.ExecutionEnvVariablesProvider{
-        private Map<String, String> envs;
+    final class DLightTargetExecutionEnvProviderCollection implements ExecutionEnvVariablesProvider {
 
-        DLightTargetExecutionEnvProviderCollection(){
-            envs = new HashMap<String, String>();
+        private List<ExecutionEnvVariablesProvider> providers;
+
+        DLightTargetExecutionEnvProviderCollection() {
+            providers = new ArrayList<DLightTarget.ExecutionEnvVariablesProvider>();
         }
 
-        void clear(){
-            envs.clear();
+        void clear() {
+            providers.clear();
         }
 
-        void add(DLightTarget.ExecutionEnvVariablesProvider provider){
-            envs.putAll(provider.getExecutionEnv());
-        }
-        
-        public Map<String, String> getExecutionEnv() {
-            return envs;
+        void add(DLightTarget.ExecutionEnvVariablesProvider provider) {
+            providers.add(provider);
         }
 
+        public Map<String, String> getExecutionEnv(DLightTarget target) throws ConnectException {
+            Map<String, String> env = new HashMap<String, String>();
+            for (ExecutionEnvVariablesProvider provider : providers) {
+                env.putAll(provider.getExecutionEnv(target));
+            }
+            return env;
+        }
     }
 }

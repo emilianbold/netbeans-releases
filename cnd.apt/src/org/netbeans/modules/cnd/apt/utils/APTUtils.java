@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * APT utilities
@@ -189,12 +190,12 @@ public class APTUtils {
         return retValue.toString();
     }
     
-    public static String macros2String(Map<String/*getTokenTextKey(token)*/, APTMacro> macros) {
+    public static String macros2String(Map<CharSequence/*getTokenTextKey(token)*/, APTMacro> macros) {
         StringBuilder retValue = new StringBuilder();
         retValue.append("MACROS (sorted "+macros.size()+"):\n"); // NOI18N
-        List<String> macrosSorted = new ArrayList<String>(macros.keySet());
-        Collections.sort(macrosSorted);
-        for (String key : macrosSorted) {
+        List<CharSequence> macrosSorted = new ArrayList<CharSequence>(macros.keySet());
+        Collections.sort(macrosSorted, CharSequenceKey.Comparator);
+        for (CharSequence key : macrosSorted) {
             APTMacro macro = macros.get(key);
             assert(macro != null);
             retValue.append(macro);
@@ -498,7 +499,7 @@ public class APTUtils {
         EMPTY_ID_TOKEN.setType(APTTokenTypes.ID);
         EMPTY_ID_TOKEN.setText(""); // NOI18N        
 
-        COMMA_TOKEN = createAPTToken();
+        COMMA_TOKEN = createAPTToken(APTTokenTypes.COMMA);
         COMMA_TOKEN.setType(APTTokenTypes.COMMA);
         COMMA_TOKEN.setText(","); // NOI18N             
         
@@ -542,12 +543,12 @@ public class APTUtils {
         }
         
         @Override
-        public int getTextID() {
+        public CharSequence getTextID() {
             throw new UnsupportedOperationException("getTextID must not be used"); // NOI18N
         }
         
         @Override
-        public void setTextID(int id) {
+        public void setTextID(CharSequence id) {
             throw new UnsupportedOperationException("setTextID must not be used"); // NOI18N
         }
         

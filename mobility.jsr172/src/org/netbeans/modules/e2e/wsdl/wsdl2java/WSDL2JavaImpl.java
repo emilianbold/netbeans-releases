@@ -254,7 +254,8 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             Output output = operation.getOutput();                            
                             if (output != null) {
                                 for( Part part : output.getMessage().getParts()) {
-                                    Element re = definition.getSchemaHolder().getSchemaElement( part.getElementName());
+                                    Element re = definition.getSchemaHolder().
+                                        getSchemaElement( part.getElementName());
                                     Element e = getReturnElement( re );
                                     if( isElementComplex( e )) {
                                         usedTypes.add( e.getName());
@@ -953,7 +954,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             
                             operationQNames.add( new QName( definition.getTargetNamespace(), operation.getName()));
                             
-                            String messageName = operation.getOutput().getMessage().getName();
+                            QName messageName = operation.getOutput().getMessage().getQName();
                             Message message = definition.getMessage( messageName );
                             for( Part part : message.getParts()) {
                                 Element element = definition.getSchemaHolder().getSchemaElement( part.getElementName());
@@ -1066,7 +1067,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             
                             Output output = operation.getOutput();
                             if (output != null) {
-                                message = definition.getMessage( output.getMessage().getName() );
+                                message = definition.getMessage( output.getMessage().getQName() );
                                 for( Part part : message.getParts()) {
                                     Element e = getReturnElement( definition.getSchemaHolder().getSchemaElement( part.getElementName()));
                                     Type type = e.getType();

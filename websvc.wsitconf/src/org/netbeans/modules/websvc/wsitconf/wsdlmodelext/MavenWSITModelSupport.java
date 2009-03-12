@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -55,6 +53,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
@@ -295,13 +294,22 @@ public class MavenWSITModelSupport {
 
     public static FileObject getWsitConfigFolder(Project prj) {
         J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
+        FileObject folder = null;
         if (provider != null) {
-            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml");
-            if (dd != null && dd.exists()) {
-                return FileUtil.toFileObject(dd.getParentFile());
+            J2eeModule j2eeModule = provider.getJ2eeModule();
+            if (j2eeModule != null) {
+                Object type = j2eeModule.getModuleType();
+                if (J2eeModule.EJB.equals(type)) {
+                    folder = prj.getProjectDirectory().getFileObject("src/main/webapp/WEB-INF");
+                }
+                if (J2eeModule.WAR.equals(type)) {
+                    folder = prj.getProjectDirectory().getFileObject("src/main/resources/META-INF");
+                }
             }
+        } else {
+            folder = prj.getProjectDirectory().getFileObject("src/main/resources/META-INF");
         }
-        return null;
+        return folder;
     }
 
     public static boolean isMavenProject(Project p) {

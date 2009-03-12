@@ -38,27 +38,30 @@
  */
 package org.netbeans.modules.refactoring.java.test;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Enumeration;
+import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.Document;
-import junit.framework.Assert;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import junit.framework.Test;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.refactoring.api.RefactoringElement;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import static org.netbeans.modules.refactoring.java.test.Utilities.*;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Test that all java-source instances are disposed at the end.
@@ -74,19 +77,19 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
     /**
      * Set-up the services and project
      */
-    @Override
-    protected void setUp() throws IOException, InterruptedException {
-        clearWorkDir();
-        String work = getWorkDirPath();
-        System.setProperty("netbeans.user", work);
-        projectDir = openProject("SimpleJ2SEApp", getDataDir());
-        File projectSourceRoot = new File(getWorkDirPath(), "SimpleJ2SEApp.src".replace('.', File.separatorChar));
-        FileObject fo = FileUtil.toFileObject(projectSourceRoot);
-
-        boot = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
-        source = createSourcePath(projectDir);
-        compile = createEmptyPath();
-    }
+//    @Override
+//    protected void setUp() throws IOException, InterruptedException {
+//        clearWorkDir();
+//        String work = getWorkDirPath();
+//        System.setProperty("netbeans.user", work);
+//        projectDir = openProject("SimpleJ2SEApp", getDataDir());
+//        File projectSourceRoot = new File(getWorkDirPath(), "SimpleJ2SEApp.src".replace('.', File.separatorChar));
+//        FileObject fo = FileUtil.toFileObject(projectSourceRoot);
+//
+//        boot = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+//        source = createSourcePath(projectDir);
+//        compile = createEmptyPath();
+//    }
 
     public void testOpenDocuments()
             throws IOException, InterruptedException, ExecutionException {
@@ -101,29 +104,38 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
 
         Log.enableInstances(Logger.getLogger("TIMER"), "JavacParser", Level.FINEST);
 
-        ClasspathInfo cpi = ClasspathInfo.create(getBoot(), getCompile(), getSource());
+        FileObject testFile = getProjectDir().getFileObject("/src/bsh/This.java");
+        JavaSource src = JavaSource.forFileObject(testFile);
         
-        Enumeration<? extends FileObject> files = getProjectDir().getData(true);
-        JavaSource src = null;
-        while (files.hasMoreElements()) {
-            FileObject testFile = files.nextElement();
-            src = JavaSource.create(cpi, testFile);
-            src.runUserActionTask(new Task<CompilationController>() {
+        final WhereUsedQuery wuq = new WhereUsedQuery(Lookup.EMPTY);
+        src.runUserActionTask(new Task<CompilationController>() {
 
-                public void run(CompilationController controller) throws Exception {
-                    controller.toPhase(Phase.RESOLVED);
-                    Document d = controller.getDocument();
-                }
-            }, true);
-
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.RESOLVED);
+                TypeElement klass = controller.getElements().getTypeElement("bsh.This");
+                TypeMirror mirror = klass.getSuperclass();
+                Element object = controller.getTypes().asElement(mirror);
+                wuq.setRefactoringSource(Lookups.singleton(TreePathHandle.create(object, controller)));
+                ClasspathInfo cpi = RetoucheUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
+                wuq.getContext().add(cpi);
+            }
+        }, false);
+        
+        wuq.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
+        RefactoringSession rs = RefactoringSession.create("Session");
+        wuq.prepare(rs);
+        rs.doRefactoring(false);
+        Collection<RefactoringElement> elems = rs.getRefactoringElements();
+        System.err.println(elems.size());
+        for (RefactoringElement e : elems) {
+            System.err.println(e.getText());
         }
-
-        System.gc(); System.gc();
         src = null;
+        System.gc(); System.gc();
         Log.assertInstances("Some instances of parser were not GCed");
     }
 
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(OpenDocumentsPerfTest.class, "testOpenDocuments").gui(false));
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().clusters(".*").addTest(OpenDocumentsPerfTest.class, "testOpenDocuments").gui(false));
     }
 }

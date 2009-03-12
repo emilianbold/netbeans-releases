@@ -11,6 +11,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -21,9 +22,11 @@ import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -41,7 +44,12 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     }
 
     public static boolean showMe(String hkey, String pathToValidate) {
-        return showMe(hkey, pathToValidate, RemoteServerList.getInstance().getServerNames());
+            List<ExecutionEnvironment> envs = RemoteServerList.getInstance().getEnvironments();
+            String[] keys = new String[envs.size()];
+            for (int i = 0; i < keys.length; i++) {
+                keys[i] = ExecutionEnvironmentFactory.getHostKey(envs.get(i));
+            }
+        return showMe(hkey, pathToValidate, keys);
     }
 
     private static boolean showMe(String hkey, String pathToValidate, String[] hostsList) {
@@ -108,13 +116,13 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     }
 
     private static RemotePathMap getRemotePathMap(String hkey) {
-        return RemotePathMap.getRemotePathMapInstance(hkey);
+        return RemotePathMap.getRemotePathMapInstance(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
     }
 
     private synchronized void initTableModel(final String hkey) {
         DefaultTableModel tableModel = cache.get(hkey);
         if (tableModel == null) {
-            if (RemotePathMap.isReady(hkey)) {
+            if (RemotePathMap.isReady(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey))) {
                 tableModel = prepareTableModel(hkey);
             } else {
                 handleProgress(true);
@@ -384,7 +392,7 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
             if (local != null) {
                 local = local.trim();
                 if (local.length() > 0) {
-                    if (!HostInfoProvider.getDefault().fileExists(CompilerSetManager.LOCALHOST, local)) {
+                    if (!HostInfoProvider.getDefault().fileExists(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), local)) {
                         sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_BadLocalPath", local));
                     }
                     if (pathToValidate != null && !pathIsValidated) {
@@ -398,7 +406,8 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
             if (remote != null) {
                 remote = remote.trim();
                 if (remote.length() > 0) {
-                    if (!HostInfoProvider.getDefault().fileExists(currentHkey, remote)) {
+                    if (!HostInfoProvider.getDefault().fileExists(
+                            ExecutionEnvironmentFactory.getExecutionEnvironment(currentHkey), remote)) {
                         sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_BadRemotePath", remote));
                     }
                 }

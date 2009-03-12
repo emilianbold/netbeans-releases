@@ -121,12 +121,12 @@ public class APTBaseToken implements APTToken {
         // do nothing
     }
 
-    public int getTextID() {
+    public CharSequence getTextID() {
 //        return textID;
-        return -1;
+        return this.text;
     }
 
-    public void setTextID(int textID) {
+    public void setTextID(CharSequence textID) {
 //        this.textID = textID;
     }
 
@@ -136,7 +136,7 @@ public class APTBaseToken implements APTToken {
     }
 
     public void setText(String t) {
-        text = TextCache.getString(t);
+        text = TextCache.getManager().getString(t);
     }
 
     public int getLine() {

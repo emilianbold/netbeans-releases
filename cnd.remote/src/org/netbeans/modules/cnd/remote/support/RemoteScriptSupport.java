@@ -68,7 +68,7 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
             // The PATH stuff makes in much less likely to get a non-standard chmod...
             String cmd = ShellUtils.prepareExportString(new String[] {"PATH=/bin:/usr/bin:$PATH"})+ "(chmod 755 " + script + ") && " + script; // NOI18N
             log.finest("RemoteScriptSupport runs: " + cmd);
-            ((ChannelExec) channel).setCommand( ShellUtils.wrapCommand(key, cmd));
+            ((ChannelExec) channel).setCommand( ShellUtils.wrapCommand(executionEnvironment, cmd));
         } catch (JSchException ex) {
             setFailed(ex.getMessage());
             log.warning("RemoteScriptSupport.setChannelCommand: Reason = [" + ex.getMessage() + "]");

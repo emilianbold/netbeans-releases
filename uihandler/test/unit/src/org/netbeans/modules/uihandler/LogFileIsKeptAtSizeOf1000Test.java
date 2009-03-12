@@ -93,6 +93,7 @@ public class LogFileIsKeptAtSizeOf1000Test extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        UIHandler.flushImmediatelly();
         System.setProperty("netbeans.user", getWorkDirPath());
         clearWorkDir();
         

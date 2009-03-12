@@ -46,7 +46,6 @@ import java.util.Vector;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileUtil;
 
@@ -56,7 +55,7 @@ public abstract class BasicCompiler extends Tool {
     protected BasicCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
         if (!env.isLocal()) {
-            includeFilePrefix = System.getProperty("netbeans.user") + "/var/cache/cnd2/includes-cache/" + RemoteUtils.getHostName(getHostKey()) + "/"; //NOI18N
+            includeFilePrefix = System.getProperty("netbeans.user") + "/var/cache/cnd2/includes-cache/" + getExecutionEnvironment().getHost() + "/"; //NOI18N
         } else {
             includeFilePrefix = null;
         }
@@ -66,7 +65,7 @@ public abstract class BasicCompiler extends Tool {
     @Override
     public String getIncludeFilePathPrefix() {
         if (includeFilePrefix == null) {
-            if (RemoteUtils.isLocalhost(getHostKey())) {
+            if (getExecutionEnvironment().isLocal()) {
                 includeFilePrefix = ""; // NOI18N
                 CompilerDescriptor c = getDescriptor();
                 if (c != null) {
@@ -155,7 +154,7 @@ public abstract class BasicCompiler extends Tool {
     }
 
     protected String normalizePath(String path) {
-        if (RemoteUtils.isLocalhost(getHostKey())) {
+        if (getExecutionEnvironment().isLocal()) {
             return FileUtil.normalizeFile(new File(path)).getAbsolutePath();
         } else {
             // TODO: remote paths would love to be normalized too

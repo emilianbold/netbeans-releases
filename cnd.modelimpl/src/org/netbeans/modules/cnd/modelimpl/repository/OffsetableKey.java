@@ -69,7 +69,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         assert kind.length() == 1;
-        this.name = name;
+        this.name = NameCache.getManager().getString(name);
         this.hashCode = (_hashCode() << 8) | (kind.charAt(0) & 0xff);
     }
 
@@ -117,7 +117,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         aStream.writeInt(this.endOffset);
         aStream.writeInt(this.hashCode);
         assert this.name != null;
-        aStream.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, aStream);
     }
 
     protected OffsetableKey(DataInput aStream) throws IOException {
@@ -125,8 +125,9 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         this.startOffset = aStream.readInt();
         this.endOffset = aStream.readInt();
         this.hashCode = aStream.readInt();
-        this.name = NameCache.getManager().getString(aStream.readUTF());
+        this.name = PersistentUtils.readUTF(aStream, NameCache.getManager());
         assert this.name != null;
+        assert !(this.name instanceof String);
     }
 
     @Override
@@ -140,6 +141,9 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
             return false;
         }
         OffsetableKey other = (OffsetableKey) obj;
+        if (name instanceof String || other.name instanceof String) {
+            System.err.println("Key has string "+name); // NOI18N
+        }
         return this.startOffset == other.startOffset &&
                 this.endOffset == other.endOffset &&
                 this.getKind() == other.getKind() &&
