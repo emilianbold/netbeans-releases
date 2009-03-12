@@ -130,7 +130,8 @@ public class FiltersNode extends ContainerNode {
                     public void run(CompilationController controller)
                              throws Exception {
                         for (FilterMapping mapping : webApp.getFilterMapping()) {
-                            TypeElement type = controller.getElements().getTypeElement(filter2class.get(mapping.getFilterName()));
+                            String clazz = filter2class.get(mapping.getFilterName());
+                            TypeElement type = clazz != null ? controller.getElements().getTypeElement(clazz) : null;
 
                             if (type != null) {
                                 String urlMapping = mapping.getUrlPattern();
