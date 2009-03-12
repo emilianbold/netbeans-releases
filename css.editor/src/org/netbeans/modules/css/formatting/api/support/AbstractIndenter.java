@@ -1519,6 +1519,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             Map<Integer, Integer> suggestedIndentsForOtherLines) throws BadLocationException {
         // go through compound blocks and generate lines for them:
         List<Line> indents = new ArrayList<Line>();
+        List<Line> linesInBlock = new ArrayList<Line>();
         int lastStart = -1;
         for (Line line : indentedLines) {
             if (line.foreignLanguageBlockStart) {
@@ -1535,21 +1536,34 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                         // BLOCK to shift (eg. JSP code "javaCall(); %>")
                         end++;
                     }
-                    assert (indents.size() > 0 ? indents.get(indents.size()-1).index <= lastStart : true) :
-                        "start="+lastStart+" end="+end+" indents="+indents+" indentedLines="+indentedLines;
                     for (int i = lastStart+1; i < end; i++) {
-                        Line line2 = generateBasicLine(i);//new Line();
-                        line2.indentThisLine = true;
-                        line2.preserveThisLineIndent = true;
+                        Line line2;
+                        line2 = findLineByLineIndex(linesInBlock, i);
+                        if (line2 == null) {
+                            line2 = generateBasicLine(i);//new Line();
+                            line2.indentThisLine = true;
+                            line2.preserveThisLineIndent = true;
+                        } else {
+                            assert !line2.indentThisLine : "there is a block of foreign " +
+                                    "language which actually contains formattable lines. " +
+                                    "this case is not handled yet! foreign lang block: " +lastStart+"-"+end+
+                                    " linesInBlock="+linesInBlock;
+                            line2.preserveThisLineIndent = true;
+                        }
                         if (!line2.emptyLine) {
                             indents.add(line2);
                         }
                         suggestedIndentsForOtherLines.remove(i);
                     }
+                    linesInBlock.clear();
                 }
                 lastStart = -1;
             }
-            indents.add(line);
+            if (lastStart != -1 && line.index > lastStart) {
+                linesInBlock.add(line);
+            } else {
+                indents.add(line);
+            }
         }
         return indents;
     }

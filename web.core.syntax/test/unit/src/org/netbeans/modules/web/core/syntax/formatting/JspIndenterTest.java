@@ -239,13 +239,17 @@ public class JspIndenterTest extends TestBase2 {
         reformatFileContents("FormattingProject/web/issue160098.jsp",new IndentPrefs(4,4));
     }
 
+    public void testFormattingIssue160103() throws Exception {
+        reformatFileContents("FormattingProject/web/issue160103.jsp",new IndentPrefs(4,4));
+    }
+
     public void testIndentation() throws Exception {
 //        insertNewline("<style>\n     h1 {\n        <%= System.\n   somth() ^%>",
 //                      "<style>\n     h1 {\n        <%= System.\n   somth() \n        ^%>", null);
 
         //#160092:
         insertNewline("^<html>\n</html>\n", "\n^<html>\n</html>\n", null);
-        
+
         insertNewline("<jsp:useBean>^", "<jsp:useBean>\n    ^", null);
         insertNewline("^<jsp:body>", "\n^<jsp:body>", null);
 
