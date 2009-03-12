@@ -444,6 +444,11 @@ public final class EditorRegistry {
         JTextComponent component = item.get();
         item = removeFromItemList(item);
         if (component != null) {
+            // unregister the listeneres
+            component.putClientProperty(Item.class, null);
+            component.removeFocusListener(FocusL.INSTANCE);
+            component.removeAncestorListener(AncestorL.INSTANCE);
+            
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.fine("Component removed: " + dumpComponent(component) + '\n'); //NOI18N
                 logItemListFinest();
