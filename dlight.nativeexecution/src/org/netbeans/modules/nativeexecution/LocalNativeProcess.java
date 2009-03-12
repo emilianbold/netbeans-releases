@@ -156,7 +156,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             if (unbuffer != null) {
                 InstalledFileLocator fl = InstalledFileLocator.getDefault();
                 File file = fl.locate(unbuffer, null, false); // NOI18N
-                if (file.exists()) {
+                if (file != null && file.exists()) {
                     String ldPreload = env.get("LD_PRELOAD"); // NOI18N
                     ldPreload = ((ldPreload == null) ? "" : ldPreload + ":") + // NOI18N
                             file.getAbsolutePath(); // NOI18N
