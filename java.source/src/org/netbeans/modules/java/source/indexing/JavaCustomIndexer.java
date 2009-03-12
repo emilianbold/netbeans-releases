@@ -112,6 +112,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 }
                             }
                             assert compileResult != null && compileResult.success;
+
                             Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added
                             Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed
                             _at.removeAll(removedTypes);
@@ -127,8 +128,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                                     urls.addAll(entry.getValue());
                                 }
                             }
+                            javaContext.sa.store();
+                            uq.typesEvent(_at, _rt, compileResult.addedTypes);
+                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles);
 
-                            if (!_at.isEmpty()) {
+                            compileResult.createdFiles.removeAll(removedFiles);
+                            if (!compileResult.createdFiles.isEmpty()) {
                                 //new type creation may cause/fix some errors
                                 //not 100% correct (consider eg. a file that has two .* imports
                                 //new file creation may cause new error in this case
@@ -138,9 +143,6 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 }
                             }
 
-                            javaContext.sa.store();
-                            uq.typesEvent(_at, _rt, compileResult.addedTypes);
-                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles);
                             for (Map.Entry<URL, Set<URL>> entry : compileResult.root2Rebuild.entrySet()) {
                                 context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                             }
