@@ -101,8 +101,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private byte flags;
     
     private static final boolean CHECK_SCOPE = false;
-    
+
     public FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
+        this(ast, file, null, scope, register, global);
+    }
+    
+    public FunctionImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
@@ -150,8 +154,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         setFlags(FLAGS_CONST, _const);
         classTemplateSuffix = new StringBuilder();
         templateDescriptor = createTemplateDescriptor(ast, this, (StringBuilder)classTemplateSuffix, global);
-        returnType = initReturnType(ast);
+        if(type != null) {
+            returnType = type;
+        } else {
+            returnType = initReturnType(ast);
+        }
 
+                
         // set parameters, do it in constructor to have final fields
         this.parameterList = createParameterList(ast, !global);
         if (this.parameterList == null || this.parameterList.isEmpty()) {

@@ -1281,7 +1281,10 @@ abstract public class CsmCompletionQuery {
                                             lastType = null;
                                             cont = false;
                                         } else {
-                                            List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly && !memberPointer, false, true, this.scopeAccessedClassifier, skipConstructors, sort);
+                                            // IZ#143044
+                                            // There is no need for searching in parents for global declarations/definitions
+                                            boolean inspectParentClasses = (this.contextElement != null);
+                                            List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly && !memberPointer, false, inspectParentClasses, this.scopeAccessedClassifier, skipConstructors, sort);
                                             List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, openingSource, true, sort);
                                             res.addAll(nestedClassifiers);
                                             // add base classes as well
@@ -1729,7 +1732,10 @@ abstract public class CsmCompletionQuery {
                                     CsmClassifier classifier = extractLastTypeClassifier(kind);
                                     // try to find method in last resolved class appropriate for current context
                                     if (CsmKindUtilities.isClass(classifier)) {
-                                        mtdList.addAll(finder.findMethods(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, true, scopeAccessedClassifier, this.sort));
+                                        // IZ#143044
+                                        // There is no need for searching in parents for global declarations/definitions
+                                        boolean inspectParentClasses = (this.contextElement != null);
+                                        mtdList.addAll(finder.findMethods(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, inspectParentClasses, scopeAccessedClassifier, this.sort));
                                         if ((!last || findType) && (mtdList == null || mtdList.size() == 0)) {
                                             // could be pointer to function-type field
                                             lastType = null;
