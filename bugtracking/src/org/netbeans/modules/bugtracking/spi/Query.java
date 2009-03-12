@@ -125,6 +125,14 @@ public abstract class Query implements Comparable<Query> {
         };    
     }
 
+    /**
+     *
+     * Returns this queries {@link Repository}
+     *
+     * @return {@link Repository}
+     */
+    public abstract Repository getRepository();
+
     /*********
      * DATA
      *********/
