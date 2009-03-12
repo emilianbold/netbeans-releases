@@ -88,6 +88,7 @@
         <folder name="Window">
             <file name="DLightIndicatorsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-dlight-core-ui-components-DLightIndicatorsAction.instance"/>
+                <attr name="position" intvalue="0"/>
             </file>
         </folder>
     </folder>
