@@ -107,18 +107,17 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         
     }
 
-    /** Creates new form GetFromKenaiPanel */
     public GetSourcesFromKenaiPanel() {
         this(null);
     }
 
-    GetSourcesInfo getSelectedSourcesInfo() {
-        StringTokenizer stok = new StringTokenizer(repoFolderTextField.getText(), ",");
-        ArrayList<String> tokens = new ArrayList<String>();
+    public GetSourcesInfo getSelectedSourcesInfo() {
+        StringTokenizer stok = new StringTokenizer(repoFolderTextField.getText(), ","); // NOI18N
+        ArrayList<String> repoFolders = new ArrayList<String>();
         while (stok.hasMoreTokens()) {
-            tokens.add(stok.nextToken());
+            repoFolders.add(stok.nextToken().trim());
         }
-        String relPaths[] = tokens.size() == 0 ? new String[] { "" } : tokens.toArray(new String[tokens.size()]);
+        String relPaths[] = repoFolders.size() == 0 ? new String[] { "" } : repoFolders.toArray(new String[repoFolders.size()]); // NOI18N
         return new GetSourcesInfo(((KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem()).feature,
                 localFolderTextField.getText(), relPaths);
     }
@@ -422,7 +421,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 
     }
 
-    static class KenaiFeatureListItem {
+    public static class KenaiFeatureListItem {
 
         KenaiProject project;
         KenaiProjectFeature feature;
@@ -439,7 +438,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 
     }
 
-    static class GetSourcesInfo {
+    public static class GetSourcesInfo {
 
         public KenaiProjectFeature feature;
         public String localFolderPath;
