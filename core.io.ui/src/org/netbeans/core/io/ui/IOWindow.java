@@ -170,6 +170,7 @@ public final class IOWindow implements IOContainer.Provider {
                     IOWindowImpl.getDefault();
                 }
             }
+            DEFAULT.getActionMap().remove("org.openide.actions.FindAction"); // NOI18N
             return DEFAULT;
         }
 
@@ -258,7 +259,6 @@ public final class IOWindow implements IOContainer.Provider {
             // special title for sliding mode
             // XXX - please rewrite to regular API when available - see issue #55955
             putClientProperty("SlidingName", getDisplayName()); //NOI18N
-
             if (AQUA) {
                 setBackground(UIManager.getColor("NbExplorerView.background"));
                 setOpaque(true);
@@ -576,6 +576,7 @@ public final class IOWindow implements IOContainer.Provider {
             if (sel != lastSelTab) {
                 lastSelTab = sel;
                 updateToolbar(sel);
+                getActionMap().setParent(sel != null ? sel.getActionMap() : null);
             }
         }
 
