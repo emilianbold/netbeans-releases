@@ -51,6 +51,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.web.core.syntax.JspUtils;
 
 /**
  * Provides model for html code
@@ -63,7 +64,7 @@ public class JspEmbeddingProvider extends EmbeddingProvider {
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
-        TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), JspTokenId.language());
+        TokenHierarchy<CharSequence> th = JspUtils.createJspTokenHierarchy(snapshot);
         TokenSequence<JspTokenId> sequence = th.tokenSequence(JspTokenId.language());
         sequence.moveStart();
         List<Embedding> embeddings = new ArrayList<Embedding>();

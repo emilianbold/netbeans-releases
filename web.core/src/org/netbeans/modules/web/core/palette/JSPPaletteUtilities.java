@@ -156,7 +156,7 @@ public final class JSPPaletteUtilities {
     public static PageInfo.BeanData[] getAllBeans(JTextComponent target) {
         FileObject fobj = getFileObject(target);
         if (fobj != null) {
-            JspParserAPI.ParseResult result = JspContextInfo.getContextInfo(fobj).getCachedParseResult(target.getDocument(), fobj, false, true);
+            JspParserAPI.ParseResult result = JspContextInfo.getContextInfo(fobj).getCachedParseResult(fobj, false, true);
             if (result != null && result.getPageInfo() != null) {
                 return result.getPageInfo().getBeans();
             }
@@ -262,7 +262,7 @@ public final class JSPPaletteUtilities {
     public static String getTagLibPrefix(JTextComponent target, String tagLibUri) {
         FileObject fobj = getFileObject(target);
         if (fobj != null) {
-            JspParserAPI.ParseResult result = JspContextInfo.getContextInfo(fobj).getCachedParseResult(target.getDocument(), fobj, false, true);
+            JspParserAPI.ParseResult result = JspContextInfo.getContextInfo(fobj).getCachedParseResult(fobj, false, true);
             if (result != null && result.getPageInfo() != null) {
                  for (TagLibraryInfo tli : result.getPageInfo().getTaglibs()) {
                      if (tagLibUri.equals(tli.getURI()))
