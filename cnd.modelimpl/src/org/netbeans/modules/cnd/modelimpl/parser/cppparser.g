@@ -863,14 +863,14 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                         // then code like "template<T> int foo(T);" incorrectly
                         // becomes a CSM_TEMPL_FWD_CL_OR_STAT_MEM.
 			(declaration_specifiers[true, false]
-				(init_declarator_list[declOther])? SEMICOLON! /*{end_of_stmt();}*/)=>
+				(init_declarator_list[declOther])? SEMICOLON /*{end_of_stmt();}*/)=>
 			//{beginTemplateDeclaration();}
 			{ if (statementTrace>=1) 
 				printf("external_declaration_template_10[%d]: Class template declaration\n",
 					LT(1).getLine());
 			}
 			declaration_specifiers[true, false]
-				(init_declarator_list[declOther])? SEMICOLON! //{end_of_stmt();}
+				(init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
 			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}
 		)
     		{endTemplateDefinition();}
@@ -1207,14 +1207,14 @@ member_declaration_template
                         // this rule must be after handling functions 
 			// templated forward class decl, init/decl of static member in template
 			(declaration_specifiers[true, false]
-				(init_declarator_list[declOther])? SEMICOLON! /*{end_of_stmt();}*/)=>
+				(init_declarator_list[declOther])? SEMICOLON /*{end_of_stmt();}*/)=>
 			//{beginTemplateDeclaration();}
 			{ if (statementTrace>=1) 
 				printf("member_declaration_12a[%d]: Class template declaration\n",
 					LT(1).getLine());
 			}
 			declaration_specifiers[true, false]
-				(init_declarator_list[declOther])? SEMICOLON! //{end_of_stmt();}
+				(init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
 			{/*endTemplateDeclaration();*/ #member_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #member_declaration_template); } 		
 		)
 		{endTemplateDefinition();}
