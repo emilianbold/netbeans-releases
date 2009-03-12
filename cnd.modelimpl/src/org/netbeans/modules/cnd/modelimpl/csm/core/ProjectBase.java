@@ -94,6 +94,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 
@@ -1890,7 +1891,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private void _registerNamespace(NamespaceImpl ns) {
         assert (ns != null);
         CharSequence key = ns.getQualifiedName();
-        assert (key != null && !(key instanceof String));
+        assert key instanceof TinyCharSequence;
         CsmUID<CsmNamespace> nsUID = RepositoryUtils.<CsmNamespace>put(ns);
         assert nsUID != null;
         namespaces.put(key, nsUID);
@@ -1900,7 +1901,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert (ns != null);
         assert !ns.isGlobal();
         CharSequence key = ns.getQualifiedName();
-        assert (key != null && !(key instanceof String));
+        assert key instanceof TinyCharSequence;
         CsmUID<CsmNamespace> nsUID = namespaces.remove(key);
         assert nsUID != null;
         RepositoryUtils.remove(nsUID);

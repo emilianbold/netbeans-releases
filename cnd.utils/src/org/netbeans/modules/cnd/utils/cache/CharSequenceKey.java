@@ -46,8 +46,8 @@ import java.util.Comparator;
  *
  * @author Alexander Simon
  */
-public final class CharSequenceKey implements CharSequence, Comparable<CharSequence> {
-    private static final CharSequence EMPTY = new CharSequenceKey(new byte[]{});
+public final class CharSequenceKey implements TinyCharSequence, Comparable<CharSequence> {
+    private static final TinyCharSequence EMPTY = new CharSequenceKey(new byte[]{});
     public static final Comparator<CharSequence> Comparator = new CharSequenceComparator();
     public static final Comparator<CharSequence> ComparatorIgnoreCase = new CharSequenceComparatorIgnoreCase();
     private final Object value;
@@ -58,9 +58,7 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
             return null;
         }
         //return s.toString();
-        if (s instanceof CharSequenceKey ||
-            s instanceof Fixed7CharSequenceKey ||
-            s instanceof Fixed15CharSequenceKey) {
+        if (s instanceof TinyCharSequence) {
             return s;
         }
         int n = s.length();
@@ -126,14 +124,14 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
         for (int i = fromIndex; i <= max; i++) {
             // look for first character
             if (text.charAt(i) != first) {
-                while (++i <= max && text.charAt(i) != first);
+                while (++i <= max && text.charAt(i) != first) {}
             }
 
             // found first character, now look at the rest of seq
             if (i <= max) {
                 int j = i + 1;
                 int end = j + seqLength - 1;
-                for (int k = 1; j < end && text.charAt(j) == seq.charAt(k); j++, k++);
+                for (int k = 1; j < end && text.charAt(j) == seq.charAt(k); j++, k++) {}
                 if (j == end) {
                     // found whole sequence
                     return i;
@@ -334,7 +332,7 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
         }
     }
 
-    private static final class Fixed7CharSequenceKey implements CharSequence, Comparable<CharSequence> {
+    private static final class Fixed7CharSequenceKey implements TinyCharSequence, Comparable<CharSequence> {
         private final int i1;
         private final int i2;
 
@@ -416,7 +414,7 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
         }
     }
 
-    private static final class Fixed15CharSequenceKey implements CharSequence, Comparable<CharSequence> {
+    private static final class Fixed15CharSequenceKey implements TinyCharSequence, Comparable<CharSequence> {
         private final int i1;
         private final int i2;
         private final int i3;
