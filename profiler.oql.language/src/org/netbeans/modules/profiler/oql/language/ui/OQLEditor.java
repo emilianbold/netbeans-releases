@@ -39,17 +39,10 @@
 
 package org.netbeans.modules.profiler.oql.language.ui;
 
-import java.io.IOException;
 import javax.swing.JEditorPane;
-import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.profiler.spi.OQLEditorImpl;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -64,22 +57,6 @@ public class OQLEditor extends OQLEditorImpl{
         editorPane = new JEditorPane();
 
         editorPane.setEditorKit(MimeLookup.getLookup(mimeType).lookup(EditorKit.class));
-        try {
-            //NOI18N
-            FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("editor.oql"); // NOI18N
-            DataObject dobj = DataObject.find(fo);
-
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-
-            Document doc = ec.openDocument();
-            doc.putProperty(EditorCookie.class, ec);
-            doc.putProperty(JEditorPane.class, editorPane);
-            editorPane.setDocument(doc);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        editorPane.setOpaque(false);
 
         return editorPane;
     }
