@@ -303,7 +303,7 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
     
     public void testCheckLookupContent() throws DataObjectNotFoundException {
         DataObject obj = DataObject.find(data);
-        checkLookup(obj, 13);
+        checkLookup(obj, 12);
     }
     
     private static void checkLookup(DataObject obj, int expected) throws DataObjectNotFoundException {
