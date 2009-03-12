@@ -72,7 +72,7 @@ public abstract class IssueCache {
 
     protected abstract void setTaskData(Issue issue, TaskData taskData);
 
-    public synchronized Issue setIssueData(String id, TaskData taskData) throws IOException {
+    public Issue setIssueData(String id, TaskData taskData) throws IOException {
         Issue issue;
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
@@ -151,11 +151,12 @@ public abstract class IssueCache {
         return seen;
     }
 
-    public synchronized Map<String, String> getSeenAttributes(String id) {
+    public Map<String, String> getSeenAttributes(String id) {
         IssueEntry entry;
         synchronized(CACHE_LOCK) {
             entry = getCache().get(id);
             if(entry == null) {
+                assert !SwingUtilities.isEventDispatchThread();
                 entry = createNewEntry(id);
                 readIssue(entry);
             }
