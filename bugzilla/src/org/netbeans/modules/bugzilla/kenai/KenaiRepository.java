@@ -64,7 +64,9 @@ public class KenaiRepository extends BugzillaRepository {
         super(repoName, url, user, password);
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
-        userMail = user + "@"+ host; // NOI18N XXX escape @?
+        // NOI18N XXX escape @?
+        // XXX what if user already mail address?
+        userMail = user + "@"+ host; 
         this.product = product;
     }
 
