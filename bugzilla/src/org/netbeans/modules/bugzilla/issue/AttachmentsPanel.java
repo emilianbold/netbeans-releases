@@ -42,6 +42,7 @@ package org.netbeans.modules.bugzilla.issue;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -53,8 +54,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
 import org.eclipse.core.runtime.CoreException;
 import org.jdesktop.layout.GroupLayout;
@@ -154,6 +157,7 @@ public class AttachmentsPanel extends JPanel {
                     .add(dateLabel)
                     .add(authorLabel)));
             for (BugzillaIssue.Attachment attachment : attachments) {
+                JPopupMenu menu = menuFor(attachment);
                 String description = attachment.getDesc();
                 String filename = attachment.getFilename();
                 Date date = attachment.getDate();
@@ -164,11 +168,17 @@ public class AttachmentsPanel extends JPanel {
                 filenameButton.setText(filename);
                 dateLabel = new JLabel(DateFormat.getDateInstance().format(date));
                 authorLabel = new JLabel(author);
+                descriptionLabel.setComponentPopupMenu(menu);
+                filenameButton.setComponentPopupMenu(menu);
+                dateLabel.setComponentPopupMenu(menu);
+                authorLabel.setComponentPopupMenu(menu);
                 descriptionGroup.add(descriptionLabel);
                 filenameGroup.add(filenameButton);
                 dateGroup.add(dateLabel);
                 authorGroup.add(authorLabel);
                 panel = createHighlightPanel();
+                panel.addMouseListener(new MouseAdapter() {}); // Workaround for bug 6272233
+                panel.setComponentPopupMenu(menu);
                 horizontalSubgroup.add(panel, 0, 0, Short.MAX_VALUE);
                 verticalGroup
                     .addPreferredGap(LayoutStyle.RELATED)
@@ -192,6 +202,12 @@ public class AttachmentsPanel extends JPanel {
         layout.setVerticalGroup(verticalGroup);
         ((CreateNewAction)createNewButton.getAction()).setLayoutGroups(horizontalGroup, newVerticalGroup);
         setLayout(layout);
+    }
+
+    private JPopupMenu menuFor(Attachment attachment) {
+        JPopupMenu menu = new JPopupMenu();
+        menu.add(new DefaultAttachmentAction(attachment));
+        return menu;
     }
 
     private void updateCreateNewButton(boolean noAttachments) {
@@ -297,6 +313,7 @@ public class AttachmentsPanel extends JPanel {
 
         public DefaultAttachmentAction(Attachment attachment) {
             this.attachment = attachment;
+            putValue(Action.NAME, NbBundle.getMessage(DefaultAttachmentAction.class, "AttachmentsPanel.DefaultAttachmentAction.name")); // NOI18N
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -306,7 +323,7 @@ public class AttachmentsPanel extends JPanel {
                         String filename = attachment.getFilename();
                         int index = filename.lastIndexOf('.'); // NOI18N
                         String prefix = (index == -1) ? filename : filename.substring(0, index);
-                        String suffix = (index == -1) ? null : filename.substring(index+1);
+                        String suffix = (index == -1) ? null : filename.substring(index);
                         File file = File.createTempFile(prefix, suffix);
                         attachment.getAttachementData(new FileOutputStream(file));
                         String contentType = attachment.getContentType();
