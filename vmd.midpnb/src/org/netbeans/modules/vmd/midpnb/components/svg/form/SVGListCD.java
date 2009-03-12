@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.vmd.api.flow.FlowSupport;
 import org.netbeans.modules.vmd.api.flow.visual.FlowNodeDescriptor;
 import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
@@ -153,10 +154,19 @@ public class SVGListCD extends ComponentDescriptor{
 
         @Override
         protected void designChanged(DesignEvent event) {
-            FlowNodeDescriptor nodeToUpdate = getComponent().getParentComponent().getPresenter(FlowInfoNodePresenter.class).getNodeDescriptor();
-            FlowScene fc = FlowSupport.getFlowSceneForDocument(getComponent().getDocument());
+            final FlowNodeDescriptor nodeToUpdate = getComponent().getParentComponent().getPresenter(FlowInfoNodePresenter.class).getNodeDescriptor();
+            final FlowScene fc = FlowSupport.getFlowSceneForDocument(getComponent().getDocument());
             fc.scheduleNodeDescriptorForOrdering (nodeToUpdate);
-            fc.resolveOrderInNodeDescriptors();
+            if (SwingUtilities.isEventDispatchThread()) {
+                fc.resolveOrderInNodeDescriptors();
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        fc.resolveOrderInNodeDescriptors();
+                    }
+                });
+            }
         }
 
         @Override
