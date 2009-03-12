@@ -239,6 +239,9 @@ public class JspIndenterTest extends TestBase2 {
 //        insertNewline("<style>\n     h1 {\n        <%= System.\n   somth() ^%>",
 //                      "<style>\n     h1 {\n        <%= System.\n   somth() \n        ^%>", null);
 
+        //#160092:
+        insertNewline("^<html>\n</html>\n", "\n^<html>\n</html>\n", null);
+        
         insertNewline("<jsp:useBean>^", "<jsp:useBean>\n    ^", null);
         insertNewline("^<jsp:body>", "\n^<jsp:body>", null);
 
