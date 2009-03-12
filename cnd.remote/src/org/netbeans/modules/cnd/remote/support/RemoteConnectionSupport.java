@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 public abstract class RemoteConnectionSupport {
 
     private JSch jsch;
-    /** TODO: deprecate and remove */
     protected final ExecutionEnvironment executionEnvironment;
     protected Session session;
     protected Channel channel;
