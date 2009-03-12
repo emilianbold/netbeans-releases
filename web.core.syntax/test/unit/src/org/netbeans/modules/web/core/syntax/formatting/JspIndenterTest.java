@@ -41,13 +41,21 @@ package org.netbeans.modules.web.core.syntax.formatting;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ext.html.parser.SyntaxElement;
+import org.netbeans.editor.ext.html.parser.SyntaxParser;
+import org.netbeans.editor.ext.html.parser.SyntaxParserListener;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
@@ -65,6 +73,9 @@ import org.netbeans.modules.web.core.syntax.JSPKit;
 import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.test.web.core.syntax.TestBase2;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 
@@ -128,51 +139,48 @@ public class JspIndenterTest extends TestBase2 {
         // override it because I've already done in setUp()
     }
 
-//    @Override
-//    protected BaseDocument getDocument(FileObject fo, String mimeType, Language language) {
-//        // for some reason GsfTestBase is not using DataObjects for BaseDocument construction
-//        // which means that for example Java formatter which does call EditorCookie to retrieve
-//        // document will get difference instance of BaseDocument for indentation
-//        try {
-//             DataObject dobj = DataObject.find(fo);
-//             assertNotNull(dobj);
-//
-//             EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
-//             assertNotNull(ec);
-//
-//             return (BaseDocument)ec.openDocument();
-//        }
-//        catch (Exception ex){
-//            fail(ex.toString());
-//            return null;
-//        }
-//    }
+    @Override
+    protected BaseDocument getDocument(FileObject fo, String mimeType, Language language) {
+        // for some reason GsfTestBase is not using DataObjects for BaseDocument construction
+        // which means that for example Java formatter which does call EditorCookie to retrieve
+        // document will get difference instance of BaseDocument for indentation
+        try {
+             DataObject dobj = DataObject.find(fo);
+             assertNotNull(dobj);
 
-//    private void forceHTMLParsingAndWait(String file, String mimeType, Language language) throws Exception {
-//        FileObject fo = getTestFile(file);
-//        BaseDocument doc = getDocument(fo, mimeType, language);
-//        LanguagePath htmlLP = LanguagePath.get(language);
-//        Semaphore s = new Semaphore(1);
-//        Listener l = new Listener(doc, s);
-//        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(l);
-//        s.acquire();
-//        s.release();
-//    }
-//
-//    private static class Listener extends EmbeddingUpdater {
-//        private Semaphore s;
-//        public Listener(Document doc, Semaphore s) throws InterruptedException {
-//            super(doc);
-//            this.s = s;
-//            s.acquire();
-//        }
-//        @Override
-//        public void parsingFinished(List<SyntaxElement> elements) {
-//            super.parsingFinished(elements);
-//            s.release();
-//        }
-//
-//    }
+             EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+             assertNotNull(ec);
+
+             return (BaseDocument)ec.openDocument();
+        }
+        catch (Exception ex){
+            fail(ex.toString());
+            return null;
+        }
+    }
+
+    private void forceHTMLParsingAndWait(String file, String mimeType, Language language) throws Exception {
+        FileObject fo = getTestFile(file);
+        BaseDocument doc = getDocument(fo, mimeType, language);
+        LanguagePath htmlLP = LanguagePath.get(language);
+        Semaphore s = new Semaphore(1);
+        Listener l = new Listener(doc, s);
+        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(l);
+        s.acquire();
+        s.release();
+    }
+
+    private static class Listener implements SyntaxParserListener {
+        private Semaphore s;
+        public Listener(Document doc, Semaphore s) throws InterruptedException {
+            this.s = s;
+            s.acquire();
+        }
+        public void parsingFinished(List<SyntaxElement> elements) {
+            s.release();
+        }
+
+    }
 
     @Override
     protected boolean runInEQ() {

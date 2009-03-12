@@ -480,6 +480,10 @@ public abstract class CslTestBase extends NbTestCase {
     }
     
     protected BaseDocument getDocument(FileObject fo) {
+        return getDocument(fo, getPreferredMimeType(), getPreferredLanguage().getLexerLanguage());
+    }
+
+    protected BaseDocument getDocument(FileObject fo, String mimeType, Language language) {
         try {
 //             DataObject dobj = DataObject.find(fo);
 //             assertNotNull(dobj);
@@ -488,7 +492,7 @@ public abstract class CslTestBase extends NbTestCase {
 //             assertNotNull(ec);
 //
 //             return (BaseDocument)ec.openDocument();
-            BaseDocument doc = getDocument(readFile(fo));
+            BaseDocument doc = getDocument(readFile(fo), mimeType, language);
             try {
                 DataObject dobj = DataObject.find(fo);
                 doc.putProperty(Document.StreamDescriptionProperty, dobj);
