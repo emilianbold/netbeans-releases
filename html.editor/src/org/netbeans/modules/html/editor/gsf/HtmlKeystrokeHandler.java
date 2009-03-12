@@ -88,14 +88,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         ts.move(caretOffset);
         String closingTagName = null;
         int end = -1;
-        while (ts.moveNext() && (ts.token().id() == HTMLTokenId.WS ||
-                (ts.token().id() == HTMLTokenId.TEXT && ts.token().text().toString().trim().length() == 0))) {
-            // skip whitespace
-        }
-        if (ts.token() == null) {
-            return -1;
-        }
-        if (ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL &&
+        if (ts.moveNext() && ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL &&
                 ts.token().text().toString().equals("</")) {
             if (ts.moveNext() && ts.token().id() == HTMLTokenId.TAG_CLOSE) {
                 closingTagName = ts.token().text().toString();
@@ -108,13 +101,6 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             return  -1;
         }
         boolean foundOpening = false;
-        if ((ts.token().id() == HTMLTokenId.WS ||
-                (ts.token().id() == HTMLTokenId.TEXT && ts.token().text().toString().trim().length() == 0))) {
-            while (ts.movePrevious() && (ts.token().id() == HTMLTokenId.WS ||
-                    (ts.token().id() == HTMLTokenId.TEXT && ts.token().text().toString().trim().length() == 0))) {
-                // skip whitespace
-            }
-        }
         if (ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL &&
                 ts.token().text().toString().equals(">")) {
             while (ts.movePrevious()) {
@@ -132,7 +118,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             //move caret
             target.getCaret().setDot(caretOffset);
             //and indent the line
-            indent.reindent(caretOffset - 1, end + 1);
+            indent.reindent(caretOffset + 1, end);
         }
         return -1;
     }
