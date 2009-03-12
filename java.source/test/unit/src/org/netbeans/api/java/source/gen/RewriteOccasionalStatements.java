@@ -1,0 +1,209 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 1997-2009 Sun Microsystems, Inc.
+ */
+package org.netbeans.api.java.source.gen;
+
+import com.sun.source.tree.*;
+import org.junit.Test;
+import org.netbeans.api.java.source.*;
+import org.netbeans.junit.NbTestSuite;
+
+import javax.lang.model.type.TypeKind;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * This test verifies issues from netbeans issueszila about rewriting trees.
+ *
+ * @author Rastislav Komara (<a href="mailto:moonko@netbeans.org">RKo</a>)
+ * @todo documentation
+ */
+public class RewriteOccasionalStatements extends GeneratorTest {
+    private static final String TEST_CONTENT = "\n" +
+            "public class NewArrayTest {\n" +
+            "\n" +
+            "int[] test = new int[3];" +
+            "}\n";
+
+    public RewriteOccasionalStatements(String aName) {
+        super(aName);
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTestSuite(RewriteOccasionalStatements.class);
+        return suite;
+    }
+
+    @Test
+    public void test158337regresion1() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,TEST_CONTENT);
+        String golden = "\n" +
+                "public class NewArrayTest {\n" +
+                "\n" +
+                "int[] test = new int[5];" +
+                "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                Tree node = extractOriginalNode(cut);
+                TreeMaker make = workingCopy.getTreeMaker();
+                List<ExpressionTree> init = new ArrayList<ExpressionTree>();
+                init.add(make.Literal(5));
+                ExpressionTree modified = make.NewArray(
+                        make.PrimitiveType(TypeKind.INT),
+                        init, new ArrayList<ExpressionTree>());
+                System.out.println("original: " + node);
+                System.out.println("modified: " + modified);
+                workingCopy.rewrite(node, modified);
+            }
+
+        };
+
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.out.println(res);
+        assertEquals(golden, res);
+    }
+
+
+    
+
+    @Test
+    public void test158337regresion2() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "\n" +
+                        "public class NewArrayTest {\n" +
+                        "\n" +
+                        "int[] test = new int[]{1,2,3};" +
+                        "}\n");
+        String golden = "\n" +
+                "public class NewArrayTest {\n" +
+                "\n" +
+                "int[] test = new int[]{4,5,6};" +
+                "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                Tree node = extractOriginalNode(cut);
+                TreeMaker make = workingCopy.getTreeMaker();
+                List<ExpressionTree> init = new ArrayList<ExpressionTree>();
+                init.add(make.Literal(4));
+                init.add(make.Literal(5));
+                init.add(make.Literal(6));
+                ExpressionTree modified = make.NewArray(
+                        make.PrimitiveType(TypeKind.INT),
+                        new ArrayList<ExpressionTree>(),
+                        init);
+                System.out.println("original: " + node);
+                System.out.println("modified: " + modified);
+                workingCopy.rewrite(node, modified);
+            }
+
+        };
+
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.out.println(res);
+        assertEquals(golden, res);
+    }
+
+
+
+    @Test
+    public void test158337() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,TEST_CONTENT);
+        String golden = "\n" +
+                "public class NewArrayTest {\n" +
+                "\n" +
+                "int[] test = new int[]{1, 2, 3};" +
+                "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                Tree node = extractOriginalNode(cut);
+                TreeMaker make = workingCopy.getTreeMaker();
+                List<ExpressionTree> init = new ArrayList<ExpressionTree>();
+                init.add(make.Literal(1));
+                init.add(make.Literal(2));
+                init.add(make.Literal(3));
+                ExpressionTree modified = make.NewArray(
+                        make.PrimitiveType(TypeKind.INT),
+                        new ArrayList<ExpressionTree>(),
+                        init);
+                System.out.println("original: " + node);
+                System.out.println("modified: " + modified);
+                workingCopy.rewrite(node, modified);
+            }
+        };
+
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.out.println(res);
+        assertEquals(golden, res);
+    }
+
+    private Tree extractOriginalNode(CompilationUnitTree cut) {
+        List<? extends Tree> classes = cut.getTypeDecls();
+        if (!classes.isEmpty()) {
+            ClassTree clazz = (ClassTree) classes.get(0);
+            List<? extends Tree> trees = clazz.getMembers();
+//                    System.out.println("Trees:" + trees);
+            if (trees.size() == 2) {
+                VariableTree tree = (VariableTree) trees.get(1);
+                return tree.getInitializer();
+            }
+        }
+
+        throw new IllegalStateException("There is no array declaration in expected place.");
+
+    }
+
+    String getGoldenPckg() {
+        return "";
+    }
+
+    String getSourcePckg() {
+        return "";
+    }
+}
