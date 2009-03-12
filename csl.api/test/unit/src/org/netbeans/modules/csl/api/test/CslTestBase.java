@@ -219,7 +219,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         classPathsForTest = createClassPathsForTest();
         if (classPathsForTest != null) {
-            RepositoryUpdater.getDefault().start();
+            RepositoryUpdater.getDefault().start(true);
             
             Logger logger = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests");
             logger.setLevel(Level.FINEST);
