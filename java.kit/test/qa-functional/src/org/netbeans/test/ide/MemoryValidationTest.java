@@ -42,10 +42,10 @@
 package org.netbeans.test.ide;
 
 import java.io.File;
+import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestCase;
 
 /**
  * Overall sanity check suite for IDE before commit.<br>
@@ -54,7 +54,6 @@ import org.netbeans.junit.NbTestCase;
  * @author Jiri.Skrivanek@sun.com, mrkam@netbeans.org
  */
 public class MemoryValidationTest extends JellyTestCase {
-
     private static boolean initBlacklistedClassesHandler() {        
         String configFN = new MemoryValidationTest("Dummy").getDataDir()
                 + File.separator + "BlacklistedClassesHandlerConfig.xml";
@@ -78,14 +77,14 @@ public class MemoryValidationTest extends JellyTestCase {
     }
     
     public static Test suite() {
-        
+
         boolean blacklistEnabled = initBlacklistedClassesHandler();
         
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             IDEValidation.class
-        ).clusters("ide[0-9]*|java[0-9]*").enableModules(".*").honorAutoloadEager(true);
+        ).clusters("ide[0-9]*|java[0-9]*").enableModules(".*").
+        honorAutoloadEager(true).failOnException(Level.INFO).failOnMessage(Level.WARNING);
 
-        
         if (blacklistEnabled) {
             conf = conf.addTest("testBlacklistedClassesHandler");
         }
