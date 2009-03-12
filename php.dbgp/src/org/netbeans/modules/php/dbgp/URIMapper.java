@@ -98,7 +98,7 @@ abstract class URIMapper {
                     File sourceBase = new File(bases[1]);
                     assert webServerBase != null;
                     assert sourceBase != null;
-                    return new BasesMapper(webServerBase, sourceBase, true);
+                    return new DefaultMapper(webServerBase, sourceBase);
                 }
             }
         }
@@ -125,10 +125,7 @@ abstract class URIMapper {
     }
 
     static URIMapper createBasedInstance(URI baseRemoteURI, File baseLocalFolder) {
-        return createBasedInstance(baseRemoteURI, baseLocalFolder, false);
-    }
-    static URIMapper createBasedInstance(URI baseRemoteURI, File baseLocalFolder, boolean isDefault) {
-        return new BasesMapper(baseRemoteURI, baseLocalFolder, isDefault);
+        return new DefaultMapper(baseRemoteURI, baseLocalFolder);
     }
 
     private static URI[] findBases(URI webServerURI, File sourceFile, File sourceRoot) {
@@ -161,16 +158,14 @@ abstract class URIMapper {
         return new URI[]{baseURI, baseFile.toURI()};
     }
 
-    private static class BasesMapper extends URIMapper {
+    private static class DefaultMapper extends URIMapper {
 
         private static final String FILE_SCHEME = "file";
         private URI baseWebServerURI;
         private URI baseSourceURI;
         private File baseSourceFolder;
-        private boolean isDefault;
 
-        BasesMapper(URI baseWebServerURI, File baseSourceFolder, boolean isDefault) {
-            this.isDefault = isDefault;
+        DefaultMapper(URI baseWebServerURI, File baseSourceFolder) {
             if (!baseSourceFolder.exists()) {
                 throw new IllegalArgumentException();
             }
@@ -195,7 +190,7 @@ abstract class URIMapper {
                 assert FILE_SCHEME.equals(webServerURI.getScheme());
                 return new File(baseSourceURI.resolve(relativizedURI));
             }
-            return isDefault ? new File(webServerURI) : null;
+            return new File(webServerURI);
         }
 
         @Override
@@ -212,7 +207,7 @@ abstract class URIMapper {
                     return retval;
                 }
             }
-            return isDefault ? toURI(sourceFile, includeHostPart) : null;
+            return toURI(sourceFile, includeHostPart);
         }
     }
 

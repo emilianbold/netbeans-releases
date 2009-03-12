@@ -41,9 +41,6 @@
 package org.netbeans.modules.php.dbgp;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.Semaphore;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
@@ -59,7 +56,6 @@ import org.openide.util.Cancellable;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.project.spi.XDebugStarter.class)
 public class DebuggerImpl implements XDebugStarter {
-    static String ID = "netbeans-PHP-DBGP-DebugInfo";// NOI18N
     static String SESSION_ID = "netbeans-PHP-DBGP-Session";// NOI18N
     static String ENGINE_ID = SESSION_ID + "/" + "PHP-Engine";// NOI18N
 
@@ -126,10 +122,8 @@ public class DebuggerImpl implements XDebugStarter {
         return null;
     }
 
-    public Semaphore debug(SessionId id,DebuggerOptions options, Callable<Cancellable> run) {
-        DebugSession session = new DebugSession(options);
-        DebuggerInfo dInfo = DebuggerInfo.create(ID, new Object[]{id, session});
-        DebuggerEngine[] engines = DebuggerManager.getDebuggerManager().startDebugging(dInfo);
-        return StartActionProviderImpl.getInstance().start(session, run);
+    public void debug(SessionId id,DebuggerOptions options, Callable<Cancellable> backendLauncher) {
+        SessionManager.getInstance().startSession(id, options, backendLauncher);
     }
+
 }
