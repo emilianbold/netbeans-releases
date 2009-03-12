@@ -90,9 +90,9 @@ public class HudsonJobNode extends AbstractNode {
         return Children.create(new ChildFactory<Object>() {
             final Object WORKSPACE = new Object();
             protected boolean createKeys(List<Object> toPopulate) {
-                toPopulate.addAll(job.getBuilds());
                 // XXX would be nicer to avoid adding this in case there is no remote workspace...
                 toPopulate.add(WORKSPACE);
+                toPopulate.addAll(job.getBuilds());
                 return true;
             }
             protected @Override Node createNodeForKey(Object key) {
