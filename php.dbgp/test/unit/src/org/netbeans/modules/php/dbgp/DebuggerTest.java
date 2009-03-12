@@ -119,7 +119,8 @@ public class DebuggerTest extends NbTestCase {
             }
 
             public void show(int kind, int column) {
-                throw new UnsupportedOperationException("Not supported.");
+                testObj.test();
+                move.goAhead();
             }
 
             public void setBreakpoint(boolean b) {
