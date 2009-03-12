@@ -100,6 +100,7 @@ public abstract class IssueCache {
                         // keep old values
                     }
                 } else {
+                    BugtrackingManager.LOG.log(Level.FINE, " issue {0} wasn't seen yet", new Object[] {id}); // NOI18N
                     if(isChanged(entry.seenAttributes, entry.issue.getAttributes())) {
                         BugtrackingManager.LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
                         entry.seen = false;
