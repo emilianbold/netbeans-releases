@@ -84,14 +84,16 @@ public class SessionId {
 
     synchronized void initialize(String uri, Pair<String, String> pathMapping) {
         if (uriMapper == null) {
+            Project project = getProject();
+            FileObject sourceRoot = project != null ? getSourceRoot() : sessionFileObject.getParent();
             uriMapper = URIMapper.createMultiMapper(URI.create(uri),
-                    sessionFileObject, getSourceRoot());
+                    sessionFileObject, sourceRoot);
             if (pathMapping != null && pathMapping.first != null && pathMapping.second != null) {
                 String uriPath = pathMapping.first;
                 String filePath = pathMapping.second;
                 if (uriPath.length() > 0 && filePath.length() > 0) {
                     if (!uriPath.startsWith("file:")) {//NOI18N
-                        uriPath = "file:"+uriPath;//NOI18N
+                        uriPath = "file:" + uriPath;//NOI18N
                     }
                     if (!uriPath.endsWith("/")) {//NOI18N
                         uriPath += "/";//NOI18N
@@ -150,7 +152,6 @@ public class SessionId {
         }
         return null;
     }
-
     private FileObject getSourceRoot() {
         final FileObject[] sourceObjects = getSourceObjects(getProject());
         return (sourceObjects != null && sourceObjects.length > 0) ? sourceObjects[0] : null;
