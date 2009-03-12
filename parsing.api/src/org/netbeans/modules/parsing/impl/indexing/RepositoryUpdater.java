@@ -72,6 +72,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -500,13 +501,25 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
     }
 
-    private void scheduleWork(Work work, boolean wait) {
+    private void scheduleWork(final Work work, boolean wait) {
         synchronized (this) {
             if (state == State.STARTED) {
                 state = State.INITIAL_SCAN_RUNNING;
                 getWorker().schedule(new RootsWork(scannedRoots2Dependencies, scannedBinaries) {
                     public @Override void getDone() {
                         try {
+                            if (work != null) {
+                                try {
+                                    long tm = System.currentTimeMillis();
+                                    LOGGER.fine("Initial scan waiting for projects"); //NOI18N
+                                    OpenProjects.getDefault().openProjects().get();
+                                    LOGGER.log(Level.FINE, "Initial scan blocked for {0} ms", System.currentTimeMillis() - tm); //NOI18N
+                                } catch (Exception ex) {
+                                    // ignore
+                                    LOGGER.log(Level.FINE, "Waiting for projects before initial scan timed out", ex); // NOI18N
+                                }
+                            } // else forced (eg. from tests) so don't wait for projects
+
                             super.getDone();
                         } finally {
                             if (state == State.INITIAL_SCAN_RUNNING) {
