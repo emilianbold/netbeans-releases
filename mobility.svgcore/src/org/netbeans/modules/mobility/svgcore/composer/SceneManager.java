@@ -330,7 +330,7 @@ public final class SceneManager {
                     if ( comp != null) {
                         SwingUtilities.invokeLater( new Runnable() {
                             public void run() {
-                                Cursor cursor = busyCursorOn ? Utilities.createProgressCursor(comp) : null;
+                                Cursor cursor = busyCursorOn ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) : null;
                                 comp.setCursor(cursor);
                             }
                         });

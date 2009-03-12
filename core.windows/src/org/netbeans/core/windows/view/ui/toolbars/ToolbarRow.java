@@ -449,8 +449,10 @@ class ToolbarRow extends JPanel {
                 continue;
             if( tc.getAlign() == ToolbarConstraints.Align.left ) {
                 Component c = findComponent(tc.getName());
-                x1 = c.getLocation().x + c.getWidth();
-                break;
+                if( null != c ) {
+                    x1 = c.getLocation().x + c.getWidth();
+                    break;
+                }
             }
         }
 
@@ -460,8 +462,10 @@ class ToolbarRow extends JPanel {
                 continue;
             if( tc.getAlign() == ToolbarConstraints.Align.right ) {
                 Component c = findComponent(tc.getName());
-                x2 = c.getLocation().x;
-                break;
+                if( null != c ) {
+                    x2 = c.getLocation().x;
+                    break;
+                }
             }
         }
         Rectangle res = new Rectangle( x1, 0, x2-x1, getHeight() );

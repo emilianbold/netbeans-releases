@@ -456,7 +456,7 @@ public class ProjectTab extends TopComponent
     private final RequestProcessor RP = new RequestProcessor();
     
     public void selectNodeAsync(FileObject object) {
-        setCursor( Utilities.createProgressCursor( this ) );
+        setCursor( Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) );
         open();
         requestActive();
         selectNodeAsyncNoSelect(object);

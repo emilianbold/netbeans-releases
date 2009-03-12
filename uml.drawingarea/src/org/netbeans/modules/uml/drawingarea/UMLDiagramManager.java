@@ -129,7 +129,7 @@ public class UMLDiagramManager
 
             if (tc != null)
             {
-                tc.setCursor(Utilities.createProgressCursor(tc));
+                tc.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             }
             showDiagram(sTOMFilename);
 
