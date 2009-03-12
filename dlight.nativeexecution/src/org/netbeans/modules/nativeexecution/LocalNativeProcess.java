@@ -144,22 +144,32 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                     "/bin/echo $$ && exec " + info.getCommandLine()); // NOI18N
 
             if (info.isUnbuffer()) {
-                String unbuffer = null; // NOI18N
+                String unbufferPath = null; // NOI18N
+                String unbufferLib = null; // NOI18N
 
                 try {
-                    unbuffer = info.macroExpander.expandPredefinedMacros(
-                            "bin/nativeexecution/$osname-$platform/unbuffer.$soext"); // NOI18N
+                    unbufferPath = info.macroExpander.expandPredefinedMacros(
+                            "bin/nativeexecution/$osname-$platform"); // NOI18N
+                    unbufferLib = info.macroExpander.expandPredefinedMacros(
+                            "unbuffer.$soext"); // NOI18N
                 } catch (ParseException ex) {
                 }
 
-                if (unbuffer != null) {
+                if (unbufferLib != null && unbufferPath != null) {
                     InstalledFileLocator fl = InstalledFileLocator.getDefault();
-                    File file = fl.locate(unbuffer, null, false); // NOI18N
+                    File file = fl.locate(unbufferPath + "/" + unbufferLib, null, false); // NOI18N
+                    unbufferPath = file.getParentFile().getAbsolutePath();
+                    
                     if (file != null && file.exists()) {
                         String ldPreload = env.get("LD_PRELOAD"); // NOI18N
-                        ldPreload = ((ldPreload == null) ? "" : ldPreload + ":") + // NOI18N
-                                file.getAbsolutePath(); // NOI18N
+                        ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
+                                unbufferLib; // NOI18N
                         env.put("LD_PRELOAD", ldPreload); // NOI18N
+
+                        String ldLibPath = env.get("LD_LIBRARY_PATH"); // NOI18N
+                        ldLibPath = ((ldLibPath == null) ? "" : (ldLibPath + ":")) + // NOI18N
+                                unbufferPath + ":" + unbufferPath + "_64"; // NOI18N
+                        env.put("LD_LIBRARY_PATH", ldLibPath); // NOI18N
                     }
                 }
             }
