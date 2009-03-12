@@ -55,13 +55,14 @@
                 </file>
             </folder>
             <folder name="navigator">
-                <file name="DLightIndicatorsTopComponent.wstcref" url="DLightIndicatorsTopComponentWstcref.xml"/>
-                <attr name="position" intvalue="50"/>
+                <file name="DLightIndicatorsTopComponent.wstcref" url="DLightIndicatorsTopComponentWstcref.xml">
+                    <attr name="position" intvalue="300"/>
+                </file>
             </folder>
             <folder name="rightSlidingSide">
                 <file name="DLightSessionsTopComponent.wstcref" url="DLightSessionsTopComponentWstcref.xml">
                     <attr name="position" intvalue="1500"/>
-                 </file>
+                </file>
             </folder>
 <!--            <folder name="explorer">
 
