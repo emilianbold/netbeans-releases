@@ -43,7 +43,20 @@ import java.awt.Color;
 import org.openide.util.Lookup;
 
 /**
- * Settings of current colors for out/err/in
+ * Settings of colors for normal, error, hyperlink, important hyperlink lines
+ * <p>
+ * Client usage:
+ * <pre>
+ *  // set important hyperlink color to red
+ *  InputOutput io = ...;
+ *  IOColors.setColor(io, IOColors.OutputType.HYPERLINK_IMPORTANT, Color.RED);
+ * </pre>
+ * How to support {@link IOColors} in own {@link IOProvider} implementation:
+ * <ul>
+ *   <li> {@link InputOutput} provided by {@link IOProvider} has to implement <a href="@org-openide-util@/org/openide/util/Lookup.Provider.html"><code>Lookup.Provider</code></a>
+ *   <li> Extend {@link IOColors} and implement its abstract methods
+ *   <li> Place instance of {@link IOColors} to {@link Lookup} provided by {@link InputOutput}
+ * </ul>
  * @since 1.16
  * @author Tomas Holy
  */

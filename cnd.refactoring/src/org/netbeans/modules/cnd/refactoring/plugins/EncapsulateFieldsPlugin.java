@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -336,10 +337,10 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
     }
 
     @Override
-    protected void processFile(CsmFile csmFile, ModificationResult mr) {
+    protected void processFile(CsmFile csmFile, ModificationResult mr, AtomicReference<Problem> outProblem) {
         if (refactoring.isAlwaysUseAccessors()) {
             for (EncapsulateFieldRefactoringPlugin ref : refactorings) {
-                ref.processFile(csmFile, mr);
+                ref.processFile(csmFile, mr, outProblem);
             }
         } else {
             // only generate definitions/declarations

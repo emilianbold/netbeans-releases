@@ -132,6 +132,16 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz159615.cpp");
     }
 
+    public void testIZ143044() throws Exception {
+        // IZ#143044 : Wrong overloaded method is not highlighted as error
+        performStaticTest("iz143044.cpp");
+    }
+
+    public void testIZ151909() throws Exception {
+        // IZ#151909 : Template friend classes (parser problem)
+        performStaticTest("iz151909.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

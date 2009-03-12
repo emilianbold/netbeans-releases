@@ -184,8 +184,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (o != null) {
             assert o instanceof ProjectBase;
             ProjectBase impl = (ProjectBase) o;
-            if (!impl.name.equals(name)) {
-                impl.setName(name);
+            CharSequence aName = ProjectNameCache.getManager().getString(name);
+            if (!impl.name.equals(aName)) {
+                impl.setName(aName);
             }
             impl.init(model, platformProject);
             if (TraceFlags.TIMING) {
@@ -207,7 +208,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return name;
     }
 
-    protected final void setName(String name) {
+    protected final void setName(CharSequence name) {
         this.name = name;
     }
 
@@ -2507,7 +2508,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert aFactory != null;
         assert this.name != null;
         PersistentUtils.writeUTF(name, aStream);
-        PersistentUtils.writeUTF(RepositoryUtils.getUnitName(getUID()), aStream);
+        //PersistentUtils.writeUTF(RepositoryUtils.getUnitName(getUID()), aStream);
         aFactory.writeUID(this.globalNamespaceUID, aStream);
         aFactory.writeStringToUIDMap(this.namespaces, aStream, false);
 
@@ -2530,7 +2531,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.name = PersistentUtils.readUTF(aStream, ProjectNameCache.getManager());
         assert this.name != null : "project name can not be null";
 
-        CharSequence unitName = PersistentUtils.readUTF(aStream, DefaultCache.getManager());
+        //CharSequence unitName = PersistentUtils.readUTF(aStream, DefaultCache.getManager());
 
         this.globalNamespaceUID = aFactory.readUID(aStream);
         assert globalNamespaceUID != null : "globalNamespaceUID can not be null";

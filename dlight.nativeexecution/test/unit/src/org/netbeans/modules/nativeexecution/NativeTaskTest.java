@@ -67,6 +67,7 @@ import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -81,11 +82,12 @@ public class NativeTaskTest {
     public static void setUpClass() throws Exception {
         String dirs = System.getProperty("netbeans.dirs", "");
         System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/dlight.suite/build/cluster:" + dirs);
+//        System.setProperty("netbeans.dirs", "E:\\work\\netbeans-src\\main\\nbbuild\\netbeans\\dlight1" + dirs);
 //        Handler handler = new LogHandler();
 //        Logger l = Logger.getLogger(ExecutionService.class.getName());
 //        l.setLevel(Level.ALL);
 //        l.addHandler(handler);
-        
+
 //        l = Logger.getLogger(ProcessInputStream.class.getName());
 //        l.setLevel(Level.ALL);
 //        l.addHandler(handler);
@@ -121,6 +123,34 @@ public class NativeTaskTest {
     static int count = 0;
 
     @Test
+    public void fake() {
+    }
+
+//    @Test
+    public void simpleTest() {
+        String cmd = "ls";
+        ExternalTerminal term = ExternalTerminalProvider.getTerminal("cmd.exe");
+        NativeProcessBuilder npb = new NativeProcessBuilder(new ExecutionEnvironment(), cmd).useExternalTerminal(term);
+        npb = npb.setArguments("/eetc");
+        StringWriter result = new StringWriter();
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "Demangling function "); // NOI18N
+
+        Future<Integer> res = execService.run();
+
+        try {
+            System.out.println("Result: " + res.get());
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+
+    }
+
+//    @Test
     public void testDemangle() {
 
         System.out.println("STart-TestDEmangle");

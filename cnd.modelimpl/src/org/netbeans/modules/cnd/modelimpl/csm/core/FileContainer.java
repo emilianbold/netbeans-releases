@@ -128,9 +128,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return EMPTY;
     }
 
-    private void trace(Map<String, Object/*String or String[]*/> map, String title) {
+    private void trace(Map<CharSequence, Object/*String or CharSequence[]*/> map, String title) {
 	System.err.printf("%s\n", title);
-	for( Map.Entry<String, Object> entry : map.entrySet() ) {
+	for( Map.Entry<CharSequence, Object> entry : map.entrySet() ) {
 	    System.err.printf("%s ->\n%s\n\n", entry.getKey(), entry.getValue());
 	}
     }
@@ -355,8 +355,8 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
         canonicFiles.put(canonicKey, newVal);
         if (TraceFlags.TRACE_CANONICAL_FIND_FILE) {
-            if (newVal instanceof String[]) {
-                System.err.println("entry for " + canonicKey + " while adding " + primaryKey + " is " + Arrays.asList((String[])newVal).toString());
+            if (newVal instanceof CharSequence[]) {
+                System.err.println("entry for " + canonicKey + " while adding " + primaryKey + " is " + Arrays.asList((CharSequence[])newVal).toString());
             } else {
                 System.err.println("entry for " + canonicKey + " while adding " + primaryKey + " is " + newVal);
             }
@@ -501,7 +501,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             if (arraySize == 1) {
                 aMap.put(key, PersistentUtils.readUTF(input, pathManager));
             } else {
-                final CharSequence[] value = new String[arraySize];
+                final CharSequence[] value = new CharSequence[arraySize];
                 for (int j = 0; j < arraySize; j++) {
                     CharSequence path = PersistentUtils.readUTF(input, pathManager);
                     assert path != null;
