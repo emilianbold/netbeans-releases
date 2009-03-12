@@ -44,6 +44,7 @@ package org.netbeans.modules.project.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
