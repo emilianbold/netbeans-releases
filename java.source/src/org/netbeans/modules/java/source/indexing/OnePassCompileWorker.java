@@ -117,7 +117,7 @@ final class OnePassCompileWorker extends CompileWorker {
                         computeFQNs(file2FQNs, cut, tuple.jfo);
                     }
                 } catch (Throwable t) {
-                    if (JavaCustomIndexer.LOG.isLoggable(Level.FINEST)) {
+                    if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                         final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
                         final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                         final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
@@ -128,7 +128,7 @@ final class OnePassCompileWorker extends CompileWorker {
                                     classPath == null  ? null : classPath.toString(),
                                     sourcePath == null ? null : sourcePath.toString()
                                     );
-                        JavaCustomIndexer.LOG.log(Level.FINEST, message, t);  //NOI18N
+                        JavaIndex.LOG.log(Level.FINEST, message, t);  //NOI18N
                     }
                     if (t instanceof ThreadDeath) {
                         throw (ThreadDeath) t;
@@ -203,7 +203,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 }
                 return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, root2Rebuild);
             } catch (Throwable t) {
-                if (JavaCustomIndexer.LOG.isLoggable(Level.FINEST)) {
+                if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                     final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
                     final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                     final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
@@ -214,7 +214,7 @@ final class OnePassCompileWorker extends CompileWorker {
                                 classPath == null  ? null : classPath.toString(),
                                 sourcePath == null ? null : sourcePath.toString()
                                 );
-                    JavaCustomIndexer.LOG.log(Level.FINEST, message, t);  //NOI18N
+                    JavaIndex.LOG.log(Level.FINEST, message, t);  //NOI18N
                 }
                 if (t instanceof ThreadDeath) {
                     throw (ThreadDeath) t;
