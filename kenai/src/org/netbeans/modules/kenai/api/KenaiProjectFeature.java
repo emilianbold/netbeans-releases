@@ -63,7 +63,7 @@ public final class KenaiProjectFeature {
             this.webL = featureData.web_url==null?null:new URL(featureData.web_url);
         } catch (MalformedURLException malformedURLException) {
             try {
-                this.webL = featureData.web_url == null ? null : new URL(System.getProperty("kenai.com.url") + "/" + featureData.web_url);
+                this.webL = featureData.web_url == null ? null : new URL(System.getProperty("kenai.com.url", "https://kenai.com") + "/" + featureData.web_url);
             } catch (MalformedURLException ex) {
                 Logger.getLogger(KenaiProjectFeature.class.getName()).log(Level.SEVERE, malformedURLException.getMessage(), ex);
             }
