@@ -63,10 +63,10 @@ public class MeasureJ2SEActionsTest {
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddToFavoritesTest.class)
         .addTest(SearchTest.class)
-//        .addTest(CloseAllEditorsTest.class)
-//        .addTest(CloseEditorTest.class)
-//        .addTest(CloseEditorModifiedTest.class)
-//        .addTest(CloseEditorTabTest.class)
+//  needs to be fixed      .addTest(CloseAllEditorsTest.class)
+//  needs to be fixed      .addTest(CloseEditorTest.class)
+//  needs to be fixed      .addTest(CloseEditorModifiedTest.class)
+//  needs to be fixed      .addTest(CloseEditorTabTest.class)
         .addTest(CommentingCodeInEditorTest.class)
 // commented until IZ 159587 is fixed        .addTest(CreateNBProjectTest.class)
         .addTest(CreateProjectTest.class)
@@ -84,7 +84,7 @@ public class MeasureJ2SEActionsTest {
         .addTest(SelectCategoriesInNewFileTest.class)
         .addTest(ShiftCodeInEditorTest.class)
         // needs to be fixed .addTest(SwitchToFileTest.class)
-//        .addTest(SwitchViewTest.class)
+//  needs to be fixed      .addTest(SwitchViewTest.class)
         .addTest(TypingInEditorTest.class)
         // needs tb moved to scenarios .addTest(RefactorFindUsagesTest.class)
         .enableModules(".*").clusters("ergonomics[0-9]|websvccommon[0-9]|apisupport[0-9]|profiler[0-9]|gsf[0-9]").reuseUserDir(true)));
