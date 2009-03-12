@@ -57,7 +57,6 @@ public class LandingPagePanel extends javax.swing.JPanel {
     private String projectName;
     private String repoPath;
 
-    /** Creates new form LandingPagePanel */
     public LandingPagePanel(String prjName, String path) {
 
         projectName = prjName;
@@ -67,11 +66,13 @@ public class LandingPagePanel extends javax.swing.JPanel {
 
         String repoMessage = "";
         if (repoPath != null || !"".equals(repoPath)) {
-            String repoPattern = NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.repoMessage");
+            String repoPattern = NbBundle.getMessage(LandingPagePanel.class,
+                    "LandingPagePanel.messageEditorPane.repoMessage");
             repoMessage = MessageFormat.format(repoPattern, repoPath);
         }
 
-        String messagePattern = NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.message");
+        String messagePattern = NbBundle.getMessage(LandingPagePanel.class,
+                "LandingPagePanel.messageEditorPane.message");
         String message = MessageFormat.format(messagePattern, projectName, repoMessage);
         messageEditorPane.setText(message);
         
@@ -101,13 +102,13 @@ public class LandingPagePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 24, 20, 30);
         add(iconLabel, gridBagConstraints);
 
-        jScrollPane1.setBorder(null);
+        jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane1.setEnabled(false);
 
         messageEditorPane.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
-        messageEditorPane.setBorder(null);
+        messageEditorPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         messageEditorPane.setContentType(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.contentType")); // NOI18N
         messageEditorPane.setEditable(false);
         messageEditorPane.setText(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.text")); // NOI18N

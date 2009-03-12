@@ -336,7 +336,10 @@ public class KenaiSearchPanel extends JPanel {
     public void removeNotify() {
         super.removeNotify();
         // cancel running tasks
-        getListModel().cancel();
+        KenaiProjectsListModel model = getListModel();
+        if (model != null) {
+            model.cancel();
+        }
     }
 
     // ----------
