@@ -63,10 +63,18 @@ public class OQLLanguageProvider extends LanguageProvider {
 
     @Override
     public LanguageEmbedding<?> findLanguageEmbedding (
-        Token arg0,
+        Token token,
         LanguagePath arg1,
         InputAttributes arg2
     ) {
+        if (token.id() == OQLTokenId.JSBLOCK) {
+            Language lang = Language.find("text/javascript");
+            if(lang == null) {
+                return null; //no language found
+            } else {
+                return LanguageEmbedding.create(lang, 0, 0, true);
+            }
+        }
         return null;
     }
 }
