@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.java.source.indexing;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
@@ -65,7 +67,6 @@ import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.Pair;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
@@ -80,7 +81,6 @@ import org.openide.util.Mutex.ExceptionAction;
  */
 public class JavaCustomIndexer extends CustomIndexer {
 
-    static final Logger LOG = Logger.getLogger(JavaCustomIndexer.class.getName());
     private static final CompileWorker[] WORKERS = {
         new OnePassCompileWorker(),
         new MultiPassCompileWorker()
@@ -88,7 +88,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     
     @Override
     protected void index(final Iterable<? extends Indexable> files, final Context context) {
-        LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", files);
+        JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", files);
         try {
             final ClassIndexManager cim = ClassIndexManager.getDefault();
             cim.writeLock(new ClassIndexManager.ExceptionAction<Void>() {
@@ -189,9 +189,9 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
 
-    private static void clear(Context context, JavaParsingContext javaContext, String sourceRelative, Set<ElementHandle<TypeElement>> removedTypes, Set<File> removedFiles) throws IOException {
-        List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
-        File classFolder = JavaIndex.getClassFolder(context);
+    private static void clear(final Context context, final JavaParsingContext javaContext, final String sourceRelative, final Set<ElementHandle<TypeElement>> removedTypes, final Set<File> removedFiles) throws IOException {
+        final List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
+        final File classFolder = JavaIndex.getClassFolder(context);
         String withoutExt = FileObjects.stripExtension(sourceRelative);
         File file = new File(classFolder, withoutExt + '.' + FileObjects.RS);
         boolean cont = true;
@@ -199,10 +199,8 @@ public class JavaCustomIndexer extends CustomIndexer {
             cont = false;
             try {
                 String binaryName = FileObjects.getBinaryName(file, classFolder);
-                List<File> files = new LinkedList<File>();
-                RepositoryUpdater.readRSFile(file, classFolder, files);
-                for (File f : files) {
-                    String className = FileObjects.getBinaryName (f, classFolder);
+                for (String className : readRSFile(file, classFolder)) {
+                    File f = new File (classFolder, FileObjects.convertPackage2Folder(className) + '.' + FileObjects.CLASS);
                     if (!binaryName.equals(className)) {
                         toDelete.add(Pair.<String,String>of (className, sourceRelative));
                         removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
@@ -255,6 +253,65 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
 
+    public static Collection<? extends ElementHandle<TypeElement>> getRelatedTypes (final File source, final File root) throws IOException {
+        final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>>();
+        final File classFolder = JavaIndex.getClassFolder(root);
+        String path = FileObjects.getRelativePath(root, source);
+        File file = new File (classFolder, path + '.' + FileObjects.RS); //NOI18N
+        boolean cont = true;
+        if (file.exists()) {
+            cont = false;
+            try {
+                String binaryName = FileObjects.getBinaryName(file, classFolder);
+                for (String className : readRSFile(file, classFolder)) {
+                    if (!binaryName.equals(className)) {
+                        result.add(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, className));
+                    } else {
+                        cont = true;
+                    }
+                }
+            } catch (IOException ioe) {
+                //The signature file is broken, report it but don't stop scanning
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+        if (cont && (file = new File(classFolder, path + '.' + FileObjects.CLASS)).exists()) {
+            String fileName = file.getName();
+            fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+            final String[] patterns = new String[] {fileName + '.', fileName + '$'}; //NOI18N
+            File parent = file.getParentFile();
+            FilenameFilter filter = new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    for (int i=0; i< patterns.length; i++) {
+                        if (name.startsWith(patterns[i])) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            };
+            for (File f : parent.listFiles(filter)) {
+                String className = FileObjects.getBinaryName (f, classFolder);
+                result.add(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, className));
+            }
+        }
+        return result;
+    }
+
+    private static List<String> readRSFile (final File file, final File root) throws IOException {
+        final List<String> binaryNames = new LinkedList<String>();
+        BufferedReader in = new BufferedReader (new InputStreamReader ( new FileInputStream (file), "UTF-8"));
+        try {
+            String binaryName;
+            while ((binaryName=in.readLine())!=null) {
+                binaryNames.add(binaryName);
+            }
+        } finally {
+            in.close();
+        }
+        return binaryNames;
+    }
+
     public static class Factory extends CustomIndexerFactory {
 
         @Override
@@ -264,13 +321,13 @@ public class JavaCustomIndexer extends CustomIndexer {
 
         @Override
         public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
-            LOG.log(Level.FINE, "filesDeleted({0})", deleted);
+            JavaIndex.LOG.log(Level.FINE, "filesDeleted({0})", deleted);
             clearFiles(context, deleted);
         }
 
         @Override
         public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
-            LOG.log(Level.FINE, "filesDirty({0})", dirty);
+            JavaIndex.LOG.log(Level.FINE, "filesDirty({0})", dirty);
             markDirtyFiles(context, dirty);
         }
 

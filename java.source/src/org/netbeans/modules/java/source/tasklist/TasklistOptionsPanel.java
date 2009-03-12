@@ -40,14 +40,7 @@
  */
 package org.netbeans.modules.java.source.tasklist;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.prefs.Preferences;
-import javax.swing.JCheckBox;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -57,16 +50,11 @@ import org.openide.util.ChangeSupport;
 public class TasklistOptionsPanel extends javax.swing.JPanel {
     
     private ChangeSupport cs;
-    private Map<JCheckBox, String> compilerSettings;
     
     /** Creates new form TasklistOptionsPanel */
     public TasklistOptionsPanel() {
         cs = new ChangeSupport(this);
         initComponents();
-        
-//        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
-//            setOpaque( false );
-        
     }
     
     void addChangeListener(ChangeListener l) {
@@ -185,37 +173,4 @@ private void enableTasklistStateChanged(javax.swing.event.ChangeEvent evt) {//GE
         enableDependencies.setEnabled(enableTasklist.isSelected());
         enableBadges.setEnabled(enableTasklist.isSelected());
     }
-    
-//    public void fillInCompilerSettings() {
-//        Preferences p = CompilerSettings.getNode();
-//        
-//        for (Entry<JCheckBox, String> e : compilerSettings.entrySet()) {
-//            e.getKey().setSelected(CompilerSettings.get(p, e.getValue()));
-//        }
-//        
-//        updateCompilerSettingsEnabled();
-//    }
-//    
-    
-//    public boolean isCompilerSettingsChanged() {
-//        Preferences p = CompilerSettings.getNode();
-//
-//        for (Entry<JCheckBox, String> e : compilerSettings.entrySet()) {
-//            if (e.getKey().isSelected() != CompilerSettings.get(p, e.getValue()))
-//                return true;
-//        }
-//
-//        return false;
-//    }
-//
-//    public void storeCompilerSettings() {
-//        
-//        Preferences p = CompilerSettings.getNode();
-//        
-//        for (Entry<JCheckBox, String> e : compilerSettings.entrySet()) {
-//            p.putBoolean(e.getValue(), e.getKey().isSelected());
-//        }
-//        RepositoryUpdater.getDefault().rebuildAll(false);
-//    }
-    
 }
