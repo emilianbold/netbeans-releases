@@ -271,7 +271,7 @@ public class Bugzilla {
     }
 
     /**
-     * Returns the request procussor for common tasks in bugzilla. 
+     * Returns the request processor for common tasks in bugzilla.
      * Do not use this when accesing a remote repository.
      * 
      * @return
