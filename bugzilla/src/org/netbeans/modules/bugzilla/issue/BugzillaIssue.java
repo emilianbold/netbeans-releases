@@ -249,14 +249,19 @@ public class BugzillaIssue extends Issue {
     public Map<String, String> getAttributes() {
         if(attributes == null) {
             attributes = new HashMap<String, String>();
+            String value;
             for (IssueField field : IssueField.values()) {
                 switch(field) {
                     case REPORTER_NAME:
                     case QA_CONTACT_NAME:
                     case ASSIGNED_TO_NAME:
                         continue;
+                    case DATE_MODIFICATION:
+                        value = getDateModification(data);
+                        break;
+                    default:    
+                        value = getFieldValue(field);
                 }
-                String value = getFieldValue(field);
                 if(value != null && !value.trim().equals("")) {
                     if(field == IssueField.DATE_MODIFICATION) {
                         attributes.put(Issue.ATTR_DATE_MODIFICATION, value);
@@ -451,7 +456,7 @@ public class BugzillaIssue extends Issue {
 
     public static String getDateModification(TaskData newData) {
         TaskAttribute a = newData.getRoot().getMappedAttribute(IssueField.DATE_MODIFICATION.key);
-        if(a==null) {
+        if(a == null) {
             a = newData.getRoot().getMappedAttribute("bug"); // XXX HACK
         }
         return a != null ? a.getValue() : "";
