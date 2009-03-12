@@ -96,7 +96,7 @@ public class QueryNode extends AsynchronousLeafNode<List<QueryResultHandle>> imp
 
     @Override
     protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-        if( panel == component ) {
+//        if( panel == component ) {
             synchronized( LOCK ) {
                 for( JLabel lbl : labels ) {
                     lbl.setForeground(foreground);
@@ -105,7 +105,7 @@ public class QueryNode extends AsynchronousLeafNode<List<QueryResultHandle>> imp
                     lb.setForeground(foreground, isSelected);
                 }
             }
-        }
+//        }
     }
 
     @Override

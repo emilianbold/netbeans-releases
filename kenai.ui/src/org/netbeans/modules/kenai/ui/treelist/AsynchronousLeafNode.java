@@ -107,16 +107,15 @@ public abstract class AsynchronousLeafNode<T> extends LeafNode {
                     if( null == loader ) {
                         startLoading();
                     }
-                } else {
-                    if( isSelected ) {
-                        lblLoading.setForeground(foreground);
-                        lblError.setForeground(foreground);
-                    } else {
-                        lblLoading.setForeground(ColorManager.getDefault().getDisabledColor());
-                        lblError.setForeground(ColorManager.getDefault().getErrorColor());
-                    }
-                    lblTitle.setForeground(foreground);
                 }
+                if( isSelected ) {
+                    lblLoading.setForeground(foreground);
+                    lblError.setForeground(foreground);
+                } else {
+                    lblLoading.setForeground(ColorManager.getDefault().getDisabledColor());
+                    lblError.setForeground(ColorManager.getDefault().getErrorColor());
+                }
+                lblTitle.setForeground(foreground);
             }
         }
         return panel;
@@ -205,6 +204,9 @@ public abstract class AsynchronousLeafNode<T> extends LeafNode {
                         panel.add( inner, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0) );
                     }
+                    panel.invalidate();
+                    panel.revalidate();
+                    panel.repaint();
                     loader = null;
                 }
                 fireContentChanged();

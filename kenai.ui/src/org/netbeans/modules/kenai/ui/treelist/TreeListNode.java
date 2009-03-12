@@ -261,6 +261,7 @@ public abstract class TreeListNode {
     }
 
     final protected void fireContentChanged() {
+        renderer = null;
         if( null != listener )
             listener.contentChanged(this);
     }
