@@ -113,8 +113,8 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
 
     private static void goToSource(VariableNode node ) {
         Line line = node.findDeclarationLine();
-        if ( line != null ) {
-            line.show(Line.SHOW_GOTO);
+        if (line != null) {
+            line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FRONT);
         }
     }
     
