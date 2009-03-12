@@ -152,7 +152,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         FileObject fobj = (dobj != null) ? dobj.getPrimaryFile() : null;
 
         // tag library coloring data stuff
-        JSPColoringData data = JspUtils.getJSPColoringData(doc, fobj);
+        JSPColoringData data = JspUtils.getJSPColoringData(fobj);
         // construct the listener
         PropertyChangeListener pList = new ColoringListener(doc, data, newSyntax);
         // attach the listener
@@ -307,7 +307,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     private void initLexerColoringListener(Document doc) {
         DataObject dobj = NbEditorUtilities.getDataObject(doc);
         FileObject fobj = (dobj != null) ? dobj.getPrimaryFile() : null;
-        JSPColoringData data = JspUtils.getJSPColoringData(doc, fobj);
+        JSPColoringData data = JspUtils.getJSPColoringData(fobj);
 
         if(data == null) {
             return ;
