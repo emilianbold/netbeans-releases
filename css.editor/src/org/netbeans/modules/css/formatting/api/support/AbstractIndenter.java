@@ -1189,7 +1189,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 i = 0 - shift;
             }
         }
-        assert i+shift >= 0 : "i="+i+" shift="+shift;
+        assert i+shift >= 0 : "i="+i+" shift="+shift+" commands="+indentations;
         return i+shift;
     }
 
