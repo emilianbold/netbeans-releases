@@ -95,8 +95,8 @@ public class RemoteServerList implements ServerList {
         // Creates the "localhost" record and any remote records cached in remote.preferences
         addServer(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), false, RemoteServerRecord.State.ONLINE);
         if (slist != null) {
-            for (String hkey : slist.split(",")) { // NOI18N
-                ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
+            for (String hostKey : slist.split(",")) { // NOI18N
+                ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hostKey);
                 if (env.isRemote()) {
                     addServer(env, false, RemoteServerRecord.State.OFFLINE);
                 }
