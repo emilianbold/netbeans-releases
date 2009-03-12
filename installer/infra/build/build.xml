@@ -273,7 +273,7 @@
 
         <if property="do.build.jtb">
         <!-- For Java Tools Bundle Update 7 we use NB6.5ML but EN SJSAS -->
-             <set property="gf.ml.build.type" value=""/>
+             <set property="gf.ml.build.type" value="ml"/>
         </if>
 
         <if property="gf.ml.build.type" value="">
@@ -388,7 +388,7 @@
 
 	<if property="gf.ml.build.type" value="ml">
 	        <set property="glassfish.build.number" value="20090114"/>
-	        <set property="sjsas.build.number" value="20090114"/>
+	        <set property="sjsas.build.number" value="20090309"/>
 	</if>
 
         <get
