@@ -207,7 +207,7 @@ public class SunStudioDataCollector
         try {
             os = HostInfoUtils.getOS(execEnv);
 
-            if (os == null || !"SunOS".equals(os) || os.indexOf("Linux") == -1) { // NOI18N
+            if (os == null || (!"SunOS".equals(os) && os.indexOf("Linux") == -1)) { // NOI18N
                 return ValidationStatus.invalidStatus("SunStudioDataCollector works on SunOS  and Linux only."); // NOI18N
             }
 
