@@ -82,10 +82,12 @@ public class IntToStringCache {
 	int size = stream.readInt();
 	
 	for (int i = 0; i < size; i++) {
-	    String value = getFileKey(stream.readUTF());
+	    String value = stream.readUTF();
 	    if (value.equals("")) {
 		value = null;
-	    }
+	    } else {
+                value = getFileKey(value);
+            }
 	    cache.add(value);
 	}
     }
