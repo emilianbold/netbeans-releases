@@ -1248,7 +1248,7 @@ public class AstRenderer {
                             break;
                     }
                 }
-                if (!hasVariables) {
+                if (!hasVariables && functionParameter) {
                     // unnamed parameter
                     processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, false);
                 }
