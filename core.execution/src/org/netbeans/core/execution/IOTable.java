@@ -45,7 +45,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 
 import org.openide.windows.InputOutput;
-import org.openide.windows.TopComponent;
 
 /** Tasks are supposed to obey following model: every task is a ThreadGroup
 * and the ThreadGroup is under another ThreadGroup - called "base".
@@ -127,7 +126,7 @@ final class IOTable extends Hashtable<InputOutput,TaskIO> {
             inout = iopc.getIO();
         }
 
-        TaskIO io = (TaskIO) get(inout);
+        TaskIO io = get(inout);
 
         // this piece of source is duplicated in exec engine
         // needed when classloader defines a class with an InpuOutput
@@ -136,24 +135,7 @@ final class IOTable extends Hashtable<InputOutput,TaskIO> {
         // following code is executed only if a task is dead but
         // some classes behave like Phoenix - they live again
         if (io == null) {
-            if (inout instanceof TopComponent) {
-                String allName = ((TopComponent) inout).getName();
-                io = getTaskIO(allName);
-                if (io == null) { // executed for the first time
-                    inout = org.openide.windows.IOProvider.getDefault().getIO(allName, true);
-                    io = new TaskIO(inout, allName);
-                } else {
-                    inout = io.getInout();
-                }
-                inout.select();
-                inout.setFocusTaken(true);
-                if ( iopc!= null) { // IOThreadIfc case
-                    iopc.setIO(inout);
-                }
-                put(inout, io);
-            } else {
-                return new TaskIO(inout); // foreign inout - just return a TaskIO
-            }
+            return new TaskIO(inout); // foreign inout - just return a TaskIO
         }
 
         return io;
@@ -188,7 +170,7 @@ final class IOTable extends Hashtable<InputOutput,TaskIO> {
     * @return free non-used TaskIO with given name or null
     */
     private TaskIO getFreeTaskIO(String name) {
-        TaskIO t = (TaskIO) freeTaskIOs.get(name);
+        TaskIO t = freeTaskIOs.get(name);
         if (t == null) {
             return null;
         }
@@ -210,14 +192,14 @@ final class IOTable extends Hashtable<InputOutput,TaskIO> {
     * @param io key for freed TaskIO
     */
     synchronized void free(ThreadGroup grp, InputOutput io) {
-        TaskIO t = (TaskIO) get(io);
+        TaskIO t = get(io);
         if (t == null) {
             return; // nothing ??
         } else if (t.foreign) {
             return;
         }
         if (t.getName() != TaskIO.VOID) { // Null
-            t = (TaskIO) freeTaskIOs.put(t.getName(), t); // free it
+            t = freeTaskIOs.put(t.getName(), t); // free it
             if (t != null) {
                 t.getInout().closeInputOutput();  // old one destroy
             }
