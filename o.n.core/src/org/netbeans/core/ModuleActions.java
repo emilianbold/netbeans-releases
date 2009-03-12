@@ -41,6 +41,7 @@
 
 package org.netbeans.core;
 
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.util.*;
 import java.util.logging.Level;
@@ -269,7 +270,7 @@ public class ModuleActions extends ActionManager
             err.fine("wait cursor already displayed on " + c);
         } else {
             err.fine("wait cursor will be displayed on " + c);
-            c.setCursor(org.openide.util.Utilities.createProgressCursor(c));
+            c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             c.setVisible(true);
         }
         glassPaneUses.put(key, c);

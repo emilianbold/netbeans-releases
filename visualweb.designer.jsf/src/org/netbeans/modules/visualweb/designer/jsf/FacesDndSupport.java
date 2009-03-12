@@ -391,7 +391,7 @@ class FacesDndSupport {
 
         // wrap process in a try to allow cleanup in the finally
         try {
-            comp.setCursor(org.openide.util.Utilities.createProgressCursor(comp));
+            comp.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
             // XXX TEMP First give the chance to the provider.
             // Later move it after the default behaviour.
