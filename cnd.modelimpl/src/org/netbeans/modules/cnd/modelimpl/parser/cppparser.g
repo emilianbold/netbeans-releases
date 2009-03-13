@@ -2615,7 +2615,7 @@ template_parameter
 
 protected template_template_parameter
     :
-	LITERAL_template LESSTHAN tpl:template_parameter_list GREATERTHAN 
+    template_head
 	LITERAL_class ID (ASSIGNEQUAL assigned_type_name)?
 	{ #template_template_parameter = #(#[CSM_TEMPLATE_TEMPLATE_PARAMETER, "CSM_TEMPLATE_TEMPLATE_PARAMETER"], #template_template_parameter);}
 

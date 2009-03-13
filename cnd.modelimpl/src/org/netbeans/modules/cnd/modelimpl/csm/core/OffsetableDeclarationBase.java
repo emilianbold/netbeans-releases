@@ -179,7 +179,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
             int inheritedTemplateParametersNumber = 0;
             if(templateClass){
                 templateParams = TemplateUtils.getTemplateParameters(templateClassNode,
-                    getContainingFile(), scope);
+                    getContainingFile(), scope, global);
                 inheritedTemplateParametersNumber = templateParams.size();
             }
             CharSequence templateSuffix = "";
@@ -202,10 +202,10 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 }                
                 if(templateParams != null) {
                     templateParams.addAll(TemplateUtils.getTemplateParameters(templateNode,
-                        getContainingFile(), scope));
+                        getContainingFile(), scope, global));
                 } else {
                     templateParams = TemplateUtils.getTemplateParameters(templateNode,
-                        getContainingFile(), scope);                    
+                        getContainingFile(), scope, global);
                 }
             }            
             return new TemplateDescriptor(

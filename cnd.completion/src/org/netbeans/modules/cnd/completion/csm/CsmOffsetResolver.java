@@ -128,6 +128,16 @@ public class CsmOffsetResolver {
                 CsmTemplateParameter templateParam = CsmOffsetUtilities.findObject(templateParams, context, offset);
                 if (templateParam != null && !CsmOffsetUtilities.sameOffsets(fun,templateParam)) {
                     context.setLastObject(templateParam);
+                    while(CsmKindUtilities.isTemplate(templateParam)) {
+                        templateParams = ((CsmTemplate)templateParam).getTemplateParameters();
+                        CsmTemplateParameter innerTemplateParam = CsmOffsetUtilities.findObject(templateParams, context, offset);
+                        if(innerTemplateParam != null && !CsmOffsetUtilities.sameOffsets(templateParam,innerTemplateParam)) {
+                            context.setLastObject(innerTemplateParam);
+                            templateParam = innerTemplateParam;
+                        } else {
+                            break;
+                        }
+                    }
                     return templateParam;
                 }
             }

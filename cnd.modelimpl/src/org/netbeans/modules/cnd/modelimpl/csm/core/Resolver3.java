@@ -880,13 +880,22 @@ public class Resolver3 implements Resolver {
         if( cls != null && cls.isValid()) {
             List<CsmClass> classesContainers = getClassesContainers(cls);
             for (CsmClass csmClass : classesContainers) {
-                String fqn = csmClass.getQualifiedName() + "::" + name; // NOI18N
-                CsmClassifier classifier = findClassifier(fqn);      
+                CsmClassifier classifier = null;
+                CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(name, true, true, false);
+                Iterator<CsmMember> it = CsmSelect.getClassMembers(csmClass, filter);
+                while (it.hasNext()) {
+                    CsmMember member = it.next();
+                    if (CsmKindUtilities.isClassifier(member)) {
+                        classifier = (CsmClassifier) member;
+                        if (!CsmKindUtilities.isClassForwardDeclaration(classifier)) {
+                            return classifier;
+                        }
+                    }
+                }
                 if (classifier != null) {
                     return classifier;
                 }
             }
-
         }
         return null;
     }

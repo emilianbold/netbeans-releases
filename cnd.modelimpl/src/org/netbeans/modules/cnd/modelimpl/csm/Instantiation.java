@@ -171,7 +171,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         assert false : "Unknown class for template instantiation:" + template; // NOI18N
         return template;
     }
-    
+
     public CsmFile getContainingFile() {
         return getTemplateDeclaration().getContainingFile();
     }
@@ -741,7 +741,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return "INSTANTIATION OF FUN PARAM: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
     }
-    
+
     private static Type createType(CsmType type, CsmInstantiation instantiation) {
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             CsmType instantiatedType = instantiation.getMapping().get(((CsmTemplateParameterType) type).getParameter());

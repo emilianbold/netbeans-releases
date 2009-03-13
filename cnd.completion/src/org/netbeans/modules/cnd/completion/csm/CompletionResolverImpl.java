@@ -851,14 +851,21 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (!analyzeTemplates.isEmpty()) {
             templateParameters = new ArrayList<CsmTemplateParameter>();
             for (CsmTemplate csmTemplate : analyzeTemplates) {
-                for (CsmTemplateParameter elem : csmTemplate.getTemplateParameters()) {
-                    if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
-                        templateParameters.add(elem);
-                    }
-                }
+                getTemplateParameters(csmTemplate, strPrefix, match, templateParameters);
             }
         }
         return templateParameters;
+    }
+
+    private void getTemplateParameters(CsmTemplate template, String strPrefix, boolean match, Collection<CsmTemplateParameter> out) {
+        for (CsmTemplateParameter elem : template.getTemplateParameters()) {
+            if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
+                out.add(elem);
+            }
+            if (CsmKindUtilities.isTemplate(elem)) {
+                getTemplateParameters((CsmTemplate) elem, strPrefix, match, out);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
