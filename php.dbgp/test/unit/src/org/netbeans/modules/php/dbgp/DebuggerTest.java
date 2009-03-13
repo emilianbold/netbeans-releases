@@ -51,7 +51,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.dbgp.breakpoints.LineBreakpoint;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.packets.RunCommand;
-import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
