@@ -87,11 +87,6 @@ public final class PathRecognizerRegistry {
         return (Set<String>) data[3];
     }
 
-    public String [] getMimeTypesAsArray() {
-        final Object [] data = getData();
-        return (String []) data[4];
-    }
-
     // -----------------------------------------------------------------------
     // private implementation
     // -----------------------------------------------------------------------
@@ -152,7 +147,6 @@ public final class PathRecognizerRegistry {
                 Collections.unmodifiableSet(libraryIds),
                 Collections.unmodifiableSet(binaryLibraryIds),
                 Collections.unmodifiableSet(mimeTypes),
-                mimeTypes.toArray(new String [mimeTypes.size()])
             };
         }
 
