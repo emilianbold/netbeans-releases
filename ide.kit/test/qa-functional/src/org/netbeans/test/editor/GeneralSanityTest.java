@@ -44,34 +44,30 @@ package org.netbeans.test.editor;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
 
-/**
- * test for reflection used in multiview module that retrieves a setting value from editor.
- *
- * @author mkleint
- */
-public class MultiviewEditorReflectionTest extends NbTestCase {
+public class GeneralSanityTest extends NbTestCase {
 
-    public MultiviewEditorReflectionTest(String name) {
+    public GeneralSanityTest(String name) {
         super(name);
     }
     
     public static Test suite() {
         return NbModuleSuite.create(
             NbModuleSuite.createConfiguration(
-                MultiviewEditorReflectionTest.class
-            ).gui(false).clusters(".*").enableModules(".*")
+                GeneralSanityTest.class
+            ).gui(false).clusters(".*").enableModules(".*").honorAutoloadEager(true)
         );
     }
 
-    public void testReflection() throws Exception {
-            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-            Class settingsClass = Class.forName("org.netbeans.editor.Settings", false, loader);
-            Class listenerClass = Class.forName("org.netbeans.editor.SettingsChangeListener", false, loader);
-            settingsClass.getMethod("addSettingsChangeListener", listenerClass);
-            settingsClass.getMethod("removeSettingsChangeListener", listenerClass);
+    public void testOrgOpenideOptionsIsDisabledAutoload() {
+        for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (m.getCodeNameBase().equals("org.openide.options")) {
+                assertFalse("org.openide.options shall not be enabled", m.isEnabled());
+                return;
+            }
+        }
+        fail("No org.openide.options module found, it should be present, but disabled");
     }
-
 }

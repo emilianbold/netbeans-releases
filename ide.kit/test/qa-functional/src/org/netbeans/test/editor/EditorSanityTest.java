@@ -59,19 +59,33 @@ import org.openide.util.Lookup;
  *
  * @author Vita Stejskal
  */
-public class EditorKitsRegistryTest extends NbTestCase {
+public class EditorSanityTest extends NbTestCase {
     
-    /** Creates a new instance of EditorKitsRegistryTest */
-    public EditorKitsRegistryTest(String name) {
+    /** Creates a new instance of EditorSanityTest */
+    public EditorSanityTest(String name) {
         super(name);
     }
 
     public static Test suite() {
         return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(EditorKitsRegistryTest.class).
+            NbModuleSuite.createConfiguration(EditorSanityTest.class).
                 clusters(".*").enableModules(".*").gui(false)
         );
     }
+
+    /**
+     * test for reflection used in multiview module that retrieves a setting value from editor.
+     *
+     * @author mkleint
+     */
+    public void testMultiviewEditorReflection() throws Exception {
+        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+        Class settingsClass = Class.forName("org.netbeans.editor.Settings", false, loader);
+        Class listenerClass = Class.forName("org.netbeans.editor.SettingsChangeListener", false, loader);
+        settingsClass.getMethod("addSettingsChangeListener", listenerClass);
+        settingsClass.getMethod("removeSettingsChangeListener", listenerClass);
+    }
+
     
     public void testHTMLEditorKits() {
         JEditorPane pane = new JEditorPane();
