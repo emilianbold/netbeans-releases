@@ -55,11 +55,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
@@ -77,7 +75,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -268,7 +266,7 @@ public class JavaFixAllImports {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaFixAllImports.class, "MSG_CannotFixImports"));
             } else {
                 //Run Fix Imports as soon as scan finishes. Make it cancellable
-                CancellableWhenScanFinishedTask taskWhenScanFinished = new CancellableWhenScanFinishedTask(javaSource, task);
+                CancellableTask taskWhenScanFinished = new CancellableTask(new ModificationRunnable(javaSource, task));
                 ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(JavaFixAllImports.class, "fix-imports"), taskWhenScanFinished); // NOI18N
                 taskWhenScanFinished.setHandle(handle);
                 handle.start();
@@ -279,34 +277,24 @@ public class JavaFixAllImports {
         }
     }
 
-    private class CancellableWhenScanFinishedTask implements Task<CompilationController>, Cancellable {
-        private Task<WorkingCopy> task;
+    private class ModificationRunnable implements Runnable {
         private JavaSource javaSource;
-        private AtomicBoolean cancel = new AtomicBoolean(false);
-        private ProgressHandle handle;
+        private Task<WorkingCopy> task;
 
-        public CancellableWhenScanFinishedTask(JavaSource javaSource, Task<WorkingCopy> task) {
+        public ModificationRunnable(JavaSource javaSource, Task<WorkingCopy> task) {
             this.javaSource = javaSource;
             this.task = task;
         }
 
-        public void setHandle(ProgressHandle handle) {
-            this.handle = handle;
-        }
-
-        public boolean cancel() {
-            cancel.set(true);
-            handle.finish();
-            return true;
-        }
-
-        public void run(CompilationController parameter) throws Exception {
-            if (!cancel.get()) {
+        public void run() {
+            try {
                 javaSource.runModificationTask(task).commit();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            handle.finish();
         }
     }
+
     
     private static List<TreePathHandle> getImportsFromSamePackage(WorkingCopy wc) {
         ImportVisitor v = new ImportVisitor(wc);
