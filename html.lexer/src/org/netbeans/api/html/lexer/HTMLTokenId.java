@@ -84,6 +84,8 @@ public enum HTMLTokenId implements TokenId {
     VALUE("value"),
     /** HTML javascript attribute value, such as one following onclick etc. */
     VALUE_JAVASCRIPT("value"),
+    /** HTML style attribute value */
+    VALUE_CSS("value"),
     /** HTML block comment: <code> &lt;!-- xxx --&gt; </code>.*/
     BLOCK_COMMENT("block-comment"),
     /** HTML/SGML comment.*/
@@ -159,6 +161,20 @@ public enum HTMLTokenId implements TokenId {
                     }
                     break;
                 // END TOR MODIFICATIONS
+                case VALUE_CSS:
+                    mimeType = STYLE_MIMETYPE;
+                    if(mimeType != null) {
+                        Language lang = Language.find(mimeType);
+                        if(lang == null) {
+                            return null; //no language found
+                        } else {
+                            PartType ptype = token.partType();
+                            int startSkipLength = ptype == PartType.COMPLETE || ptype == PartType.START ? 1 : 0;
+                            int endSkipLength = ptype == PartType.COMPLETE || ptype == PartType.END ? 1 : 0;
+                            return LanguageEmbedding.create(lang, startSkipLength, endSkipLength, true);
+                        }
+                    }
+                    break;
                 case SCRIPT:
                     mimeType = JAVASCRIPT_MIMETYPE;
                     break;

@@ -42,9 +42,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -79,12 +79,12 @@ public class ModelUtils {
     @NonNull
     public static <T extends ModelElement> List<? extends T> filter(Collection<T> allElements,
             final String... elementName) {
-        return filter(allElements, NameKind.EXACT_NAME, elementName);
+        return filter(allElements, QuerySupport.Kind.EXACT, elementName);
     }
 
     @NonNull
     public static <T extends ModelElement> List<? extends T> filter(Collection<T> allElements,
-            final NameKind nameKind, final String... elementName) {
+            final QuerySupport.Kind nameKind, final String... elementName) {
         return filter(allElements, new ElementFilter<T>() {
             public boolean isAccepted(T element) {
                 return (elementName.length == 0 || nameKindMatch(element.getName(), nameKind, elementName));
@@ -106,12 +106,12 @@ public class ModelUtils {
     @NonNull
     public static <T extends ModelElement> T getFirst(Collection<T> allElements,
             final String... elementName) {
-        return getFirst(filter(allElements, NameKind.EXACT_NAME, elementName));
+        return getFirst(filter(allElements, QuerySupport.Kind.EXACT, elementName));
     }
 
     @NonNull
     public static <T extends ModelElement> T getFirst(Collection<T> allElements,
-            final NameKind nameKind, final String... elementName) {
+            final QuerySupport.Kind nameKind, final String... elementName) {
         return getFirst(filter(allElements, new ElementFilter<T>() {
             public boolean isAccepted(T element) {
                 return (elementName.length == 0 || nameKindMatch(element.getName(), nameKind, elementName));
@@ -184,11 +184,11 @@ public class ModelUtils {
         boolean isAccepted(T element);
     }
 
-    public static boolean nameKindMatch(String text, NameKind nameKind, String... queries) {
+    public static boolean nameKindMatch(String text, QuerySupport.Kind nameKind, String... queries) {
         return nameKindMatch(true, text, nameKind, queries);
     }
 
-    private static boolean nameKindMatch(boolean forceCaseInsensitivity, String text, NameKind nameKind, String... queries) {
+    private static boolean nameKindMatch(boolean forceCaseInsensitivity, String text, QuerySupport.Kind nameKind, String... queries) {
         for (String query : queries) {
             switch (nameKind) {
                 case CAMEL_CASE:
@@ -211,7 +211,7 @@ public class ModelUtils {
                         return true;
                     }
                     break;
-                case EXACT_NAME:
+                case EXACT:
                     boolean retval = (forceCaseInsensitivity) ? text.equalsIgnoreCase(query) : text.equals(query);
                     if (retval) {
                         return true;

@@ -41,36 +41,38 @@
 
 package org.netbeans.modules.refactoring.ruby.ui;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
 import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
-import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyParseResult;
-import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -84,12 +86,15 @@ import org.openide.windows.TopComponent;
  * @author Jan Becicka
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position=100)
-public class RefactoringActionsProvider extends ActionsImplementationProvider{
+public class RefactoringActionsProvider extends ActionsImplementationProvider {
+
+    private static final Logger LOG = Logger.getLogger(RefactoringActionsProvider.class.getName());
     private static boolean isFindUsages;
-    
+
     /** Creates a new instance of RefactoringActionsProvider */
     public RefactoringActionsProvider() {
     }
+
     @Override
     public void doRename(final Lookup lookup) {
         Runnable task;
@@ -98,9 +103,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (isFromEditor(ec)) {
             task = new TextComponentTask(ec) {
                 @Override
-                protected RefactoringUI createRefactoringUI(RubyElementCtx selectedElement,int startOffset,int endOffset, final CompilationInfo info) {
+                protected RefactoringUI createRefactoringUI(RubyElementCtx selectedElement,int startOffset,int endOffset, final ParserResult parserResult) {
                     // If you're trying to rename a constructor, rename the enclosing class instead
-                    return new RenameRefactoringUI(selectedElement, info);
+                    return new RenameRefactoringUI(selectedElement, parserResult);
                 }
             };
         } else {
@@ -108,17 +113,21 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<RubyElementCtx> handles) {
                     String newName = getName(dictionary);
-                    if (newName!=null) {
-                        if (pkg[0]!= null)
+                    if (newName != null) {
+                        if (pkg[0] != null) {
                             return new RenameRefactoringUI(pkg[0], newName);
-                        else
-                            return new RenameRefactoringUI(selectedElements[0], newName, handles==null||handles.isEmpty()?null:handles.iterator().next(), cinfo==null?null:cinfo.get());
+                        } else {
+                            return new RenameRefactoringUI(selectedElements[0], newName,
+                                    handles == null || handles.isEmpty() ? null : handles.iterator().next(),
+                                    cinfo == null ? null : cinfo.get());
+                        }
+                    } else if (pkg[0] != null) {
+                        return new RenameRefactoringUI(pkg[0]);
+                    } else {
+                        return new RenameRefactoringUI(selectedElements[0],
+                                handles == null || handles.isEmpty() ? null : handles.iterator().next(),
+                                cinfo == null ? null : cinfo.get());
                     }
-                    else 
-                        if (pkg[0]!= null)
-                            return new RenameRefactoringUI(pkg[0]);
-                        else
-                            return new RenameRefactoringUI(selectedElements[0], handles==null||handles.isEmpty()?null:handles.iterator().next(), cinfo==null?null:cinfo.get());
                 }
             };
         }
@@ -219,14 +228,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (isFromEditor(ec)) {
             task = new TextComponentTask(ec) {
                 @Override
-                protected RefactoringUI createRefactoringUI(RubyElementCtx selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-                    return new WhereUsedQueryUI(selectedElement, info);
+                protected RefactoringUI createRefactoringUI(RubyElementCtx selectedElement,int startOffset,int endOffset, ParserResult parserResult) {
+                    return new WhereUsedQueryUI(selectedElement, parserResult);
                 }
             };
         } else {
             task = new NodeToElementTask(lookup.lookupAll(Node.class)) {
-                protected RefactoringUI createRefactoringUI(RubyElementCtx selectedElement, CompilationInfo info) {
-                    return new WhereUsedQueryUI(selectedElement, info);
+                protected RefactoringUI createRefactoringUI(RubyElementCtx selectedElement, ParserResult parserResult) {
+                    return new WhereUsedQueryUI(selectedElement, parserResult);
                 }
             };
         }
@@ -258,11 +267,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     public void doMove(final Lookup lookup) {
     }    
     
-    public static abstract class TextComponentTask implements Runnable, CancellableTask<CompilationController> {
-        private JTextComponent textC;
-        private int caret;
-        private int start;
-        private int end;
+    public static abstract class TextComponentTask extends UserTask implements Runnable {
+        
+        private final JTextComponent textC;
+        private final int caret;
+        private final int start;
+        private final int end;
         private RefactoringUI ui;
         
         public TextComponentTask(EditorCookie ec) {
@@ -274,49 +284,47 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             assert start != -1;
             assert end != -1;
         }
-        
-        public void cancel() {
-        }
-        
-        public void run(CompilationController cc) throws Exception {
-            cc.toPhase(Phase.RESOLVED);
-            org.jruby.nb.ast.Node root = AstUtilities.getRoot(cc);
-            if (root == null) {
-                // TODO How do I add some kind of error message?
-                System.out.println("FAILURE - can't refactor uncompileable sources");
-                return;
-            }
 
-            RubyElementCtx ctx = new RubyElementCtx(cc, caret);
-            if (ctx.getSimpleName() == null) {
-                return;
-            }
-            ui = createRefactoringUI(ctx, start, end, cc);
-        }
-        
-        public final void run() {
-            FileObject fo = null;
-            try {
-                Source source = RetoucheUtils.getSource(textC.getDocument());
-                source.runUserActionTask(this, false);
-                Collection<FileObject> fileObjects = source.getFileObjects();
-                if (fileObjects.size() > 0) {
-                    fo = fileObjects.iterator().next();
+        public void run(ResultIterator ri) throws Exception {
+            if (ri.getSnapshot().getMimeType().equals(RubyUtils.RUBY_MIME_TYPE)) {
+                ParserResult parserResult = AstUtilities.getParseResult(ri.getParserResult());
+                org.jruby.nb.ast.Node root = AstUtilities.getRoot(parserResult);
+                if (root != null) {
+                    RubyElementCtx ctx = new RubyElementCtx(parserResult, caret);
+                    if (ctx.getSimpleName() != null) {
+                        ui = createRefactoringUI(ctx, start, end, parserResult);
+                    }
+                } else {
+                    // TODO How do I add some kind of error message?
+                    System.out.println("FAILURE - can't refactor uncompileable sources");
                 }
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+            } else {
+                for (Embedding e : ri.getEmbeddings()) {
+                    run(ri.getResultIterator(e));
+                }
+            }
+        }
+
+        public final void run() {
+            try {
+                Source source = Source.create(textC.getDocument());
+                ParserManager.parse(Collections.singleton(source), this);
+            } catch (ParseException e) {
+                LOG.log(Level.WARNING, null, e);
                 return ;
             }
+
             TopComponent activetc = TopComponent.getRegistry().getActivated();
             
             if (ui!=null) {
-                if (fo != null) {
-                    ClasspathInfo classpathInfoFor = RetoucheUtils.getClasspathInfoFor(fo);
-                    if (classpathInfoFor == null) {
-                        JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotFindClasspath"));
-                        return;
-                    }
-                }
+                // XXX - Parsing API
+//                if (fo != null) {
+//                    ClasspathInfo classpathInfoFor = RetoucheUtils.getClasspathInfoFor(fo);
+//                    if (classpathInfoFor == null) {
+//                        JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotFindClasspath"));
+//                        return;
+//                    }
+//                }
                 
                 UI.openRefactoringUI(ui, activetc);
             } else {
@@ -328,106 +336,115 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             }
         }
 
-        
-        protected abstract RefactoringUI createRefactoringUI(RubyElementCtx selectedElement,int startOffset,int endOffset, CompilationInfo info);
+        protected abstract RefactoringUI createRefactoringUI(RubyElementCtx selectedElement, int startOffset, int endOffset, ParserResult info);
     }
-    
-    public static abstract class NodeToElementTask implements Runnable, CancellableTask<CompilationController>  {
-        private Node node;
+
+    public static abstract class NodeToElementTask extends UserTask implements Runnable {
+
+        private final Node node;
         private RefactoringUI ui;
-        
+
         public NodeToElementTask(Collection<? extends Node> nodes) {
             assert nodes.size() == 1;
             this.node = nodes.iterator().next();
         }
-        
-        public void cancel() {
-        }
-        
-        public void run(CompilationController info) throws Exception {
-            info.toPhase(Phase.ELEMENTS_RESOLVED);
-            org.jruby.nb.ast.Node root = AstUtilities.getRoot(info);
-            if (root != null) {
-                Element element = AstElement.create(info, root);
-                RubyElementCtx fileCtx = new RubyElementCtx(root, root, element, info.getFileObject(), info);
-                ui = createRefactoringUI(fileCtx, info);
-            }
-        }
-        
-        public final void run() {
-            DataObject o = node.getCookie(DataObject.class);
-            Source source = RetoucheUtils.getSource(o.getPrimaryFile());
-            assert source != null;
-            try {
-                source.runUserActionTask(this, false);
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-            UI.openRefactoringUI(ui);
-        }
-        protected abstract RefactoringUI createRefactoringUI(RubyElementCtx selectedElement, CompilationInfo info);
-    }
-    
-    public static abstract class NodeToFileObjectTask implements Runnable, CancellableTask<CompilationController> {
-        private Collection<? extends Node> nodes;
-        private RefactoringUI ui;
-        public NonRecursiveFolder pkg[];
-        public WeakReference<CompilationInfo> cinfo;
-        Collection<RubyElementCtx> handles = new ArrayList<RubyElementCtx>();
-     
-        public NodeToFileObjectTask(Collection<? extends Node> nodes) {
-            this.nodes = nodes;
-        }
-        
-        public void cancel() {
-        }
-        
-        public void run(CompilationController info) throws Exception {
-            info.toPhase(Phase.ELEMENTS_RESOLVED);
-            org.jruby.nb.ast.Node root = AstUtilities.getRoot(info);
-            if (root != null) {
-                RubyParseResult rpr = AstUtilities.getParseResult(info);
-                if (rpr != null) {
-                    AnalysisResult ar = rpr.getStructure();
-                    List<? extends AstElement> els = ar.getElements();
-                    if (els.size() > 0) {
-                        // TODO - try to find the outermost or most "relevant" module/class in the file?
-                        // In Java, we look for a class with the name corresponding to the file.
-                        // It's not as simple in Ruby.
-                        AstElement element = els.get(0);
-                        org.jruby.nb.ast.Node node = element.getNode();
-                        RubyElementCtx representedObject = new RubyElementCtx(root, node, element, info.getFileObject(), info);
-                        representedObject.setNames(element.getFqn(), element.getName());
-                        handles.add(representedObject);
-                    }
+
+        public void run(ResultIterator ri) throws ParseException {
+            if (ri.getSnapshot().getMimeType().equals(RubyUtils.RUBY_MIME_TYPE)) {
+                ParserResult parserResult = AstUtilities.getParseResult(ri.getParserResult());
+                org.jruby.nb.ast.Node root = AstUtilities.getRoot(parserResult);
+                if (root != null) {
+                    Element element = AstElement.create(parserResult, root);
+                    RubyElementCtx fileCtx = new RubyElementCtx(root, root, element, RubyUtils.getFileObject(parserResult), parserResult);
+                    ui = createRefactoringUI(fileCtx, parserResult);
+                }
+            } else {
+                for (Embedding e : ri.getEmbeddings()) {
+                    run(ri.getResultIterator(e));
                 }
             }
-            cinfo=new WeakReference<CompilationInfo>(info);
+        }
+
+        public final void run() {
+            try {
+                DataObject o = node.getCookie(DataObject.class);
+                Source source = Source.create(o.getPrimaryFile());
+                ParserManager.parse(Collections.singleton(source), this);
+            } catch (ParseException e) {
+                LOG.log(Level.WARNING, null, e);
+                return ;
+            }
+
+            if (ui != null) {
+                UI.openRefactoringUI(ui);
+            } else {
+                String key = "ERR_CannotRenameLoc"; // NOI18N
+                if (isFindUsages) {
+                    key = "ERR_CannotFindUsages"; // NOI18N
+                }
+                JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, key));
+            }
+        }
+
+        protected abstract RefactoringUI createRefactoringUI(RubyElementCtx selectedElement, ParserResult info);
+    }
+   
+    public static abstract class NodeToFileObjectTask extends UserTask implements Runnable {
+        
+        private final Collection<? extends Node> nodes;
+//        private RefactoringUI ui;
+        public final NonRecursiveFolder pkg[];
+        public WeakReference<ParserResult> cinfo;
+        Collection<RubyElementCtx> handles = new ArrayList<RubyElementCtx>();
+
+        public NodeToFileObjectTask(Collection<? extends Node> nodes) {
+            assert nodes != null;
+            this.nodes = nodes;
+            this.pkg = new NonRecursiveFolder[nodes.size()];
+        }
+
+        public void cancel() {
+        }
+
+        public void run(ResultIterator ri) throws ParseException {
+            if (ri.getSnapshot().getMimeType().equals(RubyUtils.RUBY_MIME_TYPE)) {
+                RubyParseResult parserResult = AstUtilities.getParseResult(ri.getParserResult());
+                org.jruby.nb.ast.Node root = AstUtilities.getRoot(parserResult);
+                if (root != null) {
+                    if (parserResult != null) {
+                        AnalysisResult ar = parserResult.getStructure();
+                        List<? extends AstElement> els = ar.getElements();
+                        if (els.size() > 0) {
+                            // TODO - try to find the outermost or most "relevant" module/class in the file?
+                            // In Java, we look for a class with the name corresponding to the file.
+                            // It's not as simple in Ruby.
+                            AstElement element = els.get(0);
+                            org.jruby.nb.ast.Node node = element.getNode();
+                            RubyElementCtx representedObject = new RubyElementCtx(
+                                    root, node, element, RubyUtils.getFileObject(parserResult), parserResult);
+                            representedObject.setNames(element.getFqn(), element.getName());
+                            handles.add(representedObject);
+                        }
+                    }
+                }
+                cinfo = new WeakReference<ParserResult>(parserResult);
+            }
         }
         
         public void run() {
             FileObject[] fobs = new FileObject[nodes.size()];
-            pkg = new NonRecursiveFolder[fobs.length];
             int i = 0;
-            for (Node node:nodes) {
+            for (Node node : nodes) {
                 DataObject dob = node.getCookie(DataObject.class);
-                if (dob!=null) {
+                if (dob != null) {
                     fobs[i] = dob.getPrimaryFile();
-                    Source source = RetoucheUtils.getSource(fobs[i]);
-                    if (source == null) {
-                        continue;
-                    }
-                    assert source != null;
+                    Source source = Source.create(fobs[i]);
                     try {
-                        source.runUserActionTask(this, false);
-                    } catch (IllegalArgumentException ex) {
-                        ex.printStackTrace();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+                        ParserManager.parse(Collections.singleton(source), this);
+                    } catch (ParseException ex) {
+                        LOG.log(Level.WARNING, null, ex);
                     }
-                    
+
                     pkg[i++] = node.getLookup().lookup(NonRecursiveFolder.class);
                 }
             }

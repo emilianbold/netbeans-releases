@@ -40,21 +40,22 @@ import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.EditRegions;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.PreviewableFix;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.EditRegions;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.PreviewableFix;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyParseResult;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
@@ -77,10 +78,10 @@ import org.openide.util.NbBundle;
  * </pre>
  * 
  * 
- * 
  * @author Tor Norbye
  */
 public class AttributeIsLocal extends RubyAstRule {
+    
     public AttributeIsLocal() {
     }
     
@@ -88,8 +89,8 @@ public class AttributeIsLocal extends RubyAstRule {
     private Set<String> attributeNames;
 
     public boolean appliesTo(RuleContext context) {
-        CompilationInfo info = context.compilationInfo;
-        RubyParseResult rpr = AstUtilities.getParseResult(info);
+        ParserResult parserResult = context.parserResult;
+        RubyParseResult rpr = AstUtilities.getParseResult(parserResult);
         AnalysisResult ar = rpr.getStructure();
         this.attributes = ar.getAttributes();
 
@@ -117,7 +118,7 @@ public class AttributeIsLocal extends RubyAstRule {
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         AstPath path = context.path;
-        CompilationInfo info = context.compilationInfo;
+        ParserResult parserResult = context.parserResult;
         
         String name = ((INameNode)node).getName();
         AstAttributeElement element = null;
@@ -174,12 +175,12 @@ public class AttributeIsLocal extends RubyAstRule {
             assert element != null;
             OffsetRange range = AstUtilities.getNameRange(node);
             List<HintFix> fixList = new ArrayList<HintFix>(1);
-            fixList.add(new ShowAttributeFix(info, element));
+            fixList.add(new ShowAttributeFix(parserResult, element));
             fixList.add(new AttributeConflictFix(context, node, true));
             fixList.add(new AttributeConflictFix(context, node, false));
-            range = LexUtilities.getLexerOffsets(info, range);
+            range = LexUtilities.getLexerOffsets(parserResult, range);
             if (range != OffsetRange.NONE) {
-                Hint desc = new Hint(this, getDisplayName(), info.getFileObject(), range, fixList, 50);
+                Hint desc = new Hint(this, getDisplayName(), RubyUtils.getFileObject(parserResult), range, fixList, 50);
                 result.add(desc);
             }
         }
@@ -245,20 +246,20 @@ public class AttributeIsLocal extends RubyAstRule {
 
         private EditList createEditList(boolean doit) throws Exception {
             BaseDocument doc = context.doc;
-            CompilationInfo info = context.compilationInfo;
+            ParserResult parserResult = context.parserResult;
             EditList edits = new EditList(doc);
             
             if (fixSelf) {
                 OffsetRange range = AstUtilities.getRange(node);
                 int start = range.getStart();
-                start = LexUtilities.getLexerOffset(info, start);
+                start = LexUtilities.getLexerOffset(parserResult, start);
                 if (start != -1) {
                     edits.replace(start, 0, "self.", false, 0); // NOI18N
                 }
             } else {
                 // Initiate synchronous editing:
                 String name = ((INameNode)node).getName();
-                Node root = AstUtilities.getRoot(info);
+                Node root = AstUtilities.getRoot(parserResult);
                 AstPath path = new AstPath(root, node);
                 Node scope = AstUtilities.findLocalScope(path.leaf(), path);
                 Set<OffsetRange> ranges = new HashSet<OffsetRange>();
@@ -271,7 +272,7 @@ public class AttributeIsLocal extends RubyAstRule {
                     }
                 }
                 if (doit) {
-                    EditRegions.getInstance().edit(info.getFileObject(), ranges, caretOffset);
+                    EditRegions.getInstance().edit(RubyUtils.getFileObject(parserResult), ranges, caretOffset);
                     return null;
                 } else {
                     String oldName = ((INameNode)path.leaf()).getName();
@@ -289,7 +290,7 @@ public class AttributeIsLocal extends RubyAstRule {
         private void addLocalRegions(Node node, String name, Set<OffsetRange> ranges) {
             if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
-                range = LexUtilities.getLexerOffsets(context.compilationInfo, range);
+                range = LexUtilities.getLexerOffsets(context.parserResult, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }
@@ -325,11 +326,11 @@ public class AttributeIsLocal extends RubyAstRule {
 
     private static class ShowAttributeFix implements HintFix {
 
-        private final CompilationInfo info;
+        private final ParserResult parserResult;
         private final AstAttributeElement element;
 
-        ShowAttributeFix(CompilationInfo info, AstAttributeElement element) {
-            this.info = info;
+        ShowAttributeFix(ParserResult parserResult, AstAttributeElement element) {
+            this.parserResult = parserResult;
             this.element = element;
         }
 
@@ -346,9 +347,9 @@ public class AttributeIsLocal extends RubyAstRule {
         }
 
         public void implement() throws Exception {
-            FileObject fo = info.getFileObject();
+            FileObject fo = RubyUtils.getFileObject(parserResult);
             int astOffset = element.getNode().getPosition().getStartOffset();
-            int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
+            int lexOffset = LexUtilities.getLexerOffset(parserResult, astOffset);
             if (lexOffset != -1) {
                 GsfUtilities.open(fo, lexOffset, element.getName());
             }

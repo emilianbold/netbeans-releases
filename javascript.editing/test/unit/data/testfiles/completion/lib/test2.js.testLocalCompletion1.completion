@@ -1,6 +1,6 @@
 Code completion result for source line:
 |alert('foo1 ' + foo1);
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 VARIABLE   arguments                                  null
 VARIABLE   bar1                                       
 VARIABLE   element1                                   

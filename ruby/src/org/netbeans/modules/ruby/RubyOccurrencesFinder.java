@@ -46,10 +46,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
 import java.util.Set;
 import javax.swing.text.BadLocationException;
-
 import org.jruby.nb.ast.AliasNode;
 import org.jruby.nb.ast.ArgsNode;
 import org.jruby.nb.ast.ArgumentNode;
@@ -82,18 +80,19 @@ import org.jruby.nb.ast.VCallNode;
 import org.jruby.nb.ast.YieldNode;
 import org.jruby.nb.ast.types.INameNode;
 import org.jruby.nb.lexer.yacc.ISourcePosition;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-
 
 /**
  * Walk through the JRuby AST and find occurrences of symbols related to the symbol under the cursor
@@ -106,7 +105,8 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class RubyOccurrencesFinder implements OccurrencesFinder {
+public class RubyOccurrencesFinder extends OccurrencesFinder {
+    
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;
@@ -134,14 +134,15 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
         cancelled = true;
     }
 
-    public void run(CompilationInfo info) {
+    @Override
+    public void run(Result info, SchedulerEvent event) {
         resume();
 
         if (isCancelled()) {
             return;
         }
 
-        FileObject currentFile = info.getFileObject();
+        FileObject currentFile = RubyUtils.getFileObject(info);
         if (currentFile != file) {
             // Ensure that we don't reuse results from a different file
             occurrences = null;
@@ -191,7 +192,7 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
         if (closest != null) {
             //ISourcePosition pos = closest.getPosition();
 
-            BaseDocument doc = (BaseDocument)info.getDocument();
+            BaseDocument doc = RubyUtils.getDocument(info);
             if (doc == null) {
                 // Document was just closed
                 return;
@@ -474,7 +475,8 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
         }
 
         if (highlights.size() > 0) {
-            if (rpr.getTranslatedSource() != null) {
+            // XXX Parsing API
+//            if (rpr.getTranslatedSource() != null) {
                 Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange,ColoringAttributes>(2*highlights.size());
                 for (Map.Entry<OffsetRange,ColoringAttributes> entry : highlights.entrySet()) {
                     OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
@@ -484,7 +486,7 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
                 }
                 
                 highlights = translated;
-            }
+//            }
 
             this.occurrences = highlights;
         } else {
@@ -495,8 +497,8 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
     private void highlightExits(
             final MethodDefNode node,
             final Map<OffsetRange, ColoringAttributes> highlights,
-            final CompilationInfo info) {
-        BaseDocument doc = (BaseDocument)info.getDocument();
+            final Result info) {
+        BaseDocument doc = RubyUtils.getDocument(info);
         if (doc == null) {
             return;
         }
@@ -518,10 +520,10 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
     private void highlightExitPoint(
             final Node node,
             final Map<OffsetRange, ColoringAttributes> highlights,
-            final CompilationInfo info) {
+            final Result info) {
         if (node.nodeId == NodeType.RETURNNODE) {
             OffsetRange astRange = AstUtilities.getRange(node);
-            BaseDocument doc = (BaseDocument)info.getDocument();
+            BaseDocument doc = RubyUtils.getDocument(info);
             if (doc != null) {
                 try {
                     OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
@@ -562,7 +564,7 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
 
                 OffsetRange lexRange = LexUtilities.getLexerOffsets(info, new OffsetRange(pos.getStartOffset(), pos.getEndOffset()));
                 if (lexRange != OffsetRange.NONE) {
-                    BaseDocument doc = (BaseDocument) info.getDocument();
+                    BaseDocument doc = RubyUtils.getDocument(info);
                     if (Utilities.getRowStart(doc, lexRange.getStart()) != Utilities.getRowStart(doc,
                             lexRange.getEnd())) {
                         // Highlight the first line - where the nonwhitespace is
@@ -1005,5 +1007,15 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
 
     private String getFunctionName(Node node) {
         return ((FCallNode) node).getName();
+    }
+
+    @Override
+    public int getPriority() {
+        return 200;
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
 }

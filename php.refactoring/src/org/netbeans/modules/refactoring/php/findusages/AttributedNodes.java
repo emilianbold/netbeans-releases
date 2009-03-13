@@ -55,11 +55,10 @@ import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Index;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
@@ -115,20 +114,20 @@ public class AttributedNodes extends DefaultVisitor {
     private Stack<DefinitionScope> scopes = new Stack<DefinitionScope>();
     private Map<ASTNode, AttributedElement> node2Element = new HashMap<ASTNode, AttributedElement>();
     private int offset;
-    private CompilationInfo info;
+    private ParserResult info;
     private Stack<ASTNode> nodes = new Stack<ASTNode>();
 
-    public AttributedNodes(CompilationInfo info) {
+    public AttributedNodes(ParserResult info) {
         this(info, -1);
     }
 
-    public AttributedNodes(CompilationInfo info, int o) {
+    public AttributedNodes(ParserResult info, int o) {
         this.offset = o;
         this.info = info;
         scopes.push(global = new DefinitionScope());
     }
 
-   public static AttributedNodes getInstance(CompilationInfo info) {
+   public static AttributedNodes getInstance(ParserResult info) {
         AttributedNodes a = info2Attr.get(info);
 
         if (a == null) {
@@ -143,14 +142,14 @@ public class AttributedNodes extends DefaultVisitor {
 
             long endTime = System.currentTimeMillis();
 
-            Logger.getLogger("TIMER").log(Level.FINE, "SemiAttribute global instance", new Object[]{info.getFileObject(), a});
-            Logger.getLogger("TIMER").log(Level.FINE, "SemiAttribute global time", new Object[]{info.getFileObject(), (endTime - startTime)});
+            Logger.getLogger("TIMER").log(Level.FINE, "SemiAttribute global instance", new Object[]{info.getSnapshot().getSource().getFileObject(), a});
+            Logger.getLogger("TIMER").log(Level.FINE, "SemiAttribute global time", new Object[]{info.getSnapshot().getSource().getFileObject(), (endTime - startTime)});
         }
 
         return a;
     }
 
-    public static AttributedNodes getInstance(CompilationInfo info, int stopOffset) {
+    public static AttributedNodes getInstance(ParserResult info, int stopOffset) {
         AttributedNodes a = new AttributedNodes(info, stopOffset);
 
         try {
@@ -723,7 +722,7 @@ public class AttributedNodes extends DefaultVisitor {
         return contextClassName;
     }
 
-    private CompilationInfo getInfo() {
+    private ParserResult getInfo() {
         return info;
     }
 
@@ -790,9 +789,8 @@ public class AttributedNodes extends DefaultVisitor {
                 if (el != null) {
                     retval.add(el);
                 } else {
-                    Index i = getInfo().getIndex(PhpSourcePath.MIME_TYPE);
-                    PHPIndex index = PHPIndex.get(i);
-                    for (IndexedClass m : index.getClasses(null, fName, NameKind.PREFIX)) {
+                    PHPIndex index = PHPIndex.get(info);
+                    for (IndexedClass m : index.getClasses(null, fName, QuerySupport.Kind.PREFIX)) {
                         String idxName = m.getName();
                         el = global.enterWrite(idxName, Kind.CLASS, m);
                         retval.add(el);
@@ -810,10 +808,9 @@ public class AttributedNodes extends DefaultVisitor {
 
     public void enterAllIndexedClasses() {
         if (name2ElementCache == null) {
-            Index i = getInfo().getIndex(PhpSourcePath.MIME_TYPE);
-            PHPIndex index = PHPIndex.get(i);
+            PHPIndex index = PHPIndex.get(info);
             name2ElementCache = new LinkedList<IndexedElement>();
-            name2ElementCache.addAll(index.getClasses(null, "", NameKind.PREFIX));
+            name2ElementCache.addAll(index.getClasses(null, "", QuerySupport.Kind.PREFIX));
         }
 
         for (IndexedElement f : name2ElementCache) {
@@ -876,9 +873,9 @@ public class AttributedNodes extends DefaultVisitor {
 
         }
     }
-    private static Map<CompilationInfo, AttributedNodes> info2Attr = new WeakHashMap<CompilationInfo, AttributedNodes>();
+    private static Map<ParserResult, AttributedNodes> info2Attr = new WeakHashMap<ParserResult, AttributedNodes>();
 
-    public static AttributedNodes AttributedNodes(CompilationInfo info) {
+    public static AttributedNodes AttributedNodes(ParserResult info) {
         AttributedNodes a = info2Attr.get(info);
 
         if (a == null) {
@@ -893,14 +890,14 @@ public class AttributedNodes extends DefaultVisitor {
 
             long endTime = System.currentTimeMillis();
 
-            Logger.getLogger("TIMER").log(Level.FINE, "AttributedNodes global instance", new Object[]{info.getFileObject(), a});
-            Logger.getLogger("TIMER").log(Level.FINE, "AttributedNodes global time", new Object[]{info.getFileObject(), (endTime - startTime)});
+            Logger.getLogger("TIMER").log(Level.FINE, "AttributedNodes global instance", new Object[]{info.getSnapshot().getSource().getFileObject(), a});
+            Logger.getLogger("TIMER").log(Level.FINE, "AttributedNodes global time", new Object[]{info.getSnapshot().getSource().getFileObject(), (endTime - startTime)});
         }
 
         return a;
     }
 
-    public static AttributedNodes AttributedNodes(CompilationInfo info, int stopOffset) {
+    public static AttributedNodes AttributedNodes(ParserResult info, int stopOffset) {
         AttributedNodes a = new AttributedNodes(info, stopOffset);
 
         try {
@@ -1216,23 +1213,22 @@ public class AttributedNodes extends DefaultVisitor {
             if (el != null) {
                 return el;
             }
-            Index i = getInfo().getIndex(PhpSourcePath.MIME_TYPE);
-            PHPIndex index = PHPIndex.get(i);
+            PHPIndex index = PHPIndex.get(info);
             int attrs = PHPIndex.ANY_ATTR;
 
             switch(k) {
                 case CONST:
-                for (IndexedConstant m : index.getAllClassConstants(null, getName(), name, NameKind.PREFIX)) {
+                for (IndexedConstant m : index.getAllClassConstants(null, getName(), name, QuerySupport.Kind.PREFIX)) {
                     String idxName = m.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
                     enclosedElements.enterWrite(idxName, Kind.CONST, m);
                 } break;
                 case FUNC:
-                for (IndexedFunction m : index.getAllMethods(null, getName(), name, NameKind.PREFIX, attrs)) {
+                for (IndexedFunction m : index.getAllMethods(null, getName(), name, QuerySupport.Kind.PREFIX, attrs)) {
                     enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
                 } break;
                 case VARIABLE:
-                for (IndexedConstant m : index.getAllFields(null, getName(), name, NameKind.PREFIX, attrs)) {
+                for (IndexedConstant m : index.getAllFields(null, getName(), name, QuerySupport.Kind.PREFIX, attrs)) {
                     String idxName = m.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
                     enclosedElements.enterWrite(idxName, Kind.VARIABLE, m);
@@ -1459,11 +1455,10 @@ public class AttributedNodes extends DefaultVisitor {
                 el = name2El.get(name);
             }
             if (el == null) {
-                Index i = getInfo().getIndex(PhpSourcePath.MIME_TYPE);
-                PHPIndex index = PHPIndex.get(i);
+                PHPIndex index = PHPIndex.get(info);
                 switch(k) {
                     case CONST:
-                    for (IndexedConstant m : index.getConstants(null, name, NameKind.PREFIX)) {
+                    for (IndexedConstant m : index.getConstants(null, name, QuerySupport.Kind.PREFIX)) {
                         String idxName = m.getName();
                         el = enterWrite(idxName, Kind.CONST, m);
                     }

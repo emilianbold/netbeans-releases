@@ -1,6 +1,6 @@
 Code completion result for source line:
 File.S| # should not offer constants (SEPARATOR)
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 KEYWORD    SCRIPT_LINES__                             null
 KEYWORD    STDERR                                     null

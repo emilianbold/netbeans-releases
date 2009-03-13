@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.IncludeElement;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.Scope;

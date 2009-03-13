@@ -270,6 +270,8 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
 
     public void undo() throws CannotUndoException {
         BaseDocument doc = (BaseDocument)getDocument();
+        doc.incrementDocVersion();
+
         inUndo = true;
 
         boolean notifyMod;
@@ -328,6 +330,8 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
 
     public void redo() throws CannotRedoException {
         BaseDocument doc = (BaseDocument)getDocument();
+        doc.incrementDocVersion();
+        
         boolean notifyMod;
         try {
             notifyMod = doc.notifyModifyCheckStart(0, "redo() vetoed"); // NOI18N

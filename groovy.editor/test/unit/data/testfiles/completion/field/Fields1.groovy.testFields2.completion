@@ -1,5 +1,5 @@
 Code completion result for source line:
 println "Hi: $ad|"
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 FIELD      ada                                        String

@@ -46,8 +46,8 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -55,15 +55,15 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.SourceModel;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
-import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -99,42 +99,36 @@ public class FastImportAction extends BaseAction {
 
             final int position = target.getCaretPosition();
             final String ident = Utilities.getIdentifier(Utilities.getDocument(target), position);
-            FileObject file = GsfUtilities.findFileObject(target.getDocument());
-
-            if (ident == null || file == null) {
+            
+            if (ident == null) {
                 Toolkit.getDefaultToolkit().beep();
                 return;
             }
+            try {
+                ParserManager.parse(Collections.singleton(Source.create(target.getDocument())), new UserTask() {
 
-            SourceModel model = SourceModelFactory.getInstance().getModel(file);
-            if (model != null) {
-                final CompilationInfo[] infoHolder = new CompilationInfo[1];
-                try {
-                    model.runUserActionTask(new CancellableTask<CompilationInfo>() {
-
-                        public void cancel() {
-                        }
-
-                        public void run(CompilationInfo info) throws Exception {
-                            importItem(info, where, caretRectangle, font, position, ident);
-                        }
-                    }, false);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        ParserResult info = (ParserResult) resultIterator.getParserResult();
+                        importItem(info, where, caretRectangle, font, position, ident);
+                    }
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
             }
+
 
         } catch (BadLocationException ex) {
             ErrorManager.getDefault().notify(ex);
         }
     }
 
-    private void importItem(final CompilationInfo info, final Point where, final Rectangle caretRectangle, final Font font, final int position, final String ident) {
+    private void importItem(final ParserResult info, final Point where, final Rectangle caretRectangle, final Font font, final int position, final String ident) {
         Model model = ModelFactory.getModel(info);
         OccurencesSupport occurencesSupport = model.getOccurencesSupport(position);
         Occurence occurence = occurencesSupport.getOccurence();
         if (occurence != null) {
-            FileObject baseFo = info.getFileObject();
+            FileObject baseFo = info.getSnapshot().getSource().getFileObject();
             File baseFile = FileUtil.toFile(baseFo);
             File baseFolder = baseFile.getParentFile();
             final LinkedHashSet<String> privileged = new LinkedHashSet<String>();
