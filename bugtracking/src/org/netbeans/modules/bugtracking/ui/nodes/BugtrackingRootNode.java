@@ -54,6 +54,7 @@ import javax.swing.Action;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -103,8 +104,7 @@ public class BugtrackingRootNode extends AbstractNode {
         return new Action[] {
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_CreateRepository")) {
                 public void actionPerformed(ActionEvent e) {
-                    RepositorySelector rs = new RepositorySelector();
-                    rs.create();
+                    BugtrackingUtil.createRepository();
                 }
             }
         };

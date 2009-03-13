@@ -73,16 +73,16 @@ public class RepositorySelector {
         return repo;
     }
 
-    public void edit(Repository repository) {
-        if(!selectorPanel.edit(repository)) return;
+    public boolean edit(Repository repository) {
+        if(!selectorPanel.edit(repository)) return false;
         Repository repo = selectorPanel.getRepository();
         try {
             repo.getController().applyChanges();
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            return;
+            return false;
         }
-        BugtrackingManager.getInstance().fireRepositoriesChanged(); 
+        return true;
     }
 
 }

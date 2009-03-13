@@ -50,6 +50,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.AbstractNode;
@@ -93,9 +94,7 @@ class RepositoryNode extends AbstractNode implements PropertyChangeListener {
             },
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_EditRepository")) {
                 public void actionPerformed(ActionEvent e) {
-                    RepositorySelector rs = new RepositorySelector();
-                    rs.edit(repository);
-                    BugtrackingManager.getInstance().fireRepositoriesChanged();
+                    BugtrackingUtil.editRepository(repository);
                 }
             },
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_RemoveRepository")) {

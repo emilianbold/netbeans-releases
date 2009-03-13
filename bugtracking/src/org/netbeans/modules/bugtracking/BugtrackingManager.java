@@ -201,6 +201,7 @@ public final class BugtrackingManager implements LookupListener {
     }
 
     public void fireRepositoriesChanged() {
+        // XXX should be connectors responsibility
         changeSupport.firePropertyChange(EVENT_REPOSITORIES_CHANGED, null, null);
     }
 }
