@@ -63,8 +63,6 @@ import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 
 /**
  * A singleton Subversion manager class, center of Subversion module. Use {@link #getInstance()} to get access
@@ -72,7 +70,7 @@ import org.openide.util.LookupListener;
  *
  * @author Maros Sandor
  */
-public class Subversion implements LookupListener {
+public class Subversion {
 
     /**
      * Fired when textual annotations and badges have changed. The NEW value is Set<File> of files that changed or NULL
@@ -139,11 +137,6 @@ public class Subversion implements LookupListener {
         addPropertyChangeListener(svcs);
 
 
-        hooksResult = (Result<? extends SvnHook>) Lookup.getDefault().lookupResult(SvnHook.class);
-        hooksResult.addLookupListener(this);
-    }
-
-    public void resultChanged(LookupEvent ev) {
         hooksResult = (Result<? extends SvnHook>) Lookup.getDefault().lookupResult(SvnHook.class);
     }
 
@@ -503,6 +496,9 @@ public class Subversion implements LookupListener {
     }
     
     public List<SvnHook> getHooks() {
+        if(hooksResult == null) {
+            return Collections.EMPTY_LIST;
+        }
         List<SvnHook> ret = new ArrayList<SvnHook>();
         Collection<? extends SvnHook> hooks = hooksResult.allInstances();
         if (hooks.size() > 0) {
