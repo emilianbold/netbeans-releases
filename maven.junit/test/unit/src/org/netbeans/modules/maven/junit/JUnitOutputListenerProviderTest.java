@@ -81,6 +81,19 @@ public class JUnitOutputListenerProviderTest {
                 "	at com.mycompany.mavenproject30.AppTest.testApp(AppTest.java:39)"
 
         }, stack);
+
+
+        t = JUnitOutputListenerProvider.constructTrouble("junit.framework.AssertionFailedError", "hello? expected:<2> but was:<1>",
+                "junit.framework.AssertionFailedError: hello? expected:&lt;2&gt; but was:&lt;1&gt;\n" +
+"	at junit.framework.Assert.fail(Assert.java:47)\n" +
+"	at junit.framework.Assert.failNotEquals(Assert.java:282)\n" +
+"	at junit.framework.Assert.assertEquals(Assert.java:64)\n" +
+"	at junit.framework.Assert.assertEquals(Assert.java:201)\n" +
+"	at com.mycompany.mavenproject30.AppTest.testApp2(AppTest.java:44)\n");
+
+        assertNotNull(t.getComparisonFailure());
+        stack = t.getStackTrace();
+        assertNotNull(stack);
         
     }
 

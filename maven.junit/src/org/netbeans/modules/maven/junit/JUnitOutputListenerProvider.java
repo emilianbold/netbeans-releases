@@ -161,11 +161,9 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
 
     static Trouble constructTrouble(String type, String message, String text) {
         Trouble t = new Trouble(true);
-        if (type.equals("junit.framework.ComparisonFailure")) { //NOI18N
-            Matcher match = COMPARISON_PATTERN.matcher(message);
-            if (match.matches()) {
-                t.setComparisonFailure(new Trouble.ComparisonFailure(match.group(1), match.group(2)));
-            }
+        Matcher match = COMPARISON_PATTERN.matcher(message);
+        if (match.matches()) {
+            t.setComparisonFailure(new Trouble.ComparisonFailure(match.group(1), match.group(2)));
         }
         String[] strs = StringUtils.split(text, "\n");
         List<String> lines = new ArrayList<String>();
