@@ -239,6 +239,17 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         assertEquals("Value taken from delegate", "Ahoj", a.getValue(Action.NAME));
 
     }
+
+    public void testEqualsNoStackOverflow() {
+        ActionListener myAction = myAction();
+        Action a1 = Actions.alwaysEnabled(myAction, "action1", null, true);
+        Action a2 = Actions.alwaysEnabled(myAction(), "action2", null, true);
+        // Tests fix of #155768 (no stack overflow)
+        assertFalse("Actions not expected to be equal", a1.equals(a2));
+
+        Action a11 = ((ContextAwareAction)a1).createContextAwareInstance(Lookup.EMPTY);
+        assertTrue("Actions expected to be equal", a1.equals(a11));
+    }
     
     private static int myListenerCounter;
     private static int myListenerCalled;
