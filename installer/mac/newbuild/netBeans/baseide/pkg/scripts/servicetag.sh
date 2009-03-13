@@ -45,6 +45,7 @@ if [ -n "$1" ] ; then
 
     ownership=`ls -nlda ~ | awk ' { print $3 ":" $4 } ' 2>/dev/null`
     [ -d ~/.netbeans ]  && chown "$ownership" ~/.netbeans
+    [ -d ~/.netbeans-registration ]  && chown -R "$ownership" ~/.netbeans-registration
     [ -f ~/.netbeans/.superId ]  && chown "$ownership" ~/.netbeans/.superId
 
 fi
