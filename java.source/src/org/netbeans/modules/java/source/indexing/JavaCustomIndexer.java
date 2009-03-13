@@ -95,7 +95,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         try {
             String sourceLevel = SourceLevelQuery.getSourceLevel(context.getRoot());
             if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel, true)) {
-                JavaIndex.LOG.fine("forcing clean due to source level change");
+                JavaIndex.LOG.fine("forcing reindex due to source level change");
                 IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
                 return;
             }
@@ -265,11 +265,9 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     public static void verifySourceLevel(URL root, String sourceLevel) throws IOException {
-        String existingSourceLevel = JavaIndex.getAttribute(root, SOURCE_LEVEL_ROOT, null);
-        if (sourceLevel != null && existingSourceLevel != null && !sourceLevel.equals(existingSourceLevel)) {
-            JavaIndex.LOG.log(Level.FINE, "source level change detected (provided={1}, existing={2}), refreshing whole source root ({0})", new Object[] {root.toExternalForm(), sourceLevel, existingSourceLevel});
+        if (JavaIndex.ensureAttributeValue(root, SOURCE_LEVEL_ROOT, sourceLevel, true)) {
+            JavaIndex.LOG.fine("forcing reindex due to source level change");
             IndexingManager.getDefault().refreshIndex(root, null);
-            return ;
         }
     }
 
