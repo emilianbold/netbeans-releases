@@ -120,9 +120,6 @@ public class BugzillaExecutor {
     }
 
     private boolean handleAuthenticate(CoreException ce) {
-        System.out.println("xxxxxxxxxx" + Thread.currentThread());
-        Thread.currentThread().dumpStack();
-        
         boolean edit = BugtrackingUtil.editRepository(repository);
         if(edit) {
             Bugzilla.getInstance().removeRepository(repository);
