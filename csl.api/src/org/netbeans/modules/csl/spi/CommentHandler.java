@@ -68,6 +68,16 @@ public interface CommentHandler {
     @NonNull
     public int[] getCommentBlocks(@NonNull Document doc, int from, int to);
 
+    /**
+     * Allows to modify the selection range.
+     *
+     * @return adjusted range or empty array if no un/comment operation is allowed
+     * in the range
+     */
+
+    @NonNull
+    public int[] getAdjustedBlocks(@NonNull Document doc, int from, int to);
+
     @NonNull
     public String getCommentStartDelimiter();
 
@@ -80,6 +90,9 @@ public interface CommentHandler {
      */
     public static abstract class DefaultCommentHandler implements CommentHandler {
 
+        public int[] getAdjustedBlocks(@NonNull Document doc, int from, int to) {
+            return new int[]{from,to};
+        }
 
         public int[] getCommentBlocks(final Document doc, final int from, final int to) {
             final ArrayList<Integer> comments = new ArrayList<Integer>();

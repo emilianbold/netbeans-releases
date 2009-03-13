@@ -80,12 +80,13 @@ public class ToggleBlockCommentAction extends ExtKit.ToggleCommentAction {
             int to = Utilities.isSelectionShowing(caret) ? target.getSelectionEnd() : caret.getDot();
 
             boolean lineSelection = false;
+            boolean inComment = isInComment(doc, from);
             if (from == to) {
                 //no selection
-                if (!isInComment(doc, from)) {
+                if (!inComment) {
                     try {
                         //check for commenting empty line
-                        if (Utilities.isRowEmpty(doc, from)) {
+                        if (Utilities.isRowEmpty(doc, from) || Utilities.isRowWhite(doc, from)) {
                             return;
                         }
 
@@ -99,6 +100,22 @@ public class ToggleBlockCommentAction extends ExtKit.ToggleCommentAction {
                 }
             }
 
+            if(!inComment && from == to) {
+                return ; //no-op
+            }
+
+            int[] adjustedRange = commentHandler.getAdjustedBlocks(doc, from, to);
+            if(adjustedRange.length == 0) {
+                return; //no-op
+            }
+
+            from = adjustedRange[0];
+            to = adjustedRange[1];
+
+            if(!inComment && from == to) {
+                return ; //no-op
+            }
+            
             final int comments[] = commentHandler.getCommentBlocks(doc, from, to);
 
             assert comments != null;
