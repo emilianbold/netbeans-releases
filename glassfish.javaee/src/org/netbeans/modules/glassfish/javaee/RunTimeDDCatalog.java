@@ -170,7 +170,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     private String shortDescriptionKey;
 
     /** Creates a new instance of RunTimeDDCatalog */
-    private RunTimeDDCatalog() {
+    public RunTimeDDCatalog() {
     }
     
     public void setInstanceProvider(ServerInstanceProvider ip) {
