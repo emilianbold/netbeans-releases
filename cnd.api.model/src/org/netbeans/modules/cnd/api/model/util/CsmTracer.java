@@ -284,8 +284,8 @@ public final class CsmTracer {
                 }
             }
             if (type.isReference()) {
-                sb.append("&");
-            } // NOI18N
+                sb.append("&"); // NOI18N
+            } 
             CsmClassifier classifier = type.getClassifier();
             if (classifier != null) {
                 sb.append(classifier.getQualifiedName());
@@ -667,8 +667,8 @@ public final class CsmTracer {
             }
         } else {
             indent();
-            print("<no includes>");
-            unindent(); // NOI18N
+            print("<no includes>"); // NOI18N
+            unindent();
         }
         Collection macros = file.getMacros();
         print("Macros:"); // NOI18N
@@ -679,8 +679,8 @@ public final class CsmTracer {
             }
         } else {
             indent();
-            print("<no macros>");
-            unindent(); // NOI18N
+            print("<no macros>"); // NOI18N
+            unindent();
         }
         Collection/*CsmDeclaration*/ objects = file.getDeclarations();
         for (Iterator iter = objects.iterator(); iter.hasNext();) {
