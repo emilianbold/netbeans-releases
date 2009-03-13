@@ -117,8 +117,12 @@
                 </file>
             </folder>
             <folder name="GrammarQueryManagers">
-                <file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog_1.instance"/>
-                <file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog.instance"/>
+                <file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog_1.instance">
+                    <attr name="position" intvalue="350"/>
+                </file>
+                <file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog.instance">
+                    <attr name="position" intvalue="375"/>
+                </file>
             </folder> <!-- GrammarQueryManagers -->
         </folder>
      </folder>
