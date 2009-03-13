@@ -137,6 +137,10 @@ public class BugzillaRepository extends Repository {
     @Override
     public void remove() {
         BugzillaConfig.getInstance().removeRepository(this.getDisplayName());
+        Query[] qs = getQueries();
+        for (Query q : qs) {
+            removeQuery((BugzillaQuery) q);
+        }
     }
 
     @Override
