@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
@@ -259,7 +260,15 @@ public class Resolver3 implements Resolver {
         if (ns != null) {
             CsmUID uid = UIDs.get(out);
             CharSequence fqn = out.getQualifiedName();
-            for (CsmDeclaration decl : ns.getDeclarations()) {
+            Collection<CsmOffsetableDeclaration> col = null;
+            if (ns instanceof NamespaceImpl) {
+                col = ((NamespaceImpl)ns).getDeclarationsRange(fqn,
+                        new Kind[]{Kind.CLASS, Kind.UNION, Kind.STRUCT, Kind.ENUM, Kind.TYPEDEF, Kind.TEMPLATE_DECLARATION, Kind.TEMPLATE_SPECIALIZATION, Kind.CLASS_FORWARD_DECLARATION});
+
+            } else {
+                col = ns.getDeclarations();
+            }
+            for (CsmDeclaration decl : col) {
                 if (CsmKindUtilities.isClassifier(decl) && decl.getQualifiedName().equals(fqn)) {
                     if (!UIDs.get(decl).equals(uid)) {
                         cls = (CsmClassifier)decl;
