@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -114,9 +115,9 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         assert(macroName != null);
         assert(macroName.length() > 0);
         assert(macroBody != null);
-        this.name = NameCache.getString(macroName);
+        this.name = NameCache.getManager().getString(macroName);
         this.kind = kind;
-        this.body = macroBody;
+        this.body = DefaultCache.getManager().getString(macroBody);
         if (macroParams != null) {
             this.params = Collections.unmodifiableList(macroParams);
         } else {
@@ -207,9 +208,9 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
 
     public MacroImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
-        this.body = NameCache.getString(PersistentUtils.readUTF(input));
+        this.body = PersistentUtils.readUTF(input, DefaultCache.getManager());
         assert this.body != null;
         this.kind = Kind.values()[input.readByte()];
         CharSequence[] out = PersistentUtils.readStrings(input, NameCache.getManager());

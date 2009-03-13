@@ -431,8 +431,8 @@ class NbIO implements InputOutput, Lookup.Provider {
         return ioTab != null ? ioTab.getToolTipText() : null;
     }
 
-    Color getColor(int type) {
-        return ioColors != null ? ioColors.getColor(type) : AbstractLines.DEF_COLORS[type];
+    Color getColor(IOColors.OutputType type) {
+        return ioColors != null ? ioColors.getColor(type) : AbstractLines.DEF_COLORS[type.ordinal()];
     }
 
     private class IOTabImpl extends IOTab {
@@ -502,14 +502,14 @@ class NbIO implements InputOutput, Lookup.Provider {
         Color[] clrs = new Color[4];
 
         @Override
-        protected Color getColor(int type) {
-            return clrs[type] != null ? clrs[type] : AbstractLines.DEF_COLORS[type];
+        protected Color getColor(OutputType type) {
+            return clrs[type.ordinal()] != null ? clrs[type.ordinal()] : AbstractLines.DEF_COLORS[type.ordinal()];
         }
 
         @Override
-        protected void setColor(int type, Color color) {
-            clrs[type] = color;
-            post(NbIO.this, IOEvent.CMD_DEF_COLORS, new Integer(type));
+        protected void setColor(OutputType type, Color color) {
+            clrs[type.ordinal()] = color;
+            post(NbIO.this, IOEvent.CMD_DEF_COLORS, type);
         }
     }
 }

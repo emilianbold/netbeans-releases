@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.CardLayout;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -53,6 +54,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -415,6 +417,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jLabel1 = new javax.swing.JLabel();
         platformsPanel = new javax.swing.JPanel();
         platformValue = org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory.getNbPlatformsComboxBox();
         platform = new javax.swing.JLabel();
@@ -426,10 +429,15 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         view = new org.openide.explorer.view.TreeTableView();
         viewLabel = new javax.swing.JLabel();
         buttonsPanel = new javax.swing.JPanel();
+        resolveButtonPanel = new javax.swing.JPanel();
+        hidingPanel = new javax.swing.JPanel();
+        resolveButton = new javax.swing.JButton();
         addProjectButton = new javax.swing.JButton();
         addClusterButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "jLabel1");
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -542,6 +550,23 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
         buttonsPanel.setLayout(new java.awt.GridLayout(1, 0, 5, 0));
 
+        resolveButtonPanel.setLayout(new java.awt.CardLayout());
+
+        hidingPanel.setLayout(null);
+        resolveButtonPanel.add(hidingPanel, "card3");
+
+        resolveButton.setForeground(java.awt.Color.red);
+        org.openide.awt.Mnemonics.setLocalizedText(resolveButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ResolveButton")); // NOI18N
+        resolveButton.setToolTipText(org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ResolveButtonTooltip")); // NOI18N
+        resolveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resolveButtonActionPerformed(evt);
+            }
+        });
+        resolveButtonPanel.add(resolveButton, "card2");
+
+        buttonsPanel.add(resolveButtonPanel);
+
         org.openide.awt.Mnemonics.setLocalizedText(addProjectButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_AddProject")); // NOI18N
         addProjectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -633,6 +658,35 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         if (ci != null)
             node.setClusterInfo(ci);
     }//GEN-LAST:event_editButtonActionPerformed
+
+    private void resolveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolveButtonActionPerformed
+        if (resolveFixInfo == null || ! resolveFixInfo.fixable)
+            return;
+        for (Node node : libChildren.getNodes()) {
+            ClusterNode cn = (ClusterNode) node;
+            for (Node modNode : cn.getChildren().getNodes()) {
+                String cnb = modNode.getName();
+                if (resolveFixInfo.toAdd.contains(cnb)) {
+                    Enabled en = (Enabled) modNode;
+                    assert ! en.isEnabled();
+                    en.setState(EnabledState.FULL_ENABLED, false);  // update cluster states only once
+                }
+            }
+            // standalone module cluster
+            if (cn.getProject() != null) {
+                NbModuleProvider nbmp = cn.getProject().getLookup().lookup(NbModuleProvider.class);
+                if (nbmp != null
+                        && nbmp.getModuleType() == NbModuleProvider.STANDALONE
+                        && resolveFixInfo.toAdd.contains(nbmp.getCodeNameBase())) {
+                    assert ! cn.isEnabled();
+                    ((Enabled) cn).setState(EnabledState.FULL_ENABLED, false);  // update cluster states only once
+                }
+            }
+        }
+        libChildren.setMergedKeys();    // update cluster states
+        resolveButton.setEnabled(false);
+        updateDependencyWarnings(false);
+    }//GEN-LAST:event_resolveButtonActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addClusterButton;
@@ -640,6 +694,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     private javax.swing.JPanel buttonsPanel;
     private javax.swing.JButton editButton;
     private javax.swing.JLabel filler;
+    private javax.swing.JPanel hidingPanel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JButton javaPlatformButton;
     private javax.swing.JComboBox javaPlatformCombo;
     private javax.swing.JLabel javaPlatformLabel;
@@ -648,6 +704,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     private javax.swing.JComboBox platformValue;
     private javax.swing.JPanel platformsPanel;
     private javax.swing.JButton removeButton;
+    private javax.swing.JButton resolveButton;
+    private javax.swing.JPanel resolveButtonPanel;
     private org.openide.explorer.view.TreeTableView view;
     private javax.swing.JLabel viewLabel;
     // End of variables declaration//GEN-END:variables
@@ -823,7 +881,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
         public abstract String getOrigin();
 
-        private void setState(EnabledState s, boolean propagate) {
+        protected void setState(EnabledState s, boolean propagate) {
             if (s == state) {
                 return;
             }
@@ -967,11 +1025,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
 
         @Override
-        public void setEnabled(boolean s) {
-            super.setEnabled(s);
-            if (ci != null && ci.isEnabled() != s) {
+        public void setState(EnabledState es, boolean propagate) {
+            super.setState(es, propagate);
+            if (ci != null && ci.isEnabled() != isEnabled()) {
                 ci = ClusterInfo.createFromCP(ci.getClusterDir(), ci.getProject(),
-                        ci.isPlatformCluster(), ci.getSourceRoots(), ci.getJavadocRoots(), s);
+                        ci.isPlatformCluster(), ci.getSourceRoots(), ci.getJavadocRoots(), isEnabled());
             }
         }
 
@@ -1374,7 +1432,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return universeModules;
     }
 
-    String[] findWarning(Set<UniverseModule> universeModules, Set<File> enabledClusters, Set<String> disabledModules) {
+    FixInfo findWarning(Set<UniverseModule> universeModules, Set<File> enabledClusters, Set<String> disabledModules) {
         SortedMap<String,UniverseModule> sortedModules = new TreeMap<String,UniverseModule>();
         Set<UniverseModule> excluded = new HashSet<UniverseModule>();
         Map<String,Set<UniverseModule>> providers = new HashMap<String,Set<UniverseModule>>();
@@ -1386,26 +1444,52 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 excluded.add(m);
             }
             sortedModules.put(cnb, m);
-            for (String tok : m.getProvidedTokens()) {
-                Set<UniverseModule> providersOf = providers.get(tok);
-                if (providersOf == null) {
-                    providersOf = new TreeSet<UniverseModule>(UNIVERSE_MODULE_COMPARATOR);
-                    providers.put(tok, providersOf);
+            addProviders(m, providers);
+        }
+
+        FixInfo fixInfo = new FixInfo();
+        Collection<UniverseModule> scannedModules = sortedModules.values();
+
+        RESTART:
+        for (;;) {
+            for (Iterator<UniverseModule> it = scannedModules.iterator(); it.hasNext();) {
+                UniverseModule m = it.next();
+                if (excluded.contains(m)) {
+                    continue;
                 }
-                providersOf.add(m);
+                fixInfo.resetCurrentAdditions();
+                boolean warningFound = findWarning(m, sortedModules, providers, excluded, fixInfo);
+                if (! warningFound)    // no missing dep for this module
+                    continue;
+                if (! fixInfo.fixable) {    // unfixable dep, bail out
+                    return fixInfo;
+                }
+                if (!fixInfo.isEmpty()) {
+                    assert fixInfo.fixable;
+                    // fixable dep, sortedModules, providers and excluded already updated, 
+                    // restart with copy of tailMap starting at either successor of m or 1st member of fixInfo.toAdd,
+                    // whichever comes sooner in sorted modules
+                    String additionCNB = (it.hasNext() ? it.next() : m).getCodeNameBase();
+                    scannedModules = sortedModules.tailMap(fixInfo.getRestartPointFor(additionCNB)).values();
+                    continue RESTART;
+                }
             }
+            break;
         }
-        for (UniverseModule m : sortedModules.values()) {
-            if (excluded.contains(m)) {
-                continue;
-            }
-            String[] warning = findWarning(m, sortedModules, providers, excluded);
-            if (warning != null) {
-                return warning;
-            }
-        }
-        return null;
+        return fixInfo;
     }
+
+    private void addProviders(UniverseModule m, Map<String, Set<UniverseModule>> providers) {
+        for (String tok : m.getProvidedTokens()) {
+            Set<UniverseModule> providersOf = providers.get(tok);
+            if (providersOf == null) {
+                providersOf = new TreeSet<UniverseModule>(UNIVERSE_MODULE_COMPARATOR);
+                providers.put(tok, providersOf);
+            }
+            providersOf.add(m);
+        }
+    }
+
     private static final Comparator<UniverseModule> UNIVERSE_MODULE_COMPARATOR = new Comparator<UniverseModule>() {
         Collator COLL = Collator.getInstance();
         public int compare(UniverseModule m1, UniverseModule m2) {
@@ -1448,26 +1532,84 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
         }
         
-        final String[] warning = findWarning(universe, enabledClusters, disabledModules);
+        final FixInfo fi = findWarning(universe, enabledClusters, disabledModules);
         
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-                if (warning != null) {
-                    String key = warning[0];
-                    String[] args = new String[warning.length - 1];
-                    System.arraycopy(warning, 1, args, 0, args.length);
+                CardLayout cl = (CardLayout) resolveButtonPanel.getLayout();
+                if (! fi.isEmpty()) {
+                    String key = fi.warning[0];
+                    String[] args = new String[fi.warning.length - 1];
+                    System.arraycopy(fi.warning, 1, args, 0, args.length);
                     category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
+                    resolveFixInfo = fi;
+                    resolveButton.setEnabled(fi.fixable);
+                    cl.last(resolveButtonPanel);
                 } else {
                     category.setErrorMessage(null);
+                    cl.first(resolveButtonPanel);
                 }
             }
         });
         
     }
 
-    // TODO C.P button "Resolve Dependencies", #122821
+    private FixInfo resolveFixInfo;
+    // package private for tests only
+    static class FixInfo {
 
-    private String[] findWarning(UniverseModule m, Map<String,UniverseModule> modules, Map<String,Set<UniverseModule>> providers, Set<UniverseModule> excluded) {
+        private static void putFixable(FixInfo fi, String cnb, String[] warning) {
+            if (! fi.fixable)
+                throw new IllegalStateException("Cannot put fixable error on top of unfixable one.\\nExisting: " + Arrays.toString(fi.warning)
+                        + "\\nNew: " + Arrays.toString(warning));
+            if (fi.warning == null)
+                fi.warning = warning;
+            fi.toAdd.add(cnb);
+            fi.currentAdditions.add(cnb);
+        }
+
+        private static void putUnfixable(FixInfo fi, String[] warning) {
+            fi.fixable = false;
+            fi.warning = warning;
+        }
+
+        String[] warning;
+        boolean fixable = true;
+        Set<String> toAdd = new HashSet<String>();
+        private SortedSet<String> currentAdditions = new TreeSet<String>();
+
+        private boolean isEmpty() {
+            return warning == null;
+        }
+
+        public SortedSet<String> getCurrentAdditions() {
+            return currentAdditions;
+        }
+
+        private void resetCurrentAdditions() {
+            currentAdditions.clear();
+        }
+
+        public String getRestartPointFor(String additionCNB)  {
+            currentAdditions.add(additionCNB);
+            return currentAdditions.first();
+        }
+    }
+
+    /**
+     *
+     * @param m
+     * @param modules
+     * @param providers
+     * @param excluded
+     * @param fi
+     * @return Returns <tt>true</tt> if issued warning for <tt>m</tt>, <tt>false</tt> if all deps for <tt>m</tt> are satisfied
+     */
+    private boolean findWarning(UniverseModule m,
+            Map<String,UniverseModule> modules,
+            Map<String,Set<UniverseModule>> providers,
+            Set<UniverseModule> excluded,
+            FixInfo fi) {
         // Check module dependencies:
         SortedSet<Dependency> deps = new TreeSet<Dependency>(new Comparator<Dependency>() {
             public int compare(Dependency d1, Dependency d2) {
@@ -1477,6 +1619,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         String mdn = m.getDisplayName();
         String mc = libChildren.findCluster(m.getCluster()).getDisplayName();
         deps.addAll(m.getModuleDependencies());
+        boolean ret = false;
         for (Dependency d : deps) {
             String codename = d.getName();
             String cnb;
@@ -1499,27 +1642,35 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
             UniverseModule dep = modules.get(cnb);
             if (dep == null) {
-                return new String[] {"ERR_no_dep", mdn, mc, cnb};
+                FixInfo.putUnfixable(fi, new String[] {"ERR_no_dep", mdn, mc, cnb});
+                return true;
             }
 
             String ddn = dep.getDisplayName();
             if (excluded.contains(dep)) {
                 String dc = libChildren.findCluster(dep.getCluster()).getDisplayName();
-                return new String[] {"ERR_excluded_dep", mdn, mc, ddn, dc};
+                // currently the only fixable error
+                FixInfo.putFixable(fi, cnb, new String[] {"ERR_excluded_dep", mdn, mc, ddn, dc});
+                // include added module again and see what happens...
+                excluded.remove(dep);
+                ret = true;
             }
             if (dep.getReleaseVersion() < mrvLo || dep.getReleaseVersion() > mrvHi) {
-                return new String[] {"ERR_bad_dep_mrv", mdn, mc, ddn};
+                FixInfo.putUnfixable(fi, new String[] {"ERR_bad_dep_mrv", mdn, mc, ddn});
+                return true;
             }
             if (d.getComparison() == Dependency.COMPARE_SPEC) {
                 SpecificationVersion needed = new SpecificationVersion(d.getVersion());
                 SpecificationVersion found = dep.getSpecificationVersion();
                 if (found == null || found.compareTo(needed) < 0) {
-                    return new String[] {"ERR_bad_dep_spec", mdn, mc, ddn};
+                    FixInfo.putUnfixable(fi, new String[] {"ERR_bad_dep_spec", mdn, mc, ddn});
+                    return true;
                 }
             } else if (d.getComparison() == Dependency.COMPARE_IMPL) {
                 String needed = d.getVersion();
                 if (!needed.equals("*") && !needed.equals(dep.getImplementationVersion())) { // NOI18N
-                    return new String[] {"ERR_bad_dep_impl", mdn, mc, ddn};
+                    FixInfo.putUnfixable(fi, new String[] {"ERR_bad_dep_impl", mdn, mc, ddn});
+                    return true;
                 }
             }
         }
@@ -1542,15 +1693,18 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
             if (!found) {
                 if (wouldBeProvider != null) {
-                    return new String[] {"ERR_only_excluded_providers", tok, mdn, mc,  // NOI18N
-                        wouldBeProvider.getDisplayName(), libChildren.findCluster(wouldBeProvider.getCluster()).getDisplayName()};
+                    // XXX may display dialog for choosing appropriate provider, turning this into fixable error
+                    FixInfo.putUnfixable(fi, new String[] {"ERR_only_excluded_providers", tok, mdn, mc,  // NOI18N
+                        wouldBeProvider.getDisplayName(), libChildren.findCluster(wouldBeProvider.getCluster()).getDisplayName()});
+                    return true;
                 } else {
-                    return new String[] {"ERR_no_providers", tok, mdn, mc}; // NOI18N
+                    FixInfo.putUnfixable(fi, new String[] {"ERR_no_providers", tok, mdn, mc}); // NOI18N
+                    return true;
                 }
             }
         }
-        // All clear for this module.
-        return null;
+        // no unfixable error for this module.
+        return ret;
     }
 
     private void updateJavaPlatformEnabled() { // #71631

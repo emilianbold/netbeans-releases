@@ -245,6 +245,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             declarationsLock.writeLock().unlock();
         }
         putFriend(decl);
+        put();
     }
 
     private void putFriend(CsmDeclaration decl) {
@@ -267,7 +268,6 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             }
             set.add(UIDs.get(fun));
         }
-        put();
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getUIDsRange(CharSequence from, CharSequence to) {

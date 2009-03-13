@@ -132,7 +132,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     @Override
     public CharSequence getQualifiedName() {
 	if( qualifiedName == null ) {
-	    qualifiedName = QualifiedNameCache.getString(findQualifiedName());
+	    qualifiedName = QualifiedNameCache.getManager().getString(findQualifiedName());
 	}
 	return qualifiedName;
     }
@@ -249,7 +249,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.ID ) {
                     if( token.getNextSibling() != null ) {
-                        l.add(NameCache.getString(token.getText()));
+                        l.add(NameCache.getManager().getString(token.getText()));
                     }
                 }
             }
@@ -299,10 +299,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     
     public VariableDefinitionImpl(DataInput input) throws IOException {
         super(input);
-        this.qualifiedName = PersistentUtils.readUTF(input);
-        if(this.qualifiedName != null) {    
-            this.qualifiedName = QualifiedNameCache.getString(this.qualifiedName);
-        }
+        this.qualifiedName = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         this.classOrNspNames = PersistentUtils.readStrings(input, NameCache.getManager());
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
         this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);

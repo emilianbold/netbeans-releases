@@ -59,7 +59,7 @@ public class LabelImpl extends StatementBase implements CsmStatement, CsmLabel {
 
     public LabelImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
-        label = NameCache.getString(ast.getFirstChild().getText());
+        label = NameCache.getManager().getString(ast.getFirstChild().getText());
     }
     
     public CsmStatement.Kind getKind() {

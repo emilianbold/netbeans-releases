@@ -277,7 +277,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
 
         @Override
         public CharSequence getText() {
-            return TextCache.getString(super.getText());
+            return TextCache.getManager().getString(super.getText());
         }        
     }
 
@@ -359,7 +359,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
 
         @Override
         public CharSequence getText() {
-            return TextCache.getString(super.getText());
+            return TextCache.getManager().getString(super.getText());
         }
     }
 

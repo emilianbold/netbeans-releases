@@ -72,7 +72,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
         startOffset = ((CsmAST)ast.getFirstChild()).getOffset();
         rawName = AstUtil.getRawNameInChildren(ast);
         
-        name = NameCache.getString(ast.getText());
+        name = NameCache.getManager().getString(ast.getText());
         if (!global) {
             Utils.setSelfUID(this);
         }
@@ -155,7 +155,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     
     public UsingDirectiveImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
         this.startOffset = input.readInt();
         this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());

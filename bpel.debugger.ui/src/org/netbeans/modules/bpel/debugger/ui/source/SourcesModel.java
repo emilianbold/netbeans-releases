@@ -56,9 +56,6 @@ NodeActionsProvider {
     private SourcePath              sourcePath;
     private BpelDebugger            debugger;
     private Vector                  listeners = new Vector ();
-    // set of filters
-    private Set                     enabledSourceRoots = new HashSet ();
-    private Set                     disabledSourceRoots = new HashSet ();
     
     public SourcesModel (ContextProvider lookupProvider) {
         sourcePath = lookupProvider.lookupFirst(null, SourcePath.class);
@@ -138,9 +135,7 @@ NodeActionsProvider {
     public Object getValueAt (Object node, String columnID) throws 
     UnknownTypeException {
         if (node instanceof String) {
-            if (columnID.equals ("use")) {
-                return Boolean.valueOf(isEnabled((String)node));
-            } else if (columnID.equals("processQName")) {
+            if (columnID.equals("processQName")) {
                 QName processQName = getProcessQName((String)node);
                 return processQName != null ? processQName.toString() : "";
             }
@@ -151,9 +146,7 @@ NodeActionsProvider {
     public boolean isReadOnly (Object node, String columnID) throws 
     UnknownTypeException {
         if (node instanceof String) {
-            if ( columnID.equals ("use")) {
-                return false;
-            } else if (columnID.equals("processQName")) {
+            if (columnID.equals("processQName")) {
                 return true;
             }
         }
@@ -163,10 +156,7 @@ NodeActionsProvider {
     public void setValueAt (Object node, String columnID, Object value) 
     throws UnknownTypeException {
         if (node instanceof String) {
-            if ( columnID.equals ("use")) {
-                setEnabled ((String) node, ((Boolean) value).booleanValue ());
-                return;
-            } else if (columnID.equals("processQName")) {
+            if (columnID.equals("processQName")) {
                 return;
             }
         }
@@ -193,33 +183,8 @@ NodeActionsProvider {
     
     // other methods ...........................................................
     
-    private boolean isEnabled (String root) {
-        String[] sourceRoots = sourcePath.getSelectedSources ();
-        int i, k = sourceRoots.length;
-        for (i = 0; i < k; i++)
-            if (sourceRoots [i].equals (root)) return true;
-        return false;
-    }
-    
     private QName getProcessQName(String root) {
         return sourcePath.getProcessQName(root);
-    }
-
-    private void setEnabled (String root, boolean enabled) {
-        Set sourceRoots = new HashSet (Arrays.asList (
-            sourcePath.getSelectedSources ()
-        ));
-        if (enabled) {
-            enabledSourceRoots.add (root);
-            disabledSourceRoots.remove (root);
-            sourceRoots.add (root);
-        } else {
-            disabledSourceRoots.add (root);
-            enabledSourceRoots.remove (root);
-            sourceRoots.remove (root);
-        }
-        String[] ss = new String [sourceRoots.size ()];
-        sourcePath.setSelectedSources ((String[]) sourceRoots.toArray (ss));
     }
 
     
@@ -267,62 +232,6 @@ NodeActionsProvider {
          */
         public Class getType () {
             return null;
-        }
-    }
-    
-    /**
-     * Defines model for one table view column. Can be used together with 
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
-     */
-    public static class SourcesUsedColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return "use";
-        }
-
-        /** 
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (SourcesModel.class).getString 
-                ("CTL_SourcesModel_Column_Debugging_Name");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return Boolean.TYPE;
-        }
-
-        /**
-         * Returns tooltip for given column. Default implementation returns 
-         * <code>null</code> - do not use tooltip.
-         *
-         * @return  tooltip for given node or <code>null</code>
-         */
-        public String getShortDescription () {
-            return NbBundle.getBundle (SourcesModel.class).getString 
-                ("CTL_SourcesModel_Column_Debugging_Desc");
-        }
-
-        /**
-         * True if column should be visible by default. Default implementation 
-         * returns <code>true</code>.
-         *
-         * @return <code>true</code> if column should be visible by default
-         */
-        public boolean initiallyVisible () {
-            return true;
         }
     }
     

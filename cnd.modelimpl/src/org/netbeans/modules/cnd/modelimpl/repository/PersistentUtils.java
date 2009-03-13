@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterTypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
 /**
  *
@@ -152,8 +153,7 @@ public class PersistentUtils {
         if (buffer instanceof AbstractFileBuffer) {
             // always write as file buffer file
             output.writeInt(FILE_BUFFER_FILE);
-            File file = buffer.getFile();
-            PersistentUtils.writeUTF(file.getAbsolutePath(), output);
+            PersistentUtils.writeUTF(((AbstractFileBuffer)buffer).getAbsolutePath(), output);
         } else {
             throw new IllegalArgumentException("instance of unknown FileBuffer " + buffer);  //NOI18N
         }
@@ -163,7 +163,7 @@ public class PersistentUtils {
         FileBuffer buffer;
         int handler = input.readInt();
         assert handler == FILE_BUFFER_FILE;
-        CharSequence absPath = FilePathCache.getString(PersistentUtils.readUTF(input));
+        CharSequence absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
         buffer = new FileBufferFile(new File(absPath.toString()));
         return buffer;
     }
@@ -183,13 +183,13 @@ public class PersistentUtils {
         }
     }
 
-    public static void writeCollectionStrings(Collection<String> arr, DataOutput output) throws IOException {
+    public static void writeCollectionStrings(Collection<CharSequence> arr, DataOutput output) throws IOException {
         if (arr == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else {
             int len = arr.size();
             output.writeInt(len);
-            for (String s : arr) {
+            for (CharSequence s : arr) {
                 assert s != null;
                 PersistentUtils.writeUTF(s, output);
             }
@@ -202,9 +202,7 @@ public class PersistentUtils {
         if (len != AbstractObjectFactory.NULL_POINTER) {
             arr = new CharSequence[len];
             for (int i = 0; i < len; i++) {
-                String str = PersistentUtils.readUTF(input);
-                assert str != null;
-                arr[i] = manager.getString(str);
+                arr[i] = manager.getString(PersistentUtils.readUTF(input, manager));
             }
         }
         return arr;
@@ -216,25 +214,32 @@ public class PersistentUtils {
         if (len != AbstractObjectFactory.NULL_POINTER) {
             arr = new ArrayList<CharSequence>(len);
             for (int i = 0; i < len; i++) {
-                String str = PersistentUtils.readUTF(input);
-                assert str != null;
-                if (manager != null) {
-                    arr.add(manager.getString(str));
-                } else {
-                    arr.add(str);
-                }
+                arr.add(PersistentUtils.readUTF(input, manager));
             }
         }
         return arr;
     }
     private static final int UTF_LIMIT = 65535;
 
+    private static final String NULL_STRING = new String(new char[]{0});
+
     public static void writeUTF(CharSequence st, DataOutput aStream) throws IOException {
-        aStream.writeUTF(st.toString());
+        if (st == null) {
+            aStream.writeUTF(NULL_STRING);
+        } else {
+            assert st instanceof TinyCharSequence;
+            aStream.writeUTF(st.toString());
+        }
     }
 
-    public static String readUTF(DataInput aStream) throws IOException {
-        return aStream.readUTF();
+    public static CharSequence readUTF(DataInput aStream, APTStringManager manager) throws IOException {
+        String s = aStream.readUTF();
+        if (s.length()==1 && s.charAt(0)==0) {
+            return null;
+        }
+        CharSequence res = manager.getString(s);
+        assert res instanceof TinyCharSequence;
+        return res;
     }
 
     public static void writeLongUTF(CharSequence st, DataOutput aStream) throws IOException {

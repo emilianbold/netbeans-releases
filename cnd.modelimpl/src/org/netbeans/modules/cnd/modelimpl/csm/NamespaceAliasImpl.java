@@ -73,7 +73,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         super(ast, file);
         _setScope(scope);
         rawName = createRawName(ast);
-        alias = NameCache.getString(ast.getText());
+        alias = NameCache.getManager().getString(ast.getText());
         AST token = ast.getFirstChild();
         while( token != null && token.getType() != CPPTokenTypes.ASSIGNEQUAL ) {
             token = token.getNextSibling();
@@ -97,7 +97,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
             for( token = token.getNextSibling() ; token != null; token = token.getNextSibling() ) {
                 sb.append(token.getText());
             }
-            namespace = QualifiedNameCache.getString(sb.toString());
+            namespace = QualifiedNameCache.getManager().getString(sb.toString());
         }
         if (!global) {
             Utils.setSelfUID(this);
@@ -199,9 +199,9 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
     
     public NamespaceAliasImpl(DataInput input) throws IOException {
         super(input);
-        this.alias = NameCache.getString(PersistentUtils.readUTF(input));
+        this.alias = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.alias != null;
-        this.namespace = QualifiedNameCache.getString(PersistentUtils.readUTF(input));
+        this.namespace = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.namespace != null;
         this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
         

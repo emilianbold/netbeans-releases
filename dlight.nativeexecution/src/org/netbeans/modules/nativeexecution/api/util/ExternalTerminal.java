@@ -53,6 +53,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.netbeans.modules.nativeexecution.support.TerminalProfile;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -64,9 +65,12 @@ import org.openide.windows.InputOutput;
  */
 public final class ExternalTerminal {
 
+    private final static ConcurrentHashMap<ExecutionEnvironment, String> execCache =
+            new ConcurrentHashMap<ExecutionEnvironment, String>();
     private final TerminalProfile profile;
     private String title = null;
     private String prompt = "Press [Enter] to close the terminal ..."; // NOI18N
+
 
     static {
         ExternalTerminalAccessor.setDefault(new ExternalTerminalAccessorImpl());
@@ -80,6 +84,10 @@ public final class ExternalTerminal {
         profile = terminal.profile;
         title = terminal.title;
         prompt = terminal.prompt;
+    }
+
+    public boolean isAvailable(ExecutionEnvironment executionEnvironment) {
+        return getExec(executionEnvironment) != null;
     }
 
     /**
@@ -112,8 +120,6 @@ public final class ExternalTerminal {
 
     private static class ExternalTerminalAccessorImpl
             extends ExternalTerminalAccessor {
-        private final static ConcurrentHashMap<ExecutionEnvironment, String> execCache =
-                new ConcurrentHashMap<ExecutionEnvironment, String>();
 
         @Override
         public TerminalProfile getTerminalProfile(ExternalTerminal terminal) {
@@ -135,17 +141,10 @@ public final class ExternalTerminal {
             }
 
 
-            String exec = execCache.get(execEnv);
+            String exec = terminal.getExec(execEnv);
 
             if (exec == null) {
-                exec = findPath(execEnv,
-                        terminal.profile.getSearchPaths(),
-                        terminal.profile.getCommand());
-                String execPath = execCache.putIfAbsent(execEnv, exec);
-
-                if (execPath != null) {
-                    exec = execPath;
-                }
+                return Arrays.asList(args);
             }
 
             ArrayList<String> result = new ArrayList<String>();
@@ -177,35 +176,62 @@ public final class ExternalTerminal {
         public String getTitle(ExternalTerminal terminal) {
             return terminal.title;
         }
+    }
 
-        private String findPath(ExecutionEnvironment execEnv,
-                List<String> searchPaths, String command) {
+    private String findPath(ExecutionEnvironment execEnv,
+            List<String> searchPaths, String command) {
 
-            StringBuilder cmd = new StringBuilder("which " + command); // NOI18N
-
-            for (String s : searchPaths) {
-                cmd.append(" || /bin/ls " + s + "/" + command); // NOI18N
-            }
-
-            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, cmd.toString());
-            StringWriter result = new StringWriter();
-
-            ExecutionDescriptor descriptor =
-                    new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));
-            ExecutionService execService = ExecutionService.newService(
-                    npb, descriptor, "Searching for " + command); // NOI18N
-
-            Future<Integer> res = execService.run();
-
-            try {
-                res.get();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            return result.toString().trim();
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            return command;
         }
+        
+        StringBuilder cmd = new StringBuilder("sh -c 'which " + command); // NOI18N
+
+        for (String s : searchPaths) {
+            cmd.append(" || /bin/ls " + s + "/" + command); // NOI18N
+        }
+
+        cmd.append("'");
+
+        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, cmd.toString());
+        StringWriter result = new StringWriter();
+
+        ExecutionDescriptor descriptor =
+                new ExecutionDescriptor().inputOutput(InputOutput.NULL).outLineBased(true).outProcessorFactory(new InputRedirectorFactory(result));
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "Searching for " + command); // NOI18N
+
+        Future<Integer> res = execService.run();
+
+        try {
+            res.get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        String r = result.toString().trim();
+        return ("".equals(r)) ? null : r; // NOI18N
+    }
+
+    private String getExec(ExecutionEnvironment execEnv) {
+        String exec = execCache.get(execEnv);
+
+        if (exec == null) {
+            exec = findPath(execEnv,
+                    profile.getSearchPaths(),
+                    profile.getCommand());
+
+            if (exec != null) {
+                String execPath = execCache.putIfAbsent(execEnv, exec);
+
+                if (execPath != null) {
+                    exec = execPath;
+                }
+            }
+        }
+
+        return exec;
     }
 }

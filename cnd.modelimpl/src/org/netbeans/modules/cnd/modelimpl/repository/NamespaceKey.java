@@ -85,6 +85,7 @@ class NamespaceKey extends ProjectNameBasedKey {
 
     private int _hashCode() {
         int key = super.hashCode();
+        key = 37*KeyObjectFactory.KEY_NAMESPACE_KEY +key;
         key = 17 * key + fqn.hashCode();
         return key;
     }
@@ -107,7 +108,7 @@ class NamespaceKey extends ProjectNameBasedKey {
 
     /*package*/ NamespaceKey(DataInput aStream) throws IOException {
         super(aStream);
-        fqn = QualifiedNameCache.getString(PersistentUtils.readUTF(aStream));
+        fqn = PersistentUtils.readUTF(aStream, QualifiedNameCache.getManager());
         assert fqn != null;
         hashCode = _hashCode();
     }

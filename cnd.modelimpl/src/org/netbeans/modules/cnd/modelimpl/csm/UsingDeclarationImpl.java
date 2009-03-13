@@ -81,7 +81,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     public UsingDeclarationImpl(AST ast, CsmFile file, CsmScope scope, boolean global) {
         super(ast, file);
         this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-        name = NameCache.getString(ast.getText());
+        name = NameCache.getManager().getString(ast.getText());
         // TODO: here we override startOffset which is not good because startPosition is now wrong
         startOffset = ((CsmAST)ast.getFirstChild()).getOffset();
         rawName = AstUtil.getRawNameInChildren(ast);
@@ -260,7 +260,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     
     public UsingDeclarationImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
         this.startOffset = input.readInt();
         this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());

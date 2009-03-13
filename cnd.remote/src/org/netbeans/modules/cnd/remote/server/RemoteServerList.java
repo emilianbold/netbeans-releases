@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
-import java.awt.Dialog;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -50,19 +49,13 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
-import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -102,8 +95,8 @@ public class RemoteServerList implements ServerList {
         // Creates the "localhost" record and any remote records cached in remote.preferences
         addServer(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), false, RemoteServerRecord.State.ONLINE);
         if (slist != null) {
-            for (String hkey : slist.split(",")) { // NOI18N
-                ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
+            for (String hostKey : slist.split(",")) { // NOI18N
+                ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hostKey);
                 if (env.isRemote()) {
                     addServer(env, false, RemoteServerRecord.State.OFFLINE);
                 }
@@ -154,15 +147,6 @@ public class RemoteServerList implements ServerList {
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
     }
     
-    public synchronized String[] getServerNames() {
-        String[] sa;
-        sa = new String[items.size()];
-        for (int i = 0; i < items.size(); i++) {
-            sa[i] = items.get(i).getName();
-        }
-        return sa;
-    }
-
     public List<ExecutionEnvironment> getEnvironments() {
         List<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(items.size());
         for (RemoteServerRecord item : items) {
@@ -234,17 +218,9 @@ public class RemoteServerList implements ServerList {
         return record;
     }
 
-    public synchronized void removeServer(int idx) {
-        if (idx >= 0 && idx < items.size()) {
-            RemoteServerRecord record = items.remove(idx);
-            removeFromPreferences(record.getName());
-            refresh();
-        }
-    }
-
     public synchronized void removeServer(ServerRecord record) {
         if (items.remove(record)) {
-            removeFromPreferences(record.getName());
+            removeFromPreferences(record);
             refresh();
         }
     }
@@ -258,33 +234,16 @@ public class RemoteServerList implements ServerList {
         items.clear();
     }
 
-    private void removeFromPreferences(String hkey) {
-        StringBuilder sb = new StringBuilder();
-        
+    private void removeFromPreferences(ServerRecord recordToRemove) {
+        StringBuilder sb = new StringBuilder();        
         for (RemoteServerRecord record : items) {
-            sb.append(record.getName());
-            sb.append(',');
+            if (!recordToRemove.equals(record)) {
+                sb.append(record.getName());
+                sb.append(',');
+            }
         }
-        getPreferences().put(REMOTE_SERVERS, sb.substring(0, sb.length() - 1));
+        getPreferences().put(REMOTE_SERVERS, sb.toString());
     }
-
-    public boolean show(ToolsCacheManager cacheManager) {
-        EditServerListDialog dlg = new EditServerListDialog(cacheManager);
-        DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_EditServerList"), true,
-                    DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
-        dlg.setDialogDescriptor(dd);
-        dd.addPropertyChangeListener(dlg);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            cacheManager.setHostKeyList(dlg.getHostKeyList());
-            cacheManager.setDefaultIndex(dlg.getDefaultIndex());
-            return true;
-        } else {
-            return false;
-        }
-    }
-
 
     protected void refresh() {
         cs.fireChange();

@@ -284,6 +284,7 @@ public class GrailsPluginSupport {
         }
         executor.shutdown();
 
+        // TODO if we will support global plugins we have to refresh global plugins dir as well
         FileUtil.refreshFor(project.getBuildConfig().getProjectPluginsDir());
         return installed;
     }

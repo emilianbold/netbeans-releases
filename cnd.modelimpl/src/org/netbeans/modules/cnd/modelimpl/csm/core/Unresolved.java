@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
@@ -249,7 +250,7 @@ public final class Unresolved implements Disposable {
     // doesn't need Repository Keys
     private final UnresolvedNamespace unresolvedNamespace;
     // doesn't need Repository Keys
-    private Map<String, Reference<UnresolvedClass>> dummiesForUnresolved = new HashMap<String, Reference<UnresolvedClass>>();
+    private Map<CharSequence, Reference<UnresolvedClass>> dummiesForUnresolved = new HashMap<CharSequence, Reference<UnresolvedClass>>();
     
     public Unresolved(ProjectBase project) {
         this.projectUID = UIDCsmConverter.projectToUID(project);
@@ -280,11 +281,12 @@ public final class Unresolved implements Disposable {
     }
     
     @SuppressWarnings("unchecked")
-    public CsmClass getDummyForUnresolved(String name) {
+    public CsmClass getDummyForUnresolved(CharSequence name) {
+        name = NameCache.getManager().getString(name);
         Reference<UnresolvedClass> ref = dummiesForUnresolved.get(name);
         UnresolvedClass cls = ref == null ? null : ref.get();
         if( cls == null ) {
-            cls = new UnresolvedClass(name);
+            cls = new UnresolvedClass(name.toString());
             dummiesForUnresolved.put(name, new SoftReference(cls));
 	    cls.register();
         }

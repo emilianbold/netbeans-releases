@@ -235,9 +235,20 @@ public class JspIndenterTest extends TestBase2 {
         reformatFileContents("FormattingProject/web/issue89174.jsp",new IndentPrefs(4,4));
     }
 
+    public void testFormattingIssue160098() throws Exception {
+        reformatFileContents("FormattingProject/web/issue160098.jsp",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingIssue160103() throws Exception {
+        reformatFileContents("FormattingProject/web/issue160103.jsp",new IndentPrefs(4,4));
+    }
+
     public void testIndentation() throws Exception {
 //        insertNewline("<style>\n     h1 {\n        <%= System.\n   somth() ^%>",
 //                      "<style>\n     h1 {\n        <%= System.\n   somth() \n        ^%>", null);
+
+        //#160092:
+        insertNewline("^<html>\n</html>\n", "\n^<html>\n</html>\n", null);
 
         insertNewline("<jsp:useBean>^", "<jsp:useBean>\n    ^", null);
         insertNewline("^<jsp:body>", "\n^<jsp:body>", null);
@@ -255,7 +266,8 @@ public class JspIndenterTest extends TestBase2 {
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>a\n^</jsp:useBean>", "<jsp:body>\n    <html>\n        <jsp:useBean>a\n\n        ^</jsp:useBean>", null);
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>a^</jsp:useBean>", "<jsp:body>\n    <html>\n        <jsp:useBean>a\n        ^</jsp:useBean>", null);
 
-        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>^", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>\n    ^", null);
+        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>^",
+                      "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>\n    ^", null);
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^</html>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    ^</html>", null);
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^<table>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n        ^<table>", null);
 
