@@ -57,6 +57,7 @@ import java.util.jar.Manifest;
 import junit.framework.Test;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.netbeans.SetupHid;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -136,7 +137,7 @@ public class NetigsoLayerTest extends SetupHid {
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
-        fo = Repository.getDefault().getDefaultFileSystem().findResource("TestFolder");
+        fo = FileUtil.getConfigFile("TestFolder");
         assertNotNull("Folder found", fo);
     }
 /* Looks like non-exported packages do not work, as the URLHandlersBundleStreamHandler gets

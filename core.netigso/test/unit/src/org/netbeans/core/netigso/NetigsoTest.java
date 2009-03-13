@@ -41,7 +41,6 @@
 
 package org.netbeans.core.netigso;
 
-import org.netbeans.core.startup.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -61,8 +60,11 @@ import java.util.jar.Manifest;
 import junit.framework.Test;
 import org.netbeans.Events;
 import org.netbeans.JarClassLoader;
+import org.netbeans.MockModuleInstaller;
+import org.netbeans.MockEvents;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.netbeans.SetupHid;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
 
@@ -107,8 +109,8 @@ public class NetigsoTest extends SetupHid {
     }
 
     public void testFactoryCreatesOurModules() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         Module m2;
@@ -149,8 +151,8 @@ public class NetigsoTest extends SetupHid {
     }
 
     public void testFactoryCreatesOurModulesWithDeps() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         HashSet<Module> both = null;
@@ -187,8 +189,8 @@ public class NetigsoTest extends SetupHid {
 
 
     public void testLongDepsAreShortened() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         Module m2 = null;
@@ -212,8 +214,8 @@ public class NetigsoTest extends SetupHid {
     }
 
     public void testOSGiCanDependOnNetBeans() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         HashSet<Module> both = null;
@@ -246,8 +248,8 @@ public class NetigsoTest extends SetupHid {
     }
 
     public void testOSGiCanRequireBundleOnNetBeans() throws Exception {
-        FakeModuleInstaller installer = new FakeModuleInstaller();
-        FakeEvents ev = new FakeEvents();
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         HashSet<Module> both = null;
