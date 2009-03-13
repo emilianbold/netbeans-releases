@@ -81,6 +81,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * @author Alexey Vladykin
@@ -211,17 +212,17 @@ public class LLDataCollector
             flags.append('m'); // NOI18N
         }
         if (collectedData.contains(LLDataCollectorConfiguration.CollectedData.SYNC)) {
-            flags.append("s"); // NOI18N
+            flags.append('s'); // NOI18N
         }
         npb = npb.setArguments(flags.toString(), String.valueOf(at.getPID()));
 
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
-
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.bridge(new MonitorOutputProcessor());
             }
         });
+        descr = descr.inputOutput(InputOutput.NULL);
 
         ExecutionService service = ExecutionService.newService(npb, descr, "monitor"); // NOI18N
         service.run();
