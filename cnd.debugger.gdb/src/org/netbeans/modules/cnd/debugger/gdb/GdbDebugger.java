@@ -2132,7 +2132,7 @@ public class GdbDebugger implements PropertyChangeListener {
         if (response.startsWith(VALUE_PREFIX)) {
             response = response.substring(VALUE_PREFIX.length(), response.length() - 1);
         } else {
-            log.severe("GDBDebugger.evaluate: unexpected response " + response + " for expression " + expression);
+            log.severe("GDBDebugger.evaluate: unexpected response " + response + " for expression " + expression); // NOI18N
         }
         if (response.startsWith("@0x")) { // NOI18N
             cb = gdb.print(expression);
