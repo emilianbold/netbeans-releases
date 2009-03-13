@@ -92,15 +92,22 @@ public class BugzillaExecutor {
     }
 
     public static boolean isAuthenticate(CoreException ce) {
-        IStatus status = ce.getStatus();
-        return INVALID_USERNAME_OR_PASSWORD.equals(ce.getMessage()) ||
-               status != null && INVALID_USERNAME_OR_PASSWORD.equals(status.getMessage()); // XXX
+        return containsMsg(ce, INVALID_USERNAME_OR_PASSWORD);
     }
 
     public static boolean isNotFound(CoreException ce) {
+        return containsMsg(ce, HTTP_ERROR_NOT_FOUND);
+    }
+
+    private static boolean containsMsg(CoreException ce, String cotainsMsg) {
+        String msg = ce.getMessage();
+        if(cotainsMsg.equals(msg)) {
+            return true;
+        }
         IStatus status = ce.getStatus();
-        return HTTP_ERROR_NOT_FOUND.equals(ce.getMessage()) ||
-               status != null && HTTP_ERROR_NOT_FOUND.equals(status.getMessage()); // XXX
+        msg = status != null ? status.getMessage() : null;
+        msg = msg != null ? msg.trim() : msg;
+        return cotainsMsg.equals(msg); // XXX
     }
 
     public boolean handleException(CoreException ce) {
@@ -149,7 +156,14 @@ public class BugzillaExecutor {
     }
 
     private void notifyErrorMessage(String msg) {
-        NotifyDescriptor nd = new NotifyDescriptor(msg, NbBundle.getMessage(BugzillaExecutor.class, "LBLError"), NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, null, null);
+        NotifyDescriptor nd =
+                new NotifyDescriptor(
+                    msg, 
+                    NbBundle.getMessage(BugzillaExecutor.class, "LBLError"),
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    new Object[] {NotifyDescriptor.OK_OPTION},
+                    NotifyDescriptor.OK_OPTION);
         DialogDisplayer.getDefault().notify(nd);
     }
 }
