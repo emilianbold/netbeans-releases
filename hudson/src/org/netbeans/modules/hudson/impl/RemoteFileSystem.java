@@ -191,7 +191,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
         URLConnection conn = new ConnectionBuilder().job(job).url(new URL(baseURL, name)).connection();
         lastModified.put(name, conn.getLastModified());
         int contentLength = conn.getContentLength();
-        size.put(name, contentLength);
+        size.put(name, Math.max(0, contentLength));
         if (contentLength >= 0 && contentLength < /* more than MIMEResolverImpl needs */ 4050) {
             InputStream is = conn.getInputStream();
             byte[] buf = new byte[contentLength];
