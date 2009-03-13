@@ -42,21 +42,24 @@
 package org.netbeans.modules.hudson.ui.actions;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import org.netbeans.modules.hudson.ui.wizard.InstanceWizard;
 import org.openide.DialogDisplayer;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  * Add Hudson instance action launches the wizard.
  *
  * @author Michal Mocnak
  */
-public class AddInstanceAction extends NodeAction {
+public class AddInstanceAction extends AbstractAction {
+
+    public AddInstanceAction() {
+        super(NbBundle.getMessage(AddInstanceAction.class, "LBL_Add_Instance"));
+    }
     
-    public void performAction(Node[] nodes) {
+    public void actionPerformed(ActionEvent e) {
         InstanceWizard wizard = new InstanceWizard();
         Dialog dialog = null;
         
@@ -71,19 +74,4 @@ public class AddInstanceAction extends NodeAction {
         }
     }
     
-    public String getName() {
-        return NbBundle.getMessage(AddInstanceAction.class, "LBL_Add_Instance");
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    public boolean enable(Node[] nodes) {
-        return true;
-    }
-    
-    public boolean asynchronous() {
-        return false;
-    }
-}
+ }
