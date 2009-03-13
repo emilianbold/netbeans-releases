@@ -672,6 +672,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             for (int i = 0; i < parameters.length; i++) {
                 if (!paramsToSkip[i]) {
                     String param = parameters[i];
+                    if (param.startsWith("&")) {//NOI18N
+                        param = param.substring(1);
+                    }
 
                     if (firstParam) {
                         firstParam = false;

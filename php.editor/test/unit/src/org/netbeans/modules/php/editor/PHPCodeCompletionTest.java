@@ -658,6 +658,11 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testVarTypeCommentType02() throws Exception {
         checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $hello VarTypeComment^", false);
     }
+
+    public void testIssue157534() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue157534.php", "issue157534^", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         //just test them as standalone files (just PHP Platform in index)
