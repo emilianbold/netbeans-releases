@@ -63,6 +63,12 @@ public abstract class NotificationDisplayer {
         LOW,
     }
 
+    /**
+     * Looks for an implementation in global Lookup, if none is found then it falls
+     * back to a primitive implementation which displays the notifications in main 
+     * window's status line.
+     * @return Default implementation.
+     */
     public static NotificationDisplayer getDefault() {
         NotificationDisplayer res = Lookup.getDefault().lookup(NotificationDisplayer.class);
         if( null == res ) {
@@ -79,7 +85,6 @@ public abstract class NotificationDisplayer {
      * is non-null then this text will be presented as a clickable link.
      * @param detailsAction Action to invoke when user click details text or null.
      * @return New notification.
-     * @throws NullPointerException If any argument is null.
      */
     public Notification notify( String title, Icon icon,
             String detailsText, ActionListener detailsAction ) throws NullPointerException {
@@ -96,7 +101,6 @@ public abstract class NotificationDisplayer {
      * @param detailsAction Action to invoke when user click details text or null.
      * @param priority Notification priority
      * @return New notification.
-     * @throws NullPointerException If any argument is null.
      */
     public abstract Notification notify( String title, Icon icon,
             String detailsText, ActionListener detailsAction, Priority priority)
@@ -112,7 +116,6 @@ public abstract class NotificationDisplayer {
      * in notifications popup list. 
      * @param priority Notification priority.
      * @return New notification.
-     * @throws NullPointerException If any argument is null.
      */
     public abstract Notification notify( String title, Icon icon,
             JComponent balloonDetails, JComponent popupDetails, Priority priority)
