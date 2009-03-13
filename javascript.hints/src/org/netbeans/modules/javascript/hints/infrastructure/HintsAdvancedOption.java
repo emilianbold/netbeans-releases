@@ -49,7 +49,12 @@ public class HintsAdvancedOption extends AdvancedOption {
     public synchronized OptionsPanelController create() {
         if ( panelController == null ) {
             HintsManager manager = HintsManager.getManagerForMimeType (JsTokenId.JAVASCRIPT_MIME_TYPE);
-            assert manager != null;
+
+            //looks like ergonomics IDE can cause the manager or the language is not found
+            if(manager == null) {
+                return null;
+            }
+
             panelController = manager.getOptionsController();
         }
         
