@@ -47,6 +47,8 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -210,8 +212,12 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                     }
                 }
             } else if (CsmKindUtilities.isNamespace(owner)) {
-                CsmNamespace ns = (CsmNamespace) owner;
-                for (CsmDeclaration decl : ns.getDeclarations()) {
+                CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
+                         CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.VARIABLE, CsmDeclaration.Kind.VARIABLE_DEFINITION),
+                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
+                Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(((CsmNamespace)owner), filter);
+                while (it.hasNext()) {
+                    CsmDeclaration decl = it.next();
                     if (CsmKindUtilities.isExternVariable(decl) && decl.getName().equals(getName())) {
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
                         ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(var);
