@@ -931,9 +931,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 if (rootFo != null) {
                     final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                     final File archiveOrDir = FileUtil.archiveOrDirForURL(root);
-                    assert archiveOrDir != null;
+                    assert archiveOrDir != null : "No archive or dir " + root; //NOI18N
                     final FileObject archiveOrDirFo = FileUtil.toFileObject(archiveOrDir);
-                    assert archiveOrDirFo != null;
+                    assert archiveOrDirFo != null : "Can't get FileObject for " + archiveOrDir; //NOI18N
                     String mimeType = archiveOrDirFo.isFolder() ? "" : archiveOrDirFo.getMIMEType(); //NOI18N
 
                     final Collection<? extends BinaryIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(BinaryIndexerFactory.class);
