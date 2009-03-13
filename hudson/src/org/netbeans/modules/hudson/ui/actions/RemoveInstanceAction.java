@@ -86,7 +86,7 @@ public class RemoveInstanceAction extends NodeAction {
     }
     
     public String getName() {
-        return NbBundle.getMessage(AddInstanceAction.class, "LBL_Remove_Instance");
+        return NbBundle.getMessage(RemoveInstanceAction.class, "LBL_Remove_Instance");
     }
     
     public HelpCtx getHelpCtx() {
