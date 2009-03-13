@@ -24,15 +24,15 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="scrollPaneOptions" alignment="0" pref="421" max="32767" attributes="0"/>
+                  <Component id="scrollPaneOptions" alignment="0" pref="336" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lblFile" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="txtFile" pref="263" max="32767" attributes="0"/>
+                      <Component id="txtFile" pref="163" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnBrowse" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="lblHint" alignment="0" pref="421" max="32767" attributes="0"/>
+                  <Component id="lblHint" alignment="0" pref="336" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
