@@ -46,15 +46,13 @@ import java.util.Collection;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonView;
-import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
+import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Implementation of the HudsonJob
@@ -178,10 +176,6 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         instance.synchronize();
     }
     
-    public Lookup getLookup() {
-        return Lookups.singleton(instance);
-    }
-    
     public Sheet.Set getSheetSet() {
         if (null == set) {
             set = Sheet.createPropertiesSet();
@@ -260,9 +254,13 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     private Collection<? extends HudsonJobBuild> builds;
     public synchronized Collection<? extends HudsonJobBuild> getBuilds() {
         if (builds == null) {
-            builds = getLookup().lookup(HudsonInstanceImpl.class).getConnector().getBuilds(this);
+            builds = instance.getConnector().getBuilds(this);
         }
         return builds;
+    }
+
+    public HudsonInstanceImpl getInstance() {
+        return instance;
     }
     
     private class HudsonJobProperty extends PropertySupport<String> {

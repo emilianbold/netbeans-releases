@@ -42,6 +42,7 @@ package org.netbeans.modules.hudson.api;
 import java.util.Collection;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Information about one build of a job.
@@ -68,5 +69,10 @@ public interface HudsonJobBuild {
      * @return a list of changes, possibly empty (including if it could not be parsed)
      */
     Collection<? extends HudsonJobChangeItem> getChanges();
+
+    /**
+     * Obtains a filesystem representing the build artifacts as accessed by Hudson web services.
+     */
+    FileSystem getArtifacts();
 
 }

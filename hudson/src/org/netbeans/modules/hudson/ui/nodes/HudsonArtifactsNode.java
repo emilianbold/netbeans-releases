@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,47 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.api;
+package org.netbeans.modules.hudson.ui.nodes;
+
+import java.awt.Image;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFilter;
+import org.openide.loaders.DataFolder;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 
 /**
- * Describes Hudson view
- *
- * @author Michal Mocnak
+ * Node which displays the artifacts for a build.
  */
-public interface HudsonView {
-    
-    /**
-     * Default all view name
-     */
-    public static final String ALL_VIEW = "All";
-    
-    
-    /**
-     * Returns name of the hudson view
-     *
-     * @return Hudson's view name
-     */
-    public String getName();
-    
-    /**
-     * Returns description of the hudson view
-     *
-     * @return Hudson's view description
-     */
-    public String getDescription();
-    
-    /**
-     * Returns url of the hudson view
-     *
-     * @return Hudson's view url
-     */
-    public String getUrl();
-    
-    /**
-     * Obtains Hudson server instance owning the view.
-     */
-    HudsonInstance getInstance();
+class HudsonArtifactsNode extends AbstractNode {
+
+    HudsonArtifactsNode(HudsonJobBuild build) {
+        super(DataFolder.findFolder(build.getArtifacts().getRoot()).createNodeChildren(DataFilter.ALL));
+        setName("artifact"); // NOI18N
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Artifacts"; // XXX I18N
+    }
+
+    private static final Node iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
+
+    public @Override Image getIcon(int type) {
+        return iconDelegate.getIcon(type);
+    }
+
+    public @Override Image getOpenedIcon(int type) {
+        return iconDelegate.getOpenedIcon(type);
+    }
 
 }

@@ -49,7 +49,9 @@ import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
 import org.netbeans.modules.hudson.ui.actions.ShowChanges;
 import org.netbeans.modules.hudson.ui.actions.ShowFailures;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -67,7 +69,7 @@ class HudsonJobBuildNode extends AbstractNode {
     private final String htmlDisplayName;
 
     public HudsonJobBuildNode(HudsonJobBuild build) {
-        super(Children.LEAF, Lookups.singleton(build)); // XXX add in artifacts
+        super(makeChildren(build), Lookups.singleton(build));
         setName(Integer.toString(build.getNumber()));
         setDisplayName("#" + build.getNumber());
         Result result;
@@ -125,6 +127,21 @@ class HudsonJobBuildNode extends AbstractNode {
         actions.add(null);
         actions.add(SystemAction.get(OpenUrlAction.class));
         return actions.toArray(new Action[actions.size()]);
+    }
+
+    private static Children makeChildren(final HudsonJobBuild build) {
+        return Children.create(new ChildFactory<Object>() {
+            final Object ARTIFACTS = new Object();
+            protected boolean createKeys(List<Object> toPopulate) {
+                // XXX is it possible to cheaply check in advance if the build has any artifacts?
+                toPopulate.add(ARTIFACTS);
+                return true;
+            }
+            protected @Override Node createNodeForKey(Object key) {
+                assert key == ARTIFACTS : key;
+                return new HudsonArtifactsNode(build);
+            }
+        }, false);
     }
 
 }

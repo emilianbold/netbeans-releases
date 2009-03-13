@@ -39,10 +39,13 @@
 
 package org.netbeans.modules.hudson.ui.nodes;
 
+import java.awt.Image;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 
 /**
  * Node which displays the remote workspace for a job.
@@ -53,12 +56,21 @@ class HudsonWorkspaceNode extends AbstractNode {
     HudsonWorkspaceNode(HudsonJob job) {
         super(DataFolder.findFolder(job.getRemoteWorkspace().getRoot()).createNodeChildren(DataFilter.ALL));
         setName("ws"); // NOI18N
-        setIconBaseWithExtension("org/netbeans/modules/hudson/ui/resources/document_edit.gif"); // XXX pick a better icon
     }
 
     @Override
     public String getDisplayName() {
         return "Remote Workspace"; // XXX I18N
+    }
+
+    private static final Node iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
+
+    public @Override Image getIcon(int type) {
+        return iconDelegate.getIcon(type);
+    }
+
+    public @Override Image getOpenedIcon(int type) {
+        return iconDelegate.getOpenedIcon(type);
     }
 
 }

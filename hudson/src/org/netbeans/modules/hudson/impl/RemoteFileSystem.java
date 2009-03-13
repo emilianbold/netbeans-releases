@@ -36,6 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.hudson.impl;
 
 import java.io.BufferedReader;
@@ -59,6 +60,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -69,29 +71,42 @@ import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Virtual filesystem representing the remote workspace of a job.
+ * Virtual filesystem representing the remote workspace of a job or artifacts of a build.
  */
-final class JobWorkspaceFileSystem extends AbstractFileSystem implements
+final class RemoteFileSystem extends AbstractFileSystem implements
         AbstractFileSystem.Attr, AbstractFileSystem.Change, AbstractFileSystem.List, AbstractFileSystem.Info {
 
-    private static final Logger LOG = Logger.getLogger(JobWorkspaceFileSystem.class.getName());
+    private static final Logger LOG = Logger.getLogger(RemoteFileSystem.class.getName());
 
-    private final HudsonJob job;
+    /** base URL of filesystem */
     private final URL baseURL;
+    /** display name for filesystem */
+    private final String displayName;
+    /** for {@link ConnectionBuilder#job} */
+    private final HudsonJob job;
 
-    JobWorkspaceFileSystem(HudsonJob job) throws MalformedURLException {
+    private RemoteFileSystem(URL baseURL, String displayName, HudsonJob job) {
+        this.baseURL = baseURL;
+        this.displayName = displayName;
         this.job = job;
-        baseURL = new URL(job.getUrl() + "ws/"); // NOI18N
         attr = this;
         change = this;
         list = this;
         info = this;
         synchronized (Mapper.class) {
             if (Mapper.workspaces == null) {
-                Mapper.workspaces = new WeakSet<JobWorkspaceFileSystem>();
+                Mapper.workspaces = new WeakSet<RemoteFileSystem>();
             }
             Mapper.workspaces.add(this);
         }
+    }
+
+    RemoteFileSystem(HudsonJob job) throws MalformedURLException {
+        this(new URL(job.getUrl() + "ws/"), job.getDisplayName(), job); // NOI18N
+    }
+
+    RemoteFileSystem(HudsonJobBuild build) throws MalformedURLException {
+        this(new URL(build.getUrl() + "artifact/"), /*XXX I18N*/build.getJob().getDisplayName() + " #" + build, build.getJob());
     }
 
     /**
@@ -105,13 +120,13 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
             headers.clear();
         }
         for (FileObject f : NbCollections.iterable(existingFileObjects(getRoot()))) {
-            LOG.log(Level.FINE, "{0} refreshing {1}", new Object[] {job, f.getPath()});
+            LOG.log(Level.FINE, "{0} refreshing {1}", new Object[] {baseURL, f.getPath()});
             f.refresh();
         }
     }
 
     public String getDisplayName() {
-        return job.getDisplayName();
+        return displayName;
     }
 
     public boolean isReadOnly() {
@@ -156,7 +171,7 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
             LOG.log(Level.FINE, "children: {0} -> {1}", new Object[] {url, kids});
             return kids.toArray(new String[kids.size()]);
         } catch (IOException x) {
-            LOG.log(Level.FINE, "cannot list children of {0} in {1}: {2}", new Object[] {f, job, x});
+            LOG.log(Level.FINE, "cannot list children of {0} in {1}: {2}", new Object[] {f, baseURL, x});
             return new String[0];
         }
     }
@@ -172,7 +187,7 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
 
     private URLConnection connection(String name) throws IOException {
         assert Thread.holdsLock(nonDirs);
-        LOG.log(Level.FINE, "metadata in {0}: {1}", new Object[] {job, name});
+        LOG.log(Level.FINE, "metadata in {0}: {1}", new Object[] {baseURL, name});
         URLConnection conn = new ConnectionBuilder().job(job).url(new URL(baseURL, name)).connection();
         lastModified.put(name, conn.getLastModified());
         int contentLength = conn.getContentLength();
@@ -188,7 +203,7 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
             if (p == contentLength) {
                 headers.put(name, buf);
             } else {
-                LOG.warning("incomplete read for " + name + " in " + job + ": read up to " + p + " where reported length is " + contentLength);
+                LOG.warning("incomplete read for " + name + " in " + baseURL + ": read up to " + p + " where reported length is " + contentLength);
             }
         } // for bigger files, just reread content later if requested
         return conn;
@@ -203,7 +218,7 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
                 try {
                     connection(name);
                 } catch (IOException x) {
-                    LOG.log(Level.FINE, "cannot get metadata for " + name + " in " + job, x);
+                    LOG.log(Level.FINE, "cannot get metadata for " + name + " in " + baseURL, x);
                     return new Date(0);
                 }
             }
@@ -220,7 +235,7 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
                 try {
                     connection(name);
                 } catch (IOException x) {
-                    LOG.log(Level.FINE, "cannot get metadata for " + name + " in " + job, x);
+                    LOG.log(Level.FINE, "cannot get metadata for " + name + " in " + baseURL, x);
                     return 0;
                 }
             }
@@ -297,7 +312,7 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
     @ServiceProvider(service=URLMapper.class)
     public static class Mapper extends URLMapper {
 
-        static Set<JobWorkspaceFileSystem> workspaces = null;
+        static Set<RemoteFileSystem> workspaces = null;
 
         public URL getURL(FileObject fo, int type) {
             synchronized (Mapper.class) {
@@ -320,8 +335,8 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
         private static URL doGetURL(FileObject fo) {
             try {
                 FileSystem fs = fo.getFileSystem();
-                if (fs instanceof JobWorkspaceFileSystem) {
-                    return new URL(((JobWorkspaceFileSystem) fs).baseURL, fo.getPath());
+                if (fs instanceof RemoteFileSystem) {
+                    return new URL(((RemoteFileSystem) fs).baseURL, fo.getPath());
                 }
             } catch (IOException x) {
                 LOG.log(Level.INFO, "trying to get URL for " + fo, x);
@@ -330,10 +345,10 @@ final class JobWorkspaceFileSystem extends AbstractFileSystem implements
         }
 
         private static FileObject[] doGetFileObjects(URL url) {
-            JobWorkspaceFileSystem fs = null;
+            RemoteFileSystem fs = null;
             String urlS = url.toString();
             synchronized (Mapper.class) {
-                for (JobWorkspaceFileSystem _fs : workspaces) {
+                for (RemoteFileSystem _fs : workspaces) {
                     if (urlS.startsWith(_fs.baseURL.toString())) {
                         fs = _fs;
                         break;
