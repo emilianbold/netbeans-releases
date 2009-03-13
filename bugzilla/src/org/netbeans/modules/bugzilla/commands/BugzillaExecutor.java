@@ -50,6 +50,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
 import org.netbeans.modules.bugzilla.RepositoryPanel;
@@ -57,6 +58,7 @@ import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -118,20 +120,14 @@ public class BugzillaExecutor {
     }
 
     private boolean handleAuthenticate(CoreException ce) {
-        final BugtrackingController controller = repository.getController();
-        RepositoryPanel rp = (RepositoryPanel) controller.getComponent();
-        final DialogDescriptor dd = new DialogDescriptor(rp, NbBundle.getMessage(BugzillaExecutor.class, "LBL_Authenticate"));
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-
-        controller.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(evt.getPropertyName().equals(BugtrackingController.EVENT_COMPONENT_DATA_CHANGED)) {
-                    dd.setValid(controller.isValid());
-                }
-            }
-        });
-        dialog.setVisible(true);
-        return dd.getValue() == DialogDescriptor.OK_OPTION;
+        System.out.println("xxxxxxxxxx" + Thread.currentThread());
+        Thread.currentThread().dumpStack();
+        
+        boolean edit = BugtrackingUtil.editRepository(repository);
+        if(edit) {
+            Bugzilla.getInstance().removeRepository(repository);
+        }
+        return edit;
     }
 
     private void notifyError(CoreException ce) {

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.bugzilla;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
@@ -53,6 +55,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
+import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -288,9 +291,31 @@ public class Bugzilla {
         if(rc == null) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
             rc = getRepositoryConnector().getClientManager().getClient(repository.getTaskRepository(), new NullProgressMonitor()).getRepositoryConfiguration(new NullProgressMonitor());
+
+            repository.getController().addPropertyChangeListener(new RepositoryListener(repository));
             repoToRepoconf.put(repository.getDisplayName(), rc);
         }
         return rc;
+    }
+
+    public void removeRepository(BugzillaRepository repository) {
+        repoToRepoconf.remove(repository.getDisplayName());
+        getRepositoryConnector().getClientManager().repositoryRemoved(repository.getTaskRepository());
+    }
+
+    private class RepositoryListener implements PropertyChangeListener {
+        private final BugzillaRepository repository;
+
+        public RepositoryListener(BugzillaRepository repository) {
+            this.repository = repository;
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getPropertyName().equals(BugtrackingController.EVENT_COMPONENT_DATA_APPLIED)) {
+                repository.removePropertyChangeListener(this);
+                removeRepository(repository);
+            }
+        }
     }
 
 }
