@@ -897,7 +897,7 @@ public class AstRenderer {
     }
 
     protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
-        ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file);
+        ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, !isRenderingLocalContext());
         if (container != null) {
             container.addDeclaration(cfdi);
         }
@@ -930,7 +930,7 @@ public class AstRenderer {
             case CPPTokenTypes.LITERAL_class:
             case CPPTokenTypes.LITERAL_struct:
             case CPPTokenTypes.LITERAL_union:
-                ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file);
+                ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, !isRenderingLocalContext);
                 if (container != null) {
                     container.addDeclaration(cfdi);
                 }

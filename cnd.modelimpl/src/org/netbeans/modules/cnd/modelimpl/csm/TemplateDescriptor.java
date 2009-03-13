@@ -112,15 +112,15 @@ public final class TemplateDescriptor {
         return inheritedTemplateParametersNumber;
     }
 
-    public static TemplateDescriptor createIfNeeded(AST ast, CsmFile file, CsmScope scope) {
+    public static TemplateDescriptor createIfNeeded(AST ast, CsmFile file, CsmScope scope, boolean global) {
         if (ast == null) {
             return null;
         }
         AST start = TemplateUtils.getTemplateStart(ast.getFirstChild());
         for( AST token = start; token != null; token = token.getNextSibling() ) {
             if (token.getType() == CPPTokenTypes.LITERAL_template) {
-                    return new TemplateDescriptor(TemplateUtils.getTemplateParameters(token, file, scope),
-                            '<' + TemplateUtils.getClassSpecializationSuffix(token, null) + '>', true);
+                    return new TemplateDescriptor(TemplateUtils.getTemplateParameters(token, file, scope, global),
+                            '<' + TemplateUtils.getClassSpecializationSuffix(token, null) + '>', global);
             }
         }
         return null;
