@@ -43,13 +43,13 @@ import java.awt.event.ActionEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
 import javax.swing.AbstractAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
-import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
+import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
 import org.netbeans.modules.hudson.util.Utilities;
@@ -58,6 +58,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -67,32 +68,34 @@ import org.w3c.dom.Document;
  */
 public class CreateJob extends AbstractAction {
 
-    private final HudsonInstanceImpl instance;
+    private final HudsonInstance instance;
 
-    public CreateJob(HudsonInstanceImpl instance) {
+    public CreateJob() {
+        super(NbBundle.getMessage(CreateJob.class, "CTL_CreateJob"));
+        Collection<HudsonInstance> instances = HudsonManagerImpl.getDefault().getInstances();
+        this.instance = instances.isEmpty() ? null : instances.iterator().next();
+    }
+
+    public CreateJob(HudsonInstance instance) {
         super("New Build..."); // XXX I18N
         this.instance = instance;
     }
 
     public void actionPerformed(ActionEvent e) {
-        Set<String> takenNames = new HashSet<String>();
-        for (HudsonJob job : instance.getJobs()) {
-            takenNames.add(job.getName());
-        }
         final CreateJobPanel panel = new CreateJobPanel();
         DialogDescriptor dd = new DialogDescriptor(panel, "New Continuous Build"); // XXX I18N
-        panel.init(takenNames, dd);
+        panel.init(dd, instance);
         Object result = DialogDisplayer.getDefault().notify(dd);
         if (result == NotifyDescriptor.OK_OPTION) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    finalizeJob(panel.creator, panel.name(), panel.selectedProject());
+                    finalizeJob(panel.instance, panel.creator, panel.name(), panel.selectedProject());
                 }
             });
         }
     }
 
-    private void finalizeJob(ProjectHudsonJobCreator creator, String name, Project project) {
+    private void finalizeJob(HudsonInstance instance, ProjectHudsonJobCreator creator, String name, Project project) {
         try {
             Document doc = creator.configure();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -103,7 +106,7 @@ public class CreateJob extends AbstractAction {
                     postData(baos.toByteArray()).
                     httpConnection().disconnect();
             URLDisplayer.getDefault().showURL(new URL(instance.getUrl() + "job/" + Utilities.uriEncode(name) + "/")); // NOI18N
-            instance.synchronize();
+            ((HudsonInstanceImpl) instance).synchronize();
             ProjectHudsonProvider.getDefault().recordAssociation(project,
                     new ProjectHudsonProvider.Association(instance.getUrl(), name));
         } catch (IOException x) {
