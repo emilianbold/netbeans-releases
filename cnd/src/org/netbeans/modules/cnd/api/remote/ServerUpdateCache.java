@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Since the ServerList is updated from the Tools->Options panel, changes must be cached
@@ -49,26 +52,27 @@ import java.util.logging.Logger;
  */
 public final class ServerUpdateCache {
 
-    private String[] hklist;
+    private List<ExecutionEnvironment> hosts;
     private int defaultIndex;
     private Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     public ServerUpdateCache() {
-        hklist = null;
+        hosts = null;
         defaultIndex = -1;
     }
     
-    public String[] getHostKeyList() {
-        if (hklist == null) {
-            throw new IllegalStateException();
+    public List<ExecutionEnvironment> getHosts() {
+        List<ExecutionEnvironment> h = hosts;
+        if (h == null) {
+            throw new IllegalStateException("hosts should not be null"); //NOI18N
         }
-        return hklist;
+        return new ArrayList<ExecutionEnvironment>(hosts);
     }
-    
-    public void setHostKeyList(String[] hklist) {
-        this.hklist = hklist;
+
+    public void setHosts(List<ExecutionEnvironment> newHosts) {
+        hosts = new ArrayList<ExecutionEnvironment>(newHosts);
     }
-    
+
     public int getDefaultIndex() {
         if (defaultIndex < 0) {
             log.warning("ServerUpdateCache.getDefaultInded: Forcing negative index to 0");

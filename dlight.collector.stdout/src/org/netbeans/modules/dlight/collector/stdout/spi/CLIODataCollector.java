@@ -172,6 +172,7 @@ public final class CLIODataCollector
     }
 
     private void targetStarted(DLightTarget target) {
+        log.fine("Starting CLIODataCollector: " + command); // NOI18N
         resetIndicators();
 
         String cmd = command + " "; // NOI18N
@@ -182,7 +183,7 @@ public final class CLIODataCollector
         } else {
             cmd += argsTemplate;
         }
-
+        log.fine("Starting CLIODataCollector cmd: " + cmd); // NOI18N
         NativeProcessBuilder npb =
                 new NativeProcessBuilder(target.getExecEnv(), cmd);
 
@@ -358,7 +359,7 @@ public final class CLIODataCollector
         }
     }
 
-    public Map<String, String> getExecutionEnv() {
+    public Map<String, String> getExecutionEnv(DLightTarget target) {
         return envs;
     }
 

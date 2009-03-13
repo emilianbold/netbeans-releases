@@ -67,7 +67,9 @@ class SVGListElementCodeFooter extends CodeClassInitHeaderFooterPresenter {
         DesignComponent eventHandler = null;
         boolean initBlock = false;
         List<PropertyValue> array = svgList.readProperty(SVGListCD.PROP_ELEMENTS).getArray();
-
+        if (array == null) {
+            return;
+        }
         for (PropertyValue value : array) {
             DesignComponent component = value.getComponent();
 

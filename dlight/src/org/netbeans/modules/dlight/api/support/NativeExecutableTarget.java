@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.api.support;
 
+import java.net.ConnectException;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -198,11 +199,20 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             pb = pb.useExternalTerminal(externalTerminal);
             descr = descr.inputVisible(false);
         } else {
+            pb = pb.unbufferOutput(true);
             descr = descr.inputVisible(true);
         }
 
-        if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null) {
-            pb = pb.addEnvironmentVariables(executionEnvProvider.getExecutionEnv());
+        if (executionEnvProvider != null) {
+            try {
+                Map<String, String> env = executionEnvProvider.getExecutionEnv(this);
+                if (env != null && !env.isEmpty()) {
+                    pb = pb.addEnvironmentVariables(env);
+                }
+            } catch (ConnectException ex) {
+                // TODO: can it happen here?
+                log.severe(ex.getMessage());
+            }
         }
 
         if (io != null) {

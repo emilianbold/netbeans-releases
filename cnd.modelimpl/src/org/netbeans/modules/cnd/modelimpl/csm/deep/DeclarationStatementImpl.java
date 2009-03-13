@@ -100,10 +100,10 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
             return var;
         }
 
-        protected FunctionImpl createFunction(AST ast, CsmFile file, CsmScope scope) {
+        protected FunctionImpl createFunction(AST ast, CsmFile file, CsmType type, CsmScope scope) {
             FunctionImpl fun = null;
             try {
-                fun = new FunctionImpl(ast, file, getScope(), !isRenderingLocalContext(), !isRenderingLocalContext());
+                fun = new FunctionImpl(ast, file, type, getScope(), !isRenderingLocalContext(), !isRenderingLocalContext());
                 declarators.add(fun);
             } catch (AstRendererException ex) {
                 DiagnosticExceptoins.register(ex);
@@ -142,39 +142,40 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                                         }
                                         next = next.getNextSibling();
                                     }
-                                    if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
-                                        do {
-                                            TypeImpl type;
-                                            if (typeToken.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
-                                                type = TypeFactory.createBuiltinType(typeToken.getText(), ptrOperator, 0, typeToken, getContainingFile());
-                                            } else {
-                                                type = TypeFactory.createType(typeToken, getContainingFile(), ptrOperator, 0);
+                                    TypeImpl type = null;
+                                    if (typeToken.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
+                                        AST typeNameToken = typeToken.getFirstChild();
+                                        if (typeNameToken != null) {
+                                            type = TypeFactory.createBuiltinType(typeNameToken.getText(), ptrOperator, 0, typeToken, getContainingFile());
+                                        }
+                                    } else {
+                                        type = TypeFactory.createType(typeToken, getContainingFile(), ptrOperator, 0);
+                                    }
+                                    if (type != null) {
+                                        while (next != null) {
+                                            if (next.getType() == CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION) {
+                                                AST inner = next.getFirstChild();
+                                                if (inner != null) {
+                                                    String name = inner.getText();
+                                                    if (isVariableLikeFunc(next)) {
+                                                        FunctionImpl fun = createFunction(next, getContainingFile(), type, getScope());
+                                                    } else {
+                                                        VariableImpl var = createVariable(next, getContainingFile(), type, name, _static, currentNamespace, container, getScope());
+                                                    }
+                                                }
                                             }
-                                            String name = next.getText();
-
-                                            if (isVariableLikeFunc(ast)) {
-                                                FunctionImpl fun = createFunction(ast, getContainingFile(), getScope());
-                                            } else {
-                                                VariableImpl var = createVariable(next, getContainingFile(), type, name, _static, currentNamespace, container, getScope());
+                                            if (next.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+                                                AST nameAst = next.getFirstChild();
+                                                if (nameAst != null && nameAst.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                                                    VariableImpl var = createVariable(next, getContainingFile(), type, nameAst.getText(), _static, currentNamespace, container, getScope());
+                                                    next = next.getNextSibling();
+                                                    if (next != null && next.getType() == CPPTokenTypes.COMMA) {
+                                                        next = next.getNextSibling();
+                                                    }
+                                                }
                                             }
-
-                                            // we ignore both currentNamespace and container; <= WHY?
-                                            // eat all tokens up to the comma that separates the next decl
                                             next = next.getNextSibling();
-                                            if (next != null && next.getType() == CPPTokenTypes.LPAREN) {
-                                                next = next.getNextSibling();
-                                            }
-                                            if (next != null && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
-                                                next = next.getNextSibling();
-                                            }
-                                            if (next != null && next.getType() == CPPTokenTypes.RPAREN) {
-                                                next = next.getNextSibling();
-                                            }
-                                            if (next != null && next.getType() == CPPTokenTypes.COMMA) {
-                                                next = next.getNextSibling();
-                                            }
-                                        } while (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID);
-                                        break;
+                                        }
                                     }
                                 }
                             }

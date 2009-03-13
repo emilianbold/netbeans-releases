@@ -63,7 +63,7 @@ FUNCTION DEFINITION sort_getScores  [34:1/799-36:2/1010] FunctionDDImpl SCOPE: $
     STATEMENT COMPOUND  [34:22/820-36:2/1010] SCOPE: sort_getScores 
         STATEMENT DECLARATION  [35:5/826-35:187/1008] SCOPE: Stmt  [34:22/820-36:2/1010]
             VARIABLE scoreMap [35:5/826-35:187/1008]  TYPE: *$unresolved$::CLHashMap TEXT=CLHashMap<TCHAR*,float_t,Compare::TChar,Deletor::tcArray,Deletor::DummyFloat>*  [35:5/826-35:84/905]  INIT: text='CLHashMap<TCHAR*,float_t,Compare::TChar,Deletor::tcArray, Deletor::DummyFloat>(true,false)'  SCOPE: Stmt  [34:22/820-36:2/1010]
-VARIABLE DEFINITION npos [39:1/1074-41:95/1269]  TYPE: const $unresolved$::flex_string::size_type TEXT=const flex_string<E1,T,A,S>::size_type  [40:1/1124-40:51/1174]  INIT: text='static_cast<typename flex_string<E1, T, A, S>::size_type>(-1)'  SCOPE: expressions.cc
+VARIABLE DEFINITION npos [39:1/1074-41:96/1270]  TYPE: const $unresolved$::flex_string::size_type TEXT=const flex_string<E1,T,A,S>::size_type  [40:1/1124-40:51/1174]  INIT: text='static_cast<typename flex_string<E1, T, A, S>::size_type>(-1)'  SCOPE: expressions.cc
     DECLARATION: null
 FUNCTION DEFINITION foo  [43:1/1272-45:2/1357] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE foo()

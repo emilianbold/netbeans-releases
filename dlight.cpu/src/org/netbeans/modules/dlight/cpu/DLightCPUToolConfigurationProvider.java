@@ -75,7 +75,7 @@ public final class DLightCPUToolConfigurationProvider
 
     private static final String TOOL_NAME = loc("CPUMonitorTool.ToolName"); // NOI18N
 //    private static final String PRSTAT_DTRACE = "prstat+dtrace"; // NOI18N
-    private static final String SUNSTUDIO = "SunStudio"; // NOI18N
+    private static final String SUNSTUDIO = "sunstudio"; // NOI18N
 //    private static final String LLTOOL = "lltool"; // NOI18N
 //    private static final String COLLECTOR =
 //            System.getProperty("dlight.cpu.collector", PRSTAT_DTRACE); // NOI18N
@@ -87,7 +87,7 @@ public final class DLightCPUToolConfigurationProvider
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration =
             new DLightToolConfiguration(TOOL_NAME);
-        String collector = "sunStudio";//preferences.get("DLightConfiguration.Gizmo.Collectors", "SunStudio");//NOI18N
+        String collector = System.getProperty("dlight.cpu.collector", "dtrace");//NOI188N
         VisualizerConfiguration detailsVisualizerConfig = null;
         DataTableMetadata detailedViewTableMetadata;
         if (collector.equals(SUNSTUDIO)) {

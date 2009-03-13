@@ -195,7 +195,10 @@ public class JaxWsServiceCreator implements ServiceCreator {
             handle.progress(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_GEN_WS"), 50); //NOI18N
             //add the JAXWS 2.0 library, if not already added
             if (addJaxWsLib) {
-                MavenModelUtils.addJaxws21Library(project);
+                boolean libraryAdded = MavenModelUtils.addJaxws21Library(project);
+                if (libraryAdded) {
+                    MavenModelUtils.reactOnServerChanges(project);
+                }
             }
             generateJaxWSImplFromTemplate(pkg, WSUtils.isEJB(project));
             handle.finish();
@@ -256,7 +259,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             }
 
             if (wsdlFo != null) {
-                MavenModelUtils.addJaxws21Library(project);
+                final boolean libraryAdded = MavenModelUtils.addJaxws21Library(project);
                 final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
                 final String serviceName = wsdlFo.getName();
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
@@ -270,6 +273,9 @@ public class JaxWsServiceCreator implements ServiceCreator {
                             MavenModelUtils.addWarPlugin(model);
                         } else { // J2SE Project
                             MavenModelUtils.addWsdlResources(model);
+                        }
+                        if (libraryAdded) {
+                            MavenModelUtils.updateLibraryScope(project, model);
                         }
                     }
                 };

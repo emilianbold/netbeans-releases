@@ -53,6 +53,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.netbeans.modules.nativeexecution.support.TerminalProfile;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -180,6 +181,10 @@ public final class ExternalTerminal {
     private String findPath(ExecutionEnvironment execEnv,
             List<String> searchPaths, String command) {
 
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            return command;
+        }
+        
         StringBuilder cmd = new StringBuilder("sh -c 'which " + command); // NOI18N
 
         for (String s : searchPaths) {

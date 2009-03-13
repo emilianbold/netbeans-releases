@@ -1753,7 +1753,8 @@ public class Installer extends ModuleInstall implements Runnable {
     } // end of Submit
 
     protected static String createMessage(Throwable thr){
-        while (thr.getCause() != null){
+        //ignore causes with empty stacktraces -> they are just annotations
+        while ((thr.getCause() != null) && (thr.getCause().getStackTrace().length != 0)){
             thr = thr.getCause();
         }
         String message = thr.toString();
