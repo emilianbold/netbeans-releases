@@ -149,7 +149,7 @@ public class HudsonConnector {
      * Gets general information about a build.
      * The changelog ({@code <changeSet>}) can be interpreted separately by {@link HudsonJobBuild#getChanges}.
      */
-    Collection<? extends HudsonJobBuild> getBuilds(HudsonJob job) {
+    Collection<? extends HudsonJobBuild> getBuilds(HudsonJobImpl job) {
         Document docBuild = getDocument(job.getUrl() + XML_API_URL +
                 // XXX no good way to only include what you _do_ want without using XSLT
                 "?depth=1&xpath=/*/build&wrapper=root&exclude=//artifact&exclude=//action&exclude=//changeSet&exclude=//culprit");

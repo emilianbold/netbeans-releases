@@ -49,18 +49,19 @@ import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.constants.HudsonXmlApiConstants;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.w3c.dom.Document;
 
 public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
 
-    private final HudsonJob job;
+    private final HudsonJobImpl job;
     private final int build;
     private final boolean building;
     private final Result result;
     private final HudsonConnector connector;
 
-    HudsonJobBuildImpl(HudsonConnector connector, HudsonJob job, int build, boolean building, Result result) {
+    HudsonJobBuildImpl(HudsonConnector connector, HudsonJobImpl job, int build, boolean building, Result result) {
         this.connector = connector;
         this.job = job;
         this.build = build;
@@ -110,6 +111,10 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
             }
         }
         return changes;
+    }
+
+    public FileSystem getArtifacts() {
+        return job.getLookup().lookup(HudsonInstanceImpl.class).getArtifacts(this);
     }
 
 }

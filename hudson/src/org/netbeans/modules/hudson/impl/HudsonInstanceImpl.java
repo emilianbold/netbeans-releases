@@ -60,6 +60,7 @@ import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
@@ -97,7 +98,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
      * Must be kept here, not in {@link HudsonJobImpl}, because that is transient
      * and this should persist across refreshes.
      */
-    private final Map<String,JobWorkspaceFileSystem> workspaces = new HashMap<String,JobWorkspaceFileSystem>();
+    private final Map<String,RemoteFileSystem> workspaces = new HashMap<String,RemoteFileSystem>();
     
     private HudsonInstanceImpl(HudsonInstanceProperties properties) {
         this.properties = properties;
@@ -307,7 +308,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                         // Update state
                         fireStateChanges();
                         
-                        for (JobWorkspaceFileSystem fs : workspaces.values()) {
+                        for (RemoteFileSystem fs : workspaces.values()) {
                             fs.refreshAll();
                         }
 
@@ -397,7 +398,22 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
             String name = job.getName();
             if (!workspaces.containsKey(name)) {
                 try {
-                    workspaces.put(name, new JobWorkspaceFileSystem(job));
+                    workspaces.put(name, new RemoteFileSystem(job));
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return FileUtil.createMemoryFileSystem();
+                }
+            }
+            return workspaces.get(name);
+        }
+    }
+
+    /* access from HudsonJobBuildImpl */ FileSystem getArtifacts(HudsonJobBuild build) {
+        synchronized (workspaces) {
+            String name = build.getJob().getName() + "/" + build.getNumber();
+            if (!workspaces.containsKey(name)) {
+                try {
+                    workspaces.put(name, new RemoteFileSystem(build));
                 } catch (MalformedURLException ex) {
                     Exceptions.printStackTrace(ex);
                     return FileUtil.createMemoryFileSystem();

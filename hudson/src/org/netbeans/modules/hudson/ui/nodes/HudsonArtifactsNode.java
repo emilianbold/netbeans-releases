@@ -34,45 +34,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.api;
+package org.netbeans.modules.hudson.ui.nodes;
 
-import java.util.Collection;
-import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
-import org.netbeans.modules.hudson.spi.HudsonSCM;
-import org.openide.filesystems.FileSystem;
+import java.awt.Image;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFilter;
+import org.openide.loaders.DataFolder;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 
 /**
- * Information about one build of a job.
+ * Node which displays the artifacts for a build.
  */
-public interface HudsonJobBuild {
+class HudsonArtifactsNode extends AbstractNode {
 
-    public enum Result {
-        SUCCESS, FAILURE, UNSTABLE, NOT_BUILT, ABORTED
+    HudsonArtifactsNode(HudsonJobBuild build) {
+        super(DataFolder.findFolder(build.getArtifacts().getRoot()).createNodeChildren(DataFilter.ALL));
+        setName("artifact"); // NOI18N
     }
 
-    HudsonJob getJob();
+    @Override
+    public String getDisplayName() {
+        return "Artifacts"; // XXX I18N
+    }
 
-    int getNumber();
+    private static final Node iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
 
-    Result getResult();
+    public @Override Image getIcon(int type) {
+        return iconDelegate.getIcon(type);
+    }
 
-    String getUrl();
-
-    boolean isBuilding();
-
-    /**
-     * Gets a changelog for the build.
-     * This requires SCM-specific parsing using {@link HudsonSCM#parseChangeSet}.
-     * @return a list of changes, possibly empty (including if it could not be parsed)
-     */
-    Collection<? extends HudsonJobChangeItem> getChanges();
-
-    /**
-     * Obtains a filesystem representing the build artifacts as accessed by Hudson web services.
-     */
-    FileSystem getArtifacts();
+    public @Override Image getOpenedIcon(int type) {
+        return iconDelegate.getOpenedIcon(type);
+    }
 
 }
