@@ -107,8 +107,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	    AST next = child.getNextSibling();
 	    if( next != null && next.getType() == CPPTokenTypes.SCOPE ) {
 		List<CharSequence> l = new ArrayList<CharSequence>();
-		l.add(child.getText());
-                APTStringManager manager = QualifiedNameCache.getManager();
+                APTStringManager manager = NameCache.getManager();
+		l.add(manager.getString(child.getText()));
 		begin:
 		for( next = next.getNextSibling(); next != null; next = next.getNextSibling() ) {
 		    switch( next.getType() ) {
@@ -136,7 +136,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         int cnt = qid.getNumberOfChildren();
         if( cnt >= 1 ) {
             List<CharSequence> l = new ArrayList<CharSequence>();
-            APTStringManager manager = QualifiedNameCache.getManager();
+            APTStringManager manager = NameCache.getManager();
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.ID ) {
                     if( token.getNextSibling() != null ) {
