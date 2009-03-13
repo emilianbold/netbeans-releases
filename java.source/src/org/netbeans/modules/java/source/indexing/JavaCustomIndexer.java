@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -81,6 +82,8 @@ import org.openide.util.Mutex.ExceptionAction;
  */
 public class JavaCustomIndexer extends CustomIndexer {
 
+    private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
+
     private static final CompileWorker[] WORKERS = {
         new OnePassCompileWorker(),
         new MultiPassCompileWorker()
@@ -90,6 +93,12 @@ public class JavaCustomIndexer extends CustomIndexer {
     protected void index(final Iterable<? extends Indexable> files, final Context context) {
         JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", files);
         try {
+            String sourceLevel = SourceLevelQuery.getSourceLevel(context.getRoot());
+            if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel, true)) {
+                JavaIndex.LOG.fine("forcing clean due to source level change");
+                IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
+                return;
+            }
             final ClassIndexManager cim = ClassIndexManager.getDefault();
             cim.writeLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
@@ -252,6 +261,15 @@ public class JavaCustomIndexer extends CustomIndexer {
             for (Indexable i : files) {
                 indexImpl.setDirty(i.getURL());
             }
+        }
+    }
+
+    public static void verifySourceLevel(URL root, String sourceLevel) throws IOException {
+        String existingSourceLevel = JavaIndex.getAttribute(root, SOURCE_LEVEL_ROOT, null);
+        if (sourceLevel != null && existingSourceLevel != null && !sourceLevel.equals(existingSourceLevel)) {
+            JavaIndex.LOG.log(Level.FINE, "source level change detected (provided={1}, existing={2}), refreshing whole source root ({0})", new Object[] {root.toExternalForm(), sourceLevel, existingSourceLevel});
+            IndexingManager.getDefault().refreshIndex(root, null);
+            return ;
         }
     }
 
