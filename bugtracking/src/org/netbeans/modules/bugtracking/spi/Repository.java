@@ -90,6 +90,11 @@ public abstract class Repository {
      */
     public abstract Issue getIssue(String id);
 
+    /**
+     * Removes this repository from its conector
+     *
+     */
+    public abstract void remove();
 
     /**
      * Returns the {@link BugtrackignController} for this repository

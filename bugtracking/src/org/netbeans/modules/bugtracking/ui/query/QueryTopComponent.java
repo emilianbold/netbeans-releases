@@ -139,17 +139,13 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
             });
 
             DefaultComboBoxModel repoModel;
+            Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
+            repoModel = new DefaultComboBoxModel(repos);
+            repositoryComboBox.setModel(repoModel);
             if(toSelect != null) {
-                repoModel = new DefaultComboBoxModel();
-                repoModel.addElement(toSelect);
-                repositoryComboBox.setModel(repoModel);
                 repositoryComboBox.setSelectedItem(toSelect);
-                repositoryComboBox.setEnabled(false);
-                newButton.setEnabled(false);
                 onRepoSelected();
             } else {
-                Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
-                repoModel = new DefaultComboBoxModel(repos);
                 repositoryComboBox.setModel(repoModel);
                 if(repositoryComboBox.getModel().getSize() > 0) {
                     repositoryComboBox.setSelectedIndex(0);
@@ -167,6 +163,13 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
             queriesPanel.setVisible(false);
             
         }
+    }
+
+    public static QueryTopComponent forKenai(Query query, Repository toSelect) {
+        QueryTopComponent tc = new QueryTopComponent(query, toSelect);
+        tc.repositoryComboBox.setEnabled(false);
+        tc.newButton.setEnabled(false);
+        return tc;
     }
 
     private Query getQuery() {

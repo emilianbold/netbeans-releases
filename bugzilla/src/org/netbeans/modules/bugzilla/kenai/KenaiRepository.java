@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
  */
 public class KenaiRepository extends BugzillaRepository {
 
-    static final String ICON_PATH = "org/netbeans/modules/bugzilla/resources/kenai-small.png";
+    static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/kenai-small.png";
     private String urlParam;
     private Query[] definedQueries;
     private Image icon;

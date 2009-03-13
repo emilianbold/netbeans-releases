@@ -186,7 +186,7 @@ public abstract class Issue {
     }
 
     /**
-     * Returns a NOde representing this issue
+     * Returns a Node representing this issue
      * @return
      */
     public abstract IssueNode getNode();

@@ -55,11 +55,8 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
@@ -74,14 +71,13 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.IssueCache;
-import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -92,16 +88,22 @@ import org.openide.util.RequestProcessor.Task;
  */
 public class BugzillaRepository extends Repository {
 
+    private static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/repository.png";
+
     private String name;
     private TaskRepository taskRepository;
     private Controller controller;
     private Set<Query> queries = null;
     private IssueCache cache;
     private BugzillaExecutor executor;
+    private Image icon;
 
-    BugzillaRepository() { }
+    BugzillaRepository() {
+        icon = ImageUtilities.loadImage(ICON_PATH, true);
+    }
 
     protected BugzillaRepository(String repoName, String url, String user, String password) {
+        this();
         name = repoName;
         taskRepository = createTaskRepository(name, url, user, password);
     }
@@ -133,12 +135,27 @@ public class BugzillaRepository extends Repository {
     }
 
     @Override
+    public void remove() {
+        BugzillaConfig.getInstance().removeRepository(this.getDisplayName());
+    }
+
+    @Override
     public void fireQueryListChanged() {
         super.fireQueryListChanged();
     }
 
     public String getDisplayName() {
         return name;
+    }
+
+    @Override
+    public String getTooltip() {
+        return name + " : " + taskRepository.getCredentials(AuthenticationType.REPOSITORY).getUserName() + "@" + taskRepository.getUrl();
+    }
+
+    @Override
+    public Image getIcon() {
+        return icon;
     }
 
     public String getUsername() {
@@ -216,11 +233,6 @@ public class BugzillaRepository extends Repository {
     }
 
     @Override
-    public String getTooltip() {
-        return name + " : " + taskRepository.getCredentials(AuthenticationType.REPOSITORY).getUserName() + "@" + taskRepository.getUrl();
-    }
-
-    @Override
     public BugtrackingController getController() {
         if(controller == null) {
             controller = new Controller();
@@ -287,11 +299,6 @@ public class BugzillaRepository extends Repository {
         return true;
     }
 
-    @Override
-    public Image getIcon() {
-        return null;
-    }
-
     public BugzillaExecutor getExecutor() {
         if(executor == null) {
             executor = new BugzillaExecutor(this);
@@ -304,14 +311,7 @@ public class BugzillaRepository extends Repository {
         private String errorMessage;
 
         private Controller() {
-            if(taskRepository != null) {
-                AuthenticationCredentials c = taskRepository.getCredentials(AuthenticationType.REPOSITORY);
-                panel.userField.setText(c.getUserName());
-                panel.psswdField.setText(c.getPassword());
-                panel.urlField.setText(taskRepository.getUrl());
-                panel.nameField.setText(BugzillaRepository.this.name);
-            }
-
+            populate();
             panel.nameField.getDocument().addDocumentListener(this);
             panel.userField.getDocument().addDocumentListener(this);
             panel.urlField.getDocument().addDocumentListener(this);
@@ -359,9 +359,24 @@ public class BugzillaRepository extends Repository {
             if(!newName.equals(BugzillaRepository.this.name)) {
                 BugzillaConfig.getInstance().removeRepository(BugzillaRepository.this.name);
             }
-            BugzillaRepository.this.name = newName;
-            BugzillaRepository.this.taskRepository = createTaskRepository(panel.nameField.getText(), panel.urlField.getText(), panel.userField.getText(), new String(panel.psswdField.getPassword()));
+            name = newName;
+            taskRepository = createTaskRepository(panel.nameField.getText(), panel.urlField.getText(), panel.userField.getText(), new String(panel.psswdField.getPassword()));
             BugzillaConfig.getInstance().putRepository(name, BugzillaRepository.this);
+            fireDataApplied();
+        }
+
+        void populate() {
+            if(taskRepository != null) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        AuthenticationCredentials c = taskRepository.getCredentials(AuthenticationType.REPOSITORY);
+                        panel.userField.setText(c.getUserName());
+                        panel.psswdField.setText(c.getPassword());
+                        panel.urlField.setText(taskRepository.getUrl());
+                        panel.nameField.setText(BugzillaRepository.this.name);
+                    }
+                });
+            }
         }
 
         public void insertUpdate(DocumentEvent e) {
@@ -375,7 +390,6 @@ public class BugzillaRepository extends Repository {
         public void changedUpdate(DocumentEvent e) {
             fireDataChanged();
         }
-
 
         public void actionPerformed(ActionEvent e) {
             if(e.getSource() == panel.validateButton) {

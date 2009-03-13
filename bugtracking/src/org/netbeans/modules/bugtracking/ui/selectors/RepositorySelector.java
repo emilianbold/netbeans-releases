@@ -53,25 +53,36 @@ import org.netbeans.modules.bugtracking.spi.Repository;
  */
 public class RepositorySelector {
 
-    private ConnectorPanel connectorPanel = new ConnectorPanel();
+    private SelectorPanel selectorPanel = new SelectorPanel();
     public RepositorySelector() {
         // init connector cbo
-        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        connectorPanel.setConnectors(connectors);
     }
 
     public Repository create() {
-        connectorPanel.open();
-        Repository repo = connectorPanel.getRepository();
-        // XXX check for duplicate repositories
+        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        selectorPanel.setConnectors(connectors);
+        if(!selectorPanel.open()) return null;
+        Repository repo = selectorPanel.getRepository();
         try {
             repo.getController().applyChanges();
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             return null;
         }
-        BugtrackingManager.getInstance().addRepo(repo);
+        BugtrackingManager.getInstance().addRepository(repo);
         return repo;
+    }
+
+    public void edit(Repository repository) {
+        if(!selectorPanel.edit(repository)) return;
+        Repository repo = selectorPanel.getRepository();
+        try {
+            repo.getController().applyChanges();
+        } catch (IOException ex) {
+            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            return;
+        }
+        BugtrackingManager.getInstance().fireRepositoriesChanged(); 
     }
 
 }

@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.bugtracking;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -63,7 +65,10 @@ import org.openide.util.RequestProcessor;
 public final class BugtrackingManager implements LookupListener {
     
     private static final BugtrackingManager instance = new BugtrackingManager();
-        
+
+    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+    public final static String EVENT_REPOSITORIES_CHANGED = "bugtracking.repositories.changed";
+
     private boolean                 initialized;
     private Set<Repository>         repos;
 
@@ -92,20 +97,30 @@ public final class BugtrackingManager implements LookupListener {
 
     /**
      *
-     * Returns all known repositories
+     * Returns all known repositories incl. the Kenai ones
      *
      * @return repositories
      */
     public Repository[] getKnownRepositories() {
         Repository[] kenaiRepos = KenaiRepositories.getInstance().getRepositories();
-        Repository[] otherRepos = getRepositories().toArray(new Repository[repos.size()]);
+        Repository[] otherRepos = getRepositories();
         Repository[] ret = new Repository[kenaiRepos.length + otherRepos.length];
         System.arraycopy(kenaiRepos, 0, ret, 0, kenaiRepos.length);
         System.arraycopy(otherRepos, 0, ret, kenaiRepos.length, otherRepos.length);
         return ret;
     }
 
-    private Set<Repository> getRepositories() {
+    /**
+     * Returns all user defined repositories
+     * @return
+     */
+    public Repository[] getRepositories() {
+        // XXX do we need to cache this?
+        Set<Repository> s = getRepositoriesIntern();
+        return s.toArray(new Repository[s.size()]);
+    }
+
+    private Set<Repository> getRepositoriesIntern() { // XXX get rid of this
         if(repos == null) {
             initRepos();
         }
@@ -127,8 +142,15 @@ public final class BugtrackingManager implements LookupListener {
         initialized = true;
     }
 
-    public void addRepo(Repository repo) {
-        getRepositories().add(repo);
+    public void addRepository(Repository repo) {
+        getRepositoriesIntern().add(repo);
+        fireRepositoriesChanged();
+    }
+    
+    public void removeRepository(Repository repo) {
+        getRepositoriesIntern().remove(repo);
+        repo.remove();
+        fireRepositoriesChanged();
     }
 
     public BugtrackingConnector[] getConnectors() {
@@ -170,4 +192,15 @@ public final class BugtrackingManager implements LookupListener {
         }
     }
 
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(listener);
+    }
+
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void fireRepositoriesChanged() {
+        changeSupport.firePropertyChange(EVENT_REPOSITORIES_CHANGED, null, null);
+    }
 }

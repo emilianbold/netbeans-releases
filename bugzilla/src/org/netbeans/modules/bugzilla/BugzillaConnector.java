@@ -62,7 +62,7 @@ public class BugzillaConnector extends BugtrackingConnector {
     public String getTooltip() {
         return "Bugzilla Bug-Tracking System"; // XXX bundle me!
     }
-
+    
     @Override
     public Repository createRepository() {
         return new BugzillaRepository();
