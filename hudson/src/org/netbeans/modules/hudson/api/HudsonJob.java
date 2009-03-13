@@ -43,14 +43,13 @@ package org.netbeans.modules.hudson.api;
 
 import java.util.Collection;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Lookup;
 
 /**
  * Instance of the Hudson Job in specified instance
  *
  * @author Michal Mocnak
  */
-public interface HudsonJob extends Lookup.Provider, Comparable<HudsonJob> {
+public interface HudsonJob extends Comparable<HudsonJob> {
     
     /**
      * Describes state of the Hudson Job
@@ -165,12 +164,9 @@ public interface HudsonJob extends Lookup.Provider, Comparable<HudsonJob> {
     public void start();
     
     /**
-     * Returns default job lookup
-     * 
-     * @return default job lookup
+     * Obtains Hudson server instance owning the job.
      */
-    // XXX replace with a getter for HudsonInstance
-    public Lookup getLookup();
+    HudsonInstance getInstance();
 
     /**
      * Obtains a filesystem representing the remote workspace as accessed by Hudson web services.
