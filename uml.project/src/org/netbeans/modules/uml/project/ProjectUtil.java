@@ -55,6 +55,7 @@ import java.beans.PropertyVetoException;
 import java.text.MessageFormat;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import java.awt.Cursor;
 import java.io.File;
 import java.text.Collator;
 import java.util.ArrayList;

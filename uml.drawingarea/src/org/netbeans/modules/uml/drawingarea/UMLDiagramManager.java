@@ -44,6 +44,7 @@ package org.netbeans.modules.uml.drawingarea;
 
 import org.netbeans.modules.uml.ui.controls.newdialog.INewDialogDiagramDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogDiagramDetails;
+import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
