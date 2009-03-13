@@ -184,16 +184,6 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
      * @param url
      * @return
      */
-    public static HudsonInstanceImpl createHudsonInstance(String name, String url) {
-        return createHudsonInstance(new HudsonInstanceProperties(name, url));
-    }
-    
-    /**
-     *
-     * @param name
-     * @param url
-     * @return
-     */
     public static HudsonInstanceImpl createHudsonInstance(String name, String url, String sync) {
         return createHudsonInstance(new HudsonInstanceProperties(name, url, sync));
     }
@@ -206,6 +196,9 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
      */
     public static HudsonInstanceImpl createHudsonInstance(HudsonInstanceProperties properties) {
         HudsonInstanceImpl instance = new HudsonInstanceImpl(properties);
+        assert instance.getName() != null;
+        assert instance.getUrl() != null;
+        assert Integer.parseInt(instance.getProperties().get(INSTANCE_SYNC)) >= 0;
         
         if (null == HudsonManagerImpl.getInstance().addInstance(instance))
             return null;
@@ -386,7 +379,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
 
     public @Override String toString() {
-        return "HudsonInstanceImpl[" + getUrl() + "]"; // NOI18N
+        return getUrl();
     }
 
     public int compareTo(HudsonInstance o) {
