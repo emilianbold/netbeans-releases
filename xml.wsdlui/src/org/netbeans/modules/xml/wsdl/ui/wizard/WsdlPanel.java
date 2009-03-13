@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardContext;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;

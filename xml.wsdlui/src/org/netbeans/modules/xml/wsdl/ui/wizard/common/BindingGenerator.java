@@ -48,8 +48,10 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.xml.wsdl.ui.wizard;
+package org.netbeans.modules.xml.wsdl.ui.wizard.common;
 
+import org.netbeans.modules.xml.wsdl.ui.wizard.*;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;

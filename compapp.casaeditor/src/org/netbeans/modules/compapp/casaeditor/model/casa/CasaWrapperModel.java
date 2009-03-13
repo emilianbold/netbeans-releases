@@ -76,7 +76,7 @@ import org.netbeans.modules.xml.wsdl.bindingsupport.template.ExtensibilityElemen
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateGroup;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplate;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
-import org.netbeans.modules.xml.wsdl.ui.wizard.BindingGenerator;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.BindingGenerator;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ValidationInfo;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
@@ -90,7 +90,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
-import org.netbeans.modules.xml.wsdl.ui.wizard.WSDLWizardConstants;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;

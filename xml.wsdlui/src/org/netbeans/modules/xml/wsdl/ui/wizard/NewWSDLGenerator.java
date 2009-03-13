@@ -50,6 +50,8 @@
 
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.BindingGenerator;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
