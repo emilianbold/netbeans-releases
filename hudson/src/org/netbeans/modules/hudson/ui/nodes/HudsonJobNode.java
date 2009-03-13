@@ -45,7 +45,6 @@ import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
@@ -167,7 +166,7 @@ public class HudsonJobNode extends AbstractNode {
             assert false : ex;
             return;
         }
-        if (job.getLookup().lookup(HudsonInstance.class).getPreferredJobs().contains(job)) {
+        if (job.getInstance().getPreferredJobs().contains(job)) {
             htmlDisplayName = "<b>" + htmlDisplayName + "</b>"; // NOI18N
         }
         switch (color) {

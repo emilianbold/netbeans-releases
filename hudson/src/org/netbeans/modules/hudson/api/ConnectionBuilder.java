@@ -124,7 +124,7 @@ public final class ConnectionBuilder {
      * @return this builder
      */
     public ConnectionBuilder job(HudsonJob job) {
-        HudsonInstance instance = job.getLookup().lookup(HudsonInstance.class);
+        HudsonInstance instance = job.getInstance();
         if (instance != null) {
             instance(instance);
         }

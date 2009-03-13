@@ -41,14 +41,12 @@
 
 package org.netbeans.modules.hudson.api;
 
-import org.openide.util.Lookup;
-
 /**
  * Describes Hudson view
  *
  * @author Michal Mocnak
  */
-public interface HudsonView extends Lookup.Provider {
+public interface HudsonView {
     
     /**
      * Default all view name
@@ -78,9 +76,8 @@ public interface HudsonView extends Lookup.Provider {
     public String getUrl();
     
     /**
-     * Returns default view lookup
-     *
-     * @return default view lookup
+     * Obtains Hudson server instance owning the view.
      */
-    public Lookup getLookup();
+    HudsonInstance getInstance();
+
 }

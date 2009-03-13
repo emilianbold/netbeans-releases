@@ -114,7 +114,7 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
     }
 
     public FileSystem getArtifacts() {
-        return job.getLookup().lookup(HudsonInstanceImpl.class).getArtifacts(this);
+        return job.getInstance().getArtifacts(this);
     }
 
 }

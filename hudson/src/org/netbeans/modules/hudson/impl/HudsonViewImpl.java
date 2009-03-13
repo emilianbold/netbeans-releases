@@ -43,11 +43,9 @@ package org.netbeans.modules.hudson.impl;
 
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonView;
-import static org.netbeans.modules.hudson.constants.HudsonViewConstants.*;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
+import static org.netbeans.modules.hudson.constants.HudsonViewConstants.*;
 import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Implementation of the HudsonView
@@ -93,8 +91,9 @@ public class HudsonViewImpl implements HudsonView, OpenableInBrowser {
     public int hashCode() {
         return getName().hashCode();
     }
-    
-    public Lookup getLookup() {
-        return Lookups.fixed(instance);
+
+    public HudsonInstance getInstance() {
+        return instance;
     }
+
 }

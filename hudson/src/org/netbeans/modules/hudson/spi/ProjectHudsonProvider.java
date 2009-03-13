@@ -44,7 +44,6 @@ package org.netbeans.modules.hudson.spi;
 import java.net.URI;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.openide.util.Lookup;
 
@@ -142,7 +141,7 @@ public abstract class ProjectHudsonProvider {
          * @return an association with the same server URL and job name
          */
         public static Association forJob(HudsonJob job) {
-            return new Association(job.getLookup().lookup(HudsonInstance.class).getUrl(), job.getName());
+            return new Association(job.getInstance().getUrl(), job.getName());
         }
 
         /**
