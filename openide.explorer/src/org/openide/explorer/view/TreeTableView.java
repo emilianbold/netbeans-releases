@@ -1311,11 +1311,12 @@ public class TreeTableView extends BeanTreeView {
         private Map<Node, SortedNode> original2filter = new WeakHashMap<Node, SortedNode> (11);
 
         @Override
-        void setNode(final Node root, final TreeView.VisualizerHolder visHolder) {
-            final Node filterNode = new SortedNode (root);
-            super.setNode (filterNode, visHolder);
+        void setNode (Node root, TreeView.VisualizerHolder visHolder) {
+            visHolder.clear ();
+            original2filter.clear ();
+            super.setNode (new SortedNode (root), null);
         }
-        
+
         private class SortedNode extends FilterNode {
             public SortedNode (Node original) {
                 super (original, new SortedChildren (original));
@@ -1327,10 +1328,8 @@ public class TreeTableView extends BeanTreeView {
         }
         
         private class SortedChildren extends FilterNode.Children {
-            private Node orig;
             public SortedChildren (Node n) {
                 super (n);
-                this.orig = n;
                 sortNodes ();
             }
 
@@ -1364,7 +1363,7 @@ public class TreeTableView extends BeanTreeView {
             }
 
             private void sortNodes () {
-                Node [] originalNodes = orig.getChildren ().getNodes ();
+                Node [] originalNodes = original.getChildren ().getNodes ();
                 if (isSortingActive ()) {
                     Collection<Node> sortedNodes = new TreeSet<Node> (getRowComparator ());
                     for (Node n : originalNodes) {

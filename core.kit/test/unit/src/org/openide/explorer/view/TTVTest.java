@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,6 +42,7 @@
 package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
@@ -101,6 +102,10 @@ public class TTVTest extends NbTestCase {
         synchronized (this) {
             try {
                 wait();
+                KeyboardFocusManager.getCurrentKeyboardFocusManager ().clearGlobalFocusOwner ();
+                for (int j = 0; j < weakNodes.length; j++) {
+                    assertGC ("Check Node #" + j, weakNodes[j]);
+                }
             } catch (InterruptedException exc) {
                 fail("Test was interrupted somehow.");
             }
@@ -146,15 +151,11 @@ public class TTVTest extends NbTestCase {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             System.gc();
-                            if (checkWeakRefs(weakNodes)) {
-                                repaintTimer.stop();
-                                result = repaintCount;
-                                // wake up testNodeReleasing method, so that it can finish properly
-                                synchronized (TTVTest.this) {
-                                    TTVTest.this.notifyAll();
-                                }
-                            } else {
-                                System.out.println("Refs still alive after GC #" + repaintCount);
+                            repaintTimer.stop();
+                            result = repaintCount;
+                            // wake up testNodeReleasing method, so that it can finish properly
+                            synchronized (TTVTest.this) {
+                                TTVTest.this.notifyAll();
                             }
                         }
                     });
@@ -169,15 +170,6 @@ public class TTVTest extends NbTestCase {
             }
         });
         repaintTimer.start();
-    }
-    
-    private boolean checkWeakRefs (WeakReference[] weakNodes) {
-        for (int j = 0; j < weakNodes.length; j++) {
-            if (weakNodes[j].get() != null) {
-                return false;
-            }
-        }
-        return true;
     }
     
     private TreeTableView createTTV () {
@@ -229,8 +221,7 @@ public class TTVTest extends NbTestCase {
         createdData.rootNode = new AbstractNode(rootChildren);
         createdData.rootNode.setDisplayName("Root test node");
         for (int i = 0; i < 100; i++) {
-            Node newNode = new TestNode();
-            newNode.setDisplayName("node #" + i);
+            Node newNode = new TestNode("node #" + i);
             createdData.childrenNodes[i] = newNode;
         }
         rootChildren.add(createdData.childrenNodes);
@@ -239,8 +230,9 @@ public class TTVTest extends NbTestCase {
     
     private static final class TestNode extends AbstractNode {
         
-        TestNode () {
+        TestNode (String name) {
             super(Children.LEAF);
+            setName (name);
         }
         
         public Sheet createSheet () {
@@ -251,6 +243,13 @@ public class TTVTest extends NbTestCase {
             wireNode(this, props);
             return s;
         }
+        
+        @Override
+        public String toString () {
+            return getName () + ": " + super.toString ();
+        }
+
+
         
     } // end of TestNode
 
@@ -272,7 +271,7 @@ public class TTVTest extends NbTestCase {
     
     private void replaceTTVContent () {
         Children children = new Children.Array();
-        children.add(new Node[] { new TestNode() });
+        children.add(new Node[] { new TestNode("Not held node") });
         
         ep.getExplorerManager().setRootContext(new AbstractNode (children));
     }
