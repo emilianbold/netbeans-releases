@@ -187,6 +187,7 @@ public class IntToStringCache {
 
     protected String getFileKey(String str) {
         // use name shared by filesystem
-        return new File(str).getPath();
+        // return new File(str).getPath();
+        return str;
     }
 }
