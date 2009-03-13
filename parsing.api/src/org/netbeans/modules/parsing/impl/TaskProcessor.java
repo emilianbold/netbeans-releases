@@ -69,6 +69,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -168,7 +169,7 @@ public class TaskProcessor {
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
             StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
             if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
-                LOGGER.warning("Source.runUserTask called in AWT event thread by: " + stackTraceElement); // NOI18N
+                LOGGER.warning("ParserManager.parse called in AWT event thread by: " + stackTraceElement); // NOI18N
             }
         }
         final Request request = currentRequest.getTaskToCancel();
@@ -539,17 +540,16 @@ public class TaskProcessor {
         }
         return false;
     }
-    
-    private static StackTraceElement findCaller(StackTraceElement[] elements) {
+
+    /* test */ static StackTraceElement findCaller(StackTraceElement[] elements) {
         for (StackTraceElement e : elements) {
-            if (Source.class.getName().equals(e.getClassName())) {
+            if (TaskProcessor.class.getName().equals(e.getClassName()) ||
+                e.getClassName().startsWith(ParserManager.class.getName()) ||
+                e.getClassName().startsWith("java.lang.") //NOI18N
+            ) {
                 continue;
             }
-            
-            if (e.getClassName().startsWith("java.lang.")) {
-                continue;
-            }
-            
+
             return e;
         }        
         return null;
