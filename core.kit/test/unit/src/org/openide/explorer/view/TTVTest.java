@@ -42,17 +42,22 @@
 package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerPanel;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -67,10 +72,10 @@ import org.openide.nodes.Sheet;
 public class TTVTest extends NbTestCase {
 
     private TreeTableView ttv;
-    private ExplorerPanel ep;
+    private TreeTableViewPanel ep;
     private NodeHolderProperty[] props;
     private NodeStructure nodeStructure;
-    private WeakReference[] weakNodes;
+    private List<WeakReference<Node>> weakNodes;
     private int result;
     
     public TTVTest(String testName) {
@@ -103,8 +108,8 @@ public class TTVTest extends NbTestCase {
             try {
                 wait();
                 KeyboardFocusManager.getCurrentKeyboardFocusManager ().clearGlobalFocusOwner ();
-                for (int j = 0; j < weakNodes.length; j++) {
-                    assertGC ("Check Node #" + j, weakNodes[j]);
+                for (WeakReference<Node> weakNode : weakNodes) {
+                    assertGC ("Check Node weakNode", weakNode);
                 }
             } catch (InterruptedException exc) {
                 fail("Test was interrupted somehow.");
@@ -201,11 +206,11 @@ public class TTVTest extends NbTestCase {
     /** Specialized property that will hold reference to any node method
      * holdNode was called on.
      */
-    private static abstract class NodeHolderProperty extends PropertySupport.ReadOnly {
+    private static abstract class NodeHolderProperty extends PropertySupport.ReadOnly<Object> {
         private Node heldNode;
         
         NodeHolderProperty (String propName, Class propClass, String name, String hint) {
-            super(propName, propClass, name, hint);
+            super(propName, Object.class, name, hint);
         }
         
         public void holdNode (Node node) {
@@ -235,6 +240,7 @@ public class TTVTest extends NbTestCase {
             setName (name);
         }
         
+        @Override
         public Sheet createSheet () {
             Sheet s = Sheet.createDefault ();
             Sheet.Set ss = s.get (Sheet.PROPERTIES);
@@ -265,7 +271,7 @@ public class TTVTest extends NbTestCase {
         
         ExplorerManager em = new ExplorerManager();
         em.setRootContext(rootNode);
-        ep = new ExplorerPanel(em);
+        ep = new TreeTableViewPanel (em);
         ep.add(ttv, BorderLayout.CENTER);
     }
     
@@ -277,16 +283,30 @@ public class TTVTest extends NbTestCase {
     }
     
     private void showTTV () {
-        ep.open();
+        DialogDescriptor dd = new DialogDescriptor (ep, "", false, null);
+        Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
+        d.setVisible (true);
     }
     
-    private WeakReference[] createWeakNodes (Node[] nodes) {
-        WeakReference[] weakNodes = new WeakReference[nodes.length];
+    private List<WeakReference<Node>> createWeakNodes (Node[] nodes) {
+        List<WeakReference<Node>> weaks = new ArrayList<WeakReference<Node>> (nodes.length);
         for (int i = 0; i < nodes.length; i++) {
-            weakNodes[i] = new WeakReference(nodes[i]);
+            weaks.add (new WeakReference<Node> (nodes[i]));
         }
-        return weakNodes;
+        return weaks;
     }
     
-    
+    private class TreeTableViewPanel extends JPanel implements ExplorerManager.Provider {
+        private final ExplorerManager manager;
+        private TreeTableViewPanel (ExplorerManager mgr) {
+            this.manager = mgr;
+            setLayout (new BorderLayout ());
+            add (new TreeTableView (), BorderLayout.CENTER);
+        }
+
+        public ExplorerManager getExplorerManager () {
+            return manager;
+        }
+
+    }
 }
