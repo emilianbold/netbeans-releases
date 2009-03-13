@@ -462,7 +462,7 @@ public class APTUtils {
         return text;
     }
     
-    public static APTToken createAPTToken(Token token, int ttype) {
+    public static APTToken createAPTToken(APTToken token, int ttype) {
         APTToken newToken;
         if (APTTraceFlags.USE_APT_TEST_TOKEN) {
             newToken = new APTTestToken(token, ttype);
@@ -472,7 +472,7 @@ public class APTUtils {
         return newToken;
     }
     
-    public static APTToken createAPTToken(Token token) {
+    public static APTToken createAPTToken(APTToken token) {
         return createAPTToken(token, token.getType());
     }
     
