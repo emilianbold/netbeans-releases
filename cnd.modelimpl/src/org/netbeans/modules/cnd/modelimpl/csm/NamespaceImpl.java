@@ -51,6 +51,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -288,6 +289,11 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     public Collection<CsmUID<CsmOffsetableDeclaration>> findUidsRange(String from, String to) {
         DeclarationContainer declStorage = getDeclarationsSorage();
         return declStorage.getUIDsRange(from, to);
+    }
+
+    public Collection<CsmOffsetableDeclaration> getDeclarationsRange(CharSequence fqn, Kind[] kinds) {
+        DeclarationContainer declStorage = getDeclarationsSorage();
+        return declStorage.getDeclarationsRange(fqn, kinds);
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getUnnamedUids() {
