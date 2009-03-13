@@ -64,6 +64,9 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.hudson.api.HudsonInstance;
+import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
@@ -85,14 +88,18 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
     private NotifyDescriptor descriptor;
     private Set<Project> manuallyAddedProjects = new HashSet<Project>();
     ProjectHudsonJobCreator creator;
+    HudsonInstance instance;
 
     CreateJobPanel() {}
 
-    void init(Set<String> takenNames, NotifyDescriptor descriptor) {
-        this.takenNames = takenNames;
+    void init(NotifyDescriptor descriptor, HudsonInstance instance) {
         this.descriptor = descriptor;
         this.notifications = descriptor.createNotificationLineSupport();
         initComponents();
+        updateServerModel();
+        this.instance = instance;
+        server.setSelectedItem(instance);
+        server.setRenderer(new ServerRenderer());
         updateProjectModel();
         project.setSelectedItem(project.getItemCount() > 0 ? project.getItemAt(0) : null);
         project.setRenderer(new ProjectRenderer());
@@ -116,6 +123,10 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
     private void check() {
         descriptor.setValid(false);
         notifications.clearMessages();
+        if (instance == null) {
+            notifications.setInformationMessage("Pick a Hudson server to create a job on."); // XXX I18N
+            return;
+        }
         Project p = selectedProject();
         if (p == null) {
             notifications.setInformationMessage("Pick a project to create a job for."); // XXX I18N
@@ -148,6 +159,19 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
         return (Project) project.getSelectedItem();
     }
 
+    private void updateServerModel() {
+        server.setModel(new DefaultComboBoxModel(HudsonManagerImpl.getDefault().getInstances().toArray()));
+    }
+
+    private void computeTakenNames() {
+        takenNames = new HashSet<String>();
+        if (instance != null) {
+            for (HudsonJob job : instance.getJobs()) {
+                takenNames.add(job.getName());
+            }
+        }
+    }
+
     private void updateProjectModel() {
         SortedSet<Project> projects = new TreeSet<Project>(new Comparator<Project>() {
             Collator COLL = Collator.getInstance();
@@ -165,12 +189,32 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        serverLabel = new javax.swing.JLabel();
+        server = new javax.swing.JComboBox();
+        addServer = new javax.swing.JButton();
         nameLabel = new javax.swing.JLabel();
         name = new javax.swing.JTextField();
         projectLabel = new javax.swing.JLabel();
         project = new javax.swing.JComboBox();
         browse = new javax.swing.JButton();
         custom = new javax.swing.JPanel();
+        explanationLabel = new javax.swing.JLabel();
+
+        serverLabel.setLabelFor(server);
+        org.openide.awt.Mnemonics.setLocalizedText(serverLabel, org.openide.util.NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.serverLabel.text")); // NOI18N
+
+        server.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                serverActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(addServer, org.openide.util.NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.addServer.text")); // NOI18N
+        addServer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addServerActionPerformed(evt);
+            }
+        });
 
         nameLabel.setLabelFor(name);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.nameLabel.text")); // NOI18N
@@ -193,30 +237,42 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
 
         custom.setLayout(new java.awt.BorderLayout());
 
+        org.openide.awt.Mnemonics.setLocalizedText(explanationLabel, org.openide.util.NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.explanationLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(custom, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(explanationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 483, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(serverLabel)
                             .add(nameLabel)
                             .add(projectLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, project, 0, 171, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, project, 0, 278, Short.MAX_VALUE)
+                            .add(server, 0, 278, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browse)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(addServer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(browse, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, custom, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 483, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(serverLabel)
+                    .add(server, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(addServer))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(nameLabel)
                     .add(name, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -226,7 +282,9 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
                     .add(project, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(browse))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(custom, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+                .add(custom, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 241, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(explanationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -285,17 +343,34 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
         check();
     }//GEN-LAST:event_projectActionPerformed
 
+    private void serverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverActionPerformed
+        instance = (HudsonInstance) server.getSelectedItem();
+        computeTakenNames();
+        check();
+    }//GEN-LAST:event_serverActionPerformed
+
+    private void addServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServerActionPerformed
+        new AddInstanceAction().actionPerformed(evt);
+        updateServerModel();
+        // XXX select newly added server
+        check();
+    }//GEN-LAST:event_addServerActionPerformed
+
     public void stateChanged(ChangeEvent event) {
         check();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addServer;
     private javax.swing.JButton browse;
     private javax.swing.JPanel custom;
+    private javax.swing.JLabel explanationLabel;
     private javax.swing.JTextField name;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JComboBox project;
     private javax.swing.JLabel projectLabel;
+    private javax.swing.JComboBox server;
+    private javax.swing.JLabel serverLabel;
     // End of variables declaration//GEN-END:variables
 
     private static class ProjectRenderer extends DefaultListCellRenderer {
@@ -307,6 +382,15 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, info.getDisplayName(), index, isSelected, cellHasFocus);
             label.setIcon(info.getIcon());
             return label;
+        }
+    }
+
+    private static class ServerRenderer extends DefaultListCellRenderer {
+        public @Override Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if (value == null) {
+                return super.getListCellRendererComponent(list, null, index, isSelected, cellHasFocus);
+            }
+            return super.getListCellRendererComponent(list, ((HudsonInstance) value).getName(), index, isSelected, cellHasFocus);
         }
     }
 
