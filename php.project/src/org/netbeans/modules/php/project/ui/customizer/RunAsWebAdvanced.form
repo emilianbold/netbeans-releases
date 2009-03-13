@@ -41,11 +41,11 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="localPathTextField" pref="193" max="32767" attributes="0"/>
+                              <Component id="localPathTextField" pref="198" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="localPathBrowseButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="remotePathTextField" alignment="0" pref="288" max="32767" attributes="0"/>
+                          <Component id="remotePathTextField" alignment="0" pref="293" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>

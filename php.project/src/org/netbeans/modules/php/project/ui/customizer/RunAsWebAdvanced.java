@@ -251,10 +251,10 @@ public class RunAsWebAdvanced extends JPanel {
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(localPathTextField, GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
+                                .add(localPathTextField, GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(localPathBrowseButton))
-                            .add(remotePathTextField, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))))
+                            .add(remotePathTextField, GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
