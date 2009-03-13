@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,67 +34,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.junit;
 
-import java.io.File;
-import java.net.URL;
-import org.apache.tools.ant.module.run.LoggerTrampoline;
-import org.apache.tools.ant.module.spi.AntEvent;
-import org.apache.tools.ant.module.spi.AntLogger;
-import org.openide.windows.OutputListener;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author mkleint
  */
-public class FakeAntSession implements LoggerTrampoline.AntSessionImpl {
+public class JUnitOutputListenerProviderTest {
 
-    private Object customData;
-    
-    public File getOriginatingScript() {
-        return new File("fake/maven/build.xml");
+    public JUnitOutputListenerProviderTest() {
     }
 
-    public String[] getOriginatingTargets() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
 
-    public Object getCustomData(AntLogger logger) {
-        return customData;
+    @AfterClass
+    public static void tearDownClass() throws Exception {
     }
 
-    public void putCustomData(AntLogger logger, Object data) {
-        customData = data;
-    }
+    /**
+     * Test of constructTrouble method, of class JUnitOutputListenerProvider.
+     */
+    @Test
+    public void testConstructTrouble() {
+        Trouble t = JUnitOutputListenerProvider.constructTrouble("junit.framework.AssertionFailedError", "message",
+                "junit.framework.AssertionFailedError: failed\n" +
+                "	at junit.framework.Assert.fail(Assert.java:47)\n" +
+                "	at com.mycompany.mavenproject30.AppTest.testApp(AppTest.java:39)");
+        assertNull(t.getComparisonFailure());
+        String[] stack = t.getStackTrace();
+        assertNotNull(stack);
+        assertArrayEquals(new String[] {
+            "message",
+            "junit.framework.AssertionFailedError",
+                "	at junit.framework.Assert.fail(Assert.java:47)",
+                "	at com.mycompany.mavenproject30.AppTest.testApp(AppTest.java:39)"
 
-    public void println(String message, boolean err, OutputListener listener) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void deliverMessageLogged(AntEvent originalEvent, String message, int level) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void consumeException(Throwable t) throws IllegalStateException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public boolean isExceptionConsumed(Throwable t) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public int getVerbosity() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public String getDisplayName() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public OutputListener createStandardHyperlink(URL file, String message, int line1, int column1, int line2, int column2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        }, stack);
+        
     }
 
 }
