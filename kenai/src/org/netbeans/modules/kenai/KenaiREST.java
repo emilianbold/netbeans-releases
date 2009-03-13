@@ -230,24 +230,28 @@ public class KenaiREST extends KenaiImpl {
         }
 
         public ITEM next() {
-            try {
                 if (currentIndex==col.size()) {
                     currentIndex-=col.size();
-                    col = loadPage(col.next, clazz);
+                    try {
+                        col = loadPage(col.next, clazz);
+                    } catch (KenaiException ex) {
+                        throw new RuntimeException("Error loading " + col.next, ex);
+                    }
                 }
                 return colToItem(currentIndex++);
-            } catch (KenaiException ex) {
-                throw new RuntimeException(ex);
-            }
         }
 
         public void remove() {
             throw new UnsupportedOperationException("Cannot remove items");
         }
 
-        private ITEM colToItem(int index) throws KenaiException {
+        private ITEM colToItem(int index) {
             if (col instanceof ProjectsListData) {
-                return (ITEM) getProject(((ProjectsListData) col).projects[index].name);
+                try {
+                    return (ITEM) getProject(((ProjectsListData) col).projects[index].name);
+                } catch (KenaiException ex) {
+                    throw new RuntimeException("Error loading project " + ((ProjectsListData) col).projects[index].name, ex);
+                }
             } else if (col instanceof ServicesListData) {
                 return (ITEM) ((ServicesListData) col).services[index];
             } else if (col instanceof LicensesListData) {
