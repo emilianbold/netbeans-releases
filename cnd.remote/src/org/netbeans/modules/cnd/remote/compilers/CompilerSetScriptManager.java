@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support.managers;
+package org.netbeans.modules.cnd.remote.compilers;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
@@ -48,14 +48,13 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
 
 /**
  * Manage the getCompilerSets script.
  * 
  * @author gordonp
  */
-public class CompilerSetScriptManager implements ScriptManager {
+/*package-local*/ class CompilerSetScriptManager {
         
     private RemoteScriptSupport support;
     private BufferedReader in;

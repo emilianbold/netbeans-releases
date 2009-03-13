@@ -74,7 +74,7 @@ public class ShellUtils {
         return cmdline.toString();
     }
 
-    static String prepareExportString(String[] envp) {
+    public static String prepareExportString(String[] envp) {
         return prepareExportString(false, envp);
     }
 

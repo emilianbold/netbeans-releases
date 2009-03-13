@@ -37,9 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.cnd.remote.compilers;
 
-import org.netbeans.modules.cnd.remote.support.managers.ScriptManager;
+import org.netbeans.modules.cnd.remote.support.*;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -51,9 +51,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * 
  * @author gordonp
  */
-public class RemoteScriptSupport extends RemoteConnectionSupport {
+/*package-local*/ class RemoteScriptSupport extends RemoteConnectionSupport {
     
-    public RemoteScriptSupport(ExecutionEnvironment execEnv, ScriptManager manager) {
+    public RemoteScriptSupport(ExecutionEnvironment execEnv, CompilerSetScriptManager manager) {
         super(execEnv);
         if (!isFailedOrCancelled()) {
             manager.setSupport(this);
