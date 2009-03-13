@@ -135,7 +135,7 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
         FileObject template = Templates.getTemplate(wiz);
         
         DataObject dTemplate = DataObject.find(template);
-        String pkgName = getSelectedPackageName(dir);
+        String pkgName = getPackageName(dir);
         DataObject dobj = null;
         if (pkgName == null) {
             dobj = dTemplate.createFromTemplate(df, targetName);
@@ -231,7 +231,7 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
         return extender;
     }
      
-    private static String getSelectedPackageName(FileObject targetFolder) {
+    private static String getPackageName(FileObject targetFolder) {
         Project project = FileOwnerQuery.getOwner(targetFolder);
         Sources sources = ProjectUtils.getSources(project);
         List<SourceGroup> groups = GroovySources.getGroovySourceGroups(sources);

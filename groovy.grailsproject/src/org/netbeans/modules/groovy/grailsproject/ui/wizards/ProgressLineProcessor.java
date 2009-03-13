@@ -46,7 +46,7 @@ import org.netbeans.api.extexecution.input.LineProcessor;
  *
  * @author Petr Hejl
  */
-public class ProgressSnooper implements LineProcessor {
+public class ProgressLineProcessor implements LineProcessor {
 
     private final ProgressHandle progress;
 
@@ -56,7 +56,7 @@ public class ProgressSnooper implements LineProcessor {
 
     private int value;
 
-    public ProgressSnooper(ProgressHandle progress, int max, int step) {
+    public ProgressLineProcessor(ProgressHandle progress, int max, int step) {
         this.progress = progress;
         this.max = max;
         this.step = step;
