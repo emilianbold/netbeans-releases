@@ -234,10 +234,11 @@ public final class GrailsProjectConfig {
 
     public GrailsPlatform getGrailsPlatform() {
         GrailsPlatform runtime = GrailsPlatform.getDefault();
-        if (runtime.isConfigured()) {
-            return runtime;
-        }
-        return null;
+        return runtime;
+//        if (runtime.isConfigured()) {
+//            return runtime;
+//        }
+//        return null;
     }
 
     /**

@@ -74,6 +74,14 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
     boolean serverConfigured = true;
     int baseCount;
 
+    public NewGrailsProjectWizardIterator() {
+        super();
+    }
+
+    public static NewGrailsProjectWizardIterator create() {
+        return new NewGrailsProjectWizardIterator();
+    }
+
     private WizardDescriptor.Panel[] createPanels() {
         pls = new GetProjectLocationStep(serverRunning, serverConfigured);
         return new WizardDescriptor.Panel[]{pls};
@@ -98,7 +106,7 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
             ExecutionDescriptor descriptor = new ExecutionDescriptor().frontWindow(true).inputVisible(true);
             descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
                 public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                    return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)));
+                    return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressLineProcessor(handle, 100, 2)));
                 }
             });
             // TODO refresh
