@@ -70,16 +70,13 @@ public final class TemplateDescriptor {
     private final int inheritedTemplateParametersNumber;
 
     public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix, boolean global) {
-        register(templateParams, global);
-        this.templateParams = UIDCsmConverter.objectsToUIDs(templateParams);
-        this.templateSuffix = templateSuffix;
-        inheritedTemplateParametersNumber = 0;
+        this(templateParams, templateSuffix, 0, global);
     }
 
     public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix, int inheritedTemplateParametersNumber,boolean global) {
         register(templateParams, global);
         this.templateParams = UIDCsmConverter.objectsToUIDs(templateParams);
-        this.templateSuffix = templateSuffix;
+        this.templateSuffix = NameCache.getManager().getString(templateSuffix);
         this.inheritedTemplateParametersNumber = inheritedTemplateParametersNumber;
     }
 
@@ -133,7 +130,7 @@ public final class TemplateDescriptor {
 
     public TemplateDescriptor(DataInput input) throws IOException {
         this.templateParams = UIDObjectFactory.getDefaultFactory().readUIDCollection(new ArrayList<CsmUID<CsmTemplateParameter>>(), input);
-        this.templateSuffix = NameCache.getString(PersistentUtils.readUTF(input));
+        this.templateSuffix = PersistentUtils.readUTF(input, NameCache.getManager());
         this.inheritedTemplateParametersNumber = input.readInt();
     }
 

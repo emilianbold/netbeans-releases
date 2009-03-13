@@ -223,7 +223,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         } catch (ConnectException ex) {
             Exceptions.printStackTrace(ex);
         }
-        session.setExecutionContext(new ExecutionContext(target, configuration.getToolsSet()));
+        session.setExecutionContext(new ExecutionContext(target, configuration));
         sessions.add(session);
         List<Indicator> indicators = session.getIndicators();
         for (Indicator ind : indicators) {
@@ -299,7 +299,9 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         if (visualizer == null) {
             VisualizerDataProvider dataProvider = DataProvidersManager.getInstance().getDataProviderFor(dataModel);
 
-            if (dataProvider == null) {
+            if (dataProvider == null || dataProvider instanceof DataProvider) {
+                //if it is DataProvider instance it had to be returned at the previous loop
+                //and if we are here it means no storage exists for this DataProvider
                 // no providers for this storage can be found nor created
                 log.info("Unable to find factory to create Visualizer with ID == " + configuration.getID());
                 return null;

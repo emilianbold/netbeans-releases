@@ -43,8 +43,8 @@ package org.netbeans.modules.php.dbgp.actions;
 import java.util.Set;
 
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
 import org.netbeans.modules.php.dbgp.SessionId;
+import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 
@@ -71,7 +71,7 @@ public abstract class AbstractActionProvider extends ActionsProviderSupport {
         if ( id == null ){
             return null;
         }
-        return StartActionProviderImpl.getInstance().getCurrentSession(id);
+        return SessionManager.getInstance().getCurrentSession(id);
     }
     
     protected SessionId getSessionId(){

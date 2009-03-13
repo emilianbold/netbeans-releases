@@ -43,9 +43,11 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
+import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -60,18 +62,25 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  *
  * @author Vladimir Kvasihn
  */
-public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> implements CsmFriendClass {
+public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> implements CsmFriendClass, CsmTemplate {
     private final CharSequence name;
     private final CharSequence[] nameParts;
     private final CsmUID<CsmClass> parentUID;
     private CsmUID<CsmClass> friendUID;
+    private TemplateDescriptor templateDescriptor = null;
     
     public FriendClassImpl(AST ast, FileImpl file, CsmClass parent, boolean register) {
         super(ast, file);
         this.parentUID = UIDs.get(parent);
         AST qid = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-        name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getString(AstRenderer.getQualifiedName(qid));
+        name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
+        AST templateParams = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LITERAL_template);
+        if (templateParams != null) {
+            List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(templateParams, file, parent);
+            String fullName = "<" + TemplateUtils.getClassSpecializationSuffix(templateParams, null) + ">"; // NOI18N
+            setTemplateDescriptor(params, fullName, register);
+        }
         if (register) {
             registerInProject();
         } else {
@@ -153,7 +162,23 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         ((ProjectBase) getContainingFile().getProject()).unregisterDeclaration(this);
         this.cleanUID();
     }
-    
+
+    private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name, boolean global) {
+        templateDescriptor = new TemplateDescriptor(params, name, global);
+    }
+
+    public boolean isTemplate() {
+        return templateDescriptor != null;
+    }
+
+    public List<CsmTemplateParameter> getTemplateParameters() {
+        return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
+    }
+
+    public CharSequence getDisplayName() {
+        return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
 
@@ -164,16 +189,18 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         PersistentUtils.writeUTF(name, output);
         PersistentUtils.writeStrings(this.nameParts, output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.parentUID, output);    
-        UIDObjectFactory.getDefaultFactory().writeUID(this.friendUID, output);    
+        UIDObjectFactory.getDefaultFactory().writeUID(this.friendUID, output);
+        PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
     }
 
 
     public FriendClassImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
         this.nameParts = PersistentUtils.readStrings(input, NameCache.getManager());
         this.parentUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         this.friendUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
     }
 }

@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
 /**
  *
@@ -69,7 +70,7 @@ public final class APTMacroMapSnapshot {
     }
     
     /*package*/ final APTMacro getMacro(CharSequence key) {
-        assert !(key instanceof String) : "string can't be here " + key;
+        assert key instanceof TinyCharSequence : "string can't be here " + key;
         APTMacroMapSnapshot currentSnap = this;
         while (currentSnap != null) {
             APTMacro macro = currentSnap.macros.get(key);

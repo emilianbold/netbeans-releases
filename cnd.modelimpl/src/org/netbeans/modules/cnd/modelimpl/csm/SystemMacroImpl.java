@@ -62,12 +62,12 @@ public class SystemMacroImpl implements CsmMacro {
     private final CharSequence macroName;
     private final CharSequence macroBody;
     private final Kind macroKind;
-    private final List<? extends CharSequence> params;
+    private final List<CharSequence> params;
     private CsmFile containingFile;
 
-    public SystemMacroImpl(String macroName, String macroBody, List<String> macroParams, CsmFile containingFile, Kind macroKind) {
-        this.macroName = NameCache.getString(macroName);
-        this.macroBody = TextCache.getString(macroBody);
+    public SystemMacroImpl(CharSequence macroName, String macroBody, List<CharSequence> macroParams, CsmFile containingFile, Kind macroKind) {
+        this.macroName = NameCache.getManager().getString(macroName);
+        this.macroBody = TextCache.getManager().getString(macroBody);
         this.macroKind = macroKind;
         if (macroParams != null) {
             this.params = Collections.unmodifiableList(macroParams);

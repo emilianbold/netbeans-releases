@@ -51,6 +51,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -123,7 +124,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private static final boolean CHECK_PARENT = false;
     
     public NamespaceImpl(ProjectBase project, NamespaceImpl parent, String name, String qualifiedName) {
-        this.name = NameCache.getString(name);
+        this.name = NameCache.getManager().getString(name);
         this.global = false;
         assert project != null;
         
@@ -131,7 +132,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert this.projectUID != null;
 
         this.projectRef = new WeakReference<ProjectBase>(project);
-        this.qualifiedName = QualifiedNameCache.getString(qualifiedName);
+        this.qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
         // TODO: rethink once more
         // now all classes do have namespaces
 //        // TODO: this makes parent-child relationships assymetric, that's bad;
@@ -288,6 +289,11 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     public Collection<CsmUID<CsmOffsetableDeclaration>> findUidsRange(String from, String to) {
         DeclarationContainer declStorage = getDeclarationsSorage();
         return declStorage.getUIDsRange(from, to);
+    }
+
+    public Collection<CsmOffsetableDeclaration> getDeclarationsRange(CharSequence fqn, Kind[] kinds) {
+        DeclarationContainer declStorage = getDeclarationsSorage();
+        return declStorage.getDeclarationsRange(fqn, kinds);
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getUnnamedUids() {
@@ -511,7 +517,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
     }
     
-    public static String getSortKey(CsmNamespaceDefinition def) {
+    public static CharSequence getSortKey(CsmNamespaceDefinition def) {
         StringBuilder sb = new StringBuilder(def.getContainingFile().getAbsolutePath());
         int start = ((CsmOffsetable) def).getStartOffset();
         String s = Integer.toString(start);
@@ -521,7 +527,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
         sb.append(s);
         sb.append(def.getName());
-        return sb.toString();
+        return QualifiedNameCache.getManager().getString(sb.toString());
     }
     
     @SuppressWarnings("unchecked")
@@ -635,9 +641,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.parentRef = null;
        
 
-        this.name = NameCache.getString(PersistentUtils.readUTF(input));
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
-        this.qualifiedName = QualifiedNameCache.getString(PersistentUtils.readUTF(input));
+        this.qualifiedName = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.qualifiedName != null;
         theFactory.readStringToUIDMap(this.nestedNamespaces, input, QualifiedNameCache.getManager());
         declarationsSorageKey = ProjectComponent.readKey(input);

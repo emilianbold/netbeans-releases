@@ -57,6 +57,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFriendClass;
@@ -245,6 +246,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             declarationsLock.writeLock().unlock();
         }
         putFriend(decl);
+        put();
     }
 
     private void putFriend(CsmDeclaration decl) {
@@ -267,7 +269,6 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             }
             set.add(UIDs.get(fun));
         }
-        put();
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getUIDsRange(CharSequence from, CharSequence to) {
@@ -281,6 +282,25 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             }
         } finally {
             declarationsLock.readLock().unlock();
+        }
+        return list;
+    }
+
+    public Collection<CsmUID<CsmOffsetableDeclaration>> getUIDsFQN(CharSequence fqn, Kind[] kinds) {
+        Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        char maxChar = 255; //Character.MAX_VALUE;
+        for(Kind kind : kinds) {
+            String prefix = Utils.getCsmDeclarationKindkey(kind) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + fqn;
+            CharSequence from  = CharSequenceKey.create(prefix);
+            CharSequence to  = CharSequenceKey.create(prefix+maxChar);
+            try {
+                declarationsLock.readLock().lock();
+                for (Map.Entry<CharSequence, Object> entry : declarations.subMap(from, to).entrySet()) {
+                    addAll(list, entry.getValue());
+                }
+            } finally {
+                declarationsLock.readLock().unlock();
+            }
         }
         return list;
     }
@@ -308,6 +328,10 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     public Collection<CsmOffsetableDeclaration> getDeclarationsRange(CharSequence from, CharSequence to) {
         return UIDCsmConverter.UIDsToDeclarations(getUIDsRange(from, to));
+    }
+
+    public Collection<CsmOffsetableDeclaration> getDeclarationsRange(CharSequence fqn, Kind[] kinds) {
+        return UIDCsmConverter.UIDsToDeclarations(getUIDsFQN(fqn, kinds));
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarationsUIDs() {

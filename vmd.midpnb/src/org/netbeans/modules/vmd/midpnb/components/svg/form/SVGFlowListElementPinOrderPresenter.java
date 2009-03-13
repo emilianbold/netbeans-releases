@@ -90,6 +90,5 @@ public final class SVGFlowListElementPinOrderPresenter extends FlowPinOrderPrese
         }
 
         return list;
-        //return descriptors;
     }
 }

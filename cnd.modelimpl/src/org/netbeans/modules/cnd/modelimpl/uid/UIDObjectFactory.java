@@ -147,7 +147,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         aStream.writeInt(collSize);
 
         for (Map.Entry<CharSequence, CsmUID<T>> anEntry : aMap.entrySet()) {
-            String key = anEntry.getKey().toString();
+            CharSequence key = anEntry.getKey();
             assert key != null;
             PersistentUtils.writeUTF(key, aStream);
             CsmUID anUID = anEntry.getValue();
@@ -195,7 +195,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         aStream.writeInt(collSize);
 
         for (Map.Entry<CharSequence, Object> anEntry : aMap.entrySet()) {
-            String key = anEntry.getKey().toString();
+            CharSequence key = anEntry.getKey();
             assert key != null;
             PersistentUtils.writeUTF(key, aStream);
             Object o = anEntry.getValue();
@@ -236,8 +236,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         int collSize = aStream.readInt();
 
         for (int i = 0; i < collSize; ++i) {
-            CharSequence key = PersistentUtils.readUTF(aStream);
-            key = manager == null ? key : manager.getString(key);
+            CharSequence key = PersistentUtils.readUTF(aStream, manager);
             assert key != null;
             CsmUID<T> uid = readUID(aStream);
             assert uid != null;
@@ -282,8 +281,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         int collSize = aStream.readInt();
 
         for (int i = 0; i < collSize; ++i) {
-            CharSequence key = PersistentUtils.readUTF(aStream);
-            key = manager == null ? key : manager.getString(key);
+            CharSequence key = PersistentUtils.readUTF(aStream, manager);
             assert key != null;
             int arrSize = aStream.readInt();
             if (arrSize == 1) {

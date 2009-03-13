@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -359,10 +360,10 @@ public final class LibraryManager {
      */
     /*package-local*/ void writeProjectLibraries(CsmUID<CsmProject> project, DataOutput aStream) throws IOException {
         assert aStream != null;
-        Set<String> res = new HashSet<String>();
+        Set<CharSequence> res = new HashSet<CharSequence>();
         for (LibraryEntry entry : librariesEntries.values()) {
             if (entry.containsProject(project)) {
-                res.add(entry.getFolder());
+                res.add(FilePathCache.getManager().getString(entry.getFolder()));
             }
         }
         PersistentUtils.writeCollectionStrings(res, aStream);
@@ -374,7 +375,7 @@ public final class LibraryManager {
     /*package-local*/ void readProjectLibraries(CsmUID<CsmProject> project, DataInput aStream) throws IOException {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         assert aStream != null;
-        Collection<CharSequence> res = PersistentUtils.readCollectionStrings(aStream, null);
+        Collection<CharSequence> res = PersistentUtils.readCollectionStrings(aStream, FilePathCache.getManager());
         for (CharSequence folder : res) {
             LibraryEntry entry = getOrCreateLibrary(model, folder.toString());
             entry.addProject(project);

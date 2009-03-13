@@ -46,6 +46,7 @@ import antlr.TokenStreamException;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -65,6 +66,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
 /**
  * APTMacroMap base implementation
@@ -122,6 +124,8 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
             List<APTToken> body = defNode.getBody();
             if (body.isEmpty()) {
                 body = APTUtils.DEF_MACRO_BODY;
+            } else if (body instanceof ArrayList) {
+                ((ArrayList)body).trimToSize();
             }
             if (isSystem) {
                 defineImpl(null, defNode.getName(), defNode.getParams(), body, Kind.COMPILER_PREDEFINED);
@@ -168,7 +172,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
 
     protected APTMacro getMacro(CharSequence token) {
-        assert !(token instanceof String) : "must not be String object " + token;
+        assert token instanceof TinyCharSequence : "must not be String object " + token;
         APTMacro res = active.getMacro(token);
         return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
     }

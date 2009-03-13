@@ -110,6 +110,12 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
     private static final String[] WEB_TYPES = new String[] {
                 "servlet-types",        // NOI18N
                 "web-types",            // NOI18N
+                "web-types-server"      // NOI18N
+    };
+
+    private static final String[] WEB_TYPES_5 = new String[] {
+                "servlet-types",        // NOI18N
+                "web-types",            // NOI18N
                 "web-types-server",     // NOI18N
                 "web-services",         // NOI18N
                 "web-service-clients",  // NOI18N
@@ -121,8 +127,8 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 "Templates/JSP_Servlet/Servlet.java",       // NOI18N
                 "Templates/Classes/Class.java",             // NOI18N
                 "Templates/Classes/Package",                // NOI18N
-                "Templates/WebServices/WebService",         // NOI18N
-                "Templates/WebServices/WebServiceClient",   // NOI18N
+//                "Templates/WebServices/WebService",         // NOI18N
+//                "Templates/WebServices/WebServiceClient",   // NOI18N
                 "Templates/Other/Folder",                   // NOI18N
     };
 
@@ -136,11 +142,11 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
         "Templates/Persistence/RelatedCMP", // NOI18N
         "Templates/Persistence/JsfFromDB", // NOI18N
         "Templates/WebServices/WebService.java",    // NOI18N
-        "Templates/WebServices/WebServiceFromWSDL.java",    // NOI18N
+//        "Templates/WebServices/WebServiceFromWSDL.java",    // NOI18N
         "Templates/WebServices/WebServiceClient",   // NOI18N
 //        "Templates/WebServices/RestServicesFromEntities", // NOI18N
-//        "Templates/WebServices/RestServicesFromPatterns",  //NOI18N
-        "Templates/Other/Folder",                   // NOI18N
+        "Templates/WebServices/RestServicesFromDatabase",  //NOI18N
+        "Templates/Other/Folder"                   // NOI18N
     };
     
     public String[] getRecommendedTypes() {
@@ -163,6 +169,10 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
             return EAR_TYPES;
         }
         if (NbMavenProject.TYPE_WAR.equals(packaging)) {
+            WebModule web = WebModule.getWebModule(project.getProjectDirectory());
+            if (web != null && WebModule.JAVA_EE_5_LEVEL.equals(web.getJ2eePlatformVersion())) {
+                return WEB_TYPES_5;
+            }
             return WEB_TYPES;
         }
         return new String[0];

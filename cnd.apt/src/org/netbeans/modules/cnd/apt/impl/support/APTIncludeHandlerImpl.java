@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
 /**
  * implementation of include handler responsible for preventing recursive inclusion
@@ -392,7 +393,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             inclStack = new Stack<IncludeInfo>();
             recurseIncludes = new HashMap<CharSequence, Integer>();
         }
-        assert !(path instanceof String) : "must be char sequence key " + path; // NOI18N
+        assert path instanceof TinyCharSequence : "must be char sequence key " + path; // NOI18N
         Integer counter = recurseIncludes.get(path);
         counter = (counter == null) ? Integer.valueOf(1) : Integer.valueOf(counter.intValue()+1);
         if (counter.intValue() < MAX_INCLUDE_DEEP) {
@@ -421,7 +422,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         
         public IncludeInfoImpl(final DataInput input) throws IOException {
             assert input != null;
-            this.path = FilePathCache.getString(input.readUTF());
+            this.path = FilePathCache.getManager().getString(input.readUTF());
             
             directiveLine = input.readInt();
             

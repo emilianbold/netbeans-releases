@@ -156,6 +156,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         for( AST token = last; token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
+                case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
                 case CPPTokenTypes.CSM_QUALIFIED_ID:
                 case CPPTokenTypes.CSM_ARRAY_DECLARATION:
                     return AstUtil.getLastChildRecursively(last);
@@ -306,7 +307,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         else {
             StringBuilder sb = new StringBuilder();
             addText(sb, AstRenderer.getFirstSiblingSkipQualifiers(node));
-            return TextCache.getString(sb.toString());
+            return TextCache.getManager().getString(sb.toString());
 //            return sb.toString();
         }
     }
@@ -452,7 +453,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                 int templateDepth = 0;
                 for (AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling()) {
                     if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID) {
-                        l.add(NameCache.getString(namePart.getText()));
+                        l.add(NameCache.getManager().getString(namePart.getText()));
                     } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
                         // the beginning of template parameters
                         templateDepth++;
@@ -576,7 +577,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         byte pack = input.readByte();
         this.reference = (pack & 1) == 1;
         this._const = (pack & 2) == 2;
-        this.classifierText = NameCache.getString(PersistentUtils.readUTF(input));
+        this.classifierText = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.classifierText != null;
 
         this.qname = PersistentUtils.readStrings(input, NameCache.getManager());

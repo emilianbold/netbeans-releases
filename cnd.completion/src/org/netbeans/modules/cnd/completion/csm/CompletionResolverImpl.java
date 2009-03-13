@@ -1599,6 +1599,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         merge(dest, result.libNSs);
         // add libraries namespace aliases
         merge(dest, result.libNsAliases);
+        // add template parameters
+        merge(dest, result.templateParameters);
 
         return dest;
     }

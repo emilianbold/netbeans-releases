@@ -260,10 +260,25 @@ public final class DLightTool implements Validateable<DLightTarget> {
                 Exceptions.printStackTrace(ex);
             }
 
-            if (result.isInvalid()) {
-                break;
-            }
+//            if (result.isInvalid()) {
+//                break;
+//            }
         }
+        for (IndicatorDataProvider idp : indicatorDataProviders) {
+            try {
+                Future<ValidationStatus> validationTask = idp.validate(target);
+                result = result.merge(validationTask.get());
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+//            if (result.isInvalid()) {
+//                break;
+//            }
+        }
+
 
         return result;
     }

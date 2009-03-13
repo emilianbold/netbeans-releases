@@ -48,12 +48,16 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author Petr Hejl
  */
 public final class ProjectUtil {
+    static {
+        MockLookup.init();
+    }
 
     private ProjectUtil() {
         super();

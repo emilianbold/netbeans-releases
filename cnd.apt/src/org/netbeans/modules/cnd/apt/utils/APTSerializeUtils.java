@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
 /**
  * utilities for APT serialization
@@ -290,8 +291,8 @@ public class APTSerializeUtils {
         output.writeInt(macros.size());
         for (Entry<CharSequence, APTMacro> entry : macros.entrySet()) {
             assert entry != null;
+            assert entry.getKey() instanceof TinyCharSequence;
             String key = entry.getKey().toString();
-            assert key != null;
             output.writeUTF(key);
             APTMacro macro = entry.getValue();
             assert macro != null;

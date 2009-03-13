@@ -40,10 +40,12 @@
  */
 package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
+import java.util.List;
 import org.netbeans.modules.vmd.api.codegen.CodeMultiGuardedLevelPresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
@@ -61,19 +63,22 @@ class SVGListElementCodeFooter extends CodeClassInitHeaderFooterPresenter {
 
     @Override
     public void generateClassInitializationFooter(MultiGuardedSection section) {
-        DesignComponent svgForm = getComponent();
+        DesignComponent svgList = getComponent();
         DesignComponent eventHandler = null;
         boolean initBlock = false;
-        for (DesignComponent component : svgForm.getComponents()) {
-            if (!component.getType().equals(myTypeId)) {
-                continue;
-            }
+        List<PropertyValue> array = svgList.readProperty(SVGListCD.PROP_ELEMENTS).getArray();
+        if (array == null) {
+            return;
+        }
+        for (PropertyValue value : array) {
+            DesignComponent component = value.getComponent();
 
             eventHandler = component.readProperty(EventSourceCD.PROP_EVENT_HANDLER).getComponent();
             if (eventHandler == null) {
                 continue;
             }
-
+            Integer index = array.indexOf(value);
+            String string = (String) array.get(index).getComponent().readProperty(SVGListElementEventSourceCD.PROP_STRING).getPrimitiveValue().toString();
             if (!initBlock) {
                 section.getWriter().write(CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ".addActionListener(new SVGActionListener() {\n"); //NOI18N
                 section.getWriter().write("public void actionPerformed(SVGComponent svgComponent) {\n");// NOI18N
@@ -86,7 +91,7 @@ class SVGListElementCodeFooter extends CodeClassInitHeaderFooterPresenter {
             }
             if (eventHandler.getType() != ExitMidletEventHandlerCD.TYPEID) {
                 section.switchToGuarded();
-                section.getWriter().write("case " + component.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue().toString() + ":\n"); //NOI18N
+                section.getWriter().write("case " + index.toString() + ": // String value: " + string + "\n"); //NOI18N
                 section.getWriter().commit();
                 section.switchToEditable(component.getComponentID() + "-beforeSwitch"); //NOI18N
                 section.getWriter().write("//Some action before switch\n"); // NOI18N
@@ -99,7 +104,7 @@ class SVGListElementCodeFooter extends CodeClassInitHeaderFooterPresenter {
                 section.getWriter().commit();
             } else {
                 section.switchToGuarded();
-                section.getWriter().write("case " + component.readProperty(SVGListElementEventSourceCD.PROP_INDEX).getPrimitiveValue().toString() + ":\n"); //NOI18N
+                section.getWriter().write("case " + index.toString() + ": // String value: " + string + "\n"); //NOI18N
                 section.getWriter().commit();
                 section.switchToEditable(component.getComponentID() + "-beforeSwitch"); //NOI18N
                 section.getWriter().write("//Some action before exit Midlet\n"); // NOI18N
@@ -110,15 +115,14 @@ class SVGListElementCodeFooter extends CodeClassInitHeaderFooterPresenter {
                 section.switchToEditable(getComponent().getComponentID() + "-exit"); //NOI18N
                 section.getWriter().commit();
             }
-
         }
-
         if (initBlock) {
             section.switchToGuarded();
             section.getWriter().write("}\n"); // NOI18N
             section.getWriter().write("}\n"); // NOI18N
             section.getWriter().write("});\n"); //NOI18N
         }
+
     }
     private TypeID myTypeId;
 }

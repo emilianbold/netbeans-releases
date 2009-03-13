@@ -43,7 +43,20 @@ import java.awt.Color;
 import org.openide.util.Lookup;
 
 /**
- * Settings of current colors for out/err/in
+ * Settings of colors for normal, error, hyperlink, important hyperlink lines
+ * <p>
+ * Client usage:
+ * <pre>
+ *  // set important hyperlink color to red
+ *  InputOutput io = ...;
+ *  IOColors.setColor(io, IOColors.OutputType.HYPERLINK_IMPORTANT, Color.RED);
+ * </pre>
+ * How to support {@link IOColors} in own {@link IOProvider} implementation:
+ * <ul>
+ *   <li> {@link InputOutput} provided by {@link IOProvider} has to implement <a href="@org-openide-util@/org/openide/util/Lookup.Provider.html"><code>Lookup.Provider</code></a>
+ *   <li> Extend {@link IOColors} and implement its abstract methods
+ *   <li> Place instance of {@link IOColors} to {@link Lookup} provided by {@link InputOutput}
+ * </ul>
  * @since 1.16
  * @author Tomas Holy
  */
@@ -57,40 +70,41 @@ public abstract class IOColors {
         return null;
     }
 
-    /** default output */
-    public static final int OUTPUT = 0;
-    /** error output */
-    public static final int ERROR = 1;
-    /** hyperlink */
-    public static final int HYPERLINK = 2;
-    /** important hyperlink */
-    public static final int HYPERLINK_IMPORTANT = 3;
-    /** input, could be supported in future */
-    // public static final int INPUT = 4;
+    /**
+     * output types
+     */
+    public enum OutputType {
+        /** default output */
+        OUTPUT,
+        /** error output */
+        ERROR,
+        /** hyperlink */
+        HYPERLINK,
+        /** important hyperlink */
+        HYPERLINK_IMPORTANT,
+        /** input, could be supported in future */
+        // INPUT,
+    }
 
     /**
      * Gets current color for output
      * @param io InputOutput to operate on
-     * @return current color for output or null if not supported
+     * @param type output type to get color for
+     * @return current color for specified output type or null if not supported
      */
-    public static Color getColor(InputOutput io, int type) {
+    public static Color getColor(InputOutput io, OutputType type) {
         IOColors ioc = find(io);
-        if (type < OUTPUT || type > HYPERLINK_IMPORTANT) {
-            throw new IllegalArgumentException("Invalid type");
-        }
         return ioc != null ? ioc.getColor(type) : null;
     }
 
     /**
      * Sets specified color for output
      * @param io InputOutput to operate on
-     * @param color new color for output
+     * @param type output type to set color for
+     * @param color new color for specified output type
      */
-    public static void setColor(InputOutput io, int type, Color color) {
+    public static void setColor(InputOutput io, OutputType type, Color color) {
         IOColors ioc = find(io);
-        if (type < OUTPUT || type > HYPERLINK_IMPORTANT) {
-            throw new IllegalArgumentException("Invalid type");
-        }
         if (ioc != null) {
             ioc.setColor(type, color);
         }
@@ -98,13 +112,15 @@ public abstract class IOColors {
 
     /**
      * Gets current color for output
-     * @return current color for output
+     * @param type output type to get color for
+     * @return current color for specified output
      */
-    abstract protected Color getColor(int type);
+    abstract protected Color getColor(OutputType type);
 
     /**
      * Sets specified color for output
-     * @param color new color for output
+     * @param type output type to set color for
+     * @param color new color for specified output type
      */
-    abstract protected void setColor(int type, Color color);
+    abstract protected void setColor(OutputType type, Color color);
 }

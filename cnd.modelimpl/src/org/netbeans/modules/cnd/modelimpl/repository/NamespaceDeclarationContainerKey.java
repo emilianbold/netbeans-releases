@@ -60,6 +60,11 @@ public class NamespaceDeclarationContainerKey extends NamespaceKey {
     }
 
     @Override
+    public int hashCode() {
+        return 37*KeyObjectFactory.KEY_NS_DECLARATION_CONTAINER_KEY + super.hashCode();
+    }
+
+    @Override
     public int getSecondaryAt(int level) {
         assert level == 0;
         return KeyObjectFactory.KEY_NS_DECLARATION_CONTAINER_KEY;

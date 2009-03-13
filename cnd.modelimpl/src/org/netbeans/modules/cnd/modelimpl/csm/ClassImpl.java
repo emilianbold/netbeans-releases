@@ -229,12 +229,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         }
                         break;
                     case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
-                         {
-                            ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
-                            if (fd != null) {
-                                addMember(fd,!isRenderingLocalContext());
-                                fd.init(token, ClassImpl.this, !isRenderingLocalContext());
-                                break;
+                        {
+                            child = token.getFirstChild();
+                            if (hasFriendPrefix(child)) {
+                                addFriend(new FriendClassImpl(child, (FileImpl) getContainingFile(), ClassImpl.this, !isRenderingLocalContext()), !isRenderingLocalContext());
+                            } else {
+                                ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
+                                if (fd != null) {
+                                    addMember(fd, !isRenderingLocalContext());
+                                    fd.init(token, ClassImpl.this, !isRenderingLocalContext());
+                                    break;
+                                }
                             }
                         }
                         break;

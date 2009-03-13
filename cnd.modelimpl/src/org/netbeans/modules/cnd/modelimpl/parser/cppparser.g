@@ -254,6 +254,8 @@ tokens {
 	CSM_ARRAY_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_VARIABLE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
+	CSM_VARIABLE_LIKE_FUNCTION_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+
 	CSM_CONDITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_BASE_SPECIFIER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
@@ -416,6 +418,10 @@ tokens {
 
         protected static final int ERROR_LIMIT = 100;
 	private int errorCount = 0;
+
+    protected static final int declOther = 0;
+    protected static final int declStatement = 1;
+    protected static final int declGeneric = 2;
 
 	public int getErrorCount() {
 	    int cnt = errorCount;
@@ -735,7 +741,7 @@ template_explicit_specialization
 			printf("template_explicit_specialization_0e[%d]: template " +
 				"explicit-specialisation\n", LT(1).getLine());
 		}
-		declaration
+		declaration[declOther]
 		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
 	)
 	;
@@ -754,7 +760,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 		{#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
 	|
 		(LITERAL_template (~LESSTHAN)) =>
-		LITERAL_template declaration
+		LITERAL_template declaration[declOther]
 		{#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
 	|
 		{beginTemplateDefinition();}               
@@ -766,7 +772,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 				printf("external_declaration_template_1b[%d]: Class template definition\n",
 					LT(1).getLine());
 			}                           
-			declaration
+			declaration[declOther]
 			{ #external_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #external_declaration_template); }
 		|
 		// Templated FUNCTIONS and CONSTRUCTORS matched here.
@@ -828,7 +834,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 				printf("external_declaration_template_11c[%d]: Function template " +
 					"declaration\n", LT(1).getLine());
 			}
-			declaration
+			declaration[declOther]
 			{ #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"], #external_declaration_template); }
 		|  
 			// Templated function definition
@@ -857,14 +863,14 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                         // then code like "template<T> int foo(T);" incorrectly
                         // becomes a CSM_TEMPL_FWD_CL_OR_STAT_MEM.
 			(declaration_specifiers[true, false]
-				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
+				(init_declarator_list[declOther])? SEMICOLON /*{end_of_stmt();}*/)=>
 			//{beginTemplateDeclaration();}
 			{ if (statementTrace>=1) 
 				printf("external_declaration_template_10[%d]: Class template declaration\n",
 					LT(1).getLine());
 			}
 			declaration_specifiers[true, false]
-				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
+				(init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
 			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}
 		)
     		{endTemplateDefinition();}
@@ -879,7 +885,7 @@ typedef_enum
                 LITERAL_typedef 
                 {declarationSpecifier(true, false, scInvalid, tqInvalid, tsInvalid, dsInvalid);} 
                 enum_specifier 
-                (init_declarator_list)? SEMICOLON //{end_of_stmt();}
+                (init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
         ;
 
 external_declaration {String s; K_and_R = false; boolean definition;}
@@ -918,7 +924,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 			printf("external_declaration_1a[%d]: Class definition\n",
 				LT(1).getLine());
 		}
-		(LITERAL___extension__!)? declaration
+		(LITERAL___extension__!)? declaration[declOther]
 		{ #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
 
 	|	
@@ -936,7 +942,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 			printf("external_declaration_3[%d]: Enum definition\n",
 				LT(1).getLine());
 		}
-		enum_specifier (init_declarator_list)? SEMICOLON! //{end_of_stmt();}
+		enum_specifier (init_declarator_list[declOther])? SEMICOLON! //{end_of_stmt();}
 		{ #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
 	|
 		// Destructor DEFINITION (templated or non-templated)
@@ -980,7 +986,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
             function_declarator[false, false] (EOF|SEMICOLON)
         ) =>
         {if (statementTrace>=1) printf("external_declaration_7[%d]: Function prototype\n", LT(1).getLine());}
-        (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration
+        (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declOther]
         { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
     |
         // Function declaration without ID in return type
@@ -992,7 +998,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
             function_declarator[false, true] (EOF|SEMICOLON)
         ) =>
         {if (statementTrace>=1) printf("external_declaration_7[%d]: Function prototype\n", LT(1).getLine());}
-        (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration
+        (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declOther]
         { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
     |
         // Function definition with return value
@@ -1017,7 +1023,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		{ #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
 	|
 		// K & R Function definition
-		(declaration_specifiers[false, false]	function_declarator[true, false] declaration)=>
+		(declaration_specifiers[false, false]	function_declarator[true, false] declaration[declOther])=>
 		{K_and_R = true;
 		 if (statementTrace>=1) 
 			printf("external_declaration_9[%d]: K & R function definition\n",
@@ -1056,7 +1062,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 			printf("external_declaration_13[%d]: Declaration\n",LT(1).getLine());
 		}
                 // VV: 23/05/06 support for gcc's "__extension__"
-		(LITERAL___extension__!)?  declaration 
+		(LITERAL___extension__!)?  declaration[declGeneric]
 		{ 
 		    // if declaration itself returned proper type, don't wrap it into generic declaration
 		    if( #external_declaration != null ) {
@@ -1127,7 +1133,7 @@ member_declaration_template
 				printf("member_declaration_12[%d]: Class template declaration\n",
 					LT(1).getLine());
 			}                           
-			declaration
+			declaration[declOther]
 			{ #member_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #member_declaration_template); }
 		|  
 			// Templated FUNCTIONS and CONSTRUCTORS matched here.
@@ -1177,7 +1183,7 @@ member_declaration_template
 				printf("member_declaration_13b[%d]: Function template " +
 					"declaration\n", LT(1).getLine());
 			}
-			declaration
+			declaration[declOther]
 			{ #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"], #member_declaration_template); }
 		|  
 			// Templated function definition
@@ -1201,14 +1207,14 @@ member_declaration_template
                         // this rule must be after handling functions 
 			// templated forward class decl, init/decl of static member in template
 			(declaration_specifiers[true, false]
-				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
+				(init_declarator_list[declOther])? SEMICOLON /*{end_of_stmt();}*/)=>
 			//{beginTemplateDeclaration();}
 			{ if (statementTrace>=1) 
 				printf("member_declaration_12a[%d]: Class template declaration\n",
 					LT(1).getLine());
 			}
 			declaration_specifiers[true, false]
-				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
+				(init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
 			{/*endTemplateDeclaration();*/ #member_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #member_declaration_template); } 		
 		)
 		{endTemplateDefinition();}
@@ -1235,7 +1241,7 @@ member_declaration
 			printf("member_declaration_1[%d]: Class definition\n",
 				LT(1).getLine());
 		}
-		declaration
+		declaration[declOther]
 		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
@@ -1328,7 +1334,7 @@ member_declaration
 			printf("member_declaration_6[%d]: Function declaration\n",
 				LT(1).getLine());
 		}
-		declaration
+		declaration[declOther]
 		{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
 	|  
 		// Function definition
@@ -1487,7 +1493,7 @@ function_K_R_parameter_list
 protected
 function_K_R_parameter
     :
-    declaration
+    declaration[declOther]
     {#function_K_R_parameter=#(#[CSM_PARAMETER_DECLARATION, "CSM_PARAMETER_DECLARATION"], #function_K_R_parameter);}
     ;
 
@@ -1526,17 +1532,17 @@ function_definition
 protected
 is_declaration
         :
-        LITERAL_extern | LITERAL_using | (declaration_specifiers[true, false] declarator[true])
+        LITERAL_extern | LITERAL_using | (declaration_specifiers[true, false] declarator[declOther])
         ;
 
-declaration
+declaration[int kind]
 	:	
 		(LITERAL_extern STRING_LITERAL)=> linkage_specification
 	|	
 		{beginDeclaration();}
 		// LL 31/1/97: added (COMMA) ? below. This allows variables to
 		// typedef'ed more than once. DW 18/08/03 ?
-		declaration_specifiers[true, false] ((COMMA!)? init_declarator_list)? (EOF!|SEMICOLON)
+		declaration_specifiers[true, false] ((COMMA!)? init_declarator_list[kind])? (EOF!|SEMICOLON)
 		//{end_of_stmt();}
 		{endDeclaration();}
 	|	
@@ -1806,12 +1812,12 @@ typeID
 		ID
 	;
 
-init_declarator_list
-	:	init_declarator[true] (COMMA init_declarator[false])*
+init_declarator_list[int kind]
+	:	init_declarator[kind] (COMMA init_declarator[kind])*
 	;
 
-init_declarator[boolean first]
-	:	declarator[first]
+init_declarator[int kind]
+	:	declarator[kind]
 		(	
 			ASSIGNEQUAL 
                         ((LPAREN ID RPAREN LCURLY) => (LPAREN ID RPAREN))?
@@ -1909,7 +1915,7 @@ member_declarator
 	:	
 		((ID)? COLON constant_expression)=>(ID)? COLON constant_expression
 	|  
-		declarator[true]
+		declarator[declOther]
 	;
 
 conversion_function_decl_or_def returns [boolean definition = false]
@@ -1932,54 +1938,55 @@ cv_qualifier_seq
 	(options {warnWhenFollowAmbig = false;}:tq = cv_qualifier)*
 	;
 
-declarator[boolean first]
+declarator[int kind]
     :
         // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
         // This rule adds support for declarations like
         // void (__attribute__((noreturn)) ****f) (void);
         (attribute_specification)=> attribute_specification!
-        declarator[first]
+        declarator[kind]
     |   //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
         // VV: 23/05/06 added support for __restrict after pointers
         //i.e. void foo (char **__restrict a)
         (ptr_operator)=> ptr_operator // AMPERSAND or STAR
-        restrict_declarator[first]
+        restrict_declarator[kind]
     |
         // typedef ((...));
         // int (i);
-        {_td || (_ts != tsTYPEID && _ts != tsInvalid)}? (LPAREN declarator[first] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
-        LPAREN declarator[first] RPAREN
+        {_td || (_ts != tsTYPEID && _ts != tsInvalid)}? (LPAREN declarator[kind] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        LPAREN declarator[kind] RPAREN
     |
-        direct_declarator[first]
+        direct_declarator[kind]
     ;
 
-restrict_declarator[boolean first]
+restrict_declarator[int kind]
     :
         // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
         // IZ 140559 : parser fails on code from boost
-        (LPAREN declarator[first] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
-        LPAREN declarator[first] RPAREN
+        (LPAREN declarator[kind] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        LPAREN declarator[kind] RPAREN
     |
         // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
         // This rule adds support for declarations like
         // char *__attribute__((aligned(8))) *f;
         (attribute_specification)=> attribute_specification!
-        restrict_declarator[first]
+        restrict_declarator[kind]
     |
         //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
         (ptr_operator)=> ptr_operator // AMPERSAND or STAR
-        restrict_declarator[first]
+        restrict_declarator[kind]
     |   
-        (literal_restrict!)? direct_declarator[first]
+        (literal_restrict!)? direct_declarator[kind]
     ;
 
-direct_declarator[boolean first]
+direct_declarator[int kind]
 	{String id;
 	 TypeQualifier tq;}  
 	:
 		// Must be function declaration
-        {first}? (function_like_var_declarator (SEMICOLON | ASSIGNEQUAL | RPAREN)) =>
+        (function_like_var_declarator) =>
         function_like_var_declarator
+        {if(kind == declStatement) {#direct_declarator = #(#[CSM_VARIABLE_LIKE_FUNCTION_DECLARATION, "CSM_VARIABLE_LIKE_FUNCTION_DECLARATION"], #direct_declarator);}}
     |	(qualified_id LPAREN)=>	// Must be class instantiation
 		id = qualified_id
 		{
@@ -2040,7 +2047,7 @@ direct_declarator[boolean first]
 		(parameter_list)?
 		RPAREN //{declaratorEndParameterList(false);}
 	|	
-		LPAREN declarator[first] RPAREN
+		LPAREN declarator[kind] RPAREN
         (options {greedy=true;} :variable_attribute_specification)?
         declarator_suffixes
         (options {greedy=true;} :variable_attribute_specification)?
@@ -2391,12 +2398,12 @@ parameter_declaration
 			    qualifiedItemIsOneOf(qiType|qiCtor) )}?
 			declaration_specifiers[true, false]	// DW 24/3/98 Mods for K & R
 			(  
-				(declarator[true])=> declarator[true]        // if arg name given
+				(declarator[declOther])=> declarator[declOther]        // if arg name given
 			| 
 				abstract_declarator  // if arg name not given  // can be empty
 			)
 		|
-			(declarator[true])=> declarator[true]	// DW 24/3/98 Mods for K & R
+			(declarator[declOther])=> declarator[declOther]	// DW 24/3/98 Mods for K & R
 		|
 			ELLIPSIS
 		)
@@ -2696,7 +2703,7 @@ statement
 			printf("statement_1[%d]: Class definition\n",
 				LT(1).getLine());
 		}
-		declaration
+		declaration[declOther]
 		{ #statement = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #statement); }
 	|  
                 // Issue 83996   Code completion list doesn't appear if enum defined within function (without messages)
@@ -2717,7 +2724,7 @@ statement
                 {if (statementTrace>=1) 
 			printf("statement_1[%d]: declaration\n", LT(1).getLine());
 		}
-                declaration  {#statement = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #statement);}  
+                declaration[declStatement]  {#statement = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #statement);}
 	|	
                 {if (statementTrace>=1) 
 			printf("statement_2[%d]: labeled_statement\n", LT(1).getLine());
@@ -2852,7 +2859,7 @@ protected
 condition_declaration {int ts = tsInvalid;}
 	:
         cv_qualifier_seq (LITERAL_typename)?
-	ts=type_specifier[dsInvalid, false] declarator[true] ASSIGNEQUAL assignment_expression
+	ts=type_specifier[dsInvalid, false] declarator[declStatement] ASSIGNEQUAL assignment_expression
 	;
 
 //	(declaration)=> declaration|	expression
@@ -2914,7 +2921,7 @@ for_statement
 protected
 for_init_statement
 	:
-		(	(declaration)=> declaration 
+		(	(declaration[declStatement])=> declaration[declStatement]
 		|	expression (EOF!|SEMICOLON) //{end_of_stmt();}
 		|	(EOF!|SEMICOLON) //{end_of_stmt();} 
 		)

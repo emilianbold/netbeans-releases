@@ -48,7 +48,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 import javax.swing.JButton;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -61,8 +60,6 @@ import org.openide.util.NbBundle;
 public abstract class RemoteConnectionSupport {
 
     private JSch jsch;
-    /** TODO: deprecate and remove */
-    protected final String key;
     protected final ExecutionEnvironment executionEnvironment;
     protected Session session;
     protected Channel channel;
@@ -75,12 +72,11 @@ public abstract class RemoteConnectionSupport {
     protected static final int PORT = Integer.getInteger("cnd.remote.port", 22); //NOI18N
 
     public RemoteConnectionSupport(ExecutionEnvironment env) {
-        this.key = ExecutionEnvironmentFactory.getHostKey(env);
         this.executionEnvironment = env;
         exit_status = -1; // this is what JSch initializes it to...
         failureReason = "";
         boolean retry = false;
-        log.finest("RCS<Init>: Starting " + getClass().getName() + " on " + key);
+        log.finest("RCS<Init>: Starting " + getClass().getName() + " on " + executionEnvironment);
         
         do {
             try {
@@ -88,12 +84,12 @@ public abstract class RemoteConnectionSupport {
                 jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts"); // NOI18N
                 session = jsch.getSession(env.getUser(), env.getHost(), env.getSSHPort());
 
-                RemoteUserInfo ui = RemoteUserInfo.getUserInfo(ExecutionEnvironmentFactory.getExecutionEnvironment(key), retry);
+                RemoteUserInfo ui = RemoteUserInfo.getUserInfo(executionEnvironment, retry);
                 retry = false;
                 session.setUserInfo(ui);
                 session.connect(timeout == null ? 30000 : timeout.intValue());
                 if (!session.isConnected()) {
-                    log.fine("RCS<Init>: Connection failed on " + key);
+                    log.fine("RCS<Init>: Connection failed on " + executionEnvironment);
                 }
             } catch (JSchException jsce) {
                 log.warning("RCS<Init>: Got JSchException [" + jsce.getMessage() + "]");
