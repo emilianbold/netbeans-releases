@@ -165,7 +165,7 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
 
     @Override
     public int getEndOffset() {
-        return getOffset() + getText().length();
+        return getOffset() + getTextID().length();
         //return endOffset;
     }
 
@@ -176,7 +176,7 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
 
     @Override
     public int getEndColumn() {
-        return getColumn() + getText().length();
+        return getColumn() + getTextID().length();
     }
 
     @Override

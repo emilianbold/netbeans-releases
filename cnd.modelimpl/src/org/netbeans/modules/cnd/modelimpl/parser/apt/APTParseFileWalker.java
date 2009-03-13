@@ -166,7 +166,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         APTToken token = error.getToken();
         SimpleOffsetableImpl pos = getOffsetable(token);
         setEndPosition(pos, token);
-        return ErrorDirectiveImpl.create(this.getFile(), token.getText(), pos);
+        return ErrorDirectiveImpl.create(this.getFile(), token.getTextID(), pos);
     }
 
     private MacroImpl createMacro(APTDefine define) {
@@ -177,7 +177,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             params = new ArrayList<CharSequence>();
             for (APTToken elem : paramTokens) {
                 if (APTUtils.isID(elem)) {
-                    params.add(NameCache.getManager().getString(elem.getText()));
+                    params.add(NameCache.getManager().getString(elem.getTextID()));
                 }
             }
         }
@@ -199,7 +199,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         }
         setEndPosition(pos, last);
 
-        return new MacroImpl(define.getName().getText(), params, body/*sb.toString()*/, getFile(), pos);
+        return new MacroImpl(define.getName().getTextID(), params, body/*sb.toString()*/, getFile(), pos);
     }
 
     private IncludeImpl createInclude(final APTInclude apt, final FileImpl included) {

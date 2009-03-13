@@ -94,23 +94,11 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
      */
     private final List<? extends CharSequence> params;
     
-    /** Creates new instance of MacroImpl based on macro information and specified position */
-    public MacroImpl(String macroName, List<CharSequence> macroParams, String macroBody, CsmOffsetable macroPos) {
-        this(macroName, macroParams, macroBody, null, macroPos);
-    }
-    
-    /**
-     * constructor to create system macro impl
-     */
-    private MacroImpl(String macroName, String macroBody, CsmFile unresolved) {
-        this(macroName, null, macroBody, unresolved, Utils.createOffsetable(unresolved, 0, 0), Kind.USER_SPECIFIED);
-    }
-    
-    public static SystemMacroImpl createSystemMacro(String macroName, String macroBody, CsmFile unresolved, Kind kind) {
+    public static SystemMacroImpl createSystemMacro(CharSequence macroName, String macroBody, CsmFile unresolved, Kind kind) {
         return new SystemMacroImpl(macroName, macroBody, null, unresolved, kind);
     }
     
-    public MacroImpl(String macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos, Kind kind) {
+    public MacroImpl(CharSequence macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos, Kind kind) {
         super(containingFile, macroPos);
         assert(macroName != null);
         assert(macroName.length() > 0);
@@ -125,7 +113,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         }
     }
     
-    public MacroImpl(String macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos) {
+    public MacroImpl(CharSequence macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos) {
         this(macroName, macroParams, macroBody, containingFile, macroPos, Kind.DEFINED);
     }
     
