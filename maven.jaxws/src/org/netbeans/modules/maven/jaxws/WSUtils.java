@@ -80,6 +80,8 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.EndpointsProvider;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.DialogDisplayer;
@@ -338,301 +340,6 @@ public class WSUtils {
         return false;
     }
 
-    public static void addSunJaxWsEntries(FileObject ddFolder, JaxWsService service) 
-            throws IOException {
-        FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
-        if(sunjaxwsFile == null){
-            generateSunJaxwsFile(ddFolder);
-        }
-        sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
-        Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
-        String serviceName = service.getServiceName();
-        Endpoint oldEndpoint = endpoints.findEndpointByName(service.getServiceName());
-        if (oldEndpoint == null) {
-            Endpoint endpoint = endpoints.newEndpoint();
-            endpoint.setEndpointName(service.getServiceName());
-            endpoint.setImplementation(service.getImplementationClass());
-            endpoint.setUrlPattern("/" + service.getServiceName());
-            endpoints.addEnpoint(endpoint);
-            FileLock lock = null;
-            OutputStream os = null;
-            synchronized (sunjaxwsFile) {
-                try {
-                    lock = sunjaxwsFile.lock();
-                    os = sunjaxwsFile.getOutputStream(lock);
-                    endpoints.write(os);
-                } finally{
-                    if (lock != null)
-                        lock.releaseLock();
-
-                    if(os != null)
-                        os.close();
-                }
-            }
-        }
-    }
-
-    public static void removeSunJaxWsEntries(FileObject ddFolder, JaxWsService service)
-            throws IOException {
-
-        FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
-        if (sunjaxwsFile != null) {
-            Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
-            String serviceName = service.getServiceName();
-            Endpoint endpoint = endpoints.findEndpointByName(service.getServiceName());
-            if (endpoint != null) {
-                endpoints.removeEndpoint(endpoint);
-                FileLock lock = null;
-                OutputStream os = null;
-                synchronized (sunjaxwsFile) {
-                    try {
-                        lock = sunjaxwsFile.lock();
-                        os = sunjaxwsFile.getOutputStream(lock);
-                        endpoints.write(os);
-                    } finally {
-                        if (lock != null) {
-                            lock.releaseLock();
-                        }
-                        if (os != null) {
-                            os.close();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public static void replaceSunJaxWsEntries(FileObject ddFolder, String oldServiceName, String newServiceName)
-            throws IOException {
-
-        FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
-        if (sunjaxwsFile != null) {
-            Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
-            Endpoint endpoint = endpoints.findEndpointByName(oldServiceName);
-            if (endpoint != null) {
-                endpoint.setEndpointName(newServiceName);
-                endpoint.setUrlPattern("/" + newServiceName);
-                FileLock lock = null;
-                OutputStream os = null;
-                synchronized (sunjaxwsFile) {
-                    try {
-                        lock = sunjaxwsFile.lock();
-                        os = sunjaxwsFile.getOutputStream(lock);
-                        endpoints.write(os);
-                    } finally {
-                        if (lock != null) {
-                            lock.releaseLock();
-                        }
-                        if (os != null) {
-                            os.close();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public static boolean generateNonJsr109Artifacts(Project prj) {
-        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(WSUtils.class,"MSG_GenerateDDEntries",
-                    prj.getProjectDirectory().getName()),
-                NbBundle.getMessage(WSUtils.class,"TTL_GenerateDDEntries"),
-                NotifyDescriptor.YES_NO_OPTION);
-        Object result = DialogDisplayer.getDefault().notify(desc);
-        return NotifyDescriptor.YES_OPTION.equals(result);
-    }
-
-    public static boolean isJsr109Supported(Project project) {
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider == null) {
-            // set to true by default
-            return true;
-        } else {
-            WSStackUtils stackUtils = new WSStackUtils(project);
-            return stackUtils.isJsr109Supported();
-        }
-    }
-
-    public static void addServiceEntriesToDD(Project prj, JaxWsService service)
-        throws IOException {
-        //add servlet entry to web.xml
-        String servletName = service.getServiceName();
-
-        WebApp webApp = getWebApp(prj);
-        if (webApp != null) {
-            Servlet servlet = null;
-            Listener listener = null;
-            try{
-                servlet = (Servlet)webApp.addBean("Servlet", new String[]{"ServletName","ServletClass"}, //NOI18N
-                        new Object[]{servletName, SERVLET_CLASS_NAME}, "ServletName"); //NOI18N
-                servlet.setLoadOnStartup(new java.math.BigInteger("1")); //NOI18N
-                ServletMapping servletMapping = (ServletMapping)
-                webApp.addBean("ServletMapping", new String[]{"ServletName","UrlPattern"}, //NOI18N
-                        new Object[]{servletName, "/" + servletName}, "ServletName"); //NOI18N
-
-                if (!webAppHasListener(webApp, SERVLET_LISTENER)){
-                    listener = (Listener)webApp.addBean("Listener", new String[]{"ListenerClass"}, //NOI18N
-                            new Object[]{SERVLET_LISTENER}, "ListenerClass"); //NOI18N
-                }
-                // This also saves server specific configuration, if necessary.
-                webApp.write(getDeploymentDescriptor(prj));
-            } catch (ClassNotFoundException exc) {
-                Logger.getLogger("global").log(Level.INFO, exc.getLocalizedMessage()); //NOI18N
-            } catch (NameAlreadyUsedException exc) {
-                Logger.getLogger(WSUtils.class.getName()).log(Level.INFO, exc.getLocalizedMessage()); //NOI18N
-            }
-        }
-    }
-
-    /**
-     * Remove the web.xml entries for the non-JSR 109 web service.
-     *
-     * @param serviceName Name of the web service to be removed
-     */
-    public static void removeServiceEntriesFromDD(Project prj, JaxWsService service)
-        throws IOException {
-        WebApp webApp = getWebApp(prj);
-        if (webApp != null) {
-            boolean changed = removeServiceFromDD(webApp, service.getServiceName());
-
-            //determine if there are other web services in the project
-            //if none, remove the listener
-            boolean hasMoreWebServices = false;
-            Servlet[] remainingServlets = webApp.getServlet();
-            for(int i = 0; i < remainingServlets.length; i++){
-                if(remainingServlets[i].getServletClass().equals(SERVLET_CLASS_NAME)){
-                    hasMoreWebServices = true;
-                    break;
-                }
-            }
-            if(!hasMoreWebServices){
-                Listener[] listeners = webApp.getListener();
-                for(int i = 0; i < listeners.length; i++){
-                    Listener listener = listeners[i];
-                    if(listener.getListenerClass().equals(SERVLET_LISTENER)){
-                        webApp.removeListener(listener);
-                        changed = true;
-                        break;
-                    }
-                }
-            }
-            if (changed) {
-                webApp.write(getDeploymentDescriptor(prj));
-            }
-        }
-    }
-
-    /**
-     * Remove the web.xml servlets for the non-JSR 109 web service.
-     *
-     * @param serviceName Name of the web service to be removed
-     */
-    private static boolean removeServiceFromDD(WebApp webApp, String serviceName) {
-        boolean changed = false;
-        //first remove the servlet
-        Servlet[] servlets = webApp.getServlet();
-        for(int i = 0; i < servlets.length; i++){
-            Servlet servlet = servlets[i];
-            if(servlet.getServletName().equals(serviceName)){
-                webApp.removeServlet(servlet);
-                changed = true;
-                break;
-            }
-        }
-        //remove the servlet mapping
-        ServletMapping[] mappings = webApp.getServletMapping();
-        for(int i = 0; i < mappings.length; i++){
-            ServletMapping mapping = mappings[i];
-            if(mapping.getServletName().equals(serviceName)){
-                webApp.removeServletMapping(mapping);
-                changed = true;
-                break;
-            }
-        }
-        return changed;
-    }
-
-    /**
-     * Remove the web.xml entries for the non-JSR 109 web service.
-     *
-     * @param serviceName Name of the web service to be removed
-     */
-    public static void replaceServiceEntriesFromDD(Project prj, String oldServiceName, String newServiceName)
-        throws IOException {
-        WebApp webApp = getWebApp(prj);
-        if (webApp != null) {
-            boolean changed = replaceServiceInDD(webApp, oldServiceName, newServiceName);
-            if (changed) {
-                webApp.write(getDeploymentDescriptor(prj));
-            }
-        }
-    }
-
-    /**
-     * Remove the web.xml servlets for the non-JSR 109 web service.
-     *
-     * @param serviceName Name of the web service to be removed
-     */
-    private static boolean replaceServiceInDD(WebApp webApp, String oldServiceName, String newServiceName) {
-        boolean changed = false;
-        //first remove the servlet
-        Servlet[] servlets = webApp.getServlet();
-        for(int i = 0; i < servlets.length; i++){
-            Servlet servlet = servlets[i];
-            if(servlet.getServletName().equals(oldServiceName)){
-                servlet.setServletName(newServiceName);
-                changed = true;
-                break;
-            }
-        }
-        //remove the servlet mapping
-        ServletMapping[] mappings = webApp.getServletMapping();
-        for(int i = 0; i < mappings.length; i++){
-            ServletMapping mapping = mappings[i];
-            if(mapping.getServletName().equals(oldServiceName)){
-                mapping.setServletName(newServiceName);
-                mapping.setUrlPattern("/"+newServiceName);
-                break;
-            }
-        }
-        return changed;
-    }
-
-    private static boolean webAppHasListener(WebApp webApp, String listenerClass){
-        Listener[] listeners = webApp.getListener();
-        for(int i = 0; i < listeners.length; i++){
-            Listener listener = listeners[i];
-            if(listenerClass.equals(listener.getListenerClass())){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static WebApp getWebApp(Project prj) {
-        try {
-            FileObject deploymentDescriptor = getDeploymentDescriptor(prj);
-            if(deploymentDescriptor != null) {
-                return DDProvider.getDefault().getDDRoot(deploymentDescriptor);
-            }
-        } catch (java.io.IOException e) {
-            Logger.getLogger("global").log(Level.INFO, e.getLocalizedMessage());
-        }
-        return null;
-    }
-
-    public static FileObject getDeploymentDescriptor(Project prj) {
-        J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
-        if (provider != null) {
-            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml");
-            if (dd != null && dd.exists()) {
-                return FileUtil.toFileObject(dd);
-            }
-        }
-        return null;
-    }
-
-
     public static void updateClients(Project prj, JAXWSLightSupport jaxWsSupport) {
         // get old clients
         List<JaxWsService> oldClients = new ArrayList<JaxWsService>();
@@ -749,6 +456,457 @@ public class WSUtils {
             }
         }
         return null;
+    }
+    private static boolean webAppHasListener(WebApp webApp, String listenerClass){
+        Listener[] listeners = webApp.getListener();
+        for(int i = 0; i < listeners.length; i++){
+            Listener listener = listeners[i];
+            if(listenerClass.equals(listener.getListenerClass())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // useful methods to work with Deployment Descriptor 
+    
+    private static WebApp getWebApp(Project prj) {
+        try {
+            FileObject deploymentDescriptor = getDeploymentDescriptor(prj);
+            if(deploymentDescriptor != null) {
+                return DDProvider.getDefault().getDDRoot(deploymentDescriptor);
+            }
+        } catch (java.io.IOException e) {
+            Logger.getLogger("global").log(Level.INFO, e.getLocalizedMessage());
+        }
+        return null;
+    }
+
+    private static FileObject getDeploymentDescriptor(Project prj) {
+        J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml");
+            if (dd != null && dd.exists()) {
+                return FileUtil.toFileObject(dd);
+            }
+        }
+        return null;
+    }
+
+    // methods that handle sun-jaxws.xml file
+
+    public static void addSunJaxWsEntry(FileObject ddFolder, JaxWsService service)
+            throws IOException {
+        FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
+        if(sunjaxwsFile == null){
+            generateSunJaxwsFile(ddFolder);
+        }
+        sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
+        Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
+        String serviceName = service.getServiceName();
+        Endpoint oldEndpoint = endpoints.findEndpointByName(service.getServiceName());
+        if (oldEndpoint == null) {
+            addService(endpoints, service);
+            FileLock lock = null;
+            OutputStream os = null;
+            synchronized (sunjaxwsFile) {
+                try {
+                    lock = sunjaxwsFile.lock();
+                    os = sunjaxwsFile.getOutputStream(lock);
+                    endpoints.write(os);
+                } finally{
+                    if (lock != null)
+                        lock.releaseLock();
+
+                    if(os != null)
+                        os.close();
+                }
+            }
+        }
+    }
+
+    private static void addJaxWsEntries(FileObject ddFolder, JAXWSLightSupport jaxWsSupport)
+            throws IOException {
+
+        generateSunJaxwsFile(ddFolder);
+        FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
+        Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
+        for (JaxWsService service: jaxWsSupport.getServices()) {
+            if (service.isServiceProvider()) {
+                addService(endpoints, service);
+            }
+        }
+        FileLock lock = null;
+        OutputStream os = null;
+        synchronized (sunjaxwsFile) {
+            try {
+                lock = sunjaxwsFile.lock();
+                os = sunjaxwsFile.getOutputStream(lock);
+                endpoints.write(os);
+            } finally{
+                if (lock != null)
+                    lock.releaseLock();
+
+                if(os != null)
+                    os.close();
+            }
+        }
+    }
+
+    private static void addService(Endpoints endpoints, JaxWsService service) {
+        Endpoint endpoint = endpoints.newEndpoint();
+        endpoint.setEndpointName(service.getServiceName());
+        endpoint.setImplementation(service.getImplementationClass());
+        endpoint.setUrlPattern("/" + service.getServiceName());
+        endpoints.addEnpoint(endpoint);
+    }
+
+    public static void removeSunJaxWsEntry(FileObject ddFolder, JaxWsService service)
+            throws IOException {
+        FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
+        if (sunjaxwsFile != null) {
+            Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
+            String serviceName = service.getServiceName();
+            Endpoint endpoint = endpoints.findEndpointByName(service.getServiceName());
+            if (endpoint != null) {
+                endpoints.removeEndpoint(endpoint);
+                FileLock lock = null;
+                OutputStream os = null;
+                synchronized (sunjaxwsFile) {
+                    try {
+                        lock = sunjaxwsFile.lock();
+                        os = sunjaxwsFile.getOutputStream(lock);
+                        endpoints.write(os);
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                        if (os != null) {
+                            os.close();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void removeSunJaxWs(FileObject ddFolder)
+            throws IOException {
+        FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
+        if (sunjaxwsFile != null) {
+            sunjaxwsFile.delete();
+        }
+    }
+
+    public static void replaceSunJaxWsEntries(FileObject ddFolder, String oldServiceName, String newServiceName)
+            throws IOException {
+
+        FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
+        if (sunjaxwsFile != null) {
+            Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
+            Endpoint endpoint = endpoints.findEndpointByName(oldServiceName);
+            if (endpoint != null) {
+                endpoint.setEndpointName(newServiceName);
+                endpoint.setUrlPattern("/" + newServiceName);
+                FileLock lock = null;
+                OutputStream os = null;
+                synchronized (sunjaxwsFile) {
+                    try {
+                        lock = sunjaxwsFile.lock();
+                        os = sunjaxwsFile.getOutputStream(lock);
+                        endpoints.write(os);
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                        if (os != null) {
+                            os.close();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static boolean generateNonJsr109Artifacts(Project prj) {
+        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(WSUtils.class,"MSG_GenerateDDEntries",
+                    prj.getProjectDirectory().getName()),
+                NbBundle.getMessage(WSUtils.class,"TTL_GenerateDDEntries"),
+                NotifyDescriptor.YES_NO_OPTION);
+        Object result = DialogDisplayer.getDefault().notify(desc);
+        return NotifyDescriptor.YES_OPTION.equals(result);
+    }
+
+    private static boolean removeNonJsr109Artifacts(Project prj) {
+        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(WSUtils.class,"MSG_RemoveDDEntries"),
+                NbBundle.getMessage(WSUtils.class,"TTL_RemoveDDEntries"),
+                NotifyDescriptor.YES_NO_OPTION);
+        Object result = DialogDisplayer.getDefault().notify(desc);
+        return NotifyDescriptor.YES_OPTION.equals(result);
+    }
+
+    public static boolean isJsr109Supported(Project project) {
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider == null) {
+            // set to true by default
+            return true;
+        } else {
+            WSStackUtils stackUtils = new WSStackUtils(project);
+            return stackUtils.isJsr109Supported();
+        }
+    }
+
+    /** Add service entries to deployment descriptor.
+     *
+     * @param prj
+     * @param service
+     * @throws java.io.IOException
+     */
+    public static void addServiceToDD(Project prj, JaxWsService service)
+        throws IOException {
+        //add servlet entry to web.xml
+        WebApp webApp = getWebApp(prj);
+        if (webApp != null) {
+            try{
+                addServlet(webApp, service);
+                if (!webAppHasListener(webApp, SERVLET_LISTENER)){
+                    webApp.addBean("Listener", new String[]{"ListenerClass"}, //NOI18N
+                            new Object[]{SERVLET_LISTENER}, "ListenerClass"); //NOI18N
+                }
+                // This also saves server specific configuration, if necessary.
+                webApp.write(getDeploymentDescriptor(prj));
+            } catch (ClassNotFoundException exc) {
+                Logger.getLogger("global").log(Level.INFO, exc.getLocalizedMessage()); //NOI18N
+            } catch (NameAlreadyUsedException exc) {
+                Logger.getLogger(WSUtils.class.getName()).log(Level.INFO, exc.getLocalizedMessage()); //NOI18N
+            }
+        }
+    }
+
+    private static void addServicesToDD(Project prj, JAXWSLightSupport jaxWsSupport)
+        throws IOException {
+        WebApp webApp = getWebApp(prj);
+        if (webApp != null) {
+            try {
+                if (!webAppHasListener(webApp, SERVLET_LISTENER)) {
+                    webApp.addBean("Listener", new String[]{"ListenerClass"}, //NOI18N
+                            new Object[]{SERVLET_LISTENER}, "ListenerClass"); //NOI18N
+                }
+                for (JaxWsService service : jaxWsSupport.getServices()) {
+                    if (service.isServiceProvider()) {
+                        addServlet(webApp, service);
+                    }
+                }
+            } catch (NameAlreadyUsedException exc) {
+                Logger.getLogger(WSUtils.class.getName()).log(Level.INFO, exc.getLocalizedMessage()); //NOI18N
+            } catch (ClassNotFoundException exc) {
+                Logger.getLogger(WSUtils.class.getName()).log(Level.INFO, exc.getLocalizedMessage()); //NOI18N
+            }
+            webApp.write(getDeploymentDescriptor(prj));
+        }
+    }
+
+    private static void addServlet(WebApp webApp, JaxWsService service) throws ClassNotFoundException, NameAlreadyUsedException {
+        String servletName = service.getServiceName();
+        Servlet servlet = (Servlet)webApp.addBean("Servlet", new String[]{"ServletName","ServletClass"}, //NOI18N
+                new Object[]{servletName, SERVLET_CLASS_NAME}, "ServletName"); //NOI18N
+        servlet.setLoadOnStartup(new java.math.BigInteger("1")); //NOI18N
+        webApp.addBean("ServletMapping", new String[] {"ServletName", "UrlPattern"}, //NOI18N
+                new Object[]{servletName, "/" + servletName}, "ServletName"); //NOI18N
+    }
+
+    /**
+     * Remove the service entries from deployment descriptor.
+     *
+     * @param serviceName Name of the web service to be removed
+     */
+    public static void removeServiceFromDD(Project prj, JaxWsService service)
+        throws IOException {
+        WebApp webApp = getWebApp(prj);
+        if (webApp != null) {
+            boolean changed = removeServiceFromDD(webApp, service.getServiceName());
+
+            //determine if there are other web services in the project
+            //if none, remove the listener
+            boolean hasMoreWebServices = false;
+            Servlet[] remainingServlets = webApp.getServlet();
+            for(int i = 0; i < remainingServlets.length; i++){
+                if(remainingServlets[i].getServletClass().equals(SERVLET_CLASS_NAME)){
+                    hasMoreWebServices = true;
+                    break;
+                }
+            }
+            if(!hasMoreWebServices){
+                Listener[] listeners = webApp.getListener();
+                for(int i = 0; i < listeners.length; i++){
+                    Listener listener = listeners[i];
+                    if(listener.getListenerClass().equals(SERVLET_LISTENER)){
+                        webApp.removeListener(listener);
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+            if (changed) {
+                webApp.write(getDeploymentDescriptor(prj));
+            }
+        }
+    }
+
+    private static void removeServicesFromDD(Project prj, JAXWSLightSupport jaxWsSupport)
+        throws IOException {
+        WebApp webApp = getWebApp(prj);
+        if (webApp != null) {
+            boolean changed = false;
+            // remove all services
+            for (JaxWsService service : jaxWsSupport.getServices()) {
+                changed = removeServiceFromDD(webApp, service.getServiceName());
+            }
+            // remove servlet listener
+            Listener[] listeners = webApp.getListener();
+            for(int i = 0; i < listeners.length; i++){
+                Listener listener = listeners[i];
+                if(listener.getListenerClass().equals(SERVLET_LISTENER)){
+                    webApp.removeListener(listener);
+                    changed = true;
+                    break;
+                }
+            }
+            if (changed) {
+                webApp.write(getDeploymentDescriptor(prj));
+            }
+        }
+    }
+
+    /**
+     * Remove the web.xml servlets for the non-JSR 109 web service.
+     *
+     * @param serviceName Name of the web service to be removed
+     */
+    private static boolean removeServiceFromDD(WebApp webApp, String serviceName) {
+        boolean changed = false;
+        //first remove the servlet
+        Servlet[] servlets = webApp.getServlet();
+        for(int i = 0; i < servlets.length; i++){
+            Servlet servlet = servlets[i];
+            if(servlet.getServletName().equals(serviceName)){
+                webApp.removeServlet(servlet);
+                changed = true;
+                break;
+            }
+        }
+        //remove the servlet mapping
+        ServletMapping[] mappings = webApp.getServletMapping();
+        for(int i = 0; i < mappings.length; i++){
+            ServletMapping mapping = mappings[i];
+            if(mapping.getServletName().equals(serviceName)){
+                webApp.removeServletMapping(mapping);
+                changed = true;
+                break;
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Remove the web.xml entries for the non-JSR 109 web service.
+     *
+     * @param serviceName Name of the web service to be removed
+     */
+    public static void replaceServiceEntriesFromDD(Project prj, String oldServiceName, String newServiceName)
+        throws IOException {
+        WebApp webApp = getWebApp(prj);
+        if (webApp != null) {
+            boolean changed = replaceServiceInDD(webApp, oldServiceName, newServiceName);
+            if (changed) {
+                webApp.write(getDeploymentDescriptor(prj));
+            }
+        }
+    }
+
+    /**
+     * Remove the web.xml servlets for the non-JSR 109 web service.
+     *
+     * @param serviceName Name of the web service to be removed
+     */
+    private static boolean replaceServiceInDD(WebApp webApp, String oldServiceName, String newServiceName) {
+        boolean changed = false;
+        //first remove the servlet
+        Servlet[] servlets = webApp.getServlet();
+        for(int i = 0; i < servlets.length; i++){
+            Servlet servlet = servlets[i];
+            if(servlet.getServletName().equals(oldServiceName)){
+                servlet.setServletName(newServiceName);
+                changed = true;
+                break;
+            }
+        }
+        //remove the servlet mapping
+        ServletMapping[] mappings = webApp.getServletMapping();
+        for(int i = 0; i < mappings.length; i++){
+            ServletMapping mapping = mappings[i];
+            if(mapping.getServletName().equals(oldServiceName)){
+                mapping.setServletName(newServiceName);
+                mapping.setUrlPattern("/"+newServiceName);
+                break;
+            }
+        }
+        return changed;
+    }
+
+    public static void checkNonJSR109Entries(Project prj) {
+        JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(prj.getProjectDirectory());
+        if (jaxWsSupport != null) {
+            WSStack<JaxWs> wsStack = new WSStackUtils(prj).getWsStack(JaxWs.class);
+            if (wsStack != null) {
+                FileObject ddFolder = jaxWsSupport.getDeploymentDescriptorFolder();
+                if (wsStack.isFeatureSupported(JaxWs.Feature.JSR109)) {
+                    if (ddFolder != null && ddFolder.getFileObject("sun-jaxws.xml") != null) {
+                        // remove non JSR109 artifacts
+                        if (removeNonJsr109Artifacts(prj)) {
+                            try {
+                                removeSunJaxWs(ddFolder);
+                            } catch (IOException ex) {
+                                Logger.getLogger(WSUtils.class.getName()).log(Level.WARNING,
+                                        "Cannot remove sun-jaxws.xml file.", ex); //NOI18N
+                            }
+                            try {
+                                removeServicesFromDD(prj, jaxWsSupport);
+                            } catch (IOException ex) {
+                                Logger.getLogger(WSUtils.class.getName()).log(Level.WARNING,
+                                        "Cannot remove services from web.xml.", ex); //NOI18N
+                            }
+                        }
+                    }
+                } else {
+                    if (ddFolder == null || ddFolder.getFileObject("sun-jaxws.xml") == null) {
+                        // generate non JSR109 artifacts
+                        if (generateNonJsr109Artifacts(prj)) {
+                            if (ddFolder != null) {
+                                try {
+                                    addJaxWsEntries(ddFolder, jaxWsSupport);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(WSUtils.class.getName()).log(Level.WARNING,
+                                            "Cannot modify sun-jaxws.xml file", ex); //NOI18N
+                                }
+                                try {
+                                    addServicesToDD(prj, jaxWsSupport);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(WSUtils.class.getName()).log(Level.WARNING,
+                                            "Cannot modify web.xml file", ex); //NOI18N
+                                }
+                            } else {
+                                String mes = NbBundle.getMessage(MavenJAXWSSupportImpl.class, "MSG_CannotFindWEB-INF"); // NOI18N
+                                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                                DialogDisplayer.getDefault().notify(desc);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
 }
