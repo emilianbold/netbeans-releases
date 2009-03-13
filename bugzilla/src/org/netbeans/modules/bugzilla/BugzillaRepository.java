@@ -330,20 +330,44 @@ public class BugzillaRepository extends Repository {
 
         public boolean isValid() {
             errorMessage = null;
-            if(panel.nameField.getText().trim().equals("")) {
-                errorMessage = "Missing name";
+
+            String name = panel.nameField.getText().trim();
+            if(name.equals("")) {
+                errorMessage = "Missing name"; // XXX bundle me
                 return false;
             }
+
+            String[] repositories = null;
+            if(taskRepository == null) {
+                repositories = BugzillaConfig.getInstance().getRepositories();
+                for (String repositoryName : repositories) {
+                    if(name.equals(repositoryName)) {
+                        errorMessage = "Repository with the same name alreay exists"; // XXX bundle me
+                        return false;
+                    }
+                }
+            }
+
             String url = panel.urlField.getText().trim();
             if(url.equals("")) {
-                errorMessage = "Missing URL";
+                errorMessage = "Missing URL"; // XXX bundle me
                 return false;
             }
             try {
                 new URL(url);
             } catch (MalformedURLException ex) {
-                errorMessage = "Wrong URL format";
+                errorMessage = "Wrong URL format"; // XXX bundle me
                 return false;
+            }
+
+            if(taskRepository == null) {
+                for (String repositoryName : repositories) {
+                    BugzillaRepository repository = BugzillaConfig.getInstance().getRepository(repositoryName);
+                    if(url.trim().equals(repository.getUrl())) {
+                        errorMessage = "Repository with the same url alreay exists"; // XXX bundle me
+                        return false;
+                    }
+                }
             }
             return true;
         }
