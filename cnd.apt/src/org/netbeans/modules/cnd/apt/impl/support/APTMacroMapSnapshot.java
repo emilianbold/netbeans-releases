@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
  * @author gorrus
  */
 public final class APTMacroMapSnapshot {
-    /*package*/ final Map<CharSequence/*getTokenTextKey(token)*/, APTMacro> macros = new HashMap<CharSequence, APTMacro>();
+    /*package*/ final Map<CharSequence/*getTokenTextKey(token)*/, APTMacro> macros = new HashMap<CharSequence, APTMacro>(1);
     /*package*/ final APTMacroMapSnapshot parent;
 
     public APTMacroMapSnapshot(APTMacroMapSnapshot parent) {

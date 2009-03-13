@@ -48,6 +48,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -55,13 +57,13 @@ import org.openide.filesystems.FileUtil;
  * @author Alexander Simon
  */
 public class SourceRootContainer {
-    private Map<String,Integer> projectRoots = new ConcurrentHashMap<String,Integer>();
+    private Map<CharSequence,Integer> projectRoots = new ConcurrentHashMap<CharSequence,Integer>();
     
     public SourceRootContainer() {
     }
     
     public boolean isMySource(String includePath){
-        if (projectRoots.containsKey(includePath)){
+        if (projectRoots.containsKey(DefaultCache.getManager().getString(includePath))){
             return true;
         }
         while (true){
@@ -73,7 +75,7 @@ public class SourceRootContainer {
                 return false;
             }
             includePath = includePath.substring(0,i);
-            Integer val = projectRoots.get(includePath);
+            Integer val = projectRoots.get(DefaultCache.getManager().getString(includePath));
             if (val != null) {
                 if (val > Integer.MAX_VALUE/4) {
                     return true;
@@ -84,7 +86,7 @@ public class SourceRootContainer {
     
     public void fixFolder(String path){
         if (path != null) {
-            projectRoots.put(path, Integer.MAX_VALUE / 2);
+            projectRoots.put(FilePathCache.getManager().getString(path), Integer.MAX_VALUE / 2);
         }
     }
     
@@ -110,11 +112,12 @@ public class SourceRootContainer {
     }
     
     private void addPath(final String path) {
-        Integer integer = projectRoots.get(path);
+        CharSequence added = FilePathCache.getManager().getString(path);
+        Integer integer = projectRoots.get(added);
         if (integer == null) {
-            projectRoots.put(path, 1);
+            projectRoots.put(added, 1);
         } else {
-            projectRoots.put(path, integer + 1);
+            projectRoots.put(added, integer + 1);
         }
     }
     

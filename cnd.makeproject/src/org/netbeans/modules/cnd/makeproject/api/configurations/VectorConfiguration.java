@@ -52,7 +52,7 @@ public class VectorConfiguration<E> {
 
     public VectorConfiguration(VectorConfiguration<E> master) {
         this.master = master;
-        value = new ArrayList<E>();
+        value = new ArrayList<E>(0);
         reset();
     }
 
