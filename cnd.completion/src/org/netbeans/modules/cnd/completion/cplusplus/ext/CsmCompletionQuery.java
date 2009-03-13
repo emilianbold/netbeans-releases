@@ -1326,7 +1326,7 @@ abstract public class CsmCompletionQuery {
                                         if (last) { // get all matching fields/methods/packages
                                             List res = finder.findNestedNamespaces(lastNamespace, var, openingSource, false); // find matching nested namespaces
                                             res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, false, false)); // matching classes
-//                                        res.addAll(finder.findStaticNamespaceElements(lastNamespace, endOffset, var, openingSource, false, false));
+                                            res.addAll(finder.findStaticNamespaceElements(lastNamespace, var, openingSource)); // matching static elements
                                             result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*', item, 0, isProjectBeeingParsed(), contextElement);
                                         }
                                     }
