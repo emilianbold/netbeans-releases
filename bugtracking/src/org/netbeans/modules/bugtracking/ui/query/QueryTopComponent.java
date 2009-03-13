@@ -70,9 +70,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -446,8 +446,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
      ***********/
 
     private void onNewClick() {
-        RepositorySelector rs = new RepositorySelector();
-        Repository repo = rs.create();
+        Repository repo = BugtrackingUtil.createRepository();
         if(repo != null) {
             repositoryComboBox.addItem(repo);
             repositoryComboBox.setSelectedItem(repo);
