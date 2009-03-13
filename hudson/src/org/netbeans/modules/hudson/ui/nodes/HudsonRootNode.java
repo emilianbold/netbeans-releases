@@ -53,7 +53,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
 /**
  * Root node which is situated in the RuntimeTab
@@ -96,7 +95,9 @@ public class HudsonRootNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {SystemAction.get(AddInstanceAction.class)};
+        return new Action[] {
+            new AddInstanceAction(),
+        };
     }
     
     private static class RootNodeChildren extends Children.Keys<HudsonInstanceImpl> implements HudsonChangeListener {
