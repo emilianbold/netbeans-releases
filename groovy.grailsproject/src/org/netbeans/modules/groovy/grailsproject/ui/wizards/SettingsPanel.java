@@ -46,7 +46,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 
 
-abstract class WizardSettingsPanel extends JPanel {
+abstract class SettingsPanel extends JPanel {
 
     abstract void store (WizardDescriptor settings);
 

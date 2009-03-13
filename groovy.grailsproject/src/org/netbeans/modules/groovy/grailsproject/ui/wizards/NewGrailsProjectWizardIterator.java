@@ -66,13 +66,12 @@ import org.openide.util.Exceptions;
 public class NewGrailsProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
     private static final Logger LOGGER = Logger.getLogger(NewGrailsProjectWizardIterator.class.getName());
+    
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
-    private GetProjectLocationStep pls = null;
-    boolean serverRunning = false;
-    boolean serverConfigured = true;
-    int baseCount;
+    private PanelConfigureProject pls;
+    private int baseCount;
 
     public NewGrailsProjectWizardIterator() {
         super();
@@ -83,7 +82,7 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
     }
 
     private WizardDescriptor.Panel[] createPanels() {
-        pls = new GetProjectLocationStep(serverRunning, serverConfigured);
+        pls = new PanelConfigureProject();
         return new WizardDescriptor.Panel[]{pls};
     }
 
@@ -93,8 +92,6 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
 
     public Set instantiate(final ProgressHandle handle) throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
-
-        serverRunning = true;
 
         handle.start(100);
         try {
@@ -114,7 +111,6 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
             ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
             Future<Integer> future = service.run();
             try {
-                // TODO handle return value
                 Integer ret = future.get();
                 if (ret.intValue() != 0) {
                     String msg = NbBundle.getMessage(NewArtifactWizardIterator.class, "WIZARD_ERROR_MESSAGE_APPLICATION");
@@ -130,7 +126,6 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
             handle.progress(100);
         }
 
-        serverRunning = false;
         File dirF = (File) wiz.getProperty("projectFolder");
 
         if (dirF != null) {
@@ -166,13 +161,6 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
     public void initialize(WizardDescriptor wizard) {
         this.wiz = wizard;
         index = 0;
-
-        if (!GrailsPlatform.getDefault().isConfigured()) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
-                    "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
-            serverConfigured = false;
-        }
 
         // get project counter from GrailsConfiguration
         baseCount = GrailsProjectSettings.getDefault().getNewProjectCount() + 1;
