@@ -242,7 +242,7 @@ public class Resolver3 implements Resolver {
             if (set.contains(resovedClassifier)) {
                 // try to recover from this error
                 resovedClassifier = findOtherClassifier(orig);
-                if (resovedClassifier == null) {
+                if (resovedClassifier == null || set.contains(resovedClassifier)) {
                     // have to stop with current 'orig' value
                     break;
                 }
