@@ -599,6 +599,7 @@ Branding:
 Branch:   trunk
 Tag:
 ${hg.id.line}</echo>
+    <mkdir dir="${netbeans.dest.dir}/${nb.cluster.nb.dir}"/>
     <copy file="${netbeans.build.dir}/build_info" tofile="${netbeans.dest.dir}/${nb.cluster.nb.dir}/build_info" failonerror="true"/>
   </target>
   
