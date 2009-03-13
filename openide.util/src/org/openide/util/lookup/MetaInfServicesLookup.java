@@ -45,6 +45,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,9 +54,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
@@ -69,8 +69,14 @@ import org.openide.util.WeakSet;
 final class MetaInfServicesLookup extends AbstractLookup {
 
     private static final Logger LOGGER = Logger.getLogger(MetaInfServicesLookup.class.getName());
-
-    private static final Map<Class,Object> knownInstances = new WeakHashMap<Class,Object>();
+    private static int knownInstancesCount;
+    private static final List<Reference<Object>> knownInstances;
+    static {
+        knownInstances = new ArrayList<Reference<Object>>();
+        for (int i = 0; i < 512; i++) {
+            knownInstances.add(null);
+        }
+    }
 
     /** A set of all requested classes.
      * Note that classes that we actually succeeded on can never be removed
@@ -94,12 +100,14 @@ final class MetaInfServicesLookup extends AbstractLookup {
         LOGGER.log(Level.FINE, "Created: {0}", this);
     }
 
+    @Override
     public String toString() {
         return "MetaInfServicesLookup[" + loader + "]"; // NOI18N
     }
 
     /* Tries to load appropriate resources from manifest files.
      */
+    @Override
     protected final void beforeLookup(Lookup.Template t) {
         Class c = t.getType();
 
@@ -381,6 +389,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
             }
         }
 
+        @Override
         public boolean equals(Object o) {
             if (o instanceof P) {
                 return ((P) o).clazz().equals(clazz());
@@ -389,6 +398,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
             return false;
         }
 
+        @Override
         public int hashCode() {
             return clazz().hashCode();
         }
@@ -411,9 +421,25 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
                     try {
                         Class<?> c = ((Class) o);
+                        o = null;
 
                         synchronized (knownInstances) { // guards only the static cache
-                            o = knownInstances.get(c);
+                            int size = knownInstances.size();
+                            int index = c.hashCode() % size;
+                            for (int i = 0; i < size; i++) {
+                                Reference<Object> ref = knownInstances.get(index);
+                                Object obj = ref == null ? null : ref.get();
+                                if (obj == null) {
+                                    break;
+                                }
+                                if (c == obj.getClass()) {
+                                    o = obj;
+                                    break;
+                                }
+                                if (++index == size) {
+                                    index = 0;
+                                }
+                            }
                         }
 
                         if (o == null) {
@@ -424,7 +450,32 @@ final class MetaInfServicesLookup extends AbstractLookup {
                             }
 
                             synchronized (knownInstances) { // guards only the static cache
-                                knownInstances.put(c, o);
+                                hashPut(o);
+
+                                int size = knownInstances.size();
+                                if (knownInstancesCount > size * 2 / 3) {
+                                    LOGGER.log(Level.CONFIG, "Cache of size {0} is 2/3 full. Rehashing.", size);
+                                    HashSet<Reference<Object>> all = new HashSet<Reference<Object>>();
+                                    all.addAll(knownInstances);
+                                    for (int i = 0; i < size; i++) {
+                                        knownInstances.set(i, null);
+                                    }
+                                    for (int i = 0; i < size; i++) {
+                                        knownInstances.add(null);
+                                    }
+                                    knownInstancesCount = 0;
+                                    for (Reference<Object> r : all) {
+                                        if (r == null) {
+                                            continue;
+                                        }
+                                        Object instance = r.get();
+                                        if (instance == null) {
+                                            continue;
+                                        }
+                                        hashPut(instance);
+                                    }
+                                }
+
                             }
                         }
 
@@ -453,6 +504,24 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
         protected boolean creatorOf(Object obj) {
             return obj == object;
+        }
+
+        private static void hashPut(Object o) {
+            Class<?> c = o.getClass();
+            int size = knownInstances.size();
+            int index = c.hashCode() % size;
+            for (int i = 0; i < size; i++) {
+                Reference<Object> ref = knownInstances.get(index);
+                Object obj = ref == null ? null : ref.get();
+                if (obj == null) {
+                    knownInstances.set(index, new WeakReference<Object>(o));
+                    knownInstancesCount++;
+                    break;
+                }
+                if (++index == size) {
+                    index = 0;
+                }
+            }
         }
     }
 }

@@ -41,7 +41,6 @@
 
 package org.netbeans.spi.autoupdate;
 
-import java.net.URL;
 import org.netbeans.modules.autoupdate.services.UpdateLicenseImpl;
 
 /** Represents License Agreement for usage in Autoupdate infrastructure.
@@ -64,15 +63,5 @@ public final class UpdateLicense {
      */
     public static final UpdateLicense createUpdateLicense (String licenseName, String agreement) {
         return new UpdateLicense (new UpdateLicenseImpl (licenseName, agreement));
-    }
-
-    /**
-     *
-     * @param licenseName name of license
-     * @param agreementUrl URL to the license agreement
-     * @return <code>UpdateLicense</code>
-     */
-    public static final UpdateLicense createUpdateLicense (String licenseName, String agreement, URL agreementUrl) {
-        return new UpdateLicense (new UpdateLicenseImpl (licenseName, agreement, agreementUrl));
     }
 }

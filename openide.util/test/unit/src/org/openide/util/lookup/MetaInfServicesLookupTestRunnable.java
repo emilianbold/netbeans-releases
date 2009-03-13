@@ -41,60 +41,10 @@
 
 package org.openide.util.lookup;
 
-import junit.framework.Test;
-import org.netbeans.junit.MockServices;
-import org.openide.util.Lookup;
-import org.openide.util.test.MockLookup;
 
-
-/** Test finding services from manifest.
- * @author Jaroslav Tulach
+/**
  */
-public class NamedServicesLookupTest extends MetaInfServicesLookupTest {
-    static {
-        MockLookup.init();
+public final class MetaInfServicesLookupTestRunnable implements Runnable {
+    public void run() {
     }
-    public NamedServicesLookupTest(String name) {
-        super(name);
-    }
-
-    @Override
-    protected String prefix() {
-        return "META-INF/namedservices/sub/path/";
-    }
-    
-    @Override
-    protected Lookup createLookup(ClassLoader c) {
-        MockLookup.setInstances(c);
-        Lookup l = Lookups.forPath("sub/path");
-        MockLookup.setInstances();
-        return l;
-    }
-    
-    //
-    // this is not much inheriting test, as we mask most of the tested methods
-    // anyway, but the infrastructure to generate the JAR files is useful
-    //
-    
-    public void testLoaderSkew() throws Exception {
-    }
-
-    public void testStability() throws Exception {
-    }
-
-    public void testMaskingOfResources() throws Exception {
-    }
-
-    public void testOrdering() throws Exception {
-    }
-
-    public void testNoCallToGetResourceForObjectIssue65124() throws Exception {
-    }
-
-    public void testListenersAreNotifiedWithoutHoldingALockIssue36035() throws Exception {
-    }
-    
-    public void testWrongOrderAsInIssue100320() throws Exception {
-    }    
-    
 }

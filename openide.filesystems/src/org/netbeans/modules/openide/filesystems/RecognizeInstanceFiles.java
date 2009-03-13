@@ -143,8 +143,15 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
                 }
 
             }
+            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+            if (l == null) {
+                l = Thread.currentThread().getContextClassLoader();
+            }
+            if (l == null) {
+                l = RecognizeInstanceFiles.class.getClassLoader();
+            }
             delegates.add(
-                Lookups.metaInfServices(Thread.currentThread().getContextClassLoader(), "META-INF/namedservices/" + p) // NOI18N
+                Lookups.metaInfServices(l, "META-INF/namedservices/" + p) // NOI18N
             );
             return delegates.toArray(new Lookup[0]);
         }
