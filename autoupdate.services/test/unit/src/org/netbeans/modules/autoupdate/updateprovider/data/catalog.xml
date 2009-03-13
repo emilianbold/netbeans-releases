@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<!DOCTYPE module_updates PUBLIC "-//NetBeans//DTD Autoupdate Catalog 2.5//EN" "http://www.netbeans.org/dtds/autoupdate-catalog-2_5.dtd">
+<!DOCTYPE module_updates PUBLIC "-//NetBeans//DTD Autoupdate Catalog 2.6//EN" "http://www.netbeans.org/dtds/autoupdate-catalog-2_6.dtd">
 <module_updates timestamp="08/08/08/08/08/2008">
     
 <notification url="http://plugins.netbeans.org/tests">Important thing!</notification>
@@ -27,11 +27,18 @@
     
 </module>
 
+<module codenamebase="org.netbeans.test.license.cddl.url" distribution="org-netbeans-test-license-cddl-url.nbm" downloadsize="2652" homepage="" license="cddl.txt" moduleauthor="" needsrestart="false">
+    <manifest AutoUpdate-Show-In-Client="true" OpenIDE-Module="org.netbeans.test.license.url" OpenIDE-Module-Display-Category="Debugging" OpenIDE-Module-Implementation-Version="090311" OpenIDE-Module-Java-Dependencies="Java &gt; 1.5" OpenIDE-Module-Long-Description="Must to check license url attribute" OpenIDE-Module-Name="Visible Plugin" OpenIDE-Module-Requires="org.openide.modules.ModuleFormat1" OpenIDE-Module-Short-Description="Plugin with licence url set" OpenIDE-Module-Specification-Version="1.0"/>
+
+</module>
+
 </module_group>
 
 <license name="strict-testament">I will never write tests.
 </license>
 <license name="kind-testament">I will make documentation sometime.
 </license>
+<license name="cddl.txt" url="nbres:/org/netbeans/modules/autoupdate/updateprovider/data/cddl.txt"/>
+
 </module_updates>
 
