@@ -541,11 +541,18 @@ public final class MavenModelUtils {
     public static void reactOnServerChanges(final Project prj) {
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
+                // update webservices-rt library dependency scope (provided or compile)
+                // depending whether J2EE Server contains metro jars or not
                 MavenModelUtils.updateLibraryScope(prj, model);
             }
         };
         Utilities.performPOMModelOperations(prj.getProjectDirectory().getFileObject("pom.xml"), //NOI18N
                 Collections.singletonList(operation));
+        // add|remove sun-jaxws.xml and WS entries to web.xml file
+        // depending on selected target server
+        if (WSUtils.isWeb(prj)) {
+            WSUtils.checkNonJSR109Entries(prj);
+        }
     }
 
 }
