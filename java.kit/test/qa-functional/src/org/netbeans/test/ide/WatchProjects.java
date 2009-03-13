@@ -41,6 +41,7 @@ package org.netbeans.test.ide;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -48,6 +49,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import junit.framework.Assert;
@@ -116,13 +119,16 @@ public final class WatchProjects {
         for (Frame f : Frame.getFrames()) {
             f.setVisible(false);
         }
+ */
+// XXX: uncommented because of the csl.api & related changes
         JFrame empty = new JFrame("Clear");
         empty.getContentPane().setLayout(new FlowLayout());
         empty.getContentPane().add(new JEditorPane());
         empty.pack();
         empty.setVisible(true);
         empty.requestFocusInWindow();
-*/
+// --------------------------------------------------------
+
         
         clearField("sun.awt.im.InputContext", "previousInputMethod");
         clearField("sun.awt.im.InputContext", "inputMethodWindowContext");

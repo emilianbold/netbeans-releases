@@ -1,6 +1,6 @@
 Code completion result for source line:
 "".c|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     center(Number)                             String
 METHOD     center(Number, String)                     String

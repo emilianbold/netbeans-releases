@@ -41,10 +41,10 @@ package org.netbeans.modules.web.core.syntax.gsf;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.StructureItem;
-import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
  * just fake class, we need the parser and the StructureScanner to enable 
@@ -54,15 +54,20 @@ import org.netbeans.modules.gsf.api.StructureScanner;
  */
 public class JspStructureScanner implements StructureScanner {
 
-    public List<? extends StructureItem> scan(final CompilationInfo info) {
-        return Collections.emptyList();
+    @Override
+    public List<? extends StructureItem> scan(ParserResult info) {
+        return Collections.EMPTY_LIST;
     }
 
-    public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
-        return Collections.emptyMap();
+    @Override
+    public Map<String,List<OffsetRange>> folds(ParserResult info) {
+        return  Collections.EMPTY_MAP;
     }
 
+    @Override
     public Configuration getConfiguration() {
-        return new Configuration(false, false, 0);
+        return null;
     }
+
+
 }

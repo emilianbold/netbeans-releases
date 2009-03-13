@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.web.core.syntax.gsf;
 
-import org.netbeans.modules.gsf.spi.CommentHandler;
+import org.netbeans.modules.csl.spi.CommentHandler;
+
 
 /**
  *

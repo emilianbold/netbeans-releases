@@ -45,10 +45,10 @@ import java.util.HashMap;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
@@ -65,7 +65,7 @@ import org.openide.util.Union2;
 final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContainerImpl {
 
     private CachingSupport cachedModelSupport;
-    private CompilationInfo info;
+    private ParserResult info;
     private Map<ModelElement, List<Occurence>> occurences =
             new HashMap<ModelElement, List<Occurence>>();
     private List<CodeMarkerImpl> codeMarkers = new ArrayList<CodeMarkerImpl>();
@@ -87,13 +87,13 @@ final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContai
         return retval;
     }
 
-    FileScopeImpl(CompilationInfo info) {
+    FileScopeImpl(ParserResult info) {
         this(info, "program", PhpKind.PROGRAM);//NOI18N
         cachedModelSupport = new CachingSupport(this);
     }
 
-    private FileScopeImpl(CompilationInfo info, String name, PhpKind kind) {
-        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
+    private FileScopeImpl(ParserResult info, String name, PhpKind kind) {
+        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
         this.info = info;
     }
 
@@ -151,10 +151,10 @@ final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContai
     }
 
     /*public List<? extends ClassScopeImpl> findDeclaredClasses(final String... queryName) {
-        return findDeclaredClasses(NameKind.EXACT_NAME, queryName);
+        return findDeclaredClasses(QuerySupport.Kind.EXACT_NAME, queryName);
     }
 
-    public List<? extends ClassScopeImpl> findDeclaredClasses(final NameKind nameKind, final String... queryName) {
+    public List<? extends ClassScopeImpl> findDeclaredClasses(final QuerySupport.Kind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElementImpl element) {
@@ -173,10 +173,10 @@ final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContai
     }
 
     /*public List<? extends InterfaceScopeImpl> findDeclaredInterfaces(final String... queryName) {
-        return findDeclaredInterfaces(NameKind.EXACT_NAME, queryName);
+        return findDeclaredInterfaces(QuerySupport.Kind.EXACT_NAME, queryName);
     }
 
-    public List<? extends InterfaceScopeImpl> findDeclaredInterfaces(final NameKind nameKind, final String... queryName) {
+    public List<? extends InterfaceScopeImpl> findDeclaredInterfaces(final QuerySupport.Kind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElementImpl element) {
@@ -195,10 +195,10 @@ final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContai
     }
 
     /*public List<? extends ConstantElementImpl> findDeclaredConstants(String... queryName) {
-        return findDeclaredConstants(NameKind.EXACT_NAME, queryName);
+        return findDeclaredConstants(QuerySupport.Kind.EXACT_NAME, queryName);
     }
 
-    public List<? extends ConstantElementImpl> findDeclaredConstants(final NameKind nameKind, final String... queryName) {
+    public List<? extends ConstantElementImpl> findDeclaredConstants(final QuerySupport.Kind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElementImpl element) {
@@ -235,10 +235,10 @@ final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContai
     }
 
     public Collection<? extends VariableName> getVariablesImpl(String... queryName) {
-        return getVariablesImpl(NameKind.EXACT_NAME, queryName);
+        return getVariablesImpl(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public Collection<? extends VariableName> getVariablesImpl(final NameKind nameKind, final String... queryName) {
+    public Collection<? extends VariableName> getVariablesImpl(final QuerySupport.Kind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElement element) {

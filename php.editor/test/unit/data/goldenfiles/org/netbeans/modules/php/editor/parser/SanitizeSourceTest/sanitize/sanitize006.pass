@@ -1,4 +1,4 @@
-<Program start='0' end='75'>
+<Program start='0' end='74'>
     <Comments>
     </Comments>
     <Statements>
@@ -40,6 +40,6 @@
         <EchoStatement start='63' end='71'>
             <Scalar start='68' end='70' type='STRING' value='""'/>
         </EchoStatement>
-        <EmptyStatement start='72' end='75'/>
+        <EmptyStatement start='72' end='74'/>
     </Statements>
 </Program>

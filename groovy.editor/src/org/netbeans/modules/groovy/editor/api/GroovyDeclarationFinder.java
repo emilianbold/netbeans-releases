@@ -43,13 +43,11 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.Trees;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.DeclarationFinder;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -72,6 +70,7 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -89,17 +88,23 @@ import org.netbeans.modules.groovy.editor.api.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedMethod;
 import org.netbeans.modules.groovy.editor.api.lexer.Call;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.gsf.api.NameKind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
     
 /**
  *
  * @author schmidtm
  * @author Martin Adamek
  */
-public class GroovyDeclarationFinder implements DeclarationFinder{
+public class GroovyDeclarationFinder implements DeclarationFinder {
 
     private final Logger LOG = Logger.getLogger(GroovyDeclarationFinder.class.getName());
     Token<? extends GroovyTokenId> tok;
@@ -145,9 +150,11 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         return range;
     }
 
-    public DeclarationLocation findDeclaration(CompilationInfo info, int lexOffset) {
+    public DeclarationLocation findDeclaration(ParserResult info, int lexOffset) {
+        GroovyParserResult gpr = AstUtilities.getParseResult(info);
+
         try {
-            Document document = info.getDocument();
+            Document document = LexUtilities.getDocument(gpr, false);
             if (document == null) {
                 return DeclarationLocation.NONE;
             }
@@ -171,11 +178,14 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
 
             ASTNode root = AstUtilities.getRoot(info);
 
+            // FIXME parsing API - source & binary IDs
+            GroovyIndex index = GroovyIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(),
+                    Collections.singleton(ClassPath.SOURCE), null, null));
+
             if (root == null) {
                 // No parse tree - try to just use the syntax info to do a simple index lookup
                 // for methods and classes
                 String text = doc.getText(range.getStart(), range.getLength());
-                GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
 
                 if ((index == null) || (text.length() == 0)) {
                     return DeclarationLocation.NONE;
@@ -184,26 +194,22 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                 if (Character.isUpperCase(text.charAt(0))) {
                     // A Class or Constant?
                     Set<IndexedClass> classes =
-                        index.getClasses(text, NameKind.EXACT_NAME, true, false, false);
+                        index.getClasses(text, QuerySupport.Kind.EXACT, true, false, false);
 
                     if (classes.size() == 0) {
                         return DeclarationLocation.NONE;
                     }
 
-                    DeclarationLocation l = getClassDeclaration(info, classes, null, null, index, doc);
+                    DeclarationLocation l = getClassDeclaration(gpr, classes, null, null, index, doc);
                     if (l != null) {
                         return l;
                     }
                 } else {
                     // A method?
                     Set<IndexedMethod> methods =
-                        index.getMethods(text, null, NameKind.EXACT_NAME, GroovyIndex.ALL_SCOPE);
+                        index.getMethods(text, null, QuerySupport.Kind.EXACT);
 
-                    if (methods.size() == 0) {
-                        methods = index.getMethods(text, null, NameKind.EXACT_NAME);
-                    }
-
-                    DeclarationLocation l = getMethodDeclaration(info, text, methods,
+                    DeclarationLocation l = getMethodDeclaration(gpr, text, methods,
                          null, null, index, astOffset, lexOffset);
 
                     if (l != null) {
@@ -213,8 +219,6 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
 
                 return DeclarationLocation.NONE;
             }
-
-            GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
 
             int tokenOffset = lexOffset;
 
@@ -242,10 +246,13 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                     String typeName = variableExpression.getType().getName();
 
                     // try to find it in Java
-                    final ClasspathInfo cpInfo = ClasspathInfo.create(info.getFileObject());
-                    DeclarationLocation location = findJavaMethod(cpInfo, typeName, methodCall);
-                    if (location != DeclarationLocation.NONE) {
-                        return location;
+                    FileObject fo = gpr.getSnapshot().getSource().getFileObject();
+                    if (fo != null) {
+                        final ClasspathInfo cpInfo = ClasspathInfo.create(fo);
+                        DeclarationLocation location = findJavaMethod(cpInfo, typeName, methodCall);
+                        if (location != DeclarationLocation.NONE) {
+                            return location;
+                        }
                     }
                 }
 
@@ -261,7 +268,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                         fqn = "java.lang.Object"; // NOI18N
                     }
 
-                    return findMethod(name, fqn, type, call, info, astOffset, lexOffset, path, closest, index);
+                    return findMethod(name, fqn, type, call, gpr, astOffset, lexOffset, path, closest, index);
                 }
 
             } else if (closest instanceof VariableExpression) {
@@ -272,7 +279,8 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                     if (variable != null) {
                         // I am using getRange and not getOffset, because getRange is adding 'def_' to offset of field
                         int offset = AstUtilities.getRange(variable, doc).getStart();
-                        return new DeclarationLocation(info.getFileObject(), offset);
+                        // FIXME parsing API
+                        return new DeclarationLocation(info.getSnapshot().getSource().getFileObject(), offset);
                     }
                 }
             } else if (closest instanceof ConstantExpression && parent instanceof PropertyExpression) {
@@ -281,7 +289,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                 Expression property = propertyExpression.getProperty();
                 if (objectExpression instanceof VariableExpression && property instanceof ConstantExpression) {
                     VariableExpression variableExpression = (VariableExpression) objectExpression;
-                    if ("this".equals(variableExpression.getName())) {
+                    if ("this".equals(variableExpression.getName())) { // NOI18N
                         ASTNode scope = AstUtilities.getOwningClass(path);
                         if (scope == null) {
                             // we are in script?
@@ -290,7 +298,8 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                         ASTNode variable = AstUtilities.getVariable(scope, ((ConstantExpression) property).getText(), path, doc, lexOffset);
                         if (variable != null) {
                             int offset = AstUtilities.getOffset(doc, variable.getLineNumber(), variable.getColumnNumber());
-                            return new DeclarationLocation(info.getFileObject(), offset);
+                            // FIXME parsing API
+                            return new DeclarationLocation(info.getSnapshot().getSource().getFileObject(), offset);
                         }
                     } else {
                         // find variable type
@@ -299,10 +308,13 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                         String fieldName = ((ConstantExpression) closest).getText();
 
                         // try to find it in Java
-                        final ClasspathInfo cpInfo = ClasspathInfo.create(info.getFileObject());
-                        DeclarationLocation location = findJavaField(cpInfo, typeName, fieldName);
-                        if (location != DeclarationLocation.NONE) {
-                            return location;
+                        FileObject fo = gpr.getSnapshot().getSource().getFileObject();
+                        if (fo != null) {
+                            final ClasspathInfo cpInfo = ClasspathInfo.create(fo);
+                            DeclarationLocation location = findJavaField(cpInfo, typeName, fieldName);
+                            if (location != DeclarationLocation.NONE) {
+                                return location;
+                            }
                         }
 
                         // TODO try to find it in Groovy
@@ -321,7 +333,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                     String text = doc.getText(range.getStart(), range.getLength());
 
                     Set<IndexedClass> classes =
-                        index.getClasses(text, NameKind.EXACT_NAME, true, false, false);
+                        index.getClasses(text, QuerySupport.Kind.EXACT, true, false, false);
 
                     for (IndexedClass indexedClass : classes) {
                         ASTNode node = AstUtilities.getForeignNode(indexedClass);
@@ -354,7 +366,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                         return DeclarationLocation.NONE;
                     }
                     
-                    FileObject fileObject = info.getFileObject();
+                    FileObject fileObject = info.getSnapshot().getSource().getFileObject();
                     
                     if (fileObject != null) {
                         final ClasspathInfo cpi = ClasspathInfo.create(fileObject);
@@ -471,7 +483,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         return OffsetRange.NONE;
     }
 
-    private DeclarationLocation getClassDeclaration(CompilationInfo info, Set<IndexedClass> classes,
+    private DeclarationLocation getClassDeclaration(GroovyParserResult info, Set<IndexedClass> classes,
             AstPath path, ASTNode closest, GroovyIndex index, BaseDocument doc) {
         final IndexedClass candidate =
             findBestClassMatch(classes, path, closest, index);
@@ -480,7 +492,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
             IndexedElement com = candidate;
             ASTNode node = AstUtilities.getForeignNode(com);
 
-            DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
+            DeclarationLocation loc = new DeclarationLocation(com.getFileObject(),
                 AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber()), com);
 
             return loc;
@@ -490,7 +502,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
     }
 
     private DeclarationLocation findMethod(String name, String possibleFqn, String type, Call call,
-        CompilationInfo info, int caretOffset, int lexOffset, AstPath path, ASTNode closest, GroovyIndex index) {
+        GroovyParserResult info, int caretOffset, int lexOffset, AstPath path, ASTNode closest, GroovyIndex index) {
         Set<IndexedMethod> methods = getApplicableMethods(name, possibleFqn, type, call, index);
 
         int astOffset = caretOffset;
@@ -509,27 +521,27 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
 
             // methods directly from fqn class
             if (methods.size() == 0) {
-                methods = index.getMethods(name, fqn, NameKind.EXACT_NAME);
+                methods = index.getMethods(name, fqn, QuerySupport.Kind.EXACT);
             }
 
-            methods = index.getInheritedMethods(fqn, name, NameKind.EXACT_NAME);
+            methods = index.getInheritedMethods(fqn, name, QuerySupport.Kind.EXACT);
         }
 
         if (type != null && methods.size() == 0) {
             fqn = possibleFqn;
 
             if (methods.size() == 0) {
-                methods = index.getInheritedMethods(fqn + "." + type, name, NameKind.EXACT_NAME);
+                methods = index.getInheritedMethods(fqn + "." + type, name, QuerySupport.Kind.EXACT);
             }
 
             if (methods.size() == 0) {
                 // Add methods in the class (without an FQN)
-                methods = index.getInheritedMethods(type, name, NameKind.EXACT_NAME);
+                methods = index.getInheritedMethods(type, name, QuerySupport.Kind.EXACT);
 
                 if (methods.size() == 0 && type.indexOf(".") == -1) {
                     // Perhaps we specified a class without its FQN, such as "TableDefinition"
                     // -- go and look for the full FQN and add in all the matches from there
-                    Set<IndexedClass> classes = index.getClasses(type, NameKind.EXACT_NAME, false, false, false);
+                    Set<IndexedClass> classes = index.getClasses(type, QuerySupport.Kind.EXACT, false, false, false);
                     Set<String> fqns = new HashSet<String>();
                     for (IndexedClass cls : classes) {
                         String f = cls.getFqn();
@@ -539,7 +551,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                     }
                     for (String f : fqns) {
                         if (!f.equals(type)) {
-                            methods.addAll(index.getInheritedMethods(f, name, NameKind.EXACT_NAME));
+                            methods.addAll(index.getInheritedMethods(f, name, QuerySupport.Kind.EXACT));
                         }
                     }
                 }
@@ -550,7 +562,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
             if (methods.size() == 0) {
                 fqn = possibleFqn;
                 while ((methods.size() == 0) && fqn != null && (fqn.length() > 0)) {
-                    methods = index.getMethods(name, fqn + "." + type, NameKind.EXACT_NAME);
+                    methods = index.getMethods(name, fqn + "." + type, QuerySupport.Kind.EXACT);
 
                     int f = fqn.lastIndexOf(".");
 
@@ -564,18 +576,18 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         }
 
         if (methods.size() == 0) {
-            methods = index.getMethods(name, type, NameKind.EXACT_NAME);
+            methods = index.getMethods(name, type, QuerySupport.Kind.EXACT);
             if (methods.size() == 0 && type != null) {
-                methods = index.getMethods(name, null, NameKind.EXACT_NAME);
+                methods = index.getMethods(name, null, QuerySupport.Kind.EXACT);
             }
         }
 
         return methods;
     }
 
-    private DeclarationLocation getMethodDeclaration(CompilationInfo info, String name, Set<IndexedMethod> methods,
+    private DeclarationLocation getMethodDeclaration(GroovyParserResult info, String name, Set<IndexedMethod> methods,
             AstPath path, ASTNode closest, GroovyIndex index, int astOffset, int lexOffset) {
-        BaseDocument doc = (BaseDocument)info.getDocument();
+        BaseDocument doc = LexUtilities.getDocument(info, false);
         if (doc == null) {
             return DeclarationLocation.NONE;
         }
@@ -585,7 +597,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                 astOffset, lexOffset, path, closest, index);
 
         if (candidate != null) {
-            FileObject fileObject = candidate.getFile().getFileObject();
+            FileObject fileObject = candidate.getFileObject();
             if (fileObject == null) {
                 return DeclarationLocation.NONE;
             }
@@ -713,14 +725,14 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         return null;
     }
 
-    private DeclarationLocation fix(DeclarationLocation location, CompilationInfo info) {
-        if ((location != DeclarationLocation.NONE) && (location.getFileObject() == null) &&
-                (location.getUrl() == null)) {
-            return new DeclarationLocation(info.getFileObject(), location.getOffset(), location.getElement());
-        }
-
-        return location;
-    }
+//    private DeclarationLocation fix(DeclarationLocation location, CompilationInfo info) {
+//        if ((location != DeclarationLocation.NONE) && (location.getFileObject() == null) &&
+//                (location.getUrl() == null)) {
+//            return new DeclarationLocation(info.getFileObject(), location.getOffset(), location.getElement());
+//        }
+//
+//        return location;
+//    }
 
     private static DeclarationLocation findJavaField(ClasspathInfo cpInfo, final String fqn, final String fieldName) {
         final ElementHandle[] handles = new ElementHandle[1];

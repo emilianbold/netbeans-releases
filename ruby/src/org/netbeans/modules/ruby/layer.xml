@@ -137,7 +137,7 @@
       </folder>
     </folder>
 
-    <folder name="GsfPlugins">
+    <folder name="CslPlugins">
         <folder name="text">
             <folder name="x-ruby">
                 <file name="language.instance">

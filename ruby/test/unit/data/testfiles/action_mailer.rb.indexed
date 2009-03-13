@@ -5,6 +5,7 @@ Searchable Keys:
   class : Base
   class-ig : base
   fqn : ActionMailer::Base
+  require : action_mailer
 
 Not Searchable Keys:
   attrs : |CLASS|

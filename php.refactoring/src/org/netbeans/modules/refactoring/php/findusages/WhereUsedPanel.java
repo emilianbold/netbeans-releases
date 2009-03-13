@@ -51,9 +51,8 @@ import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.Attribute
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
 import javax.swing.JPanel;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.ClassMemberElement;
-import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport.Kind;
 import org.openide.util.NbPreferences;
 

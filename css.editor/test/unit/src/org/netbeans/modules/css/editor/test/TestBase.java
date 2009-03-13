@@ -38,19 +38,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.css.editor.test;
 
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.gsf.CSSLanguage;
-import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 
 /**
  * Common ancestor for all test classes.
  */
-public class TestBase extends GsfTestBase {
+public class TestBase extends CslTestBase {
 
     private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
 

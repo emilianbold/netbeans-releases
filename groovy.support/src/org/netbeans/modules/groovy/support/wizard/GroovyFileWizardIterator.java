@@ -44,12 +44,10 @@ package org.netbeans.modules.groovy.support.wizard;
 import java.awt.Component;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -65,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.ChangeSupport;
 
 /**
  * Wizard to create a new Groovy file.
@@ -72,6 +71,16 @@ import org.openide.loaders.DataObject;
 public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    private transient int index;
+
+    private transient WizardDescriptor.Panel[] panels;
+
+    private transient WizardDescriptor wiz;
+    
+    private transient GroovyProjectExtender extender;
     
     public static GroovyFileWizardIterator create() {
         return new GroovyFileWizardIterator();
@@ -144,11 +153,6 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
         return Collections.singleton(createdFile);
     }
     
-    private transient int index;
-    private transient WizardDescriptor.Panel[] panels;
-    private transient WizardDescriptor wiz;
-    private transient GroovyProjectExtender extender;
-    
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -205,27 +209,16 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
         return panels[index];
     }
     
-    private transient Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
-    
     public final void addChangeListener(ChangeListener l) {
-        synchronized(listeners) {
-            listeners.add(l);
-        }
+        changeSupport.addChangeListener(l);
     }
+    
     public final void removeChangeListener(ChangeListener l) {
-        synchronized(listeners) {
-            listeners.remove(l);
-        }
+        changeSupport.removeChangeListener(l);
     }
+    
     protected final void fireChangeEvent() {
-        ChangeListener[] ls;
-        synchronized (listeners) {
-            ls = listeners.toArray(new ChangeListener[listeners.size()]);
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        for (ChangeListener l : ls) {
-            l.stateChanged(ev);
-        }
+        changeSupport.fireChange();
     }
     
     private GroovyProjectExtender initExtender() {

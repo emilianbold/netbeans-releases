@@ -125,7 +125,7 @@ public class ELFunctions {
     
     public static List /*<Function>*/ getFunctions(JspSyntaxSupport sup, String start){
         List functions = new ArrayList();
-        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(sup.getDocument(), sup.getFileObject(), false, false);
+        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(sup.getFileObject(), false, false);
         if (result != null) {
             Map libraries = result.getPageInfo().getTagLibraries();
             Map prefixes = result.getPageInfo().getJspPrefixMapper();

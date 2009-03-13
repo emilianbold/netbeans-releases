@@ -41,13 +41,13 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.Collections;
 import java.util.List;
 
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -163,7 +163,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
         return getVariablesImpl(queryName);
     }
 
-    public Collection<? extends VariableName> findDeclaredVariables(NameKind nameKind, String... queryName) {
+    public Collection<? extends VariableName> findDeclaredVariables(QuerySupport.Kind nameKind, String... queryName) {
         return findDeclaredVariables(nameKind, queryName);
     }
 
@@ -172,10 +172,10 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
     }
 
     public Collection<? extends VariableName> getVariablesImpl(String... queryName) {
-        return getVariablesImpl(NameKind.EXACT_NAME, queryName);
+        return getVariablesImpl(QuerySupport.Kind.EXACT, queryName);
     }
 
-    public Collection<? extends VariableName> getVariablesImpl(final NameKind nameKind, final String... queryName) {
+    public Collection<? extends VariableName> getVariablesImpl(final QuerySupport.Kind nameKind, final String... queryName) {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpKind().equals(PhpKind.VARIABLE)  &&
