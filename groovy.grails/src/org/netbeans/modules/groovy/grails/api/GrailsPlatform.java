@@ -59,6 +59,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -74,6 +75,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
@@ -104,6 +106,8 @@ public final class GrailsPlatform {
     static {
         Collections.addAll(GUARDED_COMMANDS, "run-app", "run-app-https", "run-war", "shell"); //NOI18N
     }
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private static GrailsPlatform instance;
 
@@ -251,6 +255,14 @@ public final class GrailsPlatform {
         }
     }
 
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
     /**
      * Reloads the runtime instance variables.
      */
@@ -260,6 +272,8 @@ public final class GrailsPlatform {
             classpath = null;
         }
 
+        changeSupport.fireChange();
+        
         // figure out the version on background
         // default executor as general purpose should be enough for this
         RequestProcessor.getDefault().post(new Runnable() {

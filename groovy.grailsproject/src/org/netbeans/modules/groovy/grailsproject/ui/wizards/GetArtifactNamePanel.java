@@ -24,7 +24,7 @@ import org.openide.util.Utilities;
  *
  * @author  schmidtm
  */
-public class GetArtifactNamePanel extends WizardSettingsPanel implements DocumentListener {
+public class GetArtifactNamePanel extends SettingsPanel implements DocumentListener {
 
     private GetArtifactNameStep parentStep;
 

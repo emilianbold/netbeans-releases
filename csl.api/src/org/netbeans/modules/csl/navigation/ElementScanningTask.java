@@ -43,11 +43,13 @@ package org.netbeans.modules.csl.navigation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -103,7 +105,7 @@ public final class ElementScanningTask extends ParserResultTask<ParserResult> {
         if (fileObject == null) {
             return;
         }
-        
+
         final int [] mimetypesWithElements = new int [] { 0 };
         final List<MimetypeRootNode> roots = new ArrayList<MimetypeRootNode>();
         try {
@@ -124,7 +126,7 @@ public final class ElementScanningTask extends ParserResultTask<ParserResult> {
                                 if (children.size() > 0) {
                                     mimetypesWithElements[0]++;
                                 }
-                                roots.add(new MimetypeRootNode(language, children));
+                                roots.add(new MimetypeRootNode(language, children, resultIterator.getSnapshot().getMimePath()));
                             }
                         }
                     }
@@ -137,6 +139,39 @@ public final class ElementScanningTask extends ParserResultTask<ParserResult> {
         } catch (ParseException e) {
             LOG.log(Level.WARNING, null, e);
         }
+
+        //ensure we do display a language structure items only once per mimetype.
+        //there is a problem that a language may be embedded in various mimepaths.
+        //For example javascript virtual source is provided for both text/html
+        //and text/x-jsp mimetypes.
+        //So we have following javascript embedding:
+        //
+        //MimePath[text/x-jsp/text/html/text/javascript]
+        //MimePath[text/x-jsp/text/javascript]
+        //
+        //...which results in multiple javascript nodes in the navigator
+        //
+        //So the solution is to use the shortest mimepath per mimetype only
+
+        HashMap<String, MimetypeRootNode> map = new HashMap<String, MimetypeRootNode>();
+        for(MimetypeRootNode mtRootNode : roots) {
+            MimePath path = mtRootNode.getMimePath();
+            String mimeType = path.getMimeType(path.size() - 1); //get leaf language
+
+            MimetypeRootNode node = map.get(mimeType);
+            if(node != null) {
+                MimePath nodeMimePath = node.getMimePath();
+                if(path.size() < nodeMimePath.size()) {
+                    //the actual path is shorter, use this one
+                    map.put(mimeType, mtRootNode);
+                }
+            } else {
+                map.put(mimeType, mtRootNode);
+            }
+        }
+
+        roots.clear();
+        roots.addAll(map.values());
 
         if (roots.size() > 1) {
             Collections.sort(roots, new Comparator<MimetypeRootNode>() {
@@ -255,12 +290,18 @@ public final class ElementScanningTask extends ParserResultTask<ParserResult> {
         Language language;
         private List<? extends StructureItem> items;
         long from, to;
+        private MimePath mimePath;
 
-        private MimetypeRootNode(Language lang, List<? extends StructureItem> items) {
+        private MimetypeRootNode(Language lang, List<? extends StructureItem> items, MimePath mimePath) {
             this.language = lang;
             this.items = items;
             this.from = items.size() > 0 ? items.get(0).getPosition() : 0;
             this.to = items.size() > 0 ? items.get(items.size() - 1).getEndPosition() : 0;
+            this.mimePath = mimePath;
+        }
+
+        public MimePath getMimePath() {
+            return mimePath;
         }
 
         @Override
