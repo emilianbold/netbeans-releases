@@ -35,37 +35,33 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author schmidtm
  */
-public class GetProjectLocationStep implements  WizardDescriptor.Panel, 
-                                                WizardDescriptor.ValidatingPanel,
-                                                WizardDescriptor.FinishablePanel
-                                                {
+public class PanelConfigureProject implements  WizardDescriptor.Panel,
+        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
 
-    private GetProjectLocationPanel component;
-    private WizardDescriptor wizardDescriptor;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    boolean        serverRunning = false;
-    boolean        serverConfigured = true;
 
-    public GetProjectLocationStep(boolean serverRunning, boolean serverConfigured) {
-        this.serverRunning = serverRunning;
-        this.serverConfigured = serverConfigured;
+    private PanelConfigureProjectVisual component;
+
+    private WizardDescriptor wizardDescriptor;
+
+    public PanelConfigureProject() {
+        super();
     }
 
     public Component getComponent() {
         if (component == null) {
-            component = new GetProjectLocationPanel(this);
+            component = new PanelConfigureProjectVisual(this);
         }
         return component;
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx( GetProjectLocationStep.class  );
+        return new HelpCtx( PanelConfigureProject.class  );
     }
 
     public void readSettings(Object settings) {
@@ -88,18 +84,6 @@ public class GetProjectLocationStep implements  WizardDescriptor.Panel,
 
     public boolean isValid() {
         getComponent();
-        if(!serverConfigured) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
-                NbBundle.getMessage(NewGrailsProjectWizardIterator.class, 
-                "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
-            return false;
-        }
-        if (serverRunning) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
-                "GetProjectLocationStep.ServerIsRunning"));
-            return false;
-        }
         if (!component.valid(wizardDescriptor)) {
             return false;
         }
@@ -119,10 +103,9 @@ public class GetProjectLocationStep implements  WizardDescriptor.Panel,
         changeSupport.fireChange();
     }
     
-    
     public void validate() throws WizardValidationException {
-        getComponent ();
-        component.validate (wizardDescriptor);
+        getComponent();
+        component.validate(wizardDescriptor);
     }
 
     public boolean isFinishPanel() {

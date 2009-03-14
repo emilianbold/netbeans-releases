@@ -246,14 +246,18 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     public FileObject getFileObject() {
         FileObject fileObject = null;
         synchronized (ModelElementImpl.class) {
-            fileObject = file.hasSecond() ? file.second() : null;
+            if (file != null) {
+                fileObject = file.hasSecond() ? file.second() : null;
+            }
         }
         if (fileObject == null) {
             assert file.hasFirst();
             String fileUrl = file.first();
             fileObject = PHPIndex.getFileObject(fileUrl);
             synchronized (ModelElementImpl.class) {
-                file = Union2.createSecond(fileObject);
+                if (fileObject != null) {
+                    file = Union2.createSecond(fileObject);
+                }
             }
         }
         return fileObject;

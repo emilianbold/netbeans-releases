@@ -110,12 +110,14 @@ public class YamlScanner implements StructureScanner {
         folds.put("codeblocks", codeblocks); // NOI18N
         BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);
 
-        for (StructureItem item : items) {
-            try {
-                addBlocks(result, doc, codeblocks, item);
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-                break;
+        if (doc != null) {
+            for (StructureItem item : items) {
+                try {
+                    addBlocks(result, doc, codeblocks, item);
+                } catch (BadLocationException ble) {
+                    Exceptions.printStackTrace(ble);
+                    break;
+                }
             }
         }
 
