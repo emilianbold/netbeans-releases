@@ -68,8 +68,6 @@ import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.kenai.ui.spi.QueryAccessor.class)
 public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeListener {
 
-    private static final List<QueryHandle> EMPTY_QH_LIST = Collections.unmodifiableList(Collections.EMPTY_LIST);
-    private static final List<QueryResultHandle> EMPTY_QRH_LIST = Collections.unmodifiableList(Collections.EMPTY_LIST);
     final private Map<String, ProjectHandleListener> projectListeners = new HashMap<String, ProjectHandleListener>();
 
     public QueryAccessorImpl() {
@@ -81,7 +79,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
         if(repo == null) {
             // XXX log this inconvenience
-            return EMPTY_QH_LIST;
+            return Collections.emptyList();
         }
         List<QueryHandle> queries = getQueryHandles(repo);
         ProjectHandleListener pl;
@@ -103,7 +101,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         Query[] queries = repo.getQueries();
         if(queries == null || queries.length == 0) {
             // XXX is this possible - at least preset queries
-            return EMPTY_QH_LIST;
+            return Collections.emptyList();
         }
         List<QueryHandle> ret = new ArrayList<QueryHandle>();
         for (Query q : queries) {
@@ -120,7 +118,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             qh.refreshIfFirstTime();
             return Collections.unmodifiableList(qh.getQueryResults());
         } else {
-            return EMPTY_QRH_LIST;
+            return Collections.emptyList();
         }
     }
 

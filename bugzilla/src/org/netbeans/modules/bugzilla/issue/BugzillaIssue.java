@@ -475,7 +475,11 @@ public class BugzillaIssue extends Issue {
     List<String> getFieldValues(IssueField f) {
         if(f.isSingleAttribute()) {
             TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
-            return a != null ? a.getValues() : Collections.EMPTY_LIST;
+            if(a != null) {
+                return a.getValues();
+            } else {
+                return Collections.emptyList();
+            }
         } else {
             List<String> ret = new ArrayList<String>();
             ret.add(getFieldValue(f));

@@ -215,11 +215,12 @@ public abstract class Query implements Comparable<Query> {
     /**
      * Describes a particular column in the queries table
      */
-    public static class ColumnDescriptor extends ReadOnly {
-        public ColumnDescriptor(String name, Class type, String displayName, String shortDescription) {
+    public static class ColumnDescriptor<T> extends ReadOnly<T> {
+        public ColumnDescriptor(String name, Class<T> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        @Override
+        public T getValue() throws IllegalAccessException, InvocationTargetException {
             return null;
         }
     }
