@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.bugzilla;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
@@ -49,6 +49,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
+import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -106,7 +107,11 @@ public class Bugzilla {
      * @return
      */
     public List<String> getProducts(BugzillaRepository repository) {
-        return repository.getRepositoryConfiguration().getProducts();
+        RepositoryConfiguration rc = repository.getRepositoryConfiguration();
+        if(rc == null) {
+            Collections.emptyList();
+        }
+        return rc.getProducts();
     }
 
     /**
@@ -117,10 +122,14 @@ public class Bugzilla {
      * @return list of components
      */
     public List<String> getComponents(BugzillaRepository repository, String product) {
+        RepositoryConfiguration rc = repository.getRepositoryConfiguration();
+        if(rc == null) {
+            Collections.emptyList();
+        }
         if(product == null) {
-            return repository.getRepositoryConfiguration().getComponents();
+            return rc.getComponents();
         } else {
-            return repository.getRepositoryConfiguration(). getComponents(product);
+            return rc. getComponents(product);
         }
     }
 
@@ -131,7 +140,11 @@ public class Bugzilla {
      * @return
      */
     public List<String> getResolutions(BugzillaRepository repository) {
-        return repository.getRepositoryConfiguration().getResolutions();
+        RepositoryConfiguration rc = repository.getRepositoryConfiguration();
+        if(rc == null) {
+            Collections.emptyList();
+        }
+        return rc.getResolutions();
     }
 
     /**
@@ -142,10 +155,14 @@ public class Bugzilla {
      * @return
      */
     public List<String> getVersions(BugzillaRepository repository, String product) {
+        RepositoryConfiguration rc = repository.getRepositoryConfiguration();
+        if(rc == null) {
+            Collections.emptyList();
+        }
         if(product == null) {
-            return repository.getRepositoryConfiguration().getVersions();
+            return rc.getVersions();
         } else {
-            return repository.getRepositoryConfiguration().getVersions(product);
+            return rc.getVersions(product);
         }
     }
 
@@ -155,7 +172,11 @@ public class Bugzilla {
      * @return
      */
     public List<String> getStatusValues(BugzillaRepository repository)  {
-        return repository.getRepositoryConfiguration().getStatusValues();
+        RepositoryConfiguration rc = repository.getRepositoryConfiguration();
+        if(rc == null) {
+            Collections.emptyList();
+        }
+        return rc.getStatusValues();
     }
 
     /**
@@ -164,7 +185,11 @@ public class Bugzilla {
      * @return all open statuses defined in the given repository.
      */
     public List<String> getOpenStatusValues(BugzillaRepository repository)  {
-        return repository.getRepositoryConfiguration().getOpenStatusValues();
+        RepositoryConfiguration rc = repository.getRepositoryConfiguration();
+        if(rc == null) {
+            Collections.emptyList();
+        }
+        return rc.getOpenStatusValues();
     }
 
     /**
@@ -173,7 +198,11 @@ public class Bugzilla {
      * @return
      */
     public List<String> getPriorities(BugzillaRepository repository)  {
-        return repository.getRepositoryConfiguration().getPriorities();
+        RepositoryConfiguration rc = repository.getRepositoryConfiguration();
+        if(rc == null) {
+            Collections.emptyList();
+        }
+        return rc.getPriorities();
     }
 
     /**
@@ -182,7 +211,11 @@ public class Bugzilla {
      * @return
      */
     public List<String> getKeywords(BugzillaRepository repository) {
-        return repository.getRepositoryConfiguration().getKeywords();
+        RepositoryConfiguration rc = repository.getRepositoryConfiguration();
+        if(rc == null) {
+            Collections.emptyList();
+        }
+        return rc.getKeywords();
     }
 
     /**
@@ -191,7 +224,11 @@ public class Bugzilla {
      * @return
      */
     public List<String> getPlatforms(BugzillaRepository repository) {
-        return repository.getRepositoryConfiguration().getPlatforms();
+        RepositoryConfiguration rc = repository.getRepositoryConfiguration();
+        if(rc == null) {
+            Collections.emptyList();
+        }
+        return rc.getPlatforms();
     }
 
     /**
@@ -200,7 +237,11 @@ public class Bugzilla {
      * @return
      */
     public List<String> getOSs(BugzillaRepository repository) {
-        return repository.getRepositoryConfiguration().getOSs();
+        RepositoryConfiguration rc = repository.getRepositoryConfiguration();
+        if(rc == null) {
+            Collections.emptyList();
+        }
+        return rc.getOSs();
     }
 
     /**
@@ -209,7 +250,11 @@ public class Bugzilla {
      * @return
      */
     public List<String> getSeverities(BugzillaRepository repository) {
-        return repository.getRepositoryConfiguration().getSeverities();
+        RepositoryConfiguration rc = repository.getRepositoryConfiguration();
+        if(rc == null) {
+            Collections.emptyList();
+        }
+        return rc.getSeverities();
     }
 
     /**
@@ -218,7 +263,11 @@ public class Bugzilla {
      * @return
      */
     public List<BugzillaCustomField> getCustomFields(BugzillaRepository repository) {
-        return repository.getRepositoryConfiguration().getCustomFields();
+        RepositoryConfiguration rc = repository.getRepositoryConfiguration();
+        if(rc == null) {
+            Collections.emptyList();
+        }
+        return rc.getCustomFields();
     }
 
     /**
@@ -230,10 +279,14 @@ public class Bugzilla {
      * @return
      */
     public List<String> getTargetMilestones(BugzillaRepository repository, String product) {
+        RepositoryConfiguration rc = repository.getRepositoryConfiguration();
+        if(rc == null) {
+            Collections.emptyList();
+        }
         if(product == null) {
-            return repository.getRepositoryConfiguration().getTargetMilestones();
+            return rc.getTargetMilestones();
         } else {
-            return repository.getRepositoryConfiguration().getTargetMilestones(product);
+            return rc.getTargetMilestones(product);
         }
     }
 
