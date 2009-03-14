@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla.query;
 
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.io.IOException;
 import org.netbeans.modules.bugzilla.*;
 import java.util.ArrayList;

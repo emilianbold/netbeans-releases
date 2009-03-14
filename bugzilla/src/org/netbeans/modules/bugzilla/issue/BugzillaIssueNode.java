@@ -43,8 +43,8 @@ import java.util.List;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueNode.SeenProperty;
-import org.netbeans.modules.bugzilla.BugzillaRepository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.IssueField;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
 
@@ -85,7 +85,7 @@ public class BugzillaIssueNode extends IssueNode {
         if(bc == null) {
             return null;
         }
-        List<String> s = bc.getSeverities(getBugzillaIssue().getRepository());
+        List<String> s = bc.getSeverities();
         if(s == null) {
             return null;
         }
@@ -97,7 +97,7 @@ public class BugzillaIssueNode extends IssueNode {
         if(bc == null) {
             return null;
         }
-        List<String> p = bc.getPriorities(getBugzillaIssue().getRepository());
+        List<String> p = bc.getPriorities();
         if(p == null) {
             return null;
         }
@@ -109,7 +109,7 @@ public class BugzillaIssueNode extends IssueNode {
         if(bc == null) {
             return null;
         }
-        List<String> r = bc.getResolutions(getBugzillaIssue().getRepository());
+        List<String> r = bc.getResolutions();
         if(r == null) {
             return null;
         }

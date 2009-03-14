@@ -63,8 +63,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugzilla.BugzillaRepository;
-import org.netbeans.modules.bugzilla.BugzillaRepository.BugzillaConfiguration;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -229,17 +229,17 @@ public class IssuePanel extends javax.swing.JPanel {
             // XXX nice error msg?
             return;
         }
-        productCombo.setModel(toComboModel(bc.getProducts(repository)));
+        productCombo.setModel(toComboModel(bc.getProducts()));
         // componentCombo, versionCombo, targetMilestoneCombo are filled
         // automatically when productCombo is set/changed
-        platformCombo.setModel(toComboModel(bc.getPlatforms(repository)));
-        osCombo.setModel(toComboModel(bc.getOSs(repository)));
+        platformCombo.setModel(toComboModel(bc.getPlatforms()));
+        osCombo.setModel(toComboModel(bc.getOSs()));
         // Do not support MOVED resolution (yet?)
-        List<String> resolutions = new LinkedList<String>(bc.getResolutions(repository));
+        List<String> resolutions = new LinkedList<String>(bc.getResolutions());
         resolutions.remove("MOVED"); // NOI18N
         resolutionCombo.setModel(toComboModel(resolutions));
-        priorityCombo.setModel(toComboModel(bc.getPriorities(repository)));
-        severityCombo.setModel(toComboModel(bc.getSeverities(repository)));
+        priorityCombo.setModel(toComboModel(bc.getPriorities()));
+        severityCombo.setModel(toComboModel(bc.getSeverities()));
         // stausCombo and resolution fields are filled in reloadForm
     }
 
@@ -254,8 +254,8 @@ public class IssuePanel extends javax.swing.JPanel {
             // XXX nice error msg?
             return;
         }
-        List<String> allStatuses = bc.getStatusValues(repository);
-        List<String> openStatuses = bc.getOpenStatusValues(repository);
+        List<String> allStatuses = bc.getStatusValues();
+        List<String> openStatuses = bc.getOpenStatusValues();
         List<String> statuses = new LinkedList<String>();
         String unconfirmed = "UNCONFIRMED"; // NOI18N
         String reopened = "REOPENED"; // NOI18N
@@ -826,9 +826,9 @@ public class IssuePanel extends javax.swing.JPanel {
         Object component = componentCombo.getSelectedItem();
         Object version = versionCombo.getSelectedItem();
         Object targetMilestone = targetMilestoneCombo.getSelectedItem();
-        componentCombo.setModel(toComboModel(bc.getComponents(repository, product)));
-        versionCombo.setModel(toComboModel(bc.getVersions(repository, product)));
-        List<String> targetMilestones = bc.getTargetMilestones(repository, product);
+        componentCombo.setModel(toComboModel(bc.getComponents(product)));
+        versionCombo.setModel(toComboModel(bc.getVersions(product)));
+        List<String> targetMilestones = bc.getTargetMilestones(product);
         usingTargetMilestones = (targetMilestones.size() != 0);
         targetMilestoneCombo.setModel(toComboModel(targetMilestones));
         // Attempt to keep selection

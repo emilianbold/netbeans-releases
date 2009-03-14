@@ -82,8 +82,7 @@ import org.netbeans.modules.bugtracking.spi.Query.Filter;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
-import org.netbeans.modules.bugzilla.BugzillaRepository;
-import org.netbeans.modules.bugzilla.BugzillaRepository.BugzillaConfiguration;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -92,6 +91,7 @@ import org.netbeans.modules.bugzilla.query.QueryParameter.ComboParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ListParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValue;
 import org.netbeans.modules.bugzilla.query.QueryParameter.TextFieldParameter;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -309,15 +309,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
                         // XXX nice errro msg?
                         return;
                     }
-                    productParameter.setParameterValues(toParameterValues(bc.getProducts(repository)));
+                    productParameter.setParameterValues(toParameterValues(bc.getProducts()));
                     if (panel.productList.getModel().getSize() > 0) {
                         panel.productList.setSelectedIndex(0);
                         populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
                     }
-                    severityParameter.setParameterValues(toParameterValues(bc.getSeverities(repository)));
-                    statusParameter.setParameterValues(toParameterValues(bc.getStatusValues(repository)));
-                    resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions(repository)));
-                    priorityParameter.setParameterValues(toParameterValues(bc.getPriorities(repository)));
+                    severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
+                    statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
+                    resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
+                    priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
                     changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
                     summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
                     commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
@@ -361,7 +361,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             // XXX nice errro msg?
             return;
         }
-        List<String> products = bc.getProducts(repository);
+        List<String> products = bc.getProducts();
         Iterator<String> i = products.iterator();
         while (i.hasNext()) {
             String p = i.next();
@@ -770,13 +770,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
         List<String> newComponents = new ArrayList<String>();
         List<String> newVersions = new ArrayList<String>();
         for (String p : products) {
-            List<String> productComponents = bc.getComponents(repository, p);
+            List<String> productComponents = bc.getComponents(p);
             for (String c : productComponents) {
                 if(!newComponents.contains(c)) {
                     newComponents.add(c);
                 }
             }
-            List<String> productVersions = bc.getVersions(repository, p);
+            List<String> productVersions = bc.getVersions(p);
             for (String c : productVersions) {
                 if(!newVersions.contains(c)) {
                     newVersions.add(c);

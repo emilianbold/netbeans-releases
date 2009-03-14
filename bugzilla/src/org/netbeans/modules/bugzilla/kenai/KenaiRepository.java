@@ -42,7 +42,7 @@ package org.netbeans.modules.bugzilla.kenai;
 import java.awt.Image;
 import java.text.MessageFormat;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;

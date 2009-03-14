@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla;
 
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.net.MalformedURLException;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;

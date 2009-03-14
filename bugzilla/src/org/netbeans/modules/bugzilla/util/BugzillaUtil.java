@@ -50,9 +50,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.BugzillaRepository;
-import org.netbeans.modules.bugzilla.BugzillaRepository.BugzillaConfiguration;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -106,7 +106,7 @@ public class BugzillaUtil {
                 // XXX is there something else we could do at this point?
                 return keywordsString;
             }
-            List<String> knownKeywords = bc.getKeywords(repository);
+            List<String> knownKeywords = bc.getKeywords();
             kp = new KeywordsPanel(label, knownKeywords, keywords);
         } catch (Exception ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);

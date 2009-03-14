@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla;
 
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.KenaiSupport;
