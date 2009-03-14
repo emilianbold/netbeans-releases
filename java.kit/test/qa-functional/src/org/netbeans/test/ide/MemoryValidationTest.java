@@ -77,6 +77,8 @@ public class MemoryValidationTest extends JellyTestCase {
     }
     
     public static Test suite() {
+        // XXX: supresses warning about jpda debugger using parsing API from AWT thread
+        System.setProperty("org.netbeans.modules.parsing.impl.TaskProcessor.level", "OFF");
 
         boolean blacklistEnabled = initBlacklistedClassesHandler();
         
