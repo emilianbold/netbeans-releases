@@ -161,7 +161,6 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
             });
 
             queriesPanel.setVisible(false);
-            
         }
     }
 
@@ -391,16 +390,12 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     @Override
     public void componentOpened() {
         openQueries.add(this);
-        if(query != null) {
-            query.getController().opened();
-        }
     }
 
     @Override
     public void componentClosed() {
         openQueries.remove(this);
         if(query != null) {
-            query.getController().closed();
             query.removePropertyChangeListener(this);
         }        
     }
