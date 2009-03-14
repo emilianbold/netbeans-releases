@@ -95,11 +95,11 @@ public final class NbModuleLogHandler extends Handler implements Test {
 
         if (record.getThrown() != null) {
             if (exc.intValue() <= record.getLevel().intValue()) {
-                t.append(Log.toString(record));
+                t.append(Log.toString(record)).append('\n');
             }
         } else {
             if (msg.intValue() <= record.getLevel().intValue()) {
-                t.append(Log.toString(record));
+                t.append(Log.toString(record)).append('\n');
             }
         }
     }
