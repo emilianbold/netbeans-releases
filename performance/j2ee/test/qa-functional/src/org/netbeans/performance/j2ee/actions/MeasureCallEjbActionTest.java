@@ -105,7 +105,7 @@ public class MeasureCallEjbActionTest extends PerformanceTestCase {
     public void initialize() {
     	index = 1;
         // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"),"Enterprise Beans|TestSessionSB");
+        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"),"Enterprise Beans|TestSessionSB");
         new OpenAction().performAPI(openFile);
         editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
         new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
@@ -117,7 +117,7 @@ public class MeasureCallEjbActionTest extends PerformanceTestCase {
         new ActionNoBlock(null,"Enterprise Resources|" + 
                 org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbAction")).perform(editor);
         dialog = new NbDialogOperator("Call Enterprise Bean");
-        new Node(new JTreeOperator(dialog),"TestApplication-EJBModule|ExpandTest00" + (index++) + "SB").select();
+        new Node(new JTreeOperator(dialog),"TestApplication-ejb|ExpandTest00" + (index++) + "SB").select();
         new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
    }
     

@@ -72,7 +72,7 @@ public class ExpandEJBNodesProjectsViewTest extends PerformanceTestCase {
     private static ProjectsTabOperator projectTab;
     
     /** Project with data for these tests */
-    private static String testDataProject = "TestApplication-EJBModule";
+    private static String testDataProject = "TestApplication-ejb";
     
   
     /**

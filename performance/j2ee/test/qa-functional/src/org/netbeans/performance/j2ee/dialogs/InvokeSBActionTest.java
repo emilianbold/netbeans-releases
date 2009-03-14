@@ -41,47 +41,48 @@
 
 package org.netbeans.performance.j2ee.dialogs;
 
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
 
-
 /**
- * Test of dialogs from WS source editor.
+ * Test of dialogs from EJB source editor.
  *
  * @author  lmartinek@netbeans.org
  */
-public class InvokeWSActionTest extends PerformanceTestCase {
+public class InvokeSBActionTest extends PerformanceTestCase {
     
     private static EditorOperator editor;
-    private static Node node;
-    
+    private JPopupMenuOperator jmpo;
+    private Node openFile;
     private String popupMenu = null;
     private String dialogTitle = null;
     
     /**
-     * Creates a new instance of InvokeWSActionTest
+     * Creates a new instance of InvokeEJBActionTest
      */
-    public InvokeWSActionTest(String testName) {
+    public InvokeSBActionTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 1000;
     }
     
     /**
-     * Creates a new instance of InvokeWSActionTest
+     * Creates a new instance of InvokeEJBActionTest
      */
-    public InvokeWSActionTest(String testName, String performanceDataName) {
+    public InvokeSBActionTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 1000;
@@ -90,44 +91,50 @@ public class InvokeWSActionTest extends PerformanceTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(InvokeWSActionTest.class)
+             .addTest(InvokeEJBActionTest.class)
              .enableModules(".*").clusters(".*")));
         return suite;
     }
-    
-    public void testAddOperationDialog(){
-        popupMenu = Bundle.getString(
-                "org.netbeans.modules.websvc.core.webservices.action.Bundle",
-                "LBL_OperationAction");
-        dialogTitle = Bundle.getString(
-                "org.netbeans.modules.websvc.core.webservices.action.Bundle",
-                "TTL_AddOperation");
+
+    public void testAddBusinessMethodDialogInSB(){
+        popupMenu = "Add|Business Method";
+        dialogTitle = "Business Method";
         doMeasurement();
     }
 
+
+/*    public void testCallEJBDialog(){
+        popupMenu = "Enterprise Resources|" + 
+                org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbAction");
+        dialogTitle = "Call Enterprise Bean";
+        doMeasurement();
+    }*/
+    
     public void initialize() {
-        //MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Edit") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.search.project.Bundle","LBL_SearchProjects");
-        //TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "find");
         
         // open a java file in the editor
-        node = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-WebModule"),"Web Services|TestWebService");
-        new OpenAction().performPopup(node);
-        editor = new EditorWindowOperator().getEditor("TestWebServiceImpl.java");
+        openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"),"Enterprise Beans|TestSessionSB");
+        
+/*        new OpenAction().performAPI(openFile);
+        editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
         new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
-        //editor.select(11);
+        editor.select(11);*/
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
     }
     
     public void prepare() {
+        jmpo=openFile.callPopup();
         // do nothing
    }
     
     public ComponentOperator open(){
-        node.performPopupActionNoBlock(popupMenu);
+        jmpo.pushMenu(popupMenu);
+        //new ActionNoBlock(null,popupMenu).perform(jmpo);
         return new NbDialogOperator(dialogTitle);
     }
 
     public void shutdown(){
-        editor.closeDiscard();
+//        editor.closeDiscard();
     }
     
 }

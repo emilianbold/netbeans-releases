@@ -39,13 +39,35 @@
  * made subject to such option by the copyright holder.
  */
 
-package test;
+package org.netbeans.test.editor;
 
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
-/**
- * This is the local interface for TestSession enterprise bean.
- */
-public interface TestSessionLocal extends javax.ejb.EJBLocalObject, test.TestSessionLocalBusiness {
+public class GeneralSanityTest extends NbTestCase {
+
+    public GeneralSanityTest(String name) {
+        super(name);
+    }
     
-    
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(
+                GeneralSanityTest.class
+            ).gui(false).clusters(".*").enableModules(".*").honorAutoloadEager(true)
+        );
+    }
+
+    public void testOrgOpenideOptionsIsDisabledAutoload() {
+        for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (m.getCodeNameBase().equals("org.openide.options")) {
+                assertFalse("org.openide.options shall not be enabled", m.isEnabled());
+                return;
+            }
+        }
+        fail("No org.openide.options module found, it should be present, but disabled");
+    }
 }

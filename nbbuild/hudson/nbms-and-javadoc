@@ -29,6 +29,9 @@ ant -Djnlp.codebase=${HUDSON_URL}job/${JOB_NAME}/${BUILD_NUMBER}/artifact/nbbuil
     build-jnlp || exit
 ant index-layer-paths
 ant clean-untracked-files
+
+sh sigtests || exit 1
+
 for r in . contrib
 do
     output="`hg -R $r st`"
