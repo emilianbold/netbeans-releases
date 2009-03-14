@@ -66,6 +66,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -128,6 +129,8 @@ public class CodeUtils {
             } else if (name instanceof FieldAccess) {
                 var = ((FieldAccess)name).getField();
                 return extractVariableName(var);
+            } else if (name instanceof InfixExpression) {
+                return null;
             }
         }
         if (var.getName() instanceof Identifier) {
