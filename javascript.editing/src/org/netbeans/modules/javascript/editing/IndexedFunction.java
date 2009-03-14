@@ -42,7 +42,8 @@ package org.netbeans.modules.javascript.editing;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
  *
@@ -52,8 +53,8 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     private String[] args;
     private List<String> parameters;
     
-    IndexedFunction(String fqn, String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(fqn, name, in, index, fileUrl, attributes, flags, kind);
+    IndexedFunction(String fqn, String name, String in, JsIndex index, IndexResult indexResult, String attributes, int flags, ElementKind kind) {
+        super(fqn, name, in, index, indexResult, attributes, flags, kind);
     }
     
     @Override

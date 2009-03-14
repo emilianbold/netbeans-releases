@@ -157,6 +157,7 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-spi-tasklist" value="${javadoc.web.root}/org-netbeans-spi-tasklist"/>
 <property name="javadoc.docs.org-netbeans-modules-projectui" value="${javadoc.web.root}/org-netbeans-modules-projectui"/>
 <property name="javadoc.docs.org-netbeans-modules-refactoring-java" value="${javadoc.web.root}/org-netbeans-modules-refactoring-java"/>
+<property name="javadoc.docs.org-netbeans-modules-kenai" value="${javadoc.web.root}/org-netbeans-modules-kenai"/>
 <property name="javadoc.docs.org-netbeans-bootstrap" value="${javadoc.web.root}/org-netbeans-bootstrap"/>
 <property name="javadoc.docs.org-netbeans-modules-xml-retriever" value="${javadoc.web.root}/org-netbeans-modules-xml-retriever"/>
 <property name="javadoc.docs.org-netbeans-modules-server" value="${javadoc.web.root}/org-netbeans-modules-server"/>
@@ -179,3 +180,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-gsf-api" value="${javadoc.web.root}/org-netbeans-modules-gsf-api"/>
 <property name="javadoc.docs.org-netbeans-modules-mobility-project" value="${javadoc.web.root}/org-netbeans-modules-mobility-project"/>
 <property name="javadoc.docs.org-netbeans-api-annotations-common" value="${javadoc.web.root}/org-netbeans-api-annotations-common"/>
+<property name="javadoc.docs.org-netbeans-modules-kenai-ui" value="${javadoc.web.root}/org-netbeans-modules-kenai-ui"/>

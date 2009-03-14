@@ -48,6 +48,7 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -77,6 +78,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.StreamHandler;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
@@ -242,12 +245,19 @@ public final class OpenProjectList {
         private final Lock enteredGuard = new ReentrantLock();
         private final Condition enteredZeroed = enteredGuard.newCondition();
         private final ProgressHandle progress;
+        private ByteArrayOutputStream os;
+        private StreamHandler details;
         
         public LoadOpenProjects(int a) {
             action = a;
             currentFiles = Utilities.actionsGlobalContext().lookupResult(FileObject.class);
             currentFiles.addLookupListener(WeakListeners.create(LookupListener.class, this, currentFiles));
             progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(OpenProjectList.class, "CAP_Opening_Projects"));
+            os = new ByteArrayOutputStream();
+            details = new StreamHandler(os, new SimpleFormatter());
+            details.setLevel(Level.FINEST);
+            LOGGER.addHandler(details);
+            LOGGER.setLevel(Level.FINEST);
         }
 
         final void waitFinished() {
@@ -280,6 +290,14 @@ public final class OpenProjectList {
                         progress.finish();
                     }
                     updateGlobalState();
+                    LOGGER.removeHandler(details);
+                    boolean verify = false;
+                    assert verify = true;
+                    if (verify) {
+                        ProjectsRootNode.checkNoLazyNode(os);
+                    }
+                    details = null;
+                    os = null;
                     return;
                 case 2:
                     // finished, oK
@@ -300,7 +318,7 @@ public final class OpenProjectList {
                 }
             }
         }
-        
+
         private void updateGlobalState() {
             LOGGER.log(Level.FINER, "updateGlobalState"); // NOI18N
             synchronized (INSTANCE) {
@@ -363,7 +381,11 @@ public final class OpenProjectList {
                     lazilyOpenedProjects.add(p);
                     LOGGER.log(Level.FINE, "notify opened {0}", p); // NOI18N
                     PropertyChangeEvent ev = new PropertyChangeEvent(this, PROPERTY_REPLACE, null, p);
-                    pchSupport.firePropertyChange(ev);
+                    try {
+                        pchSupport.firePropertyChange(ev);
+                    } catch (Throwable t) {
+                        LOGGER.log(Level.WARNING, "broken node for {0}", t);
+                    }
                     LOGGER.log(Level.FINE, "property change notified {0}", p); // NOI18N
                 } else {
                     // opened failed, remove main project if same.

@@ -230,7 +230,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     }
 
     /* package */ static void waitForRepositoryUpdaterInit() throws Exception {
-        RepositoryUpdater.getDefault().start();
+        RepositoryUpdater.getDefault().start(true);
         RepositoryUpdater.State state;
         long time = System.currentTimeMillis();
         do {
@@ -239,7 +239,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             }
             Thread.sleep(100);
             state = RepositoryUpdater.getDefault().getState();
-        } while (state != RepositoryUpdater.State.INITIALIZED_AFTER_FIRST_SCAN);
+        } while (state != RepositoryUpdater.State.ACTIVE);
     }
 
     public void testPathAddedRemovedChanged () throws Exception {

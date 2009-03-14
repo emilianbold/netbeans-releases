@@ -1,6 +1,6 @@
 Code completion result for source line:
 echo $|var_in_fun;
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 VARIABLE   ? $func_arg                                var_scope.php
 VARIABLE   ? $var_in_fun                              var_scope.php
 ------------------------------------

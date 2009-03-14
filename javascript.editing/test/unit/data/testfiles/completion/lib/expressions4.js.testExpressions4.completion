@@ -1,6 +1,6 @@
 Code completion result for source line:
 document.b|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 PROPERTY   baseURI : String                           Node
 PROPERTY   bgColor                                    Document
 PROPERTY   body                                       Document

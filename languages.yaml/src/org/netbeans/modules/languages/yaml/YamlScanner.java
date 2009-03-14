@@ -55,14 +55,15 @@ import org.jvyamlb.nodes.PositionedScalarNode;
 import org.jvyamlb.nodes.PositionedSequenceNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.StructureItem;
-import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.api.StructureScanner.Configuration;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 
@@ -73,8 +74,9 @@ import org.openide.xml.XMLUtil;
  */
 public class YamlScanner implements StructureScanner {
 
-    public List<? extends StructureItem> scan(CompilationInfo info) {
-        YamlParserResult result = (YamlParserResult) info.getEmbeddedResult(YamlTokenId.YAML_MIME_TYPE, 0);
+    @Override
+    public List<? extends StructureItem> scan(ParserResult info) {
+        YamlParserResult result = (YamlParserResult) info;
         if (result != null) {
             return result.getItems();
         }
@@ -92,8 +94,8 @@ public class YamlScanner implements StructureScanner {
         return Collections.emptyList();
     }
 
-    public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
-        YamlParserResult result = (YamlParserResult) info.getEmbeddedResult(YamlTokenId.YAML_MIME_TYPE, 0);
+    public Map<String, List<OffsetRange>> folds(ParserResult info) {
+        YamlParserResult result = (YamlParserResult) info;
         if (result == null) {
             return Collections.emptyMap();
         }
@@ -106,14 +108,16 @@ public class YamlScanner implements StructureScanner {
         Map<String,List<OffsetRange>> folds = new HashMap<String,List<OffsetRange>>();
         List<OffsetRange> codeblocks = new ArrayList<OffsetRange>();
         folds.put("codeblocks", codeblocks); // NOI18N
-        BaseDocument doc = (BaseDocument)info.getDocument();
+        BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);
 
-        for (StructureItem item : items) {
-            try {
-                addBlocks(result, doc, codeblocks, item);
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-                break;
+        if (doc != null) {
+            for (StructureItem item : items) {
+                try {
+                    addBlocks(result, doc, codeblocks, item);
+                } catch (BadLocationException ble) {
+                    Exceptions.printStackTrace(ble);
+                    break;
+                }
             }
         }
 

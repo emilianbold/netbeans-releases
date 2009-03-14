@@ -1,0 +1,9 @@
+DRbObject = DRb::DRbObject
+---------
+HINT:Style: Constants traditionally use uppercase letters only
+DRbUndumped = DRb::DRbUndumped
+-----------
+HINT:Style: Constants traditionally use uppercase letters only
+DRbIdConv = DRb::DRbIdConv
+---------
+HINT:Style: Constants traditionally use uppercase letters only

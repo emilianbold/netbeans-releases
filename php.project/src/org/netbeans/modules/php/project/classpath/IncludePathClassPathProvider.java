@@ -42,19 +42,19 @@ package org.netbeans.modules.php.project.classpath;
 
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.WeakSet;
 
 /**
  * Provides ClassPath for php files on include path
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider.class, position = 200)
+@org.openide.util.lookup.ServiceProvider(service = ClassPathProvider.class, position = 200)
 public class IncludePathClassPathProvider implements ClassPathProvider {
     static Set<ClassPath> projectIncludes = new WeakSet<ClassPath>();
     /** Default constructor for lookup. */

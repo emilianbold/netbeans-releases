@@ -40,50 +40,34 @@
  */
 package org.netbeans.modules.mercurial.ui.diff;
 
-import java.awt.Dialog;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import java.io.File;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
+import org.netbeans.modules.versioning.util.ExportDiffSupport;
+
 /**
  *
  * @author Padraig O'Briain
  */
-public class ExportDiff implements PropertyChangeListener {
+public abstract class ExportDiff extends ExportDiffSupport {
 
     private ExportDiffPanel panel;
-    private JButton okButton;
-    private JButton cancelButton;
-    private final DocumentListener          listener;
-    private RepositoryRevision repoRev;
     private File fileToDiff;
-
+    private AbstractExportDiffPanel aedp;
+    private DocumentListener listener;
+    private DialogDescriptor dd;
+    
     
     /** Creates a new instance of ExportDiff */
     public ExportDiff(File repository, RepositoryRevision repoRev, File [] roots, File fileToDiff) {
+        super(roots == null ? new File[] {fileToDiff} : roots, HgModuleConfig.getDefault().getPreferences());
         this.fileToDiff = fileToDiff;
-        this.repoRev = repoRev;
+
         panel = new ExportDiffPanel(repository, repoRev, roots, fileToDiff);
-        okButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(ExportDiff.class, "CTL_ExportForm_Action_Export")); // NOI18N
-        okButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExportDiff.class, "ACSN_ExportForm_Action_Export")); // NOI18N
-        okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiff.class, "ACSD_ExportForm_Action_Export")); // NOI18N
-        cancelButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(ExportDiff.class, "CTL_ExportForm_Action_Cancel")); // NOI18N
-        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExportDiff.class, "ACSN_ExportForm_Action_Cancel")); // NOI18N
-        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiff.class, "ACSD_ExportForm_Action_Cancel")); // NOI18N
-        this.listener = new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { nameChange(); }
-            public void removeUpdate(DocumentEvent e) { nameChange(); }
-            public void changedUpdate(DocumentEvent e) { nameChange(); }
-        };
-        panel.outputFileTextField.getDocument().addDocumentListener(listener);
     } 
     
     public ExportDiff(File repository, RepositoryRevision repoRev, File [] roots) {
@@ -93,48 +77,12 @@ public class ExportDiff implements PropertyChangeListener {
     public ExportDiff(File repository, File [] roots) {
         this(repository, null, roots, null);
     }
-    
-    public boolean showDialog() {
-        DialogDescriptor dialogDescriptor;
-        if(fileToDiff != null){
-            dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(ExportDiff.class, 
-                "CTL_ExportFileDialog")); // NOI18N
-        }else{
-            dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(ExportDiff.class, 
-                "CTL_ExportDialog")); // NOI18N
-        }
-        dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});
-        
-        dialogDescriptor.setModal(true);
-        dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
-        dialogDescriptor.setValid(false);
-        
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
-        if(fileToDiff != null){
-            dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiff.class, 
-                "ACSD_ExportFileDialog")); // NOI18N
-        }else{
-            dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiff.class, 
-                "ACSD_ExportDialog")); // NOI18N
-        }
-        dialog.setVisible(true);
-        dialog.setResizable(false);
-        boolean ret = dialogDescriptor.getValue() == okButton;
-        return ret;       
-    }
 
     private void nameChange() {
-        if (panel.outputFileTextField.getText().trim().length() > 0) 
-            okButton.setEnabled(true);
+        if (aedp.getOutputFileText().trim().length() > 0)
+            dd.setValid(true);
         else
-            okButton.setEnabled(false);
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(okButton != null) {
-            boolean valid = ((Boolean)evt.getNewValue()).booleanValue();
-            okButton.setEnabled(valid);
-        }       
+            dd.setValid(false);
     }
 
     public String getOutputFileName() {
@@ -145,5 +93,48 @@ public class ExportDiff implements PropertyChangeListener {
     public String getSelectionRevision() {
         if (panel == null) return null;
         return panel.getSelectedRevision();
+    }
+
+    @Override
+    protected AbstractExportDiffPanel createSimpleDialog(String currentFilePath) {
+        aedp = new ExportAsFilePanel();
+        listener = new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { nameChange(); }
+            public void removeUpdate(DocumentEvent e) { nameChange(); }
+            public void changedUpdate(DocumentEvent e) { nameChange(); }
+        };
+        panel.setInsidePanel(aedp);
+
+        if(fileToDiff != null){
+            dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(ExportDiff.class,
+                "CTL_ExportFileDialog")); // NOI18N
+        } else{
+            dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(ExportDiff.class,
+                "CTL_ExportDialog")); // NOI18N
+        }
+        
+        aedp.addOutputFileTextDocumentListener(listener);
+        dd.setModal(true);
+        dd.setHelpCtx(new HelpCtx(this.getClass()));
+        dd.setValid(false);
+
+        return aedp;
+    }
+
+    @Override
+    protected void createComplexDialog(AbstractExportDiffPanel insidePanel) {
+        panel.setInsidePanel(insidePanel);
+        if(fileToDiff != null){
+            dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(ExportDiff.class,
+                "CTL_ExportFileDialog")); // NOI18N
+        } else{
+            dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(ExportDiff.class,
+                "CTL_ExportDialog")); // NOI18N
+        }
+    }
+
+    @Override
+    protected DialogDescriptor getDialogDescriptor() {
+        return dd;
     }
 }

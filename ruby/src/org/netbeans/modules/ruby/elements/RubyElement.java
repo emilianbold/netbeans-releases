@@ -43,11 +43,12 @@ package org.netbeans.modules.ruby.elements;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
-
 
 /**
  * A logical program element, such as a Class, Method, Attribute, etc.
@@ -56,6 +57,7 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public abstract class RubyElement implements Element {
+
     public abstract String getName();
     public abstract ElementKind getKind();
 
@@ -72,6 +74,7 @@ public abstract class RubyElement implements Element {
         return null;
     }
     
+    @Override
     public Set<Modifier> getModifiers() {
         return Collections.emptySet();
     }
@@ -79,4 +82,9 @@ public abstract class RubyElement implements Element {
     public String getIn() {
         return null;
     }
+
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return OffsetRange.NONE;
+    }
+
 }

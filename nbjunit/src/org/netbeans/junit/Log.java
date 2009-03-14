@@ -266,6 +266,7 @@ public final class Log extends Handler {
             PrintStream ps = log.get();
             if (ps == null) {
                 // gc => remove the handler
+                setLevel(Level.OFF);
                 logger.removeHandler(this);
             }
 
@@ -277,6 +278,10 @@ public final class Log extends Handler {
     }
 
     public void publish(LogRecord record) {
+        if (record.getLevel().intValue() < getLevel().intValue()) {
+            return;
+        }
+
         StringBuffer sb = new StringBuffer();
         sb.append('[');
         sb.append(record.getLoggerName());
@@ -329,6 +334,9 @@ public final class Log extends Handler {
     }
 
     public void close() {
+        if (getLevel() != Level.OFF) {
+            this.logger.addHandler(this);
+        }
     }
 
     static Throwable wrapWithMessages(Throwable ex) {

@@ -82,7 +82,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/javafxtmpdir"/>
 
         <property name="clusters" value="apisupport(javase), profiler(javase), java(javase), harness(javase),
-                                         ide(baseide), nb6.0-etc(baseide), platform(baseide), gsf(baseide),
+                                         ide(baseide), nb6.0-etc(baseide), platform(baseide),
 					 javafx(javafx)"/>        
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <antcall target="unzip-cluster"/>                           

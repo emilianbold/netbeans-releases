@@ -43,12 +43,13 @@ package org.netbeans.modules.groovy.editor.api.parser;
 
 import groovy.lang.GroovyClassLoader;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.ModuleNode;
@@ -61,23 +62,12 @@ import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParseEvent;
-import org.netbeans.modules.gsf.api.ParseListener;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.ParserResult.AstTreeNode;
-import org.netbeans.modules.gsf.api.PositionManager;
-import org.netbeans.modules.gsf.api.Severity;
-import org.netbeans.modules.gsf.api.SourceFileReader;
-import org.netbeans.modules.groovy.editor.api.AstNodeAdapter;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
 import org.netbeans.modules.groovy.editor.api.elements.AstRootElement;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -87,14 +77,22 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 
 /**
  *
  * @author Martin Adamek
  */
-class GroovyParser implements Parser {
+class GroovyParser extends Parser {
 
     private static final Logger LOG = Logger.getLogger(GroovyParser.class.getName());
 
@@ -102,68 +100,80 @@ class GroovyParser implements Parser {
 
     private static final AtomicInteger PARSING_COUNT = new AtomicInteger(0);
     
-    private final PositionManager positions = createPositionManager();
-    
     private boolean waitJavaScanFinished = true;
 
+    private GroovyParserResult lastResult;
+    
     public GroovyParser() {
         super();
     }
 
-    public void parseFiles(Job job) {
-        ParseListener listener = job.listener;
-        SourceFileReader reader = job.reader;
-        for (ParserFile file : job.files) {
-            ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
-            listener.started(beginEvent);
-            
-            ParserResult result = null;
+    @Override
+    public void addChangeListener(ChangeListener changeListener) {
+        // FIXME parsing API
+    }
 
-            try {
-                CharSequence buffer = reader.read(file);
-                String source = asString(buffer);
-                int caretOffset = reader.getCaretOffset(file);
-                Context context = new Context(file, listener, source, caretOffset, AstUtilities.getBaseDocument(file.getFileObject(), true));
-                result = parseBuffer(context, Sanitize.NONE);
-            } catch (IOException ioe) {
-                listener.exception(ioe);
-                result = createParseResult(file, null, null, null);
+    @Override
+    public void removeChangeListener(ChangeListener changeListener) {
+        // FIXME parsing API
+    }
+
+    @Override
+    public void cancel() {
+        // FIXME parsing API
+    }
+
+    @Override
+    public Result getResult(Task task) throws ParseException {
+        assert lastResult != null : "getResult() called prior parse()"; //NOI18N
+        return lastResult;
+    }
+
+    @Override
+    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        Context context = new Context(snapshot, event);
+        final List<Error> errors = new ArrayList<Error>();
+        context.errorHandler = new ParseErrorHandler() {
+            public void error(Error error) {
+                errors.add(error);
             }
-
-            ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
-            listener.finished(doneEvent);
-        }
+        };
+        lastResult = parseBuffer(context, Sanitize.NONE);
+        lastResult.setErrors(errors);
     }
 
-    public PositionManager getPositionManager() {
-        return positions;
-    }
+//    public void parseFiles(Job job) {
+//        ParseListener listener = job.listener;
+//        SourceFileReader reader = job.reader;
+//        for (ParserFile file : job.files) {
+//            ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
+//            listener.started(beginEvent);
+//
+//            ParserResult result = null;
+//
+//            try {
+//                CharSequence buffer = reader.read(file);
+//                String source = asString(buffer);
+//                int caretOffset = reader.getCaretOffset(file);
+//                Context context = new Context(file, listener, source, caretOffset, AstUtilities.getBaseDocument(file.getFileObject(), true));
+//                result = parseBuffer(context, Sanitize.NONE);
+//            } catch (IOException ioe) {
+//                listener.exception(ioe);
+//                result = createParseResult(file, null, null, null);
+//            }
+//
+//            ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
+//            listener.finished(doneEvent);
+//        }
+//    }
 
     void setWaitJavaScanFinished(boolean shouldWait) {
         waitJavaScanFinished = shouldWait;
     }
 
-    protected GroovyParserResult createParseResult(ParserFile file, AstRootElement rootElement, AstTreeNode ast, ErrorCollector errorCollector) {
+    protected GroovyParserResult createParseResult(Snapshot snapshot, AstRootElement rootElement, ErrorCollector errorCollector) {
         
-        GroovyParserResult parserResult = new GroovyParserResult(this, file, rootElement, ast, errorCollector);
-        
-        // Register parsing result with parsing-manager:
-        
-//        Lookup lkp = Lookup.getDefault();
-//        
-//        if(lkp != null){
-//            GroovyParserManager parserManager = lkp.lookup(GroovyParserManager.class);
-//            if(parserManager != null){
-//                FileObject fo = file.getFileObject();
-//                if (fo != null) {
-//                    parserManager.registerParsing(fo, parserResult);
-//                }
-//            } else {
-//                LOG.log(Level.FINEST, "Couldn't get GroovyParserManager from global lookup");
-//            }
-//        } else {
-//            LOG.log(Level.FINEST, "Couldn't get global lookup");
-//        }
+        GroovyParserResult parserResult = new GroovyParserResult(this, snapshot, rootElement, errorCollector);
         
         return parserResult;
     }
@@ -213,7 +223,10 @@ class GroovyParser implements Parser {
                     if (sanitizing == Sanitize.ERROR_LINE) {
                         // groovy-only, this is not done in Ruby or JavaScript sanitization
                         // look backwards if there is unfinished line with trailing dot and remove that dot
-                        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(context.document, offset);
+                        TokenSequence<? extends GroovyTokenId> ts = (context.document != null)
+                                ? LexUtilities.getPositionedSequence(context.document, offset)
+                                : null;
+
                         if (ts != null) {
                             Token<? extends GroovyTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
                             if (token.id() == GroovyTokenId.DOT) {
@@ -343,7 +356,7 @@ class GroovyParser implements Parser {
 
         switch (sanitizing) {
         case NEVER:
-            return createParseResult(context.file, null, null, null);
+            return createParseResult(context.snapshot, null, null);
 
         case NONE:
 
@@ -393,7 +406,7 @@ class GroovyParser implements Parser {
         case MISSING_END:
         default:
             // We're out of tricks - just return the failed parse result
-            return createParseResult(context.file, null, null, null);
+            return createParseResult(context.snapshot, null, null);
         }
     }
 
@@ -421,11 +434,11 @@ class GroovyParser implements Parser {
         }
         
         String fileName = "";
-        if ((context.file != null) && (context.file.getFileObject() != null)) {
-            fileName = context.file.getFileObject().getNameExt();
+        if (context.snapshot.getSource().getFileObject() != null) {
+            fileName = context.snapshot.getSource().getFileObject().getNameExt();
         }
         
-        FileObject fo = context.file.getFileObject();
+        FileObject fo = context.snapshot.getSource().getFileObject();
         ClassPath bootPath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.BOOT);
         ClassPath compilePath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.COMPILE);
         ClassPath sourcePath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.SOURCE);
@@ -517,7 +530,10 @@ class GroovyParser implements Parser {
 //                    System.out.println("getLine(): " + se.getLine());
 //                    System.out.println("getStartColumn(): " + col);
                     
-                    offset = AstUtilities.getOffset(context.document, line, col);
+                    // FIXME parsing API
+                    if (context.document != null) {
+                        offset = AstUtilities.getOffset(context.document, line, col);
+                    }
                     errorMessage = se.getMessage();
                     localizedMessage = se.getLocalizedMessage();
                 }
@@ -567,9 +583,9 @@ class GroovyParser implements Parser {
         
         if (module != null) {
             context.sanitized = sanitizing;
-            AstRootElement astRootElement = new AstRootElement(context.file.getFileObject(), module);
-            AstNodeAdapter ast = new AstNodeAdapter(null, module, context.document);
-            GroovyParserResult r = createParseResult(context.file, astRootElement, ast, compilationUnit.getErrorCollector());
+            // FIXME parsing API
+            AstRootElement astRootElement = new AstRootElement(context.snapshot.getSource().getFileObject(), module);
+            GroovyParserResult r = createParseResult(context.snapshot, astRootElement, compilationUnit.getErrorCollector());
             r.setSanitized(context.sanitized, context.sanitizedRange, context.sanitizedContents);
             return r;
         } else {
@@ -585,10 +601,6 @@ class GroovyParser implements Parser {
         }
     }
 
-    private PositionManager createPositionManager() {
-        return new GroovyPositionManager();
-    }
-
     private static void notifyError(Context context, String key, Severity severity, String description, String details, 
             int offset, Sanitize sanitizing) {
         notifyError(context, key, severity, description, details, offset, offset, sanitizing);
@@ -597,8 +609,6 @@ class GroovyParser implements Parser {
     private static void notifyError(Context context, String key, Severity severity, String description, String displayName, 
             int startOffset, int endOffset, Sanitize sanitizing) {
 
-        Logger LOG = Logger.getLogger(GroovyParser.class.getName());
-        // LOG.setLevel(Level.FINEST);
         LOG.log(Level.FINEST, "---------------------------------------------------");
         LOG.log(Level.FINEST, "key         : {0}\n", key);
         LOG.log(Level.FINEST, "description : {0}\n", description);
@@ -624,10 +634,11 @@ class GroovyParser implements Parser {
         }
         
         Error error =
-            new GroovyError(key, displayName, description, context.file.getFileObject(),
+            new GroovyError(key, displayName, description, context.snapshot.getSource().getFileObject(),
                 startOffset, endOffset, severity, getIdForErrorMessage(description));
-        
-        context.listener.error(error);
+
+        // parsing API
+        //context.listener.error(error);
 
         if (sanitizing == Sanitize.NONE) {
             context.errorOffset = startOffset;
@@ -645,9 +656,7 @@ class GroovyParser implements Parser {
 
         return GroovyCompilerErrorID.UNDEFINED;
     }
-    
-    
-    
+     
     private void handleErrorCollector(ErrorCollector errorCollector, Context context, ModuleNode moduleNode, boolean ignoreErrors, Sanitize sanitizing) {
         LOG.log(Level.FINEST, "handleErrorCollector()");
         if (!ignoreErrors && errorCollector != null) {
@@ -659,15 +668,25 @@ class GroovyParser implements Parser {
                         SyntaxException ex = ((SyntaxErrorMessage)object).getCause();
                         
                         String sourceLocator = ex.getSourceLocator();
-                        String name = moduleNode != null ? moduleNode.getContext().getName() : context.file.getNameExt();
+                        String name = null;
+                        if (moduleNode != null) {
+                            name = moduleNode.getContext().getName();
+                        } else if (context.snapshot.getSource().getFileObject() != null) {
+                            name = context.snapshot.getSource().getFileObject().getNameExt();
+                        }
                         
                         if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
                             int startLine = ex.getStartLine();
                             int startColumn = ex.getStartColumn();
                             int line = ex.getLine();
                             int endColumn = ex.getEndColumn();
-                            int startOffset = AstUtilities.getOffset(context.document, startLine > 0 ? startLine : 1, startColumn > 0 ? startColumn : 1);
-                            int endOffset = AstUtilities.getOffset(context.document, line > 0 ? line : 1, endColumn > 0 ? endColumn : 1);
+                            // FIXME parsing API
+                            int startOffset = 0;
+                            int endOffset = 0;
+                            if (context.document != null) {
+                                startOffset = AstUtilities.getOffset(context.document, startLine > 0 ? startLine : 1, startColumn > 0 ? startColumn : 1);
+                                endOffset = AstUtilities.getOffset(context.document, line > 0 ? line : 1, endColumn > 0 ? endColumn : 1);
+                            }
                             notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset, sanitizing);
                         }
                     } else if (object instanceof SimpleMessage) {
@@ -702,8 +721,12 @@ class GroovyParser implements Parser {
 
     /** Parsing context */
     public static final class Context {
-        private final ParserFile file;
-        private final ParseListener listener;
+
+        private final Snapshot snapshot;
+        private final SourceModificationEvent event;
+        private final BaseDocument document;
+
+        private ParseErrorHandler errorHandler;
         private int errorOffset;
         private String source;
         private String sanitizedSource;
@@ -711,19 +734,19 @@ class GroovyParser implements Parser {
         private String sanitizedContents;
         private int caretOffset;
         private Sanitize sanitized = Sanitize.NONE;
-        private BaseDocument document;
         
-        public Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset, BaseDocument doc) {
-            this.file = parserFile;
-            this.listener = listener;
-            this.source = source;
-            this.caretOffset = caretOffset;
-            this.document = doc;//AstUtilities.getBaseDocument(file.getFileObject(), true);
+        public Context(Snapshot snapshot, SourceModificationEvent event) {
+            this.snapshot = snapshot;
+            this.event = event;
+            this.source = asString(snapshot.getText());
+            this.caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
+            // FIXME parsing API
+            this.document = LexUtilities.getDocument(snapshot.getSource(), true);
         }
         
         @Override
         public String toString() {
-            return "GroovyParser.Context(" + file.toString() + ")"; // NOI18N
+            return "GroovyParser.Context(" + snapshot.getSource().getFileObject() + ")"; // NOI18N
         }
         
         public OffsetRange getSanitizedRange() {
@@ -742,5 +765,10 @@ class GroovyParser implements Parser {
             return errorOffset;
         }
     }
-    
+
+    private static interface ParseErrorHandler {
+
+        void error(Error error);
+        
+    }
 }
