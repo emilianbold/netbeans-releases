@@ -66,6 +66,8 @@ import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -136,6 +138,21 @@ public class QueryController extends BugtrackingController implements DocumentLi
         this.query = query;
         
         panel = new QueryPanel(query.getTableComponent());
+        panel.addAncestorListener(new AncestorListener() {
+            public void ancestorAdded(AncestorEvent event) {
+                if(QueryController.this.query.isSaved() && !QueryController.this.query.wasRun()) {
+                    onRefresh();
+                }
+            }
+            public void ancestorRemoved(AncestorEvent event) {
+                onCancelChanges();
+                if(task != null) {
+                    task.cancel();
+                }
+            }
+            public void ancestorMoved(AncestorEvent event) { }
+        });
+
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
@@ -235,23 +252,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
     @Override
     public void applyChanges() {
         
-    }
-
-    @Override
-    public void opened() {
-        super.opened();
-        if(query.isSaved() && !query.wasRun()) {
-            onRefresh();
-        }
-    }
-
-    @Override
-    public void closed() {
-        super.closed();
-        onCancelChanges();
-        if(task != null) {
-            task.cancel();
-        }
     }
 
     protected void disableModify() {
