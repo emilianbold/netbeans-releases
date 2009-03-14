@@ -41,17 +41,13 @@
 
 package org.netbeans.modules.hudson.ui.actions;
 
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import org.netbeans.modules.hudson.ui.wizard.InstanceWizard;
-import org.openide.DialogDisplayer;
+import org.netbeans.modules.hudson.ui.wizard.InstanceDialog;
 import org.openide.util.NbBundle;
 
 /**
  * Add Hudson instance action launches the wizard.
- *
- * @author Michal Mocnak
  */
 public class AddInstanceAction extends AbstractAction {
 
@@ -60,18 +56,7 @@ public class AddInstanceAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
-        InstanceWizard wizard = new InstanceWizard();
-        Dialog dialog = null;
-        
-        try {
-            dialog = DialogDisplayer.getDefault().createDialog(wizard);
-            dialog.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getMessage(AddInstanceAction.class, "ACSD_Add_Instance"));
-            dialog.setVisible(true);
-        } finally {
-            if (dialog != null)
-                dialog.dispose();
-        }
+       new InstanceDialog().show();
     }
     
  }

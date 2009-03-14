@@ -70,6 +70,7 @@ import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
+import org.netbeans.modules.hudson.ui.wizard.InstanceDialog;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
@@ -350,10 +351,13 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
     }//GEN-LAST:event_serverActionPerformed
 
     private void addServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServerActionPerformed
-        new AddInstanceAction().actionPerformed(evt);
-        updateServerModel();
-        // XXX select newly added server
-        check();
+        HudsonInstance created = new InstanceDialog().show();
+        if (created != null) {
+            updateServerModel();
+            instance = created;
+            server.setSelectedItem(instance);
+            check();
+        }
     }//GEN-LAST:event_addServerActionPerformed
 
     public void stateChanged(ChangeEvent event) {
