@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  * 
  * @author jqian
  */
-public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
+public class ApplicationVariablesEditor extends SimpleTabularDataEditor {
             
     /**
      * Constructs a Environment Variables / Application Variables property editor.
@@ -64,12 +64,12 @@ public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
      *                  <code>false</code> for Environment Variables.
      * @param tabularType   the type of the tabular data
      */
-    public EnvironmentVariablesEditor(boolean isAppVar, TabularType tabularType,
+    public ApplicationVariablesEditor(boolean isAppVar, TabularType tabularType,
             JBIComponentConfigurationDescriptor descriptor, boolean isWritable) {
-        super(NbBundle.getMessage(EnvironmentVariablesEditor.class, 
+        super(NbBundle.getMessage(ApplicationVariablesEditor.class, 
                 isAppVar ? "LBL_APPLICATION_VARIABLES_TABLE" :  // NOI18N 
                     "LBL_ENVIRONMENT_VARIABLES_TABLE"),  // NOI18N 
-              NbBundle.getMessage(EnvironmentVariablesEditor.class, 
+              NbBundle.getMessage(ApplicationVariablesEditor.class, 
                 isAppVar ? "ACS_APPLICATION_VARIABLES_TABLE" :  // NOI18N 
                     "ACS_ENVIRONMENT_VARIABLES_TABLE"),  // NOI18N
               tabularType, descriptor, isWritable); 
@@ -77,7 +77,7 @@ public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
 
     @Override
     public Component getCustomEditor() {
-        customEditor = new EnvironmentVariablesCustomEditor(this,
+        customEditor = new ApplicationVariablesCustomEditor(this,
                 tableLabelText, tableLabelDescription, 
                 descriptor, isWritable);
         return customEditor;
@@ -94,16 +94,16 @@ public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
         visibleRowValues.addAll(rowValues);
         
         String type = visibleRowValues.get(
-                EnvironmentVariablesCustomEditor.TYPE_COLUMN);
+                ApplicationVariablesCustomEditor.TYPE_COLUMN);
         
         if (type.equals(ApplicationVariableType.PASSWORD.toString())) {
             String password = visibleRowValues.get(
-                    EnvironmentVariablesCustomEditor.VALUE_COLUMN);
+                    ApplicationVariablesCustomEditor.VALUE_COLUMN);
             if (password != null) {
                 password = password.replaceAll(".", "*"); // NOI18N
             }
             visibleRowValues.set(
-                    EnvironmentVariablesCustomEditor.VALUE_COLUMN, password);
+                    ApplicationVariablesCustomEditor.VALUE_COLUMN, password);
         }
         
         return visibleRowValues.toString();
