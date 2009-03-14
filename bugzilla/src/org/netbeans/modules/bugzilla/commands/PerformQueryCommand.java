@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,78 +34,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugzilla.commands;
 
-import java.net.MalformedURLException;
-import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
-import org.openide.util.RequestProcessor;
+import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.BugzillaRepository;
 
 /**
- *
+ * Perfoms a repository query
+ * 
  * @author Tomas Stupka
  */
-public class Bugzilla {
+public class PerformQueryCommand extends BugzillaCommand {
 
-    private BugzillaRepositoryConnector brc;
+    private final BugzillaRepository repository;
+    private final String queryUrl;
+    private final TaskDataCollector collector;
 
-    private static Bugzilla instance;
-
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.bugzilla.Bugzilla"); // NOI18N
-
-    private RequestProcessor rp;
-
-    private Bugzilla() {
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex); // XXX thisiscrap
-        }
+    public PerformQueryCommand(BugzillaRepository repository, String queryUrl, TaskDataCollector collector) {
+        this.repository = repository;
+        this.queryUrl = queryUrl;
+        this.collector = collector;
     }
 
-    public static Bugzilla getInstance() {
-        if(instance == null) {
-            instance = new Bugzilla();
-        }
-        return instance;
+    @Override
+    public void execute() throws CoreException {
+        TaskRepository taskRepository = repository.getTaskRepository();
+        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), "");
+        query.setUrl(queryUrl);
+        BugzillaRepositoryConnector rc = Bugzilla.getInstance().getRepositoryConnector();
+        rc.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
     }
 
-    public BugzillaRepositoryConnector getRepositoryConnector() {
-        if(brc == null) {
-            brc = new BugzillaRepositoryConnector();
-        }
-        return brc;
-    }
-
-    /**
-     * Returns a BugzillaClient for the given repository
-     * @param repository
-     * @return
-     * @throws java.net.MalformedURLException
-     * @throws org.eclipse.core.runtime.CoreException
-     */
-    public BugzillaClient getClient(BugzillaRepository repository) throws MalformedURLException, CoreException {
-        return getRepositoryConnector().getClientManager().getClient(repository.getTaskRepository(), new NullProgressMonitor());
-    }
-
-    /**
-     * Returns the request processor for common tasks in bugzilla.
-     * Do not use this when accesing a remote repository.
-     * 
-     * @return
-     */
-    public RequestProcessor getRequestProcessor() {
-        if(rp == null) {
-            rp = new RequestProcessor("Bugzilla"); // NOI18N
-        }
-        return rp;
-    }
 }

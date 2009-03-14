@@ -44,7 +44,6 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -59,17 +58,13 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.apache.commons.httpclient.HttpException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
-import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.BugzillaRepository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -228,19 +223,23 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void initCombos() {
-        Bugzilla bugzilla = Bugzilla.getInstance();
         BugzillaRepository repository = issue.getRepository();
-        productCombo.setModel(toComboModel(bugzilla.getProducts(repository)));
+        BugzillaConfiguration bc = repository.getConfiguration();
+        if(bc == null) {
+            // XXX nice error msg?
+            return;
+        }
+        productCombo.setModel(toComboModel(bc.getProducts(repository)));
         // componentCombo, versionCombo, targetMilestoneCombo are filled
         // automatically when productCombo is set/changed
-        platformCombo.setModel(toComboModel(bugzilla.getPlatforms(repository)));
-        osCombo.setModel(toComboModel(bugzilla.getOSs(repository)));
+        platformCombo.setModel(toComboModel(bc.getPlatforms(repository)));
+        osCombo.setModel(toComboModel(bc.getOSs(repository)));
         // Do not support MOVED resolution (yet?)
-        List<String> resolutions = new LinkedList<String>(bugzilla.getResolutions(repository));
+        List<String> resolutions = new LinkedList<String>(bc.getResolutions(repository));
         resolutions.remove("MOVED"); // NOI18N
         resolutionCombo.setModel(toComboModel(resolutions));
-        priorityCombo.setModel(toComboModel(bugzilla.getPriorities(repository)));
-        severityCombo.setModel(toComboModel(bugzilla.getSeverities(repository)));
+        priorityCombo.setModel(toComboModel(bc.getPriorities(repository)));
+        severityCombo.setModel(toComboModel(bc.getSeverities(repository)));
         // stausCombo and resolution fields are filled in reloadForm
     }
 
@@ -249,10 +248,14 @@ public class IssuePanel extends javax.swing.JPanel {
         // Open -> Open-Unconfirmed-Reopened+Resolved
         // Resolved -> Reopened+Close
         // Close-Resolved -> Reopened+Resolved+(Close with higher index)
-        Bugzilla bugzilla = Bugzilla.getInstance();
         BugzillaRepository repository = issue.getRepository();
-        List<String> allStatuses = bugzilla.getStatusValues(repository);
-        List<String> openStatuses = bugzilla.getOpenStatusValues(repository);
+        BugzillaConfiguration bc = repository.getConfiguration();
+        if(bc == null) {
+            // XXX nice error msg?
+            return;
+        }
+        List<String> allStatuses = bc.getStatusValues(repository);
+        List<String> openStatuses = bc.getOpenStatusValues(repository);
         List<String> statuses = new LinkedList<String>();
         String unconfirmed = "UNCONFIRMED"; // NOI18N
         String reopened = "REOPENED"; // NOI18N
@@ -813,15 +816,19 @@ public class IssuePanel extends javax.swing.JPanel {
     private void productComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_productComboActionPerformed
         cancelHighlight(productLabel);
         // Reload componentCombo, versionCombo and targetMilestoneCombo
-        Bugzilla bugzilla = Bugzilla.getInstance();
         BugzillaRepository repository = issue.getRepository();
+        BugzillaConfiguration bc = repository.getConfiguration();
+        if(bc == null) {
+            // XXX nice error msg?
+            return;
+        }
         String product = productCombo.getSelectedItem().toString();
         Object component = componentCombo.getSelectedItem();
         Object version = versionCombo.getSelectedItem();
         Object targetMilestone = targetMilestoneCombo.getSelectedItem();
-        componentCombo.setModel(toComboModel(bugzilla.getComponents(repository, product)));
-        versionCombo.setModel(toComboModel(bugzilla.getVersions(repository, product)));
-        List<String> targetMilestones = bugzilla.getTargetMilestones(repository, product);
+        componentCombo.setModel(toComboModel(bc.getComponents(repository, product)));
+        versionCombo.setModel(toComboModel(bc.getVersions(repository, product)));
+        List<String> targetMilestones = bc.getTargetMilestones(repository, product);
         usingTargetMilestones = (targetMilestones.size() != 0);
         targetMilestoneCombo.setModel(toComboModel(targetMilestones));
         // Attempt to keep selection

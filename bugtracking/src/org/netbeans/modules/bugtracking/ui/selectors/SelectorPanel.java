@@ -37,18 +37,11 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * ConnectorPanel.java
- *
- * Created on Oct 15, 2008, 9:41:51 PM
- */
-
 package org.netbeans.modules.bugtracking.ui.selectors;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Image;
 import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -72,14 +65,13 @@ import org.openide.util.NbBundle;
 public class SelectorPanel extends javax.swing.JPanel implements PropertyChangeListener {
     private Repository currentRepo;
     private DialogDescriptor dd;
+    private ImageIcon errorIcon;
 
     /** Creates new form ConnectorPanel */
     public SelectorPanel() {
         initComponents();
         errorLabel.setForeground(new Color(153,0,0));
-        Image img = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/error.gif"); //NOI18N
-        errorLabel.setIcon(new ImageIcon(img));
-        errorLabel.setVisible(false);
+        errorIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/error.gif")); //NOI18N
         
         final ListCellRenderer lcr = connectorCbo.getRenderer();
         connectorCbo.setRenderer(new ListCellRenderer() {
@@ -97,10 +89,11 @@ public class SelectorPanel extends javax.swing.JPanel implements PropertyChangeL
         String title = NbBundle.getMessage(SelectorPanel.class, "CTL_CreateTitle");
         dd = new DialogDescriptor(this, title);
         validateController();
-        return DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
+        boolean ret = DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
+        return ret;
     }
 
-    boolean edit(Repository repository) {
+    boolean edit(Repository repository, String errorMessage) {
         connectorCbo.setVisible(false);
         connectorLabel.setVisible(false);
         currentRepo = repository;
@@ -108,7 +101,9 @@ public class SelectorPanel extends javax.swing.JPanel implements PropertyChangeL
         String title = NbBundle.getMessage(SelectorPanel.class, "CTL_EditTitle");
         dd = new DialogDescriptor(this, title);
         validateController();
-        return DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
+        updateErorrLabel(errorMessage);
+        boolean ret = DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
+        return ret;
     }
 
     Repository getRepository() {
@@ -152,21 +147,23 @@ public class SelectorPanel extends javax.swing.JPanel implements PropertyChangeL
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
-                        .addContainerGap())
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(layout.createSequentialGroup()
+                                .add(connectorLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(connectorCbo, 0, 405, Short.MAX_VALUE)))
+                        .add(14, 14, 14))
                     .add(layout.createSequentialGroup()
-                        .add(connectorLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(connectorCbo, 0, 405, Short.MAX_VALUE)
-                        .add(14, 14, 14))))
+                        .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(20, 20, 20)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(connectorLabel)
                     .add(connectorCbo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -218,20 +215,23 @@ public class SelectorPanel extends javax.swing.JPanel implements PropertyChangeL
         }
     }
 
-
     private void validateController() {
         if (dd != null && currentRepo != null) {
             BugtrackingController controller = currentRepo.getController();
             boolean valid = controller.isValid();
             dd.setValid(valid);
             String msg = controller.getErrorMessage();
-            if (msg != null) {
-                errorLabel.setText(msg);
-                errorLabel.setVisible(!valid);
-            } else {
-                errorLabel.setVisible(false);
-            }
+            updateErorrLabel(msg);
         }
     }
 
+    private void updateErorrLabel(String msg) {
+        if(msg == null) {
+            errorLabel.setText("");
+            errorLabel.setIcon(null);
+        } else {
+            errorLabel.setText(msg);
+            errorLabel.setIcon(errorIcon);
+        }
+    }
 }

@@ -47,18 +47,22 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -76,10 +80,10 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
+import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.openide.filesystems.RepositoryListener;
 import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -102,8 +106,6 @@ public class BugzillaRepository extends Repository {
     private IssueCache cache;
     private BugzillaExecutor executor;
     private Image icon;
-
-    private RepositoryConfiguration rc;
 
     BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -148,15 +150,18 @@ public class BugzillaRepository extends Repository {
         for (Query q : qs) {
             removeQuery((BugzillaQuery) q);
         }
-        removeRepository();
+        resetRepository();
     }
 
-    public synchronized void removeRepository() {
+    private synchronized void resetRepository() {
         rc = null;
-        Bugzilla.getInstance()
-                .getRepositoryConnector()
-                .getClientManager()
-                .repositoryRemoved(getTaskRepository());
+        bc = null;
+        if(getTaskRepository() != null) {
+            Bugzilla.getInstance()
+                    .getRepositoryConnector()
+                    .getClientManager()
+                    .repositoryRemoved(getTaskRepository());
+        }
     }
 
     @Override
@@ -206,37 +211,11 @@ public class BugzillaRepository extends Repository {
     @Override
     // XXX create repo wih product if kenai project and use in queries
     public Issue[] simpleSearch(final String criteria) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
-        String[] keywords = criteria.split(" ");
-
-        List<Issue> issues = new ArrayList<Issue>();
-        StringBuffer url = new StringBuffer();
-        if(keywords.length == 1 && isNumber(keywords[0])) {
-            // only one search criteria -> might be we are looking for the bug with id=values[0]
-            url.append(IBugzillaConstants.URL_GET_SHOW_BUG);
-            url.append("="); // XXX ???
-            url.append(keywords[0]);
-
-            issues.addAll(executeQuery(url.toString()));
-        }
-
-        url = new StringBuffer();
-        url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST + "&short_desc_type=allwordssubstr&short_desc=");
-        for (int i = 0; i < keywords.length; i++) {
-            String val = keywords[i].trim();
-            if(val.equals("")) continue;
-            url.append(val);
-            if(i < keywords.length - 1) {
-                url.append("+");
-            }
-        }
-        issues.addAll(executeQuery(url.toString()));
-        return issues.toArray(new BugzillaIssue[issues.size()]);
-    }
-
-    private List<Issue> executeQuery(String queryUrl)  {
         assert taskRepository != null;
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+
+        String[] keywords = criteria.split(" ");                                // NOI18N
+
         final List<Issue> issues = new ArrayList<Issue>();
         TaskDataCollector collector = new TaskDataCollector() {
             public void accept(TaskData taskData) {
@@ -248,8 +227,37 @@ public class BugzillaRepository extends Repository {
                 }
             }
         };
-        BugzillaUtil.performQuery(taskRepository, queryUrl, collector);
-        return issues;
+
+        StringBuffer url = new StringBuffer();
+        if(keywords.length == 1 && isNumber(keywords[0])) {
+            // only one search criteria -> might be we are looking for the bug with id=values[0]
+            url.append(IBugzillaConstants.URL_GET_SHOW_BUG);
+            url.append("="); // XXX ???                                         // NOI18N
+            url.append(keywords[0]);
+
+            PerformQueryCommand queryCmd = new PerformQueryCommand(this, url.toString(), collector);
+            getExecutor().execute(queryCmd);
+            if(queryCmd.hasFailed()) {
+                return new Issue[0];
+            }
+        }
+
+        url = new StringBuffer();
+        url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST + "&short_desc_type=allwordssubstr&short_desc="); // NOI18N
+        for (int i = 0; i < keywords.length; i++) {
+            String val = keywords[i].trim();
+            if(val.equals("")) continue;                                        // NOI18N
+            url.append(val);
+            if(i < keywords.length - 1) {
+                url.append("+");                                                // NOI18N
+            }
+        }
+        PerformQueryCommand queryCmd = new PerformQueryCommand(this, url.toString(), collector);
+        getExecutor().execute(queryCmd);
+        if(queryCmd.hasFailed()) {
+            return new Issue[0];
+        }
+        return issues.toArray(new BugzillaIssue[issues.size()]);
     }
 
     @Override
@@ -329,15 +337,24 @@ public class BugzillaRepository extends Repository {
     private class Controller extends BugtrackingController implements DocumentListener, ActionListener {
         private RepositoryPanel panel = new RepositoryPanel();
         private String errorMessage;
+        private boolean validateError;
+        private boolean populating;
 
         private Controller() {
-            populate();
             panel.nameField.getDocument().addDocumentListener(this);
             panel.userField.getDocument().addDocumentListener(this);
             panel.urlField.getDocument().addDocumentListener(this);
             panel.psswdField.getDocument().addDocumentListener(this);
 
             panel.validateButton.addActionListener(this);
+            panel.addAncestorListener(new AncestorListener() {
+                public void ancestorAdded(AncestorEvent event) {
+                    populate();
+                }
+                public void ancestorRemoved(AncestorEvent event) { }
+                public void ancestorMoved(AncestorEvent event)   { }
+            });
+
         }
 
         public JComponent getComponent() {
@@ -349,6 +366,9 @@ public class BugzillaRepository extends Repository {
         }
 
         public boolean isValid() {
+            if(validateError) {
+                return false;
+            }
             errorMessage = null;
 
             String name = panel.nameField.getText().trim();
@@ -407,32 +427,40 @@ public class BugzillaRepository extends Repository {
             taskRepository = createTaskRepository(panel.nameField.getText(), panel.urlField.getText(), panel.userField.getText(), new String(panel.psswdField.getPassword()));
             BugzillaConfig.getInstance().putRepository(name, BugzillaRepository.this);
             fireDataApplied();
-            removeRepository(); // only on url, user or passwd change
+            resetRepository(); // only on url, user or passwd change
         }
 
         void populate() {
             if(taskRepository != null) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
+                        populating = true;
                         AuthenticationCredentials c = taskRepository.getCredentials(AuthenticationType.REPOSITORY);
                         panel.userField.setText(c.getUserName());
                         panel.psswdField.setText(c.getPassword());
                         panel.urlField.setText(taskRepository.getUrl());
                         panel.nameField.setText(BugzillaRepository.this.name);
+                        populating = false;
                     }
                 });
             }
         }
 
         public void insertUpdate(DocumentEvent e) {
+            if(populating) return;
+            validateErrorOff(e);
             fireDataChanged();
         }
 
         public void removeUpdate(DocumentEvent e) {
+            if(populating) return;
+            validateErrorOff(e);
             fireDataChanged();
         }
 
         public void changedUpdate(DocumentEvent e) {
+            if(populating) return;
+            validateErrorOff(e);
             fireDataChanged();
         }
 
@@ -466,13 +494,26 @@ public class BugzillaRepository extends Repository {
                     panel.validateLabel.setVisible(true);
                     panel.validateLabel.setText(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating"));
                     try {
+                        resetRepository(); // reset mylyns caching
                         TaskRepository taskRepo = BugzillaRepository.createTaskRepository(
                                 panel.nameField.getText(),
                                 panel.urlField.getText(),
                                 panel.userField.getText(),
                                 new String(panel.psswdField.getPassword()));
+
                         ValidateCommand cmd = new ValidateCommand(taskRepo);
-                        getExecutor().execute(cmd);
+                        getExecutor().execute(cmd, false);
+                        if(cmd.hasFailed()) {
+                            if(cmd.getErrorMessage() != null) {
+                                errorMessage = cmd.getErrorMessage();
+                                validateError = true;
+                                fireDataChanged();
+                            } else {
+                                // strange. lets try agian and let the executor 
+                                // see what it can do
+                                getExecutor().execute(cmd, true);
+                            }
+                        }
                     } finally {
                         handle.finish();
                         panel.progressPanel.setVisible(false);
@@ -481,6 +522,12 @@ public class BugzillaRepository extends Repository {
                 }
             });
             task[0].schedule(0);
+        }
+
+        private void validateErrorOff(DocumentEvent e) {
+            if (e.getDocument() == panel.userField.getDocument() || e.getDocument() == panel.urlField.getDocument() || e.getDocument() == panel.psswdField.getDocument()) {
+                validateError = false;
+            }
         }
 
     }
@@ -497,6 +544,8 @@ public class BugzillaRepository extends Repository {
         }
     }
 
+    // XXX get rid of this
+    private RepositoryConfiguration rc;
     public synchronized RepositoryConfiguration getRepositoryConfiguration() {
         if(rc == null) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
@@ -504,15 +553,219 @@ public class BugzillaRepository extends Repository {
                 @Override
                 public void execute() throws CoreException, IOException, MalformedURLException {
                     rc = Bugzilla.getInstance()
-                            .getRepositoryConnector()
-                            .getClientManager()
-                            .getClient(getTaskRepository(), new NullProgressMonitor())
-                            .getRepositoryConfiguration(new NullProgressMonitor());
+                        .getRepositoryConnector()
+                        .getClientManager()
+                        .getClient(getTaskRepository(), new NullProgressMonitor())
+                        .getRepositoryConfiguration(new NullProgressMonitor());
                 }
             };
             getExecutor().execute(cmd);
         }
         return rc;
+    }
+
+    private BugzillaConfiguration bc;
+    public synchronized BugzillaConfiguration getConfiguration() {
+        if(bc == null) {
+            bc = new BugzillaConfiguration();
+            getExecutor().execute(bc);
+        }
+        if(bc.hasFailed()) {
+            // did not work.
+            // return null and let the caller deal with it
+            bc = null;
+        }
+        return bc;
+    }
+
+    public class BugzillaConfiguration extends BugzillaCommand {
+        private RepositoryConfiguration rc;
+
+        @Override
+        public void execute() throws CoreException, IOException, MalformedURLException {
+            rc = Bugzilla.getInstance()
+                    .getRepositoryConnector()
+                    .getClientManager()
+                    .getClient(getTaskRepository(), new NullProgressMonitor())
+                    .getRepositoryConfiguration(new NullProgressMonitor());
+        }
+
+        /**
+         * Returns all products defined in the given repository
+         *
+         * @param repository
+         * @return
+         */
+        public List<String> getProducts(BugzillaRepository repository) {
+            if(rc == null) {
+                return Collections.emptyList();
+            }
+            return rc.getProducts();
+        }
+
+        /**
+         * Returns the componets for the given product or all known components if product is null
+         *
+         * @param repository
+         * @param product
+         * @return list of components
+         */
+        public List<String> getComponents(BugzillaRepository repository, String product) {
+            if(rc == null) {
+                return Collections.emptyList();
+            }
+            if(product == null) {
+                return rc.getComponents();
+            } else {
+                return rc. getComponents(product);
+            }
+        }
+
+        /**
+         * Returns all resolutions defined in the given repository
+         *
+         * @param repository
+         * @return
+         */
+        public List<String> getResolutions(BugzillaRepository repository) {
+            if(rc == null) {
+                return Collections.emptyList();
+            }
+            return rc.getResolutions();
+        }
+
+        /**
+         * Returns versiones defined for the given product or all available versions if product is null
+         *
+         * @param repository
+         * @param product
+         * @return
+         */
+        public List<String> getVersions(BugzillaRepository repository, String product) {
+            if(rc == null) {
+                return Collections.emptyList();
+            }
+            if(product == null) {
+                return rc.getVersions();
+            } else {
+                return rc.getVersions(product);
+            }
+        }
+
+        /**
+         * Returns all status defined in the given repository
+         * @param repository
+         * @return
+         */
+        public List<String> getStatusValues(BugzillaRepository repository)  {
+            if(rc == null) {
+                return Collections.emptyList();
+            }
+            return rc.getStatusValues();
+        }
+
+        /**
+         * Returns all open statuses defined in the given repository.
+         * @param repository
+         * @return all open statuses defined in the given repository.
+         */
+        public List<String> getOpenStatusValues(BugzillaRepository repository)  {
+            if(rc == null) {
+                return Collections.emptyList();
+            }
+            return rc.getOpenStatusValues();
+        }
+
+        /**
+         * Returns all priorities defined in the given repository
+         * @param repository
+         * @return
+         */
+        public List<String> getPriorities(BugzillaRepository repository)  {
+            if(rc == null) {
+                return Collections.emptyList();
+            }
+            return rc.getPriorities();
+        }
+
+        /**
+         * Returns all keywords defined in the given repository
+         * @param repository
+         * @return
+         */
+        public List<String> getKeywords(BugzillaRepository repository) {
+            if(rc == null) {
+                return Collections.emptyList();
+            }
+            return rc.getKeywords();
+        }
+
+        /**
+         * Returns all platforms defined in the given repository
+         * @param repository
+         * @return
+         */
+        public List<String> getPlatforms(BugzillaRepository repository) {
+            if(rc == null) {
+                return Collections.emptyList();
+            }
+            return rc.getPlatforms();
+        }
+
+        /**
+         * Returns all operating systems defined in the given repository
+         * @param repository
+         * @return
+         */
+        public List<String> getOSs(BugzillaRepository repository) {
+            if(rc == null) {
+                return Collections.emptyList();
+            }
+            return rc.getOSs();
+        }
+
+        /**
+         * Returns all severities defined in the given repository
+         * @param repository
+         * @return
+         */
+        public List<String> getSeverities(BugzillaRepository repository) {
+            if(rc == null) {
+                return Collections.emptyList();
+            }
+            return rc.getSeverities();
+        }
+
+        /**
+         * Returns all custom fields defined in the given repository
+         * @param repository
+         * @return
+         */
+        public List<BugzillaCustomField> getCustomFields(BugzillaRepository repository) {
+            if(rc == null) {
+                return Collections.emptyList();
+            }
+            return rc.getCustomFields();
+        }
+
+        /**
+         * Returns target milestones defined for the given product or all available
+         * milestones if product is null
+         *
+         * @param repository
+         * @param product
+         * @return
+         */
+        public List<String> getTargetMilestones(BugzillaRepository repository, String product) {
+            if(rc == null) {
+                return Collections.emptyList();
+            }
+            if(product == null) {
+                return rc.getTargetMilestones();
+            } else {
+                return rc.getTargetMilestones(product);
+            }
+        }
     }
 
 }

@@ -54,8 +54,9 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.IssueCache;
+import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
+import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 
 /**
  *
@@ -128,16 +129,16 @@ public class BugzillaQuery extends Query {
     }
 
     @Override
-    public void refresh() { // XXX sync???
+    public boolean refresh() { // XXX sync???
 
         assert urlParameters != null;
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
 
+        final boolean ret[] = new boolean[1];
         executeQuery(new Runnable() {
             public void run() {
                 Bugzilla.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name, urlParameters});
                 try {
-
                     Set<String> queryIssues = new HashSet<String>();
                     if(isSaved()) {
                         if(!wasRun()) {
@@ -157,26 +158,33 @@ public class BugzillaQuery extends Query {
                     issues.clear();
                     firstRun = false;
 
-                    TaskRepository taskRepository = repository.getTaskRepository();
-
                     // run query to know what matches the criteria
                     StringBuffer url = new StringBuffer();
                     url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST);
                     url.append(urlParameters); // XXX encode url?
                     // IssuesIdCollector will populate the issues set
-                    BugzillaUtil.performQuery(taskRepository, url.toString(), new IssuesIdCollector());
+                    // XXX encode url?
+                    // IssuesIdCollector will populate the issues set
+                    PerformQueryCommand queryCmd = new PerformQueryCommand(repository, url.toString(), new IssuesIdCollector());
+                    repository.getExecutor().execute(queryCmd);
+                    ret[0] = queryCmd.hasFailed();
+                    if(ret[0]) {
+                        return;
+                    }
                     obsoleteIssues.removeAll(issues);
 
                     if(!isSaved()) {
                         queryIssues.addAll(issues);
                     }
-                    BugzillaUtil.getMultiTaskData(repository, queryIssues, new IssuesCollector());
-
+                    GetMultiTaskDataCommand dataCmd = new GetMultiTaskDataCommand(repository, issues, new IssuesCollector());
+                    repository.getExecutor().execute(dataCmd);
+                    ret[0] = dataCmd.hasFailed();
                 } finally {
                     Bugzilla.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name, urlParameters});
                 }
             }
         });
+        return ret[0];
     }
 
     public void refresh(String urlParameters) {

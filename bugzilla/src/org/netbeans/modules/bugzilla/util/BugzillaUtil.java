@@ -43,20 +43,15 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
-import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
-import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.BugzillaRepository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -80,13 +75,6 @@ public class BugzillaUtil {
         return DialogDisplayer.getDefault().notify(descriptor) == ok;
     }
 
-    public static void performQuery(TaskRepository taskRepository, String queryUrl, TaskDataCollector collector)  {
-        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), "");
-        query.setUrl(queryUrl);
-        BugzillaRepositoryConnector rc = Bugzilla.getInstance().getRepositoryConnector();
-        rc.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
-    }
-
     /**
      * Returns TaskData for the given issue id or null if an error occured
      * @param repository
@@ -105,27 +93,6 @@ public class BugzillaUtil {
         return taskData[0];
     }
 
-    /**
-     * Retrieves the TaskData for al given issue ids
-     * 
-     * @param repository
-     * @param ids
-     * @param collector
-     */
-    public static void getMultiTaskData(final BugzillaRepository repository, final Set<String> ids, final TaskDataCollector collector) {
-        BugzillaCommand cmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-            Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().getMultiTaskData(
-                    repository.getTaskRepository(),
-                    ids,
-                    collector,
-                    new NullProgressMonitor());
-            }
-        };
-        repository.getExecutor().execute(cmd);
-    }
-
     public static String getKeywords(String label, String keywordsString, BugzillaRepository repository) {
         String[] keywords = keywordsString.split(","); // NOI18N
         if(keywords == null || keywords.length == 0) {
@@ -134,7 +101,12 @@ public class BugzillaUtil {
 
         KeywordsPanel kp;
         try {
-            List<String> knownKeywords = Bugzilla.getInstance().getKeywords(repository);
+            BugzillaConfiguration bc = repository.getConfiguration();
+            if(bc == null) {
+                // XXX is there something else we could do at this point?
+                return keywordsString;
+            }
+            List<String> knownKeywords = bc.getKeywords(repository);
             kp = new KeywordsPanel(label, knownKeywords, keywords);
         } catch (Exception ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);

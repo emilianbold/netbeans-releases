@@ -690,10 +690,13 @@ public class BugzillaIssue extends Issue {
         repository.getExecutor().execute(cmd);
     }
 
-    public void refresh() {
+    public boolean refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
         try {
             TaskData td = BugzillaUtil.getTaskData(repository, getID());
+            if(td == null) {
+                return false;
+            }
             getRepository().getIssueCache().setIssueData(getID(), td); // XXX
             if (controller != null) {
                 controller.refreshViewData();
@@ -701,6 +704,7 @@ public class BugzillaIssue extends Issue {
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
+        return true;
     }
 
 

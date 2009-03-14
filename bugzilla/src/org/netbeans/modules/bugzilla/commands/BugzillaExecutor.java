@@ -55,14 +55,14 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
- * Executes commands against one bugzilla Repository
+ * Executes commands against one bugzilla Repository handles errors
  * 
  * @author Tomas Stupka
  */
 public class BugzillaExecutor {
-    public static final String HTTP_ERROR_NOT_FOUND = "Http error: Not Found";
 
-    private static final String INVALID_USERNAME_OR_PASSWORD = "invalid username or password";
+    private static final String HTTP_ERROR_NOT_FOUND         = "http error: not found";         // NOI18N
+    private static final String INVALID_USERNAME_OR_PASSWORD = "invalid username or password";  // NOI18N
 
     private final BugzillaRepository repository;
 
@@ -71,50 +71,87 @@ public class BugzillaExecutor {
     }
 
     public void execute(BugzillaCommand cmd) {
+        execute(cmd, true);
+    }
+
+    public void execute(BugzillaCommand cmd, boolean handle) {
         try {
             cmd.execute();
+
+            cmd.setFailed(false);
+            cmd.setErrorMessage(null);
+
         } catch (CoreException ex) {
-            if(handleException(ex)) {
+
+            String msg = getMessage(ex);
+
+            cmd.setFailed(true);
+            cmd.setErrorMessage(msg);
+
+            if(!handle) {
+                // XXX at least log
+                return;
+            }
+
+            if(handleException(msg)) {
                 execute(cmd);
             } else {
                 notifyError(ex);
             }
         } catch(MalformedURLException me) {
+            cmd.setFailed(true); // should not happen
+            cmd.setErrorMessage(me.getMessage());
             Bugzilla.LOG.log(Level.SEVERE, null, me);
         } catch(IOException ioe) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ioe);
+            cmd.setFailed(true);
+            cmd.setErrorMessage(ioe.getMessage());
+
+            if(!handle) {
+                return;
+            }
+
+            handleException(ioe);
         } 
     }
 
-    public static boolean isAuthenticate(CoreException ce) {
-        return containsMsg(ce, INVALID_USERNAME_OR_PASSWORD);
+    public static boolean isAuthenticate(String msg) {
+        return INVALID_USERNAME_OR_PASSWORD.equals(msg.trim().toLowerCase());
     }
 
-    public static boolean isNotFound(CoreException ce) {
-        return containsMsg(ce, HTTP_ERROR_NOT_FOUND);
+    public static boolean isNotFound(String msg) {
+        return HTTP_ERROR_NOT_FOUND.equals(msg.trim().toLowerCase());
     }
 
-    private static boolean containsMsg(CoreException ce, String cotainsMsg) {
+    public static String getMessage(CoreException ce) {
         String msg = ce.getMessage();
-        if(cotainsMsg.equals(msg)) {
-            return true;
+        if(msg != null && !msg.trim().equals("")) {                             // NOI18N
+            return msg;
         }
         IStatus status = ce.getStatus();
         msg = status != null ? status.getMessage() : null;
-        msg = msg != null ? msg.trim() : msg;
-        return cotainsMsg.equals(msg); // XXX
+        return msg != null ? msg.trim() : null;
     }
 
-    public boolean handleException(CoreException ce) {
-        if(isAuthenticate(ce)) {
-            return handleAuthenticate(ce);
+    private boolean handleException(String msg) {
+        if(isAuthenticate(msg)) {
+            return handleAuthenticate(msg);
+        } else if(isNotFound(msg)) {
+            return handleNotFound(msg);
         }
         return false;
     }
 
-    private boolean handleAuthenticate(CoreException ce) {
-        boolean edit = BugtrackingUtil.editRepository(repository);
-        return edit;
+    public boolean handleException(IOException io) {
+        Bugzilla.LOG.log(Level.SEVERE, null, io); 
+        return true;
+    }
+
+    private boolean handleAuthenticate(String msg) {
+        return BugtrackingUtil.editRepository(repository, msg);
+    }
+
+    private boolean handleNotFound(String msg) {
+        return BugtrackingUtil.editRepository(repository, msg);
     }
 
     private void notifyError(CoreException ce) {
@@ -122,7 +159,7 @@ public class BugzillaExecutor {
         if (status instanceof RepositoryStatus) {
             RepositoryStatus rs = (RepositoryStatus) status;
             String html = rs.getHtmlMessage();
-            if(html != null && !html.trim().equals("")) {
+            if(html != null && !html.trim().equals("")) {                       // NOI18N
                 final HtmlPanel p = new HtmlPanel();
                 p.setHtml(html);
                 BugzillaUtil.show(p, "html", "ok");
@@ -142,7 +179,7 @@ public class BugzillaExecutor {
         NotifyDescriptor nd =
                 new NotifyDescriptor(
                     msg, 
-                    NbBundle.getMessage(BugzillaExecutor.class, "LBLError"),
+                    NbBundle.getMessage(BugzillaExecutor.class, "LBLError"),    // NOI18N
                     NotifyDescriptor.DEFAULT_OPTION,
                     NotifyDescriptor.ERROR_MESSAGE,
                     new Object[] {NotifyDescriptor.OK_OPTION},

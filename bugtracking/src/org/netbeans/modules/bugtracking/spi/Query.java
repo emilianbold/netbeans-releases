@@ -138,9 +138,10 @@ public abstract class Query implements Comparable<Query> {
      *********/
 
     /**
-     * Runs the query against the remote repository
+     * Refreshes this Query
+     * @return true if the query was refreshed, otherwise false
      */
-    public abstract void refresh(); // XXX throw? // XXX do we need this in api
+    public abstract boolean refresh(); 
     
     /**
      * Sets te queries status as saved. The {@link IssueTable} assotiated with

@@ -1,5 +1,3 @@
-package org.netbeans.modules.bugtracking.ui.selectors;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,50 +37,39 @@ package org.netbeans.modules.bugtracking.ui.selectors;
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.bugzilla.commands;
 
-
-import java.io.IOException;
-import java.util.logging.Level;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import java.util.Set;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.BugzillaRepository;
 
 /**
- *
+ * Retrieves the TaskData for all given issue ids
+ * 
  * @author Tomas Stupka
  */
-public class RepositorySelector {
+public class GetMultiTaskDataCommand extends BugzillaCommand {
 
-    private SelectorPanel selectorPanel = new SelectorPanel();
-    public RepositorySelector() {
-        // init connector cbo
+    private final BugzillaRepository repository;
+    private final Set<String> ids;
+    private final TaskDataCollector collector;
+
+    public GetMultiTaskDataCommand(BugzillaRepository repository, Set<String> ids, TaskDataCollector collector) {
+        this.repository = repository;
+        this.ids = ids;
+        this.collector = collector;
     }
 
-    public Repository create() {
-        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        selectorPanel.setConnectors(connectors);
-        if(!selectorPanel.open()) return null;
-        Repository repo = selectorPanel.getRepository();
-        try {
-            repo.getController().applyChanges();
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            return null;
-        }
-        BugtrackingManager.getInstance().addRepository(repo);
-        return repo;
-    }
-
-    public boolean edit(Repository repository, String errorMessage) {
-        if(!selectorPanel.edit(repository, errorMessage)) return false;
-        Repository repo = selectorPanel.getRepository();
-        try {
-            repo.getController().applyChanges();
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            return false;
-        }
-        return true;
+    @Override
+    public void execute() throws CoreException {
+        Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().getMultiTaskData(
+                repository.getTaskRepository(),
+                ids,
+                collector,
+                new NullProgressMonitor());
     }
 
 }

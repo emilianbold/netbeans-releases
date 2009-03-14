@@ -43,7 +43,7 @@ import java.util.List;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueNode.SeenProperty;
-import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.BugzillaRepository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.IssueField;
 import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
@@ -81,7 +81,11 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getSeveritySortKey(String severity) {
-        List<String> s = Bugzilla.getInstance().getSeverities(getBugzillaIssue().getRepository());
+        BugzillaConfiguration bc = getBugzillaIssue().getRepository().getConfiguration();
+        if(bc == null) {
+            return null;
+        }
+        List<String> s = bc.getSeverities(getBugzillaIssue().getRepository());
         if(s == null) {
             return null;
         }
@@ -89,7 +93,11 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getPrioritySortKey(String priority) {
-        List<String> p = Bugzilla.getInstance().getPriorities(getBugzillaIssue().getRepository());
+        BugzillaConfiguration bc = getBugzillaIssue().getRepository().getConfiguration();
+        if(bc == null) {
+            return null;
+        }
+        List<String> p = bc.getPriorities(getBugzillaIssue().getRepository());
         if(p == null) {
             return null;
         }
@@ -97,7 +105,11 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getResolutionSortKey(String resolution) {
-        List<String> r = Bugzilla.getInstance().getResolutions(getBugzillaIssue().getRepository());
+        BugzillaConfiguration bc = getBugzillaIssue().getRepository().getConfiguration();
+        if(bc == null) {
+            return null;
+        }
+        List<String> r = bc.getResolutions(getBugzillaIssue().getRepository());
         if(r == null) {
             return null;
         }

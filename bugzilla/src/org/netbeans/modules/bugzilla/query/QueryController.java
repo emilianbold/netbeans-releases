@@ -83,6 +83,7 @@ import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.BugzillaRepository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -303,26 +304,32 @@ public class QueryController extends BugtrackingController implements DocumentLi
             BugzillaCommand cmd = new BugzillaCommand() {
                 @Override
                 public void execute() throws CoreException, IOException, MalformedURLException {
-                    Bugzilla bgz = Bugzilla.getInstance();
-                    productParameter.setParameterValues(toParameterValues(bgz.getProducts(repository)));
+                    BugzillaConfiguration bc = repository.getConfiguration();
+                    if(bc == null) {
+                        // XXX nice errro msg?
+                        return;
+                    }
+                    productParameter.setParameterValues(toParameterValues(bc.getProducts(repository)));
                     if (panel.productList.getModel().getSize() > 0) {
                         panel.productList.setSelectedIndex(0);
                         populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
                     }
-                    severityParameter.setParameterValues(toParameterValues(bgz.getSeverities(repository)));
-                    statusParameter.setParameterValues(toParameterValues(bgz.getStatusValues(repository)));
-                    resolutionParameter.setParameterValues(toParameterValues(bgz.getResolutions(repository)));
-                    priorityParameter.setParameterValues(toParameterValues(bgz.getPriorities(repository)));
+                    severityParameter.setParameterValues(toParameterValues(bc.getSeverities(repository)));
+                    statusParameter.setParameterValues(toParameterValues(bc.getStatusValues(repository)));
+                    resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions(repository)));
+                    priorityParameter.setParameterValues(toParameterValues(bc.getPriorities(repository)));
                     changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
                     summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
                     commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
                     keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
                     peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
                     panel.changedToTextField.setText("Now"); // XXX
+
                     // XXX
                     if (urlParameters != null) {
                         setParameters(urlParameters);
                     }
+
                     panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
                     panel.jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
                     panel.jScrollPane3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -349,8 +356,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     protected void disableProduct(String product) { // XXX whatever field
-        Bugzilla bgz = Bugzilla.getInstance();
-        List<String> products = bgz.getProducts(repository);
+        BugzillaConfiguration bc = repository.getConfiguration();
+        if(bc == null) {
+            // XXX nice errro msg?
+            return;
+        }
+        List<String> products = bc.getProducts(repository);
         Iterator<String> i = products.iterator();
         while (i.hasNext()) {
             String p = i.next();
@@ -747,7 +758,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void populateProductDetails(String... products) {
-        Bugzilla bgz = Bugzilla.getInstance();
+        BugzillaConfiguration bc = repository.getConfiguration();
+        if(bc == null) {
+            // XXX nice errro msg?
+            return;
+        }
         if(products == null || products.length == 0) {
             products = new String[] {null};
         }
@@ -755,13 +770,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
         List<String> newComponents = new ArrayList<String>();
         List<String> newVersions = new ArrayList<String>();
         for (String p : products) {
-            List<String> productComponents = bgz.getComponents(repository, p);
+            List<String> productComponents = bc.getComponents(repository, p);
             for (String c : productComponents) {
                 if(!newComponents.contains(c)) {
                     newComponents.add(c);
                 }
             }
-            List<String> productVersions = bgz.getVersions(repository, p);
+            List<String> productVersions = bc.getVersions(repository, p);
             for (String c : productVersions) {
                 if(!newVersions.contains(c)) {
                     newVersions.add(c);
