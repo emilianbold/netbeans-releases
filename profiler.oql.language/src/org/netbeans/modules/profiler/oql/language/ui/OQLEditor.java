@@ -39,17 +39,18 @@
 
 package org.netbeans.modules.profiler.oql.language.ui;
 
-import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JEditorPane;
-import javax.swing.text.Document;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.lexer.TokenHierarchyEvent;
+import org.netbeans.api.lexer.TokenHierarchyListener;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.profiler.oql.language.OQLTokenId;
 import org.netbeans.modules.profiler.spi.OQLEditorImpl;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
+import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -58,33 +59,61 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=OQLEditorImpl.class)
 public class OQLEditor extends OQLEditorImpl{
-    private JEditorPane newPane() {
-        JEditorPane editorPane;
+    private final AtomicReference<MutableTextInput<OQLTokenId>> textInputRef = new AtomicReference<MutableTextInput<OQLTokenId>>();
+    private JEditorPane editorPane;
+    volatile boolean validFlag = false;
+
+    final private TokenHierarchyListener thl = new TokenHierarchyListener() {
+
+        public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
+            TokenSequence ts = evt.tokenHierarchy().tokenSequence();
+            boolean oldValidity = validFlag;
+            if (ts.tokenCount() == 0) {
+                validFlag = false;
+                pcs.firePropertyChange(VALIDITY_PROPERTY, oldValidity, validFlag);
+                return;
+            }
+            while (ts.moveNext()) {
+                if (ts.token().id() == OQLTokenId.ERROR) {
+                    validFlag = false;
+                    pcs.firePropertyChange(VALIDITY_PROPERTY, oldValidity, validFlag);
+                    return;
+                }
+            }
+            validFlag = true;
+            pcs.firePropertyChange(VALIDITY_PROPERTY, oldValidity, validFlag);
+        }
+    };
+
+    private void init() {
         String mimeType = "text/x-oql"; // NOI18N
         editorPane = new JEditorPane();
 
         editorPane.setEditorKit(MimeLookup.getLookup(mimeType).lookup(EditorKit.class));
-        try {
-            //NOI18N
-            FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("editor.oql"); // NOI18N
-            DataObject dobj = DataObject.find(fo);
+        editorPane.getDocument().addDocumentListener(new DocumentListener() {
 
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            public void insertUpdate(DocumentEvent e) {
+                if (textInputRef.compareAndSet(null, (MutableTextInput)e.getDocument().getProperty(MutableTextInput.class))) {
+                    textInputRef.get().tokenHierarchyControl().tokenHierarchy().addTokenHierarchyListener(thl);
+                }
+            }
 
-            Document doc = ec.openDocument();
-            doc.putProperty(EditorCookie.class, ec);
-            doc.putProperty(JEditorPane.class, editorPane);
-            editorPane.setDocument(doc);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+            public void removeUpdate(DocumentEvent e) {
+                if (textInputRef.compareAndSet(null, (MutableTextInput)e.getDocument().getProperty(MutableTextInput.class))) {
+                    textInputRef.get().tokenHierarchyControl().tokenHierarchy().addTokenHierarchyListener(thl);
+                }
+            }
 
-        editorPane.setOpaque(false);
-
-        return editorPane;
+            public void changedUpdate(DocumentEvent e) {
+                if (textInputRef.compareAndSet(null, (MutableTextInput)e.getDocument().getProperty(MutableTextInput.class))) {
+                    textInputRef.get().tokenHierarchyControl().tokenHierarchy().addTokenHierarchyListener(thl);
+                }
+            }
+        });
     }
 
-    public JEditorPane getEditorPane() {
-        return newPane();
+    synchronized public JEditorPane getEditorPane() {
+        if (editorPane == null) init();
+        return editorPane;
     }
 }
