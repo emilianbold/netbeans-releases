@@ -1031,15 +1031,6 @@ public class IDEValidation extends JellyTestCase {
         }
     }
 	
-	public void testDebuggingMayFail() {
-	    try {
-	        testDebugging();
-		}
-		catch (Throwable t) {
-            log(t.getClass().getName()+": "+t.getMessage());
-		}
-	}
-
      /** Test Options  
       * - open Options window from main menu Tools|Options
       * - select General category
@@ -1403,11 +1394,9 @@ public class IDEValidation extends JellyTestCase {
         Log.enableInstances(Logger.getLogger("TIMER"), "TextDocument", Level.FINEST);
     }
 
-// XXX: the following two tests were commented out because of the csl.api & related changes
-//    public void testGCDocuments() throws Exception {
-//        WatchProjects.assertTextDocuments();
-//    }
-// ---------------------------------------------------------------
+    public void testGCDocuments() throws Exception {
+        WatchProjects.assertTextDocuments();
+    }
     
     public void testGCProjects() throws Exception {
         WatchProjects.assertProjects();
