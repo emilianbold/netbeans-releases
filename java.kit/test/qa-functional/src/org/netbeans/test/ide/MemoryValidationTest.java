@@ -89,12 +89,12 @@ public class MemoryValidationTest extends JellyTestCase {
             conf = conf.addTest("testBlacklistedClassesHandler");
         }
         conf = conf.addTest("testInitGC");
-//        conf = conf.addTest("testMainMenu");
-//        conf = conf.addTest("testHelp");
-//        conf = conf.addTest("testOptions");
+        conf = conf.addTest("testMainMenu");
+        conf = conf.addTest("testHelp");
+        conf = conf.addTest("testOptions");
         conf = conf.addTest("testNewProject");
         // sample project must exist before testShortcuts
-//        conf = conf.addTest("testShortcuts");
+        conf = conf.addTest("testShortcuts");
         conf = conf.addTest("testNewFile");
 //        conf = conf.addTest("testCVSLite");
 //        conf = conf.addTest("testProjectsView");
