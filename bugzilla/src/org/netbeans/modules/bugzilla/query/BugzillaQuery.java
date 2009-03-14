@@ -75,6 +75,7 @@ public class BugzillaQuery extends Query {
     public BugzillaQuery(BugzillaRepository repository) {
         super();
         this.repository = repository;
+        controller = createControler(repository, this, urlParameters);
     }
 
     public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved) {
@@ -83,6 +84,7 @@ public class BugzillaQuery extends Query {
         this.repository = repository;
         this.urlParameters = urlParameters;
         this.saved = saved;
+        controller = createControler(repository, this, urlParameters);
     }
 
     public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, long lastRefresh) {

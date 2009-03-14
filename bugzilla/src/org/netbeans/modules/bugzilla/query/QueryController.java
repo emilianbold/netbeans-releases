@@ -129,6 +129,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private BugzillaQuery query;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss, EEE MMM d yyyy"); // NOI18N
+    private NotifyListener notifyListener;
+
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters) {
         this.repository = repository;
         this.query = query;
@@ -198,6 +200,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(query.isSaved()) {
             setAsSaved();
         }
+        notifyListener = new NotifyListener();
+        query.addNotifyListener(notifyListener);
         postPopulate(urlParameters);
     }
 
@@ -739,42 +743,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         };
 
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_SearchingQuery", new Object[] {query.getDisplayName()}), c);// NOI18N
-        final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
+        ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_SearchingQuery", new Object[] {query.getDisplayName()}), c);// NOI18N
+        JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
         panel.showSearchingProgress(true, progressBar, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
+        notifyListener.setProgressHandle(handle);
         handle.start();
-
-        // XXX !!! remove !!!
-        query.addNotifyListener(new QueryNotifyListener() {
-            private int c = 0;
-            public void notifyData(final Issue issue) {                                
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        panel.showNoContentPanel(false);
-                        panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {++c})); // NOI18N // XXX
-                    }
-                });
-            }
-
-            public void started() {
-            }
-
-            public void finished() {
-                handle.finish();
-                query.removeNotifyListener(this); // XXX
-                final int size = query.getSize();
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        enableFields(true);
-                        panel.setLastRefresh(getLastRefresh());
-                        panel.showNoContentPanel(false);
-                        if(size == 0) {
-                            panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {0})); // NOI18N // XXX
-                        }
-                    }
-                });
-            }
-        });
+        
         task.schedule(0);
     }
 
@@ -851,6 +825,46 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 List<ParameterValue> pvs = e.getValue();    
                 pv.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
             }
+        }
+    }
+
+    private class NotifyListener implements QueryNotifyListener {
+        private int counter;
+        private ProgressHandle handle;
+
+        void setProgressHandle(ProgressHandle handle) {
+            this.handle = handle;
+        }
+        
+        public void notifyData(final Issue issue) {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    panel.showNoContentPanel(false);
+                    panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {++counter})); // NOI18N // XXX
+                }
+            });
+        }
+
+        public void started() {
+            counter = 0;
+        }
+
+        public void finished() {
+            if(handle != null) {
+                handle.finish();
+                handle = null;
+            }
+            final int size = query.getSize();
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    enableFields(true);
+                    panel.setLastRefresh(getLastRefresh());
+                    panel.showNoContentPanel(false);
+                    if(size == 0) {
+                        panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {0})); // NOI18N // XXX
+                    }
+                }
+            });
         }
     }
 
