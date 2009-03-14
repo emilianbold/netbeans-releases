@@ -62,6 +62,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.netbeans.modules.maven.junit.nodes.JUnitTestRunnerNodeFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -126,7 +127,8 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
 
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
         if (session == null) {
-            session = new TestSession(mavenproject.getMavenProject().getId(), prj, TestSession.SessionType.TEST);
+            session = new TestSession(mavenproject.getMavenProject().getId(), prj, TestSession.SessionType.TEST,
+                    new JUnitTestRunnerNodeFactory(session, prj));
             //TODO recognize debug
             Manager.getInstance().testStarted(session);
             session.setRerunHandler(new RerunHandler() {
@@ -239,7 +241,8 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
                 String time = testcase.getAttributeValue("time");
                 float fl = Float.parseFloat(time);
                 test.setTimeMillis((long)(fl * 1000));
-                test.setClassName(testcase.getAttributeValue("clasname"));
+                test.setClassName(testcase.getAttributeValue("classname"));
+                test.setLocation(test.getClassName().replace('.', '/') + ".java");
                 session.addTestCase(test);
             }
             String time = testSuite.getAttributeValue("time");
