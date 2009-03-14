@@ -349,26 +349,20 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     protected void disableProduct(String product) { // XXX whatever field
-        try {
-            Bugzilla bgz = Bugzilla.getInstance();
-            List<String> products = bgz.getProducts(repository);
-            Iterator<String> i = products.iterator();
-            while (i.hasNext()) {
-                String p = i.next();
-                if (!p.equals(product)) {
-                    i.remove();
-                }
+        Bugzilla bgz = Bugzilla.getInstance();
+        List<String> products = bgz.getProducts(repository);
+        Iterator<String> i = products.iterator();
+        while (i.hasNext()) {
+            String p = i.next();
+            if (!p.equals(product)) {
+                i.remove();
             }
-            productParameter.setParameterValues(toParameterValues(products));
-            productParameter.setAlwaysDisabled(true);
-            if (panel.productList.getModel().getSize() > 0) {
-                panel.productList.setSelectedIndex(0);
-                populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
-            }
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        }
+        productParameter.setParameterValues(toParameterValues(products));
+        productParameter.setAlwaysDisabled(true);
+        if (panel.productList.getModel().getSize() > 0) {
+            panel.productList.setSelectedIndex(0);
+            populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
         }
     }
 
@@ -753,37 +747,30 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void populateProductDetails(String... products) {
-        try {
-            Bugzilla bgz = Bugzilla.getInstance();
-            if(products == null || products.length == 0) {
-                products = new String[] {null};
-            }
-
-            List<String> newComponents = new ArrayList<String>();
-            List<String> newVersions = new ArrayList<String>();
-            for (String p : products) {
-                List<String> productComponents = bgz.getComponents(repository, p);
-                for (String c : productComponents) {
-                    if(!newComponents.contains(c)) {
-                        newComponents.add(c);
-                    }
-                }
-                List<String> productVersions = bgz.getVersions(repository, p);
-                for (String c : productVersions) {
-                    if(!newVersions.contains(c)) {
-                        newVersions.add(c);
-                    }
-                }
-            }
-            
-            componentParameter.setParameterValues(toParameterValues(newComponents));
-            versionParameter.setParameterValues(toParameterValues(newVersions));
-
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        Bugzilla bgz = Bugzilla.getInstance();
+        if(products == null || products.length == 0) {
+            products = new String[] {null};
         }
+
+        List<String> newComponents = new ArrayList<String>();
+        List<String> newVersions = new ArrayList<String>();
+        for (String p : products) {
+            List<String> productComponents = bgz.getComponents(repository, p);
+            for (String c : productComponents) {
+                if(!newComponents.contains(c)) {
+                    newComponents.add(c);
+                }
+            }
+            List<String> productVersions = bgz.getVersions(repository, p);
+            for (String c : productVersions) {
+                if(!newVersions.contains(c)) {
+                    newVersions.add(c);
+                }
+            }
+        }
+
+        componentParameter.setParameterValues(toParameterValues(newComponents));
+        versionParameter.setParameterValues(toParameterValues(newVersions));
     }
 
     private List<ParameterValue> toParameterValues(List<String> values) {

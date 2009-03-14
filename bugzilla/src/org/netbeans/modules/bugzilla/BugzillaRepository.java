@@ -74,6 +74,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.IssueCache;
+import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
@@ -496,14 +497,20 @@ public class BugzillaRepository extends Repository {
         }
     }
 
-    public synchronized RepositoryConfiguration getRepositoryConfiguration() throws CoreException, IOException {
+    public synchronized RepositoryConfiguration getRepositoryConfiguration() {
         if(rc == null) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
-            rc = Bugzilla.getInstance()
-                    .getRepositoryConnector()
-                    .getClientManager()
-                    .getClient(getTaskRepository(), new NullProgressMonitor())
-                    .getRepositoryConfiguration(new NullProgressMonitor());
+            BugzillaCommand cmd = new BugzillaCommand() {
+                @Override
+                public void execute() throws CoreException, IOException, MalformedURLException {
+                    rc = Bugzilla.getInstance()
+                            .getRepositoryConnector()
+                            .getClientManager()
+                            .getClient(getTaskRepository(), new NullProgressMonitor())
+                            .getRepositoryConfiguration(new NullProgressMonitor());
+                }
+            };
+            getExecutor().execute(cmd);
         }
         return rc;
     }

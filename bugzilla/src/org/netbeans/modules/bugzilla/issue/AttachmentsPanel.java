@@ -56,7 +56,6 @@ import javax.swing.AbstractAction;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
-import org.eclipse.core.runtime.CoreException;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.util.LinkButton;
@@ -326,8 +325,6 @@ public class AttachmentsPanel extends JPanel {
                         }
                     } catch (DataObjectNotFoundException dnfex) {
                         dnfex.printStackTrace();
-                    } catch (CoreException cex) {
-                        cex.printStackTrace();
                     } catch (IOException ioex) {
                         ioex.printStackTrace();
                     }

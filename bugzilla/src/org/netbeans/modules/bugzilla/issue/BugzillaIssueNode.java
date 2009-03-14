@@ -39,10 +39,7 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueNode.SeenProperty;
@@ -84,14 +81,7 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getSeveritySortKey(String severity) {
-        List<String> s = null;
-        try {
-            s = Bugzilla.getInstance().getSeverities(getBugzillaIssue().getRepository());
-        } catch (IOException iOException) {
-            Bugzilla.LOG.log(Level.SEVERE, null, iOException);
-        } catch (CoreException coreException) {
-            Bugzilla.LOG.log(Level.SEVERE, null, coreException);
-        }
+        List<String> s = Bugzilla.getInstance().getSeverities(getBugzillaIssue().getRepository());
         if(s == null) {
             return null;
         }
@@ -99,14 +89,7 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getPrioritySortKey(String priority) {
-        List<String> p = null;
-        try {
-            p = Bugzilla.getInstance().getPriorities(getBugzillaIssue().getRepository());
-        } catch (IOException iOException) {
-            Bugzilla.LOG.log(Level.SEVERE, null, iOException);
-        } catch (CoreException coreException) {
-            Bugzilla.LOG.log(Level.SEVERE, null, coreException);
-        }
+        List<String> p = Bugzilla.getInstance().getPriorities(getBugzillaIssue().getRepository());
         if(p == null) {
             return null;
         }
@@ -114,14 +97,7 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getResolutionSortKey(String resolution) {
-        List<String> r = null;
-        try {
-            r = Bugzilla.getInstance().getResolutions(getBugzillaIssue().getRepository());
-        } catch (IOException iOException) {
-            Bugzilla.LOG.log(Level.SEVERE, null, iOException);
-        } catch (CoreException coreException) {
-            Bugzilla.LOG.log(Level.SEVERE, null, coreException);
-        }
+        List<String> r = Bugzilla.getInstance().getResolutions(getBugzillaIssue().getRepository());
         if(r == null) {
             return null;
         }

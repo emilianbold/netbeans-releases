@@ -104,10 +104,8 @@ public class Bugzilla {
      *
      * @param repository
      * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<String> getProducts(BugzillaRepository repository) throws CoreException, IOException {
+    public List<String> getProducts(BugzillaRepository repository) {
         return repository.getRepositoryConfiguration().getProducts();
     }
 
@@ -117,10 +115,8 @@ public class Bugzilla {
      * @param repository
      * @param product
      * @return list of components
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<String> getComponents(BugzillaRepository repository, String product) throws IOException, CoreException {
+    public List<String> getComponents(BugzillaRepository repository, String product) {
         if(product == null) {
             return repository.getRepositoryConfiguration().getComponents();
         } else {
@@ -133,10 +129,8 @@ public class Bugzilla {
      *
      * @param repository
      * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<String> getResolutions(BugzillaRepository repository) throws IOException, CoreException {
+    public List<String> getResolutions(BugzillaRepository repository) {
         return repository.getRepositoryConfiguration().getResolutions();
     }
 
@@ -146,10 +140,8 @@ public class Bugzilla {
      * @param repository
      * @param product
      * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<String> getVersions(BugzillaRepository repository, String product) throws IOException, CoreException {
+    public List<String> getVersions(BugzillaRepository repository, String product) {
         if(product == null) {
             return repository.getRepositoryConfiguration().getVersions();
         } else {
@@ -161,10 +153,8 @@ public class Bugzilla {
      * Returns all status defined in the given repository
      * @param repository
      * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<String> getStatusValues(BugzillaRepository repository) throws IOException, CoreException {
+    public List<String> getStatusValues(BugzillaRepository repository)  {
         return repository.getRepositoryConfiguration().getStatusValues();
     }
 
@@ -172,10 +162,8 @@ public class Bugzilla {
      * Returns all open statuses defined in the given repository.
      * @param repository
      * @return all open statuses defined in the given repository.
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<String> getOpenStatusValues(BugzillaRepository repository) throws IOException, CoreException {
+    public List<String> getOpenStatusValues(BugzillaRepository repository)  {
         return repository.getRepositoryConfiguration().getOpenStatusValues();
     }
 
@@ -183,10 +171,8 @@ public class Bugzilla {
      * Returns all priorities defined in the given repository
      * @param repository
      * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<String> getPriorities(BugzillaRepository repository) throws IOException, CoreException {
+    public List<String> getPriorities(BugzillaRepository repository)  {
         return repository.getRepositoryConfiguration().getPriorities();
     }
 
@@ -194,10 +180,8 @@ public class Bugzilla {
      * Returns all keywords defined in the given repository
      * @param repository
      * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<String> getKeywords(BugzillaRepository repository) throws IOException, CoreException {
+    public List<String> getKeywords(BugzillaRepository repository) {
         return repository.getRepositoryConfiguration().getKeywords();
     }
 
@@ -205,10 +189,8 @@ public class Bugzilla {
      * Returns all platforms defined in the given repository
      * @param repository
      * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<String> getPlatforms(BugzillaRepository repository) throws IOException, CoreException {
+    public List<String> getPlatforms(BugzillaRepository repository) {
         return repository.getRepositoryConfiguration().getPlatforms();
     }
 
@@ -216,10 +198,8 @@ public class Bugzilla {
      * Returns all operating systems defined in the given repository
      * @param repository
      * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<String> getOSs(BugzillaRepository repository) throws IOException, CoreException {
+    public List<String> getOSs(BugzillaRepository repository) {
         return repository.getRepositoryConfiguration().getOSs();
     }
 
@@ -227,10 +207,8 @@ public class Bugzilla {
      * Returns all severities defined in the given repository
      * @param repository
      * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<String> getSeverities(BugzillaRepository repository) throws IOException, CoreException {
+    public List<String> getSeverities(BugzillaRepository repository) {
         return repository.getRepositoryConfiguration().getSeverities();
     }
 
@@ -238,10 +216,8 @@ public class Bugzilla {
      * Returns all custom fields defined in the given repository
      * @param repository
      * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<BugzillaCustomField> getCustomFields(BugzillaRepository repository) throws IOException, CoreException {
+    public List<BugzillaCustomField> getCustomFields(BugzillaRepository repository) {
         return repository.getRepositoryConfiguration().getCustomFields();
     }
 
@@ -252,10 +228,8 @@ public class Bugzilla {
      * @param repository
      * @param product
      * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<String> getTargetMilestones(BugzillaRepository repository, String product) throws IOException, CoreException {
+    public List<String> getTargetMilestones(BugzillaRepository repository, String product) {
         if(product == null) {
             return repository.getRepositoryConfiguration().getTargetMilestones();
         } else {

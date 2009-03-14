@@ -60,7 +60,6 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.commons.httpclient.HttpException;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
@@ -138,23 +137,17 @@ public class IssuePanel extends javax.swing.JPanel {
             });
         }
         this.issue = issue;
-        try {
-            initCombos();
-            reloadForm(true);
-            GroupLayout layout = (GroupLayout)getLayout();
-            if (issue.getTaskData().isNew()) {
-                if (productCombo.getParent() == null) {
-                    layout.replace(productField, productCombo);
-                }
-            } else {
-                if (productField.getParent() == null) {
-                    layout.replace(productCombo, productField);
-                }
+        initCombos();
+        reloadForm(true);
+        GroupLayout layout = (GroupLayout)getLayout();
+        if (issue.getTaskData().isNew()) {
+            if (productCombo.getParent() == null) {
+                layout.replace(productField, productCombo);
             }
-        } catch (CoreException cex) {
-            cex.printStackTrace();
-        } catch (IOException ioex) {
-            ioex.printStackTrace();
+        } else {
+            if (productField.getParent() == null) {
+                layout.replace(productCombo, productField);
+            }
         }
     }
 
@@ -234,7 +227,7 @@ public class IssuePanel extends javax.swing.JPanel {
         return currentValue;
     }
 
-    private void initCombos() throws CoreException, IOException {
+    private void initCombos() {
         Bugzilla bugzilla = Bugzilla.getInstance();
         BugzillaRepository repository = issue.getRepository();
         productCombo.setModel(toComboModel(bugzilla.getProducts(repository)));
@@ -252,60 +245,54 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void initStatusCombo(String status) {
-        try {
-            // Init statusCombo - allowed transitions (heuristics):
-            // Open -> Open-Unconfirmed-Reopened+Resolved
-            // Resolved -> Reopened+Close
-            // Close-Resolved -> Reopened+Resolved+(Close with higher index)
-            Bugzilla bugzilla = Bugzilla.getInstance();
-            BugzillaRepository repository = issue.getRepository();
-            List<String> allStatuses = bugzilla.getStatusValues(repository);
-            List<String> openStatuses = bugzilla.getOpenStatusValues(repository);
-            List<String> statuses = new LinkedList<String>();
-            String unconfirmed = "UNCONFIRMED"; // NOI18N
-            String reopened = "REOPENED"; // NOI18N
-            String resolved = "RESOLVED"; // NOI18N
-            if (openStatuses.contains(status)) {
-                statuses.addAll(openStatuses);
-                if (!unconfirmed.equals(status)) {
-                    statuses.remove(unconfirmed);
-                }
-                if (!reopened.equals(status)) {
-                    statuses.remove(reopened);
-                }
-                statuses.add(resolved);
+        // Init statusCombo - allowed transitions (heuristics):
+        // Open -> Open-Unconfirmed-Reopened+Resolved
+        // Resolved -> Reopened+Close
+        // Close-Resolved -> Reopened+Resolved+(Close with higher index)
+        Bugzilla bugzilla = Bugzilla.getInstance();
+        BugzillaRepository repository = issue.getRepository();
+        List<String> allStatuses = bugzilla.getStatusValues(repository);
+        List<String> openStatuses = bugzilla.getOpenStatusValues(repository);
+        List<String> statuses = new LinkedList<String>();
+        String unconfirmed = "UNCONFIRMED"; // NOI18N
+        String reopened = "REOPENED"; // NOI18N
+        String resolved = "RESOLVED"; // NOI18N
+        if (openStatuses.contains(status)) {
+            statuses.addAll(openStatuses);
+            if (!unconfirmed.equals(status)) {
+                statuses.remove(unconfirmed);
+            }
+            if (!reopened.equals(status)) {
+                statuses.remove(reopened);
+            }
+            statuses.add(resolved);
+        } else {
+            if (allStatuses.contains(reopened)) {
+                statuses.add(reopened);
             } else {
-                if (allStatuses.contains(reopened)) {
-                    statuses.add(reopened);
-                } else {
-                    // Pure guess
-                    statuses.addAll(openStatuses);
-                    statuses.remove(unconfirmed);
-                }
-                if (resolved.equals(status)) {
-                    List<String> closedStatuses = new LinkedList<String>(allStatuses);
-                    closedStatuses.removeAll(openStatuses);
-                    statuses.addAll(closedStatuses);
-                } else {
-                    statuses.add(resolved);
-                    if(!status.equals("")) {
-                        for (int i=allStatuses.indexOf(status); i<allStatuses.size(); i++) {
-                            String s = allStatuses.get(i);
-                            if (!openStatuses.contains(s)) {
-                                statuses.add(s);
-                            }
+                // Pure guess
+                statuses.addAll(openStatuses);
+                statuses.remove(unconfirmed);
+            }
+            if (resolved.equals(status)) {
+                List<String> closedStatuses = new LinkedList<String>(allStatuses);
+                closedStatuses.removeAll(openStatuses);
+                statuses.addAll(closedStatuses);
+            } else {
+                statuses.add(resolved);
+                if(!status.equals("")) {
+                    for (int i=allStatuses.indexOf(status); i<allStatuses.size(); i++) {
+                        String s = allStatuses.get(i);
+                        if (!openStatuses.contains(s)) {
+                            statuses.add(s);
                         }
                     }
                 }
-                resolvedIndex = statuses.indexOf(resolved);
             }
-            statusCombo.setModel(toComboModel(statuses));
-            statusCombo.setSelectedItem(status);
-        } catch (CoreException cex) {
-            cex.printStackTrace();
-        } catch (IOException ioex) {
-            ioex.printStackTrace();
+            resolvedIndex = statuses.indexOf(resolved);
         }
+        statusCombo.setModel(toComboModel(statuses));
+        statusCombo.setSelectedItem(status);
     }
 
     private ComboBoxModel toComboModel(List<String> items) {
@@ -829,28 +816,22 @@ public class IssuePanel extends javax.swing.JPanel {
         Bugzilla bugzilla = Bugzilla.getInstance();
         BugzillaRepository repository = issue.getRepository();
         String product = productCombo.getSelectedItem().toString();
-        try {
-            Object component = componentCombo.getSelectedItem();
-            Object version = versionCombo.getSelectedItem();
-            Object targetMilestone = targetMilestoneCombo.getSelectedItem();
-            componentCombo.setModel(toComboModel(bugzilla.getComponents(repository, product)));
-            versionCombo.setModel(toComboModel(bugzilla.getVersions(repository, product)));
-            List<String> targetMilestones = bugzilla.getTargetMilestones(repository, product);
-            usingTargetMilestones = (targetMilestones.size() != 0);
-            targetMilestoneCombo.setModel(toComboModel(targetMilestones));
-            // Attempt to keep selection
-            componentCombo.setSelectedItem(component);
-            versionCombo.setSelectedItem(version);
-            if (usingTargetMilestones) {
-                targetMilestoneCombo.setSelectedItem(targetMilestone);
-            }
-            targetMilestoneLabel.setVisible(usingTargetMilestones);
-            targetMilestoneCombo.setVisible(usingTargetMilestones);
-        } catch (CoreException cex) {
-            cex.printStackTrace();
-        } catch (IOException ioex) {
-            ioex.printStackTrace();
+        Object component = componentCombo.getSelectedItem();
+        Object version = versionCombo.getSelectedItem();
+        Object targetMilestone = targetMilestoneCombo.getSelectedItem();
+        componentCombo.setModel(toComboModel(bugzilla.getComponents(repository, product)));
+        versionCombo.setModel(toComboModel(bugzilla.getVersions(repository, product)));
+        List<String> targetMilestones = bugzilla.getTargetMilestones(repository, product);
+        usingTargetMilestones = (targetMilestones.size() != 0);
+        targetMilestoneCombo.setModel(toComboModel(targetMilestones));
+        // Attempt to keep selection
+        componentCombo.setSelectedItem(component);
+        versionCombo.setSelectedItem(version);
+        if (usingTargetMilestones) {
+            targetMilestoneCombo.setSelectedItem(targetMilestone);
         }
+        targetMilestoneLabel.setVisible(usingTargetMilestones);
+        targetMilestoneCombo.setVisible(usingTargetMilestones);
     }//GEN-LAST:event_productComboActionPerformed
 
     private void statusComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statusComboActionPerformed
@@ -929,34 +910,16 @@ public class IssuePanel extends javax.swing.JPanel {
             public void run() {
                 try {
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
-                        try {
-                            if (attachment.file.exists()) {
-                                if (attachment.description.trim().length() == 0) {
-                                    attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
-                                }
-                                issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
-                            } else {
-                                // PENDING notify user
+                        if (attachment.file.exists()) {
+                            if (attachment.description.trim().length() == 0) {
+                                attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
                             }
-                        } catch (HttpException hex) {
-                            hex.printStackTrace();
-                        } catch (IOException ioex) {
-                            ioex.printStackTrace();
-                        } catch (CoreException cex) {
-                            cex.printStackTrace();
+                            issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
+                        } else {
+                            // PENDING notify user
                         }
                     }
                     issue.submitAndRefresh();
-                } catch (CoreException cex) {
-                    IStatus status = cex.getStatus();
-                    if (!(status instanceof BugzillaStatus)) {
-                        System.err.println(status.getMessage());
-                    }
-                    if (status instanceof RepositoryStatus) {
-                        RepositoryStatus rStatus = (RepositoryStatus)status;
-                        System.err.println(rStatus.getHtmlMessage());
-                    }
-                    cex.printStackTrace();
                 } finally {
                     issue.refresh();
                     handle.finish();

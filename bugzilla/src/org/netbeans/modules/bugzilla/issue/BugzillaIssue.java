@@ -54,7 +54,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import org.apache.commons.httpclient.HttpException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
@@ -74,9 +73,7 @@ import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -381,7 +378,7 @@ public class BugzillaIssue extends Issue {
         try {
             if(taskData.isNew()) {
                 return null;
-            }
+                }
             return Integer.toString(BugzillaRepositoryConnector.getBugId(taskData.getTaskId()));
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
@@ -584,7 +581,7 @@ public class BugzillaIssue extends Issue {
     }
 
 
-    void addAttachment(final File file, final String comment, final String desc, String contentType, final boolean patch) throws HttpException, IOException, CoreException  {
+    void addAttachment(final File file, final String comment, final String desc, String contentType, final boolean patch) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
         final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
         if (contentType == null) {
@@ -661,34 +658,32 @@ public class BugzillaIssue extends Issue {
     @Override
     public void attachPatch(File file, String description) {
         refresh();
-        try {
-            addAttachment(file, null, description, null, true);
-            refresh();
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
+        addAttachment(file, null, description, null, true);
+        refresh();
     }
 
-    void submitAndRefresh() throws CoreException {
+    void submitAndRefresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
 
-        boolean wasSeenAlready = repository.getIssueCache().wasSeen(getID());
-
-        RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
-        // XXX evaluate rr
-
-        refresh();
-
-        // it was the user who made the changes, so preserve the seen status if seen already
-        if(wasSeenAlready) {
-            try {
-                repository.getIssueCache().setSeen(getID(), true);
-            } catch (IOException ex) {
-                Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        final boolean wasSeenAlready = repository.getIssueCache().wasSeen(getID());
+        BugzillaCommand cmd = new BugzillaCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
+                RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
+                // XXX evaluate rr
+                refresh();
+                // it was the user who made the changes, so preserve the seen status if seen already
+                if (wasSeenAlready) {
+                    try {
+                        repository.getIssueCache().setSeen(getID(), true);
+                        // it was the user who made the changes, so preserve the seen status if seen already
+                    } catch (IOException ex) {
+                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
             }
-        }
+        };
+        repository.getExecutor().execute(cmd);
     }
 
     public void refresh() {
@@ -822,9 +817,15 @@ public class BugzillaIssue extends Issue {
             return url;
         }
 
-        public void getAttachementData(OutputStream os) throws MalformedURLException, IOException, CoreException {
+        public void getAttachementData(final OutputStream os) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
-            Bugzilla.getInstance().getClient(repository).getAttachmentData(id, os, new NullProgressMonitor());
+            BugzillaCommand cmd = new BugzillaCommand() {
+                @Override
+                public void execute() throws CoreException, IOException, MalformedURLException {
+                    Bugzilla.getInstance().getClient(repository).getAttachmentData(id, os, new NullProgressMonitor());
+                }
+            };
+            repository.getExecutor().execute(cmd);
         }
     }
 
