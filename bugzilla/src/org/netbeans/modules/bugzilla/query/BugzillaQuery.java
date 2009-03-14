@@ -104,7 +104,7 @@ public class BugzillaQuery extends Query {
     }
 
     @Override
-    public QueryController getController() {
+    public synchronized QueryController getController() {
         if (controller == null) {
             controller = createControler(repository, this, urlParameters);
         }

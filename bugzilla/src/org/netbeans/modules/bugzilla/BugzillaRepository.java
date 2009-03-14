@@ -55,9 +55,12 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
+import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -75,6 +78,7 @@ import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.filesystems.RepositoryListener;
 import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -97,6 +101,8 @@ public class BugzillaRepository extends Repository {
     private IssueCache cache;
     private BugzillaExecutor executor;
     private Image icon;
+
+    private RepositoryConfiguration rc;
 
     BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -141,6 +147,15 @@ public class BugzillaRepository extends Repository {
         for (Query q : qs) {
             removeQuery((BugzillaQuery) q);
         }
+        removeRepository();
+    }
+
+    public synchronized void removeRepository() {
+        rc = null;
+        Bugzilla.getInstance()
+                .getRepositoryConnector()
+                .getClientManager()
+                .repositoryRemoved(getTaskRepository());
     }
 
     @Override
@@ -391,6 +406,7 @@ public class BugzillaRepository extends Repository {
             taskRepository = createTaskRepository(panel.nameField.getText(), panel.urlField.getText(), panel.userField.getText(), new String(panel.psswdField.getPassword()));
             BugzillaConfig.getInstance().putRepository(name, BugzillaRepository.this);
             fireDataApplied();
+            removeRepository(); // only on url, user or passwd change
         }
 
         void populate() {
@@ -478,6 +494,18 @@ public class BugzillaRepository extends Repository {
         protected void setTaskData(Issue issue, TaskData taskData) {
             ((BugzillaIssue)issue).setTaskData(taskData); 
         }
+    }
+
+    public synchronized RepositoryConfiguration getRepositoryConfiguration() throws CoreException, IOException {
+        if(rc == null) {
+            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
+            rc = Bugzilla.getInstance()
+                    .getRepositoryConnector()
+                    .getClientManager()
+                    .getClient(getTaskRepository(), new NullProgressMonitor())
+                    .getRepositoryConfiguration(new NullProgressMonitor());
+        }
+        return rc;
     }
 
 }

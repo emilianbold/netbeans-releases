@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.bugzilla.commands;
 
-import java.awt.Dialog;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
@@ -49,16 +46,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaRepository;
-import org.netbeans.modules.bugzilla.RepositoryPanel;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -121,9 +114,6 @@ public class BugzillaExecutor {
 
     private boolean handleAuthenticate(CoreException ce) {
         boolean edit = BugtrackingUtil.editRepository(repository);
-        if(edit) {
-            Bugzilla.getInstance().removeRepository(repository);
-        }
         return edit;
     }
 

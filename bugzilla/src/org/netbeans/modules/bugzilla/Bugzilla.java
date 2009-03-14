@@ -39,23 +39,16 @@
 
 package org.netbeans.modules.bugzilla;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
-import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -72,8 +65,6 @@ public class Bugzilla {
 
     private RequestProcessor rp;
 
-    private Map<String, RepositoryConfiguration> repoToRepoconf = new HashMap<String, RepositoryConfiguration>();
-    
     private Bugzilla() {
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
@@ -90,7 +81,6 @@ public class Bugzilla {
         return instance;
     }
 
-    // XXX private?
     public BugzillaRepositoryConnector getRepositoryConnector() {
         if(brc == null) {
             brc = new BugzillaRepositoryConnector();
@@ -117,8 +107,8 @@ public class Bugzilla {
      * @throws java.io.IOException
      * @throws org.eclipse.core.runtime.CoreException
      */
-    public List<String> getProducts(BugzillaRepository repo) throws CoreException, IOException {
-        return getRepositoryConfiguration(repo).getProducts();
+    public List<String> getProducts(BugzillaRepository repository) throws CoreException, IOException {
+        return repository.getRepositoryConfiguration().getProducts();
     }
 
     /**
@@ -132,9 +122,9 @@ public class Bugzilla {
      */
     public List<String> getComponents(BugzillaRepository repository, String product) throws IOException, CoreException {
         if(product == null) {
-            return getRepositoryConfiguration(repository).getComponents();
+            return repository.getRepositoryConfiguration().getComponents();
         } else {
-            return getRepositoryConfiguration(repository). getComponents(product);
+            return repository.getRepositoryConfiguration(). getComponents(product);
         }
     }
 
@@ -147,7 +137,7 @@ public class Bugzilla {
      * @throws org.eclipse.core.runtime.CoreException
      */
     public List<String> getResolutions(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getResolutions();
+        return repository.getRepositoryConfiguration().getResolutions();
     }
 
     /**
@@ -161,9 +151,9 @@ public class Bugzilla {
      */
     public List<String> getVersions(BugzillaRepository repository, String product) throws IOException, CoreException {
         if(product == null) {
-            return getRepositoryConfiguration(repository).getVersions();
+            return repository.getRepositoryConfiguration().getVersions();
         } else {
-            return getRepositoryConfiguration(repository).getVersions(product);
+            return repository.getRepositoryConfiguration().getVersions(product);
         }
     }
 
@@ -175,7 +165,7 @@ public class Bugzilla {
      * @throws org.eclipse.core.runtime.CoreException
      */
     public List<String> getStatusValues(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getStatusValues();
+        return repository.getRepositoryConfiguration().getStatusValues();
     }
 
     /**
@@ -186,7 +176,7 @@ public class Bugzilla {
      * @throws org.eclipse.core.runtime.CoreException
      */
     public List<String> getOpenStatusValues(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getOpenStatusValues();
+        return repository.getRepositoryConfiguration().getOpenStatusValues();
     }
 
     /**
@@ -197,7 +187,7 @@ public class Bugzilla {
      * @throws org.eclipse.core.runtime.CoreException
      */
     public List<String> getPriorities(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getPriorities();
+        return repository.getRepositoryConfiguration().getPriorities();
     }
 
     /**
@@ -208,7 +198,7 @@ public class Bugzilla {
      * @throws org.eclipse.core.runtime.CoreException
      */
     public List<String> getKeywords(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getKeywords();
+        return repository.getRepositoryConfiguration().getKeywords();
     }
 
     /**
@@ -219,7 +209,7 @@ public class Bugzilla {
      * @throws org.eclipse.core.runtime.CoreException
      */
     public List<String> getPlatforms(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getPlatforms();
+        return repository.getRepositoryConfiguration().getPlatforms();
     }
 
     /**
@@ -230,7 +220,7 @@ public class Bugzilla {
      * @throws org.eclipse.core.runtime.CoreException
      */
     public List<String> getOSs(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getOSs();
+        return repository.getRepositoryConfiguration().getOSs();
     }
 
     /**
@@ -241,7 +231,7 @@ public class Bugzilla {
      * @throws org.eclipse.core.runtime.CoreException
      */
     public List<String> getSeverities(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getSeverities();
+        return repository.getRepositoryConfiguration().getSeverities();
     }
 
     /**
@@ -252,7 +242,7 @@ public class Bugzilla {
      * @throws org.eclipse.core.runtime.CoreException
      */
     public List<BugzillaCustomField> getCustomFields(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getCustomFields();
+        return repository.getRepositoryConfiguration().getCustomFields();
     }
 
     /**
@@ -267,9 +257,9 @@ public class Bugzilla {
      */
     public List<String> getTargetMilestones(BugzillaRepository repository, String product) throws IOException, CoreException {
         if(product == null) {
-            return getRepositoryConfiguration(repository).getTargetMilestones();
+            return repository.getRepositoryConfiguration().getTargetMilestones();
         } else {
-            return getRepositoryConfiguration(repository).getTargetMilestones(product);
+            return repository.getRepositoryConfiguration().getTargetMilestones(product);
         }
     }
 
@@ -285,37 +275,4 @@ public class Bugzilla {
         }
         return rp;
     }
-
-    private RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository) throws CoreException, IOException {
-        RepositoryConfiguration rc = repoToRepoconf.get(repository.getDisplayName());
-        if(rc == null) {
-            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
-            rc = getRepositoryConnector().getClientManager().getClient(repository.getTaskRepository(), new NullProgressMonitor()).getRepositoryConfiguration(new NullProgressMonitor());
-
-            repository.getController().addPropertyChangeListener(new RepositoryListener(repository));
-            repoToRepoconf.put(repository.getDisplayName(), rc);
-        }
-        return rc;
-    }
-
-    public void removeRepository(BugzillaRepository repository) {
-        repoToRepoconf.remove(repository.getDisplayName());
-        getRepositoryConnector().getClientManager().repositoryRemoved(repository.getTaskRepository());
-    }
-
-    private class RepositoryListener implements PropertyChangeListener {
-        private final BugzillaRepository repository;
-
-        public RepositoryListener(BugzillaRepository repository) {
-            this.repository = repository;
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(BugtrackingController.EVENT_COMPONENT_DATA_APPLIED)) {
-                repository.removePropertyChangeListener(this);
-                removeRepository(repository);
-            }
-        }
-    }
-
 }
