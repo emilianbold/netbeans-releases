@@ -152,7 +152,6 @@ public class IDEValidation extends JellyTestCase {
         suite.addTest(new IDEValidation("testEditor"));
         suite.addTest(new IDEValidation("testBuildAndRun"));
         suite.addTest(new IDEValidation("testDebugging"));
-        suite.addTest(new IDEValidation("testDebuggingMayFail"));
         suite.addTest(new IDEValidation("testJUnit"));
         suite.addTest(new IDEValidation("testXML"));
         suite.addTest(new IDEValidation("testDb"));

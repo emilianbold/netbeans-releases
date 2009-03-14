@@ -103,9 +103,9 @@ public class MemoryValidationTest extends JellyTestCase {
 // XXX: the following two tests were commented out because of the csl.api & related changes
 //        conf = conf.addTest("testEditor");
 //        conf = conf.addTest("testBuildAndRun");
+//        conf = conf.addTest("testDebugging");
 // ---------------------------------------------------------------
 
-        conf = conf.addTest("testDebuggingMayFail");
 //        conf = conf.addTest("testJUnit");
 //        conf = conf.addTest("testXML");
 //        conf = conf.addTest("testDb");
