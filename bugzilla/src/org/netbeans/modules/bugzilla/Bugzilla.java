@@ -109,7 +109,7 @@ public class Bugzilla {
     public List<String> getProducts(BugzillaRepository repository) {
         RepositoryConfiguration rc = repository.getRepositoryConfiguration();
         if(rc == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
         return rc.getProducts();
     }
@@ -124,7 +124,7 @@ public class Bugzilla {
     public List<String> getComponents(BugzillaRepository repository, String product) {
         RepositoryConfiguration rc = repository.getRepositoryConfiguration();
         if(rc == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
         if(product == null) {
             return rc.getComponents();
@@ -142,7 +142,7 @@ public class Bugzilla {
     public List<String> getResolutions(BugzillaRepository repository) {
         RepositoryConfiguration rc = repository.getRepositoryConfiguration();
         if(rc == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
         return rc.getResolutions();
     }
@@ -157,7 +157,7 @@ public class Bugzilla {
     public List<String> getVersions(BugzillaRepository repository, String product) {
         RepositoryConfiguration rc = repository.getRepositoryConfiguration();
         if(rc == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
         if(product == null) {
             return rc.getVersions();
@@ -174,7 +174,7 @@ public class Bugzilla {
     public List<String> getStatusValues(BugzillaRepository repository)  {
         RepositoryConfiguration rc = repository.getRepositoryConfiguration();
         if(rc == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
         return rc.getStatusValues();
     }
@@ -187,7 +187,7 @@ public class Bugzilla {
     public List<String> getOpenStatusValues(BugzillaRepository repository)  {
         RepositoryConfiguration rc = repository.getRepositoryConfiguration();
         if(rc == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
         return rc.getOpenStatusValues();
     }
@@ -200,7 +200,7 @@ public class Bugzilla {
     public List<String> getPriorities(BugzillaRepository repository)  {
         RepositoryConfiguration rc = repository.getRepositoryConfiguration();
         if(rc == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
         return rc.getPriorities();
     }
@@ -213,7 +213,7 @@ public class Bugzilla {
     public List<String> getKeywords(BugzillaRepository repository) {
         RepositoryConfiguration rc = repository.getRepositoryConfiguration();
         if(rc == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
         return rc.getKeywords();
     }
@@ -226,7 +226,7 @@ public class Bugzilla {
     public List<String> getPlatforms(BugzillaRepository repository) {
         RepositoryConfiguration rc = repository.getRepositoryConfiguration();
         if(rc == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
         return rc.getPlatforms();
     }
@@ -239,7 +239,7 @@ public class Bugzilla {
     public List<String> getOSs(BugzillaRepository repository) {
         RepositoryConfiguration rc = repository.getRepositoryConfiguration();
         if(rc == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
         return rc.getOSs();
     }
@@ -252,7 +252,7 @@ public class Bugzilla {
     public List<String> getSeverities(BugzillaRepository repository) {
         RepositoryConfiguration rc = repository.getRepositoryConfiguration();
         if(rc == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
         return rc.getSeverities();
     }
@@ -265,7 +265,7 @@ public class Bugzilla {
     public List<BugzillaCustomField> getCustomFields(BugzillaRepository repository) {
         RepositoryConfiguration rc = repository.getRepositoryConfiguration();
         if(rc == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
         return rc.getCustomFields();
     }
@@ -281,7 +281,7 @@ public class Bugzilla {
     public List<String> getTargetMilestones(BugzillaRepository repository, String product) {
         RepositoryConfiguration rc = repository.getRepositoryConfiguration();
         if(rc == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
         if(product == null) {
             return rc.getTargetMilestones();
