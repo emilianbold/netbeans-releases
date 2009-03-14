@@ -61,9 +61,4 @@ public class KenaiQuery extends BugzillaQuery {
         return c;
     }
 
-    @Override
-    public void refresh() {
-        super.refresh();
-    }
-
 }
