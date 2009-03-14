@@ -338,7 +338,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    void enableFields(boolean bl) {
+    protected void enableFields(boolean bl) {
         // set all non parameter fields
         panel.enableFields(bl);
         // set the parameter fields

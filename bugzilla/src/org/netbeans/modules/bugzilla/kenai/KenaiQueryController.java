@@ -61,5 +61,15 @@ public class KenaiQueryController extends QueryController {
         super.populate(urlParameters);
         disableProduct(product);
     }
-    
+
+    @Override
+    protected void enableFields(boolean bl) {
+        super.enableFields(bl);
+
+        // overide - for predefined kenai queries are those always disabled
+        panel.modifyButton.setEnabled(false);
+        panel.removeButton.setEnabled(false);
+    }
+
+
 }
