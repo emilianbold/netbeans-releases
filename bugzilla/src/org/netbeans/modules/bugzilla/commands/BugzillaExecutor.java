@@ -141,7 +141,7 @@ public class BugzillaExecutor {
                 notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
             }
         } else {
-            notifyErrorMessage(msg);
+            notifyError(ce);
         }
     }
 
@@ -166,17 +166,27 @@ public class BugzillaExecutor {
             if(html != null && !html.trim().equals("")) {                       // NOI18N
                 final HtmlPanel p = new HtmlPanel();
                 p.setHtml(html);
-                BugzillaUtil.show(p, "html", "ok");
+                NotifyDescriptor descriptor = new NotifyDescriptor (
+                    p,
+                    NbBundle.getMessage(BugzillaExecutor.class, "MSG_RemoteResponse"),
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.INFORMATION_MESSAGE,
+                    new Object[] {NotifyDescriptor.OK_OPTION},
+                    NotifyDescriptor.OK_OPTION);
+                DialogDisplayer.getDefault().notify(descriptor);
 //                 XXX show in browser ?
+                return;
             }
-        } else if (status instanceof BugzillaStatus) {
-            BugzillaStatus bs = (BugzillaStatus) status;
-            String msg = bs.getMessage();
-            notifyErrorMessage(msg);
-        } else {
-            String msg = status.getMessage();
-            notifyErrorMessage(msg);
         }
+        String msg = getMessage(ce);
+        notifyErrorMessage(msg);
+//        if (status instanceof BugzillaStatus) {
+//            BugzillaStatus bs = (BugzillaStatus) status;
+//            String msg = bs.getMessage();
+//        } else {
+//            String msg = status.getMessage();
+//            notifyErrorMessage(msg);
+//        }
     }
 
     private void notifyErrorMessage(String msg) {
