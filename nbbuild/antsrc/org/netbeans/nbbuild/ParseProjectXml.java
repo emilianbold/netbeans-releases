@@ -912,14 +912,7 @@ public final class ParseProjectXml extends Task {
                         " against because it is part of the cluster " +
                         clusterF + " which is not part of cluster.path in your suite configuration.\n\n" +
                         "Cluster.path is: " + clusterPath;
-                if (runtime) {
-                    // Hotfix for build failure in cdev.
-                    // kenai.ui in ide cluster indirectly has test dep on ide.kit in gsf cluster.
-                    // No problem during building; technically a cyclic dep but would only matter running tests.
-                    log(msg, Project.MSG_WARN);
-                } else {
-                    throw new BuildException(msg, getLocation());
-                }
+                throw new BuildException(msg, getLocation());
             }
         }
         /* XXX consider readding:
