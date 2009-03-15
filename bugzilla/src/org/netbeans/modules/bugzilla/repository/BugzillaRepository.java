@@ -37,36 +37,28 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugzilla.repository;
 
-import java.awt.BorderLayout;
+import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
+import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -76,15 +68,10 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
-import org.netbeans.modules.bugzilla.commands.ValidateCommand;
+import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -92,16 +79,23 @@ import org.openide.util.RequestProcessor.Task;
  */
 public class BugzillaRepository extends Repository {
 
+    private static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/repository.png";
+
     private String name;
     private TaskRepository taskRepository;
-    private Controller controller;
+    private RepositoryController controller;
     private Set<Query> queries = null;
     private IssueCache cache;
     private BugzillaExecutor executor;
+    private Image icon;
+    private BugzillaConfiguration bc;
+    
+    public BugzillaRepository() {
+        icon = ImageUtilities.loadImage(ICON_PATH, true);
+    }
 
-    BugzillaRepository() { }
-
-    protected BugzillaRepository(String repoName, String url, String user, String password) {
+    public BugzillaRepository(String repoName, String url, String user, String password) {
+        this();
         name = repoName;
         taskRepository = createTaskRepository(name, url, user, password);
     }
@@ -133,12 +127,46 @@ public class BugzillaRepository extends Repository {
     }
 
     @Override
+    public void remove() {
+        BugzillaConfig.getInstance().removeRepository(this.getDisplayName());
+        Query[] qs = getQueries();
+        for (Query q : qs) {
+            removeQuery((BugzillaQuery) q);
+        }
+        resetRepository();
+    }
+
+    synchronized void resetRepository() {
+        bc = null;
+        if(getTaskRepository() != null) {
+            Bugzilla.getInstance()
+                    .getRepositoryConnector()
+                    .getClientManager()
+                    .repositoryRemoved(getTaskRepository());
+        }
+    }
+
+    void setName(String name) {
+        this.name = name;
+    }
+    
+    @Override
     public void fireQueryListChanged() {
         super.fireQueryListChanged();
     }
 
     public String getDisplayName() {
         return name;
+    }
+
+    @Override
+    public String getTooltip() {
+        return name + " : " + taskRepository.getCredentials(AuthenticationType.REPOSITORY).getUserName() + "@" + taskRepository.getUrl();
+    }
+
+    @Override
+    public Image getIcon() {
+        return icon;
     }
 
     public String getUsername() {
@@ -169,37 +197,11 @@ public class BugzillaRepository extends Repository {
     @Override
     // XXX create repo wih product if kenai project and use in queries
     public Issue[] simpleSearch(final String criteria) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
-        String[] keywords = criteria.split(" ");
-
-        List<Issue> issues = new ArrayList<Issue>();
-        StringBuffer url = new StringBuffer();
-        if(keywords.length == 1 && isNumber(keywords[0])) {
-            // only one search criteria -> might be we are looking for the bug with id=values[0]
-            url.append(IBugzillaConstants.URL_GET_SHOW_BUG);
-            url.append("="); // XXX ???
-            url.append(keywords[0]);
-
-            issues.addAll(executeQuery(url.toString()));
-        }
-
-        url = new StringBuffer();
-        url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST + "&short_desc_type=allwordssubstr&short_desc=");
-        for (int i = 0; i < keywords.length; i++) {
-            String val = keywords[i].trim();
-            if(val.equals("")) continue;
-            url.append(val);
-            if(i < keywords.length - 1) {
-                url.append("+");
-            }
-        }
-        issues.addAll(executeQuery(url.toString()));
-        return issues.toArray(new BugzillaIssue[issues.size()]);
-    }
-
-    private List<Issue> executeQuery(String queryUrl)  {
         assert taskRepository != null;
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+
+        String[] keywords = criteria.split(" ");                                // NOI18N
+
         final List<Issue> issues = new ArrayList<Issue>();
         TaskDataCollector collector = new TaskDataCollector() {
             public void accept(TaskData taskData) {
@@ -211,19 +213,43 @@ public class BugzillaRepository extends Repository {
                 }
             }
         };
-        BugzillaUtil.performQuery(taskRepository, queryUrl, collector);
-        return issues;
-    }
 
-    @Override
-    public String getTooltip() {
-        return name + " : " + taskRepository.getCredentials(AuthenticationType.REPOSITORY).getUserName() + "@" + taskRepository.getUrl();
+        StringBuffer url = new StringBuffer();
+        if(keywords.length == 1 && isNumber(keywords[0])) {
+            // only one search criteria -> might be we are looking for the bug with id=values[0]
+            url.append(IBugzillaConstants.URL_GET_SHOW_BUG);
+            url.append("="); // XXX ???                                         // NOI18N
+            url.append(keywords[0]);
+
+            PerformQueryCommand queryCmd = new PerformQueryCommand(this, url.toString(), collector);
+            getExecutor().execute(queryCmd);
+            if(queryCmd.hasFailed()) {
+                return new Issue[0];
+            }
+        }
+
+        url = new StringBuffer();
+        url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST + "&short_desc_type=allwordssubstr&short_desc="); // NOI18N
+        for (int i = 0; i < keywords.length; i++) {
+            String val = keywords[i].trim();
+            if(val.equals("")) continue;                                        // NOI18N
+            url.append(val);
+            if(i < keywords.length - 1) {
+                url.append("+");                                                // NOI18N
+            }
+        }
+        PerformQueryCommand queryCmd = new PerformQueryCommand(this, url.toString(), collector);
+        getExecutor().execute(queryCmd);
+        if(queryCmd.hasFailed()) {
+            return new Issue[0];
+        }
+        return issues.toArray(new BugzillaIssue[issues.size()]);
     }
 
     @Override
     public BugtrackingController getController() {
         if(controller == null) {
-            controller = new Controller();
+            controller = new RepositoryController(this);
         }
         return controller;
     }
@@ -267,6 +293,10 @@ public class BugzillaRepository extends Repository {
         return queries;
     }
 
+    void setTaskRepository(String name, String url, String user, String password) {
+        taskRepository = createTaskRepository(name, url, user, password);
+    }
+
     static TaskRepository createTaskRepository(String name, String url, String user, String password) {
         TaskRepository repository = new TaskRepository(name, url);
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
@@ -287,143 +317,11 @@ public class BugzillaRepository extends Repository {
         return true;
     }
 
-    @Override
-    public Image getIcon() {
-        return null;
-    }
-
     public BugzillaExecutor getExecutor() {
         if(executor == null) {
             executor = new BugzillaExecutor(this);
         }
         return executor;
-    }
-
-    private class Controller extends BugtrackingController implements DocumentListener, ActionListener {
-        private RepositoryPanel panel = new RepositoryPanel();
-        private String errorMessage;
-
-        private Controller() {
-            if(taskRepository != null) {
-                AuthenticationCredentials c = taskRepository.getCredentials(AuthenticationType.REPOSITORY);
-                panel.userField.setText(c.getUserName());
-                panel.psswdField.setText(c.getPassword());
-                panel.urlField.setText(taskRepository.getUrl());
-                panel.nameField.setText(BugzillaRepository.this.name);
-            }
-
-            panel.nameField.getDocument().addDocumentListener(this);
-            panel.userField.getDocument().addDocumentListener(this);
-            panel.urlField.getDocument().addDocumentListener(this);
-            panel.psswdField.getDocument().addDocumentListener(this);
-
-            panel.validateButton.addActionListener(this);
-        }
-
-        public JComponent getComponent() {
-            return panel;
-        }
-
-        public HelpCtx getHelpContext() {
-            return new HelpCtx(org.netbeans.modules.bugzilla.BugzillaRepository.class);
-        }
-
-        public boolean isValid() {
-            errorMessage = null;
-            if(panel.nameField.getText().trim().equals("")) {
-                errorMessage = "Missing name";
-                return false;
-            }
-            String url = panel.urlField.getText().trim();
-            if(url.equals("")) {
-                errorMessage = "Missing URL";
-                return false;
-            }
-            try {
-                new URL(url);
-            } catch (MalformedURLException ex) {
-                errorMessage = "Wrong URL format";
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public String getErrorMessage() {
-            return errorMessage;
-        }
-
-        @Override
-        public void applyChanges() {
-            String newName = panel.nameField.getText().trim();
-            if(!newName.equals(BugzillaRepository.this.name)) {
-                BugzillaConfig.getInstance().removeRepository(BugzillaRepository.this.name);
-            }
-            BugzillaRepository.this.name = newName;
-            BugzillaRepository.this.taskRepository = createTaskRepository(panel.nameField.getText(), panel.urlField.getText(), panel.userField.getText(), new String(panel.psswdField.getPassword()));
-            BugzillaConfig.getInstance().putRepository(name, BugzillaRepository.this);
-        }
-
-        public void insertUpdate(DocumentEvent e) {
-            fireDataChanged();
-        }
-
-        public void removeUpdate(DocumentEvent e) {
-            fireDataChanged();
-        }
-
-        public void changedUpdate(DocumentEvent e) {
-            fireDataChanged();
-        }
-
-
-        public void actionPerformed(ActionEvent e) {
-            if(e.getSource() == panel.validateButton) {
-                onValidate();
-            }
-        }
-
-        private void onValidate() {
-            RequestProcessor rp = Bugzilla.getInstance().getRequestProcessor();
-
-            final Task[] task = new Task[1];
-            Cancellable c = new Cancellable() {
-                public boolean cancel() {
-                    panel.progressPanel.setVisible(false);
-                    panel.validateLabel.setVisible(false);
-                    if(task[0] != null) task[0].cancel();
-                    return true;
-                }
-            };
-            final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating"), c);
-            JComponent comp = ProgressHandleFactory.createProgressComponent(handle);
-            panel.progressPanel.removeAll();
-            panel.progressPanel.add(comp, BorderLayout.CENTER);
-
-            task[0] = rp.create(new Runnable() {
-                public void run() {
-                    handle.start();
-                    panel.progressPanel.setVisible(true);
-                    panel.validateLabel.setVisible(true);
-                    panel.validateLabel.setText(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating"));
-                    try {
-                        TaskRepository taskRepo = BugzillaRepository.createTaskRepository(
-                                panel.nameField.getText(),
-                                panel.urlField.getText(),
-                                panel.userField.getText(),
-                                new String(panel.psswdField.getPassword()));
-                        ValidateCommand cmd = new ValidateCommand(taskRepo);
-                        getExecutor().execute(cmd);
-                    } finally {
-                        handle.finish();
-                        panel.progressPanel.setVisible(false);
-                        panel.validateLabel.setVisible(false);
-                    }
-                }
-            });
-            task[0].schedule(0);
-        }
-
     }
 
     private class Cache extends IssueCache {
@@ -436,6 +334,18 @@ public class BugzillaRepository extends Repository {
         protected void setTaskData(Issue issue, TaskData taskData) {
             ((BugzillaIssue)issue).setTaskData(taskData); 
         }
+    }
+
+    /**
+     * Returns the bugzilla configuration or null if not available
+     * 
+     * @return
+     */
+    public synchronized BugzillaConfiguration getConfiguration() {
+        if(bc == null) {
+            bc = BugzillaConfiguration.create(this);
+        }
+        return bc;
     }
 
 }

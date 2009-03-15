@@ -138,9 +138,10 @@ public abstract class Query implements Comparable<Query> {
      *********/
 
     /**
-     * Runs the query against the remote repository
+     * Refreshes this Query
+     * @return true if the query was refreshed, otherwise false
      */
-    public abstract void refresh(); // XXX throw? // XXX do we need this in api
+    public abstract boolean refresh(); 
     
     /**
      * Sets te queries status as saved. The {@link IssueTable} assotiated with
@@ -215,11 +216,12 @@ public abstract class Query implements Comparable<Query> {
     /**
      * Describes a particular column in the queries table
      */
-    public static class ColumnDescriptor extends ReadOnly {
-        public ColumnDescriptor(String name, Class type, String displayName, String shortDescription) {
+    public static class ColumnDescriptor<T> extends ReadOnly<T> {
+        public ColumnDescriptor(String name, Class<T> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        @Override
+        public T getValue() throws IllegalAccessException, InvocationTargetException {
             return null;
         }
     }
@@ -244,11 +246,11 @@ public abstract class Query implements Comparable<Query> {
      * EVENTS
      *********/
 
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 

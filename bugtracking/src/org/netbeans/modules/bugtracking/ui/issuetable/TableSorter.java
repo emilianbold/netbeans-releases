@@ -129,7 +129,7 @@ public final class TableSorter extends AbstractTableModel {
 
     private static Directive EMPTY_DIRECTIVE = new Directive(-1, NOT_SORTED);
 
-    public static final Comparator COMPARABLE_COMAPRATOR = new Comparator<Comparable>() {
+    public static final Comparator<Comparable> COMPARABLE_COMAPRATOR = new Comparator<Comparable>() {
         public int compare(Comparable o1, Comparable o2) {
             return o1.compareTo(o2);
         }

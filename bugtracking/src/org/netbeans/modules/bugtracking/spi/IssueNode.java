@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.spi;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
@@ -107,16 +108,6 @@ public abstract class IssueNode extends AbstractNode {
         return preferedAction;
     }
 
-    /**
-     * Provide cookies to actions.
-     * If a node represents primary file of a DataObject
-     * it has respective DataObject cookies.
-     */
-    @Override
-    public Cookie getCookie(Class klass) {
-        return super.getCookie(klass);
-    }
-
     public boolean wasSeen() {
         return issue.wasSeen();
     }
@@ -175,8 +166,8 @@ public abstract class IssueNode extends AbstractNode {
     /**
      * An IssueNode Property
      */
-    public abstract class IssueProperty extends org.openide.nodes.PropertySupport.ReadOnly implements Comparable<IssueProperty> {
-        protected IssueProperty(String name, Class type, String displayName, String shortDescription) {
+    public abstract class IssueProperty<T> extends org.openide.nodes.PropertySupport.ReadOnly<T> implements Comparable<IssueProperty> {
+        protected IssueProperty(String name, Class<T> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }
         @Override
@@ -199,17 +190,17 @@ public abstract class IssueNode extends AbstractNode {
     /**
      * Represens the Seen value in a IssueNode
      */
-    public class SeenProperty extends IssueProperty {
+    public class SeenProperty extends IssueProperty<Boolean> {
         public SeenProperty() {
             super(Issue.LABEL_NAME_SEEN,
                   Boolean.class,
                   "", // NOI18N
                   NbBundle.getMessage(Issue.class, "CTL_Issue_Seen_Desc")); // NOI18N
         }
-        public Object getValue() {
+        public Boolean getValue() {
             return getIssue().wasSeen();
         }
-
+        @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
             if(IssueNode.this.wasSeen()) return 1;
@@ -222,17 +213,16 @@ public abstract class IssueNode extends AbstractNode {
     /**
      * Represens the Seen value in a IssueNode
      */
-    public class RecentChangesProperty extends IssueProperty {
+    public class RecentChangesProperty extends IssueProperty<String> {
         public RecentChangesProperty() {
             super(Issue.LABEL_RECENT_CHANGES,
                   String.class,
                   NbBundle.getMessage(Issue.class, "CTL_Issue_Recent"), // NOI18N
                   NbBundle.getMessage(Issue.class, "CTL_Issue_Recent_Desc")); // NOI18N
         }
-        public Object getValue() {
+        public String getValue() {
             return getIssue().getRecentChanges();
         }
-        
         @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
@@ -241,7 +231,6 @@ public abstract class IssueNode extends AbstractNode {
             }
             return 1;
         }
-
     }
 
 }

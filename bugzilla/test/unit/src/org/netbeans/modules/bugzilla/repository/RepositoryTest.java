@@ -37,8 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugzilla.repository;
 
+import org.netbeans.modules.bugzilla.*;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.util.ArrayList;

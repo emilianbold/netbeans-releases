@@ -37,18 +37,11 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * ConnectorPanel.java
- *
- * Created on Oct 15, 2008, 9:41:51 PM
- */
-
 package org.netbeans.modules.bugtracking.ui.selectors;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Image;
 import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -69,17 +62,16 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class ConnectorPanel extends javax.swing.JPanel implements PropertyChangeListener {
+public class SelectorPanel extends javax.swing.JPanel implements PropertyChangeListener {
     private Repository currentRepo;
     private DialogDescriptor dd;
+    private ImageIcon errorIcon;
 
     /** Creates new form ConnectorPanel */
-    public ConnectorPanel() {
+    public SelectorPanel() {
         initComponents();
         errorLabel.setForeground(new Color(153,0,0));
-        Image img = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/error.gif"); //NOI18N
-        errorLabel.setIcon(new ImageIcon(img));
-        errorLabel.setVisible(false);
+        errorIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/error.gif")); //NOI18N
         
         final ListCellRenderer lcr = connectorCbo.getRenderer();
         connectorCbo.setRenderer(new ListCellRenderer() {
@@ -94,12 +86,24 @@ public class ConnectorPanel extends javax.swing.JPanel implements PropertyChange
     }
 
     boolean open() {
-        String title = NbBundle.getMessage(ConnectorPanel.class, "CTL_ConnectorTitle");
-//        JButton ok = new JButton(NbBundle.getMessage(ConnectorPanel.class, "CTL_OK"));
-//        JButton cancel = new JButton(NbBundle.getMessage(ConnectorPanel.class, "CTL_Cancel"));
+        String title = NbBundle.getMessage(SelectorPanel.class, "CTL_CreateTitle");
         dd = new DialogDescriptor(this, title);
         validateController();
-        return DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION;
+        boolean ret = DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
+        return ret;
+    }
+
+    boolean edit(Repository repository, String errorMessage) {
+        connectorCbo.setVisible(false);
+        connectorLabel.setVisible(false);
+        currentRepo = repository;
+        setRepoPanel(repository);
+        String title = NbBundle.getMessage(SelectorPanel.class, "CTL_EditTitle");
+        dd = new DialogDescriptor(this, title);
+        validateController();
+        updateErorrLabel(errorMessage);
+        boolean ret = DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
+        return ret;
     }
 
     Repository getRepository() {
@@ -120,10 +124,10 @@ public class ConnectorPanel extends javax.swing.JPanel implements PropertyChange
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        connectorLabel = new javax.swing.JLabel();
         errorLabel = new javax.swing.JLabel();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(ConnectorPanel.class, "ConnectorPanel.jLabel1.text")); // NOI18N
+        connectorLabel.setText(org.openide.util.NbBundle.getMessage(SelectorPanel.class, "SelectorPanel.connectorLabel.text")); // NOI18N
 
         connectorCbo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -133,7 +137,7 @@ public class ConnectorPanel extends javax.swing.JPanel implements PropertyChange
 
         repoPanel.setLayout(new java.awt.BorderLayout());
 
-        errorLabel.setText(org.openide.util.NbBundle.getMessage(ConnectorPanel.class, "ConnectorPanel.errorLabel.text")); // NOI18N
+        errorLabel.setText(org.openide.util.NbBundle.getMessage(SelectorPanel.class, "SelectorPanel.errorLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -143,23 +147,25 @@ public class ConnectorPanel extends javax.swing.JPanel implements PropertyChange
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
-                        .addContainerGap())
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(layout.createSequentialGroup()
+                                .add(connectorLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(connectorCbo, 0, 405, Short.MAX_VALUE)))
+                        .add(14, 14, 14))
                     .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(connectorCbo, 0, 405, Short.MAX_VALUE)
-                        .add(14, 14, 14))))
+                        .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(20, 20, 20)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
+                    .add(connectorLabel)
                     .add(connectorCbo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
@@ -175,10 +181,11 @@ public class ConnectorPanel extends javax.swing.JPanel implements PropertyChange
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JComboBox connectorCbo = new javax.swing.JComboBox();
+    private javax.swing.JLabel connectorLabel;
     private javax.swing.JLabel errorLabel;
-    private javax.swing.JLabel jLabel1;
     final javax.swing.JPanel repoPanel = new javax.swing.JPanel();
     // End of variables declaration//GEN-END:variables
+
 
     private void updateRepoPanel(BugtrackingConnector connector) {
         if (connector == null) {
@@ -188,14 +195,18 @@ public class ConnectorPanel extends javax.swing.JPanel implements PropertyChange
         if (currentRepo == null) {
             return;
         }
-        currentRepo.getController().addPropertyChangeListener(this);
-        BugtrackingController controller = currentRepo.getController();
+        setRepoPanel(currentRepo);
+        return;
+    }
+
+    private void setRepoPanel(Repository repository) {
+        BugtrackingController controller = repository.getController();
+        controller.addPropertyChangeListener(this);
         JComponent comp = controller.getComponent();
         repoPanel.removeAll();
         repoPanel.add(comp, BorderLayout.CENTER);
         revalidate();
         repaint();
-        return;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -206,17 +217,21 @@ public class ConnectorPanel extends javax.swing.JPanel implements PropertyChange
 
     private void validateController() {
         if (dd != null && currentRepo != null) {
-            final BugtrackingController controller = currentRepo.getController();
+            BugtrackingController controller = currentRepo.getController();
             boolean valid = controller.isValid();
             dd.setValid(valid);
             String msg = controller.getErrorMessage();
-            if(msg != null) {
-                errorLabel.setText(msg);
-                errorLabel.setVisible(!valid);
-            } else {
-                errorLabel.setVisible(false);
-            }
+            updateErorrLabel(msg);
         }
     }
 
+    private void updateErorrLabel(String msg) {
+        if(msg == null) {
+            errorLabel.setText("");
+            errorLabel.setIcon(null);
+        } else {
+            errorLabel.setText(msg);
+            errorLabel.setIcon(errorIcon);
+        }
+    }
 }

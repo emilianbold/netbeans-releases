@@ -43,7 +43,7 @@
  * Created on Oct 14, 2008, 5:08:33 PM
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugzilla.repository;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -71,11 +71,11 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.jLabel1.text")); // NOI18N
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.jLabel1.text_1")); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.jLabel2.text")); // NOI18N
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.jLabel2.text_1")); // NOI18N
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.jLabel3.text")); // NOI18N
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.jLabel3.text_1")); // NOI18N
 
         userField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -83,9 +83,9 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
             }
         });
 
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.jLabel5.text")); // NOI18N
+        jLabel5.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.jLabel5.text_1")); // NOI18N
 
-        validateButton.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.validateButton.text")); // NOI18N
+        validateButton.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.validateButton.text_1")); // NOI18N
         validateButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 validateButtonActionPerformed(evt);
@@ -94,7 +94,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
 
         progressPanel.setLayout(new java.awt.BorderLayout());
 
-        validateLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.validateLabel.text")); // NOI18N
+        validateLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.validateLabel.text_1")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
