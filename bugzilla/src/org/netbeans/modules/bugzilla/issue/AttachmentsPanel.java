@@ -371,9 +371,7 @@ public class AttachmentsPanel extends JPanel {
                             attachment.getAttachementData(new FileOutputStream(file));
                         } catch (IOException ioex) {
                             ioex.printStackTrace();
-                        } catch (CoreException cex) {
-                            cex.printStackTrace();
-                        }
+                        } 
                     }
                 });
             }
