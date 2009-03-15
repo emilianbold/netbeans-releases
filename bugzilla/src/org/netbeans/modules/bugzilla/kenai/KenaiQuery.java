@@ -53,6 +53,7 @@ public class KenaiQuery extends BugzillaQuery {
     public KenaiQuery(String name, BugzillaRepository repository, String urlParameters, String product, boolean saved) {
         super(name, repository, urlParameters, saved);
         this.product = product;
+        controller = createControler(repository, this, urlParameters);
     }
 
     @Override

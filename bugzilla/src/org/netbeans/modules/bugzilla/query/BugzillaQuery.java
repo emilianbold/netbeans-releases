@@ -67,7 +67,7 @@ public class BugzillaQuery extends Query {
 
     private String name;
     private final BugzillaRepository repository;
-    private QueryController controller;
+    protected QueryController controller;
     private final Set<String> issues = new HashSet<String>();
     private Set<String> obsoleteIssues = new HashSet<String>();
 
@@ -80,13 +80,13 @@ public class BugzillaQuery extends Query {
         controller = createControler(repository, this, urlParameters);
     }
 
-    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved) {
+    protected BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved) {
         super();
         this.name = name;
         this.repository = repository;
         this.urlParameters = urlParameters;
         this.saved = saved;
-        controller = createControler(repository, this, urlParameters);
+        // let the subclass create the controller
     }
 
     public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, long lastRefresh) {

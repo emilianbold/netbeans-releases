@@ -53,7 +53,6 @@ public class KenaiQueryController extends QueryController {
     public KenaiQueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, String product) {
         super(repository, query, urlParameters);
         this.product = product;
-        disableModify();
     }
 
     @Override

@@ -255,10 +255,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         
     }
 
-    protected void disableModify() {
-        panel.modifyButton.setEnabled(false);
-    }
-
     public String getUrlParameters() {
         StringBuffer sb = new StringBuffer();
         for (QueryParameter p : parameters.values()) {
