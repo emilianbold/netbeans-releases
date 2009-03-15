@@ -1,5 +1,3 @@
-package org.netbeans.modules.bugtracking.ui.selectors;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,50 +37,42 @@ package org.netbeans.modules.bugtracking.ui.selectors;
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.bugzilla.commands;
 
-
-import java.io.IOException;
-import java.util.logging.Level;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
+import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
- *
+ * Perfoms a repository query
+ * 
  * @author Tomas Stupka
  */
-public class RepositorySelector {
+public class PerformQueryCommand extends BugzillaCommand {
 
-    private SelectorPanel selectorPanel = new SelectorPanel();
-    public RepositorySelector() {
-        // init connector cbo
+    private final BugzillaRepository repository;
+    private final String queryUrl;
+    private final TaskDataCollector collector;
+
+    public PerformQueryCommand(BugzillaRepository repository, String queryUrl, TaskDataCollector collector) {
+        this.repository = repository;
+        this.queryUrl = queryUrl;
+        this.collector = collector;
     }
 
-    public Repository create() {
-        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        selectorPanel.setConnectors(connectors);
-        if(!selectorPanel.open()) return null;
-        Repository repo = selectorPanel.getRepository();
-        try {
-            repo.getController().applyChanges();
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            return null;
-        }
-        BugtrackingManager.getInstance().addRepository(repo);
-        return repo;
-    }
-
-    public boolean edit(Repository repository, String errorMessage) {
-        if(!selectorPanel.edit(repository, errorMessage)) return false;
-        Repository repo = selectorPanel.getRepository();
-        try {
-            repo.getController().applyChanges();
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            return false;
-        }
-        return true;
+    @Override
+    public void execute() throws CoreException {
+        TaskRepository taskRepository = repository.getTaskRepository();
+        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), "");
+        query.setUrl(queryUrl);
+        BugzillaRepositoryConnector rc = Bugzilla.getInstance().getRepositoryConnector();
+        rc.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
     }
 
 }

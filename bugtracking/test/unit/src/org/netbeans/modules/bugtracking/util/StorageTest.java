@@ -153,7 +153,7 @@ public class StorageTest extends NbTestCase {
         }
 
         @Override
-        public void refresh() {
+        public boolean refresh() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -195,7 +195,6 @@ public class StorageTest extends NbTestCase {
         public BugtrackingController getController() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-
 
     }
 }

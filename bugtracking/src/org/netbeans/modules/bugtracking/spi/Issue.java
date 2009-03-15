@@ -140,8 +140,10 @@ public abstract class Issue {
 
     /**
      * Refreshes this Issues data from its bugtracking repositry
+     *
+     * @return true if the issue was refreshed, otherwise false
      */
-    public abstract void refresh();
+    public abstract boolean refresh();
 
 
     // XXX throw exception
@@ -166,7 +168,9 @@ public abstract class Issue {
                 handle.start();
                 try {
                     try {
-                        Issue.this.refresh();
+                        if(!Issue.this.refresh()) {
+                            return;
+                        }
                         Issue.this.setSeen(true);
                     } catch (IOException ex) {
                         BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
@@ -186,7 +190,7 @@ public abstract class Issue {
     }
 
     /**
-     * Returns a NOde representing this issue
+     * Returns a Node representing this issue
      * @return
      */
     public abstract IssueNode getNode();
@@ -228,11 +232,11 @@ public abstract class Issue {
 
     public abstract Map<String, String> getAttributes();
 
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
