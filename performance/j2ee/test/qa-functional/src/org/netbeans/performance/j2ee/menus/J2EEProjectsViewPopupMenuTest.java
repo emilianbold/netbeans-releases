@@ -111,11 +111,11 @@ public class J2EEProjectsViewPopupMenuTest extends PerformanceTestCase {
     }
 
     public void testJ2eeModulesEJBNodePopupMenu(){
-        testNode(getEARProjectNode(), JAVA_EE_MODULES+"|TestApplication-EJBModule.jar");
+        testNode(getEARProjectNode(), JAVA_EE_MODULES+"|TestApplication-ejb.jar");
     }
 
     public void testJ2eeModulesWebNodePopupMenu(){
-        testNode(getEARProjectNode(), JAVA_EE_MODULES+"|TestApplication-WebModule.war");
+        testNode(getEARProjectNode(), JAVA_EE_MODULES+"|TestApplication-war.war");
     }
 
     public void testEJBProjectNodePopupMenu() {
@@ -167,14 +167,14 @@ public class J2EEProjectsViewPopupMenuTest extends PerformanceTestCase {
         if(projectsTab==null)
             projectsTab = new ProjectsTabOperator();
         
-        return projectsTab.getProjectRootNode("TestApplication-WebModule");
+        return projectsTab.getProjectRootNode("TestApplication-war");
     }
     
     private Node getEJBProjectNode() {
         if(projectsTab==null)
             projectsTab = new ProjectsTabOperator();
         
-        return projectsTab.getProjectRootNode("TestApplication-EJBModule");
+        return projectsTab.getProjectRootNode("TestApplication-ejb");
     }
 
     

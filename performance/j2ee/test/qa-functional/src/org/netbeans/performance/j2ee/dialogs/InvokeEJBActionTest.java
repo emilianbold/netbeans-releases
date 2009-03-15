@@ -41,15 +41,13 @@
 
 package org.netbeans.performance.j2ee.dialogs;
 
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
+
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -63,8 +61,8 @@ import org.netbeans.performance.j2ee.setup.J2EESetup;
  */
 public class InvokeEJBActionTest extends PerformanceTestCase {
     
-    private static EditorOperator editor;
-    
+    private JPopupMenuOperator jmpo;
+    private Node openFile;
     private String popupMenu = null;
     private String dialogTitle = null;
     
@@ -94,41 +92,59 @@ public class InvokeEJBActionTest extends PerformanceTestCase {
         return suite;
     }
 
-    public void testAddBusinessMethodDialog(){
-        popupMenu = "EJB Methods|Add Business Method";
-        dialogTitle = "Add Business Method";
+    public void testAddBusinessMethodDialogInEJB(){
+        popupMenu = "Add|Business Method";
+        dialogTitle = "Business Method";
         doMeasurement();
     }
 
-    public void testCallEJBDialog(){
-        popupMenu = "Enterprise Resources|" + 
-                org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbAction");
-        dialogTitle = "Call Enterprise Bean";
+    public void testCreateMethodDialogInEJB(){
+        popupMenu = "Add|Create Method";
+        dialogTitle = "Create Method";
         doMeasurement();
     }
-    
+
+    public void testFinderMethodDialogInEJB(){
+        popupMenu = "Add|Finder Method";
+        dialogTitle = "Finder Method";
+        doMeasurement();
+    }
+
+    public void testHomeMethodDialogInEJB(){
+        popupMenu = "Add|Home Method";
+        dialogTitle = "Home Method";
+        doMeasurement();
+    }
+
+    public void testSelectMethodDialogInEJB(){
+        popupMenu = "Add|Select Method";
+        dialogTitle = "Select Method";
+        doMeasurement();
+    }
+
+    public void testAddCMPFieldDialogInEJB(){
+        popupMenu = "Add|Add CMP Field";
+        dialogTitle = "Add CMP Field";
+        doMeasurement();
+    }
+
     public void initialize() {
         
-        // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"),"Enterprise Beans|TestSessionSB");
-        new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
-        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
-        editor.select(11);
+        openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"),"Enterprise Beans|TestEntityEB");
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
     }
     
     public void prepare() {
+        jmpo=openFile.callPopup();
         // do nothing
    }
     
     public ComponentOperator open(){
-        new ActionNoBlock(null,popupMenu).perform(editor);
+        jmpo.pushMenu(popupMenu);
         return new NbDialogOperator(dialogTitle);
     }
 
     public void shutdown(){
-        editor.closeDiscard();
     }
     
 }

@@ -143,7 +143,7 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
     public void testOpeningJava(){
         WAIT_AFTER_OPEN = 1000;
         setJavaEditorCaretFilteringOn();
-        fileProject = "TestApplication-EJBModule";
+        fileProject = "TestApplication-ejb";
         filePath = "Source Packages|test|TestSessionRemote.java";
         editorTitle = "TestSessionRemote.java";
         menuItem = OPEN;
@@ -154,7 +154,7 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
     public void testOpeningSessionBean(){
         WAIT_AFTER_OPEN = 1000;
         setJavaEditorCaretFilteringOn();
-        fileProject = "TestApplication-EJBModule";
+        fileProject = "TestApplication-ejb";
         filePath = "Enterprise Beans|TestSessionSB";
         editorTitle = "TestSessionBean.java";
         menuItem = OPEN;
@@ -165,7 +165,7 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
     public void testOpeningEntityBean(){
         WAIT_AFTER_OPEN = 1000;
         setJavaEditorCaretFilteringOn();
-        fileProject = "TestApplication-EJBModule";
+        fileProject = "TestApplication-ejb";
         filePath = "Enterprise Beans|TestEntityEB";
         editorTitle = "TestEntityBean.java";
         menuItem = OPEN;
@@ -176,7 +176,7 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
     public void testOpeningEjbJarXml(){
         WAIT_AFTER_OPEN = 1000;
         setJavaEditorCaretFilteringOn();
-        fileProject = "TestApplication-EJBModule";
+        fileProject = "TestApplication-ejb";
         filePath = "Configuration Files|ejb-jar.xml";
         editorTitle = "ejb-jar.xml";
         menuItem = OPEN;
@@ -187,7 +187,7 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
     public void testOpeningSunEjbJarXml(){
         WAIT_AFTER_OPEN = 1000;
         setJavaEditorCaretFilteringOn();
-        fileProject = "TestApplication-EJBModule";
+        fileProject = "TestApplication-ejb";
         filePath = "Configuration Files|sun-ejb-jar.xml";
         editorTitle = "sun-ejb-jar.xml";
         menuItem = OPEN;
