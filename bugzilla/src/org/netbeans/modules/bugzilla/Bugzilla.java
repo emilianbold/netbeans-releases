@@ -39,20 +39,14 @@
 
 package org.netbeans.modules.bugzilla;
 
-import java.io.IOException;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
-import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -69,8 +63,6 @@ public class Bugzilla {
 
     private RequestProcessor rp;
 
-    private Map<String, RepositoryConfiguration> repoToRepoconf = new HashMap<String, RepositoryConfiguration>();
-    
     private Bugzilla() {
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
@@ -87,7 +79,6 @@ public class Bugzilla {
         return instance;
     }
 
-    // XXX private?
     public BugzillaRepositoryConnector getRepositoryConnector() {
         if(brc == null) {
             brc = new BugzillaRepositoryConnector();
@@ -107,171 +98,7 @@ public class Bugzilla {
     }
 
     /**
-     * Returns all products defined in the given repository
-     *
-     * @param repository
-     * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
-     */
-    public List<String> getProducts(BugzillaRepository repo) throws CoreException, IOException {
-        return getRepositoryConfiguration(repo).getProducts();
-    }
-
-    /**
-     * Returns the componets for the given product or all known components if product is null
-     *
-     * @param repository
-     * @param product
-     * @return list of components
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
-     */
-    public List<String> getComponents(BugzillaRepository repository, String product) throws IOException, CoreException {
-        if(product == null) {
-            return getRepositoryConfiguration(repository).getComponents();
-        } else {
-            return getRepositoryConfiguration(repository). getComponents(product);
-        }
-    }
-
-    /**
-     * Returns all resolutions defined in the given repository
-     *
-     * @param repository
-     * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
-     */
-    public List<String> getResolutions(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getResolutions();
-    }
-
-    /**
-     * Returns versiones defined for the given product or all available versions if product is null
-     *
-     * @param repository
-     * @param product
-     * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
-     */
-    public List<String> getVersions(BugzillaRepository repository, String product) throws IOException, CoreException {
-        if(product == null) {
-            return getRepositoryConfiguration(repository).getVersions();
-        } else {
-            return getRepositoryConfiguration(repository).getVersions(product);
-        }
-    }
-
-    /**
-     * Returns all status defined in the given repository
-     * @param repository
-     * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
-     */
-    public List<String> getStatusValues(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getStatusValues();
-    }
-
-    /**
-     * Returns all open statuses defined in the given repository.
-     * @param repository
-     * @return all open statuses defined in the given repository.
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
-     */
-    public List<String> getOpenStatusValues(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getOpenStatusValues();
-    }
-
-    /**
-     * Returns all priorities defined in the given repository
-     * @param repository
-     * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
-     */
-    public List<String> getPriorities(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getPriorities();
-    }
-
-    /**
-     * Returns all keywords defined in the given repository
-     * @param repository
-     * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
-     */
-    public List<String> getKeywords(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getKeywords();
-    }
-
-    /**
-     * Returns all platforms defined in the given repository
-     * @param repository
-     * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
-     */
-    public List<String> getPlatforms(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getPlatforms();
-    }
-
-    /**
-     * Returns all operating systems defined in the given repository
-     * @param repository
-     * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
-     */
-    public List<String> getOSs(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getOSs();
-    }
-
-    /**
-     * Returns all severities defined in the given repository
-     * @param repository
-     * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
-     */
-    public List<String> getSeverities(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getSeverities();
-    }
-
-    /**
-     * Returns all custom fields defined in the given repository
-     * @param repository
-     * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
-     */
-    public List<BugzillaCustomField> getCustomFields(BugzillaRepository repository) throws IOException, CoreException {
-        return getRepositoryConfiguration(repository).getCustomFields();
-    }
-
-    /**
-     * Returns target milestones defined for the given product or all available 
-     * milestones if product is null
-     *
-     * @param repository
-     * @param product
-     * @return
-     * @throws java.io.IOException
-     * @throws org.eclipse.core.runtime.CoreException
-     */
-    public List<String> getTargetMilestones(BugzillaRepository repository, String product) throws IOException, CoreException {
-        if(product == null) {
-            return getRepositoryConfiguration(repository).getTargetMilestones();
-        } else {
-            return getRepositoryConfiguration(repository).getTargetMilestones(product);
-        }
-    }
-
-    /**
-     * Returns the request procussor for common tasks in bugzilla. 
+     * Returns the request processor for common tasks in bugzilla.
      * Do not use this when accesing a remote repository.
      * 
      * @return
@@ -282,15 +109,4 @@ public class Bugzilla {
         }
         return rp;
     }
-
-    private RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository) throws CoreException, IOException {
-        RepositoryConfiguration rc = repoToRepoconf.get(repository.getDisplayName());
-        if(rc == null) {
-            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
-            rc = getRepositoryConnector().getClientManager().getClient(repository.getTaskRepository(), new NullProgressMonitor()).getRepositoryConfiguration(new NullProgressMonitor());
-            repoToRepoconf.put(repository.getDisplayName(), rc);
-        }
-        return rc;
-    }
-
 }

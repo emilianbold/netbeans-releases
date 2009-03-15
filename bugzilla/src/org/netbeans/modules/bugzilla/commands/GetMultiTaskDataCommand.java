@@ -37,39 +37,39 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.kenai;
+package org.netbeans.modules.bugzilla.commands;
 
+import java.util.Set;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugzilla.query.QueryController;
 
 /**
- *
+ * Retrieves the TaskData for all given issue ids
+ * 
  * @author Tomas Stupka
  */
-public class KenaiQueryController extends QueryController {
-    private String product;
+public class GetMultiTaskDataCommand extends BugzillaCommand {
 
-    public KenaiQueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, String product) {
-        super(repository, query, urlParameters);
-        this.product = product;
-        disableModify();
+    private final BugzillaRepository repository;
+    private final Set<String> ids;
+    private final TaskDataCollector collector;
+
+    public GetMultiTaskDataCommand(BugzillaRepository repository, Set<String> ids, TaskDataCollector collector) {
+        this.repository = repository;
+        this.ids = ids;
+        this.collector = collector;
     }
 
     @Override
-    public void populate(String urlParameters) {
-        super.populate(urlParameters);
-        disableProduct(product);
+    public void execute() throws CoreException {
+        Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().getMultiTaskData(
+                repository.getTaskRepository(),
+                ids,
+                collector,
+                new NullProgressMonitor());
     }
-
-    @Override
-    protected void enableFields(boolean bl) {
-        super.enableFields(bl);
-
-        // overide - for predefined kenai queries are those always disabled
-        panel.modifyButton.setEnabled(false);
-        panel.removeButton.setEnabled(false);
-    }
-
 
 }

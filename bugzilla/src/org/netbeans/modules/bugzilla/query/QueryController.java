@@ -66,6 +66,8 @@ import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -80,7 +82,7 @@ import org.netbeans.modules.bugtracking.spi.Query.Filter;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
-import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -89,6 +91,7 @@ import org.netbeans.modules.bugzilla.query.QueryParameter.ComboParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ListParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValue;
 import org.netbeans.modules.bugzilla.query.QueryParameter.TextFieldParameter;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -129,11 +132,28 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private BugzillaQuery query;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss, EEE MMM d yyyy"); // NOI18N
+    private NotifyListener notifyListener;
+
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters) {
         this.repository = repository;
         this.query = query;
         
         panel = new QueryPanel(query.getTableComponent());
+        panel.addAncestorListener(new AncestorListener() {
+            public void ancestorAdded(AncestorEvent event) {
+                if(QueryController.this.query.isSaved() && !QueryController.this.query.wasRun()) {
+                    onRefresh();
+                }
+            }
+            public void ancestorRemoved(AncestorEvent event) {
+                onCancelChanges();
+                if(task != null) {
+                    task.cancel();
+                }
+            }
+            public void ancestorMoved(AncestorEvent event) { }
+        });
+
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
@@ -198,6 +218,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(query.isSaved()) {
             setAsSaved();
         }
+        notifyListener = new NotifyListener();
+        query.addNotifyListener(notifyListener);
         postPopulate(urlParameters);
     }
 
@@ -231,23 +253,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
     @Override
     public void applyChanges() {
         
-    }
-
-    @Override
-    public void opened() {
-        super.opened();
-        if(query.isSaved() && !query.wasRun()) {
-            onRefresh();
-        }
-    }
-
-    @Override
-    public void closed() {
-        super.closed();
-        onCancelChanges();
-        if(task != null) {
-            task.cancel();
-        }
     }
 
     protected void disableModify() {
@@ -299,26 +304,32 @@ public class QueryController extends BugtrackingController implements DocumentLi
             BugzillaCommand cmd = new BugzillaCommand() {
                 @Override
                 public void execute() throws CoreException, IOException, MalformedURLException {
-                    Bugzilla bgz = Bugzilla.getInstance();
-                    productParameter.setParameterValues(toParameterValues(bgz.getProducts(repository)));
+                    BugzillaConfiguration bc = repository.getConfiguration();
+                    if(bc == null) {
+                        // XXX nice errro msg?
+                        return;
+                    }
+                    productParameter.setParameterValues(toParameterValues(bc.getProducts()));
                     if (panel.productList.getModel().getSize() > 0) {
                         panel.productList.setSelectedIndex(0);
                         populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
                     }
-                    severityParameter.setParameterValues(toParameterValues(bgz.getSeverities(repository)));
-                    statusParameter.setParameterValues(toParameterValues(bgz.getStatusValues(repository)));
-                    resolutionParameter.setParameterValues(toParameterValues(bgz.getResolutions(repository)));
-                    priorityParameter.setParameterValues(toParameterValues(bgz.getPriorities(repository)));
+                    severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
+                    statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
+                    resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
+                    priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
                     changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
                     summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
                     commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
                     keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
                     peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
                     panel.changedToTextField.setText("Now"); // XXX
+
                     // XXX
                     if (urlParameters != null) {
                         setParameters(urlParameters);
                     }
+
                     panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
                     panel.jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
                     panel.jScrollPane3.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -334,7 +345,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    void enableFields(boolean bl) {
+    protected void enableFields(boolean bl) {
         // set all non parameter fields
         panel.enableFields(bl);
         // set the parameter fields
@@ -345,26 +356,24 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     protected void disableProduct(String product) { // XXX whatever field
-        try {
-            Bugzilla bgz = Bugzilla.getInstance();
-            List<String> products = bgz.getProducts(repository);
-            Iterator<String> i = products.iterator();
-            while (i.hasNext()) {
-                String p = i.next();
-                if (!p.equals(product)) {
-                    i.remove();
-                }
+        BugzillaConfiguration bc = repository.getConfiguration();
+        if(bc == null) {
+            // XXX nice errro msg?
+            return;
+        }
+        List<String> products = bc.getProducts();
+        Iterator<String> i = products.iterator();
+        while (i.hasNext()) {
+            String p = i.next();
+            if (!p.equals(product)) {
+                i.remove();
             }
-            productParameter.setParameterValues(toParameterValues(products));
-            productParameter.setAlwaysDisabled(true);
-            if (panel.productList.getModel().getSize() > 0) {
-                panel.productList.setSelectedIndex(0);
-                populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
-            }
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        }
+        productParameter.setParameterValues(toParameterValues(products));
+        productParameter.setAlwaysDisabled(true);
+        if (panel.productList.getModel().getSize() > 0) {
+            panel.productList.setSelectedIndex(0);
+            populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
         }
     }
 
@@ -739,77 +748,44 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         };
 
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_SearchingQuery", new Object[] {query.getDisplayName()}), c);// NOI18N
-        final JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
+        ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_SearchingQuery", new Object[] {query.getDisplayName()}), c);// NOI18N
+        JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
         panel.showSearchingProgress(true, progressBar, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
+        notifyListener.setProgressHandle(handle);
         handle.start();
-
-        // XXX !!! remove !!!
-        query.addNotifyListener(new QueryNotifyListener() {
-            private int c = 0;
-            public void notifyData(final Issue issue) {                                
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        panel.showNoContentPanel(false);
-                        panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {++c})); // NOI18N // XXX
-                    }
-                });
-            }
-
-            public void started() {
-            }
-
-            public void finished() {
-                handle.finish();
-                query.removeNotifyListener(this); // XXX
-                final int size = query.getSize();
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        enableFields(true);
-                        panel.setLastRefresh(getLastRefresh());
-                        panel.showNoContentPanel(false);
-                        if(size == 0) {
-                            panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {0})); // NOI18N // XXX
-                        }
-                    }
-                });
-            }
-        });
+        
         task.schedule(0);
     }
 
     private void populateProductDetails(String... products) {
-        try {
-            Bugzilla bgz = Bugzilla.getInstance();
-            if(products == null || products.length == 0) {
-                products = new String[] {null};
-            }
-
-            List<String> newComponents = new ArrayList<String>();
-            List<String> newVersions = new ArrayList<String>();
-            for (String p : products) {
-                List<String> productComponents = bgz.getComponents(repository, p);
-                for (String c : productComponents) {
-                    if(!newComponents.contains(c)) {
-                        newComponents.add(c);
-                    }
-                }
-                List<String> productVersions = bgz.getVersions(repository, p);
-                for (String c : productVersions) {
-                    if(!newVersions.contains(c)) {
-                        newVersions.add(c);
-                    }
-                }
-            }
-            
-            componentParameter.setParameterValues(toParameterValues(newComponents));
-            versionParameter.setParameterValues(toParameterValues(newVersions));
-
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        BugzillaConfiguration bc = repository.getConfiguration();
+        if(bc == null) {
+            // XXX nice errro msg?
+            return;
         }
+        if(products == null || products.length == 0) {
+            products = new String[] {null};
+        }
+
+        List<String> newComponents = new ArrayList<String>();
+        List<String> newVersions = new ArrayList<String>();
+        for (String p : products) {
+            List<String> productComponents = bc.getComponents(p);
+            for (String c : productComponents) {
+                if(!newComponents.contains(c)) {
+                    newComponents.add(c);
+                }
+            }
+            List<String> productVersions = bc.getVersions(p);
+            for (String c : productVersions) {
+                if(!newVersions.contains(c)) {
+                    newVersions.add(c);
+                }
+            }
+        }
+
+        componentParameter.setParameterValues(toParameterValues(newComponents));
+        versionParameter.setParameterValues(toParameterValues(newVersions));
     }
 
     private List<ParameterValue> toParameterValues(List<String> values) {
@@ -851,6 +827,46 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 List<ParameterValue> pvs = e.getValue();    
                 pv.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
             }
+        }
+    }
+
+    private class NotifyListener implements QueryNotifyListener {
+        private int counter;
+        private ProgressHandle handle;
+
+        void setProgressHandle(ProgressHandle handle) {
+            this.handle = handle;
+        }
+        
+        public void notifyData(final Issue issue) {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    panel.showNoContentPanel(false);
+                    panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {++counter})); // NOI18N // XXX
+                }
+            });
+        }
+
+        public void started() {
+            counter = 0;
+        }
+
+        public void finished() {
+            if(handle != null) {
+                handle.finish();
+                handle = null;
+            }
+            final int size = query.getSize();
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    enableFields(true);
+                    panel.setLastRefresh(getLastRefresh());
+                    panel.showNoContentPanel(false);
+                    if(size == 0) {
+                        panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {0})); // NOI18N // XXX
+                    }
+                }
+            });
         }
     }
 

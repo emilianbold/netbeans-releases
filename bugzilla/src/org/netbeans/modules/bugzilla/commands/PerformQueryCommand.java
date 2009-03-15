@@ -37,39 +37,42 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.kenai;
+package org.netbeans.modules.bugzilla.commands;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
+import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugzilla.query.QueryController;
 
 /**
- *
+ * Perfoms a repository query
+ * 
  * @author Tomas Stupka
  */
-public class KenaiQueryController extends QueryController {
-    private String product;
+public class PerformQueryCommand extends BugzillaCommand {
 
-    public KenaiQueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, String product) {
-        super(repository, query, urlParameters);
-        this.product = product;
-        disableModify();
+    private final BugzillaRepository repository;
+    private final String queryUrl;
+    private final TaskDataCollector collector;
+
+    public PerformQueryCommand(BugzillaRepository repository, String queryUrl, TaskDataCollector collector) {
+        this.repository = repository;
+        this.queryUrl = queryUrl;
+        this.collector = collector;
     }
 
     @Override
-    public void populate(String urlParameters) {
-        super.populate(urlParameters);
-        disableProduct(product);
+    public void execute() throws CoreException {
+        TaskRepository taskRepository = repository.getTaskRepository();
+        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), "");
+        query.setUrl(queryUrl);
+        BugzillaRepositoryConnector rc = Bugzilla.getInstance().getRepositoryConnector();
+        rc.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
     }
-
-    @Override
-    protected void enableFields(boolean bl) {
-        super.enableFields(bl);
-
-        // overide - for predefined kenai queries are those always disabled
-        panel.modifyButton.setEnabled(false);
-        panel.removeButton.setEnabled(false);
-    }
-
 
 }

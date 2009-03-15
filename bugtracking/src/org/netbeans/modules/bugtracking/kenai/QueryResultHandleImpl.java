@@ -76,7 +76,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
 
     public void actionPerformed(ActionEvent e) {
         query.setFilter(filter);
-        QueryAction.openQuery(query);
+        QueryAction.openKenaiQuery(query, null);
     }
 
     public static QueryResultHandleImpl forStatus(Query query, int status) {
