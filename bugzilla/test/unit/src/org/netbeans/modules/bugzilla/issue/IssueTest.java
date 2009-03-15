@@ -87,14 +87,6 @@ public class IssueTest extends NbTestCase implements TestConstants {
         }
     }
 
-    public void testI() throws Throwable {
-        for (int i = 0; i < 2000; i++) {
-            long ts = System.currentTimeMillis();
-            String summary = "somary" + ts;
-            TestUtil.createIssue(getRepository(), summary);
-            System.out.println(i);
-        }
-    }
 //    public void testStatusOpenIssue() throws MalformedURLException, CoreException, InterruptedException, IOException, Throwable {
 //        long ts = System.currentTimeMillis();
 //        String summary = "somary" + ts;
@@ -138,7 +130,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
             // haven't seen anything yet, everything's new
             assertEquals(BugzillaIssue.FIELD_STATUS_IRELEVANT, issue.getFieldStatus(f));
         }
-        setSeen(issue); // reset status
+//        setSeen(issue); // reset status
 
 
         String keyword = getKeyword(issue);
