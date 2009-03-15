@@ -38,40 +38,87 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.junit;
 
-package org.netbeans.test.editor;
-
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import junit.framework.AssertionFailedError;
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestCase;
-import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
+import junit.framework.TestResult;
+import org.openide.util.lookup.ServiceProvider;
 
-/**
- * test for reflection used in multiview module that retrieves a setting value from editor.
- *
- * @author mkleint
- */
-public class MultiviewEditorReflectionTest extends NbTestCase {
+@ServiceProvider(service=Handler.class)
+public final class NbModuleLogHandler extends Handler implements Test {
+    private static StringBuffer text;
+    private static Level msg;
+    private static Level exc;
 
-    public MultiviewEditorReflectionTest(String name) {
-        super(name);
+    static Test registerBuffer(Level msg, Level exc) {
+        if (msg == null) {
+            msg = Level.OFF;
+        }
+        if (exc == null) {
+            exc = Level.OFF;
+        }
+
+        if (exc == Level.OFF && msg == Level.OFF) {
+            return null;
+        }
+
+        NbModuleLogHandler.msg = msg;
+        NbModuleLogHandler.exc = exc;
+        NbModuleLogHandler.text = new StringBuffer();
+        Logger l = Logger.getLogger("");
+        Level min = msg;
+        if (min.intValue() > exc.intValue()) {
+            min = exc;
+        }
+        l.setLevel(min);
+        return new NbModuleLogHandler();
     }
-    
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(
-                MultiviewEditorReflectionTest.class
-            ).gui(false).clusters(".*").enableModules(".*")
-        );
+
+    static void finish() {
+        text = null;
     }
 
-    public void testReflection() throws Exception {
-            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-            Class settingsClass = Class.forName("org.netbeans.editor.Settings", false, loader);
-            Class listenerClass = Class.forName("org.netbeans.editor.SettingsChangeListener", false, loader);
-            settingsClass.getMethod("addSettingsChangeListener", listenerClass);
-            settingsClass.getMethod("removeSettingsChangeListener", listenerClass);
+    public NbModuleLogHandler() {
     }
 
+    @Override
+    public void publish(LogRecord record) {
+        StringBuffer t = text;
+        if (t == null) {
+            return;
+        }
+
+        if (record.getThrown() != null) {
+            if (exc.intValue() <= record.getLevel().intValue()) {
+                t.append(Log.toString(record)).append('\n');
+            }
+        } else {
+            if (msg.intValue() <= record.getLevel().intValue()) {
+                t.append(Log.toString(record)).append('\n');
+            }
+        }
+    }
+
+    @Override
+    public void flush() {
+    }
+
+    @Override
+    public void close() throws SecurityException {
+    }
+
+    public int countTestCases() {
+        return 1;
+    }
+
+    public void run(TestResult res) {
+        if (text.length() > 0) {
+            res.addFailure(this, new AssertionFailedError("There shall have been no warnings:\n" + text));
+        }
+    }
 }

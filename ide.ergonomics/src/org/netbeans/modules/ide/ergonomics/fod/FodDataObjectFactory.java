@@ -73,6 +73,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.Lookup;
 import org.openide.util.WeakSet;
 
 /** Support for special dataobjects that can dynamically FoD objects.
@@ -141,7 +142,9 @@ public class FodDataObjectFactory implements DataObject.Factory {
             return dn;
         }
 
-
+        public Lookup getLookup() {
+            return getCookieSet().getLookup();
+        }
 
         public void open() {
             delegate(true);
