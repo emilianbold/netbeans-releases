@@ -82,22 +82,12 @@ public class BugzillaExecutor {
             cmd.setErrorMessage(null);
 
         } catch (CoreException ex) {
-
-            String msg = getMessage(ex);
-
-            cmd.setFailed(true);
-            cmd.setErrorMessage(msg);
-
-            if(!handle) {
-                // XXX at least log
-                return;
+            if(handle) {
+                handleException(ex, cmd);
             }
-
-            if(handleException(msg)) {
-                execute(cmd);
-            } else {
-                notifyError(ex);
-            }
+            // XXX log at least
+            return;
+                
         } catch(MalformedURLException me) {
             cmd.setFailed(true); // should not happen
             cmd.setErrorMessage(me.getMessage());
@@ -132,13 +122,27 @@ public class BugzillaExecutor {
         return msg != null ? msg.trim() : null;
     }
 
-    private boolean handleException(String msg) {
+    private void handleException(CoreException ce, BugzillaCommand cmd) {
+        String msg = getMessage(ce);
+
+        cmd.setFailed(true);
+        cmd.setErrorMessage(msg);
+
         if(isAuthenticate(msg)) {
-            return handleAuthenticate(msg);
+            if(handleAuthenticate(msg)) {
+                execute(cmd);
+            } else {
+                notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
+            }
         } else if(isNotFound(msg)) {
-            return handleNotFound(msg);
+            if(handleNotFound(msg)) {
+                execute(cmd);
+            } else {
+                notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
+            }
+        } else {
+            notifyErrorMessage(msg);
         }
-        return false;
     }
 
     public boolean handleException(IOException io) {
