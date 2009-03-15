@@ -43,8 +43,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +57,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Comment;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.IssueField;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
  *
@@ -456,7 +455,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         long ts = System.currentTimeMillis();
         String summary = "somary" + ts;
 
-        List<String> rs = Bugzilla.getInstance().getResolutions(getRepository());
+        List<String> rs = getRepository().getConfiguration().getResolutions();
         for (String r : rs) {
             if(r.equals("DUPLICATE") ||
                r.equals("MOVED"))
@@ -494,7 +493,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
 //        assertEquals("FIXED", issue.getFieldValue(IssueField.RESOLUTION));
 //
 //        // try to change to another resolution
-//        List<String> rs = Bugzilla.getInstance().getResolutions(getRepository());
+//        List<String> rs = getRepository().getConfiguration().getResolutions();
 //        for (String r : rs) {
 //            if(r.equals("DUPLICATE") ||
 //               r.equals("MOVED") ||
@@ -703,47 +702,47 @@ public class IssueTest extends NbTestCase implements TestConstants {
     }
 
     private String getKeyword(BugzillaIssue issue) throws IOException, CoreException {
-        List<String> l = Bugzilla.getInstance().getKeywords(getRepository());
+        List<String> l = getRepository().getConfiguration().getKeywords();
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.KEYWORDS), IssueField.KEYWORDS.getKey());
     }
 
     private String getMilestone(BugzillaIssue issue) throws IOException, CoreException {
-        List<String> l = Bugzilla.getInstance().getTargetMilestones(getRepository(), TEST_PROJECT);
+        List<String> l = getRepository().getConfiguration().getTargetMilestones(TEST_PROJECT);
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.MILESTONE), IssueField.MILESTONE.getKey());
     }
 
     private String getPlatform(BugzillaIssue issue) throws IOException, CoreException {
-        List<String> l = Bugzilla.getInstance().getPlatforms(getRepository());
+        List<String> l = getRepository().getConfiguration().getPlatforms();
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.PLATFORM), IssueField.PLATFORM.getKey());
     }
 
     private String getProduct(BugzillaIssue issue) throws IOException, CoreException {
-        List<String> l = Bugzilla.getInstance().getProducts(getRepository());
+        List<String> l = getRepository().getConfiguration().getProducts();
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.PRODUCT), IssueField.PRODUCT.getKey());
     }
 
     private String getPriority(BugzillaIssue issue) throws IOException, CoreException {
-        List<String> l = Bugzilla.getInstance().getPriorities(getRepository());
+        List<String> l = getRepository().getConfiguration().getPriorities();
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.PRIORITY), IssueField.PRIORITY.getKey());
     }
 
     private String getVersion(BugzillaIssue issue) throws IOException, CoreException {
-        List<String> l = Bugzilla.getInstance().getVersions(getRepository(), TEST_PROJECT);
+        List<String> l = getRepository().getConfiguration().getVersions(TEST_PROJECT);
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.VERSION), IssueField.VERSION.getKey());
     }
 
     private String getSeverity(BugzillaIssue issue) throws IOException, CoreException {
-        List<String> l = Bugzilla.getInstance().getSeverities(getRepository());
+        List<String> l = getRepository().getConfiguration().getSeverities();
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.SEVERITY), IssueField.SEVERITY.getKey());
     }
 
     private String getResolution(BugzillaIssue issue) throws IOException, CoreException {
-        List<String> l = Bugzilla.getInstance().getResolutions(getRepository());
+        List<String> l = getRepository().getConfiguration().getResolutions();
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.RESOLUTION), IssueField.RESOLUTION.getKey());
     }
 
     private String getComponent(BugzillaIssue issue) throws IOException, CoreException {
-        List<String> l = Bugzilla.getInstance().getComponents(getRepository(), TEST_PROJECT);
+        List<String> l = getRepository().getConfiguration().getComponents(TEST_PROJECT);
         return getDifferentServerValue(l, issue.getFieldValue(IssueField.COMPONENT), IssueField.COMPONENT.getKey());
     }
 
