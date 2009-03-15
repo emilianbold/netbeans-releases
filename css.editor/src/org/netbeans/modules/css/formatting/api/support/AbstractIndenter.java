@@ -1315,13 +1315,11 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
         }
 
-        // iterate over all commands and apply adjustment
-        for (IndentCommand ii : currentLineIndents) {
-            // RETURN commands indent is based on INDENT command from some
-            // previous line so do not adjust it:
-            if (ii.getType() != IndentCommand.Type.RETURN) {
-                ii.setCalculatedIndentation(ii.getCalculatedIndentation() + lineIndentAdjustment);
-            }
+        // update last command on line with lineIndentAdjustment. last command on
+        // line represents overall line indentation and there should be adjusted
+        IndentCommand ii = currentLineIndents.get(currentLineIndents.size()-1);
+        if (lineIndentAdjustment != 0 && !beingFormatted) {
+            ii.setCalculatedIndentation(ii.getCalculatedIndentation() + lineIndentAdjustment);
         }
 
         // if we are formatting this line then re-read this line's indent
@@ -1333,44 +1331,20 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             line.indentation = lineIndentation;
             line.indentationAdjustment = lineIndentAdjustment;
         }
-        return lineIndentation;
+        return currentLineIndents.get(currentLineIndents.size()-1).getCalculatedIndentation();
     }
 
     private List<IndentCommand> cleanUpAndPossiblyClone(List<IndentCommand> commands, boolean clone) {
+        // cleanup was removed so for now just cloning:
+        if (!clone) {
+            return commands;
+        }
         List<IndentCommand> newItems = new ArrayList<IndentCommand>();
         for (int i=0; i<commands.size(); i++) {
             IndentCommand item = commands.get(i);
-            if (item.getType() == IndentCommand.Type.INDENT) {
-                int index = indexOfReturnCommand(commands, item, i);
-                if (index != -1) {
-                    i = index;
-                    continue;
-                }
-            }
             newItems.add(clone ? item.cloneMe() : item);
         }
-        if (newItems.size() == 0) {
-            newItems.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, commands.get(0).getLineOffset()));
-        }
         return newItems;
-    }
-
-    private static int indexOfReturnCommand(List<IndentCommand> commands, IndentCommand command, int i) {
-        assert command.getType() == IndentCommand.Type.INDENT: command;
-        int balance = 0;
-        for (int index=i+1; index < commands.size(); index++) {
-            IndentCommand item = commands.get(index);
-            if (item.getType() == IndentCommand.Type.INDENT) {
-                balance++;
-            } else if (item.getType() == IndentCommand.Type.RETURN) {
-                if (balance == 0) {
-                    return index;
-                } else {
-                    balance--;
-                }
-            }
-        }
-        return -1;
     }
 
     /**
