@@ -1220,7 +1220,7 @@ public class TraceModel extends TraceModelBase {
 
         if (doCleanRepository) {
             CsmProject prj = fileImpl.getProject();
-            String absPath = fileImpl.getAbsolutePath();
+            CharSequence absPath = fileImpl.getAbsolutePath();
             fileImpl = null;
             ParserThreadManager.instance().waitEmptyProjectQueue((ProjectBase) prj);
             sleep(100);

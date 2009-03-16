@@ -1693,7 +1693,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getFileContainer().getFile(file);
     }
 
-    protected final void removeFile(File file) {
+    protected final void removeFile(CharSequence file) {
         getFileContainer().removeFile(file);
     }
 
