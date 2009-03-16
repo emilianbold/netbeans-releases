@@ -61,6 +61,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator.PresenceListener;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator.Status;
@@ -289,20 +290,12 @@ public class KenaiConnection implements PropertyChangeListener {
     }
     
 //------------------------------------------
-//TODO this should be removed when xmpp server starts working on kenai.com    
 
-//    bcol4 test server
-//    private static final String USER = "testuser1";
-//    private static final String PASSWORD = "password";
-//    private static final String XMPP_SERVER = "bco14.central.sun.com";
-//    private static final String CHAT_ROOM = "@muc.central.sun.com";
-
-////  test server on localhost
     private String USER;
     private String PASSWORD;
+    
+    //TODO this should be removed when xmpp server starts working on kenai.com
     private static final String XMPP_SERVER = System.getProperty("kenai.xmpp.url","127.0.0.1");
-    private static final String CHAT_ROOM = "@" + System.getProperty("kenai.xmpp.muc.url", "conference.127.0.0.1");
-
 
     /**
      * TODO: should return kenai account name
@@ -313,12 +306,8 @@ public class KenaiConnection implements PropertyChangeListener {
     }
 
 
-    /**
-     * TODO: should return data from KenaiProjectFeature
-     */
     private String getChatroomName(KenaiProject prj) {
-        return prj.getName() + CHAT_ROOM;
-    //return prj.getFeatures(KenaiFeature.CHAT)[0].getName();
+         return prj.getFeatures(KenaiFeature.CHAT)[0].getName();
     }
 
     //TODO: my projects does not work so far
