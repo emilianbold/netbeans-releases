@@ -591,7 +591,12 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
         public CsmClass getCsmClass() {
             if (csmClass == null) {
-                csmClass = (CsmClass)Instantiation.create((CsmTemplate)declaration.getCsmClass(), getMapping());
+                CsmClass declClassifier = declaration.getCsmClass();
+                if (CsmKindUtilities.isTemplate(declClassifier)) {
+                    csmClass = (CsmClass)Instantiation.create((CsmTemplate)declClassifier, getMapping());
+                } else {
+                    csmClass = declClassifier;
+                }
             }
             return csmClass;
         }
