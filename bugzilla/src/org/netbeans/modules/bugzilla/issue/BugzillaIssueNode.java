@@ -171,6 +171,7 @@ public class BugzillaIssueNode extends IssueNode {
         public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.STATUS);
         }
+        @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
             String s1 = getBugzillaIssue().getFieldValue(IssueField.STATUS);
@@ -202,6 +203,7 @@ public class BugzillaIssueNode extends IssueNode {
         public String getValue() {
             return getBugzillaIssue().getSummary();
         }
+        @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
             String s1 = getIssue().getSummary();
