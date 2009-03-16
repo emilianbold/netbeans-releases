@@ -682,7 +682,7 @@ public translation_unit:
 protected
 template_explicit_specialization
 	:
-	LITERAL_template LESSTHAN GREATERTHAN
+	LITERAL_template LESSTHAN GREATERTHAN   
 	(
 	// Template explicit specialisation function definition (VK 30/05/06)
 		(declaration_specifiers[false, false] function_declarator[true, false] LCURLY)=>
@@ -692,21 +692,17 @@ template_explicit_specialization
 		}
 		function_definition
 		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-	|
-	// Template explicit specialisation ctor definition 
-		(ctor_declarator[true] 
-		  (COLON        // DEFINITION :ctor_initializer
-		   |LCURLY       // DEFINITION (compound Statement) ?
-	 	  )
-                )=>
-		{if(statementTrace >= 1)
-			printf("template_explicit_specialization_0b[%d]: template " +
-				"explicit-specialisation ctor definition\n", LT(1).getLine());
-		}
-		ctor_definition
-		//{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+    |
+        // Template explicit specialisation ctor definition
+        (   ctor_decl_spec ctor_declarator[true]
+            ( COLON         // DEFINITION :ctor_initializer
+            | LCURLY        // DEFINITION (compound Statement) ?
+            )
+        ) =>
+        {if(statementTrace >= 1) printf("template_explicit_specialization_0b[%d]: template " + "explicit-specialisation ctor definition\n", LT(1).getLine());}
+        ctor_definition
         { #template_explicit_specialization = #(#[CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-	|
+    |
 	// Template explicit specialisation dtor definition
 		(dtor_declarator[true] LCURLY)=>
 		{if(statementTrace >= 1)
