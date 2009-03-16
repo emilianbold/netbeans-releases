@@ -57,6 +57,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -83,6 +84,7 @@ public class ProjectsRootNodeWithBadOpenHookTest extends NbTestCase {
         return Level.OFF;
     }
 
+    @RandomlyFails // NB-Core-Build #2288
     public void testIsBrokenInitializationReportedAsWarning() throws Exception {
         MockLookup.setInstances(new TestSupport.TestProjectFactory());
         CountDownLatch down = new CountDownLatch(1);
