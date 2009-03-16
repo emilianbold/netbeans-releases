@@ -41,9 +41,15 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.PrintStream;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 
 /**
  *
@@ -55,6 +61,7 @@ public final class Tracer {
         PrintStream printStream = System.out;
         dumpProjectContainers(project.getClassifierSorage(), printStream);
         dumpProjectContainers(project, printStream);
+        dumpProjectContainers(project.getDeclarationsSorage(), printStream);
     }
 
     private static void dumpProjectContainers(ClassifierContainer container, PrintStream printStream){
@@ -105,6 +112,43 @@ public final class Tracer {
                 for (CsmFile f : set.values()){
                     printStream.println("\t\t"+f.getAbsolutePath());
                 }
+            }
+        }
+    }
+
+    private static void dumpProjectContainers(DeclarationContainer container, PrintStream printStream){
+        printStream.println("\n========== Dumping Dump Project declarations");
+        for(Map.Entry<CharSequence, Object> entry : container.testDeclarations().entrySet()){
+            printStream.println("\t"+entry.getKey().toString());
+            TreeMap<CharSequence, CsmDeclaration> set = new TreeMap<CharSequence, CsmDeclaration>();
+            Object o = entry.getValue();
+            if (o instanceof CsmUID<?>[]) {
+                // we know the template type to be CsmDeclaration
+                @SuppressWarnings("unchecked") // checked
+                CsmUID<CsmDeclaration>[] uids = (CsmUID<CsmDeclaration>[]) o;
+                for(CsmUID<CsmDeclaration> uidt : uids){
+                    set.put(((CsmOffsetableDeclaration)uidt.getObject()).getContainingFile().getAbsolutePath(), uidt.getObject());
+                }
+            } else if (o instanceof CsmUID<?>) {
+                // we know the template type to be CsmDeclaration
+                @SuppressWarnings("unchecked") // checked
+                CsmUID<CsmDeclaration> uidt = (CsmUID<CsmDeclaration>) o;
+                set.put(((CsmOffsetableDeclaration)uidt.getObject()).getContainingFile().getAbsolutePath(), uidt.getObject());
+            }
+            for(Map.Entry<CharSequence, CsmDeclaration> f : set.entrySet()){
+                printStream.print("\t\t"+f.getValue());
+            }
+        }
+        printStream.println("\n========== Dumping Dump Project friends");
+        for(Map.Entry<CharSequence, Set<CsmUID<? extends CsmFriend>>> entry : container.testFriends().entrySet()){
+            printStream.print("\t"+entry.getKey().toString()+" ");
+            TreeMap<CharSequence, CsmFriend> set = new TreeMap<CharSequence, CsmFriend>();
+            for(CsmUID<? extends CsmFriend> uid : entry.getValue()) {
+                CsmFriend f = uid.getObject();
+                set.put(f.getQualifiedName(), f);
+            }
+            for(Map.Entry<CharSequence, CsmFriend> f : set.entrySet()){
+                printStream.print("\t\t"+f.getKey().toString()+" "+f.getValue());
             }
         }
     }
