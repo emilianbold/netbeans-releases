@@ -40,6 +40,8 @@ package org.netbeans.modules.php.editor;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -66,6 +68,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -84,6 +87,7 @@ public class CodeUtils {
     public static final String FUNCTION_TYPE_PREFIX = "@fn:";
     public static final String METHOD_TYPE_PREFIX = "@mtd:";
     public static final String STATIC_METHOD_TYPE_PREFIX = "@static.mtd:";
+    private static final Logger LOGGER = Logger.getLogger(CodeUtils.class.getName());
 
     private CodeUtils() {
     }
@@ -128,6 +132,12 @@ public class CodeUtils {
             } else if (name instanceof FieldAccess) {
                 var = ((FieldAccess)name).getField();
                 return extractVariableName(var);
+            } else if (name instanceof InfixExpression) {
+                //#157750
+                return null;
+            }
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Cannot extract variable name of ReflectionVariable: " + name.getClass().toString());
             }
         }
         if (var.getName() instanceof Identifier) {

@@ -61,7 +61,7 @@ import org.netbeans.editor.SideBarFactory;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProvider;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
