@@ -270,7 +270,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private boolean prepareContext(ExecutionContext context) {
         final DLightTarget target = context.getTarget();
 
-        context.validateTools(true);
+        context.validateTools(false);
 
         List<DLightTool> validTools = new ArrayList<DLightTool>();
 
