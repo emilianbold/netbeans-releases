@@ -61,6 +61,7 @@ import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.GsfUtilities;
@@ -689,10 +690,15 @@ public class PHPIndex {
 
                     // TODO: now doing IC prefix search only, handle other search types
                     // according to 'kind'
-                    if ((kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX && elemName.toLowerCase().startsWith(name.toLowerCase())) || (kind == QuerySupport.Kind.PREFIX && elemName.startsWith(name)) || (kind == QuerySupport.Kind.EXACT && elemName.equals(name))) {
-                        signatures.put(signature, typeMap);
-                    }
 
+                    if (elemName != null){
+                        if ((kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX
+                                && elemName.toLowerCase().startsWith(name.toLowerCase()))
+                                || (kind == QuerySupport.Kind.PREFIX && elemName.startsWith(name))
+                                || (kind == QuerySupport.Kind.EXACT && elemName.equals(name))) {
+                            signatures.put(signature, typeMap);
+                        }
+                    }
                 }
             }
         }
@@ -703,6 +709,7 @@ public class PHPIndex {
     //faster parsing of signatures.
     //use Signature class if you need to search in the same signature
     //multiple times
+    @CheckForNull
     static String getSignatureItem(String signature, int index) {
         int searchIndex = 0;
         for(int i = 0; i < signature.length(); i++) {
