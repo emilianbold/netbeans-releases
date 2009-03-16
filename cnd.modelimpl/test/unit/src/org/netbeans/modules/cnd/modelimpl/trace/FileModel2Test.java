@@ -219,4 +219,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#158124 : parser breaks on (( ))
         performTest("iz158124.cc");
     }
+
+    public void testIZ156009() throws Exception {
+        // IZ#156009 : parser fails on declaration with __attribute__
+        performTest("iz156009.cc");
+    }
 }
