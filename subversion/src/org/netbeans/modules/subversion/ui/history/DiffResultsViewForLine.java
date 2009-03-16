@@ -168,11 +168,11 @@ final class DiffResultsViewForLine extends DiffResultsView {
                         if (currentTask == ShowDiffTask.this) {
                             currentDiff = view;
                             setBottomComponent(currentDiff.getJComponent());
-                            if (rightMaxLineNumber != -1) {
-                                setLocation(Math.min(rightMaxLineNumber, lineNumber), true);
-                            }
                             if (leftMaxLineNumber != -1) {
                                 setLocation(Math.min(leftMaxLineNumber, lineNumber), false);
+                            }
+                            if (rightMaxLineNumber != -1) {
+                                setLocation(Math.min(rightMaxLineNumber, lineNumber), true);
                             }
                             parent.refreshComponents(false);
                         }
