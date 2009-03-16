@@ -157,6 +157,9 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
     }
 
     public Set instantiate(final ProgressHandle handle) throws IOException {
+        // FIXME some target create multiple artifacts so we should
+        // a) use non-interactive
+        // b) ask in wizard for rewrite
         FileObject dir = Templates.getTargetFolder(wiz);
         String targetName = Templates.getTargetName(wiz);
         String packageName = getPackageName(dir);
