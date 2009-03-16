@@ -84,17 +84,17 @@ public class BugzillaIssue extends Issue {
 
     private TaskData data;
     private BugzillaRepository repository;
-    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";
+    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm"; // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
     private IssueController controller;
     private IssueNode node;
     
-    static final String LABEL_NAME_ID           = "bugzilla.issue.id";
-    static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity";
-    static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority";
-    static final String LABEL_NAME_STATUS       = "bugzilla.issue.status";
-    static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution";
-    static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary";
+    static final String LABEL_NAME_ID           = "bugzilla.issue.id"; // NOI18N
+    static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity"; // NOI18N
+    static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority"; // NOI18N
+    static final String LABEL_NAME_STATUS       = "bugzilla.issue.status"; // NOI18N
+    static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution"; // NOI18N
+    static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary"; // NOI18N
 
     /**
      * Issue wasn't seen yet
@@ -184,8 +184,8 @@ public class BugzillaIssue extends Issue {
     @Override
     public String getDisplayName() {
         return data.isNew() ?
-                NbBundle.getMessage(BugzillaIssue.class, "CTL_NewIssue") :
-                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()});
+                NbBundle.getMessage(BugzillaIssue.class, "CTL_NewIssue") : // NOI18N
+                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()}); // NOI18N
     }
 
     @Override
@@ -198,23 +198,23 @@ public class BugzillaIssue extends Issue {
             ResourceBundle loc = NbBundle.getBundle(BugzillaIssue.class);
             DESCRIPTORS = new ColumnDescriptor[] {
                 new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
-                                                  loc.getString("CTL_Issue_ID_Title"),
-                                                  loc.getString("CTL_Issue_ID_Desc")),
+                                                  loc.getString("CTL_Issue_ID_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_ID_Desc")), // NOI18N
                 new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
-                                                  loc.getString("CTL_Issue_Severity_Title"),
-                                                  loc.getString("CTL_Issue_Severity_Desc")),
+                                                  loc.getString("CTL_Issue_Severity_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Severity_Desc")), // NOI18N
                 new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
-                                                  loc.getString("CTL_Issue_Priority_Title"),
-                                                  loc.getString("CTL_Issue_Priority_Desc")),
+                                                  loc.getString("CTL_Issue_Priority_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Priority_Desc")), // NOI18N
                 new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
-                                                  loc.getString("CTL_Issue_Status_Title"),
-                                                  loc.getString("CTL_Issue_Status_Desc")),
+                                                  loc.getString("CTL_Issue_Status_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Status_Desc")), // NOI18N
                 new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
-                                                  loc.getString("CTL_Issue_Resolution_Title"),
-                                                  loc.getString("CTL_Issue_Resolution_Desc")),
+                                                  loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Resolution_Desc")), // NOI18N
                 new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
-                                                  loc.getString("CTL_Issue_Summary_Title"),
-                                                  loc.getString("CTL_Issue_Summary_Desc"))
+                                                  loc.getString("CTL_Issue_Summary_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Summary_Desc")) // NOI18N
             };
         }
         return DESCRIPTORS;
@@ -230,7 +230,7 @@ public class BugzillaIssue extends Issue {
 
     @Override
     public String toString() {
-        String str = getID() + " : "  + getSummary();
+        String str = getID() + " : "  + getSummary(); // NOI18N
         return str;
     }
 
@@ -430,10 +430,11 @@ public class BugzillaIssue extends Issue {
             if(a != null && a.getValues().size() > 1) {
                 return listValues(a);
             }
-            return a != null ? a.getValue() : "";
+            return a != null ? a.getValue() : ""; // NOI18N
         } else {
             List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, f.key);
-            return "" + ( attrs != null && attrs.size() > 0 ?  attrs.size() : ""); // returning 0 would set status MODIFIED instead of NEW
+            // returning 0 would set status MODIFIED instead of NEW
+            return "" + ( attrs != null && attrs.size() > 0 ?  attrs.size() : ""); // NOI18N
         }
     }
 
