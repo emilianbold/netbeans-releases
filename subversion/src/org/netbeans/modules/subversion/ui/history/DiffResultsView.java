@@ -40,12 +40,12 @@
  */
 package org.netbeans.modules.subversion.ui.history;
 
+import org.netbeans.modules.subversion.ui.history.RepositoryRevision.Event;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
-import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.Diff;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
@@ -59,6 +59,7 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
+import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.util.Cancellable;
@@ -71,19 +72,19 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffSetupSource {
 
-    private final SearchHistoryPanel parent;
+    protected final SearchHistoryPanel parent;
 
-    private DiffTreeTable treeView;
+    protected DiffTreeTable treeView;
     private JSplitPane    diffView;
     
-    private SvnProgressSupport      currentTask;
-    private RequestProcessor.Task   currentShowDiffTask;
+    protected SvnProgressSupport        currentTask;
+    private RequestProcessor.Task       currentShowDiffTask;
     
-    private DiffView                currentDiff;
-    private int                     currentDifferenceIndex;
-    private int                     currentIndex;
-    private boolean                 dividerSet;
-    private List<RepositoryRevision> results;
+    protected DiffController            currentDiff;
+    private int                         currentDifferenceIndex;
+    protected int                       currentIndex;
+    private boolean                     dividerSet;
+    protected List<RepositoryRevision>  results;
     private static final RequestProcessor rp = new RequestProcessor("SubversionDiff", 1, true);  // NOI18N
 
     public DiffResultsView(SearchHistoryPanel parent, List<RepositoryRevision> results) {
@@ -204,20 +205,24 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         return null;
     }
 
-    private void showDiffError(String s) {
+    protected void showDiffError(String s) {
         setBottomComponent(new NoContentPanel(s));
     }
 
-    private void setBottomComponent(Component component) {
+    protected SvnProgressSupport createShowDiffTask(Event header, String revision1, String revision2, boolean showLastDifference) {
+        return new ShowDiffTask(header, revision1, revision2, showLastDifference);
+    }
+
+    protected void setBottomComponent(Component component) {
         int dl = diffView.getDividerLocation();
         diffView.setBottomComponent(component);
         diffView.setDividerLocation(dl);
     }
 
-    private void showDiff(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
+    protected void showDiff(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
         synchronized(this) {
             cancelBackgroundTasks();
-            currentTask = new ShowDiffTask(header, revision1, revision2, showLastDifference);
+            currentTask = createShowDiffTask(header, revision1, revision2, showLastDifference);
             currentShowDiffTask = currentTask.start(rp, header.getLogInfoHeader().getRepositoryRootUrl(), NbBundle.getMessage(DiffResultsView.class, "LBL_SearchHistory_Diffing"));
         }
     }
@@ -231,32 +236,30 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
     private boolean onSelectionshowLastDifference;
 
-    private void setDiffIndex(int idx, boolean showLastDifference) {
+    protected void setDiffIndex(int idx, boolean showLastDifference) {
         currentIndex = idx;
         onSelectionshowLastDifference = showLastDifference;
         treeView.setSelection(idx);
     }
 
-    private void showRevisionDiff(RepositoryRevision.Event rev, boolean showLastDifference) {
+    protected void showRevisionDiff(RepositoryRevision.Event rev, boolean showLastDifference) {
         if (rev.getFile() == null) return;
         long revision2 = rev.getLogInfoHeader().getLog().getRevision().getNumber();
         long revision1 = revision2 - 1;
         showDiff(rev, Long.toString(revision1), Long.toString(revision2), showLastDifference);
     }
 
-    private void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
+    protected void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
         List<RepositoryRevision.Event> revs = container.getEvents();
 
         RepositoryRevision.Event newest = getEventForRoots(container);
         if(newest == null) {
             newest = revs.get(0);
         }
-        if (newest.getFile() == null) return;
-        long rev = newest.getLogInfoHeader().getLog().getRevision().getNumber();
-        showDiff(newest, Long.toString(rev - 1), Long.toString(rev), showLastDifference);
+        showRevisionDiff(newest, showLastDifference);
     }
 
-    private RepositoryRevision.Event getEventForRoots(RepositoryRevision container) {
+    protected RepositoryRevision.Event getEventForRoots(RepositoryRevision container) {
         RepositoryRevision.Event event = null;
         List<RepositoryRevision.Event> revs = container.getEvents();
 
@@ -280,7 +283,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                 if (++currentIndex >= treeView.getRowCount()) currentIndex = 0;
                 setDiffIndex(currentIndex, false);
             } else {
-                currentDiff.setCurrentDifference(currentDifferenceIndex);
+                currentDiff.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {
             if (++currentIndex >= treeView.getRowCount()) currentIndex = 0;
@@ -295,7 +298,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                 if (--currentIndex < 0) currentIndex = treeView.getRowCount() - 1;
                 setDiffIndex(currentIndex, true);
             } else {
-                currentDiff.setCurrentDifference(currentDifferenceIndex);
+                currentDiff.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {
             if (--currentIndex < 0) currentIndex = treeView.getRowCount() - 1;
@@ -375,13 +378,13 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                         if (isCanceled()) {
                             return;
                         }
-                        final DiffView view = diff.createDiff(s1, s2);
+                        final DiffController view = DiffController.create(s1, s2);
                         if (currentTask == ShowDiffTask.this) {
                             currentDiff = view;
-                            setBottomComponent(currentDiff.getComponent());
+                            setBottomComponent(currentDiff.getJComponent());
                             if (currentDiff.getDifferenceCount() > 0) {
                                 currentDifferenceIndex = showLastDifference ? currentDiff.getDifferenceCount() - 1 : 0;
-                                currentDiff.setCurrentDifference(currentDifferenceIndex);
+                                currentDiff.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
                             }
                             parent.refreshComponents(false);
                         }
