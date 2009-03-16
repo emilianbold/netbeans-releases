@@ -198,6 +198,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2ee.ejbverification</friend>
                 <friend>org.netbeans.modules.j2ee.performancetests</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
+                <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.profiler.j2ee</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>

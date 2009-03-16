@@ -242,7 +242,8 @@ final class ResultDisplayHandler {
 
         synchronized (this) {
             if (treePanel == null) {
-                reports.add(report);
+                if (!reports.contains(report))
+                    reports.add(report);
                 runningSuite = null;
                 return;
             }
