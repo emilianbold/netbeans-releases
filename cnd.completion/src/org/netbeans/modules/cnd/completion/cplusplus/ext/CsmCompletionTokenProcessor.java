@@ -902,12 +902,11 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                         break;
 
                     case QUESTION:
-                        if (topID == GENERIC_TYPE_OPEN) {
-                            pushExp(new CsmCompletionExpression(GENERIC_WILD_CHAR));
-                        } else {
-                            nrQuestions++;
-                            pushExp(new CsmCompletionExpression(TERNARY_OPERATOR));
-                        }
+                        nrQuestions++;
+                        popExp();
+                        CsmCompletionExpression ternary = new CsmCompletionExpression(TERNARY_OPERATOR);
+                        ternary.addParameter(top);
+                        pushExp(ternary);
                         break;
 
                     case STAR:
@@ -1668,6 +1667,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                             case PARENTHESIS:
                             case OPERATOR:
                             case UNARY_OPERATOR:
+                            case TERNARY_OPERATOR:
                             case MEMBER_POINTER:
                             case TYPE_REFERENCE:
                             case INSTANCEOF:
@@ -1992,6 +1992,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                 case ANNOTATION_OPEN:
                 case OPERATOR:
                 case UNARY_OPERATOR:
+                case TERNARY_OPERATOR:
                 case MEMBER_POINTER:
                 case CONVERSION:
                 case NO_EXP:
