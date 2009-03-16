@@ -233,6 +233,7 @@ public final class SourceCache {
     
     public Iterable<Embedding> getAllEmbeddings () {
         Collection<SchedulerTask> tsks = createTasks();
+        Snapshot snpsht = getSnapshot();
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             if (this.embeddings == null) {
                 this.embeddings = new ArrayList<Embedding> ();
@@ -243,7 +244,7 @@ public final class SourceCache {
                             List<Embedding> _embeddings = embeddingProviderToEmbedings.get (embeddingProvider);
                             this.embeddings.addAll (_embeddings);
                         } else {
-                            List<Embedding> _embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
+                            List<Embedding> _embeddings = embeddingProvider.getEmbeddings (snpsht);
                             List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
                             updateEmbeddings (_embeddings, oldEmbeddings, false, null);
                             embeddingProviderToEmbedings.put (embeddingProvider, _embeddings);
