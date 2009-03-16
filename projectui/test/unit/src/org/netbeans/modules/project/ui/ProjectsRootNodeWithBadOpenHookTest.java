@@ -156,7 +156,8 @@ public class ProjectsRootNodeWithBadOpenHookTest extends NbTestCase {
         
         OpenProjectList.waitProjectsFullyOpen();
 
-        assertEquals("30 nodes", 30, logicalView.getChildren().getNodesCount());
+        List<Node> arrNodes = logicalView.getChildren().snapshot();
+        assertEquals("30 nodes:\n" + arrNodes, 30, arrNodes.size());
 
         assertEquals("One message: " + h.recs, 1, h.recs.size());
         assertEquals("It is a warning ", Level.WARNING, h.recs.get(0).getLevel());
