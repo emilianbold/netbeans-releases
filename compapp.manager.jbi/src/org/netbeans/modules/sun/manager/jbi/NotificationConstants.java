@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,41 +31,37 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.sun.manager.jbi.nodes;
-
-import javax.management.MBeanServerConnection;
-import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
-import org.netbeans.modules.j2ee.sun.api.SimpleNodeExtensionProvider;
-import org.openide.nodes.Node;
+package org.netbeans.modules.sun.manager.jbi;
 
 /**
- * Implementation of <code>SimpleNodeExtensionProvider</code> to provide the top level
- * JBI meta-container node.
  *
  * @author jqian
  */
-public class JBINodeExtensionProvider implements SimpleNodeExtensionProvider {
-
-    /**
-     * Gets the JBI node under the application server node.
-     * 
-     * @param connection 
-     * 
-     * @return  the top level JBI meta-container node if the "JBIFramework"  
-     *          Lifecycle Module is installed in the application server; 
-     *          or <code>null</code> otherwise.
-     */
-    public Node getExtensionNode(MBeanServerConnection connection) {        
-        AppserverJBIMgmtController jbiController = 
-                new AppserverJBIMgmtController(connection);
-                
-        if (jbiController.isJBIFrameworkEnabled()) {
-            return new JBINode(jbiController);
-        } else {
-            return null;
-        }
-    }
+public interface NotificationConstants {
+     
+    public static final String NOTIFICATION_SOURCE_NAME = "SourceName"; // NOI18N
+    public static final String NOTIFICATION_SOURCE_TYPE = "SourceType"; // NOI18N
+    public static final String NOTIFICATION_EVENT_TYPE = "EventType"; // NOI18N
     
+    public static final String NOTIFICATION_EVENT_TYPE_STARTED = "Started"; // NOI18N
+    public static final String NOTIFICATION_EVENT_TYPE_STOPPED = "Stopped"; // NOI18N
+    public static final String NOTIFICATION_EVENT_TYPE_SHUTDOWN = "ShutDown"; // NOI18N
+    public static final String NOTIFICATION_EVENT_TYPE_UPGRADED = "Upgraded"; // NOI18N
+    public static final String NOTIFICATION_EVENT_TYPE_INSTALLED = "Installed"; // NOI18N
+    public static final String NOTIFICATION_EVENT_TYPE_UNINSTALLED = "Uninstalled"; // NOI18N
+    public static final String NOTIFICATION_EVENT_TYPE_DEPLOYED = "Deployed"; // NOI18N
+    public static final String NOTIFICATION_EVENT_TYPE_UNDEPLOYED = "Undeployed"; // NOI18N
+    
+    public static final String NOTIFICATION_SOURCE_TYPE_SERVICE_ENGINE = "ServiceEngine"; // NOI18N
+    public static final String NOTIFICATION_SOURCE_TYPE_BINDING_COMPONENT = "BindingComponent"; // NOI18N
+    public static final String NOTIFICATION_SOURCE_TYPE_SHARED_LIBRARY = "SharedLibrary"; // NOI18N
+    public static final String NOTIFICATION_SOURCE_TYPE_SERVICE_ASSEMBLY = "ServiceAssembly"; // NOI18N
+    public static final String NOTIFICATION_SOURCE_TYPE_SERVICE_UNIT = "ServiceUnit"; // NOI18N
+
 }

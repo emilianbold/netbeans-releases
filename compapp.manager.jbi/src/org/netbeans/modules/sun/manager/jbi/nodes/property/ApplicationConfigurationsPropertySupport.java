@@ -49,7 +49,7 @@ import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.editors.ApplicationConfigurationsEditor;
-import org.netbeans.modules.sun.manager.jbi.editors.EnvironmentVariablesEditor;
+import org.netbeans.modules.sun.manager.jbi.editors.ApplicationVariablesEditor;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptor;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
@@ -57,7 +57,7 @@ import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigu
 import org.openide.util.NbBundle;
 
 /**
- * Property support for Application Configurations.
+ * Property support for Application Configurations TabularData.
  * 
  * @author jqian
  */
@@ -65,21 +65,26 @@ class ApplicationConfigurationsPropertySupport extends AbstractTabularPropertySu
 
     private static final String APPLICATION_CONFIGURATION_NAME = "configurationName"; // NOI18N
 
+    private String componentName;
+    
     ApplicationConfigurationsPropertySupport(
             PropertySheetOwner propertySheetOwner,
             Attribute attr,
-            MBeanAttributeInfo info) {
+            MBeanAttributeInfo info,
+            String componentName) {
         super(propertySheetOwner, attr, info,
                 new String[]{APPLICATION_CONFIGURATION_NAME});
+        
+        this.componentName = componentName;
     }
 
     @Override
     public PropertyEditor getPropertyEditor() {
         String tableLabelText = NbBundle.getMessage(
-                EnvironmentVariablesEditor.class,
+                ApplicationVariablesEditor.class,
                 "LBL_APPLICATION_CONFIGURATIONS_TABLE"); // NOI18N
         String tableLabelDescription = NbBundle.getMessage(
-                EnvironmentVariablesEditor.class,
+                ApplicationVariablesEditor.class,
                 "ACS_APPLICATION_CONFIGURATIONS_TABLE"); // NOI18N
 
         JBIComponentConfigurationDescriptor descriptor =
@@ -89,7 +94,7 @@ class ApplicationConfigurationsPropertySupport extends AbstractTabularPropertySu
         return new ApplicationConfigurationsEditor(
                 tableLabelText, tableLabelDescription, getTabularType(),
                 new String[]{APPLICATION_CONFIGURATION_NAME}, descriptor,
-                info.isWritable());
+                info.isWritable(), componentName);
     }
 
     protected TabularData getTabularData() throws ManagementRemoteException {
