@@ -1592,7 +1592,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 		|	LITERAL_friend	{fd=true;}
 		|	literal_stdcall
         |   { LT(1).getText().equals(LITERAL___global_ext) == true}? ID
-        |   (options {greedy=true;} : attribute_specification)
+        |   (options {greedy=true;} : attribute_specification!)
 		)*
 		(	
                         (options {greedy=true;} :type_attribute_specification)?
