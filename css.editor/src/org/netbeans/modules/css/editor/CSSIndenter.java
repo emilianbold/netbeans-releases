@@ -223,7 +223,7 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
                         //
                         item = blockStack.pop();
                     }
-                    assert item.state == StackItemState.IN_RULE;
+                    assert item.state == StackItemState.IN_RULE : item;
                     if (ts.offset() == context.getLineNonWhiteStartOffset()) {
                         // if "}" is first character on line then it changes line's indentation:
                         iis.add(new IndentCommand(IndentCommand.Type.RETURN, context.getLineStartOffset()));
@@ -243,25 +243,26 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
                     if (start < ts.offset()) {
                         start = ts.offset();
                     }
+                    int commentEndOffset = ts.offset()+ts.token().text().toString().length()-1;
                     int end = context.getLineEndOffset();
-                    if (end > ts.offset()+ts.token().text().toString().length()) {
-                        end = ts.offset()+ts.token().text().toString().length();
+                    if (end > commentEndOffset) {
+                        end = commentEndOffset;
                     }
-                    int length = end - start;
-                    String text = getDocument().getText(start, length).trim();
-                    if (text.startsWith("/*")) {
-                        if (!text.endsWith("*/")) {
-                            assert !isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" line="+text+" block="+blockStack;
+                    if (start == ts.offset()) {
+                        if (end < commentEndOffset) {
+                            // if comment ends on next line put formatter to IN_COMMENT state
                             blockStack.push(new CssStackItem(StackItemState.IN_COMMENT));
                         }
-                    } else if (text.endsWith("*/")) {
+                    } else if (end == commentEndOffset) {
+                        String text = getDocument().getText(start, end-start).trim();
                         if (!text.startsWith("*/")) {
                             // if line does not start with '*/' then treat it as unformattable
                             iis.add(new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset()));
                         }
-                        assert isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" line="+text+" block="+blockStack;
+                        assert isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" start="+start+" end="+end;
                         blockStack.pop();
-                    } else if (isInState(blockStack, StackItemState.IN_COMMENT)) {
+                    } else {
+                        assert isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" start="+start+" end="+end;
                         iis.add(new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset()));
                     }
                 } catch (BadLocationException ex) {
