@@ -17,15 +17,13 @@ import org.openide.util.Lookup;
  */
 public final class DataCollectorProvider {
 
-    private static DataCollectorProvider instance = null;
+    private final static DataCollectorProvider instance =
+            new DataCollectorProvider();
 
     private DataCollectorProvider() {
     }
 
     public static final DataCollectorProvider getInstance() {
-        if (instance == null) {
-            instance = new DataCollectorProvider();
-        }
         return instance;
     }
 
@@ -35,17 +33,24 @@ public final class DataCollectorProvider {
      * @return new instance of data collector is returned each time this method is invoked;
      */
     public DataCollector createDataCollector(DataCollectorConfiguration configuraiton) {
-        Collection<? extends DataCollectorFactory> result = Lookup.getDefault().lookupAll(DataCollectorFactory.class);
-        if (result.isEmpty()) {
-            return null;
-        }
-        Iterator<? extends DataCollectorFactory> iterator = result.iterator();
-        while (iterator.hasNext()) {
-            DataCollectorFactory collectorFactory = iterator.next();
+        Collection<? extends DataCollectorFactory> result =
+                Lookup.getDefault().lookupAll(DataCollectorFactory.class);
+
+        for (DataCollectorFactory collectorFactory : result) {
             if (collectorFactory.getID().equals(configuraiton.getID())) {
                 return collectorFactory.create(configuraiton);
             }
         }
+
         return null;
+    }
+
+    public void reset() {
+        Collection<? extends DataCollectorFactory> result =
+                Lookup.getDefault().lookupAll(DataCollectorFactory.class);
+
+        for (DataCollectorFactory f : result) {
+            f.reset();
+        }
     }
 }
