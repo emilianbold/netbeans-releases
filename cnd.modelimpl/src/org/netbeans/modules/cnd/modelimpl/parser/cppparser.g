@@ -1323,29 +1323,29 @@ member_declaration
 		}
 		dtor_head[true] dtor_body	// Definition
 		{ #member_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #member_declaration); }
-	|
-		// Function declaration
-		(declaration_specifiers[false, false]	function_declarator[false, false] (EOF|SEMICOLON))=>
-		{if (statementTrace>=1) 
-			printf("member_declaration_6[%d]: Function declaration\n",
-				LT(1).getLine());
-		}
-		declaration[declOther]
-		{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
-	|  
-		// Function definition
-		(declaration_specifiers[false, false] function_declarator[true, false] LCURLY)=>
-		{beginFieldDeclaration();
-		 if (statementTrace>=1) 
-			printf("member_declaration_7[%d]: Function definition\n",
-				LT(1).getLine());
-		}
-		function_definition
-		{ #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
-	|  
-		// Member without a type (I guess it can only be a function declaration
-		// or definition)
-		((LITERAL_static)? function_declarator[false, false] (EOF|SEMICOLON))=>
+    |
+        // Function declaration
+        (   (LITERAL___extension__)?
+            declaration_specifiers[false, false]
+            function_declarator[false, false]
+            (EOF|SEMICOLON)
+        ) =>
+        {if (statementTrace>=1) printf("member_declaration_6[%d]: Function declaration\n", LT(1).getLine());}
+        declaration[declOther]
+        { #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
+    |
+        // Function definition
+        (   (LITERAL___extension__)?
+            declaration_specifiers[false, false]
+            function_declarator[true, false]
+            LCURLY
+        ) =>
+        {beginFieldDeclaration(); if(statementTrace>=1) printf("member_declaration_7[%d]: Function definition\n", LT(1).getLine());}
+        function_definition
+        { #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
+    |
+        // Member without a type (I guess it can only be a function declaration or definition)
+        ((LITERAL_static)? function_declarator[false, false] (EOF|SEMICOLON))=>
 		{beginFieldDeclaration();
                 if( reportOddWarnings ) {
                     printf("member_declaration[%d]: Warning Function declaration found without typename\n", LT(1).getLine());
@@ -1591,7 +1591,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 		|	LITERAL_typename
 		|	LITERAL_friend	{fd=true;}
 		|	literal_stdcall
-                |      { LT(1).getText().equals(LITERAL___global_ext) == true}? ID 
+        |   { LT(1).getText().equals(LITERAL___global_ext) == true}? ID
+        |   (options {greedy=true;} : attribute_specification)
 		)*
 		(	
                         (options {greedy=true;} :type_attribute_specification)?
