@@ -44,6 +44,7 @@ import java.util.concurrent.Future;
 import org.netbeans.modules.dlight.api.impl.DLightSessionHandlerAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
 import org.netbeans.modules.dlight.api.impl.DLightToolkitManager;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.openide.util.Lookup;
 
@@ -147,6 +148,16 @@ public final class DLightToolkitManagement {
                 return toolkitManager.createSession(target, configurationName);
             }
         }, "DLight [" + configurationName + "] Session Creation for " + target); // NOI18N
+  }
+
+  public Future<DLightSessionHandler> createSession(
+          final DLightTarget target,
+          final DLightConfiguration configuration) {
+      return DLightExecutorService.submit(new Callable<DLightSessionHandler>() {
+            public DLightSessionHandler call() throws Exception {
+                return toolkitManager.createSession(target, configuration);
+            }
+        }, "DLight [" + configuration.getConfigurationName() + "] Session Creation for " + target); // NOI18N
   }
 
 

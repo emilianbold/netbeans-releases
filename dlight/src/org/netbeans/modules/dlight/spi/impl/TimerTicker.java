@@ -143,4 +143,9 @@ public final class TimerTicker
     public void removeValidationListener(ValidationListener listener) {
         // throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    @Override
+    public String getName() {
+        return "Timer";
+    }
 }
