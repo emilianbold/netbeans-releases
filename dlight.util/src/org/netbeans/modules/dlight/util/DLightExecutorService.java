@@ -47,6 +47,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -56,24 +57,13 @@ import org.openide.util.RequestProcessor;
 public class DLightExecutorService {
 
     private final static String PREFIX = "DLIGHT: "; // NOI18N
-    private final static ScheduledExecutorService service;
     private final static Object lock;
-    private static String threadName;
     private final static Logger log;
+
 
     static {
         log = DLightLogger.getLogger(DLightExecutorService.class);
-        service = Executors.newScheduledThreadPool(10, new TaskThreadFactory());
         lock = new String(DLightExecutorService.class.getName());
-
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-
-            @Override
-            public void run() {
-                log.fine("Stop DLight ScheduledExecutorService"); // NOI18N
-                service.shutdownNow();
-            }
-        });
     }
 
     public static <T> Future<T> submit(final Callable<T> task, String name) {
@@ -89,36 +79,74 @@ public class DLightExecutorService {
         processor.post(task);
     }
 
-    public static Future scheduleAtFixedRate(Runnable task, long period, TimeUnit unit, String descr) {
+    public static Future scheduleAtFixedRate(final Runnable task, final long period, final TimeUnit unit, final String descr) {
         synchronized (lock) {
-            threadName = descr;
-            return service.scheduleAtFixedRate(task, 0, period, unit);
+            Runnable runnable = new Runnable() {
+
+                public void run() {
+                    final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
+                            new TaskThreadFactory(descr));
+                    final Future taskResult = service.scheduleAtFixedRate(task, 0, period, unit);
+                    try {
+                        while (true) {
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
+
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+                        }
+                    } finally {
+                        try {
+                            taskResult.cancel(true);
+                            Mutex.EVENT.readAccess(new Runnable() {
+                                public void run() {
+                                    service.shutdownNow();
+                                }
+                            });
+                        } catch (Exception ex) {
+                            // TODO: ????? AccessControlException if shutdown in
+                            // RequestProcessor's thread!!!! What to do???
+                            System.out.println("!!!!!!!!!!!!!! " + ex.getMessage());
+                        }
+                    }
+                }
+            };
+
+            final FutureTask<Boolean> ftask = new FutureTask<Boolean>(runnable, Boolean.TRUE);
+            RequestProcessor.getDefault().post(ftask);
+            return ftask;
         }
     }
 
     static class TaskThreadFactory implements ThreadFactory {
 
-        static final AtomicInteger poolNumber = new AtomicInteger(1);
+        final static AtomicInteger threadNumber = new AtomicInteger(1);
+        final static String namePrefix = PREFIX + "ScheduledExecutorService No. "; // NOI18N
+        final String threadName;
         final ThreadGroup group;
-        final AtomicInteger threadNumber = new AtomicInteger(1);
-        final String namePrefix = PREFIX + "ScheduledExecutorService Task No. "; // NOI18N
 
-        TaskThreadFactory() {
+        TaskThreadFactory(String threadName) {
+            this.threadName = namePrefix + threadNumber.getAndIncrement() + " [ " + threadName + " ]"; // NOI18N
             SecurityManager s = System.getSecurityManager();
             group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
         }
 
         public Thread newThread(Runnable r) {
             synchronized (lock) {
-                Thread t = new Thread(group, r,
-                        namePrefix + threadNumber.getAndIncrement() + " [ " + threadName + " ]", // NOI18N
-                        0);
+                Thread t = new Thread(group, r, threadName, 0);
+
                 if (t.isDaemon()) {
                     t.setDaemon(false);
                 }
+
                 if (t.getPriority() != Thread.NORM_PRIORITY) {
                     t.setPriority(Thread.NORM_PRIORITY);
                 }
+
                 return t;
             }
         }

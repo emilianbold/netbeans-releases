@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
-
 import java.net.ConnectException;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
 import java.util.ArrayList;
@@ -47,6 +46,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -56,24 +56,30 @@ import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.management.api.ExecutionContextEvent.Type;
 import org.netbeans.modules.dlight.api.impl.DLightToolAccessor;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.spi.impl.DataCollectorProvider;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.openide.util.Exceptions;
 
-
 final class ExecutionContext {
+
     private static final Object lock = new Object();
     private static final Logger log = DLightLogger.getLogger(ExecutionContext.class);
-    private volatile boolean validationInProgress = false;
+    // ***
     private final DLightTarget target;
     private final DLightTargetExecutionEnvProviderCollection envProvider;
-    private final List<DLightTool> tools = Collections.synchronizedList(new ArrayList<DLightTool>());
+    // Immutable
+    private final List<DLightTool> tools;
+    // @GuardedBy("lock")
     private List<ExecutionContextListener> listeners = null;
+    private volatile boolean validationInProgress = false;
 
     ExecutionContext(final DLightTarget target, DLightConfiguration dlightConfiguration) {
         this.target = target;
-        this.tools.addAll(dlightConfiguration.getToolsSet());
+        tools = Collections.unmodifiableList(dlightConfiguration.getToolsSet());
+        DataCollectorProvider.getInstance().reset();
         envProvider = new DLightTargetExecutionEnvProviderCollection();
     }
 
@@ -85,18 +91,21 @@ final class ExecutionContext {
         return target;
     }
 
-    void addDLightTargetExecutionEnviromentProvider(DLightTarget.ExecutionEnvVariablesProvider executionEnvProvider){
+    void addDLightTargetExecutionEnviromentProvider(DLightTarget.ExecutionEnvVariablesProvider executionEnvProvider) {
         envProvider.add(executionEnvProvider);
     }
 
-    DLightTarget.ExecutionEnvVariablesProvider getDLightTargetExecutionEnvProvider(){
+    DLightTarget.ExecutionEnvVariablesProvider getDLightTargetExecutionEnvProvider() {
         return envProvider;
     }
+
     /**
      * Do not call directly - use DLightSession.addDLightContextListener()
      */
     void setListeners(List<ExecutionContextListener> listeners) {
-        this.listeners = listeners;
+        synchronized (lock) {
+            this.listeners = listeners;
+        }
     }
 
     void validateTools() {
@@ -106,7 +115,7 @@ final class ExecutionContext {
 //    static int count = 0;
     void validateTools(boolean performRequiredActions) {
         DLightLogger.assertNonUiThread();
-        
+
         synchronized (lock) {
             if (validationInProgress) {
                 return;
@@ -121,15 +130,21 @@ final class ExecutionContext {
                 new HashMap<DLightTool, ValidationStatus>();
 
 //        count++;
-        
-        for (DLightTool tool : tools.toArray(new DLightTool[0])) {
+
+        for (final DLightTool tool : tools) {
 //            System.out.printf("%d: VALIDATING TOOL: %s\n", count, tool.getName());
             ValidationStatus toolCurrentStatus = tool.getValidationStatus();
 
             states.put(tool, toolCurrentStatus);
 //            System.out.printf("%d: CurrentStatus: %s\n", count, toolCurrentStatus.toString());
-            
-            tasks.put(tool, tool.validate(target));
+
+            tasks.put(tool, DLightExecutorService.submit(new Callable<ValidationStatus>() {
+
+                public ValidationStatus call() throws Exception {
+                    return tool.validate(target);
+                }
+            }, "Tool " + tool.getName() + " validation")); // NOI18N
+
 //            System.out.printf("%d: Future for validation task: %s\n", count, tasks.get(tool).toString());
         }
 
@@ -140,7 +155,7 @@ final class ExecutionContext {
             DLightTool[] toolsToValidate = tasks.keySet().toArray(new DLightTool[0]);
             willReiterate = false;
 
-            for (DLightTool tool : toolsToValidate) {
+            for (final DLightTool tool : toolsToValidate) {
                 Future<ValidationStatus> task = tasks.get(tool);
 
                 try {
@@ -154,7 +169,7 @@ final class ExecutionContext {
                     if (performRequiredActions) {
                         if (!toolNewStatus.isKnown()) {
                             Collection<AsynchronousAction> actions = toolNewStatus.getRequiredActions();
-                            
+
                             if (actions != null) {
                                 for (AsynchronousAction a : actions) {
                                     try {
@@ -165,7 +180,12 @@ final class ExecutionContext {
                                 }
                             }
 
-                            task = tool.validate(target);
+                            task = DLightExecutorService.submit(new Callable<ValidationStatus>() {
+
+                                public ValidationStatus call() throws Exception {
+                                    return tool.validate(target);
+                                }
+                            }, "Tool " + tool.getName() + " validation"); // NOI18N
                             toolNewStatus = task.get();
                             thisToolStateChanged = !toolNewStatus.equals(states.get(tool));
                         }
@@ -200,22 +220,26 @@ final class ExecutionContext {
 
     }
 
-    private void notifyListeners(ExecutionContextEvent event) {
-        if (listeners == null) {
-            return;
+    private void notifyListeners(final ExecutionContextEvent event) {
+        ExecutionContextListener[] lls = null;
+
+        synchronized (lock) {
+            if (listeners == null) {
+                return;
+            }
+
+            lls = listeners.toArray(new ExecutionContextListener[0]);
         }
 
-        for (ExecutionContextListener l : listeners.toArray(new ExecutionContextListener[0])) {
+        for (ExecutionContextListener l : lls) {
             l.contextChanged(event);
         }
     }
 
     List<Indicator> getIndicators() {
         ArrayList<Indicator> result = new ArrayList<Indicator>();
-        if (tools != null) {
-            for (DLightTool tool : tools) {
-                result.addAll(DLightToolAccessor.getDefault().getIndicators(tool));
-            }
+        for (DLightTool tool : tools) {
+            result.addAll(DLightToolAccessor.getDefault().getIndicators(tool));
         }
 
         return result;
@@ -234,18 +258,29 @@ final class ExecutionContext {
         }
 
         void clear() {
-            providers.clear();
+            synchronized (this) {
+                providers.clear();
+            }
         }
 
         void add(DLightTarget.ExecutionEnvVariablesProvider provider) {
-            providers.add(provider);
+            synchronized (this) {
+                providers.add(provider);
+            }
         }
 
         public Map<String, String> getExecutionEnv(DLightTarget target) throws ConnectException {
             Map<String, String> env = new HashMap<String, String>();
-            for (ExecutionEnvVariablesProvider provider : providers) {
+            ExecutionEnvVariablesProvider[] pp = null;
+
+            synchronized (this) {
+                pp = providers.toArray(new ExecutionEnvVariablesProvider[0]);
+            }
+
+            for (ExecutionEnvVariablesProvider provider : pp) {
                 env.putAll(provider.getExecutionEnv(target));
             }
+
             return env;
         }
     }
