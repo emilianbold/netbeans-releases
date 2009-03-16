@@ -76,7 +76,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
-import org.netbeans.modules.websvc.wsitconf.ui.service.BindingPanel;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
