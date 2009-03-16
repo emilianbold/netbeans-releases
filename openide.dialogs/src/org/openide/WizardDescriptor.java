@@ -921,8 +921,10 @@ public class WizardDescriptor extends DialogDescriptor {
 
                 if (autoWizardStyle) {
                     String overlayImageName = NbBundle.getMessage(WizardDescriptor.class, "STRING_WizardOverlayImage"); //NOI18N
-                    boolean isOverlayImage = overlayImageName.length() > 0 && !Boolean.getBoolean("netbeans.wizard.overlayimage.hide") //NOI18N
-                        || null != getProperty("OverlayImageName"); //NOI18N
+                    boolean isOverlayImage = (overlayImageName.length() > 0
+                                                && !Boolean.getBoolean("netbeans.wizard.overlayimage.hide") //NOI18N
+                                                && "Aqua".equals(UIManager.getLookAndFeel().getID()))
+                                    || null != getProperty("OverlayImageName"); //NOI18N
                     if( isOverlayImage && null == getProperty("OverlayImageName") ) //NOI18N
                         putProperty("OverlayImageName", overlayImageName); //NOI18N
                     wizardPanel = new WizardPanel(
@@ -1773,6 +1775,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * (This interface can replace
      * <a href="@OPENIDE/LOADERS@/org/openide/loaders/TemplateWizard.Iterator.html"><code>TemplateWizard.Iterator</code></a>
      * in a template's declaration.)
+     * @param <Data> in practice this should be {@link WizardDescriptor}
      * @since org.openide/1 4.33
      */
     public interface InstantiatingIterator<Data> extends Iterator<Data> {
@@ -1802,6 +1805,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * (This interface can replace
      * <a href="@OPENIDE/LOADERS@/org/openide/loaders/TemplateWizard.Iterator.html"><code>TemplateWizard.Iterator</code></a>
      * in a template's declaration.)
+     * @param <Data> in practice this should be {@link WizardDescriptor}
      * @since org.openide/1 6.5
      */
     public interface AsynchronousInstantiatingIterator<Data> extends InstantiatingIterator<Data> {
@@ -1824,6 +1828,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * (This interface can replace
      * <a href="@OPENIDE/LOADERS@/org/openide/loaders/TemplateWizard.Iterator.html"><code>TemplateWizard.Iterator</code></a>
      * in a template's declaration.)
+     * @param <Data> in practice this should be {@link WizardDescriptor}
      * @since org.openide.dialogs 7.1
      */
     public interface ProgressInstantiatingIterator<Data> extends AsynchronousInstantiatingIterator<Data> {

@@ -65,8 +65,8 @@ public enum AccessLevel {
         }
 
         @Override
-        public boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers) {
-            return modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PUBLIC);
+        public boolean accept(Set<org.netbeans.modules.csl.api.Modifier> modifiers) {
+            return modifiers.contains(org.netbeans.modules.csl.api.Modifier.PUBLIC);
         }
     },
 
@@ -84,10 +84,10 @@ public enum AccessLevel {
         }
 
         @Override
-        public boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers) {
-            return !modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PRIVATE)
-                    && !modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PROTECTED)
-                    && !modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PUBLIC);
+        public boolean accept(Set<org.netbeans.modules.csl.api.Modifier> modifiers) {
+            return !modifiers.contains(org.netbeans.modules.csl.api.Modifier.PRIVATE)
+                    && !modifiers.contains(org.netbeans.modules.csl.api.Modifier.PROTECTED)
+                    && !modifiers.contains(org.netbeans.modules.csl.api.Modifier.PUBLIC);
         }
     },
 
@@ -102,8 +102,8 @@ public enum AccessLevel {
         }
 
         @Override
-        public boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers) {
-            return modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PROTECTED);
+        public boolean accept(Set<org.netbeans.modules.csl.api.Modifier> modifiers) {
+            return modifiers.contains(org.netbeans.modules.csl.api.Modifier.PROTECTED);
         }
     },
 
@@ -118,14 +118,14 @@ public enum AccessLevel {
         }
 
         @Override
-        public boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers) {
-            return modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PRIVATE);
+        public boolean accept(Set<org.netbeans.modules.csl.api.Modifier> modifiers) {
+            return modifiers.contains(org.netbeans.modules.csl.api.Modifier.PRIVATE);
         }
     };
 
     public abstract ElementAcceptor getJavaAcceptor();
 
-    public abstract boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers);
+    public abstract boolean accept(Set<org.netbeans.modules.csl.api.Modifier> modifiers);
 
     public static Set<AccessLevel> create(ClassNode source, ClassNode type) {
         Set<AccessLevel> levels;

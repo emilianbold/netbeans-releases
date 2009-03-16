@@ -60,8 +60,11 @@ public class SecMan extends SecurityManager {
 
     public SecMan() {
         base = ExecutionEngine.base;
+        PrivilegedCheck.init();
+        AccController.init();
     }
 
+    @Override
     public void checkExit(int status) throws SecurityException {
         PrivilegedCheck.checkExit(status, this);
     }
@@ -105,6 +108,7 @@ public class SecMan extends SecurityManager {
         }
     }
     
+    @Override
     public boolean checkTopLevelWindow(Object window) {
         IOPermissionCollection iopc = AccController.getIOPermissionCollection();
         if (iopc != null && iopc.grp != null && (window instanceof java.awt.Window)) {
@@ -144,6 +148,10 @@ public class SecMan extends SecurityManager {
             if (action == 0) {
                 acc = AccessController.getContext();
             }
+        }
+
+        /** Just to preresolve the class and get it into the start class cache */
+        static void init() {
         }
         
         public Object run() throws Exception {

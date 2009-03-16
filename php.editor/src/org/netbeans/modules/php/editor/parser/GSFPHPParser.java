@@ -47,63 +47,82 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java_cup.runtime.Symbol;
-import org.netbeans.modules.gsf.api.*;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
+import org.openide.filesystems.FileObject;
 
 
 /**
  *
  * @author Petr Pisl
  */
-public class GSFPHPParser implements Parser {
+public class GSFPHPParser extends Parser {
 
-    private PositionManager positionManager = null;
-    
     private static final Logger LOGGER = Logger.getLogger(GSFPHPParser.class.getName());
 
     private boolean shortTags = true;
     private boolean aspTags = false;
+    private ParserResult result = null;
 
-    public void parseFiles(Job request) {
-        LOGGER.fine("parseFiles " + request.toString());
-        ParseListener listener = request.listener;
-        SourceFileReader reader = request.reader;
+    @Override
+    public Result getResult(Task task) throws ParseException {
+        return result;
+    }
+
+    @Override
+    public void cancel() {
+        // TODO
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener changeListener) {
+        // TODO
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener changeListener) {
+        // TODO
+    }
+
+    @Override
+    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        FileObject file = snapshot.getSource().getFileObject();
+        LOGGER.fine("parseFiles " + file);
+//        ParseListener listener = request.listener;
         
-        for (ParserFile file : request.files) {
-            ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
-            request.listener.started(beginEvent);
-            ParserResult result = null;
-            Properties languageProperties = PhpLanguageOptions.getProperties(file.getFileObject());
-            shortTags = languageProperties.areShortTagsEnabled();
-            aspTags = languageProperties.areAspTagsEnabled();
-            int end = 0;
-            try {
-                CharSequence buffer = reader.read(file);
-                String source = asString(buffer);
-                end = source.length();
-                int caretOffset = reader.getCaretOffset(file);
-                if (caretOffset != -1 && request.translatedSource != null) {
-                    caretOffset = request.translatedSource.getAstOffset(caretOffset);
-                }
-                LOGGER.fine("caretOffset: " + caretOffset); //NOI18N
-                Context context = new Context(file, listener, source, caretOffset, request.translatedSource);
-                result = parseBuffer(context, Sanitize.NONE, null);
-            } catch (Exception exception) {
-                listener.exception(exception);
-                LOGGER.fine ("Exception during parsing: " + exception);
-                ASTError error = new ASTError(0, end);
-                List<Statement> statements = new ArrayList<Statement>();
-                statements.add(error);
-                Program emptyProgram = new Program(0, end, statements, Collections.<Comment>emptyList());
-                result = new PHPParseResult(this, file, emptyProgram, false);
-            }
-            ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
-            listener.finished(doneEvent);
+//        ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
+//        request.listener.started(beginEvent);
+        Properties languageProperties = PhpLanguageOptions.getProperties(file);
+        shortTags = languageProperties.areShortTagsEnabled();
+        aspTags = languageProperties.areAspTagsEnabled();
+        int end = 0;
+        try {
+            String source = snapshot.getText().toString();
+            end = source.length();
+            int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
+            LOGGER.fine("caretOffset: " + caretOffset); //NOI18N
+            Context context = new Context(snapshot, source, caretOffset);
+            result = parseBuffer(context, Sanitize.NONE, null);
+        } catch (Exception exception) {
+            LOGGER.fine ("Exception during parsing: " + exception);
+            ASTError error = new ASTError(0, end);
+            List<Statement> statements = new ArrayList<Statement>();
+            statements.add(error);
+            Program emptyProgram = new Program(0, end, statements, Collections.<Comment>emptyList());
+            result = new PHPParseResult(snapshot, emptyProgram);
         }
         
     }
@@ -183,8 +202,8 @@ public class GSFPHPParser implements Parser {
                     }
                 }
                 if (ok) {
-                    result = new PHPParseResult(this, context.getFile(), program, true);
-                }
+                        result = new PHPParseResult(context.getSnapshot(), program);
+                    }
                 else {
                     result = sanitize(context, sanitizing, errorHandler);
                 }
@@ -193,8 +212,9 @@ public class GSFPHPParser implements Parser {
                 LOGGER.fine ("The parser value is not a Program: " + rootSymbol.value);
                 result = sanitize(context, sanitizing, errorHandler);
             }
+
             if (!sanitizedSource) {
-                errorHandler.displaySyntaxErrors(program);
+                result.setErrors(errorHandler.displaySyntaxErrors(program));
             }
         }
         else {
@@ -466,7 +486,7 @@ public class GSFPHPParser implements Parser {
                 statements.add(error);
                 Program emptyProgram = new Program(0, end, statements, Collections.<Comment>emptyList());
 
-                return new PHPParseResult(this, context.getFile(), emptyProgram, false);
+                return new PHPParseResult(context.getSnapshot(), emptyProgram);
         }
         
     }
@@ -479,13 +499,6 @@ public class GSFPHPParser implements Parser {
         }
     }
     
-    public PositionManager getPositionManager() {
-        if (positionManager == null) {
-            positionManager = new PHPPositionManager();
-        }
-        return positionManager;
-    }
-
     /** Attempts to sanitize the input buffer */
     public static enum Sanitize {
         /** Only parse the current file accurately, don't try heuristics */
@@ -519,8 +532,7 @@ public class GSFPHPParser implements Parser {
     
     /** Parsing context */
     public static class Context {
-        private final ParserFile file;
-        private final ParseListener listener;
+        private final Snapshot snapshot;
         private int errorOffset;
         private String source;
         private String sanitizedSource;
@@ -528,20 +540,17 @@ public class GSFPHPParser implements Parser {
         private String sanitizedContents;
         private int caretOffset;
         private Sanitize sanitized = Sanitize.NONE;
-        private TranslatedSource translatedSource;
 
         
-        public Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset, TranslatedSource translatedSource) {
-            this.file = parserFile;
-            this.listener = listener;
+        public Context(Snapshot snapshot, String source, int caretOffset) {
+            this.snapshot = snapshot;
             this.source = source;
             this.caretOffset = caretOffset;
-            this.translatedSource = translatedSource;
         }
         
         @Override
         public String toString() {
-            return "PHPParser.Context(" + getFile().toString() + ")"; // NOI18N
+            return "PHPParser.Context(" + snapshot.getSource().getFileObject() + ")"; // NOI18N
         }
         
         public OffsetRange getSanitizedRange() {
@@ -561,17 +570,10 @@ public class GSFPHPParser implements Parser {
         }
 
         /**
-         * @return the listener
-         */
-        public ParseListener getListener() {
-            return listener;
-        }
-
-        /**
          * @return the file
          */
-        public ParserFile getFile() {
-            return file;
+        public Snapshot getSnapshot() {
+            return snapshot;
         }
 
         /**

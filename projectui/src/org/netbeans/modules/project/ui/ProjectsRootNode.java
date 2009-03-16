@@ -60,6 +60,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -104,13 +105,14 @@ import org.openidex.search.Utils;
 public class ProjectsRootNode extends AbstractNode {
 
     private static final Logger LOG = Logger.getLogger(ProjectsRootNode.class.getName());
+    private static final Set<ProjectsRootNode> all = new WeakSet<ProjectsRootNode>();
 
     static final int PHYSICAL_VIEW = 0;
     static final int LOGICAL_VIEW = 1;
         
     private static final String ICON_BASE = "org/netbeans/modules/project/ui/resources/projectsRootNode.gif"; //NOI18N
     private static final String ACTIONS_FOLDER = "ProjectsTabActions"; // NOI18N
-    
+
     private ResourceBundle bundle;
     private final int type;
     
@@ -118,6 +120,7 @@ public class ProjectsRootNode extends AbstractNode {
         super( new ProjectChildren( type ) ); 
         setIconBaseWithExtension( ICON_BASE );
         this.type = type;
+        all.add(this);
     }
         
     public String getName() {
@@ -195,6 +198,19 @@ public class ProjectsRootNode extends AbstractNode {
         }       
         else {
             return null;
+        }
+    }
+
+    static void checkNoLazyNode(Object msg) {
+        for (ProjectsRootNode root : all) {
+            for (Node n : root.getChildren().getNodes()) {
+                if (n.getLookup().lookup(LazyProject.class) != null) {
+                    LogRecord REC = new LogRecord(Level.WARNING, "LazyProjects remain visible:\n {0}"); // NOI18N
+                    REC.setLoggerName(OpenProjectList.LOGGER.getName());
+                    REC.setParameters(new Object[] { msg });
+                    OpenProjectList.LOGGER.log(REC);
+                }
+            }
         }
     }
     

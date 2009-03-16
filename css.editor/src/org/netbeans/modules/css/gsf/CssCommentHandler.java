@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.css.gsf;
 
-import org.netbeans.modules.gsf.spi.CommentHandler;
+import org.netbeans.modules.csl.spi.CommentHandler;
 
 /**
  *

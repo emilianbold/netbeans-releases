@@ -52,6 +52,7 @@ import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.api.project.ProjectInformation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.test.MockLookup;
@@ -76,8 +77,12 @@ public class ProjectGeneratorTest extends NbTestCase {
     private FileObject scratch;
     private FileObject projdir;
     
+    @Override
     protected void setUp() throws Exception {
-        super.setUp();
+        FileObject fo = FileUtil.getConfigFile("Services");
+        if (fo != null) {
+            fo.delete();
+        }
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         MockLookup.setInstances(
@@ -85,6 +90,7 @@ public class ProjectGeneratorTest extends NbTestCase {
             AntBasedTestUtil.testAntBasedProjectType());
     }
     
+    @Override
     protected void tearDown() throws Exception {
         scratch = null;
         projdir = null;

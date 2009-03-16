@@ -42,23 +42,23 @@ import javax.swing.text.Document;
 import org.jruby.nb.ast.Node;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
+import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.csl.spi.DefaultCompletionResult;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
 final class CompletionRequest {
 
     final DefaultCompletionResult completionResult;
     final TokenHierarchy<Document> th;
-    final CompilationInfo info;
+    final ParserResult parserResult;
     final int lexOffset;
     final int astOffset;
     final BaseDocument doc;
     final String prefix;
     final RubyIndex index;
-    final NameKind kind;
+    final QuerySupport.Kind kind;
     final QueryType queryType;
     final FileObject fileObject;
     AstPath path;
@@ -71,13 +71,13 @@ final class CompletionRequest {
     CompletionRequest(
             final DefaultCompletionResult completionResult,
             final TokenHierarchy<Document> th,
-            final CompilationInfo info,
+            final ParserResult result,
             final int lexOffset,
             final int astOffset,
             final BaseDocument doc,
             final String prefix,
             final RubyIndex index,
-            final NameKind kind,
+            final QuerySupport.Kind kind,
             final QueryType queryType,
             final FileObject fileObject) {
         this.completionResult = completionResult;
@@ -85,7 +85,7 @@ final class CompletionRequest {
         this.astOffset = astOffset;
         this.index = index;
         this.doc = doc;
-        this.info = info;
+        this.parserResult = result;
         this.prefix = prefix;
         this.th = th;
         this.kind = kind;

@@ -273,6 +273,20 @@ public class ELExpression {
         
         return dotPos == -1 ? null : elExp.substring(dotPos + 1);
     }
+
+    static String getPropertyName(String methodName, int prefixLength) {
+            String propertyName = methodName.substring(prefixLength);
+            String propertyNameWithoutFL = propertyName.substring(1);
+
+            if(propertyNameWithoutFL.length() > 0) {
+                if(propertyNameWithoutFL.equals(propertyNameWithoutFL.toUpperCase())) {
+                    //property is in uppercase
+                    return propertyName;
+                }
+            }
+
+            return Character.toLowerCase(propertyName.charAt(0)) + propertyNameWithoutFL;
+        }
     
     protected abstract class BaseELTaskClass{
         protected String beanType;
@@ -344,11 +358,11 @@ public class ELExpression {
                 String methodName = method.getSimpleName().toString();
                 
                 if (methodName.startsWith("get")){ //NOI18N
-                    return Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
+                    return getPropertyName(methodName, 3);
                 }
                 
                 if (methodName.startsWith("is")){ //NOI18N
-                    return Character.toLowerCase(methodName.charAt(2)) + methodName.substring(3);
+                    getPropertyName(methodName, 2);
                 }
                 
                 if (isDefferedExecution()){
@@ -362,7 +376,7 @@ public class ELExpression {
             
             return null; // not a property accessor
         }
-        
+
         public void cancel() {}
     }
     

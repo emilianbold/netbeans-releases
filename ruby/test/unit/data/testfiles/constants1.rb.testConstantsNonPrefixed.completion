@@ -1,6 +1,6 @@
 Code completion result for source line:
 Fcntl::|O_A
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 CONSTANT   FD_CLOEXEC                                 null
 CONSTANT   F_DUPFD                                    null
 CONSTANT   F_GETFD                                    null

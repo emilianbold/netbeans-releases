@@ -50,7 +50,7 @@ public final class PhpModifiers extends Modifier {
     private int mod;
     public static PhpModifiers EMPTY = new PhpModifiers(0);
 
-    public PhpModifiers(Set<org.netbeans.modules.gsf.api.Modifier> modifiers) {
+    public PhpModifiers(Set<org.netbeans.modules.csl.api.Modifier> modifiers) {
         this(convertStringToBitmask(modifiers));
     }
 
@@ -123,9 +123,9 @@ public final class PhpModifiers extends Modifier {
         return hash;
     }
 
-    private static int[] convertStringToBitmask(Set<org.netbeans.modules.gsf.api.Modifier> modifiers) {
+    private static int[] convertStringToBitmask(Set<org.netbeans.modules.csl.api.Modifier> modifiers) {
         ArrayList<Integer> mods = new ArrayList<Integer>();
-        for (org.netbeans.modules.gsf.api.Modifier modifier : modifiers) {
+        for (org.netbeans.modules.csl.api.Modifier modifier : modifiers) {
             switch (modifier) {
                 case PRIVATE:
                     mods.add(PhpModifiers.PRIVATE);

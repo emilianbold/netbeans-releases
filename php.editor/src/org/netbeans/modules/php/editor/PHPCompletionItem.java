@@ -44,12 +44,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
@@ -146,7 +146,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         } else if (element instanceof IndexedElement) {
             IndexedElement ie = (IndexedElement) element;
-            if (ie.getFile().isPlatform()){
+            if (ie.isPlatform()){
                 return NbBundle.getMessage(PHPCompletionItem.class, "PHPPlatform");
             }
 
@@ -672,6 +672,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             for (int i = 0; i < parameters.length; i++) {
                 if (!paramsToSkip[i]) {
                     String param = parameters[i];
+                    if (param.startsWith("&")) {//NOI18N
+                        param = param.substring(1);
+                    }
 
                     if (firstParam) {
                         firstParam = false;
@@ -761,7 +764,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     static class CompletionRequest {
         public  int anchor;
         public  PHPParseResult result;
-        public  CompilationInfo info;
+        public  ParserResult info;
         public  String prefix;
         public  String currentlyEditedFileURL;
         PHPIndex index;

@@ -30,13 +30,13 @@ package org.netbeans.modules.groovy.gsp;
 
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.csl.api.CodeCompletionResult;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
-import org.netbeans.modules.gsf.api.CodeCompletionContext;
-import org.netbeans.modules.gsf.api.CodeCompletionResult;
 
 /**
  * GSP code completer
@@ -51,9 +51,9 @@ public class GspCompleter extends CompletionHandler {
      */
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
-        CompilationInfo info = context.getInfo();
+        ParserResult info = context.getParserResult();
         int caretOffset = context.getCaretOffset();
-        Document doc = info.getDocument();
+        Document doc = info.getSnapshot().getSource().getDocument(false);
         if (doc != null && isWithinGroovy(doc, caretOffset)) {
             return super.complete(context);
         }

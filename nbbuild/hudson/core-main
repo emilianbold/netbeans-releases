@@ -2,35 +2,16 @@
 
 [ "$action" = "build" ] || [ "$action" = "sync" ] || exit 101
 
-[ -n "$push_username" ] || exit 102
-[ -n "$push_password" ] || exit 103
-
-
 ANT_OPTS="-Xmx512m"
 export ANT_OPTS
-HGMERGE=merge
-export HGMERGE
-
-rm -rf real.workspace
-hg clone . real.workspace || exit 1
-cd real.workspace
-
-RESULT=`pwd`/nbbuild/build/test-results.txt
-export RESULT
-rm $RESULT
 
 testmodule() {
-    if ant -f $1/build.xml test-unit -Dtest-unit-sys-prop.ignore.random.failures=true; then
-        echo Test OK: $1
-    else
-        echo $1 >>$RESULT
-    fi
+    ant -f $1/build.xml test-unit -Dtest-unit-sys-prop.ignore.random.failures=true -Dcontinue.after.failing.tests=true || exit
 }
 
 if [ "$action" = "build" ]; then
-    ant build || exit 2
-    ant commit-validation || echo commit-validation >$RESULT
-
+    ant build || exit
+    ant commit-validation -Dcontinue.after.failing.tests=true || exit
     testmodule ant.freeform
     testmodule api.java
     testmodule api.java.classpath
@@ -90,25 +71,19 @@ if [ "$action" = "build" ]; then
     testmodule tasklist.todo
     testmodule tasklist.ui
     testmodule templates
-
-    if [ `hg out --template '{node|short}\n' http://hg.netbeans.org/main | wc -l` > 0 ]; then
-        echo No outgoing changes
-#        exit 0
-    fi
-
-    FAILED=`cat $RESULT | wc -l`
-    if [ "$FAILED" -gt 0 ]; then
-        echo "Failed tests in following modules:"
-        cat $RESULT
-        exit 5
-    fi
-    exit 0
 fi
 
 if [ "$action" = "sync" ]; then
+    [ -n "$push_username" ] || exit 102
+    [ -n "$push_password" ] || exit 103
+    HGMERGE=merge
+    export HGMERGE
     if [ -z "$push_repo" ]; then
         push_repo="core-main"
     fi
+    rm -rf real.workspace
+    hg clone . real.workspace || exit 1
+    cd real.workspace
     HEADS=`hg heads --template "{node}\n" | wc -l`
     if [ $HEADS = 2 ]; then
       hg merge

@@ -411,14 +411,18 @@ public class CommitAction extends ContextAction {
             for (HgHook hook : hooks) {
                 try {
                     // XXX handle returned context
-                    hook.beforeCommit(context);
+                    context = hook.beforeCommit(context);
+                    if(context != null) {
+                        message = context.getMessage();
+                    }
                 } catch (IOException ex) {
                     // XXX handle veto
                 }
             }
             HgCommand.doCommit(repository, commitCandidates, message, logger);
 
-            HgRepositoryContextCache.setHasHistory(ctx);
+            HgRepositoryContextCache.getInstance().setHasHistory(ctx);
+            
             HgLogMessage tip = HgCommand.doTip(repository, logger);
 
             context = new HgHookContext(hookFiles, message, new HgHookContext.LogEntry(tip));

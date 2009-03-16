@@ -40,22 +40,25 @@
  */
 package org.netbeans.modules.groovy.editor.api.lexer;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.parsing.api.Source;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -96,28 +99,84 @@ public class LexUtilities {
         INDENT_WORDS.add(GroovyTokenId.COLON);
     }
 
+    @CheckForNull
+    public static BaseDocument getDocument(GroovyParserResult info, boolean forceOpen) {
+        if (info != null) {
+            Source source = info.getSnapshot().getSource();
+            return getDocument(source, forceOpen);
+        }
+
+        return null;
+    }
+
+    @CheckForNull
+    public static BaseDocument getDocument(Source source, boolean forceOpen) {
+        BaseDocument bdoc = null;
+
+        Document doc = source.getDocument(true);
+        if (doc instanceof BaseDocument) {
+            bdoc = (BaseDocument) doc;
+        }
+
+        return bdoc;
+    }
+
+    public static BaseDocument getDocument(FileObject fileObject, boolean forceOpen) {
+        DataObject dobj;
+
+        try {
+            dobj = DataObject.find(fileObject);
+
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+
+            if (ec == null) {
+                throw new IOException("Can't open " + fileObject.getNameExt());
+            }
+
+            Document document;
+
+            if (forceOpen) {
+                document = ec.openDocument();
+            } else {
+                document = ec.getDocument();
+            }
+
+            if (document instanceof BaseDocument) {
+                return ((BaseDocument)document);
+            } else {
+                // Must be testsuite execution
+                try {
+                    Class c = Class.forName("org.netbeans.modules.groovy.editor.test.GroovyTestBase");
+                    if (c != null) {
+                        @SuppressWarnings("unchecked")
+                        java.lang.reflect.Method m = c.getMethod("getDocumentFor", new Class[] { FileObject.class });
+                        return (BaseDocument) m.invoke(null, (Object[])new FileObject[] { fileObject });
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+
+        return null;
+    }
+
     private LexUtilities() {
     }
 
-    public static OffsetRange getLexerOffsets(CompilationInfo info, OffsetRange astRange) {
-        ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
-        if (result != null) {
-            TranslatedSource ts = result.getTranslatedSource();
-            if (ts != null) {
-                int rangeStart = astRange.getStart();
-                int start = ts.getLexicalOffset(rangeStart);
-                if (start == rangeStart) {
-                    return astRange;
-                } else if (start == -1) {
-                    return OffsetRange.NONE;
-                } else {
-                    // Assumes the translated range maintains size
-                    return new OffsetRange(start, start+astRange.getLength());
-                }
-            }
+    public static OffsetRange getLexerOffsets(GroovyParserResult info, OffsetRange astRange) {
+        int rangeStart = astRange.getStart();
+        int start = info.getSnapshot().getOriginalOffset(rangeStart);
+        if (start == rangeStart) {
+            return astRange;
+        } else if (start == -1) {
+            return OffsetRange.NONE;
+        } else {
+            // Assumes the translated range maintains size
+            return new OffsetRange(start, start + astRange.getLength());
         }
-
-        return astRange;
     }
     
     /** Find the Groovy token sequence (in case it's embedded in something else at the top level */

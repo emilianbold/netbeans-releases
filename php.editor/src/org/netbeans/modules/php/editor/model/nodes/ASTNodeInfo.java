@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.php.editor.model.nodes;
 
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.nav.NavUtils;

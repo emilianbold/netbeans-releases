@@ -56,7 +56,6 @@ import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.test.TestFileUtils;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
@@ -84,7 +83,10 @@ public class GeneratedFilesHelperTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        super.setUp();
+        FileObject fo = FileUtil.getConfigFile("Services");
+        if (fo != null) {
+            fo.delete();
+        }
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         TestUtil.createFileFromContent(GeneratedFilesHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");

@@ -1,7 +1,17 @@
 Code completion result for source line:
 (1..3).any {println |}
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+PACKAGE    com                                        null
+PACKAGE    groovy                                     null
+PACKAGE    groovyjarjarantlr                          null
+PACKAGE    groovyjarjarasm                            null
+PACKAGE    groovyjarjarcommonscli                     null
+PACKAGE    java                                       null
+PACKAGE    javax                                      null
+PACKAGE    org                                        null
+PACKAGE    sun                                        null
+PACKAGE    sunw                                       null
 CLASS      AbstractCollection                         null
 CLASS      AbstractFactory                            null
 CLASS      AbstractList                               null
@@ -200,7 +210,6 @@ CLASS      InvalidPropertiesFormatExcepti             null
 CLASS      Iterable                                   null
 CLASS      Iterator                                   null
 CLASS      JarURLConnection                           null
-CLASS      KeywordAboveClass1                         null
 CLASS      LineNumberInputStream                      null
 CLASS      LineNumberReader                           null
 CLASS      LinkageError                               null
@@ -225,7 +234,6 @@ CLASS      MetaExpandoProperty                        null
 CLASS      MetaMethod                                 null
 CLASS      MetaObjectProtocol                         null
 CLASS      MetaProperty                               null
-CLASS      MethodCompletionTestCase                   null
 CLASS      MissingClassException                      null
 CLASS      MissingFieldException                      null
 CLASS      MissingFormatArgumentException             null
@@ -324,11 +332,6 @@ CLASS      RuntimePermission                          null
 CLASS      Scanner                                    null
 CLASS      Script                                     null
 CLASS      ScriptException                            null
-CLASS      ScriptLong1                                null
-CLASS      ScriptLong2                                null
-CLASS      ScriptString1                              null
-CLASS      ScriptString2                              null
-CLASS      ScriptStringConst1                         null
 CLASS      SecureCacheResponse                        null
 CLASS      SecurityException                          null
 CLASS      SecurityManager                            null
@@ -416,7 +419,6 @@ CLASS      Writer                                     null
 CLASS      XmlNodePrinter                             null
 CLASS      XmlParser                                  null
 CLASS      XmlSlurper                                 null
-CLASS      testClass1                                 null
 VARIABLE   it                                         Object
 KEYWORD    assert                                     null
 KEYWORD    boolean                                    null
