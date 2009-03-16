@@ -78,7 +78,6 @@ import org.netbeans.modules.visualweb.insync.ModelSetsListener;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.actions.ToolsAction.Model;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
