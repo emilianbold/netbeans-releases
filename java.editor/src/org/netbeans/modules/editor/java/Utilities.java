@@ -740,7 +740,8 @@ public class Utilities {
         
         OUTER:
         for (ExecutableElement ee : execsIn(info, (TypeElement) on.asElement(), constr, name)) {
-            if (!info.getTypes().isSubtype(on, ((TypeElement) ee.getEnclosingElement()).asType())) //XXX: fix for #132627, a clearer fix may exist
+            TypeMirror currType = ((TypeElement) ee.getEnclosingElement()).asType();
+            if (!info.getTypes().isSubtype(on, currType) && !on.asElement().equals(((DeclaredType)currType).asElement())) //XXX: fix for #132627, a clearer fix may exist
                 continue;
             if (ee.getParameters().size() == foundTypes.size() /*XXX: variable arg count*/) {
                 TypeMirror innerCandidate = null;
