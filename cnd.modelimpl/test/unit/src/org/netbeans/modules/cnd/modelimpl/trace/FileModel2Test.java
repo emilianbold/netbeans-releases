@@ -224,4 +224,10 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#156009 : parser fails on declaration with __attribute__
         performTest("iz156009.cc");
     }
+
+    public void testIZ158615() throws Exception {
+        // IZ#158615 : Intervals are unresolved
+        performTest("iz158615.cc");
+    }
+
 }
