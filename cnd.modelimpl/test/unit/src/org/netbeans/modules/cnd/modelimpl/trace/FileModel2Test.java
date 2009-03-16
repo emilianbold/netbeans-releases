@@ -214,4 +214,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#159238 : parser fails on attribute after friend
         performTest("iz159238.cc");
     }
+
+    public void testIZ158124() throws Exception {
+        // IZ#158124 : parser breaks on (( ))
+        performTest("iz158124.cc");
+    }
 }
