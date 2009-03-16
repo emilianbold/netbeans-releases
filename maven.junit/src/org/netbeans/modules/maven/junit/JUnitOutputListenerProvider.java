@@ -49,6 +49,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.output.NotifyFinishOutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.jdom.Document;
@@ -62,6 +63,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.junit.nodes.JUnitTestRunnerNodeFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -83,15 +85,17 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
     private Pattern testNamePattern = Pattern.compile(".*\\((.*)\\).*<<< (?:FAILURE)?(?:ERROR)?!\\s*"); //NOI18N
     
     private Logger LOG = Logger.getLogger(JUnitOutputListenerProvider.class.getName());
+    private RunConfig config;
     
-    public JUnitOutputListenerProvider(Project project) {
+    public JUnitOutputListenerProvider(Project project, RunConfig config) {
         prj = project;
         mavenproject = prj.getLookup().lookup(NbMavenProject.class);
         runningPattern = Pattern.compile("(?:\\[surefire\\] )?Running (.*)", Pattern.DOTALL); //NOI18N
         outDirPattern = Pattern.compile("Surefire report directory\\: (.*)", Pattern.DOTALL); //NOI18N
         outDirPattern2 = Pattern.compile("Setting reports dir\\: (.*)", Pattern.DOTALL); //NOI18N
-        
+        this.config = config;
     }
+
 
     public String[] getRegisteredOutputSequences() {
         return new String[] {
@@ -133,10 +137,10 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
             Manager.getInstance().testStarted(session);
             session.setRerunHandler(new RerunHandler() {
                 public void rerun() {
-                    throw new UnsupportedOperationException("Not supported yet.");
+                    RunUtils.executeMaven(config);
                 }
                 public boolean enabled() {
-                    return false;
+                    return true;
                 }
                 public void addChangeListener(ChangeListener listener) {
                 }
