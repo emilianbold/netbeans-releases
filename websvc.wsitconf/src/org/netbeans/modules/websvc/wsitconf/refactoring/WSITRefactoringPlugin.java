@@ -55,6 +55,8 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
@@ -143,9 +145,11 @@ abstract class WSITRefactoringPlugin<T extends AbstractRefactoring> extends Prog
                                     JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(file);
                                     if (supp == null) return;
                                     fireProgressListenerStep();
+                                    Project p = FileOwnerQuery.getOwner(file);
+                                    if (p == null) return;
                                     WSDLModel model = null;
                                     try {
-                                        model = WSITModelSupport.getModelForServiceFromJava(file, supp, false, null);
+                                        model = WSITModelSupport.getModelForServiceFromJava(file, p, false, null);
                                     } catch (IOException ex) {
                                         ex.printStackTrace();
                                     } catch (Exception ex) {
@@ -175,8 +179,10 @@ abstract class WSITRefactoringPlugin<T extends AbstractRefactoring> extends Prog
                                     if (supp == null) return;
                                     WSDLModel model = null;
                                     fireProgressListenerStep();
+                                    Project p = FileOwnerQuery.getOwner(file);
+                                    if (p == null) return;
                                     try {
-                                        model = WSITModelSupport.getModelForServiceFromJava(file, supp, false, null);
+                                        model = WSITModelSupport.getModelForServiceFromJava(file, p, false, null);
                                     } catch (IOException ex) {
                                         ex.printStackTrace();
                                     } catch (Exception ex) {
