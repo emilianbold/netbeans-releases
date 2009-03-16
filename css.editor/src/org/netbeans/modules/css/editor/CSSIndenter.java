@@ -243,7 +243,7 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
                     if (start < ts.offset()) {
                         start = ts.offset();
                     }
-                    int commentEndOffset = ts.offset()+ts.token().text().toString().length()-1;
+                    int commentEndOffset = ts.offset()+ts.token().text().toString().trim().length()-1;
                     int end = context.getLineEndOffset();
                     if (end > commentEndOffset) {
                         end = commentEndOffset;

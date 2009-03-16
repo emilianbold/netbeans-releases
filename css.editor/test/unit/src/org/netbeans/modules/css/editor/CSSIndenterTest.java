@@ -145,6 +145,8 @@ public class CSSIndenterTest extends TestBase {
         // #160105:
         format("/* unfinished comment\n* /\n\n/* another comment\n*/",
                "/* unfinished comment\n* /\n\n/* another comment\n*/", null);
+        format("a{\n    /*\n    comment\n    */\n    color: green;\n}",
+               "a{\n    /*\n    comment\n    */\n    color: green;\n}", null);
     }
 
     public void testNativeEmbeddingFormattingCase1() throws Exception {
