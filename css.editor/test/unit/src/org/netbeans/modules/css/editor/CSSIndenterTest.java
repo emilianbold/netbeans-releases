@@ -81,14 +81,6 @@ public class CSSIndenterTest extends TestBase {
         NbReaderProvider.setupReaders();
         AbstractIndenter.inUnitTestRun = true;
 
-//        MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class);
-//        // init TestLanguageProvider
-//        Lookup.getDefault().lookup(TestLanguageProvider.class);
-//        TestLanguageProvider.register(CSSTokenId.language());
-//        TestLanguageProvider.register(HTMLTokenId.language());
-//        TestLanguageProvider.register(JspTokenId.language());
-//        TestLanguageProvider.register(JavaTokenId.language());
-        
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CSSTokenId.language());
         JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
@@ -129,29 +121,6 @@ public class CSSIndenterTest extends TestBase {
         // override it because I've already done in setUp()
     }
 
-    private static class Listener implements SyntaxParserListener {
-        private Semaphore s;
-        public Listener(Document doc, Semaphore s) throws InterruptedException {
-            this.s = s;
-            s.acquire();
-        }
-        public void parsingFinished(List<SyntaxElement> elements) {
-            s.release();
-        }
-
-    }
-
-    private void forceHTMLParsingAndWait(String file, String mimeType, Language language) throws Exception {
-        FileObject fo = getTestFile(file);
-        BaseDocument doc = getDocument(fo, mimeType, language);
-        LanguagePath htmlLP = LanguagePath.get(language);
-        Semaphore s = new Semaphore(1);
-        Listener l = new Listener(doc, s);
-        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(l);
-        s.acquire();
-        s.release();
-    }
-
     public void testFormatting() throws Exception {
         format("a{\nbackground: red,\nblue;\n  }\n",
                "a{\n    background: red,\n        blue;\n}\n", null);
@@ -179,12 +148,10 @@ public class CSSIndenterTest extends TestBase {
     }
 
     public void testNativeEmbeddingFormattingCase1() throws Exception {
-        forceHTMLParsingAndWait("testfiles/format1.html", "text/html", HTMLTokenId.language());
         reformatFileContents("testfiles/format1.html", new IndentPrefs(4,4));
     }
 
     public void testNativeEmbeddingFormattingCase2() throws Exception {
-        forceHTMLParsingAndWait("testfiles/format2.html", "text/html", HTMLTokenId.language());
         reformatFileContents("testfiles/format2.html", new IndentPrefs(4,4));
     }
 

@@ -99,8 +99,7 @@ public class JspIndenterTest extends TestBase2 {
         AbstractIndenter.inUnitTestRun = true;
 
         MockLookup.init();
-        MockLookup.setInstances(create(), testLanguageProvider, new MockMimeLookup());
-        //MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class);
+        MockLookup.setInstances(testLanguageProvider);
 
         // init TestLanguageProvider
         Lookup.getDefault().lookup(TestLanguageProvider.class);
@@ -118,20 +117,6 @@ public class JspIndenterTest extends TestBase2 {
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HTMLKit("text/html"));
         Reformatter.Factory factory = new Reformatter.Factory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, new JavacParserFactory(), new ClassParserFactory());
-    }
-
-    // HACK to workaround #159622
-    public static AntBasedProjectType create() {
-        Map map = new HashMap();
-        map.put("type", "org.netbeans.modules.web.project");
-        map.put("iconResource", "org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif");
-        map.put("sharedName", "true");
-        map.put("sharedNamespace", "http://www.netbeans.org/ns/web-project/3");
-        map.put("privateName", "data");
-        map.put("privateNamespace", "http://www.netbeans.org/ns/web-project-private/1");
-        map.put("className", "org.netbeans.modules.web.project.WebProjectType");
-        map.put("methodName", "createProject");
-        return AntBasedProjectFactorySingleton.create(map);
     }
 
     @Override
@@ -159,29 +144,6 @@ public class JspIndenterTest extends TestBase2 {
         }
     }
 
-    private void forceHTMLParsingAndWait(String file, String mimeType, Language language) throws Exception {
-        FileObject fo = getTestFile(file);
-        BaseDocument doc = getDocument(fo, mimeType, language);
-        LanguagePath htmlLP = LanguagePath.get(language);
-        Semaphore s = new Semaphore(1);
-        Listener l = new Listener(doc, s);
-        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(l);
-        s.acquire();
-        s.release();
-    }
-
-    private static class Listener implements SyntaxParserListener {
-        private Semaphore s;
-        public Listener(Document doc, Semaphore s) throws InterruptedException {
-            this.s = s;
-            s.acquire();
-        }
-        public void parsingFinished(List<SyntaxElement> elements) {
-            s.release();
-        }
-
-    }
-
     @Override
     protected boolean runInEQ() {
         return true;
@@ -192,7 +154,6 @@ public class JspIndenterTest extends TestBase2 {
     }
 
     public void testFormattingCase002() throws Exception {
-//        forceHTMLParsingAndWait("FormattingProject/web/case002.jsp", "text/x-jsp", JspTokenId.language());
         reformatFileContents("FormattingProject/web/case002.jsp",new IndentPrefs(4,4));
     }
 

@@ -72,14 +72,6 @@ public class HtmlIndenterTest extends TestBase2 {
         super.setUp();
         AbstractIndenter.inUnitTestRun = true;
 
-//        MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class);
-//        // init TestLanguageProvider
-//        Lookup.getDefault().lookup(TestLanguageProvider.class);
-//        TestLanguageProvider.register(CSSTokenId.language());
-//        TestLanguageProvider.register(HTMLTokenId.language());
-//        TestLanguageProvider.register(JspTokenId.language());
-//        TestLanguageProvider.register(JavaTokenId.language());
-
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CSSTokenId.language());
         JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();

@@ -112,6 +112,7 @@ public class HtmlLanguage extends DefaultLanguageConfig {
         return null;
     }
 
+    @Override
     public KeystrokeHandler getKeystrokeHandler() {
         return new HtmlKeystrokeHandler();
     }
