@@ -37,31 +37,21 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grailsproject.ui.wizards;
+package org.netbeans.modules.groovy.grailsproject.templates;
 
+import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import org.netbeans.modules.groovy.grailsproject.ui.TemplatesImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Martin Adamek
  */
 public class GrailsArtifacts {
-
-    public static String getWizardTitle(SourceCategory SourceCategory) {
-        switch (SourceCategory) {
-            case GRAILSAPP_CONTROLLERS: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_CONTROLLERS");
-            case GRAILSAPP_DOMAIN: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_DOMAIN");
-            case GRAILSAPP_SERVICES: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_SERVICES");
-            case GRAILSAPP_VIEWS: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_VIEWS");
-            case GRAILSAPP_TAGLIB: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_TAGLIB");
-            case SCRIPTS: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_SCRIPTS");
-        }
-        return null;
-    }
 
     public static SourceCategory getCategoryForFolder(FileObject projectRoot, FileObject fileObject) {
         String dirName = null;
@@ -131,4 +121,16 @@ public class GrailsArtifacts {
         return null;
     }
 
+    public static SourceGroup getSourceGroupForCategory(Project project, List<SourceGroup> groups, SourceCategory category) {
+        FileObject projectRoot = project.getProjectDirectory();
+        for (SourceGroup group : groups) {
+            FileObject folder = group.getRootFolder();
+            FileObject categoryFolder = projectRoot.getFileObject(category.getRelativePath());
+            if (folder.equals(categoryFolder)) {
+                return group;
+            }
+        }
+
+        return null;
+    }
 }

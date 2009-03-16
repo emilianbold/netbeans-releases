@@ -157,7 +157,8 @@ public class CodeUtils {
             // no variable name
             return null; 
         }
-        assert false : var.getName().getClass().toString();
+        
+        LOGGER.fine("Cannot extract variable name of type: " + var.getName().getClass().toString());
         return null;
     }
 
