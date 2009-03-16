@@ -151,7 +151,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 	put();
     }
     
-    public void removeFile(File file) {
+    public void removeFile(CharSequence file) {
         CharSequence path = getFileKey(file, false);
         MyFile f;
 
@@ -301,6 +301,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return sharedText ? FilePathCache.getManager().getString(key) : DefaultCache.getManager().getString(key);
     }
     
+    public static CharSequence getFileKey(CharSequence file, boolean sharedText) {
+        return sharedText ? FilePathCache.getManager().getString(file) : DefaultCache.getManager().getString(file);
+    }
 
     private CharSequence getAlternativeFileKey(CharSequence primaryKey) {
         Object out = canonicFiles.get(primaryKey);
