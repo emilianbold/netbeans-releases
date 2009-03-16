@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.websvc.jaxrpc.nodes;
 
+import java.awt.Cursor;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.websvc.jaxrpc.actions.JaxRpcWsdlCookie;
