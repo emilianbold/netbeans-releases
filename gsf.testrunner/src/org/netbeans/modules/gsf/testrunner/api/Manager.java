@@ -198,14 +198,19 @@ public final class Manager {
         displayHandler.displaySuiteRunning(suiteName);
         displayInWindow(session, displayHandler);
     }
-    
+
+    public void displayReport(final TestSession session,
+                       final Report report) {
+        displayReport(session, report, true);
+    }
+
     /**
      */
     public synchronized void displayReport(final TestSession session,
-                       final Report report) {
+                       final Report report, boolean completed) {
 
         /* Called from the AntLogger's thread */
-
+        report.completed = completed;
         final ResultDisplayHandler displayHandler = getDisplayHandler(session);
         displayHandler.displayReport(report);
         displayInWindow(session, displayHandler);
