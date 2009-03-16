@@ -54,6 +54,8 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbPerformanceTest;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -102,40 +104,60 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
         timer.setLevel(Level.FINE);
         timer.addHandler(handler);
 
+        ClassIndexManager.getDefault();
+        Thread.sleep(29000);
+        System.err.println("Starting...");
         Log.enableInstances(Logger.getLogger("TIMER"), "JavacParser", Level.FINEST);
 
         FileObject testFile = getProjectDir().getFileObject("/src/bsh/This.java");
         JavaSource src = JavaSource.forFileObject(testFile);
+        final WhereUsedQuery[] wuq = new WhereUsedQuery[1];
         
-        final WhereUsedQuery wuq = new WhereUsedQuery(Lookup.EMPTY);
         src.runUserActionTask(new Task<CompilationController>() {
 
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement klass = controller.getElements().getTypeElement("bsh.This");
-                TypeMirror mirror = klass.getSuperclass();
+                TypeMirror mirror = klass.getInterfaces().get(1); // java.lang.Runnable
                 Element object = controller.getTypes().asElement(mirror);
-                wuq.setRefactoringSource(Lookups.singleton(TreePathHandle.create(object, controller)));
+                wuq[0] = new WhereUsedQuery(Lookups.singleton(TreePathHandle.create(object, controller)));
                 ClasspathInfo cpi = RetoucheUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
-                wuq.getContext().add(cpi);
+                wuq[0].getContext().add(cpi);
             }
         }, false);
         
-        wuq.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
+        wuq[0].putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
         RefactoringSession rs = RefactoringSession.create("Session");
-        wuq.prepare(rs);
+        wuq[0].prepare(rs);
         rs.doRefactoring(false);
         Collection<RefactoringElement> elems = rs.getRefactoringElements();
-        System.err.println(elems.size());
-        for (RefactoringElement e : elems) {
-            System.err.println(e.getText());
+        StringBuilder sb = new StringBuilder();
+                sb.append("Symbol: '").append("java.lang.Runnable").append("'");
+        sb.append('\n').append("Number of usages: ").append(elems.size()).append('\n');
+        try {
+            long prepare = handler.get("refactoring.prepare");
+            NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
+            d.name = "refactoring.prepare"+" (" + "java.lang.Runnable" + ", usages:" + elems.size() + ")";
+            d.value = prepare;
+            d.unit = "ms";
+            d.runOrder = 0;
+            sb.append("Prepare phase: ").append(prepare).append(" ms.\n");
+            Utilities.processUnitTestsResults(FindUsagesPerfTest.class.getCanonicalName(), d);
+            System.err.println("Time: " + prepare);
+        } catch (Exception ex) {
+            sb.append("Cannot collect usages: ").append(ex.getCause());
         }
+        getLog().append(sb);
+        System.err.println(sb);
+
         src = null;
+        wuq[0] = null;
         System.gc(); System.gc();
+        
         Log.assertInstances("Some instances of parser were not GCed");
     }
 
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().clusters(".*").addTest(OpenDocumentsPerfTest.class, "testOpenDocuments").gui(false));
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().clusters("gsf.*").addTest(OpenDocumentsPerfTest.class, "testOpenDocuments").gui(true));
     }
 }
