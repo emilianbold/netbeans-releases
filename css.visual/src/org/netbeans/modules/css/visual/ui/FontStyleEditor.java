@@ -258,7 +258,7 @@ public class FontStyleEditor extends StyleEditor {
         if(textColor != null){
             colorField.setColorString(textColor);
         }else{
-            colorField.setColorString(CssRuleContent.NOT_SET);
+            colorField.setColorString(Utils.NOT_SET);
         }
         
         setCssPropertyChangeListener(cssStyleData);

@@ -144,7 +144,7 @@ public class BackgroundStyleEditor extends StyleEditor {
         if(backGroundColor != null){
             colorField.setColorString(backGroundColor);
         }else{
-            colorField.setColorString(CssRuleContent.NOT_SET);
+            colorField.setColorString(Utils.NOT_SET);
         }
         
         // Set the Bckground Image name to the GUI
@@ -159,7 +159,7 @@ public class BackgroundStyleEditor extends StyleEditor {
                 imageFileField.setText(backGroundImage);
             }
         }else{
-            imageFileField.setText(CssRuleContent.NOT_SET);
+            imageFileField.setText(Utils.NOT_SET);
         }
         
         String backGroundRepeat = cssStyleData.getProperty(CssProperties.BACKGROUND_REPEAT);
@@ -496,13 +496,13 @@ public class BackgroundStyleEditor extends StyleEditor {
         PropertyData backgroundImageData = new PropertyData();
         String imgPath = imageFileField.getText();
         if((imgPath == null) || (imgPath.equals(""))) {
-            imgPath = CssRuleContent.NOT_SET;
+            imgPath = Utils.NOT_SET;
             imageFileField.setText(imgPath);
         }
-        if(!imgPath.equals(CssRuleContent.NOT_SET)){
+        if(!imgPath.equals(Utils.NOT_SET)){
             backgroundImageData.setValue("url(" + imgPath + ")"); //NOI18N
         }else{
-            backgroundImageData.setValue(CssRuleContent.NOT_SET);
+            backgroundImageData.setValue(Utils.NOT_SET);
         }
         cssPropertyChangeSupport().firePropertyChange(CssProperties.BACKGROUND_IMAGE, null, backgroundImageData.toString());
     }

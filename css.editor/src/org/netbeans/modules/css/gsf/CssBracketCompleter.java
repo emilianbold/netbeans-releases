@@ -51,6 +51,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.css.editor.LexerUtils;
@@ -248,7 +249,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
         //ranges.add(new OffsetRange(0, info.getDocument().getLength()));
 
 //        CSSGSFParserResult result = (CSSGSFParserResult)info.getEmbeddedResult("text/x-css", caretOffset);
-        SimpleNode root = ((CSSGSFParserResult) info).root();
+        SimpleNode root = ((CssParserResult) info).root();
         Snapshot snapshot = info.getSnapshot();
 
         if (root != null) {
