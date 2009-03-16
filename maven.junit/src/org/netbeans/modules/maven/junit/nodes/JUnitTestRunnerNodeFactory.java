@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,43 +34,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.junit;
+package org.netbeans.modules.maven.junit.nodes;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.api.output.ContextOutputProcessorFactory;
-import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.openide.nodes.Node;
 
 /**
+ * mkleint: copied from junit module
  *
- * @author Milos Kleint
+ * @author answer
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.api.output.OutputProcessorFactory.class)
-public class JUnitOutputProcessorFactory implements ContextOutputProcessorFactory {
-    
-    /** Creates a new instance of DefaultOutputProcessor */
-    public JUnitOutputProcessorFactory() {
+public class JUnitTestRunnerNodeFactory extends TestRunnerNodeFactory {
+    private TestSession session;
+    private Project project;
+
+    public JUnitTestRunnerNodeFactory(TestSession session, Project project) {
+        this.session = session;
+        this.project = project;
     }
 
-    public Set<OutputProcessor> createProcessorsSet(Project project) {
-        return Collections.<OutputProcessor>emptySet();
+    @Override
+    public Node createTestMethodNode(Testcase testcase, Project project) {
+        return new JUnitTestMethodNode(testcase, project);
     }
 
-    public Set<OutputProcessor> createProcessorsSet(Project project, RunConfig config) {
-        if (config.getGoals().contains("test") || config.getGoals().contains("surefire:test")) { //NOI18N
-            Set<OutputProcessor> toReturn = new HashSet<OutputProcessor>();
-            if (project != null) {
-                toReturn.add(new JUnitOutputListenerProvider(project, config));
-            }
-            return toReturn;
-        }
-        return Collections.<OutputProcessor>emptySet();
+    @Override
+    public Node createCallstackFrameNode(String frameInfo, String dispayName) {
+        return new JUnitCallstackFrameNode(frameInfo, dispayName);
     }
-    
+
+    @Override
+    public TestsuiteNode createTestSuiteNode(String suiteName, boolean filtered) {
+        return new JUnitTestsuiteNode(suiteName, filtered);
+    }
 }
