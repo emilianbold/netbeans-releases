@@ -113,6 +113,10 @@ public class ChatPanel extends javax.swing.JPanel {
         outbox.requestFocus();
     }
 
+    private String removeTags(String body) {
+        return body.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    }
+
 //    void setUpPrivateMessages() {
 //
 //        final JPopupMenu popupMenu = new JPopupMenu();
@@ -315,7 +319,7 @@ public class ChatPanel extends javax.swing.JPanel {
             String text = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"buddy\" align=\"left\">"+
                     StringUtils.parseResource(message.getFrom()) + "</td><td class=\"time\" align=\"right\">" +
                     DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>" +
-                    "<div class=\"message\">" + message.getBody() + "</div>";
+                    "<div class=\"message\">" + removeTags(message.getBody()) + "</div>";
 
             editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
         } catch (IOException ex) {
