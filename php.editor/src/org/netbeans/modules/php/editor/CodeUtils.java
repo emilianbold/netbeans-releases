@@ -40,6 +40,7 @@ package org.netbeans.modules.php.editor;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -85,6 +86,7 @@ public class CodeUtils {
     public static final String FUNCTION_TYPE_PREFIX = "@fn:";
     public static final String METHOD_TYPE_PREFIX = "@mtd:";
     public static final String STATIC_METHOD_TYPE_PREFIX = "@static.mtd:";
+    private static final Logger LOGGER = Logger.getLogger(CodeUtils.class.getName());
 
     private CodeUtils() {
     }
@@ -130,8 +132,11 @@ public class CodeUtils {
                 var = ((FieldAccess)name).getField();
                 return extractVariableName(var);
             } else if (name instanceof InfixExpression) {
+                //#157750
                 return null;
             }
+            LOGGER.fine("Cannot extract variable name of ReflectionVariable: " + name.getClass().toString());
+            return null;
         }
         if (var.getName() instanceof Identifier) {
             Identifier id = (Identifier) var.getName();
