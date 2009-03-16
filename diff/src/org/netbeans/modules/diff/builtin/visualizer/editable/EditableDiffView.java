@@ -298,7 +298,16 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
 
     private void setModifiedLineNumberImpl(int line) {
-        
+        initGlobalSizes(); // The window might be resized in the mean time.
+        try {
+            EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(jEditorPane2.getEditorPane());
+            if (editorUI == null) return;
+            int off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), line);
+            jEditorPane2.getEditorPane().setCaretPosition(off2);
+
+        } catch (IndexOutOfBoundsException ex) {
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
+        }
     }
 
     private void setBaseLineNumberImpl(int line) {
@@ -308,20 +317,20 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             if (editorUI == null) return;
             int lineHeight = editorUI.getLineHeight();
     
-            int offset = jEditorPane1.getScrollPane().getViewport().getViewRect().height / 5;
+            int offset = jEditorPane1.getScrollPane().getViewport().getViewSize().height / 5;
             int lineOffset = lineHeight * line - offset;
     
             double scrollFactor = manager.getScrollFactor();
-    
+
             int off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getEditorPane().getDocument(), line);
             jEditorPane1.getEditorPane().setCaretPosition(off1);
     
             JScrollBar leftScrollBar = jEditorPane1.getScrollPane().getVerticalScrollBar();
             JScrollBar rightScrollBar = jEditorPane2.getScrollPane().getVerticalScrollBar();
-    
+
             leftScrollBar.setValue(lineOffset);
             rightScrollBar.setValue((int) (lineOffset / scrollFactor));
-            
+
             updateCurrentDifference();
         } catch (IndexOutOfBoundsException ex) {
             ErrorManager.getDefault().notify(ex);
@@ -837,7 +846,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
 
     private void setSource2(StreamSource ss) throws IOException {
-        secondSourceAvailable = false;         
+        secondSourceAvailable = false;
         EditorKit kit = jEditorPane2.getEditorPane().getEditorKit();
         if (kit == null) throw new IOException("Missing Editor Kit"); // NOI18N
         
