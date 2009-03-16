@@ -250,15 +250,15 @@ public class RepositoryController extends BugtrackingController implements Docum
                     ValidateCommand cmd = new ValidateCommand(taskRepo);
                     repository.getExecutor().execute(cmd, false);
                     if(cmd.hasFailed()) {
-                        if(cmd.getErrorMessage() != null) {
-                            errorMessage = cmd.getErrorMessage();
-                            validateError = true;
-                            fireDataChanged();
+                        if(cmd.getErrorMessage() == null) {
+                            Bugzilla.LOG.warning("validate command has failed, yet the returned error message is null.");
+                            errorMessage = "Validation failed."; // XXX bundle me
                         } else {
-                            // strange. lets try agian and let the executor
-                            // see what it can do
-                            repository.getExecutor().execute(cmd, true);
+                            errorMessage = cmd.getErrorMessage();
                         }
+                        validateError = true;
+                        fireDataChanged();
+                        
                     }
                 } finally {
                     panel.validateButton.setEnabled(true);
