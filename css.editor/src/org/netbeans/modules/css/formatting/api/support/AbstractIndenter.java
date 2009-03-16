@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
@@ -74,7 +76,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     private Context context;
     private int indentationSize;
 
-    protected static final boolean DEBUG = false;
+    private static final Logger LOG = Logger.getLogger(AbstractIndenter.class.getName());
+
+    protected static final boolean DEBUG = LOG.isLoggable(Level.FINE);
 
     public static boolean inUnitTestRun = false;
 
@@ -251,9 +255,10 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 //            }
 //        }
 
-        if (DEBUG) {
-            //System.err.println(">> TokenHierarchy of file to be indented:");
-            //System.err.println(org.netbeans.api.lexer.TokenHierarchy.get(doc));
+        // debug these only when FINER logging is requested - it clutters output
+        if (LOG.isLoggable(Level.FINER)) {
+            System.err.println(">> TokenHierarchy of file to be indented:");
+            System.err.println(org.netbeans.api.lexer.TokenHierarchy.get(doc));
         }
 
         // create chunks of our language from the document:
@@ -1058,7 +1063,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     }
                 }
 
-                // firstNonWhite must e within our language:
+                // firstNonWhite must be within our language:
                 if (firstNonWhite < rowStartOffset) {
                     firstNonWhite = rowStartOffset;
                 }
@@ -1807,14 +1812,14 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     return true;
                 }
                 if (start >= or.getStart() && start <= or.getEnd()) {
+                    assert or.getEnd()+1 <= end : ""+start+"-"+end+" range="+or;
                     start = or.getEnd()+1;
                     changed = true;
-                    assert start < end;
                 }
                 if (end >= or.getStart() && end <= or.getEnd()) {
+                    assert start <= or.getStart()-1 : ""+start+"-"+end+" range="+or;
                     end = or.getStart()-1;
                     changed = true;
-                    assert start < end;
                 }
             }
             if (changed) {
