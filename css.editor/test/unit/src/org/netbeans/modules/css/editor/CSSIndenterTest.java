@@ -180,6 +180,7 @@ public class CSSIndenterTest extends TestBase {
         insertNewline("a{\n    background: red;\n  }^", "a{\n    background: red;\n  }\n  ^", null);
         // check that indentation cooperates with bracket insertion:
         insertNewline("a{^}", "a{\n    ^\n}", null);
+        insertNewline("a{\n/**/^\n}", "a{\n/**/\n^\n}", null);
     }
 
 }

@@ -51,7 +51,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.openide.util.Exceptions;
 
 /**
  * Implementation of AbstractIndenter for tag based languages.
@@ -116,7 +115,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
     @Override
     protected int getFormatStableStart(JoinedTokenSequence<T1> ts, int startOffset, int endOffset,
-            AbstractIndenter.OffsetRanges rangesToIgnore) {
+            AbstractIndenter.OffsetRanges rangesToIgnore) throws BadLocationException {
 
         // find open tag (with manadatory close tag) we are inside and use it
         // as formatting start; by "we are inside" is meant that all tags between
@@ -152,15 +151,11 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             }
 
             if (isStartTagSymbol(tk) || isForeignLanguageStartToken(tk, ts)) {
-                try {
                     int firstNonWhite = Utilities.getRowFirstNonWhite(getDocument(), ts.offset());
                     if (firstNonWhite != -1 && firstNonWhite == ts.offset()) {
                         foundOffset = ts.offset();
                         break;
                     }
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
             }
         } while (ts.movePrevious());
         if (foundOffset == -1) {

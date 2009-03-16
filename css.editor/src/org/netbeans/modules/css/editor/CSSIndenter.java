@@ -53,7 +53,6 @@ import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.openide.util.Exceptions;
 
 public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
 
@@ -169,7 +168,8 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
     }
 
     @Override
-    protected List<IndentCommand> getLineIndent(IndenterContextData<CSSTokenId> context, List<IndentCommand> preliminaryNextLineIndent) {
+    protected List<IndentCommand> getLineIndent(IndenterContextData<CSSTokenId> context,
+            List<IndentCommand> preliminaryNextLineIndent) throws BadLocationException {
         Stack<CssStackItem> blockStack = getStack();
         List<IndentCommand> iis = new ArrayList<IndentCommand>();
         getIndentFromState(iis, true, context.getLineStartOffset());
@@ -238,7 +238,6 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
                     }
                 }
             } else if (isCommentToken(token)) {
-                try {
                     int start = context.getLineStartOffset();
                     if (start < ts.offset()) {
                         start = ts.offset();
@@ -248,7 +247,10 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
                     if (end > commentEndOffset) {
                         end = commentEndOffset;
                     }
-                    if (start == ts.offset()) {
+                    if (start > end) {
+                        assert !isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" start="+start+" end="+end;
+                        // do nothing
+                    } else if (start == ts.offset()) {
                         if (end < commentEndOffset) {
                             // if comment ends on next line put formatter to IN_COMMENT state
                             blockStack.push(new CssStackItem(StackItemState.IN_COMMENT));
@@ -265,9 +267,6 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
                         assert isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" start="+start+" end="+end;
                         iis.add(new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset()));
                     }
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
             }
         }
 

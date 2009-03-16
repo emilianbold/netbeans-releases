@@ -142,7 +142,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
      * @return offset representing stable start for formatting
      */
     abstract protected int getFormatStableStart(JoinedTokenSequence<T1> ts, int startOffset, int endOffset,
-            AbstractIndenter.OffsetRanges rangesToIgnore);
+            AbstractIndenter.OffsetRanges rangesToIgnore) throws BadLocationException;
 
     /**
      * Calculate and return list of indentation commands for the given line.
@@ -153,7 +153,8 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
      *  is known about next line yet
      * @return list of indentation commands to apply when formatting this line
      */
-    abstract protected List<IndentCommand> getLineIndent(IndenterContextData<T1> context, List<IndentCommand> preliminaryNextLineIndent);
+    abstract protected List<IndentCommand> getLineIndent(IndenterContextData<T1> context, 
+            List<IndentCommand> preliminaryNextLineIndent) throws BadLocationException;
 
     /**
      * Is this whitespace token?
