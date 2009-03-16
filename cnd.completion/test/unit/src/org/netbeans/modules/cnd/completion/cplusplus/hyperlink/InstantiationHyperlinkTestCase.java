@@ -100,4 +100,9 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz159054.cc", 9, 17, "iz159054.cc", 3, 5);
         performTest("iz159054.cc", 15, 17, "iz159054.cc", 4, 5);
     }
+
+    public void test151194() throws Exception {
+        // IZ#151194 : Unresolved template instantiation with template as parameter
+        performTest("iz151194.cpp", 32, 12, "iz151194.cpp", 3, 5);
+    }
 }

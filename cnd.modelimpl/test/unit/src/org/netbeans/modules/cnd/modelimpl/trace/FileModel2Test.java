@@ -204,4 +204,14 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#159324 : Unresolved variable definition
         performTest("iz159324.cc");
     }
+
+    public void testIZ158872() throws Exception {
+        // IZ#158872 : inline keyword break code model for template definition
+        performTest("iz158872.cc");
+    }
+
+    public void testIZ159238() throws Exception {
+        // IZ#159238 : parser fails on attribute after friend
+        performTest("iz159238.cc");
+    }
 }
