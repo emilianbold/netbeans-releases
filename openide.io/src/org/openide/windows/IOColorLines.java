@@ -44,7 +44,7 @@ import java.io.IOException;
 import org.openide.util.Lookup;
 
 /**
- * Line printing with custom color
+ * Line printing with custom color.
  * <p>
  * Client usage:
  * <pre>
@@ -54,7 +54,7 @@ import org.openide.util.Lookup;
  * </pre>
  * How to support {@link IOColorLines} in own {@link IOProvider} implementation:
  * <ul>
- *   <li> {@link InputOutput} provided by {@link IOProvider} has to implement <a href="@org-openide-util@/org/openide/util/Lookup.Provider.html"><code>Lookup.Provider</code></a>
+ *   <li> {@link InputOutput} provided by {@link IOProvider} has to implement {@link org.openide.util.Lookup.Provider}
  *   <li> Extend {@link IOColorLines} and implement its abstract methods
  *   <li> Place instance of {@link IOColorLines} to {@link Lookup} provided by {@link InputOutput}
  * </ul>
