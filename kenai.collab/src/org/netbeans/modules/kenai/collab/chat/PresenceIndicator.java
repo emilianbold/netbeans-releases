@@ -126,7 +126,7 @@ public class PresenceIndicator {
         @Override
         public void mouseClicked(MouseEvent event) {
             if (event.getClickCount() == 2) {
-                ChatTopComponent.openAction(ChatTopComponent.getDefault(), "", "", false).actionPerformed(new ActionEvent(event,event.getID(),""));
+                ChatTopComponent.openAction(ChatTopComponent.getDefault(), "", "", false).actionPerformed(new ActionEvent(event,event.getID(),"")); // NOI18N
             }
         }
     }
@@ -142,21 +142,21 @@ public class PresenceIndicator {
                 public void run() {
                     HashSet<String> onlineUsers = new HashSet<String>();
                     StringBuffer tipBuffer = new StringBuffer();
-                    tipBuffer.append("<html><body>");
+                    tipBuffer.append("<html><body>"); // NOI18N
 
                     for (MultiUserChat muc : KenaiConnection.getDefault().getChats()) {
                         String displayName = null;
                         displayName = StringUtils.parseName(muc.getRoom());
-                        tipBuffer.append("<font color=gray>" + displayName + "</font><br>");
+                        tipBuffer.append("<font color=gray>" + displayName + "</font><br>"); // NOI18N
                         Iterator<String> i = muc.getOccupants();
                         ChatNotifications.getDefault().getMessagingHandle(displayName).setOnlineCount(muc.getOccupantsCount());
                         while (i.hasNext()) {
                             String uname = StringUtils.parseResource(i.next());
                             onlineUsers.add(uname);
-                            tipBuffer.append("&nbsp;&nbsp;" + uname + "<br>");
+                            tipBuffer.append("&nbsp;&nbsp;" + uname + "<br>"); // NOI18N
                         }
                     }
-                    tipBuffer.append("</body></html>");
+                    tipBuffer.append("</body></html>"); // NOI18N
                     if (onlineUsers.size() == 0) {
                         setStatus(Status.OFFLINE);
                     } else {

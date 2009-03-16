@@ -196,6 +196,8 @@ public final class KenaiProject {
         return features;
     }
 
+    private static final String CHAT_ROOM = "@" + System.getProperty("kenai.xmpp.muc.url", "conference.127.0.0.1");
+
     /**
      * get features of given type
      * @param type
@@ -207,6 +209,15 @@ public final class KenaiProject {
             if (f.getType().equals(type)) {
                 fs.add(f);
             }
+        }
+
+        //TODO: remove me as soon as xmpp server will work on kenai
+        if (type==KenaiFeature.CHAT && Boolean.parseBoolean(System.getProperty(("kenai.chat.enabled"), "false"))) {
+            FeatureData chat = new FeatureData();
+            chat.name = getName() + CHAT_ROOM;
+            chat.display_name = getDisplayName() + " chat room"; //NOI18N
+            KenaiProjectFeature f = new KenaiProjectFeature(chat);
+            fs.add(f);
         }
         return fs.toArray(new KenaiProjectFeature[fs.size()]);
     }
