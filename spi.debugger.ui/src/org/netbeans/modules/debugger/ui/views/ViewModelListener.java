@@ -51,20 +51,22 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
 import javax.swing.JMenuItem;
+import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -90,11 +92,9 @@ import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.Models.CompoundModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
-import org.openide.windows.WindowManager;
 
 
 /**
@@ -128,7 +128,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private List mm;
     private RequestProcessor rp;
 
-    private List<? extends javax.swing.AbstractButton> buttons;
+    private List<AbstractButton> buttons;
     private javax.swing.JTabbedPane tabbedPane;
     private Image viewIcon;
     private SessionProvider providerToDisplay;
@@ -275,7 +275,17 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             }
         }
 
-        buttons = cp.lookup(viewPath, javax.swing.AbstractButton.class);
+        List<? extends AbstractButton> bList = cp.lookup(viewPath, AbstractButton.class);
+        buttons = new ArrayList<AbstractButton>();
+        List tempList = new ArrayList<AbstractButton>();
+        for (AbstractButton b : bList) {
+            if (b instanceof JToggleButton) { // [TODO]
+                buttons.add(b);
+            } else {
+                tempList.add(b);
+            }
+        }
+        buttons.addAll(tempList);
         tabbedPane = cp.lookupFirst(viewPath, javax.swing.JTabbedPane.class);
         
         ModelsChangeRefresher mcr = new ModelsChangeRefresher();
