@@ -197,22 +197,22 @@ public class BugzillaIssue extends Issue {
         if(DESCRIPTORS == null) {
             ResourceBundle loc = NbBundle.getBundle(BugzillaIssue.class);
             DESCRIPTORS = new ColumnDescriptor[] {
-                new ColumnDescriptor(LABEL_NAME_ID, String.class,
+                new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
                                                   loc.getString("CTL_Issue_ID_Title"),
                                                   loc.getString("CTL_Issue_ID_Desc")),
-                new ColumnDescriptor(LABEL_NAME_SEVERITY, String.class,
+                new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
                                                   loc.getString("CTL_Issue_Severity_Title"),
                                                   loc.getString("CTL_Issue_Severity_Desc")),
-                new ColumnDescriptor(LABEL_NAME_PRIORITY, String.class,
+                new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
                                                   loc.getString("CTL_Issue_Priority_Title"),
                                                   loc.getString("CTL_Issue_Priority_Desc")),
-                new ColumnDescriptor(LABEL_NAME_STATUS, String.class,
+                new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
                                                   loc.getString("CTL_Issue_Status_Title"),
                                                   loc.getString("CTL_Issue_Status_Desc")),
-                new ColumnDescriptor(LABEL_NAME_RESOLUTION, String.class,
+                new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
                                                   loc.getString("CTL_Issue_Resolution_Title"),
                                                   loc.getString("CTL_Issue_Resolution_Desc")),
-                new ColumnDescriptor(LABEL_NAME_SUMMARY, String.class,
+                new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
                                                   loc.getString("CTL_Issue_Summary_Title"),
                                                   loc.getString("CTL_Issue_Summary_Desc"))
             };

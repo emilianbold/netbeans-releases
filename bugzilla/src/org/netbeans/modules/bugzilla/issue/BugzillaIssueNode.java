@@ -116,14 +116,14 @@ public class BugzillaIssueNode extends IssueNode {
         return r.indexOf(resolution);
     }
 
-    private class IDProperty extends IssueNode.IssueProperty {
+    private class IDProperty extends IssueNode.IssueProperty<String> {
         public IDProperty() {
             super(BugzillaIssue.LABEL_NAME_ID,
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_ID_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_ID_Desc")); // NOI18N
         }
-        public Object getValue() {
+        public String getValue() {
             return getBugzillaIssue().getID();
         }
         @Override
@@ -135,7 +135,7 @@ public class BugzillaIssueNode extends IssueNode {
         }
     }
 
-    private class SeverityProperty extends IssueNode.IssueProperty {
+    private class SeverityProperty extends IssueNode.IssueProperty<String> {
         public SeverityProperty() {
             super(BugzillaIssue.LABEL_NAME_SEVERITY,
                   String.class,
@@ -143,12 +143,12 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Severity_Desc")); // NOI18N
             setValue("sortkey", getSeveritySortKey(getBugzillaIssue().getFieldValue(IssueField.SEVERITY))); // NOI18N
         }
-        public Object getValue() {
+        public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.SEVERITY);
         }
     }
 
-    private class PriorityProperty extends IssueProperty {
+    private class PriorityProperty extends IssueProperty<String> {
         public PriorityProperty() {
             super(BugzillaIssue.LABEL_NAME_PRIORITY,
                   String.class,
@@ -156,19 +156,19 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Priority_Desc")); // NOI18N
             setValue("sortkey", getPrioritySortKey(getBugzillaIssue().getFieldValue(IssueField.PRIORITY))); // NOI18N
         }
-        public Object getValue() {
+        public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.PRIORITY);
         }
     }
 
-    private class StatusProperty extends IssueProperty {
+    private class StatusProperty extends IssueProperty<String> {
         public StatusProperty() {
             super(BugzillaIssue.LABEL_NAME_STATUS,
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Status_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Status_Desc")); // NOI18N
         }
-        public Object getValue() {
+        public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.STATUS);
         }
         public int compareTo(IssueProperty p) {
@@ -179,7 +179,7 @@ public class BugzillaIssueNode extends IssueNode {
         }
     }
 
-    private class ResolutionProperty extends IssueProperty {
+    private class ResolutionProperty extends IssueProperty<String> {
         public ResolutionProperty() {
             super(BugzillaIssue.LABEL_NAME_RESOLUTION,
                   String.class,
@@ -187,19 +187,19 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_ID_Desc")); // NOI18N
             setValue("sortkey", getResolutionSortKey(getBugzillaIssue().getFieldValue(IssueField.RESOLUTION))); // NOI18N
         }
-        public Object getValue() {
+        public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.RESOLUTION);
         }
     }
 
-    private class SummaryProperty extends IssueProperty {
+    private class SummaryProperty extends IssueProperty<String> {
         public SummaryProperty() {
             super(BugzillaIssue.LABEL_NAME_SUMMARY,
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Summary_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Summary_Desc")); // NOI18N
         }
-        public Object getValue() {
+        public String getValue() {
             return getBugzillaIssue().getSummary();
         }
         public int compareTo(IssueProperty p) {
