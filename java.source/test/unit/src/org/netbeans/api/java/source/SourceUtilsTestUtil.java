@@ -68,6 +68,7 @@ import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -190,9 +191,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
             FileObject file = queue.remove(0);
             
             if (file.isData()) {
-                CountDownLatch l = RepositoryUpdater.getDefault().scheduleCompilationAndWait(file, sourceRoot);
-                
-                l.await(60, TimeUnit.SECONDS);
+                IndexingManager.getDefault().refreshIndexAndWait(sourceRoot.getURL(), null);
             } else {
                 queue.addAll(Arrays.asList(file.getChildren()));
             }
