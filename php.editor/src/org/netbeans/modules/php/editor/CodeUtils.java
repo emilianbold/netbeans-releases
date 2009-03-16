@@ -40,6 +40,7 @@ package org.netbeans.modules.php.editor;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -135,8 +136,9 @@ public class CodeUtils {
                 //#157750
                 return null;
             }
-            LOGGER.fine("Cannot extract variable name of ReflectionVariable: " + name.getClass().toString());
-            return null;
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Cannot extract variable name of ReflectionVariable: " + name.getClass().toString());
+            }
         }
         if (var.getName() instanceof Identifier) {
             Identifier id = (Identifier) var.getName();
