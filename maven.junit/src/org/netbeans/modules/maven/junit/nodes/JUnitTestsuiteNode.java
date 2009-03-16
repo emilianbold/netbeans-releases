@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,43 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.junit;
+package org.netbeans.modules.maven.junit.nodes;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.api.output.ContextOutputProcessorFactory;
-import org.netbeans.modules.maven.api.output.OutputProcessor;
-import org.netbeans.api.project.Project;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.Action;
+import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
 
 /**
- *
- * @author Milos Kleint
+ * mkleint: copied from junit module
+ * @author answer
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.api.output.OutputProcessorFactory.class)
-public class JUnitOutputProcessorFactory implements ContextOutputProcessorFactory {
-    
-    /** Creates a new instance of DefaultOutputProcessor */
-    public JUnitOutputProcessorFactory() {
+public class JUnitTestsuiteNode extends TestsuiteNode{
+
+    public JUnitTestsuiteNode(String suiteName, boolean filtered) {
+        super(suiteName, filtered);
     }
 
-    public Set<OutputProcessor> createProcessorsSet(Project project) {
-        return Collections.<OutputProcessor>emptySet();
-    }
-
-    public Set<OutputProcessor> createProcessorsSet(Project project, RunConfig config) {
-        if (config.getGoals().contains("test") || config.getGoals().contains("surefire:test")) { //NOI18N
-            Set<OutputProcessor> toReturn = new HashSet<OutputProcessor>();
-            if (project != null) {
-                toReturn.add(new JUnitOutputListenerProvider(project, config));
-            }
-            return toReturn;
+    @Override
+    public Action[] getActions(boolean context) {
+        List<Action> actions = new ArrayList<Action>();
+        Action preferred = getPreferredAction();
+        if (preferred != null) {
+            actions.add(preferred);
         }
-        return Collections.<OutputProcessor>emptySet();
+        
+        return actions.toArray(new Action[actions.size()]);
     }
-    
+
+    @Override
+    public Action getPreferredAction() {
+        return new JumpAction(this, null);
+    }
+
 }

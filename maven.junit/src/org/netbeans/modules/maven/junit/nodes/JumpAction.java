@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,46 +37,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.junit;
+package org.netbeans.modules.maven.junit.nodes;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.api.output.ContextOutputProcessorFactory;
-import org.netbeans.modules.maven.api.output.OutputProcessor;
-import org.netbeans.api.project.Project;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author Milos Kleint
+ * mkleint: copied from junit module
+ * @author Marian Petras
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.api.output.OutputProcessorFactory.class)
-public class JUnitOutputProcessorFactory implements ContextOutputProcessorFactory {
-    
-    /** Creates a new instance of DefaultOutputProcessor */
-    public JUnitOutputProcessorFactory() {
+final class JumpAction extends AbstractAction {
+
+    /** */
+    private final Node node;
+    /** */
+    private final String callstackFrameInfo;
+
+    /** Creates a new instance of JumpAction */
+    public JumpAction(Node node, String callstackFrameInfo) {
+        this.node = node;
+        this.callstackFrameInfo = callstackFrameInfo;
     }
 
-    public Set<OutputProcessor> createProcessorsSet(Project project) {
-        return Collections.<OutputProcessor>emptySet();
-    }
-
-    public Set<OutputProcessor> createProcessorsSet(Project project, RunConfig config) {
-        if (config.getGoals().contains("test") || config.getGoals().contains("surefire:test")) { //NOI18N
-            Set<OutputProcessor> toReturn = new HashSet<OutputProcessor>();
-            if (project != null) {
-                toReturn.add(new JUnitOutputListenerProvider(project, config));
-            }
-            return toReturn;
+    /**
+     * If the <code>callstackFrameInfo</code> is not <code>null</code>,
+     * tries to jump to the callstack frame source code. Otherwise does nothing.
+     */
+    public void actionPerformed(ActionEvent e) {
+        if (node instanceof TestsuiteNode){
+            OutputUtils.openTestsuite((TestsuiteNode)node);
+        } else {
+            OutputUtils.openCallstackFrame(node, callstackFrameInfo);
         }
-        return Collections.<OutputProcessor>emptySet();
     }
-    
+
+
+
+    @Override
+    public Object getValue(String key) {
+        if (key.equals(Action.NAME)) {
+            return NbBundle.getMessage(JumpAction.class, "LBL_GotoSource"); //NOI18N
+        }else{
+            return super.getValue(key);
+        }
+    }
+
 }
