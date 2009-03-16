@@ -103,10 +103,16 @@ public class RepositoryController extends BugtrackingController implements Docum
     }
 
     public boolean isValid() {
+        return validate();
+    }
+
+    private boolean validate() {
         if(validateError) {
             return false;
         }
         errorMessage = null;
+
+        panel.validateButton.setEnabled(false);
 
         String name = panel.nameField.getText().trim();
         if(name.equals("")) {
@@ -146,6 +152,8 @@ public class RepositoryController extends BugtrackingController implements Docum
                 }
             }
         }
+
+        panel.validateButton.setEnabled(true);
         return true;
     }
 
@@ -229,6 +237,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                 handle.start();
                 panel.progressPanel.setVisible(true);
                 panel.validateLabel.setVisible(true);
+                panel.enableFields(false);
                 panel.validateLabel.setText(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating"));
                 try {
                     repository.resetRepository(); // reset mylyns caching
@@ -241,20 +250,21 @@ public class RepositoryController extends BugtrackingController implements Docum
                     ValidateCommand cmd = new ValidateCommand(taskRepo);
                     repository.getExecutor().execute(cmd, false);
                     if(cmd.hasFailed()) {
-                        if(cmd.getErrorMessage() != null) {
-                            errorMessage = cmd.getErrorMessage();
-                            validateError = true;
-                            fireDataChanged();
+                        if(cmd.getErrorMessage() == null) {
+                            Bugzilla.LOG.warning("validate command has failed, yet the returned error message is null.");
+                            errorMessage = "Validation failed."; // XXX bundle me
                         } else {
-                            // strange. lets try agian and let the executor
-                            // see what it can do
-                            repository.getExecutor().execute(cmd, true);
+                            errorMessage = cmd.getErrorMessage();
                         }
+                        validateError = true;
+                        fireDataChanged();
+                        
                     }
                 } finally {
-                    handle.finish();
+                    panel.enableFields(true);
                     panel.progressPanel.setVisible(false);
                     panel.validateLabel.setVisible(false);
+                    handle.finish();
                 }
             }
         });
