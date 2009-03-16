@@ -45,10 +45,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.prefs.Preferences;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
@@ -60,7 +58,6 @@ import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -152,11 +149,10 @@ public class JaxWsOpenHook extends ProjectOpenedHook {
 
         public void propertyChange(PropertyChangeEvent evt) {
             //requestModelUpdate();
-            updateJaxWsTask.schedule(100);
+            updateJaxWsTask.schedule(1000);
         }
 
-        private void updateJaxWs() {
-
+        private synchronized void updateJaxWs() {
             try {
                 Map<String, ServiceInfo> newServices = wsModel.runReadAction(
                         new MetadataModelAction<WebservicesMetadata, Map<String, ServiceInfo>>() {
