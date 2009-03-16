@@ -58,9 +58,13 @@ final class FindersHelper {
     private static final String ATTRIBUTE_SEPARATOR = "_and_"; //NOI18N
 
     /**
+     * The prefix for dynamic scope methods.
+     */
+    static final String SCOPED_BY = "scoped_by_"; //NOI18N
+    /**
      * Common finder method prefixes.
      */
-    static final List<String> FINDER_PREFIXES = Arrays.asList("find_by_", "find_all_by_", "find_last_by_");
+    static final List<String> FINDER_PREFIXES = Arrays.asList("find_by_", "find_all_by_", "find_last_by_", SCOPED_BY); //NOI18N
 
     /**
      * Gets all the possible finder attribute combinations for the given columns,
@@ -130,7 +134,11 @@ final class FindersHelper {
                     result.append(", ");
                 }
             }
-            result.append(", *options)");
+            if (!SCOPED_BY.equals(prefix)) {
+                // no options for dynamic scopes
+                result.append(", *options");
+            }
+            result.append(")");
             return result.toString();
 
         }

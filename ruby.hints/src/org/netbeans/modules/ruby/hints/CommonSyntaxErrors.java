@@ -107,7 +107,7 @@ public class CommonSyntaxErrors extends RubyErrorRule {
     }
 
     public String getDisplayName() {
-        return "Common Syntax Errors";
+        return NbBundle.getMessage(CommonSyntaxErrors.class, "CommonSyntaxErrorsHint");
     }
 
     public String getId() {
