@@ -69,6 +69,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -79,8 +80,8 @@ import org.openide.util.Exceptions;
 
 /**
  * Formatting and indentation for Ruby.
- * 
- * @todo Handle RHTML! 
+ *
+ * @todo Handle RHTML!
  *      - 4 space indents
  *      - conflicts with HTML formatter (HtmlIndentTask)
  *      - The Ruby indentation should be indented into the HTML level as well!
@@ -109,17 +110,26 @@ public class PHPFormatter implements Formatter {
     private static final Logger LOG = Logger.getLogger(PHPFormatter.class.getName());
     private static final Set<PHPTokenId> IGNORE_BREAK_IN = new HashSet<PHPTokenId>(Arrays.asList(
             PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_DO));
-    
+
     public PHPFormatter() {
         LOG.fine("PHP Formatter: " + this); //NOI18N
     }
-    
+
     public boolean needsParserResult() {
         return false;
     }
 
     public void reindent(Context context) {
         // Make sure we're not reindenting HTML content
+
+        // hotfix for for broken new line indentation after merging with dkonecny's changes
+        String mimeType = getMimeTypeAtOffset(context.document(), context.startOffset());
+
+        if (!PHPLanguage.PHP_MIME_TYPE.equals(mimeType)){
+            return;
+        }
+        // end of hotfix
+
         reindent(context, null, true);
     }
 
@@ -127,15 +137,15 @@ public class PHPFormatter implements Formatter {
         prettyPrint(context);
         reindent(context, info, false);
     }
-    
+
     public int indentSize() {
         return CodeStyle.get((Document) null).getIndentSize();
     }
-    
+
     public int hangingIndentSize() {
         return CodeStyle.get((Document) null).getContinuationIndentSize();
     }
-    
+
     /** Compute the initial balance of brackets at the given offset. */
     private int getFormatStableStart(BaseDocument doc, int offset) {
         TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
@@ -162,7 +172,7 @@ public class PHPFormatter implements Formatter {
 
         return ts.offset();
     }
-    
+
     public static int getTokenBalanceDelta(BaseDocument doc, Token<? extends PHPTokenId> token, TokenSequence<? extends PHPTokenId> ts, boolean includeKeywords) {
         if (token.id() == PHPTokenId.PHP_VARIABLE) {
             // In some cases, the [ shows up as an identifier, for example in this expression:
@@ -303,7 +313,7 @@ public class PHPFormatter implements Formatter {
                     // contain newlines. Leave it as is.
                     return true;
                 }
-// XXX: resurrect support for heredoc                
+// XXX: resurrect support for heredoc
 //                if (id == PHPTokenId.STRING_END || id == PHPTokenId.QUOTED_STRING_END) {
 //                    // Possibly a heredoc
 //                    TokenSequence<? extends PHPTokenId> ts = LexUtilities.getRubyTokenSequence(doc, pos);
@@ -346,8 +356,8 @@ public class PHPFormatter implements Formatter {
 
         return false;
     }
-    
-    /** 
+
+    /**
      * Get the first token on the given line. Similar to LexUtilities.getToken(doc, lineBegin)
      * except (a) it computes the line begin from the offset itself, and more importantly,
      * (b) it handles RHTML tokens specially; e.g. if a line begins with
@@ -356,8 +366,8 @@ public class PHPFormatter implements Formatter {
      * }
      * then the "if" embedded token will be returned rather than the RHTML delimiter, or even
      * the whitespace token (which is the first Ruby token in the embedded sequence).
-     *    
-     * </pre>   
+     *
+     * </pre>
      */
     private Token<? extends PHPTokenId> getFirstToken(BaseDocument doc, int offset) throws BadLocationException {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
@@ -365,7 +375,7 @@ public class PHPFormatter implements Formatter {
         if (lineBegin != -1) {
             return LexUtilities.getToken(doc, lineBegin);
         }
-        
+
         return null;
     }
 
@@ -374,11 +384,11 @@ public class PHPFormatter implements Formatter {
 
         if (lineBegin != -1) {
             Token<?extends PHPTokenId> token = getFirstToken(doc, offset);
-            
+
             if (token == null) {
                 return false;
             }
-            
+
             // If the line starts with an end-marker, such as "end", "}", "]", etc.,
             // find the corresponding opening marker, and indent the line to the same
             // offset as the beginning of that line.
@@ -386,10 +396,10 @@ public class PHPFormatter implements Formatter {
                 LexUtilities.textEquals(token.text(), ')') || LexUtilities.textEquals(token.text(), ']') ||
                 token.id() == PHPTokenId.PHP_CURLY_CLOSE;
         }
-        
+
         return false;
     }
-    
+
     private boolean isLineContinued(BaseDocument doc, int offset, int bracketBalance) throws BadLocationException {
         offset = Utilities.getRowLastNonWhite(doc, offset);
         if (offset == -1) {
@@ -400,7 +410,7 @@ public class PHPFormatter implements Formatter {
         if (ts == null) {
             return false;
         }
-        
+
         ts.move(offset);
         if (!ts.moveNext() && !ts.movePrevious()) {
             return false;
@@ -410,12 +420,12 @@ public class PHPFormatter implements Formatter {
 
         if (token != null) {
             TokenId id = token.id();
-            
+
             if (ts.offset() == offset && token.length() > 1 && token.text().toString().startsWith("\\")) {
                 // Continued lines have different token types
                 return true;
             }
-            
+
             if (token.length() == 1 && id == PHPTokenId.PHP_TOKEN && token.text().toString().equals(",")) {
                 // If there's a comma it's a continuation operator, but inside arrays, hashes or parentheses
                 // parameter lists we should not treat it as such since we'd "double indent" the items, and
@@ -428,11 +438,11 @@ public class PHPFormatter implements Formatter {
                     return true;
                 }
             }
-            
+
             if (id == PHPTokenId.PHP_TOKEN) {
                 if (CharSequenceUtilities.textEquals(token.text(), "or") // NOI18N
                     || CharSequenceUtilities.textEquals(token.text(), "and")
-                ) { 
+                ) {
                     return true;
                 }
             }
@@ -494,10 +504,10 @@ public class PHPFormatter implements Formatter {
 
 //        System.out.println("~~~ PHP Formatter: " + (indentOnly ? "renidenting" : "reformatting")
 //                + " <" + startOffset + ", " + endOffset + ">");
-        
+
         // a workaround for issue #131929
         document.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE); //NOI18N
-        
+
         try {
             final BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
@@ -514,9 +524,9 @@ public class PHPFormatter implements Formatter {
                 initialOffset = getFormatStableStart(doc, prevOffset);
                 initialIndent = GsfUtilities.getLineIndent(doc, initialOffset);
             }
-            
+
 //            System.out.println("~~~ initialIndent=" + initialIndent + ", initialOffset=" + initialOffset + ", startOffset=" + startOffset);
-            
+
             // Build up a set of offsets and indents for lines where I know I need
             // to adjust the offset. I will then go back over the document and adjust
             // lines that are different from the intended indent. By doing piecemeal
@@ -533,11 +543,11 @@ public class PHPFormatter implements Formatter {
             boolean indentEmptyLines = (startOffset != 0 || endOffset != doc.getLength());
 
             boolean includeEnd = endOffset == doc.getLength() || indentOnly;
-            
+
             // TODO - remove initialbalance etc.
-            computeIndents(doc, initialIndent, initialOffset, endOffset, info, 
+            computeIndents(doc, initialIndent, initialOffset, endOffset, info,
                     offsets, indents, indentEmptyLines, includeEnd, indentOnly);
-            
+
 //            System.out.println("~~~ indents=" + indents.size() + ", offsets=" + offsets.size());
 
             doc.runAtomic(new Runnable() {
@@ -611,7 +621,7 @@ public class PHPFormatter implements Formatter {
         try {
             // Algorithm:
             // Iterate over the range.
-            // Accumulate a token balance ( {,(,[, and keywords like class, case, etc. increases the balance, 
+            // Accumulate a token balance ( {,(,[, and keywords like class, case, etc. increases the balance,
             //      },),] and "end" decreases it
             // If the line starts with an end marker, indent the line to the level AFTER the token
             // else indent the line to the level BEFORE the token (the level being the balance * indentationSize)
@@ -624,7 +634,7 @@ public class PHPFormatter implements Formatter {
             // State:
             int offset = Utilities.getRowStart(doc, startOffset); // The line's offset
             int end = endOffset;
-            
+
             CodeStyle codeStyle = CodeStyle.get(doc);
             int iSize = codeStyle.getIndentSize();
             int hiSize = codeStyle.getContinuationIndentSize();
@@ -634,7 +644,7 @@ public class PHPFormatter implements Formatter {
             // XXX Look up RHTML too
             //int indentSize = EditorOptions.get(RubyInstallation.RUBY_MIME_TYPE).getSpacesPerTab();
             //int hangingIndentSize = indentSize;
-            
+
 
             // Build up a set of offsets and indents for lines where I know I need
             // to adjust the offset. I will then go back over the document and adjust
@@ -677,7 +687,7 @@ public class PHPFormatter implements Formatter {
                 }
 
                 if (isInLiteral(doc, offset)) {
-                    // Skip this line - leave formatting as it is prior to reformatting 
+                    // Skip this line - leave formatting as it is prior to reformatting
                     indent = GsfUtilities.getLineIndent(doc, offset);
                 } else if (isEndIndent(doc, offset)) {
                     indent = (balance-1) * iSize + hangingIndent + initialIndent;
@@ -688,13 +698,13 @@ public class PHPFormatter implements Formatter {
                 if (indent < 0) {
                     indent = 0;
                 }
-                
+
                 int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
                 // Insert whitespace on empty lines too -- needed for abbreviations expansion
                 if (lineBegin != -1 || indentEmptyLines) {
                     // Don't do a hanging indent if we're already indenting beyond the parent level?
-                    
+
                     indents.add(Integer.valueOf(indent));
                     offsets.add(Integer.valueOf(offset));
                 }
@@ -714,4 +724,14 @@ public class PHPFormatter implements Formatter {
         }
     }
 
+    private static String getMimeTypeAtOffset(Document doc, int offset){
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        List<TokenSequence<?>> tsl = th.embeddedTokenSequences(offset, false);
+        if (tsl != null && tsl.size() > 0) {
+            TokenSequence<?> tokenSequence = tsl.get(tsl.size() - 1);
+            return tokenSequence.language().mimeType();
+        }
+
+        return null;
+    }
 }
