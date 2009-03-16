@@ -77,7 +77,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> {
     static {
         IndicatorAccessor.setDefault(new IndicatorAccessorImpl());
     }
-    private VisualizerConfiguration visualizerConfiguraiton;
+    private List<VisualizerConfiguration> visualizerConfiguraitons;
 
     protected final void notifyListeners() {
         for (IndicatorActionListener l : listeners) {
@@ -88,7 +88,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> {
     protected Indicator(T configuration) {
         listeners = Collections.synchronizedList(new ArrayList<IndicatorActionListener>());
         this.metadata = IndicatorConfigurationAccessor.getDefault().getIndicatorMetadata(configuration);
-        this.visualizerConfiguraiton = IndicatorConfigurationAccessor.getDefault().getVisualizerConfiguration(configuration);
+        this.visualizerConfiguraitons = IndicatorConfigurationAccessor.getDefault().getVisualizerConfigurations(configuration);
 
     }
 
@@ -106,8 +106,8 @@ public abstract class Indicator<T extends IndicatorConfiguration> {
         this.toolName = toolName;
     }
 
-    VisualizerConfiguration getVisualizerConfiguration() {
-        return visualizerConfiguraiton;
+    List<VisualizerConfiguration> getVisualizerConfigurations() {
+        return visualizerConfiguraitons;
     }
 
     void addIndicatorActionListener(IndicatorActionListener l) {
@@ -187,8 +187,8 @@ public abstract class Indicator<T extends IndicatorConfiguration> {
         }
 
         @Override
-        public VisualizerConfiguration getVisualizerConfiguration(Indicator indicator) {
-            return indicator.getVisualizerConfiguration();
+        public List<VisualizerConfiguration> getVisualizerConfigurations(Indicator indicator) {
+            return indicator.getVisualizerConfigurations();
         }
 
         @Override
