@@ -103,10 +103,16 @@ public class RepositoryController extends BugtrackingController implements Docum
     }
 
     public boolean isValid() {
+        return validate();
+    }
+
+    private boolean validate() {
         if(validateError) {
             return false;
         }
         errorMessage = null;
+
+        panel.validateButton.setEnabled(false);
 
         String name = panel.nameField.getText().trim();
         if(name.equals("")) {
@@ -146,6 +152,8 @@ public class RepositoryController extends BugtrackingController implements Docum
                 }
             }
         }
+
+        panel.validateButton.setEnabled(true);
         return true;
     }
 
@@ -229,6 +237,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                 handle.start();
                 panel.progressPanel.setVisible(true);
                 panel.validateLabel.setVisible(true);
+                panel.validateButton.setEnabled(false);
                 panel.validateLabel.setText(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating"));
                 try {
                     repository.resetRepository(); // reset mylyns caching
@@ -252,9 +261,10 @@ public class RepositoryController extends BugtrackingController implements Docum
                         }
                     }
                 } finally {
-                    handle.finish();
+                    panel.validateButton.setEnabled(true);
                     panel.progressPanel.setVisible(false);
                     panel.validateLabel.setVisible(false);
+                    handle.finish();
                 }
             }
         });

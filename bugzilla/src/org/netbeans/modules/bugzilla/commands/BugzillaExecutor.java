@@ -84,8 +84,13 @@ public class BugzillaExecutor {
         } catch (CoreException ex) {
             if(handle) {
                 handleException(ex, cmd);
+            } else {
+                String msg = getMessage(ex);
+
+                cmd.setFailed(true);
+                cmd.setErrorMessage(msg);
+                // XXX log at least
             }
-            // XXX log at least
             return;
                 
         } catch(MalformedURLException me) {
