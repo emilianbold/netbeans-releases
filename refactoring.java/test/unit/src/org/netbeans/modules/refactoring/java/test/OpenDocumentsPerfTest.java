@@ -56,13 +56,13 @@ import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -76,33 +76,16 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
         super(name);
     }
 
-    /**
-     * Set-up the services and project
-     */
-//    @Override
-//    protected void setUp() throws IOException, InterruptedException {
-//        clearWorkDir();
-//        String work = getWorkDirPath();
-//        System.setProperty("netbeans.user", work);
-//        projectDir = openProject("SimpleJ2SEApp", getDataDir());
-//        File projectSourceRoot = new File(getWorkDirPath(), "SimpleJ2SEApp.src".replace('.', File.separatorChar));
-//        FileObject fo = FileUtil.toFileObject(projectSourceRoot);
-//
-//        boot = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
-//        source = createSourcePath(projectDir);
-//        compile = createEmptyPath();
-//    }
-
     public void testOpenDocuments()
             throws IOException, InterruptedException, ExecutionException {
         // logging is used to obtain data about consumed time
         Logger timer = Logger.getLogger("TIMER.RefactoringSession");
         timer.setLevel(Level.FINE);
-        timer.addHandler(handler);
+        timer.addHandler(getHandler());
 
         timer = Logger.getLogger("TIMER.RefactoringPrepare");
         timer.setLevel(Level.FINE);
-        timer.addHandler(handler);
+        timer.addHandler(getHandler());
 
         ClassIndexManager.getDefault();
         Thread.sleep(29000);
@@ -128,6 +111,14 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
         
         wuq[0].putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
         RefactoringSession rs = RefactoringSession.create("Session");
+        Problem p = wuq[0].preCheck();
+        if (p != null) {
+            System.err.println(p.getMessage());
+        }
+        p = wuq[0].checkParameters();
+        if (p != null) {
+            System.err.println(p.getMessage());
+        }
         wuq[0].prepare(rs);
         rs.doRefactoring(false);
         Collection<RefactoringElement> elems = rs.getRefactoringElements();
@@ -135,7 +126,7 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
                 sb.append("Symbol: '").append("java.lang.Runnable").append("'");
         sb.append('\n').append("Number of usages: ").append(elems.size()).append('\n');
         try {
-            long prepare = handler.get("refactoring.prepare");
+            long prepare = getHandler().get("refactoring.prepare");
             NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
             d.name = "refactoring.prepare"+" (" + "java.lang.Runnable" + ", usages:" + elems.size() + ")";
             d.value = prepare;
@@ -158,6 +149,6 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
     }
 
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().clusters("gsf.*").addTest(OpenDocumentsPerfTest.class, "testOpenDocuments").gui(true));
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(OpenDocumentsPerfTest.class, "testOpenDocuments").gui(true));
     }
 }
