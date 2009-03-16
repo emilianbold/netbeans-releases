@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.*;
@@ -67,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedPro
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -167,8 +169,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return new Class((CsmClass)template, mapping);
         } else if (template instanceof CsmFunction) {
             return new Function((CsmFunction)template, mapping);
+        } else {
+            if (CndUtils.isDebugMode()) {
+                CndUtils.assertTrue(false, "Unknown class " + template.getClass() + " for template instantiation:" + template, Level.WARNING); // NOI18N
+            }
         }
-        assert false : "Unknown class for template instantiation:" + template; // NOI18N
         return template;
     }
 
