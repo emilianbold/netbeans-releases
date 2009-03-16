@@ -237,7 +237,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                 handle.start();
                 panel.progressPanel.setVisible(true);
                 panel.validateLabel.setVisible(true);
-                panel.validateButton.setEnabled(false);
+                panel.enableFields(false);
                 panel.validateLabel.setText(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating"));
                 try {
                     repository.resetRepository(); // reset mylyns caching
@@ -261,7 +261,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                         
                     }
                 } finally {
-                    panel.validateButton.setEnabled(true);
+                    panel.enableFields(true);
                     panel.progressPanel.setVisible(false);
                     panel.validateLabel.setVisible(false);
                     handle.finish();
