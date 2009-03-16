@@ -84,6 +84,12 @@ import static com.sun.source.tree.Tree.Kind.*;
  * @author Jan Lahoda
  */
 public final class AddCast implements ErrorRule<Void> {
+
+    private static final Set<String> ERROR_CODES = new HashSet<String>(Arrays.asList(
+            "compiler.err.prob.found.req", // NOI18N
+            "compiler.err.cant.apply.symbol", // NOI18N
+            "compiler.err.cant.resolve.location", // NOI18N
+            "compiler.err.cant.resolve.location.args")); // NOI18N
     
     static void computeType(CompilationInfo info, int offset, TypeMirror[] tm, ExpressionTree[] expression, Tree[] leaf) {
         TreePath path = info.getTreeUtilities().pathFor(offset + 1);
@@ -159,9 +165,9 @@ public final class AddCast implements ErrorRule<Void> {
             tm[0] = org.netbeans.modules.java.hints.errors.Utilities.resolveCapturedType(info, tm[0]);
         }
     }
-    
+
     public Set<String> getCodes() {
-        return new HashSet<String>(Arrays.asList("compiler.err.prob.found.req", "compiler.err.cant.apply.symbol", "compiler.err.cant.resolve.location")); // NOI18N
+        return ERROR_CODES;
     }
     
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
