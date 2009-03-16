@@ -131,16 +131,21 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
 
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
         if (session == null) {
+            TestSession.SessionType type = TestSession.SessionType.TEST;
+            if (config.getActionName().contains("debug")) { //NOI81N
+                 type = TestSession.SessionType.DEBUG;
+            }
+            final TestSession.SessionType fType = type;
             session = new TestSession(mavenproject.getMavenProject().getId(), prj, TestSession.SessionType.TEST,
                     new JUnitTestRunnerNodeFactory(session, prj));
-            //TODO recognize debug
             Manager.getInstance().testStarted(session);
             session.setRerunHandler(new RerunHandler() {
                 public void rerun() {
                     RunUtils.executeMaven(config);
                 }
                 public boolean enabled() {
-                    return true;
+                    //TODO debug doesn't property update debug port in runconfig..
+                    return fType.equals(TestSession.SessionType.TEST);
                 }
                 public void addChangeListener(ChangeListener listener) {
                 }
