@@ -586,6 +586,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ150884.cc", 16, 19, "IZ150884.cc", 3, 51);
     }
 
+    public void testIZ151588() throws Exception {
+        // IZ#151588 : Unresolved element of array in case of complex index
+        performTest("IZ151588.cc", 11, 26, "IZ151588.cc", 3, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

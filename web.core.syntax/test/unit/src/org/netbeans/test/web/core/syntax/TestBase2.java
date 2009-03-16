@@ -49,9 +49,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.web.core.syntax.JSPKit;
 import org.netbeans.modules.web.core.syntax.gsf.JspLanguage;
 import org.netbeans.modules.web.jspparser.JspParserImpl;
@@ -61,7 +62,7 @@ import org.openide.filesystems.FileUtil;
 /**
  * Common ancestor for all test classes.
  */
-public class TestBase2 extends GsfTestBase {
+public class TestBase2 extends CslTestBase {
 
 
     public TestBase2(String name) {

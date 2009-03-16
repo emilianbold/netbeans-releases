@@ -41,6 +41,7 @@ package org.netbeans.modules.project.ant;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import javax.swing.Icon;
@@ -120,6 +121,14 @@ final class AntBasedGenericType implements AntBasedProjectType {
                 Constructor c = clazz.getConstructor(AntProjectHelper.class);
                 return (Project) c.newInstance(helper);
             }
+        } catch (InvocationTargetException ex) {
+            if (ex.getTargetException() instanceof IOException) {
+                throw (IOException)ex.getTargetException();
+            }
+            if (ex.getTargetException() instanceof RuntimeException) {
+                throw (RuntimeException)ex.getTargetException();
+            }
+            throw (IllegalArgumentException)new IllegalArgumentException().initCause(ex);
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {

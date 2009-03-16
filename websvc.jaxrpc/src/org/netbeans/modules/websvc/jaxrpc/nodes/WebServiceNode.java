@@ -467,7 +467,7 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
                             WebServicesRegistryView registryView = (WebServicesRegistryView)Lookup.getDefault().
                                     lookup(WebServicesRegistryView.class);
                             TopComponent currentComponent = TopComponent.getRegistry().getActivated();
-                            currentComponent.setCursor(org.openide.util.Utilities.createProgressCursor(currentComponent));
+                            currentComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                             try{
                                 boolean success = registryView.registerService(url, true);
                                 if(!success) {

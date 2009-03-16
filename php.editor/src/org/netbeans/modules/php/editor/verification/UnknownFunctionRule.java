@@ -41,12 +41,11 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.TreeSet;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -77,14 +76,14 @@ public class UnknownFunctionRule extends PHPRule{
             if (fname != null && !IGNORED.contains(fname.toLowerCase())) {
                 Collection<IndexedFunction> functions = context.index.getFunctions(
                         (PHPParseResult) context.parserResult,
-                        fname, NameKind.EXACT_NAME);
+                        fname, QuerySupport.Kind.EXACT);
                 
                 if (functions.size() == 0) {
                     FunctionName funcName = functionInvocation.getFunctionName();
                     OffsetRange range = new OffsetRange(funcName.getStartOffset(), funcName.getEndOffset());
 
                     Hint hint = new Hint(UnknownFunctionRule.this, getDisplayName(),
-                            context.compilationInfo.getFileObject(), range, null, 500);
+                            context.parserResult.getSnapshot().getSource().getFileObject(), range, null, 500);
 
                     addResult(hint);
                 }

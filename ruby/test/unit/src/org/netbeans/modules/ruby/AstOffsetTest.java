@@ -47,9 +47,8 @@ import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.lexer.yacc.ISourcePosition;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
  * Check offsets for the JRuby AST
@@ -63,12 +62,12 @@ public class AstOffsetTest extends RubyTestBase {
     }            
     
     @Override
-    protected String describeNode(CompilationInfo info, Object obj, boolean includePath) throws Exception {
+    protected String describeNode(ParserResult parserResult, Object obj, boolean includePath) throws Exception {
         Node node = (Node)obj;
         if (includePath) {
-            AstPath path = new AstPath(AstUtilities.getRoot(info), node);
+            AstPath path = new AstPath(AstUtilities.getRoot(parserResult), node);
             Iterator<Node> it = path.leafToRoot();
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = RubyUtils.getDocument(parserResult);
             assertNotNull(doc);
             String s = null;
             while (it.hasNext()) {
@@ -89,10 +88,10 @@ public class AstOffsetTest extends RubyTestBase {
             return node.nodeId.name();
         }
     }
-    
+
     @Override
-    protected void initializeNodes(CompilationInfo info, ParserResult result, List<Object> validNodes,
-            Map<Object,OffsetRange> positions, List<Object> invalidNodes) throws Exception {
+    protected void initializeNodes(ParserResult result, List<Object> validNodes,
+            Map<Object, OffsetRange> positions, List<Object> invalidNodes) throws Exception {
         Node root = AstUtilities.getRoot(result);
         assertNotNull(root);
         

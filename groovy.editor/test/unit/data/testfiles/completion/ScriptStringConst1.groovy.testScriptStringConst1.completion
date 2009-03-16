@@ -1,6 +1,6 @@
 Code completion result for source line:
 " ddd ".toS|
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     toShort()                                  Short
 METHOD     toString()                      [PUBLIC]   String

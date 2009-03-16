@@ -8,6 +8,7 @@ Searchable Keys:
   fqn : CreateOrders
   method : down|STATIC|
   method : up|STATIC|
+  require : 005_create_orders
 
 Not Searchable Keys:
   attrs : |DOCUMENTED|;1429
@@ -16,6 +17,7 @@ Not Searchable Keys:
 Document 1
 Searchable Keys:
   dbtable : orders
+  require : 005_create_orders
 
 Not Searchable Keys:
   dbcolumn : address;text

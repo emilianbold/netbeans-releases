@@ -72,6 +72,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -116,41 +117,31 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         return instance;
     }
 
-    public synchronized void start() {
+    public synchronized void start(boolean force) {
         if (state == State.CREATED) {
+            state = State.STARTED;
             LOGGER.fine("Initializing..."); //NOI18N
             PathRegistry.getDefault().addPathRegistryListener(this);
             FileUtil.addFileChangeListener(this);
             EditorRegistry.addPropertyChangeListener(this);
 
-            state = State.INITIALIZED;
-            getWorker().schedule(new RootsWork(scannedRoots2Dependencies, scannedBinaries) {
-                public @Override void getDone() {
-                    try {
-                        super.getDone();
-                    } finally {
-                        if (state == State.INITIALIZED) {
-                            synchronized (RepositoryUpdater.this) {
-                                if (state == State.INITIALIZED) {
-                                    state = State.INITIALIZED_AFTER_FIRST_SCAN;
-                                }
-                            }
-                        }
-                    }
-                }
-            }, false);
+            if (force) {
+                scheduleWork(null, false);
+            }
         }
     }
 
     public synchronized void stop() {
-        state = State.CLOSED;
-        LOGGER.fine("Closing..."); //NOI18N
+        if (state != State.STOPPED) {
+            state = State.STOPPED;
+            LOGGER.fine("Closing..."); //NOI18N
 
-        PathRegistry.getDefault().removePathRegistryListener(this);
-        FileUtil.removeFileChangeListener(this);
-        EditorRegistry.removePropertyChangeListener(this);
+            PathRegistry.getDefault().removePathRegistryListener(this);
+            FileUtil.removeFileChangeListener(this);
+            EditorRegistry.removePropertyChangeListener(this);
 
-        getWorker().cancelAll();
+            getWorker().cancelAll();
+        }
     }
 
     public boolean isScanInProgress() {
@@ -208,7 +199,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 LOGGER.fine("Scheduling index refreshing: root=" + rootUrl + ", files=" + fileUrls); //NOI18N
             }
 
-            getWorker().schedule(flw, wait);
+            scheduleWork(flw, wait);
         }
     }
 
@@ -243,7 +234,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             sb.append("====\n"); //NOI18N
             LOGGER.fine(sb.toString());
         }
-        getWorker().schedule(new RootsWork(scannedRoots2Dependencies, scannedBinaries), false);
+        scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries), false);
     }
 
     // -----------------------------------------------------------------------
@@ -262,7 +253,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         if ( root != null && VisibilityQuery.getDefault().isVisible(fo)) {
-            getWorker().schedule(new FileListWork(root, Collections.singleton(fo), false), false);
+            scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
         }
     }
 
@@ -277,7 +268,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (root != null && VisibilityQuery.getDefault().isVisible(fo) &&
             FileUtil.getMIMEType(fo, PathRecognizerRegistry.getDefault().getMimeTypesAsArray()) != null)
         {
-            getWorker().schedule(new FileListWork(root, Collections.singleton(fo), false), false);
+            scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
         }
     }
 
@@ -292,7 +283,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (root != null && VisibilityQuery.getDefault().isVisible(fo) &&
             FileUtil.getMIMEType(fo, PathRecognizerRegistry.getDefault().getMimeTypesAsArray()) != null)
         {
-            getWorker().schedule(new FileListWork(root, Collections.singleton(fo), false), false);
+            scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
         }
     }
 
@@ -311,7 +302,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         if (root != null &&  VisibilityQuery.getDefault().isVisible(fo)
             /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
-            getWorker().schedule(new DeleteWork(root, fo), false);
+            scheduleWork(new DeleteWork(root, fo), false);
         }
     }
 
@@ -394,7 +385,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
 
             for(FileListWork job : jobs.values()) {
-                getWorker().schedule(job, false);
+                scheduleWork(job, false);
             }
         }
     }
@@ -509,7 +500,46 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             LOGGER.log(Level.FINE, "Registering active document listener: activeDocument={0}", activeDocument); //NOI18N
         }
     }
-    
+
+    private void scheduleWork(final Work work, boolean wait) {
+        synchronized (this) {
+            if (state == State.STARTED) {
+                state = State.INITIAL_SCAN_RUNNING;
+                getWorker().schedule(new RootsWork(scannedRoots2Dependencies, scannedBinaries) {
+                    public @Override void getDone() {
+                        try {
+                            if (work != null) {
+                                try {
+                                    long tm = System.currentTimeMillis();
+                                    LOGGER.fine("Initial scan waiting for projects"); //NOI18N
+                                    OpenProjects.getDefault().openProjects().get();
+                                    LOGGER.log(Level.FINE, "Initial scan blocked for {0} ms", System.currentTimeMillis() - tm); //NOI18N
+                                } catch (Exception ex) {
+                                    // ignore
+                                    LOGGER.log(Level.FINE, "Waiting for projects before initial scan timed out", ex); // NOI18N
+                                }
+                            } // else forced (eg. from tests) so don't wait for projects
+
+                            super.getDone();
+                        } finally {
+                            if (state == State.INITIAL_SCAN_RUNNING) {
+                                synchronized (RepositoryUpdater.this) {
+                                    if (state == State.INITIAL_SCAN_RUNNING) {
+                                        state = State.ACTIVE;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }, false);
+            }
+        }
+
+        if (work != null) {
+            getWorker().schedule(work, wait);
+        }
+    }
+
     private Task getWorker () {
         Task t = this.worker;
         if (t == null) {
@@ -537,7 +567,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         return null;
     }
 
-    enum State {CREATED, INITIALIZED, INITIALIZED_AFTER_FIRST_SCAN, CLOSED};
+    enum State {CREATED, STARTED, INITIAL_SCAN_RUNNING, ACTIVE, STOPPED};
 
     private static abstract class Work {
 
@@ -614,7 +644,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                 if (LOGGER.isLoggable(Level.FINE)) {
                                     LOGGER.fine("Indexing " + indexables.size() + " indexables; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
                                 }
-                                SPIAccessor.getInstance().index(indexer, Collections.unmodifiableCollection(indexables), ctx);
+                                try {
+                                    SPIAccessor.getInstance().index(indexer, Collections.unmodifiableCollection(indexables), ctx);
+                                } catch (ThreadDeath td) {
+                                    throw td;
+                                } catch (Throwable t) {
+                                    LOGGER.log(Level.WARNING, null, t);
+                                }
                             }
                         }
                     } finally {
@@ -771,6 +807,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 final List<URL> newRoots = new LinkedList<URL>();
                 newRoots.addAll(PathRegistry.getDefault().getSources());
                 newRoots.addAll(PathRegistry.getDefault().getLibraries());
+                newRoots.addAll(PathRegistry.getDefault().getUnknownRoots());
+
                 ctx.newBinaries.addAll(PathRegistry.getDefault().getBinaryLibraries());
                 for (Iterator<URL> it = ctx.newBinaries.iterator(); it.hasNext();) {
                     if (ctx.oldBinaries.remove(it.next())) {

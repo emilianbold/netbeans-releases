@@ -46,7 +46,6 @@ import antlr.TokenStreamException;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -124,8 +123,6 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
             List<APTToken> body = defNode.getBody();
             if (body.isEmpty()) {
                 body = APTUtils.DEF_MACRO_BODY;
-            } else if (body instanceof ArrayList) {
-                ((ArrayList)body).trimToSize();
             }
             if (isSystem) {
                 defineImpl(null, defNode.getName(), defNode.getParams(), body, Kind.COMPILER_PREDEFINED);
@@ -144,11 +141,11 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
     
     private void defineImpl(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
-        active.macros.put(name.getTextID(), createMacro(file, name, params, value, macroType));
+        active.getMacros().put(name.getTextID(), createMacro(file, name, params, value, macroType));
     }
 
     public void undef(APTFile file, APTToken name) {
-        active.macros.put(name.getTextID(), APTMacroMapSnapshot.UNDEFINED_MACRO);
+        active.getMacros().put(name.getTextID(), APTMacroMapSnapshot.UNDEFINED_MACRO);
     }
     
     /** method to implement in children */

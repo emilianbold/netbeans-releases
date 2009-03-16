@@ -44,12 +44,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParameterInfo;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.ParameterInfo;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
@@ -322,7 +322,7 @@ public class ParameterInfoSupport {
         return token.id().equals(PHPTokenId.PHP_STRING);
     }
 
-    private static ParameterInfo parametersNodeImpl(final int caretOffset, final CompilationInfo info) {
+    private static ParameterInfo parametersNodeImpl(final int caretOffset, final ParserResult info) {
         final ParameterInfo[] retval = new ParameterInfo[1];
         DefaultVisitor visitor = new DefaultVisitor() {
 

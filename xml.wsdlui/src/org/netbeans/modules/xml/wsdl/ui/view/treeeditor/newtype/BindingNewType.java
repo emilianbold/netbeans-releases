@@ -55,7 +55,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.view.BindingConfigurationDialogPanel;
-import org.netbeans.modules.xml.wsdl.ui.wizard.BindingGenerator;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.BindingGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;

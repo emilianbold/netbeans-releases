@@ -43,15 +43,12 @@ package org.netbeans.modules.refactoring.ruby;
 
 import java.awt.Color;
 import java.io.CharConversionException;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.Document;
 import javax.swing.text.StyleConstants;
 import org.jruby.nb.ast.AliasNode;
 import org.jruby.nb.ast.Colon2Node;
@@ -61,9 +58,6 @@ import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -73,67 +67,44 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.napi.gsfret.source.Source;
-import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 
 /**
- * Various utilies related to Ruby refactoring; the generic ones are based
+ * Various utilities related to Ruby refactoring; the generic ones are based
  * on the ones from the Java refactoring module.
  * 
  * @author Jan Becicka
  * @author Tor Norbye
  */
 public class RetoucheUtils {
+    
     private RetoucheUtils() {
     }
 
-    // XXX Should this be unused now?
-    public static Source createSource(ClasspathInfo cpInfo, FileObject fo) {
-        if (RubyUtils.canContainRuby(fo)) {
-            return Source.create(cpInfo, fo);
-        }
-        
-        return null;
-    }
-    
-    public static Source getSource(FileObject fo) {
-        Source source =  Source.forFileObject(fo);
-        
-        return source;
-    }
-    
-    public static Source getSource(Document doc) {
-        Source source = Source.forDocument(doc);
-
-        return source;
-    }
-    
-    public static BaseDocument getDocument(CompilationInfo info, FileObject fo) {
+    public static BaseDocument getDocument(ParserResult parserResult, FileObject fo) {
         BaseDocument doc = null;
 
-        if (info != null) {
-            doc = (BaseDocument)info.getDocument();
+        if (parserResult != null) {
+            doc = RubyUtils.getDocument(parserResult);
         }
 
         if (doc == null) {
@@ -152,7 +123,17 @@ public class RetoucheUtils {
 
         return doc;
     }
-    
+
+    public static BaseDocument getDocument(ParserResult info) {
+        BaseDocument doc = null;
+
+        if (info != null) {
+            doc = RubyUtils.getDocument(info, true);
+        }
+
+        return doc;
+    }
+
     /** Compute the names (full and simple, e.g. Foo::Bar and Bar) for the given node, if any, and return as 
      * a String[2] = {name,simpleName} */
     public static String[] getNodeNames(Node node) {
@@ -186,10 +167,10 @@ public class RetoucheUtils {
         return new String[] { name, simpleName };
     }
     
-    public static CloneableEditorSupport findCloneableEditorSupport(CompilationInfo info) {
+    public static CloneableEditorSupport findCloneableEditorSupport(ParserResult info) {
         DataObject dob = null;
         try {
-            dob = DataObject.find(info.getFileObject());
+            dob = DataObject.find(RubyUtils.getFileObject(info));
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -218,8 +199,8 @@ public class RetoucheUtils {
     }
 
     /** Return the most distant method in the hierarchy that is overriding the given method, or null */
-    public static IndexedMethod getOverridingMethod(RubyElementCtx element, CompilationInfo info) {
-        RubyIndex index = RubyIndex.get(info.getIndex(RubyUtils.RUBY_MIME_TYPE), info.getFileObject());
+    public static IndexedMethod getOverridingMethod(RubyElementCtx element, ParserResult info) {
+        RubyIndex index = RubyIndex.get(info);
         String fqn = AstUtilities.getFqnName(element.getPath());
 
         return index.getOverridingMethod(fqn, element.getName());
@@ -321,17 +302,18 @@ public class RetoucheUtils {
         return false;
     }
 
-    public static boolean isClasspathRoot(FileObject fo) {
-        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        if (cp != null) {
-            FileObject f = cp.findOwnerRoot(fo);
-            if (f != null) {
-                return fo.equals(f);
-            }
-        }
-        
-        return false;
-    }
+    // XXX Parsing API
+//    public static boolean isClasspathRoot(FileObject fo) {
+//        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+//        if (cp != null) {
+//            FileObject f = cp.findOwnerRoot(fo);
+//            if (f != null) {
+//                return fo.equals(f);
+//            }
+//        }
+//
+//        return false;
+//    }
     
     public static boolean isRefactorable(FileObject file) {
         return RubyUtils.canContainRuby(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
@@ -344,96 +326,93 @@ public class RetoucheUtils {
                 .getResourceName(folder, '.', false);
     }
 
-    public static FileObject getClassPathRoot(URL url) throws IOException {
-        FileObject result = URLMapper.findFileObject(url);
-        File f = FileUtil.normalizeFile(new File(url.getPath()));
-        while (result==null) {
-            result = FileUtil.toFileObject(f);
-            f = f.getParentFile();
-        }
-        return ClassPath.getClassPath(result, ClassPath.SOURCE).findOwnerRoot(result);
-    }
-    
-    public static ElementKind getElementKind(RubyElementCtx tph) {
-        return tph.getKind();
-    }
-    
-    public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
-        assert files.length >0;
-        Set<URL> dependentRoots = new HashSet<URL>();
-        for (FileObject fo: files) {
-            Project p = null;
-            if (fo!=null) {
-                p = FileOwnerQuery.getOwner(fo);
-            }
-            if (p!=null) {
-                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                if (classPath == null) {
-                    return null;
-                }
-                FileObject ownerRoot = classPath.findOwnerRoot(fo);
-                if (ownerRoot != null) {
-                    URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
-                    dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
-                    for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(RubyProject.SOURCES_TYPE_RUBY)) {
-                        dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
-                    }
-                } else {
-                    dependentRoots.add(URLMapper.findURL(fo.getParent(), URLMapper.INTERNAL));
-                }
-            } else {
-                for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
-                    for (FileObject root:cp.getRoots()) {
-                        dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
-                    }
-                }
-            }
-        }
-        
-        ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
-        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClassPath boot = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.BOOT):nullPath;
-        ClassPath compile = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.COMPILE):nullPath;
-
-        if (boot == null || compile == null) { // 146499
-            return null;
-        }
-
-        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
-        return cpInfo;
-    }
-    
-    public static ClasspathInfo getClasspathInfoFor(RubyElementCtx ctx) {
-        return getClasspathInfoFor(ctx.getFileObject());
-    }
-    
-    public static List<FileObject> getRubyFilesInProject(FileObject fileInProject) {
-        List<FileObject> list = new ArrayList<FileObject>(100);
-        ClasspathInfo cpInfo = RetoucheUtils.getClasspathInfoFor(fileInProject);
-        if (cpInfo == null) {
-            return list;
-        }
-        ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-        for (ClassPath.Entry entry : cp.entries()) {
-            FileObject root = entry.getRoot();
+//    public static FileObject getClassPathRoot(URL url) throws IOException {
+//        FileObject result = URLMapper.findFileObject(url);
+//        File f = FileUtil.normalizeFile(new File(url.getPath()));
+//        while (result==null) {
+//            result = FileUtil.toFileObject(f);
+//            f = f.getParentFile();
+//        }
+//        return ClassPath.getClassPath(result, ClassPath.SOURCE).findOwnerRoot(result);
+//    }
+//
+//    public static ElementKind getElementKind(RubyElementCtx tph) {
+//        return tph.getKind();
+//    }
+//
+//    public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
+//        assert files.length >0;
+//        Set<URL> dependentRoots = new HashSet<URL>();
+//        for (FileObject fo: files) {
+//            Project p = null;
+//            if (fo!=null) {
+//                p = FileOwnerQuery.getOwner(fo);
+//            }
+//            if (p!=null) {
+//                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+//                if (classPath == null) {
+//                    return null;
+//                }
+//                FileObject ownerRoot = classPath.findOwnerRoot(fo);
+//                if (ownerRoot != null) {
+//                    URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
+//                    dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
+//                    for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(RubyProject.SOURCES_TYPE_RUBY)) {
+//                        dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+//                    }
+//                } else {
+//                    dependentRoots.add(URLMapper.findURL(fo.getParent(), URLMapper.INTERNAL));
+//                }
+//            } else {
+//                for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
+//                    for (FileObject root:cp.getRoots()) {
+//                        dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
+//                    }
+//                }
+//            }
+//        }
+//
+//        ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
+//        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
+//        ClassPath boot = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.BOOT):nullPath;
+//        ClassPath compile = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.COMPILE):nullPath;
+//
+//        if (boot == null || compile == null) { // 146499
+//            return null;
+//        }
+//
+//        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
+//        return cpInfo;
+//    }
+//
+//    public static ClasspathInfo getClasspathInfoFor(RubyElementCtx ctx) {
+//        return getClasspathInfoFor(ctx.getFileObject());
+//    }
+//
+    public static Set<FileObject> getRubyFilesInProject(FileObject fileInProject) {
+        Set<FileObject> files = new HashSet<FileObject>(100);
+        // XXX: user ruby specific classpath IDs
+        Collection<FileObject> sourceRoots = GsfUtilities.getRoots(fileInProject, 
+                null, Collections.<String>emptySet(), Collections.<String>emptySet());
+        for (FileObject root : sourceRoots) {
             String name = root.getName();
             // Skip non-refactorable parts in renaming
             if (name.equals("vendor") || name.equals("script")) { // NOI18N
                 continue;
             }
-            addRubyFiles(list, root);
+            addRubyFiles(files, root);
         }
-        
-        return list;
+
+        return files;
     }
     
-    private static void addRubyFiles(List<FileObject> list, FileObject f) {
+    private static void addRubyFiles(Set<FileObject> files, FileObject f) {
         if (f.isFolder()) {
             for (FileObject child : f.getChildren()) {
-                addRubyFiles(list, child);
+                addRubyFiles(files, child);
             }
         } else if (RubyUtils.canContainRuby(f)) {
-            list.add(f);
+            files.add(f);
         }
     }
 }

@@ -160,18 +160,20 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
                 if (combinedPos != -1 && combinedPos < addressPos) {
                     int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, combinedPos));
-                    //String path = debugger.getRunDirectory();
-                    String fileStr = readValue(FILE_HEADER, msg, combinedPos);
-                    if (srcFile != null && srcFile.getName().equals(fileStr)) {
-                        FileObject src_fo = FileUtil.toFileObject(FileUtil.normalizeFile(srcFile));
-                        if (src_fo != null) {
-                            try {
-                                text.addLine("!" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
-                            } catch (DataObjectNotFoundException doe) {
-                                // do nothing
+                    if (lineIdx > 0) {
+                        //String path = debugger.getRunDirectory();
+                        String fileStr = readValue(FILE_HEADER, msg, combinedPos);
+                        if (srcFile != null && srcFile.getName().equals(fileStr)) {
+                            FileObject src_fo = FileUtil.toFileObject(FileUtil.normalizeFile(srcFile));
+                            if (src_fo != null) {
+                                try {
+                                    text.addLine("!" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
+                                } catch (DataObjectNotFoundException doe) {
+                                    // do nothing
+                                }
+                            } else {
+                                text.addLine("!" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
                             }
-                        } else {
-                            text.addLine("!" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
                         }
                     }
                     pos = combinedPos+1;

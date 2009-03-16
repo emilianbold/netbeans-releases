@@ -41,15 +41,16 @@
 
 package org.netbeans.modules.groovy.editor.api.parser;
 
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.ParserResult.AstTreeNode;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.api.elements.AstRootElement;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.codehaus.groovy.control.ErrorCollector;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
@@ -57,22 +58,26 @@ import org.codehaus.groovy.control.ErrorCollector;
  */
 public class GroovyParserResult extends ParserResult {
 
+    private final GroovyParser parser;
+    
+    private List<Error> errors = new ArrayList<Error>();
+
     private AstRootElement rootElement;
-    private AstTreeNode ast;
     private OffsetRange sanitizedRange = OffsetRange.NONE;
     private String sanitizedContents;
     private StructureAnalyzer.AnalysisResult analysisResult;
     private GroovyParser.Sanitize sanitized;
     private ErrorCollector errorCollector;  // keep track of pending errors (if any)
 
-    GroovyParserResult(GroovyParser parser, ParserFile parserFile, AstRootElement rootElement, 
-            AstTreeNode ast, ErrorCollector errorCollector) {
-        super(parser, parserFile, GroovyTokenId.GROOVY_MIME_TYPE);
+    GroovyParserResult(GroovyParser parser, Snapshot snapshot, AstRootElement rootElement,
+            ErrorCollector errorCollector) {
+        super(snapshot);
+        this.parser = parser;
         this.rootElement = rootElement;
-        this.ast = ast;
         this.errorCollector = errorCollector;
     }
 
+    // FIXME remove this
     public ErrorCollector getErrorCollector() {
         return errorCollector;
     }
@@ -81,9 +86,19 @@ public class GroovyParserResult extends ParserResult {
         return rootElement;
     }
 
+    public void setErrors(List<? extends Error> errors) {
+        this.errors = new ArrayList<Error>(errors);
+    }
+    
     @Override
-    public AstTreeNode getAst() {
-        return ast;
+    public List<? extends Error> getDiagnostics() {
+        return errors;
+    }
+
+    @Override
+    protected void invalidate() {
+        // FIXME parsing API
+        // remove from parser cache (?)
     }
 
     /**

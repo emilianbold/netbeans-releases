@@ -59,6 +59,10 @@ public class RunToCursorActionProvider extends AbstractActionProvider {
             return ;
         }
         Line line = Utils.getCurrentLine();
+        if (line == null){
+            return ;
+        }
+
         BrkpntSetCommand command = BrkpntCommandBuilder.buildLineBreakpoint(
                 id, session.getTransactionId(), 
                 EditorContextDispatcher.getDefault().getCurrentFile(), 

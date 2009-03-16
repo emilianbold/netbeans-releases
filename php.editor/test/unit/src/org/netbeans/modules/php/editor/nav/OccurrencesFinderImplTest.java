@@ -39,12 +39,16 @@
 
 package org.netbeans.modules.php.editor.nav;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -771,13 +775,16 @@ public class OccurrencesFinderImplTest extends TestBase {
     }
 
     private void performTestOccurrences(String code, final int caretOffset, final boolean symmetric, final int... goldenRanges) throws Exception {
-        performTest(new String[] {code}, new CancellableTask<CompilationInfo>() {
+        performTest(new String[] {code}, new UserTask() {
             public void cancel() {}
-            public void run(CompilationInfo parameter) throws Exception {
+            
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                ParserResult parameter = (ParserResult) resultIterator.getParserResult();
                 Collection<OffsetRange> ranges = OccurrencesFinderImpl.compute(parameter, caretOffset);
-                
+
                 assertEquals(goldenRanges, ranges);
-                
+
                 if (symmetric) {
                     for (OffsetRange r : ranges) {
                         assertEquals(goldenRanges, OccurrencesFinderImpl.compute(parameter, (r.getStart() + r.getEnd()) / 2));
@@ -801,5 +808,15 @@ public class OccurrencesFinderImplTest extends TestBase {
         }
 
         assertEquals(golden, out);
+    }
+
+    @Override
+    protected FileObject[] createSourceClassPathsForTest() {
+        try {
+            return new FileObject[]{toFileObject(workDirToFileObject(), "src", true)};//NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 }

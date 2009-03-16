@@ -41,6 +41,11 @@
 
 package org.netbeans.modules.php.editor;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+
 /**
  *
  * @author tomslot
@@ -140,19 +145,15 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
 
     public void testTypesInPHPDOC4() throws Exception {
-        checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return News|^", false);
+        checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return PhpDoc01News|PhpDoc01^", false);
     }
 
     public void testTypesInPHPDOC5() throws Exception {
-        checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return News|   text|^", false);
+        checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return PhpDoc01News|PhpDoc01   text|^", false);
     }
 
     public void testPhpContext2() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
-    }
-
-    public void testHTML() throws Exception {
-        checkCompletion("testfiles/completion/lib/nowdoc02.php", "<title>^</title>", false);
     }
 
     public void test145138_1() throws Exception {
@@ -657,6 +658,21 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testVarTypeCommentType02() throws Exception {
         checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $hello VarTypeComment^", false);
     }
+
+    public void testIssue157534() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue157534.php", "issue157534^", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        //just test them as standalone files (just PHP Platform in index)
+        List<String> asList = Arrays.asList("testPhpContextWithPrefix", "testVarScope2", "testSanitizedCode");//NOI18N
+        if (asList.contains(getName())) {
+            return null;
+        }
+        return super.createClassPathsForTest();
+    }
+
     /* doesn't work properly yet
     public void testTypeInInstanceof() throws Exception {
         checkCompletion("testfiles/completion/lib/catchinstanceof.php", "$vInstanceof->^", false);

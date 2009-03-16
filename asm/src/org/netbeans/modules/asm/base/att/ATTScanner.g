@@ -96,6 +96,7 @@ options {
 
     public void resetText() {
         super.resetText();
+        resetMatchError();
         tokenStartOffset = offset;
     }
    

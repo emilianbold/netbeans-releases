@@ -42,8 +42,8 @@ package org.netbeans.modules.refactoring.ruby;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import org.netbeans.napi.gsfret.source.ModificationResult;
-import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
+import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.ruby.ui.tree.ElementGripFactory;
 import org.openide.filesystems.FileObject;

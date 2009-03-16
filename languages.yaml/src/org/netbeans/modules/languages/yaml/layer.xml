@@ -54,9 +54,14 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-yaml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.yaml.Bundle"/>
+
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.languages.yaml.YamlTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+
+                <file name="org-netbeans-modules-languages-yaml-ruby-RubyEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
 
                 <file name="org-netbeans-modules-languages-yaml-EmbeddedSectionsHighlighting$Factory.instance"/>
@@ -96,7 +101,7 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    <folder name="GsfPlugins">
+    <folder name="CslPlugins">
         <folder name="text">
             <folder name="x-yaml">
                 <file name="language.instance">

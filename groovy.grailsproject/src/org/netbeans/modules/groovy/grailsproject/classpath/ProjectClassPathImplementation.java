@@ -169,22 +169,23 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         }
 
         // project plugins listener
-        if (oldPluginsDir == null || !oldPluginsDir.equals(currentPluginsDir)) {
-            if (oldPluginsDir != null) {
-                FileUtil.removeFileChangeListener(listenerPluginsLib, oldPluginsDir);
-            }
-            FileUtil.addFileChangeListener(listenerPluginsLib, pluginsDir);
-        }
+        updateListener(listenerPluginsLib, oldPluginsDir, currentPluginsDir);
 
         // global plugins listener
-        if (oldGlobalPluginsDir == null || !oldGlobalPluginsDir.equals(currentGlobalPluginsDir)) {
-            if (oldGlobalPluginsDir != null) {
-                FileUtil.removeFileChangeListener(listenerPluginsLib, oldGlobalPluginsDir);
-            }
-            FileUtil.addFileChangeListener(listenerPluginsLib, globalPluginsDir);
-        }
+        updateListener(listenerPluginsLib, oldGlobalPluginsDir, currentGlobalPluginsDir);
 
         return Collections.unmodifiableList(result);
+    }
+
+    private void updateListener(FileChangeListener listener, File oldDir, File newDir) {
+        if (oldDir == null || !oldDir.equals(newDir)) {
+            if (oldDir != null) {
+                FileUtil.removeFileChangeListener(listener, oldDir);
+            }
+            if (newDir != null) {
+                FileUtil.addFileChangeListener(listener, newDir);
+            }
+        }
     }
 
     private void addPlugins(File dir, List<PathResourceImplementation> result, Set<String> names) {

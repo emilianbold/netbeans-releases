@@ -38,14 +38,16 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.SourceModel;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
@@ -160,24 +162,21 @@ public class CodeUtils {
 
     private static String findClassNameEnclosingDeclaration(PHPParseResult context,
             IndexedConstant variable) {
-        if (context.getFile().getFileObject().equals(variable.getFileObject())){
+        if (context.getSnapshot().getSource().getFileObject().equals(variable.getFileObject())){
             return findClassNameEnclosingDeclaration(context.getProgram(), variable);
         }
 
-        SourceModel model = SourceModelFactory.getInstance().getModel(variable.getFileObject());
-
+        
         ClassNameExtractor task = new ClassNameExtractor(variable);
-
         try {
-            model.runUserActionTask(task, true);
-        } catch (IOException ex) {
+            ParserManager.parse(Collections.singleton(Source.create(variable.getFileObject())), task);
+        } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
-
         return task.className;
     }
 
-    private static class ClassNameExtractor implements CancellableTask<CompilationInfo> {
+    private static class ClassNameExtractor extends UserTask {
         IndexedConstant variable;
         String className;
 
@@ -185,9 +184,9 @@ public class CodeUtils {
             this.variable = variable;
         }
 
-        public void cancel() {}
-
-        public void run(CompilationInfo parameter) throws Exception {
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            ParserResult parameter = (ParserResult)resultIterator.getParserResult();
             Program program = Utils.getRoot(parameter);
             className = findClassNameEnclosingDeclaration(program, variable);
         }
@@ -221,7 +220,7 @@ public class CodeUtils {
 
                 String fname = rawType.substring(FUNCTION_TYPE_PREFIX.length());
 
-                for (IndexedFunction func : index.getFunctions(context, fname, NameKind.EXACT_NAME)) {
+                for (IndexedFunction func : index.getFunctions(context, fname, QuerySupport.Kind.EXACT)) {
                     varType = func.getReturnType();
                 }
             } else if (rawType.startsWith(STATIC_METHOD_TYPE_PREFIX)){
@@ -235,7 +234,7 @@ public class CodeUtils {
                 String methodName = parts[1];
 
                 for (IndexedFunction func : index.getAllMethods(context, className,
-                        methodName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
+                        methodName, QuerySupport.Kind.EXACT, Integer.MAX_VALUE)) {
 
                     varType = func.getReturnType();
                 }
@@ -260,7 +259,7 @@ public class CodeUtils {
 
                 if (className != null) {
                     for (IndexedFunction func : index.getAllMethods(context, className,
-                            methodName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
+                            methodName, QuerySupport.Kind.EXACT, Integer.MAX_VALUE)) {
 
                         varType = func.getReturnType();
                     }

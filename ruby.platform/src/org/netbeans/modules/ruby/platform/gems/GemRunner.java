@@ -474,7 +474,7 @@ final class GemRunner {
         final Cursor originalCursor;
         if (parent != null) {
             originalCursor = parent.getCursor();
-            Cursor busy = Utilities.createProgressCursor(parent);
+            Cursor busy = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
             parent.setCursor(busy);
         } else {
             originalCursor = null;

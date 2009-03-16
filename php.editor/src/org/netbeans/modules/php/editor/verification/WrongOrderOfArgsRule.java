@@ -38,10 +38,9 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.Set;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
@@ -82,7 +81,7 @@ public class WrongOrderOfArgsRule extends PHPRule {
                 OffsetRange range = new OffsetRange(param.getStartOffset(), param.getEndOffset());
 
                 Hint hint = new Hint(WrongOrderOfArgsRule.this, getDisplayName(),
-                        context.compilationInfo.getFileObject(), range, null, 500);
+                        context.parserResult.getSnapshot().getSource().getFileObject(), range, null, 500);
 
                 addResult(hint);
                 break;

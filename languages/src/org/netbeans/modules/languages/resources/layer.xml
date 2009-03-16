@@ -236,7 +236,6 @@ made subject to such option by the copyright holder.
     <folder name="Templates">
         <folder name="NetBeansModuleDevelopment">
             <file name="_language.nbs" url="nbs_template.nbs">
-                <attr name="position" intvalue="666"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>

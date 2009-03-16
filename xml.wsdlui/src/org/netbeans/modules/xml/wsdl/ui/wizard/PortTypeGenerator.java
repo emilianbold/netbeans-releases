@@ -50,6 +50,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

@@ -2101,6 +2101,8 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
+    private static final String VALUE_PREFIX = ",value="; // NOI18N
+
     public String evaluate(String expression) {
         // IZ:131315 (gdb may not be initialized yet)
         if (gdb == null) {
@@ -2127,8 +2129,11 @@ public class GdbDebugger implements PropertyChangeListener {
 
         String response = cb.getResponse();
         // response have the form ",value=...", so we trim it
-        response = response.substring(7, response.length() - 1);
-
+        if (response.startsWith(VALUE_PREFIX)) {
+            response = response.substring(VALUE_PREFIX.length(), response.length() - 1);
+        } else {
+            log.severe("GDBDebugger.evaluate: unexpected response " + response + " for expression " + expression); // NOI18N
+        }
         if (response.startsWith("@0x")) { // NOI18N
             cb = gdb.print(expression);
             response = cb.getResponse();

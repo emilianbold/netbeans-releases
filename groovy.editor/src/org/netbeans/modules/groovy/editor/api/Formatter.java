@@ -51,13 +51,13 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.options.CodeStyle;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.util.Exceptions;
 
 
@@ -72,7 +72,7 @@ import org.openide.util.Exceptions;
  * @author Martin Adamek
  * @author Gopalakrishnan Sankaran
  */
-public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
+public class Formatter implements org.netbeans.modules.csl.api.Formatter {
     private boolean isGspDocument;
     private CodeStyle codeStyle;
     private int rightMarginOverride = -1;
@@ -87,7 +87,6 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
         this.rightMarginOverride = rightMarginOverride;
     }
     
-
     public boolean needsParserResult() {
         return false;
     }
@@ -101,7 +100,7 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
         }
     }
 
-    public void reformat(Context context, CompilationInfo compilationInfo) {
+    public void reformat(Context context, ParserResult compilationInfo) {
         if (codeStyle != null) {
             reindent(context, compilationInfo, false);
         } else {
@@ -454,7 +453,7 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
         return false;
     }
 
-    private void reindent(final Context context, CompilationInfo info, final boolean indentOnly) {
+    private void reindent(final Context context, ParserResult info, final boolean indentOnly) {
         assert codeStyle != null;
         
         Document document = context.document();
@@ -555,7 +554,7 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
         }
     }
 
-    public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, CompilationInfo info,
+    public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, ParserResult info,
             List<Integer> offsets,
             List<Integer> indents,
             boolean indentEmptyLines, boolean includeEnd, boolean indentOnly

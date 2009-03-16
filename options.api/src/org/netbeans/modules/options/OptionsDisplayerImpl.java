@@ -44,6 +44,8 @@ package org.netbeans.modules.options;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -77,6 +79,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
@@ -183,6 +186,10 @@ public class OptionsDisplayerImpl {
         dialog = DialogDisplayer.getDefault ().createDialog (descriptor);
         optionsPanel.initCurrentCategory(categoryID, subpath);
         dialog.addWindowListener (new MyWindowListener (optionsPanel));
+        Point userLocation = getUserLocation();
+        if (userLocation != null) {
+            dialog.setLocation(userLocation);
+        }
         dialog.setVisible (true);     
     }
 
@@ -210,6 +217,17 @@ public class OptionsDisplayerImpl {
             }
         }
         return false;
+    }
+
+    private Point getUserLocation() {
+        final Rectangle screenBounds = Utilities.getUsableScreenBounds();
+        int x = NbPreferences.forModule(OptionsDisplayerImpl.class).getInt("OptionsX", Integer.MAX_VALUE);//NOI18N
+        int y = NbPreferences.forModule(OptionsDisplayerImpl.class).getInt("OptionsY", Integer.MAX_VALUE);//NOI18N
+        if (x > screenBounds.getWidth() || y > screenBounds.getHeight()) {
+            return null;
+        } else {
+            return new Point(x, y);
+        }
     }
 
     private static String loc (String key) {
@@ -353,6 +371,9 @@ public class OptionsDisplayerImpl {
 
         public void windowClosed(WindowEvent e) {
             optionsPanel.storeUserSize();
+            // store location of dialog
+            NbPreferences.forModule(OptionsDisplayerImpl.class).putInt("OptionsX", originalDialog.getX());//NOI18N
+            NbPreferences.forModule(OptionsDisplayerImpl.class).putInt("OptionsY", originalDialog.getY());//NOI18N
             if (optionsPanel.needsReinit()) {
                 synchronized (lookupListener) {
                     descriptorRef = new WeakReference<DialogDescriptor>(null);

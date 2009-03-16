@@ -40,23 +40,24 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.RootNode;
 import org.jruby.nb.parser.RubyParserResult;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  * @author Tor Norbye
  */
 public class RubyParseResult extends ParserResult {
     
-    private AstTreeNode ast;
-    private Node root;
-    private RootNode realRoot;
+    private final RubyParser parser;
+    private final Node rootNode;
+    
     private String source;
     private OffsetRange sanitizedRange = OffsetRange.NONE;
     private String sanitizedContents;
@@ -64,33 +65,43 @@ public class RubyParseResult extends ParserResult {
     private RubyParser.Sanitize sanitized;
     private RubyParserResult jrubyResult;
     private boolean commentsAdded;
+    private List<Error> errors;
 
-    public RubyParseResult(RubyParser parser, ParserFile file, AstTreeNode ast, Node root,
-        RootNode realRoot, RubyParserResult jrubyResult) {
-        super(parser, file, RubyInstallation.RUBY_MIME_TYPE);
-        this.ast = ast;
-        this.root = root;
-        this.realRoot = realRoot;
-        this.jrubyResult = jrubyResult;
+    public RubyParseResult(RubyParser parser, Snapshot snapshot, Node rootNode) {
+        super(snapshot);
+        this.parser = parser;
+        this.rootNode = rootNode;
+        this.errors = new ArrayList<Error>();
     }
 
-    public ParserResult.AstTreeNode getAst() {
-        return ast;
+    @Override
+    protected void invalidate() {
+        // XXX: what exactly should we do here?
     }
 
-    public void setAst(AstTreeNode ast) {
-        this.ast = ast;
+    @Override
+    public List<? extends Error> getDiagnostics() {
+        return errors;
     }
+
+    public void setErrors(List<? extends Error> errors) {
+        this.errors = new ArrayList<Error>(errors);
+    }
+
+    // XXX: CSL rewrite
+//    public ParserResult.AstTreeNode getAst() {
+//        return ast;
+//    }
+//
+//    public void setAst(AstTreeNode ast) {
+//        this.ast = ast;
+//    }
 
     /** The root node of the AST produced by the parser.
      * Later, rip out the getAst part etc.
      */
     public Node getRootNode() {
-        return root;
-    }
-
-    public Node getRealRoot() {
-        return realRoot;
+        return rootNode;
     }
 
     public String getSource() {
@@ -139,7 +150,7 @@ public class RubyParseResult extends ParserResult {
     @NonNull
     public RubyStructureAnalyzer.AnalysisResult getStructure() {
         if (analysisResult == null) {
-            analysisResult = new RubyStructureAnalyzer().analyze(this, getInfo());
+            analysisResult = new RubyStructureAnalyzer().analyze(this);
         }
         return analysisResult;
     }
@@ -151,4 +162,5 @@ public class RubyParseResult extends ParserResult {
     public void setCommentsAdded(boolean commentsAdded) {
         this.commentsAdded = commentsAdded;
     }
+
 }

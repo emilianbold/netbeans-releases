@@ -77,7 +77,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         nameParts = initNameParts(qid);
         AST templateParams = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LITERAL_template);
         if (templateParams != null) {
-            List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(templateParams, file, parent);
+            List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(templateParams, file, parent, register);
             String fullName = "<" + TemplateUtils.getClassSpecializationSuffix(templateParams, null) + ">"; // NOI18N
             setTemplateDescriptor(params, fullName, register);
         }

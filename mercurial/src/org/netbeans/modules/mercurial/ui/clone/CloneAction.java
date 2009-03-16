@@ -113,12 +113,12 @@ public class CloneAction extends ContextAction {
         performClone(root.getAbsolutePath(), clone.getOutputFileName(), projIsRepos, projFile, true, null, null);
     }
 
-    public static void performClone(final String source, final String target, boolean projIsRepos, 
+    public static RequestProcessor.Task performClone(final String source, final String target, boolean projIsRepos,
             File projFile, final String pullPath, final String pushPath) {
-        performClone(source, target, projIsRepos, projFile, false, pullPath, pushPath);
+        return performClone(source, target, projIsRepos, projFile, false, pullPath, pushPath);
     }
 
-    private static void performClone(final String source, final String target, 
+    private static RequestProcessor.Task performClone(final String source, final String target,
             final boolean projIsRepos, final File projFile, final boolean isLocalClone, final String pullPath, final String pushPath) {
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(source);
@@ -260,7 +260,7 @@ public class CloneAction extends ContextAction {
                 return false;
             }
         });
-        support.start(rp, source, org.openide.util.NbBundle.getMessage(CloneAction.class, "LBL_Clone_Progress", source)); // NOI18N
+        return support.start(rp, source, org.openide.util.NbBundle.getMessage(CloneAction.class, "LBL_Clone_Progress", source)); // NOI18N
     }
 
     public boolean isEnabled() {

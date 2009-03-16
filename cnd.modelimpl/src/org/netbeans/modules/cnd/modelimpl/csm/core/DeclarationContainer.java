@@ -305,6 +305,20 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
         return list;
     }
 
+    // for unit test
+    SortedMap<CharSequence, Object> testDeclarations() {
+        try {
+            declarationsLock.readLock().lock();
+            return new TreeMap<CharSequence, Object>(declarations);
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
+    }
+
+    SortedMap<CharSequence, Set<CsmUID<? extends CsmFriend>>> testFriends(){
+        return new TreeMap<CharSequence, Set<CsmUID<? extends CsmFriend>>>(friends);
+    }
+
     /**
      * Adds ether object to the collection or array of objects
      * @param list

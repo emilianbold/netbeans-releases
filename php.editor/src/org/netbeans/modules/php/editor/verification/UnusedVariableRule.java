@@ -44,12 +44,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Rule.AstRule;
-import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Rule.AstRule;
+import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.openide.util.NbBundle;
 
@@ -63,7 +63,7 @@ public class UnusedVariableRule implements AstRule, UserConfigurableRule, VarSta
             OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
             
             Hint hint = new Hint(UnusedVariableRule.this, getDisplayName(),
-                        context.compilationInfo.getFileObject(), range, null, 500);
+                        context.parserResult.getSnapshot().getSource().getFileObject(), range, null, 500);
             
             hints.add(hint);
         }
