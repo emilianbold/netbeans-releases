@@ -80,16 +80,16 @@ public class ChatPanel extends javax.swing.JPanel {
         setName(StringUtils.parseName(chat.getRoom()));
         editorKit= (HTMLEditorKit) inbox.getEditorKit();
 
-        Font font = UIManager.getFont("Label.font");
-        String bodyRule = "body { font-family: " + font.getFamily() + "; " +
-                "font-size: " + font.getSize() + "pt; }";
+        Font font = UIManager.getFont("Label.font"); // NOI18N
+        String bodyRule = "body { font-family: " + font.getFamily() + "; " + // NOI18N
+                "font-size: " + font.getSize() + "pt; }"; // NOI18N
         final StyleSheet styleSheet = ((HTMLDocument) inbox.getDocument()).getStyleSheet();
 
         styleSheet.addRule(bodyRule);
-        styleSheet.addRule(".buddy {color: black; font-weight: bold;}");
-        styleSheet.addRule(".time {color: lightgrey;");
-        styleSheet.addRule(".message {color: lightgrey;");
-        styleSheet.addRule(".date {color: #FF9933;");
+        styleSheet.addRule(".buddy {color: black; font-weight: bold;}"); // NOI18N
+        styleSheet.addRule(".time {color: lightgrey;"); // NOI18N
+        styleSheet.addRule(".message {color: lightgrey;"); // NOI18N
+        styleSheet.addRule(".date {color: #FF9933;"); // NOI18N
 
 
 //        users.setCellRenderer(new BuddyListCellRenderer());
@@ -114,7 +114,7 @@ public class ChatPanel extends javax.swing.JPanel {
     }
 
     private String removeTags(String body) {
-        return body.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+        return body.replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
     }
 
 //    void setUpPrivateMessages() {
@@ -186,11 +186,11 @@ public class ChatPanel extends javax.swing.JPanel {
         online.setText(NbBundle.getMessage(ChatPanel.class, "CTL_PresenceOnline", muc.getOccupantsCount()));
         Iterator<String> string = muc.getOccupants();
         StringBuffer buffer = new StringBuffer();
-        buffer.append("<html><body>");
+        buffer.append("<html><body>"); // NOI18N
         while (string.hasNext()) {
-            buffer.append(StringUtils.parseResource(string.next()) + "<br>");
+            buffer.append(StringUtils.parseResource(string.next()) + "<br>"); // NOI18N
         }
-        buffer.append("</body></html>");
+        buffer.append("</body></html>"); // NOI18N
         online.setToolTipText(buffer.toString());
     //setEndSelection();
     //insertPresence(presence);
@@ -311,15 +311,15 @@ public class ChatPanel extends javax.swing.JPanel {
             final Date timestamp = getTimestamp(message);
             if (!isSameDate(lastDatePrinted,timestamp)) {
                 lastDatePrinted = timestamp;
-                String d = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"date\" align=\"left\">" +
-                    (isToday(timestamp)?"Today":DateFormat.getDateInstance().format(timestamp)) + "</td><td class=\"date\" align=\"right\">" +
-                    DateFormat.getTimeInstance(DateFormat.SHORT).format(timestamp) + "</td></tr></tbody></table>";
+                String d = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"date\" align=\"left\">" + // NOI18N
+                    (isToday(timestamp)?"Today":DateFormat.getDateInstance().format(timestamp)) + "</td><td class=\"date\" align=\"right\">" + // NOI18N
+                    DateFormat.getTimeInstance(DateFormat.SHORT).format(timestamp) + "</td></tr></tbody></table>"; // NOI18N
                 editorKit.insertHTML(doc, doc.getLength(), d, 0, 0, null);
             }
-            String text = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"buddy\" align=\"left\">"+
-                    StringUtils.parseResource(message.getFrom()) + "</td><td class=\"time\" align=\"right\">" +
-                    DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>" +
-                    "<div class=\"message\">" + removeTags(message.getBody()) + "</div>";
+            String text = "<table border=\"0\" borderwith=\"0\" width=\"100%\"><tbody><tr><td class=\"buddy\" align=\"left\">"+ // NOI18N
+                    StringUtils.parseResource(message.getFrom()) + "</td><td class=\"time\" align=\"right\">" + // NOI18N
+                    DateFormat.getTimeInstance(DateFormat.SHORT).format(getTimestamp(message)) + "</td></tr></tbody></table>" + // NOI18N
+                    "<div class=\"message\">" + removeTags(message.getBody()) + "</div>"; // NOI18N
 
             editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
         } catch (IOException ex) {
@@ -330,7 +330,7 @@ public class ChatPanel extends javax.swing.JPanel {
     }
 
     public static Date getTimestamp(Packet packet) {
-         DelayInformation delay = (DelayInformation) packet.getExtension("x", "jabber:x:delay");
+         DelayInformation delay = (DelayInformation) packet.getExtension("x", "jabber:x:delay"); // NOI18N
          if (delay != null) {
              return delay.getStamp();
          } else {
@@ -354,7 +354,7 @@ public class ChatPanel extends javax.swing.JPanel {
     protected void insertPresence(Presence presence) {
         try {
             HTMLDocument doc = (HTMLDocument) inbox.getStyledDocument();
-            String text = "<i><b>" + StringUtils.parseResource(presence.getFrom()) + "</b> is now " + presence.getType() + "</i>";
+            String text = "<i><b>" + StringUtils.parseResource(presence.getFrom()) + "</b> is now " + presence.getType() + "</i>"; // NOI18N
             editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

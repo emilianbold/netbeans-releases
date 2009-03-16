@@ -185,7 +185,7 @@ public class KenaiConnection implements PropertyChangeListener {
         public void processPacket(Packet packet) {
             final Message msg = (Message) packet;
             try {
-                connection.getChatManager().createChat(msg.getFrom(), null).sendMessage("NetBeans IDE does not support private messages");
+                connection.getChatManager().createChat(msg.getFrom(), null).sendMessage(org.openide.util.NbBundle.getMessage(KenaiConnection.class, "CTL_NoPrivateMessages"));
                 //chatNotifications.addPrivateMessage(msg);
             } catch (XMPPException ex) {
                 Exceptions.printStackTrace(ex);
@@ -258,7 +258,7 @@ public class KenaiConnection implements PropertyChangeListener {
         return connection.getRoster();
     }
 
-    private RequestProcessor xmppProcessor = new RequestProcessor("XMPP Processor");
+    private RequestProcessor xmppProcessor = new RequestProcessor("XMPP Processor"); // NOI18N
     public RequestProcessor.Task post(Runnable run) {
         return xmppProcessor.post(run);
     }
