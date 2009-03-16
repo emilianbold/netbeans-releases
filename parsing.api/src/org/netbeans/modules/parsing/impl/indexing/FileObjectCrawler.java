@@ -59,14 +59,14 @@ public class FileObjectCrawler extends Crawler {
     private final boolean checkTimeStamps;
 
     public FileObjectCrawler (final FileObject root, final boolean checkTimeStamps) throws IOException {
-        super (root.getURL());
+        super (root.getURL(), checkTimeStamps);
         this.root = root;
         this.files = null;
         this.checkTimeStamps = checkTimeStamps;
     }
 
     public FileObjectCrawler (final FileObject root, final FileObject[] files, final boolean checkTimeStamps) throws IOException {
-        super (root.getURL());
+        super (root.getURL(), checkTimeStamps);
         this.root = root;
         this.files = files;
         this.checkTimeStamps = checkTimeStamps;
