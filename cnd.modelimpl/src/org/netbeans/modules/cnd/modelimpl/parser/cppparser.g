@@ -3112,6 +3112,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   POINTERTO
             |   NOT    
             |   TILDE
+            |   ELLIPSIS
 
             |   balanceParensInExpression
             |   balanceSquaresInExpression
