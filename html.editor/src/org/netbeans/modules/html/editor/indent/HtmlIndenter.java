@@ -73,8 +73,8 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     @Override
     protected boolean isOpenTagNameToken(Token<HTMLTokenId> token) {
-        return token.id() == HTMLTokenId.TAG_OPEN /*||
-                token.id() == HTMLTokenId.DECLARATION && token.text().toString().startsWith("<!DOCTYPE")*/;
+        return token.id() == HTMLTokenId.TAG_OPEN ||
+                (token.id() == HTMLTokenId.DECLARATION && token.text().toString().startsWith("<!DOCTYPE"));
     }
 
     @Override
@@ -102,8 +102,8 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     @Override
     protected boolean isEndTagClosingSymbol(Token<HTMLTokenId> token) {
         return (token.id() == HTMLTokenId.TAG_CLOSE_SYMBOL &&
-                token.text().toString().equals("/>")) /*||
-                (token.id() == HTMLTokenId.DECLARATION && token.text().toString().startsWith(">"))*/;
+                token.text().toString().equals("/>")) ||
+                (token.id() == HTMLTokenId.DECLARATION && token.text().toString().startsWith(">"));
     }
 
     @Override
@@ -141,9 +141,6 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     @Override
     protected Boolean isEmptyTag(String tagName) {
-//        if ("<!DOCTYPE".equals(tagName)) {
-//            return true;
-//        }
         Element elem = getDTD().getElement(tagName.toUpperCase());
         if (elem == null) {
             return false;
