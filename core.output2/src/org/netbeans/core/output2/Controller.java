@@ -458,9 +458,16 @@ public class Controller {
      */
     static class ControllerOutputEvent extends OutputEvent {
         private int line;
-        ControllerOutputEvent (NbIO io, int line) {
+        private OutWriter out;
+        ControllerOutputEvent(NbIO io, int line) {
             super (io);
+            out = io.out();
             this.line = line;
+        }
+
+        ControllerOutputEvent(NbIO io, OutWriter out, int line) {
+            this(io, line);
+            this.out = out;
         }
 
         void setLine (int line) {
