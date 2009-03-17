@@ -48,6 +48,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.editor.settings.storage.EditorTestLookup;
 import org.netbeans.modules.editor.settings.storage.StorageImpl;
 import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
@@ -200,6 +201,7 @@ public class PreferencesTest extends NbTestCase {
         assertEquals("Wrong number of B events", 0, listenerB.count);
     }
 
+    @RandomlyFails
     public void testEvents142723() throws Exception {
         Preferences prefsA = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
         Preferences prefsB = MimeLookup.getLookup(MimePath.parse("text/x-testA")).lookup(Preferences.class);
