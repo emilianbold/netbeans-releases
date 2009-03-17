@@ -225,11 +225,19 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                             evt.getPropertyName().equals("columnMoved") ||
                             evt.getPropertyName().equals("componentHidden")) {
                     saveEditorValue(false);
+                    if (evt.getPropertyName().equals("columnMoved")) {
+                        if (evt.getOldValue()!=null && evt.getNewValue()!=null) {
+                            int fromIndex = ((Integer)evt.getOldValue()).intValue();
+                            int toIndex = ((Integer)evt.getNewValue()).intValue();
+                            if (fromIndex !=0 && toIndex != 0) {
+                                ((MultiBundleStructure)structure).moveEntry(fromIndex-1,toIndex-1);
+                            }
+                        }
+                    }
                 }
             }
         });
 
-        table.getTableHeader().setReorderingAllowed(false);
         // listens on clikcs on table header, detects column and sort accordingly to chosen one
         table.getTableHeader().addMouseListener(new MouseAdapter() {
             @Override
@@ -240,7 +248,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                 if (columnModelIndex < 0) {
                     return;
                 }
-                int modelIndex = colModel.getColumn(columnModelIndex).getModelIndex();
+                int modelIndex = columnModelIndex;//colModel.getColumn(columnModelIndex).getModelIndex();
                 // not detected column
                 if (modelIndex < 0) {
                     return;
@@ -833,7 +841,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
 
     } // End of inner class TableViewHeaderRenderer.
     
-    
+
     /**
      * This subclass of Default column model is provided due correct set of column widths,
      * see the JTable and horizontal scrolling problem in Java Discussion Forum.
@@ -842,6 +850,17 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     private class TableViewColumnModel extends DefaultTableColumnModel {
         /** Helper listener. */
         private AncestorListener ancestorListener;
+
+        @Override
+        public void moveColumn(int fromIndex, int toIndex) {
+            super.moveColumn(fromIndex, toIndex);
+            if (fromIndex == 0 || toIndex==0) {
+                if (fromIndex != toIndex) {
+                    super.moveColumn(toIndex, fromIndex);
+                }
+            }
+        }
+
 
         /** Overrides superclass method. */
         @Override
@@ -940,7 +959,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             table.getTableHeader().repaint();
         }
     } // End of inner class TableViewColumnModel.
-    
+
 
     /** Renderer which renders cells in table view. */
     @SuppressWarnings("serial")
@@ -1052,8 +1071,24 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }
 
         @Override
+        public int convertColumnIndexToModel(int arg0) {
+            return arg0;
+        }
+
+        @Override
+        public int convertColumnIndexToView(int arg0) {
+            return arg0;
+        }
+
+
+        @Override
         public void columnMoved(TableColumnModelEvent evt) {
-            firePropertyChange("columnMoved", null, null); //NOI18N
+            if (evt.getFromIndex() == evt.getToIndex()) {
+                //This case needed because when specifying equal indexes, but not null,
+                //it is not passed  to propertyChange method 
+                firePropertyChange("columnMoved", null,null); //NOI18N
+            } else
+                firePropertyChange("columnMoved", evt.getFromIndex(), evt.getToIndex()); //NOI18N
             super.columnMoved(evt);
         }
         @Override
@@ -1103,7 +1138,6 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }        
         
     } // End of BundleTable class.
-
     private class ModifiedListener implements DocumentListener {
         
         public void changedUpdate(DocumentEvent e) {

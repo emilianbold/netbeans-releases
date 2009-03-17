@@ -173,6 +173,46 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
         }
     }
 
+    /**
+     * Moves entry from fromIndex to toIndex shifting the rest elements
+     * This method used in @see BundleEditPanel when switching columns order
+     * @param fromIndex
+     * @param toIndex
+     */
+    void moveEntry(int fromIndex, int toIndex) {
+        if (fromIndex >= 0 && fromIndex < getEntryCount() && toIndex>=0 && toIndex < getEntryCount()) {
+            int sortIndex = getSortIndex();
+            if ((fromIndex+1) == sortIndex)
+                sortIndex = toIndex+1;
+            FileObject tmpFO = null;
+            if (fromIndex < toIndex) {
+                tmpFO = files[fromIndex];
+                for (int i=fromIndex; i<toIndex;i++) {
+                    files[i] = files[i+1];
+                    if (i == sortIndex-1) sortIndex--;
+                }
+                files[toIndex] = tmpFO;
+            } else if (fromIndex > toIndex) {
+                tmpFO = files[fromIndex];
+                for (int i=fromIndex;i>toIndex;i--) {
+                    files[i] = files[i-1];
+                    if(i == sortIndex-1) sortIndex++;
+                }
+                files[toIndex]=tmpFO;
+            }
+            if (getSortIndex()==toIndex+1) {
+                sortIndex = fromIndex+1;
+            }
+            if (sortIndex != getSortIndex()) {
+                boolean ascending = getSortOrder();
+                sort(sortIndex);
+                //preserving the sort order
+                if (!ascending) 
+                    sort(sortIndex);
+            }
+        }
+    }
+
     @Override
     public PropertiesFileEntry getNthEntry(int index) {
         if (files == null) {
