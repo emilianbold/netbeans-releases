@@ -176,18 +176,18 @@ public final class Tracer {
             CsmFile csmFile = file.getFileUID().getObject();
             printStream.println("\t\tModel File "+csmFile.getAbsolutePath());
             printStream.println("\t\tNumber of states "+file.getPrerocStates().size());
-//            for(APTPreprocHandler.State state : file.getPrerocStates()){
-//                StringTokenizer st = new StringTokenizer(state.toString(),"\n");
-//                boolean first = true;
-//                while (st.hasMoreTokens()) {
-//                    if (first) {
-//                        printStream.println("\t\tState "+st.nextToken());
-//                        first = false;
-//                    } else {
-//                        printStream.println("\t\t\t"+st.nextToken());
-//                    }
-//                }
-//            }
+            for (FileContainer.StatePair statePair : file.getStates()) {
+                StringTokenizer st = new StringTokenizer(FilePreprocessorConditionState.toStringBrief(statePair.pcState),"\n");
+                boolean first = true;
+                while (st.hasMoreTokens()) {
+                    if (first) {
+                        printStream.println("\t\tState "+st.nextToken());
+                        first = false;
+                    } else {
+                        printStream.println("\t\t\t"+st.nextToken());
+                    }
+                }
+            }
         }
     }
 
