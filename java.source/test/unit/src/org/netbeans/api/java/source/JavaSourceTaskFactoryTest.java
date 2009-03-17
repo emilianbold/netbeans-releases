@@ -105,6 +105,7 @@ public class JavaSourceTaskFactoryTest extends NbTestCase {
     private Lookup.Result<JavaSourceTaskFactory> factories;
     
     protected void setUp() throws Exception {
+        JavaSourceTaskFactory.SYNCHRONOUS_EVENTS = true;
         cpp = new ClassPathProvider() {
             public ClassPath findClassPath(FileObject file, String type) {
                 if (type == ClassPath.SOURCE)
@@ -120,9 +121,8 @@ public class JavaSourceTaskFactoryTest extends NbTestCase {
             JavaDataLoader.getLoader(JavaDataLoader.class),
             cpp
         }, this.getClass().getClassLoader());
-        
-        JavaSourceTaskFactoryManager.register();
-        
+
+
         jstf = new JavaSourceTaskFactoryImplImpl();
         JavaSourceTaskFactory.ACCESSOR2 = new AccessorImpl();
         testDir = SourceUtilsTestUtil.makeScratchDir(this);
@@ -130,12 +130,16 @@ public class JavaSourceTaskFactoryTest extends NbTestCase {
         testFile2 = testDir.createData("test2.java");
         task1 = new DummyCancellableTask<CompilationInfo>();
         task2 = new DummyCancellableTask<CompilationInfo>();
-        
+
         file2Task.put(testFile1, task1);
-        file2Task.put(testFile1, task2);
-        
+        file2Task.put(testFile2, task2);
+
         assertNotNull(JavaSource.forFileObject(testFile1));
         assertNotNull(JavaSource.forFileObject(testFile2));
+
+        assertEquals(2, file2Task.size());
+
+        JavaSourceTaskFactoryManager.register();
     }
 
     public void testTasksRegistration() throws Exception {
@@ -148,7 +152,14 @@ public class JavaSourceTaskFactoryTest extends NbTestCase {
             jstf,
             cpp
         }, this.getClass().getClassLoader());
-        
+
+        /*
+         * Dirty hack to wait for finish of assynchronous initialization... 
+         */
+        synchronized (this) {
+            wait(1000);
+        }
+
         assertEquals(1, addedTasks.size());
         assertEquals(testFile1, addedTasks.keySet().iterator().next());
         assertEquals(file2Task.get(testFile1), addedTasks.values().iterator().next());
@@ -217,7 +228,11 @@ public class JavaSourceTaskFactoryTest extends NbTestCase {
             jstf,
             cpp
         }, this.getClass().getClassLoader());
-        
+
+        synchronized (this) {
+            wait(1000);
+        }
+
         assertEquals(1, addedTasks.size());
         assertEquals(testFile1, addedTasks.keySet().iterator().next());
         assertEquals(file2Task.get(testFile1), addedTasks.values().iterator().next());
@@ -246,7 +261,12 @@ public class JavaSourceTaskFactoryTest extends NbTestCase {
             JavaDataLoader.getLoader(JavaDataLoader.class),
             jstf,
         }, this.getClass().getClassLoader());
+
+        synchronized (this) {
+            wait(1000);
+        }
         
+
         assertEquals(1, addedTasks.size());
         assertEquals(testFile1, addedTasks.keySet().iterator().next());
         assertEquals(file2Task.get(testFile1), addedTasks.values().iterator().next());
@@ -392,7 +412,12 @@ public class JavaSourceTaskFactoryTest extends NbTestCase {
 
         public CancellableTask<CompilationInfo> createTask(FileObject file) {
             filesWithTasks.add(file);
-            return file2Task.get(file);
+            CancellableTask<CompilationInfo> task = file2Task.get(file);
+            if (task == null) {
+                System.out.println("WARN: Instantiating empty dummy task");
+                new DummyCancellableTask<CompilationInfo>();
+            }
+            return task;                                    
         }
 
         public synchronized List<FileObject> getFileObjects() {
