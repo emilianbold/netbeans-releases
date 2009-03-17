@@ -96,12 +96,10 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
     protected abstract boolean isDisposed();
 
-    protected abstract boolean isTrouble();
-
     protected abstract void handleException (Exception e);
 
     public char[] getText (int start, int end, char[] chars) {
-        if (isDisposed() || isTrouble()) {
+        if (isDisposed()) {
              //There is a breif window of opportunity for a window to display
              //a disposed document.  Should never appear on screen, but it can
              //be requested to calculate the preferred size this will
@@ -149,7 +147,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     public String getText (int start, int end) {
-        if (isDisposed() || isTrouble()) {
+        if (isDisposed()) {
             return new String (new char[end - start]);
         }
         if (end < start) {
@@ -176,7 +174,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
     private int lastErrLineMarked = -1;
     void markErr() {
-        if (isTrouble() || getStorage().isClosed()) {
+        if (getStorage().isClosed()) {
             return;
         }
         if (errLines == null) {
@@ -241,9 +239,6 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     public void fire() {
-        if (isTrouble()) {
-            return;
-        }
         if (Controller.LOG) Controller.log (this + ": Writer firing " + getStorage().size() + " bytes written");
         if (listener != null) {
             Mutex.EVENT.readAccess(this);
@@ -281,7 +276,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     private boolean dirty;
 
     public boolean checkDirty(boolean clear) {
-        if (isTrouble()) {
+        if (isDisposed()) {
             return false;
         }
         boolean wasDirty = dirty;
@@ -300,7 +295,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     public int getCharCount() {
-        if (isDisposed() || isTrouble()) {
+        if (isDisposed()) {
             return 0;
         }
         Storage storage = getStorage();
@@ -311,7 +306,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
      * Get a single getLine as a string.
      */
     public String getLine (int idx) throws IOException {
-        if (isDisposed() || isTrouble()) {
+        if (isDisposed()) {
             return ""; //NOI18N
         }
         int lineStart = getByteLineStart(idx);
@@ -328,7 +323,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
      * Get a length of single line in bytes.
      */
     private int getLineLength(int idx) {
-        if (isDisposed() || isTrouble()) {
+        if (isDisposed()) {
             return 0;
         }
         if (idx == lineStartList.size()-1) {
@@ -359,7 +354,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
      * the output file.
      */
     public int getLineStart (int line) {
-        if (isDisposed() || isTrouble()) {
+        if (isDisposed()) {
             return 0;
         }
         return getCharLineStart(line);
@@ -380,7 +375,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
      * file (as distinct from a byte position)
      */
     public int getLineAt (int position) {
-        if (isDisposed() || isTrouble()) {
+        if (isDisposed()) {
             return -1;
         }
         int bytePos = toByteIndex (position);
@@ -391,7 +386,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     public int getLineCount() {
-        if (isDisposed() || isTrouble()) {
+        if (isDisposed()) {
             return 0;
         }
         return lineStartList.size();
@@ -402,14 +397,14 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     public int firstListenerLine () {
-        if (isDisposed() || isTrouble()) {
+        if (isDisposed()) {
             return -1;
         }
         return linesToListeners.isEmpty() ? -1 : linesToListeners.first();
     }
 
     public int nearestListenerLine (int line, boolean backward) {
-        if (isDisposed() || isTrouble()) {
+        if (isDisposed()) {
             return -1;
         }
         return linesToListeners.nearest (line, backward);

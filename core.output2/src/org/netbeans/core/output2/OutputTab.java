@@ -306,7 +306,6 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     public void closed() {
         io.setClosed(true);
         Controller.getDefault().removeTab(io);
-        io.setClosed(true);
         NbWriter w = io.writer();
         if (w != null && w.isClosed()) {
             //Will dispose the document
