@@ -203,10 +203,11 @@ public class OQLCompletionProvider implements CompletionProvider {
                         String regex = ".*?" + tokentext.replace("[", "\\[").replace("]", "\\]").replace("$", "\\$") + ".*";
                         String camel = null;
                         if (tokentext.trim().equals(tokentext.trim().toUpperCase())) {
+                            String trimmed = tokentext.trim();
                             StringBuilder sb = new StringBuilder(".*?");
-                            for(int i=0;i<tokentext.length();i++) {
-                                if (tokentext.charAt(i) >= 'a' && tokentext.charAt(i) <= 'z') {
-                                    sb.append(tokentext.charAt(i));
+                            for(int i=0;i<trimmed.length();i++) {
+                                if (trimmed.charAt(i) >= 'A' && trimmed.charAt(i) <= 'Z') {
+                                    sb.append(trimmed.charAt(i));
                                     sb.append("[a-z]*?");
                                 } else {
                                     sb = null;
