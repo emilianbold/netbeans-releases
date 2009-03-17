@@ -66,6 +66,7 @@ public class OQLLanguageHierarchy extends LanguageHierarchy<OQLTokenId> {
     protected String mimeType () {
         return "text/x-oql";
     }
+
 }
 
 

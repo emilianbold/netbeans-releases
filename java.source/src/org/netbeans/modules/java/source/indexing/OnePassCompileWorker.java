@@ -182,6 +182,7 @@ final class OnePassCompileWorker extends CompileWorker {
                         System.gc();
                         return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, root2Rebuild);
                     }
+                    TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), dc.getDiagnostics(active.jfo));
                     if (!context.isSupplementaryFilesIndexing()) {
                         for (Map.Entry<URL, Collection<URL>> toRebuild : RebuildOraculum.findFilesToRebuild(context.getRootURI(), active.jfo.toUri().toURL(), javaContext.cpInfo, jt.getElements(), types).entrySet()) {
                             Set<URL> urls = root2Rebuild.get(toRebuild.getKey());
@@ -189,7 +190,7 @@ final class OnePassCompileWorker extends CompileWorker {
                                 root2Rebuild.put(toRebuild.getKey(), urls = new HashSet<URL>());
                             }
                             urls.addAll(toRebuild.getValue());
-                    }
+                        }
                     }
                     for (JavaFileObject generated : jt.generate(types)) {
                         if (generated instanceof OutputFileObject) {
@@ -198,7 +199,6 @@ final class OnePassCompileWorker extends CompileWorker {
                             // presumably should not happen
                         }
                     }
-                    TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), dc.getDiagnostics(active.jfo));
                     finished.add(active.indexable);
                 }
                 return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, root2Rebuild);

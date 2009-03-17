@@ -48,5 +48,25 @@ import org.eclipse.core.runtime.CoreException;
  * @author Tomas Stupka
  */
 public abstract class BugzillaCommand {
+    private boolean failed = false;
+    private String errorMessage;
+
     public abstract void execute() throws CoreException, IOException, MalformedURLException;
+
+    public boolean hasFailed() {
+        return failed;
+    }
+
+    void setFailed(boolean failed) {
+        this.failed = failed;
+    }
+
+    void setErrorMessage(String msg) {
+        this.errorMessage = msg;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
 }

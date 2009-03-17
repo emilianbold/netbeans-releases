@@ -45,7 +45,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -66,15 +65,11 @@ public abstract class InstallAction extends NodeAction {
         final Installable installable = lookup.lookup(Installable.class);
 
         if (installable != null) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        installable.install(autoStart);
-                    } catch (RuntimeException rex) {
-                        //gobble up exception
-                    }
-                }
-            });
+            try {
+                installable.install(autoStart);
+            } catch (RuntimeException rex) {
+                //gobble up exception
+            }
         }
     }
 

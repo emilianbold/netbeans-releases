@@ -166,8 +166,8 @@ public class HudsonJobNode extends AbstractNode {
             assert false : ex;
             return;
         }
-        if (job.getInstance().getPreferredJobs().contains(job)) {
-            htmlDisplayName = "<b>" + htmlDisplayName + "</b>"; // NOI18N
+        if (!job.isSalient()) {
+            // XXX visually mark this somehow?
         }
         switch (color) {
         case red:

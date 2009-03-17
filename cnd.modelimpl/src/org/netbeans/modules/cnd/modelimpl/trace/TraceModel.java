@@ -149,7 +149,7 @@ public class TraceModel extends TraceModelBase {
     private static final int APT_REPEAT_TEST = Integer.getInteger("apt.repeat.test", 3).intValue(); // NOI18N
 
     public static void main(String[] args) {
-        new TraceModel().test(args);
+        new TraceModel(true).test(args);
         APTDriver.getInstance().close();
     //System.out.println("" + org.netbeans.modules.cnd.apt.utils.APTIncludeUtils.getHitRate());
     }
@@ -221,7 +221,8 @@ public class TraceModel extends TraceModelBase {
         }
     };
 
-    public TraceModel() {
+    public TraceModel(boolean cleanCache) {
+        super(cleanCache);
         FileImpl.setHook(hook);
     }
 
@@ -1220,7 +1221,7 @@ public class TraceModel extends TraceModelBase {
 
         if (doCleanRepository) {
             CsmProject prj = fileImpl.getProject();
-            String absPath = fileImpl.getAbsolutePath();
+            CharSequence absPath = fileImpl.getAbsolutePath();
             fileImpl = null;
             ParserThreadManager.instance().waitEmptyProjectQueue((ProjectBase) prj);
             sleep(100);

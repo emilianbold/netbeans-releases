@@ -678,6 +678,7 @@ public class RubyFormatter implements Formatter {
 
                 if (isEmbeddedDoc && !indentOnly) {
                     // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
+                    @SuppressWarnings("unchecked")
                     Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
                     if (suggestedLineIndents != null) {
                         Integer ind = suggestedLineIndents.get(Utilities.getLineOffset(doc, offset));

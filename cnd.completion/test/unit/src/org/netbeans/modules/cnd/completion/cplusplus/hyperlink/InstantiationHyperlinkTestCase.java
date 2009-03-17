@@ -105,4 +105,9 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#151194 : Unresolved template instantiation with template as parameter
         performTest("iz151194.cpp", 32, 12, "iz151194.cpp", 3, 5);
     }
+
+    public void test154792() throws Exception {
+        // IZ#154792 : Completion fails on question mark
+        performTest("iz154792.cpp", 6, 34, "iz154792.cpp", 2, 5);
+    }
 }

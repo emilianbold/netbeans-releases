@@ -297,9 +297,9 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         boolean changed = false;
         List<File> checked = new ArrayList<File>();
         for (URI u : uris) {
-            FileObject folder = FileUtilities.convertURItoFileObject(u);
-            File file = FileUtil.toFile(folder);
-            changed = changed |checkGeneratedGroupCache(folder, file, folder.getNameExt());
+            File file = FileUtil.normalizeFile(new File(u));
+            FileObject folder = FileUtil.toFileObject(file);
+            changed = changed |checkGeneratedGroupCache(folder, file, file.getName());
             checked.add(file);
         }
         Set<File> currs = new HashSet<File>();

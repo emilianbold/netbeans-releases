@@ -281,40 +281,12 @@ public final class Log extends Handler {
         if (record.getLevel().intValue() < getLevel().intValue()) {
             return;
         }
-
-        StringBuffer sb = new StringBuffer();
-        sb.append('[');
-        sb.append(record.getLoggerName());
-        sb.append("] THREAD: ");
-        sb.append(Thread.currentThread().getName());
-        sb.append(" MSG: ");
-        String msg = record.getMessage();
-        ResourceBundle b = record.getResourceBundle();
-        if (b != null) {
-            try {
-                msg = b.getString(msg);
-            } catch (MissingResourceException ex) {
-                // ignore
-            }
-        }
-        
-        if (msg != null && record.getParameters() != null) {
-            msg = MessageFormat.format(msg, record.getParameters());
-        }
-        sb.append(msg);
-        
-        Throwable t = record.getThrown();
-        if (t != null) {
-            for (StackTraceElement s : t.getStackTrace()) {
-                sb.append("\n  ").append(s.toString());
-            }
-        }
+        StringBuffer sb = toString(record);
         try {
             getLog(record).println(sb.toString());
         } catch (LinkageError err) {
             // prevent circular references
         }
-
 
         messages.append(sb.toString());
         messages.append ('\n');
@@ -344,26 +316,33 @@ public final class Log extends Handler {
             // no wrapping
             return ex;
         }
+        return wrapWithAddendum(ex, "Log:\n" + messages);
+    }
 
-
+    static Throwable wrapWithAddendum(Throwable ex, String addendum) {
         if (ex instanceof AssertionFailedError) {
-            AssertionFailedError ne = new AssertionFailedError (ex.getMessage () + " Log:\n" + messages);
+            AssertionFailedError ne = new AssertionFailedError(combineMessages(ex, addendum));
             ne.setStackTrace (ex.getStackTrace ());
             return ne;
         }
-
-
+        if (ex instanceof AssertionError) { // preferred in JUnit 4
+            AssertionError ne = new AssertionError(combineMessages(ex, addendum));
+            ne.setStackTrace(ex.getStackTrace());
+            return ne;
+        }
         if (ex instanceof IOException) {//#66208
-            IOException ne = new IOException (ex.getMessage () + " Log:\n" + messages);
+            IOException ne = new IOException(combineMessages(ex, addendum));
             ne.setStackTrace (ex.getStackTrace ());
             return ne;
         }
-
         if (ex instanceof Exception) {
-            return new InvocationTargetException(ex, ex.getMessage() + " Log:\n" + messages);
+            return new InvocationTargetException(ex, combineMessages(ex, addendum));
         }
-
         return ex;
+    }
+    private static String combineMessages(Throwable ex, String addendum) {
+        String baseMessage = ex.getMessage();
+        return (baseMessage == null || baseMessage.equals("null")) ? addendum : baseMessage + " " + addendum;
     }
 
         
@@ -448,4 +427,33 @@ public final class Log extends Handler {
         }
         
     } // end of InstancesHandler
+
+    static StringBuffer toString(LogRecord record) {
+        StringBuffer sb = new StringBuffer();
+        sb.append('[');
+        sb.append(record.getLoggerName());
+        sb.append("] THREAD: ");
+        sb.append(Thread.currentThread().getName());
+        sb.append(" MSG: ");
+        String msg = record.getMessage();
+        ResourceBundle b = record.getResourceBundle();
+        if (b != null) {
+            try {
+                msg = b.getString(msg);
+            } catch (MissingResourceException ex) {
+                // ignore
+            }
+        }
+        if (msg != null && record.getParameters() != null) {
+            msg = MessageFormat.format(msg, record.getParameters());
+        }
+        sb.append(msg);
+        Throwable t = record.getThrown();
+        if (t != null) {
+            for (StackTraceElement s : t.getStackTrace()) {
+                sb.append("\n  ").append(s.toString());
+            }
+        }
+        return sb;
+    }
 }

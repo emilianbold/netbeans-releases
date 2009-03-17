@@ -48,6 +48,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
+import java.awt.Cursor;
 
 /**
  *

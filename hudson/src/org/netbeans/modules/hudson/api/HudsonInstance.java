@@ -87,13 +87,6 @@ public interface HudsonInstance extends Comparable<HudsonInstance> {
     public Collection<HudsonJob> getJobs();
 
     /**
-     * Returns preferred, watched Hudson jobs from registered instance
-     *
-     * @return collection of all jobs
-     */
-    public Collection<HudsonJob> getPreferredJobs();
-    
-    /**
      * Returns all Hudson views from registered instance
      *
      * @return collection of all views

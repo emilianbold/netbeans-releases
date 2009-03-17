@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
-import org.netbeans.modules.bugzilla.BugzillaRepository;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.query.QueryController;
 
@@ -53,18 +53,13 @@ public class KenaiQuery extends BugzillaQuery {
     public KenaiQuery(String name, BugzillaRepository repository, String urlParameters, String product, boolean saved) {
         super(name, repository, urlParameters, saved);
         this.product = product;
+        controller = createControler(repository, this, urlParameters);
     }
 
     @Override
     protected QueryController createControler(BugzillaRepository r, BugzillaQuery q, String parameters) {
         KenaiQueryController c = new KenaiQueryController(r, q, parameters, product);
         return c;
-    }
-
-    @Override
-    public void refresh() {
-        getController(); // XXX force table creation
-        super.refresh();
     }
 
 }

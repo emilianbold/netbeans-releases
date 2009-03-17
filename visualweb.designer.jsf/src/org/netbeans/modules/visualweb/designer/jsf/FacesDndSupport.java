@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.visualweb.designer.jsf;
 
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.util.Arrays;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;

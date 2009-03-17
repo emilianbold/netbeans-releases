@@ -221,7 +221,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         state = State.INITIAL;
         setBuffer(fileBuffer);
         this.projectUID = UIDCsmConverter.projectToUID(project);
-        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) { // NOI18N
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         this.projectRef = new WeakReference<ProjectBase>(project); // Suppress Warnings
@@ -1416,8 +1416,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return new OffsetSortedKey(declaration);
     }
 
-    public String getAbsolutePath() {
-        return fileBuffer.getFile().getAbsolutePath();
+    public CharSequence getAbsolutePath() {
+        return fileBuffer.getAbsolutePath();
     }
 
     public File getFile() {
@@ -1581,7 +1581,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         // not null UID
         assert this.projectUID != null;
         UIDObjectFactory.getDefaultFactory().writeUID(this.projectUID, output);
-        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) { // NOI18N
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         output.writeLong(lastParsed);
@@ -1609,7 +1609,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         fileType = input.readInt();
 
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().endsWith("cpu.cc")) { // NOI18N
+        if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         // not null UID

@@ -27,8 +27,22 @@ ant -Djnlp.codebase=${HUDSON_URL}job/${JOB_NAME}/${BUILD_NUMBER}/artifact/nbbuil
     -Djnlp.signjar.password=$storepass \
     -Djnlp.fail.on.error=false \
     build-jnlp || exit
-ant index-layer-paths
+
+ant generate-golden-files generate-files-layout index-layer-paths || exit
+generated=nbbuild/build/generated
+cp -v nbbuild/netbeans/THIRDPARTYLICENSE-generated.txt $generated/external-libraries.txt || exit
+prev_generated=../lastSuccessful/archive/$generated
+if [ -d $prev_generated ]; then
+    diff -r -U 25 $prev_generated $generated > $generated.diff
+    if [ -s $generated.diff ]; then
+        (echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$generated/"; echo; cat $generated.diff) | mail -s "Golden file changes in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
+    fi
+fi
+
 ant clean-untracked-files
+
+sh nbbuild/hudson/sigtests || exit 1
+
 for r in . contrib
 do
     output="`hg -R $r st`"

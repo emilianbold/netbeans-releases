@@ -49,7 +49,7 @@ import javax.management.MBeanAttributeInfo;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
-import org.netbeans.modules.sun.manager.jbi.editors.EnvironmentVariablesEditor;
+import org.netbeans.modules.sun.manager.jbi.editors.ApplicationVariablesEditor;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptor;
@@ -79,7 +79,7 @@ class ApplicationVariablesPropertySupport extends AbstractTabularPropertySupport
                 (info instanceof JBIComponentConfigurationMBeanAttributeInfo) ? 
                 ((JBIComponentConfigurationMBeanAttributeInfo)info).getConfigurationDescriptor() : null;
         
-        return new EnvironmentVariablesEditor(true, getTabularType(), 
+        return new ApplicationVariablesEditor(true, getTabularType(), 
                 descriptor, info.isWritable());
     }
     

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -118,30 +117,31 @@ public class TimeStamps {
         return CacheFolder.getDataFolder(root);
     }
 
-    public boolean isUpToDate (final File f) {
-        String relative = null;
-        long fts = f.lastModified();
-        String value = (String) props.setProperty(relative,Long.toString(fts));
-        if (value == null) {
-            return false;
-        }
-        unseen.remove(relative);
-        long lts = Long.parseLong(value);        
-        return lts >= fts;
-    }
+//    public boolean isUpToDate (final File f) {
+//        String relative = null;
+//        long fts = f.lastModified();
+//        String value = (String) props.setProperty(relative,Long.toString(fts));
+//        if (value == null) {
+//            return false;
+//        }
+//        unseen.remove(relative);
+//        long lts = Long.parseLong(value);
+//        return lts >= fts;
+//    }
 
     public boolean isUpToDate (final FileObject f) {
         if (rootFoCache == null) {
             rootFoCache = URLMapper.findFileObject(root);
         }
         String relative = FileUtil.getRelativePath(rootFoCache, f);
+        String fileId = relative != null ? relative : URLMapper.findURL(f, URLMapper.EXTERNAL).toExternalForm();
         long fts = f.lastModified().getTime();
-        String value = (String) props.setProperty(relative,Long.toString(fts));
+        String value = (String) props.setProperty(fileId, Long.toString(fts));
         if (value == null) {
             changed|=true;
             return false;
         }
-        unseen.remove(relative);
+        unseen.remove(fileId);
         long lts = Long.parseLong(value);
         boolean isUpToDate = lts >= fts;
         changed|=!isUpToDate;

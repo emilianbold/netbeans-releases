@@ -569,8 +569,11 @@ final class JUnitOutputReader {
                     }
                 }
             }
-//            manager.displayReport(testSession, testSession.getReport(lastSuiteTime));
-            report.update(testSession.getReport(lastSuiteTime));
+            if (report == null){
+                report = testSession.getReport(lastSuiteTime);
+            }else{
+                report.update(testSession.getReport(lastSuiteTime));
+            }
             manager.displayReport(testSession, report, true);
             report = null;
             lastSuiteTime = 0;

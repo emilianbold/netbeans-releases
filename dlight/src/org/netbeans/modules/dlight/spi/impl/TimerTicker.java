@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.spi.impl;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -62,7 +61,7 @@ public final class TimerTicker
     private final Object lock = new String(TimerTicker.class.getName());
     private final IndicatorDataProviderConfiguration configuration;
     private long startTime = 0;
-    private Future tickerTask;
+    private Future tickerService;
 
 
     static {
@@ -77,7 +76,7 @@ public final class TimerTicker
     private void targetStarted(DLightTarget target) {
         synchronized (lock) {
             resetIndicators();
-            tickerTask = DLightExecutorService.scheduleAtFixedRate(
+            tickerService = DLightExecutorService.scheduleAtFixedRate(
                 this, 1, TimeUnit.SECONDS, "TimerTicker"); // NOI18N
             startTime = System.currentTimeMillis();
         }
@@ -85,10 +84,8 @@ public final class TimerTicker
 
     private void targetFinished(DLightTarget target) {
         synchronized (lock) {
-            if (tickerTask != null) {
-                tickerTask.cancel(true);
-                tickerTask = null;
-            }
+            tickerService.cancel(true);
+            tickerService = null;
         }
     }
 
@@ -126,19 +123,8 @@ public final class TimerTicker
         }
     }
 
-    public Future<ValidationStatus> validate(DLightTarget objectToValidate) {
-        // throw new UnsupportedOperationException("Not supported yet.");
-        Callable<ValidationStatus> validationTask =
-            new Callable<ValidationStatus>() {
-
-                public ValidationStatus call() throws Exception {
-                    return ValidationStatus.validStatus();
-
-                }
-            };
-
-        return DLightExecutorService.submit(
-            validationTask, "Validate.."); // NOI18N
+    public ValidationStatus validate(DLightTarget objectToValidate) {
+        return ValidationStatus.validStatus();
     }
 
     public void invalidate() {
@@ -156,5 +142,10 @@ public final class TimerTicker
 
     public void removeValidationListener(ValidationListener listener) {
         // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String getName() {
+        return "Timer";
     }
 }

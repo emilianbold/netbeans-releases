@@ -126,7 +126,6 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         return sessionContext;
     }
 
-
     void addExecutionContext(ExecutionContext context) {
         contexts.add(context);
         context.validateTools();
@@ -246,7 +245,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 boolean f = false;
 
                 final DLightTargetAccessor targetAccess =
-                        DLightTargetAccessor.getDefault();
+                    DLightTargetAccessor.getDefault();
 
                 for (ExecutionContext context : contexts) {
                     DLightTarget target = context.getTarget();
@@ -257,7 +256,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                     }
 
                     DLightTarget.ExecutionEnvVariablesProvider envProvider =
-                            context.getDLightTargetExecutionEnvProvider();
+                        context.getDLightTargetExecutionEnvProvider();
 
                     targetAccess.getDLightTargetExecution(target).start(target, envProvider);
                 }
@@ -270,14 +269,14 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private boolean prepareContext(ExecutionContext context) {
         final DLightTarget target = context.getTarget();
 
-        context.validateTools(true);
+        context.validateTools(context.getDLightConfiguration().getConfigurationOptions(false).validateToolsRequiredUserInteraction());
 
         List<DLightTool> validTools = new ArrayList<DLightTool>();
 
         for (DLightTool tool : context.getTools()) {
 //            if (tool.getValidationStatus().isValid()) {//it is not quite correct, should run anyway
-                validTools.add(tool);
-  //          }
+            validTools.add(tool);
+        //          }
         }
 
         if (validTools.isEmpty()) {
@@ -289,28 +288,23 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         if (collectors == null) {
             collectors = new ArrayList<DataCollector>();
         }
-
-        for (DLightTool tool : validTools) {
-            if (DLightToolAccessor.getDefault().collectorsTurnedOn(tool)) {
-                List<DataCollector> toolCollectors = DLightToolAccessor.getDefault().getCollectors(tool);
+        if (context.getDLightConfiguration().getConfigurationOptions(false).areCollectorsTurnedOn()) {
+            for (DLightTool tool : validTools) {
+                List<DataCollector> toolCollectors = context.getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
                 //TODO: no algorithm here:) should be better
                 for (DataCollector c : toolCollectors) {
-                    if (c.getValidationStatus().isValid()){//for valid collectors only
-                        if (!collectors.contains(c)) {
+                    if (!collectors.contains(c)) {
+                        if (c.getValidationStatus().isValid()) {//for valid collectors only
                             collectors.add(c);
                         }
                     }
                 }
-            } else {
-                //should remove if any
-                List<DataCollector> toolCollectors = DLightToolAccessor.getDefault().getCollectors(tool);
-                //TODO: no algorithm here:) should be better
-                for (DataCollector c : toolCollectors) {
-                    collectors.remove(c);
-
-                }
             }
+        } else {
+            collectors.clear();
         }
+
+
 
         for (DataCollector toolCollector : collectors) {
             DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(toolCollector);
@@ -340,10 +334,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             // Try to subscribe every IndicatorDataProvider to every Indicator
             //there can be the situation when IndicatorDataProvider is collector
             //and not attacheble
-            List<IndicatorDataProvider> idps = DLightToolAccessor.getDefault().getIndicatorDataProviders(tool);
+            List<IndicatorDataProvider> idps = context.getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
             if (idps != null) {
                 for (IndicatorDataProvider idp : idps) {
-                    if (idp.getValidationStatus().isValid()){
+                    if (idp.getValidationStatus().isValid()) {
                         if (idp instanceof DLightTarget.ExecutionEnvVariablesProvider) {
                             context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) idp);
                         }

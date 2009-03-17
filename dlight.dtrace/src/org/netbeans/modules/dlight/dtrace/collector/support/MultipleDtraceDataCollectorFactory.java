@@ -63,4 +63,7 @@ public final class MultipleDtraceDataCollectorFactory
     public String getID() {
         return MultipleDTDCConfigurationAccessor.getDefault().getID();
     }
+
+    public void reset() {
+    }
 }

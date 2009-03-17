@@ -39,15 +39,12 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueNode.SeenProperty;
-import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.IssueField;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
 
@@ -84,14 +81,11 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getSeveritySortKey(String severity) {
-        List<String> s = null;
-        try {
-            s = Bugzilla.getInstance().getSeverities(getBugzillaIssue().getRepository());
-        } catch (IOException iOException) {
-            Bugzilla.LOG.log(Level.SEVERE, null, iOException);
-        } catch (CoreException coreException) {
-            Bugzilla.LOG.log(Level.SEVERE, null, coreException);
+        BugzillaConfiguration bc = getBugzillaIssue().getRepository().getConfiguration();
+        if(bc == null) {
+            return null;
         }
+        List<String> s = bc.getSeverities();
         if(s == null) {
             return null;
         }
@@ -99,14 +93,11 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getPrioritySortKey(String priority) {
-        List<String> p = null;
-        try {
-            p = Bugzilla.getInstance().getPriorities(getBugzillaIssue().getRepository());
-        } catch (IOException iOException) {
-            Bugzilla.LOG.log(Level.SEVERE, null, iOException);
-        } catch (CoreException coreException) {
-            Bugzilla.LOG.log(Level.SEVERE, null, coreException);
+        BugzillaConfiguration bc = getBugzillaIssue().getRepository().getConfiguration();
+        if(bc == null) {
+            return null;
         }
+        List<String> p = bc.getPriorities();
         if(p == null) {
             return null;
         }
@@ -114,28 +105,25 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getResolutionSortKey(String resolution) {
-        List<String> r = null;
-        try {
-            r = Bugzilla.getInstance().getResolutions(getBugzillaIssue().getRepository());
-        } catch (IOException iOException) {
-            Bugzilla.LOG.log(Level.SEVERE, null, iOException);
-        } catch (CoreException coreException) {
-            Bugzilla.LOG.log(Level.SEVERE, null, coreException);
+        BugzillaConfiguration bc = getBugzillaIssue().getRepository().getConfiguration();
+        if(bc == null) {
+            return null;
         }
+        List<String> r = bc.getResolutions();
         if(r == null) {
             return null;
         }
         return r.indexOf(resolution);
     }
 
-    private class IDProperty extends IssueNode.IssueProperty {
+    private class IDProperty extends IssueNode.IssueProperty<String> {
         public IDProperty() {
             super(BugzillaIssue.LABEL_NAME_ID,
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_ID_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_ID_Desc")); // NOI18N
         }
-        public Object getValue() {
+        public String getValue() {
             return getBugzillaIssue().getID();
         }
         @Override
@@ -147,7 +135,7 @@ public class BugzillaIssueNode extends IssueNode {
         }
     }
 
-    private class SeverityProperty extends IssueNode.IssueProperty {
+    private class SeverityProperty extends IssueNode.IssueProperty<String> {
         public SeverityProperty() {
             super(BugzillaIssue.LABEL_NAME_SEVERITY,
                   String.class,
@@ -155,12 +143,12 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Severity_Desc")); // NOI18N
             setValue("sortkey", getSeveritySortKey(getBugzillaIssue().getFieldValue(IssueField.SEVERITY))); // NOI18N
         }
-        public Object getValue() {
+        public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.SEVERITY);
         }
     }
 
-    private class PriorityProperty extends IssueProperty {
+    private class PriorityProperty extends IssueProperty<String> {
         public PriorityProperty() {
             super(BugzillaIssue.LABEL_NAME_PRIORITY,
                   String.class,
@@ -168,21 +156,22 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Priority_Desc")); // NOI18N
             setValue("sortkey", getPrioritySortKey(getBugzillaIssue().getFieldValue(IssueField.PRIORITY))); // NOI18N
         }
-        public Object getValue() {
+        public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.PRIORITY);
         }
     }
 
-    private class StatusProperty extends IssueProperty {
+    private class StatusProperty extends IssueProperty<String> {
         public StatusProperty() {
             super(BugzillaIssue.LABEL_NAME_STATUS,
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Status_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Status_Desc")); // NOI18N
         }
-        public Object getValue() {
+        public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.STATUS);
         }
+        @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
             String s1 = getBugzillaIssue().getFieldValue(IssueField.STATUS);
@@ -191,7 +180,7 @@ public class BugzillaIssueNode extends IssueNode {
         }
     }
 
-    private class ResolutionProperty extends IssueProperty {
+    private class ResolutionProperty extends IssueProperty<String> {
         public ResolutionProperty() {
             super(BugzillaIssue.LABEL_NAME_RESOLUTION,
                   String.class,
@@ -199,21 +188,22 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_ID_Desc")); // NOI18N
             setValue("sortkey", getResolutionSortKey(getBugzillaIssue().getFieldValue(IssueField.RESOLUTION))); // NOI18N
         }
-        public Object getValue() {
+        public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.RESOLUTION);
         }
     }
 
-    private class SummaryProperty extends IssueProperty {
+    private class SummaryProperty extends IssueProperty<String> {
         public SummaryProperty() {
             super(BugzillaIssue.LABEL_NAME_SUMMARY,
                   String.class,
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Summary_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Summary_Desc")); // NOI18N
         }
-        public Object getValue() {
+        public String getValue() {
             return getBugzillaIssue().getSummary();
         }
+        @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
             String s1 = getIssue().getSummary();

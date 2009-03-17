@@ -51,7 +51,6 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -82,6 +81,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
+import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportImpl;
 import org.netbeans.modules.maven.jaxws.MavenWebService;
 import org.netbeans.modules.maven.jaxws.WSUtils;
@@ -219,7 +219,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             }
             generateJaxWSImplFromTemplate(pkg, WSUtils.isEJB(project));
             handle.finish();
-        }else if (serviceType == WizardProperties.ENCAPSULATE_SESSION_BEAN) {
+        } else if (serviceType == WizardProperties.ENCAPSULATE_SESSION_BEAN) {
             String wsName = Templates.getTargetName(wiz);
             handle.progress(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_GEN_SEI_AND_IMPL"), 50); //NOI18N
             Node[] nodes = (Node[]) wiz.getProperty(WizardProperties.DELEGATE_TO_SESSION_BEAN);
@@ -310,10 +310,12 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 final FileObject targetFile = generateJaxWSImplFromTemplate(pkg, false);
 
                 // execute wsimport goal
-                RunConfig cfg = RunUtils.createRunConfig(FileUtil.toFile(project.getProjectDirectory()), project, "wsimport",
-                        Collections.singletonList("jaxws:wsimport"));
+                RunConfig cfg = RunUtils.createRunConfig(
+                        FileUtil.toFile(project.getProjectDirectory()),
+                        project,
+                        "JAX-WS:wsimport", //NOI18N
+                        Collections.singletonList("org.codehaus.mojo:jaxws-maven-plugin:wsimport")); //NOI18N
                 ExecutorTask task = RunUtils.executeMaven(cfg);
-
                 try {
                     task.waitFinished(60000);
                 } catch (InterruptedException ex) {
@@ -516,7 +518,6 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
                 DataFolder df = DataFolder.findFolder(pkg);
                 FileObject template = Templates.getTemplate(wiz);
-
                 if (WSUtils.isEJB(project)) { //EJB Web Service
                     FileObject templateParent = template.getParent();
                     template = templateParent.getFileObject("EjbWebService", "java"); //NOI18N
@@ -524,32 +525,21 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 DataObject dTemplate = DataObject.find(template);
                 DataObject dobj = dTemplate.createFromTemplate(df, wsName);
                 FileObject createdFile = dobj.getPrimaryFile();
-                createdFile.setAttribute("jax-ws-service", java.lang.Boolean.TRUE);
-//                dobj.setValid(false);
-                dobj = DataObject.find(createdFile);
 
                 ClassPath classPath = getClassPathForFile(project, createdFile);
                 if (classPath != null) {
-                    String serviceImplPath = classPath.getResourceName(createdFile, '.', false);
+                    if (classPath.findResource("javax/ejb/EJB.class") == null) { //NOI19\8N
+                        // ad EJB API on classpath
+                        ContainerClassPathModifier modifier = project.getLookup().lookup(ContainerClassPathModifier.class);
+                        if (modifier != null) {
+                            modifier.extendClasspath(createdFile, new String[] {
+                                ContainerClassPathModifier.API_EJB
+                            });
+                        }
+                    }
                     generateDelegateMethods(createdFile, ejbRef);
-
-//                    final JaxWsModel jaxWsModel = projectInfo.getProject().getLookup().lookup(JaxWsModel.class);
-//                    if (jaxWsModel != null) {
-//                        jaxWsModel.addService(wsName, serviceImplPath);
-//                        ProjectManager.mutex().writeAccess(new Runnable() {
-//
-//                            public void run() {
-//                                try {
-//                                    jaxWsModel.write();
-//                                } catch (IOException ex) {
-//                                    ErrorManager.getDefault().notify(ex);
-//                                }
-//                            }
-//                        });
-//                    }
+                    openFileInEditor(dobj);
                 }
-                openFileInEditor(dobj);
-//                displayDuplicityWarning(createdFile);
             }
         }
     }

@@ -188,6 +188,20 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         return textView.getSelectionEnd();
     }
 
+    public String getSelectedText() {
+        int start = getSelectionStart();
+        int end = getSelectionEnd();
+        String str = null;
+        if (start > 0 && end > start) {
+            try {
+                str = getDocument().getText(start, end - start);
+            } catch (BadLocationException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return str;
+    }
+
     public void setSelection (int start, int end) {
         int rstart = Math.min (start, end);
         int rend = Math.max (start, end);

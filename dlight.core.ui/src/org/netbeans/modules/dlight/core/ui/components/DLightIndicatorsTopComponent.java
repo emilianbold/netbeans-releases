@@ -38,22 +38,19 @@
  */
 package org.netbeans.modules.dlight.core.ui.components;
 
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-//import org.openide.util.Utilities;
 
 /**
  * Top component which displays something.
@@ -81,23 +78,25 @@ final class DLightIndicatorsTopComponent extends TopComponent {
     public void setSession(DLightSession session) {
         this.session = session;
         removeAll();
-        setLayout(new BorderLayout());
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         if (session != null) {
-//            JPanel indicatorsPane = new JPanel(new RowLayoutManager());
-            JPanel indicatorsPane = new JPanel();
-            indicatorsPane.setLayout(new GridBagLayout());
-            GridBagConstraints c = new GridBagConstraints();
-            c.gridx = 0;
-            c.fill = GridBagConstraints.NONE;
-            c.anchor = GridBagConstraints.WEST;
-            c.insets = new Insets(6, 6, 6, 6);
-            int row = 0;
+            JSplitPane prevSplit = null;
             for (Indicator indicator : session.getIndicators()) {
-                JComponent indicatorComponent = indicator.getComponent();
-                c.gridy = row++;
-                indicatorsPane.add(indicatorComponent, c);
+                JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+                splitPane.setBorder(BorderFactory.createEmptyBorder());
+                splitPane.setContinuousLayout(true);
+                splitPane.setDividerSize(5);
+                splitPane.setTopComponent(indicator.getComponent());
+                if (prevSplit == null) {
+                    add(splitPane);
+                } else {
+                    prevSplit.setBottomComponent(splitPane);
+                }
+                prevSplit = splitPane;
             }
-            add(indicatorsPane, BorderLayout.NORTH);
+            if (prevSplit != null) {
+                prevSplit.setBottomComponent(Box.createVerticalGlue());
+            }
         } else {
             add(new JLabel("<Empty>"));
         }

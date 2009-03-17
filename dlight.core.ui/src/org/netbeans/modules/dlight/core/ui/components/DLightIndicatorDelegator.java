@@ -43,9 +43,11 @@ public final class DLightIndicatorDelegator implements IndicatorComponentDelegat
             UIThread.invoke(new Runnable() {
 
                 public void run() {
-                    DLightIndicatorsTopComponent.findInstance().setSession(session);
-                    DLightIndicatorsTopComponent.findInstance().open();
-                    DLightIndicatorsTopComponent.findInstance().requestAttention(true);
+                    DLightIndicatorsTopComponent indicators = DLightIndicatorsTopComponent.findInstance();
+                    indicators.setSession(session);
+                    indicators.open();
+                    indicators.requestActive();
+                    indicators.requestAttention(true);
                 }
             });
         }
