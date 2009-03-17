@@ -52,7 +52,9 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -94,6 +96,8 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -237,8 +241,8 @@ public class TraceXRef extends TraceModel {
     }
     private static final int FACTOR = 1;
 
-    public static void traceProjectRefsStatistics(CsmProject csmPrj, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr, CsmProgressListener callback, AtomicBoolean canceled) {
-        XRefResultSet<UnresolvedEntry> bag = new XRefResultSet<UnresolvedEntry>();
+    public static void traceProjectRefsStatistics(CsmProject csmPrj, final StatisticsParameters params, final PrintWriter printOut, final OutputWriter printErr, final CsmProgressListener callback, final AtomicBoolean canceled) {
+        final XRefResultSet<UnresolvedEntry> bag = new XRefResultSet<UnresolvedEntry>();
         Collection<CsmFile> allFiles = new ArrayList<CsmFile>();
         int i = 0;
         for (CsmFile file : csmPrj.getAllFiles()) {
@@ -253,21 +257,36 @@ public class TraceXRef extends TraceModel {
         if (callback != null) {
             callback.projectFilesCounted(csmPrj, allFiles.size());
         }
-        for (CsmFile file : allFiles) {
-            if (callback != null) {
-                callback.fileParsingStarted(file);
-            }
-            String oldName = Thread.currentThread().getName();
-            try {
-		    Thread.currentThread().setName("Testing xRef "+file.getAbsolutePath()); //NOI18N
-                analyzeFile(file, params, bag, printOut, printErr, canceled);
-            } finally {
-                Thread.currentThread().setName(oldName);
-            }
-            if (canceled.get()) {
-                printOut.println("Cancelled"); // NOI18N
-                break;
-            }
+        RequestProcessor rp = new RequestProcessor("TraceXRef", params.reportUnresolved ? 1 : Runtime.getRuntime().availableProcessors());
+        final CountDownLatch waitFinished = new CountDownLatch(allFiles.size());
+        for (final CsmFile file : allFiles) {
+            Runnable task = new Runnable() {
+                public void run() {
+                    try {
+                        if (canceled.get()) {
+                            return;
+                        }
+                        if (callback != null) {
+                            callback.fileParsingStarted(file);
+                        }
+                        String oldName = Thread.currentThread().getName();
+                        try {
+                            Thread.currentThread().setName("Testing xRef " + file.getAbsolutePath()); //NOI18N
+                            analyzeFile(file, params, bag, printOut, printErr, canceled);
+                        } finally {
+                            Thread.currentThread().setName(oldName);
+                        }
+                    } finally {
+                        waitFinished.countDown();
+                    }
+                }
+            };
+            rp.post(task);
+        }
+        try {
+            waitFinished.await();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
         }
         if (callback != null) {
             callback.projectParsingFinished(csmPrj);
@@ -390,7 +409,7 @@ public class TraceXRef extends TraceModel {
                     UnresolvedEntry unres = bag.getUnresolvedEntry(text);
                     if (unres == null) {
                         unres = new UnresolvedEntry(text, new RefLink(ref));
-                        bag.addUnresolvedEntry(text, unres);
+                        unres = bag.addUnresolvedEntry(text, unres);
                     }
                     unres.increment();
                 }
@@ -1140,12 +1159,13 @@ public class TraceXRef extends TraceModel {
     private final static class UnresolvedEntry {
 
         private final RefLink link;
-        private int nrUnnamed;
+        private final AtomicInteger nrUnnamed;
         private final CharSequence name;
 
         public UnresolvedEntry(CharSequence name, RefLink link) {
             this.link = link;
             this.name = name;
+            this.nrUnnamed = new AtomicInteger(0);
         }
 
         public CharSequence getName() {
@@ -1153,7 +1173,7 @@ public class TraceXRef extends TraceModel {
         }
 
         public int getNrUnnamed() {
-            return nrUnnamed;
+            return nrUnnamed.get();
         }
 
         public RefLink getLink() {
@@ -1161,7 +1181,24 @@ public class TraceXRef extends TraceModel {
         }
 
         private void increment() {
-            nrUnnamed++;
+            nrUnnamed.incrementAndGet();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final UnresolvedEntry other = (UnresolvedEntry) obj;
+            return this.name.equals(other.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return this.name.hashCode();
         }
     }
 }
