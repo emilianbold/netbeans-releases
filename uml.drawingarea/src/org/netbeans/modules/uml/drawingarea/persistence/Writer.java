@@ -141,10 +141,6 @@ public class Writer {
         this.font = font;
     }
 
-    public void setForeground(Color foreground) {
-        this.foreground = foreground;
-    }
-
     public void setIdref(String idref) {
         this.idref = idref;
     }
@@ -223,10 +219,6 @@ public class Writer {
             // write graph node size
             XMIWriter.writeGraphNodeSize(bw, size);
         }
-    }
-
-    public void setBackground(Color background) {
-        this.background = background;
     }
 
     public void setPresentation(String presentation) {
