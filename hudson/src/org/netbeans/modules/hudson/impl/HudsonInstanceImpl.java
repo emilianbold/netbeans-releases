@@ -119,7 +119,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         });
         
         // For listeners purposes
-        final HudsonInstance instance = this;
+        final HudsonInstanceImpl instance = this;
         
         // Add content change listener to update HudsonJobViews in cache and
         // to notify all failed jobs

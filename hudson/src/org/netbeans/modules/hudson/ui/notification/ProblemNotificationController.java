@@ -36,41 +36,47 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.hudson.ui.notification;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.hudson.api.HudsonInstance;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
+import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 
 public class ProblemNotificationController {
 
     private static final Logger LOG = Logger.getLogger(ProblemNotificationController.class.getName());
 
-    private final HudsonInstance instance;
+    private final HudsonInstanceImpl instance;
     private final Set<ProblemNotification> notifications = new HashSet<ProblemNotification>();
 
-    public ProblemNotificationController(HudsonInstance instance) {
+    public ProblemNotificationController(HudsonInstanceImpl instance) {
         this.instance = instance;
     }
 
     public synchronized void updateNotifications() {
         LOG.log(Level.FINE, "Updating notifications for {0}", instance);
+        Preferences prefs = instance.prefs().node("notifications"); // NOI18N
         for (HudsonJob job : instance.getJobs()) {
             if (!job.isSalient()) {
+                LOG.log(Level.FINER, "{0} is not being watched", job);
+                continue;
+            }
+            int build = job.getLastCompletedBuild();
+            if (prefs.getInt(job.getName(), 0) >= build) {
+                LOG.log(Level.FINER, "{0} was already notified", job);
                 continue;
             }
             ProblemNotification n;
-            int build = job.getLastCompletedBuild();
             Color color = job.getColor();
             LOG.log(Level.FINER, "{0} has status {1}", new Object[] {job, color});
             switch (color) {
             case red:
-                // XXX should check if the user is among the culprits (need API)
                 n = new ProblemNotification(job, build, true, false);
                 break;
             case red_anime:
@@ -86,8 +92,13 @@ public class ProblemNotificationController {
                 n = null;
             }
             if (n != null && notifications.add(n)) {
-                LOG.log(Level.FINE, "Adding {0}", n);
+                prefs.putInt(job.getName(), build);
                 n.add();
+                for (ProblemNotification former : notifications) {
+                    if (former.job.getName().equals(job.getName()) && !former.equals(n)) {
+                        former.remove();
+                    }
+                }
             }
         }
     }
