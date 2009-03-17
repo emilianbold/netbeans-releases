@@ -654,7 +654,8 @@ public final class HtmlRenderer {
                 }
 
                 if (done) {
-                    throw new IllegalArgumentException("HTML rendering failed on string \"" + s + "\"");
+                    throwBadHTML("Matching '>' not found", pos, chars);
+                    break;
                 }
 
                 if (inClosingTag) {
