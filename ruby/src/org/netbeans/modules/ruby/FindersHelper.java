@@ -55,7 +55,18 @@ import java.util.Set;
  */
 final class FindersHelper {
 
-    private static final String ATTRIBUTE_SEPARATOR = "_and_"; //NOI18N
+    private static final String ATTRIBUTE_SEPARATOR_BASE = "_and"; //NOI18N
+    private static final String ATTRIBUTE_SEPARATOR = ATTRIBUTE_SEPARATOR_BASE + "_"; //NOI18N
+
+    /**
+     * The max amount of dynamic finders to compute.
+     */
+    private static final int MAX_ITEMS = 2000;
+    /**
+     * The threshold for the column count after which we will compute only one
+     * level of finders.
+     */
+    private static final int THRESHOLD = 100;
 
     /**
      * The prefix for dynamic scope methods.
@@ -66,39 +77,99 @@ final class FindersHelper {
      */
     static final List<String> FINDER_PREFIXES = Arrays.asList("find_by_", "find_all_by_", "find_last_by_", SCOPED_BY); //NOI18N
 
+    private final Collection<String> prefixes;
+    private final Collection<String> columns;
     /**
-     * Gets all the possible finder attribute combinations for the given columns,
+     * The max depth of finders to compute, i.e. the how many columns to combine.
+     */
+    private final int maxDepth;
+
+
+    private FindersHelper(Collection<String> prefixes, Collection<String> columns) {
+        this.prefixes = prefixes;
+        this.columns = columns;
+        int size = columns.size();
+        // compute the depth -- needs to be limited since the number of 
+        // possible combinations grows exponentially (hence the use oflogarithm here).
+        this.maxDepth = size > THRESHOLD ? 0 : (int) (Math.log(MAX_ITEMS)/Math.log(size));
+    }
+
+    // package private for unit tests
+    static List<String> extractColumns(String method) {
+        for (String prefix : FINDER_PREFIXES) {
+            int prefixIdx = method.indexOf(prefix);
+            if (prefixIdx != -1) {
+                String woPrefix = method.substring(prefix.length());
+                if (woPrefix.endsWith(ATTRIBUTE_SEPARATOR_BASE)) {
+                    woPrefix = woPrefix.substring(0, woPrefix.length() - ATTRIBUTE_SEPARATOR_BASE.length());
+                }
+                return Arrays.asList(woPrefix.split(ATTRIBUTE_SEPARATOR));
+            }
+        }
+        return Collections.<String>emptyList();
+    }
+
+    /**
+     * Gets all the possible finder attribute combinations for the given 
+     * <code>prefix</code> and <code>columns</code>,
      * e.g. for columns 'name' and 'price' this would return "name",
      * "name_and_price", "price", "price_and_name".
      *
      * @param columns
-     * @param prefix the prefix to add, e.g. "find_all_by"
+     * @param prefix the prefix of the method.
      * @return
      */
     static List<FinderMethod> getFinderSignatures(String prefix, Collection<String> columns) {
+        Set<String> columnsCopy = new HashSet<String>(columns);
+        Collection<String> existingColumns = extractColumns(prefix);
+        columnsCopy.removeAll(existingColumns);
+        FindersHelper helper = new FindersHelper(matchingFinderPrefixes(prefix), columns);
+        return helper.computeSignatures();
+    }
+
+    private static List<String> matchingFinderPrefixes(String methodPrefix) {
+        List<String> result = new ArrayList<String>(4);
+        for (String finderPrefix : FINDER_PREFIXES) {
+            if (methodPrefix.length() >= finderPrefix.length()) {
+                if (finderPrefix.startsWith(methodPrefix.substring(0, finderPrefix.length()))) {
+                    result.add(finderPrefix);
+                }
+            } else if (finderPrefix.startsWith(methodPrefix)) {
+                result.add(finderPrefix);
+            }
+        }
+        return result;
+    }
+
+    private List<FinderMethod> computeSignatures() {
         Set<String> combinations = new HashSet<String>();
         for (String baseColumn : columns) {
             combinations.add(baseColumn);
             Set<String> copy = new HashSet<String>(columns);
             copy.remove(baseColumn);
-            addCombinations(baseColumn, copy, combinations);
+            addCombinations(baseColumn, copy, combinations, 0);
         }
 
         List<FinderMethod> result = new ArrayList<FinderMethod>(combinations.size());
-        for (Iterator<String> it = combinations.iterator(); it.hasNext();) {
-            result.add(new FinderMethod(prefix, it.next()));
+        for (String prefix : prefixes) {
+            for (Iterator<String> it = combinations.iterator(); it.hasNext();) {
+                result.add(new FinderMethod(prefix, it.next()));
+            }
         }
         Collections.sort(result);
         return result;
     }
 
-    private static void addCombinations(String root, Set<String> others, Set<String> result) {
+    private void addCombinations(String root, Set<String> others, Set<String> result, int depth) {
+        if (depth >= maxDepth) {
+            return;
+        }
         for (String o : others) {
             String base = root + ATTRIBUTE_SEPARATOR + o; //NOI18N
             result.add(base);
             Set<String> rest = new HashSet<String>(others);
             rest.remove(o);
-            addCombinations(base, rest, result);
+            addCombinations(base, rest, result, depth + 1);
         }
     }
 

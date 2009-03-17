@@ -252,13 +252,7 @@ final class DatabasePropertiesIndexer {
             Map<String, FileObject> fileUrls,
             Set<String> currentCols) {
 
-        List<FindersHelper.FinderMethod> finders = new ArrayList<FindersHelper.FinderMethod>();
-        for (String finderPrefix : FindersHelper.FINDER_PREFIXES) {
-            if (prefix.startsWith(finderPrefix) || finderPrefix.startsWith(prefix)) {
-                finders.addAll(FindersHelper.getFinderSignatures(finderPrefix, currentCols));
-            }
-        }
-
+        List<FinderMethod> finders = new ArrayList<FinderMethod>(FindersHelper.getFinderSignatures(prefix, currentCols));
 
         for (FindersHelper.FinderMethod finder : finders) {
             String methodName = finder.getName();
