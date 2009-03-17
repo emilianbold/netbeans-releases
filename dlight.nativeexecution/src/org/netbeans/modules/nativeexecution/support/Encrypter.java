@@ -62,9 +62,9 @@ import org.openide.util.Exceptions;
  *
  * @author Vladimir Voskresensky
  */
-public class Encrypter {
+public final class Encrypter {
 
-    private EncryptionAlgorythm algo;
+    private final EncryptionAlgorythm algo;
 
     public Encrypter(String passPhrase) {
         if (passPhrase == null) {
@@ -77,12 +77,16 @@ public class Encrypter {
                     "passPhrase cannot be less than 8 characters"); // NOI18N
         }
 
+        EncryptionAlgorythm algorithm = null;
+        
         try {
-            algo = new DESEncrypter(passPhrase);
+            algorithm = new DESEncrypter(passPhrase);
         } catch (NoSuchAlgorithmException ex) {
             // fall-back to simple mangling...
-            algo = new XOREncrypter(passPhrase);
+            algorithm = new XOREncrypter(passPhrase);
         }
+
+        algo = algorithm;
     }
 
     public String encrypt(String str) {
