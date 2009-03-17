@@ -903,9 +903,33 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
 
                     case QUESTION:
                         nrQuestions++;
-                        popExp();
                         CsmCompletionExpression ternary = new CsmCompletionExpression(TERNARY_OPERATOR);
-                        ternary.addParameter(top);
+                        switch (topID) {
+                            case CONSTANT:
+                            case VARIABLE:
+                            case METHOD:
+                            case CONSTRUCTOR:
+                            case ARRAY:
+                            case DOT:
+                            case ARROW:
+                            case SCOPE:
+                            case PARENTHESIS:
+                            case UNARY_OPERATOR:
+                            case MEMBER_POINTER:
+                            case GENERIC_TYPE_OPEN:
+                            case METHOD_OPEN:
+                            case ARRAY_OPEN:
+                            case PARENTHESIS_OPEN:
+                            case SPECIAL_PARENTHESIS_OPEN:
+                            case MEMBER_POINTER_OPEN:
+                            case OPERATOR:
+                                popExp();
+                                ternary.addParameter(top);
+                                break;
+                            default:
+                                errorState = true;
+                                break;
+                        }
                         pushExp(ternary);
                         break;
 
