@@ -46,6 +46,7 @@ import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
 import org.netbeans.modules.css.formatting.api.support.IndentCommand;
@@ -57,6 +58,7 @@ import org.netbeans.modules.editor.indent.spi.Context;
 public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
 
     private Stack<CssStackItem> stack = null;
+    private int preservedLineIndentation = -1;
 
     public CSSIndenter(Context context) {
         super(CSSTokenId.language(), context);
@@ -254,18 +256,25 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
                         if (end < commentEndOffset) {
                             // if comment ends on next line put formatter to IN_COMMENT state
                             blockStack.push(new CssStackItem(StackItemState.IN_COMMENT));
+                            int lineStart = Utilities.getRowStart(getDocument(), ts.offset());
+                            preservedLineIndentation = start - lineStart;
                         }
                     } else if (end == commentEndOffset) {
                         String text = getDocument().getText(start, end-start).trim();
                         if (!text.startsWith("*/")) {
                             // if line does not start with '*/' then treat it as unformattable
-                            iis.add(new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset()));
+                            IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
+                            ic.setFixedIndentSize(preservedLineIndentation);
+                            iis.add(ic);
                         }
                         assert isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" start="+start+" end="+end;
                         blockStack.pop();
+                        preservedLineIndentation = -1;
                     } else {
                         assert isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" start="+start+" end="+end;
-                        iis.add(new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset()));
+                        IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
+                        ic.setFixedIndentSize(preservedLineIndentation);
+                        iis.add(ic);
                     }
             }
         }

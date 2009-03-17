@@ -181,6 +181,7 @@ public class CSSIndenterTest extends TestBase {
         // check that indentation cooperates with bracket insertion:
         insertNewline("a{^}", "a{\n    ^\n}", null);
         insertNewline("a{\n/**/^\n}", "a{\n/**/\n^\n}", null);
+        insertNewline("a{\n     /*^comment\n     */\n}", "a{\n     /*\n     ^comment\n     */\n}", null);
     }
 
 }

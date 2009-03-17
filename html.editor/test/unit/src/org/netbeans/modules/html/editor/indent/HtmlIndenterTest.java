@@ -211,6 +211,23 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline(
                 "   <p>\n     <table>\n      <tbody>^</table>",
                 "   <p>\n     <table>\n      <tbody>\n     ^</table>", null);
+
+        insertNewline(
+            "<html> <!--^comment",
+            "<html> <!--\n       ^comment", null);
+        insertNewline(
+            "<html> <!--\n             ^comment",
+            "<html> <!--\n             \n       ^comment", null);
+        insertNewline(
+            "<html>\n    <!--\n    comment\n          -->\n^",
+            "<html>\n    <!--\n    comment\n          -->\n\n          ^", null);
+
+        insertNewline(
+            "  <html\n     a=b\n       c=d^",
+            "  <html\n     a=b\n       c=d\n       ^", null);
+        insertNewline(
+            "  <html\n     a=b\n       c=d>^",
+            "  <html\n     a=b\n       c=d>\n      ^", null);
     }
 
 }

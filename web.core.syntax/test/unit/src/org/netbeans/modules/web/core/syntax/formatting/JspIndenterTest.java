@@ -231,6 +231,14 @@ public class JspIndenterTest extends TestBase2 {
         // TODO: impl matching of INDENT/RETURN and use it to properly match incorrect document:
         //insertNewline("<jsp:body>\n    <html>^</jsp:body>", "<jsp:body>\n    <html>\n^</jsp:body>", null);
 
+        insertNewline("<!--\n   comment\n^-->\n", "<!--\n   comment\n\n^-->\n", null);
+        insertNewline(
+            "<html> <!--^comment",
+            "<html> <!--\n       ^comment", null);
+        insertNewline(
+            "<html> <!--\n             ^comment",
+            "<html> <!--\n             \n       ^comment", null);
+
     }
 
 }
