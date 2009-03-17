@@ -47,7 +47,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JToggleButton;
+import org.netbeans.modules.debugger.ui.actions.AddWatchAction;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
@@ -80,6 +82,29 @@ public class VariablesViewButtons {
         return button;
     }
 
+    public static JButton createNewWatchButton() {
+        JButton button = createButton(
+                "org/netbeans/modules/debugger/resources/watchesView/Field.gif",
+                "Create new watch"
+            );
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ((AddWatchAction) AddWatchAction.findObject(AddWatchAction.class, true)).actionPerformed(null);
+            }
+        });
+        return button;
+    }
+
+    public static boolean isWatchesViewNested() {
+        Preferences preferences = NbPreferences.forModule(ContextProvider.class).node("variables_view"); // NOI18N
+        return preferences.getBoolean(SHOW_WATCHES, false);
+    }
+
+    public static boolean isResultsViewNested() {
+        Preferences preferences = NbPreferences.forModule(ContextProvider.class).node("variables_view"); // NOI18N
+        return preferences.getBoolean(SHOW_EVALUTOR_RESULT, false);
+    }
+
     private static JToggleButton createToggleButton (final String id, String iconName, String tooltip) {
         Icon icon = loadIcon(iconName);
         boolean isSelected = isButtonSelected(id);
@@ -90,12 +115,19 @@ public class VariablesViewButtons {
         toggleButton.setMargin(new Insets(0, 0, 0, 0));
         toggleButton.setToolTipText(tooltip);
         toggleButton.setFocusable(false);
-        toggleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setButtonSelected(id, toggleButton.isSelected());
-            }
-        });
         return toggleButton;
+    }
+
+    private static JButton createButton (String iconName, String tooltip) {
+        Icon icon = loadIcon(iconName);
+        final JButton button = new JButton(icon);
+        // ensure small size, just for the icon
+        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8); // [TODO]
+        button.setPreferredSize(size);
+        button.setMargin(new Insets(0, 0, 0, 0));
+        button.setToolTipText(tooltip);
+        button.setFocusable(false);
+        return button;
     }
 
     private static Icon loadIcon(String iconPath) {

@@ -66,7 +66,7 @@ public class JUnitOutputProcessorFactory implements ContextOutputProcessorFactor
         if (config.getGoals().contains("test") || config.getGoals().contains("surefire:test")) { //NOI18N
             Set<OutputProcessor> toReturn = new HashSet<OutputProcessor>();
             if (project != null) {
-                toReturn.add(new JUnitOutputListenerProvider(project));
+                toReturn.add(new JUnitOutputListenerProvider(project, config));
             }
             return toReturn;
         }

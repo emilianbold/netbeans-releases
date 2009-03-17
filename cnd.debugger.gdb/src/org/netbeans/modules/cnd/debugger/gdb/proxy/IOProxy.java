@@ -49,7 +49,6 @@ import java.io.Reader;
 import java.io.Writer;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -310,7 +309,7 @@ public abstract class IOProxy {
 
         @Override
         protected OutputStream createInStream() throws IOException {
-            inProvider = InteractiveCommandProviderFactory.create(ExecutionEnvironmentFactory.getHostKey(execEnv));
+            inProvider = InteractiveCommandProviderFactory.create(execEnv);
             if (inProvider != null && inProvider.run(execEnv, "cat > " + inFilename, null)) { // NOI18N
                 return inProvider.getOutputStream();
             }
@@ -324,7 +323,7 @@ public abstract class IOProxy {
 
         @Override
         protected InputStream createOutStream() throws IOException {
-            outProvider = InteractiveCommandProviderFactory.create(ExecutionEnvironmentFactory.getHostKey(execEnv));
+            outProvider = InteractiveCommandProviderFactory.create(execEnv);
             if (outProvider != null && outProvider.run(execEnv, "cat " + outFilename, null)) { // NOI18N
                 return outProvider.getInputStream();
             }

@@ -15,11 +15,11 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.cnd.repository</friend>
                 <friend>org.netbeans.modules.cnd.apt</friend>
+                <friend>org.netbeans.modules.cnd.kit</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <friend>org.netbeans.modules.cnd.modelui</friend>
-                
+                <friend>org.netbeans.modules.cnd.repository</friend>
                 <package>org.netbeans.modules.cnd.repository.api</package>
                 <package>org.netbeans.modules.cnd.repository.spi</package>
                 <package>org.netbeans.modules.cnd.repository.support</package>

@@ -94,6 +94,17 @@ public class CsmOffsetUtilities {
         }
     }
 
+    public static boolean isInObject(CsmObject outerObj, CsmObject innerObj) {
+        if (!CsmKindUtilities.isOffsetable(outerObj) || !CsmKindUtilities.isOffsetable(innerObj)) {
+            return false;
+        }
+        CsmOffsetable outer = (CsmOffsetable)outerObj;
+        CsmOffsetable inner = (CsmOffsetable)innerObj;
+        return outer.getContainingFile().equals(inner.getContainingFile()) &&
+                outer.getStartOffset() <= inner.getStartOffset() &&
+                inner.getEndOffset() <= outer.getEndOffset();
+    }
+
     private static boolean endsWithBrace(CsmOffsetable obj) {
         if (!CsmKindUtilities.isScope(obj)) {
             // only scopes can end with '}'

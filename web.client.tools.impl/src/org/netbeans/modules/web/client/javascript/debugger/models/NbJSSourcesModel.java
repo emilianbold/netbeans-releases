@@ -63,6 +63,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerS
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSSource;
 import org.netbeans.modules.web.client.javascript.debugger.ui.NbJSEditorUtil;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
@@ -79,7 +80,7 @@ import org.openide.util.WeakListeners;
 /**
  * @author Joelle Lam ( copied from JPDA source )
  */
-public class NbJSSourcesModel implements TreeModel, NodeModel, TableModel,
+public class NbJSSourcesModel implements TreeModel, CheckNodeModel,
         NodeActionsProvider, JSDebuggerEventListener {
 
     private final Action GO_TO_ACTION;
@@ -243,41 +244,32 @@ public class NbJSSourcesModel implements TreeModel, NodeModel, TableModel,
             listener.modelChanged(new ModelEvent.TreeChanged(this));
         }
     }
-    // TableModel ..............................................................
-    public Object getValueAt(Object node, String columnID)
-            throws UnknownTypeException {
+
+    // CheckNodeModel ..........................................................
+
+    public boolean isCheckable(Object node) throws UnknownTypeException {
+        return true;
+    }
+
+    public boolean isCheckEnabled(Object node) throws UnknownTypeException {
+        return true;
+    }
+
+    public Boolean isSelected(Object node) throws UnknownTypeException {
         if (node instanceof JSSource) {
-            if (columnID.equals(COLUMN_ID.USE_COLUMN.name())) {
-                return ((JSSource) node).isEnabled();
-            } else if (columnID.equals(COLUMN_ID.DEFAULT_SOURCES_COLUMN.name())) {
-                return ((JSSource) node).getLocation().getURI().toString();
-            }
-        } else if (node instanceof JToolTip) {
-            return "";
+            return ((JSSource) node).isEnabled();
+        } else {
+            throw new UnknownTypeException(node);
         }
-        throw new UnknownTypeException(node);
     }
 
-    public boolean isReadOnly(Object node, String columnID)
-            throws UnknownTypeException {
-//        if (columnID.equals(COLUMN_ID.USE_COLUMN.name())) {
-//            return false;
-//        }
-//        else if (node instanceof JSSource) {
-//            return true;
-//        }
-        return true; /* All other lines should be read only */
-    }
-
-    public void setValueAt(Object node, String columnID, Object value)
-            throws UnknownTypeException {
-        if (columnID.equals(COLUMN_ID.USE_COLUMN.name())) {
-            if (node instanceof JSSource) {
-                JSSource source = ((JSSource) node);
-                source.setEnabled(((Boolean) value).booleanValue());
-                return;
-            }
+    public void setSelected(Object node, Boolean selected) throws UnknownTypeException {
+        if (node instanceof JSSource) {
+            JSSource source = ((JSSource) node);
+            source.setEnabled(selected.booleanValue());
+            return;
         }
+        throw new UnknownTypeException (node);
     }
 
     // NodeActionsProvider .....................................................
@@ -344,67 +336,6 @@ public class NbJSSourcesModel implements TreeModel, NodeModel, TableModel,
          */
         public Class getType() {
             return null;
-        }
-    }
-
-    /**
-     * Defines model for one table view column. Can be used together with
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view
-     * representation.
-     */
-    public static class SourcesUsedColumn extends AbstractColumnModel {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID() {
-            return COLUMN_ID.USE_COLUMN.name();
-        }
-
-        /**
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName() {
-            return NbBundle.getBundle(NbJSSourcesModel.class).getString(
-                    "CTL_SourcesModel_Column_Debugging_Name");
-        }
-
-        public Character getDisplayedMnemonic() {
-            return new Character(NbBundle.getBundle(NbJSSourcesModel.class).getString("CTL_SourcesModel_Column_Debugging_Name_Mnc").charAt(0));
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType() {
-            return Boolean.TYPE;
-        }
-
-        /**
-         * Returns tooltip for given column. Default implementation returns
-         * <code>null</code> - do not use tooltip.
-         *
-         * @return tooltip for given node or <code>null</code>
-         */
-        public String getShortDescription() {
-            return NbBundle.getBundle(NbJSSourcesModel.class).getString(
-                    "CTL_SourcesModel_Column_Debugging_Desc");
-        }
-
-        /**
-         * True if column should be visible by default. Default implementation
-         * returns <code>true</code>.
-         *
-         * @return <code>true</code> if column should be visible by default
-         */
-        public boolean initiallyVisible() {
-            return true;
         }
     }
 

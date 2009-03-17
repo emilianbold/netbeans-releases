@@ -139,7 +139,7 @@ public class TestsuiteNode extends AbstractNode {
     /**
      */
     public void displayReport(final Report report) {
-        assert (this.report == null) && (report != null);
+        assert (report != null);
         assert report.getSuiteClassName().equals(this.suiteName)
                || (this.suiteName == TestSuite.ANONYMOUS_SUITE);
         
@@ -160,7 +160,7 @@ public class TestsuiteNode extends AbstractNode {
     public Report getReport() {
         return report;
     }
-    
+
     /**
      */
     private void setDisplayName() {
@@ -176,6 +176,18 @@ public class TestsuiteNode extends AbstractNode {
                                           getClass(),
                                           "MSG_TestsuiteRunningNoname");//NOI18N
             }
+        } else if (!report.completed){
+            boolean containsFailed = containsFailed();
+            displayName = containsFailed
+                          ? NbBundle.getMessage(
+                                          getClass(),
+                                          "MSG_TestsuiteFailed",        //NOI18N
+                                          suiteName)
+                          : suiteName;
+            displayName = NbBundle.getMessage(
+                                      getClass(),
+                                      "MSG_TestsuiteRunning",       //NOI18N
+                                      displayName);
         } else {
             boolean containsFailed = containsFailed();
             displayName = containsFailed
@@ -197,20 +209,21 @@ public class TestsuiteNode extends AbstractNode {
         StringBuffer buf = new StringBuffer(60);
         if (suiteName != TestSuite.ANONYMOUS_SUITE) {
             buf.append(suiteName);
-            buf.append("&nbsp;&nbsp;");                                 //NOI18N
         } else {
             buf.append(NbBundle.getMessage(getClass(),
                                            "MSG_TestsuiteNoname"));     //NOI18N
-            buf.append("&nbsp;");
         }
         if (report != null) {
             Status status = report.getStatus();
+            buf.append("&nbsp;&nbsp;");                                 //NOI18N
 
             buf.append("<font color='#");                               //NOI18N
             buf.append(status.getHtmlDisplayColor() + "'>");       //NOI18N
             buf.append(suiteStatusToMsg(status, true));
             buf.append("</font>");                                      //NOI18N
-        } else {
+        } 
+        if (report == null || !report.completed){
+            buf.append("&nbsp;&nbsp;");                                 //NOI18N
             buf.append(NbBundle.getMessage(
                                     getClass(),
                                     "MSG_TestsuiteRunning_HTML"));      //NOI18N

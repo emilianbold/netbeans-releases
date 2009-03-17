@@ -46,32 +46,6 @@ public class WSDLViewOpenAction extends NodeAction{
         if (node == null || node[0] == null) {
             return;
         }
-        WSDLDataObject sdo = node[0].getLookup().lookup(
-                WSDLDataObject.class);
-        if (sdo != null) {
-            WSDLEditorSupport wes = sdo.getWSDLEditorSupport();
-            ViewComponentCookie svc = sdo.getCookie(
-                    ViewComponentCookie.class);
-            if (svc != null) {
-                WSDLModel model= wes.getModel();
-                Definitions def = null;
-                ViewComponentCookie.View view = ViewComponentCookie.View.STRUCTURE;
-                if (model.getState() ==  Model.State.VALID) {
-                    def = model.getDefinitions();
-                }
-                if (def == null) {
-                    view = ViewComponentCookie.View.SOURCE;
-                }
-                
-                if (wes.getOpenedPanes() == null ||
-                        wes.getOpenedPanes().length == 0) {
-                    svc.view(view, def);
-                } else {
-                    wes.open();
-                }                
-            	return;
-            }
-        }
         // default to open cookie
         OpenCookie oc = node[0].getCookie(OpenCookie.class);
         if (oc != null) {

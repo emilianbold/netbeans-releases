@@ -131,6 +131,7 @@ public abstract class APTStringManager  {
                 throw new NullPointerException("null string is illegal to share"); // NOI18N
             }
             CharSequence outText = null;
+
             synchronized (lock) {
                 outText = storage.addOrGet(text);
             }

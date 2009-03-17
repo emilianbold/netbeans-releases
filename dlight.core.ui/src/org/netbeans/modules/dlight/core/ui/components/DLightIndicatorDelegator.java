@@ -33,7 +33,7 @@ public final class DLightIndicatorDelegator implements IndicatorComponentDelegat
 //        if (newSession.getState() != SessionState.CONFIGURATION)
         UIThread.invoke(new Runnable() {
             public void run() {
-                DLightIndicatorsTopComponent.getDefault().setSession(newSession);
+                DLightIndicatorsTopComponent.findInstance().setSession(newSession);
             }
         });
     }
@@ -43,9 +43,11 @@ public final class DLightIndicatorDelegator implements IndicatorComponentDelegat
             UIThread.invoke(new Runnable() {
 
                 public void run() {
-                    DLightIndicatorsTopComponent.getDefault().setSession(session);
-                    DLightIndicatorsTopComponent.getDefault().open();
-                    DLightIndicatorsTopComponent.getDefault().requestAttention(true);
+                    DLightIndicatorsTopComponent indicators = DLightIndicatorsTopComponent.findInstance();
+                    indicators.setSession(session);
+                    indicators.open();
+                    indicators.requestActive();
+                    indicators.requestAttention(true);
                 }
             });
         }

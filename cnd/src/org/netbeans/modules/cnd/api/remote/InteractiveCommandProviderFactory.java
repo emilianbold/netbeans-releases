@@ -44,7 +44,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -55,19 +54,19 @@ import org.openide.util.Lookup;
  */
 public abstract class InteractiveCommandProviderFactory {
 
-    protected abstract InteractiveCommandProvider createInstance(String hkey);
+    protected abstract InteractiveCommandProvider createInstance(ExecutionEnvironment execEnv);
 
     protected InteractiveCommandProviderFactory() {
     }
 
-    public static InteractiveCommandProvider create(String hkey) {
+    public static InteractiveCommandProvider create(ExecutionEnvironment execEnv) {
         InteractiveCommandProviderFactory factory = null;
-        if (RemoteUtils.isLocalhost(hkey)) {
+        if (execEnv.isLocal()) {
             factory = Default.instance;
         } else {
             factory = Lookup.getDefault().lookup(InteractiveCommandProviderFactory.class);
         }
-        return factory == null ? null : factory.createInstance(hkey);
+        return factory == null ? null : factory.createInstance(execEnv);
     }
 
     private static class Default extends InteractiveCommandProviderFactory {
@@ -75,8 +74,8 @@ public abstract class InteractiveCommandProviderFactory {
        private static InteractiveCommandProviderFactory instance = new Default();
 
         @Override
-        public InteractiveCommandProvider createInstance(String hkey) {
-            if (RemoteUtils.isLocalhost(hkey)) {
+        public InteractiveCommandProvider createInstance(ExecutionEnvironment execEnv) {
+            if (execEnv.isLocal()) {
                 return new LocalInteractiveCommandProvider();
             }
             return null;
@@ -133,10 +132,6 @@ public abstract class InteractiveCommandProviderFactory {
             return exitStatus;
         }
 
-
-        public boolean run(String hkey, String cmd, Map<String, String> env) {
-            return run(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), cmd, env);
-        }
 
         public boolean run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
             throw new UnsupportedOperationException("deprecated."); // NOI18N

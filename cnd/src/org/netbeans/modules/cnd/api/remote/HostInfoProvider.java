@@ -43,6 +43,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * Interface for a remote host information utility provider which can/will be implemented in another module.
@@ -53,7 +54,7 @@ import org.openide.util.Lookup;
 public abstract class HostInfoProvider {
 
     /**
-     * This function returns path mapper for the host stated by hkey
+     * This function returns path mapper for the given host
      */
     public abstract PathMap getMapper(ExecutionEnvironment execEnv);
 
@@ -63,17 +64,9 @@ public abstract class HostInfoProvider {
     public abstract int getPlatform(ExecutionEnvironment execEnv);
 
     /**
-     * This function returns system environment for the host stated by hkey
+     * This function returns system environment for the given host
      */
     public abstract Map<String, String> getEnv(ExecutionEnvironment execEnv);
-
-    /**
-     * Validates file existence
-     * TODO: deprecate and remove
-     */
-    public final boolean fileExists(String hkey, String path) {
-        return fileExists(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey), path);
-    }
 
     /**
      * Validates file existence
@@ -177,7 +170,13 @@ public abstract class HostInfoProvider {
         @Override
         public boolean fileExists(ExecutionEnvironment execEnv, String path) {
             if (execEnv.isLocal()) {
-                return new File(path).exists();
+                if (new File(path).exists()) {
+                    return true;
+                }
+                if (Utilities.isWindows() && !path.endsWith(".lnk")) { //NOI18N
+                    return new File(path+".lnk").exists(); //NOI18N
+                }
+                return false;
             } else if (provider != null) {
                 return provider.fileExists(execEnv, path);
             } else {

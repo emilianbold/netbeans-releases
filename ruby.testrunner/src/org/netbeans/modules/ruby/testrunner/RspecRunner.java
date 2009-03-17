@@ -74,6 +74,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.rubyproject.RubyTestingSettings;
 
 
@@ -341,6 +342,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         
         Manager manager = Manager.getInstance();
         final TestRunnerLineConvertor convertor = new TestRunnerLineConvertor(manager, session, new RspecHandlerFactory());
+        session.setOutputLineHandler(new RubyOutputLineHandler(session.getFileLocator()));
         taskDescriptor.addOutConvertor(convertor);
         taskDescriptor.addErrConvertor(convertor);
         taskDescriptor.lineBased(true);

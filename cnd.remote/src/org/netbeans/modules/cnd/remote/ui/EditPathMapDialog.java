@@ -11,6 +11,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -20,10 +21,11 @@ import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -36,17 +38,18 @@ import org.openide.util.RequestProcessor;
  */
 public class EditPathMapDialog extends JPanel implements ActionListener {
 
-    public static boolean showMe(String hkey, String[] hostsList) {
-        return showMe(hkey, null, hostsList);
+    public static boolean showMe(ExecutionEnvironment host, List<ExecutionEnvironment> hostList) {
+        return showMe(host, null, hostList);
     }
 
-    public static boolean showMe(String hkey, String pathToValidate) {
-        return showMe(hkey, pathToValidate, RemoteServerList.getInstance().getServerNames());
+    public static boolean showMe(ExecutionEnvironment host, String pathToValidate) {
+        List<ExecutionEnvironment> envs = RemoteServerList.getInstance().getEnvironments();
+        return showMe(host, pathToValidate, envs);
     }
 
-    private static boolean showMe(String hkey, String pathToValidate, String[] hostsList) {
+    private static boolean showMe(ExecutionEnvironment host, String pathToValidate, List<ExecutionEnvironment> hostList) {
         JButton btnOK = new JButton(NbBundle.getMessage(EditPathMapDialog.class, "BTN_OK"));
-        EditPathMapDialog dlg = new EditPathMapDialog(hkey, pathToValidate, hostsList, btnOK);
+        EditPathMapDialog dlg = new EditPathMapDialog(host, pathToValidate, hostList, btnOK);
 
         DialogDescriptor dd = new DialogDescriptor(dlg,
                 NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialogTitle"),
@@ -64,22 +67,22 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
     private final JButton btnOK;
     private Dialog presenter;
-    private String currentHkey;
+    private ExecutionEnvironment currentHost;
     private DefaultComboBoxModel serverListModel;
     private final String pathToValidate;
-    private final Map<String, DefaultTableModel> cache = new HashMap<String, DefaultTableModel>();
+    private final Map<ExecutionEnvironment, DefaultTableModel> cache = new HashMap<ExecutionEnvironment, DefaultTableModel>();
     private ProgressHandle phandle;
 
     /** Creates new form EditPathMapDialog */
-    protected EditPathMapDialog(String defaultHost, String pathToValidate, String[] hostsList, JButton btnOK) {
+    protected EditPathMapDialog(ExecutionEnvironment defaultHost, String pathToValidate, List<ExecutionEnvironment> hostList, JButton btnOK) {
         this.btnOK = btnOK;
         this.pathToValidate = pathToValidate;
-        currentHkey = defaultHost;
+        currentHost = defaultHost;
         serverListModel = new DefaultComboBoxModel();
 
-        for (String hkey : hostsList) {
-            if (!CompilerSetManager.LOCALHOST.equals(hkey)) {
-                serverListModel.addElement(hkey);
+        for (ExecutionEnvironment host : hostList) {
+            if (host.isRemote()) {
+                serverListModel.addElement(host);
             }
         }
 
@@ -88,7 +91,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         tblPathMappings.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         tblPathMappings.getTableHeader().setPreferredSize(new Dimension(0, 20));
 
-        cbHostsList.setSelectedItem(currentHkey);
+        cbHostsList.setSelectedItem(currentHost);
 
         String explanationText;
         if (pathToValidate != null) {
@@ -104,25 +107,25 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
             jScrollPane3.setOpaque(false);
         }
 
-        initTableModel(currentHkey);
+        initTableModel(currentHost);
     }
 
-    private static RemotePathMap getRemotePathMap(String hkey) {
-        return RemotePathMap.getRemotePathMapInstance(hkey);
+    private static RemotePathMap getRemotePathMap(ExecutionEnvironment host) {
+        return RemotePathMap.getRemotePathMapInstance(host);
     }
 
-    private synchronized void initTableModel(final String hkey) {
-        DefaultTableModel tableModel = cache.get(hkey);
+    private synchronized void initTableModel(final ExecutionEnvironment host) {
+        DefaultTableModel tableModel = cache.get(host);
         if (tableModel == null) {
-            if (RemotePathMap.isReady(hkey)) {
-                tableModel = prepareTableModel(hkey);
+            if (RemotePathMap.isReady(host)) {
+                tableModel = prepareTableModel(host);
             } else {
                 handleProgress(true);
                 tableModel = new DefaultTableModel(0, 2);
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        final DefaultTableModel tm = prepareTableModel(hkey);
-                        cache.put(hkey, tm);
+                        final DefaultTableModel tm = prepareTableModel(host);
+                        cache.put(host, tm);
                         SwingUtilities.invokeLater(new Runnable() {
 
                             public void run() {
@@ -138,7 +141,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Loading"));
 
             }
-            cache.put(hkey, tableModel);
+            cache.put(host, tableModel);
         }
 
         updatePathMappingsTable(tableModel);
@@ -156,8 +159,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         setColumnNames();
     }
 
-    private DefaultTableModel prepareTableModel(String hkey) {
-        Map<String, String> pm = getRemotePathMap(hkey).getMap();
+    private DefaultTableModel prepareTableModel(ExecutionEnvironment host) {
+        Map<String, String> pm = getRemotePathMap(host).getMap();
         DefaultTableModel tableModel = new DefaultTableModel(0, 2);
         for (Map.Entry<String, String> entry : pm.entrySet()) {
             tableModel.addRow(new String[]{entry.getKey(), entry.getValue()});
@@ -178,9 +181,9 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     }
 
     /* package */ void applyChanges() {
-        for (String hkey : cache.keySet()) {
+        for (ExecutionEnvironment host : cache.keySet()) {
             Map<String, String> map = new HashMap<String, String>();
-            DefaultTableModel model = cache.get(hkey);
+            DefaultTableModel model = cache.get(host);
             for (int i = 0; i < model.getRowCount(); i++) {
                 String local = (String) model.getValueAt(i, 0);
                 String remote = (String) model.getValueAt(i, 1);
@@ -192,7 +195,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                     }
                 }
             }
-            getRemotePathMap(hkey).updatePathMap(map);
+            getRemotePathMap(host).updatePathMap(map);
         }
     }
 
@@ -251,7 +254,6 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         txtExplanation.setAutoscrolls(false);
         txtExplanation.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         txtExplanation.setFocusable(false);
-        txtExplanation.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jScrollPane2.setViewportView(txtExplanation);
 
         jScrollPane3.setBorder(null);
@@ -274,14 +276,14 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(lblHostName)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(cbHostsList, 0, 391, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -309,8 +311,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     }// </editor-fold>//GEN-END:initComponents
 
 private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbHostsListItemStateChanged
-    currentHkey = (String) cbHostsList.getSelectedItem();
-    initTableModel(currentHkey);
+    currentHost = (ExecutionEnvironment) cbHostsList.getSelectedItem();
+    initTableModel(currentHost);
 }//GEN-LAST:event_cbHostsListItemStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -326,7 +328,7 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
     // End of variables declaration//GEN-END:variables
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnOK) {
-            if (cache.get(currentHkey).getRowCount() == 0) {
+            if (cache.get(currentHost).getRowCount() == 0) {
                 // fast handle vacuous case
                 presenter.setVisible(false);
                 return;
@@ -375,7 +377,7 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
     }
 
     private String validateMaps() {
-        DefaultTableModel model = cache.get(currentHkey);
+        DefaultTableModel model = cache.get(currentHost);
         StringBuilder sb = new StringBuilder();
         boolean pathIsValidated = false;
         for (int i = 0; i < model.getRowCount(); i++) {
@@ -384,7 +386,7 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
             if (local != null) {
                 local = local.trim();
                 if (local.length() > 0) {
-                    if (!HostInfoProvider.getDefault().fileExists(CompilerSetManager.LOCALHOST, local)) {
+                    if (!HostInfoProvider.getDefault().fileExists(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), local)) {
                         sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_BadLocalPath", local));
                     }
                     if (pathToValidate != null && !pathIsValidated) {
@@ -398,7 +400,7 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
             if (remote != null) {
                 remote = remote.trim();
                 if (remote.length() > 0) {
-                    if (!HostInfoProvider.getDefault().fileExists(currentHkey, remote)) {
+                    if (!HostInfoProvider.getDefault().fileExists(currentHost, remote)) {
                         sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_BadRemotePath", remote));
                     }
                 }

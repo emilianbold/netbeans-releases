@@ -60,10 +60,12 @@ public class MappingsTestCase extends RemoteTestBase {
     
     public void testAnalyzer() throws Exception {
         if (canTestRemote()) {
-            HostMappingsAnalyzer ham = new HostMappingsAnalyzer(getHKey()); //sg155630@elif
+            HostMappingsAnalyzer ham = new HostMappingsAnalyzer(getExecutionEnvironment()); //sg155630@elif
             final Map<String, String> mappings = ham.getMappings();
             assert mappings != null;
             System.err.println(mappings);
+        } else {
+            System.err.println("Remote tests are not configured.");
         }
     }
 

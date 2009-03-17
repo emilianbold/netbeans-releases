@@ -154,8 +154,8 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         if (stmts.size() > 0){
             ASTNode firstNode = stmts.get(0);
             ASTNode lastNode = stmts.get(stmts.size() - 1);
-            int start = firstNode.getStartOffset();
-            int end = lastNode.getEndOffset();
+            int start = firstNonWSBwd(doc, firstNode.getStartOffset());
+            int end = firstNonWSFwd(doc, lastNode.getEndOffset());
             indentLevels.put(start, indentSize);
             indentLevels.put(end, -1 * indentSize);
         }
@@ -177,10 +177,40 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
 
     private void indentNonBlockStatement(ASTNode node) {
         if (node != null && !(node instanceof Block)) {
-            int start = node.getStartOffset();
-            int end = node.getEndOffset();
+            int start = firstNonWSBwd(doc, node.getStartOffset());
+            int end = firstNonWSFwd(doc, node.getEndOffset());
             indentLevels.put(start, indentSize);
             indentLevels.put(end, -1 * indentSize);
         }
+    }
+
+    private static int firstNonWSBwd(BaseDocument doc, int offset){
+        int r = offset;
+        try {
+            int v = Utilities.getFirstNonWhiteBwd(doc, offset);
+            
+            if (v >= 0){
+                r = v;
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return r;
+    }
+
+    private static  int firstNonWSFwd(BaseDocument doc, int offset){
+        int r = offset;
+        try {
+            int v = Utilities.getFirstNonWhiteFwd(doc, offset);
+
+            if (v >= 0){
+                r = v;
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return r;
     }
 }

@@ -104,11 +104,6 @@ public final class PlatformInfo {
         }
     }
 
-    /** TODO: deprecate and  */
-    public String getHkey() {
-        return ExecutionEnvironmentFactory.getHostKey(executionEnvironment);
-    }
-
     public ExecutionEnvironment getExecutionEnvironment() {
         return executionEnvironment;
     }
@@ -342,10 +337,6 @@ public final class PlatformInfo {
     private static Map<ExecutionEnvironment, PlatformInfo> map =
             new HashMap<ExecutionEnvironment, PlatformInfo>();
 
-    public static PlatformInfo getDefault(String hkey) {
-        return getDefault(ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
-    }
-
     public static synchronized PlatformInfo getDefault(ExecutionEnvironment execEnv) {
         PlatformInfo pi = map.get(execEnv);
         if (pi == null) {
@@ -357,6 +348,6 @@ public final class PlatformInfo {
     }
 
     public static PlatformInfo localhost() {
-        return getDefault(CompilerSetManager.LOCALHOST);
+        return getDefault(ExecutionEnvironmentFactory.getLocalExecutionEnvironment());
     }
 }
