@@ -119,8 +119,7 @@ public class GizmoProjectOptions {
             data = createDocument(namespace, shared ? "project" : "project-private").createElementNS(namespace, GizmoData); //NOI18N
         }
         if (data == null) {
-            System.err.println("GizmoProjectOptions: Failed to load and create configuration fragment (" +
-                    GizmoData + " : " + namespace + ")"); //NOI18N
+            System.err.println("GizmoProjectOptions: Failed to load and create configuration fragment (" + GizmoData + " : " + namespace + ")"); //NOI18N
         }
         return data;
     }

@@ -61,12 +61,12 @@ import org.openide.util.Exceptions;
  */
 public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 
-    private String DLightCollectorString = "SunStudio";
-    private List<String> DLightIndicatorDPStrings = Arrays.asList("SunStudio");
-    private static final String SUNSTUDIO = "SunStudio";
-    private static final String LL_MONITOR = "ll";
-    private static final String DTRACE = "DTrace";
-    private static final String PRSTAT_INDICATOR = "prstat";
+    private String DLightCollectorString = "SunStudio";//NOI18N
+    private List<String> DLightIndicatorDPStrings = Arrays.asList("SunStudio");//NOI18N
+    private static final String SUNSTUDIO = "SunStudio";//NOI18N
+    private static final String LL_MONITOR = "ll";//NOI18N
+    private static final String DTRACE = "DTrace";//NOI18N
+    private static final String PRSTAT_INDICATOR = "prstat";//NOI18N
     private Project currentProject;
     private boolean areCollectorsTurnedOn = false;
 
@@ -107,7 +107,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 
         String dataCollectorSelectName = options.getDataCollectorName();//DTrace or SunStudio
 
-        if (hasSunStudio && dataCollectorSelectName.equals("SunStudio")) {
+        if (hasSunStudio && dataCollectorSelectName.equals("SunStudio")) {//NOI18N
             DLightCollectorString = SUNSTUDIO;
             DLightIndicatorDPStrings = new ArrayList<String>();
             DLightIndicatorDPStrings.add(SUNSTUDIO);
@@ -115,7 +115,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         } else {
             try {
                 String osName = HostInfoUtils.getOS(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
-                if (osName.indexOf("linux") != -1 ||  osName.equals("MacOS")){//Linux or Solaris
+                if (osName.indexOf("linux") != -1 ||  osName.equals("MacOS")){////NOI18N
                     DLightCollectorString = LL_MONITOR;
                     DLightIndicatorDPStrings = Arrays.asList(LL_MONITOR);
                 }

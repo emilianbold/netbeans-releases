@@ -82,7 +82,7 @@ public class GizmoCustomizerNodeProvider implements CustomizerNodeProvider {
 //        }
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsDebugging"); // NOI18N
+            return new HelpCtx("ProjectPropsGizmo"); // NOI18N
         }
 
         public int getPriority() {
