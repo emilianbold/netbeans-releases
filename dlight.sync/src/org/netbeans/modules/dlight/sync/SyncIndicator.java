@@ -70,24 +70,17 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
     public void updated(List<DataRow> data) {
         List<Column> indicatorColumns = getMetadataColumns();
-        String firstColumnName = indicatorColumns.iterator().next().getColumnName();
-        int[][] values = new int[data.size()][indicatorColumns.size()];
-        int rowIdx = 0;
+        int[][] values = new int[1][1];
         for (DataRow row : data) {
-            if (!row.getColumnNames().contains(firstColumnName)) {
-                continue;
-            }
-            int colIdx = 0;
+            String strValue = null;
             for (Column column : indicatorColumns) {
-                String strValue = row.getStringValue(column.getColumnName()); //TODO: change to Long
+                strValue = row.getStringValue(column.getColumnName()); //TODO: change to Long
                 if (strValue != null) {
-                    values[rowIdx][colIdx++] = (int) Float.parseFloat(strValue);
-                } else {
+                    values[0][0] = (int) Float.parseFloat(strValue);
+                    panel.updated(values);
                     break;
                 }
             }
-            panel.updated(values);
-            rowIdx++;
         }
     }
 }
