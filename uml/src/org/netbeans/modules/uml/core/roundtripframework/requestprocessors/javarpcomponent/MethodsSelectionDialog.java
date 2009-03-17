@@ -293,6 +293,7 @@ public class MethodsSelectionDialog extends JCenterDialog
 
 			WindowListener wndCloser = new WindowAdapter()
 			{
+                @Override
 				public void windowClosing(WindowEvent e)
 				{
 					return;
@@ -302,9 +303,9 @@ public class MethodsSelectionDialog extends JCenterDialog
 
 			setResizable(true);
 			expandAll(tree, true);
-			center(ProductHelper.getProxyUserInterface().getWindowHandle());
             pack();
             this.getRootPane().setDefaultButton(okButton);
+            center(ProductHelper.getProxyUserInterface().getWindowHandle());
 			setVisible(true);
 		}
 		catch (Exception e)
