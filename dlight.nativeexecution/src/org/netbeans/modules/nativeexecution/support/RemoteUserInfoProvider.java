@@ -37,23 +37,33 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.nativeexecution.api.util;
+package org.netbeans.modules.nativeexecution.support;
 
-import javax.swing.Action;
+import com.jcraft.jsch.UserInfo;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-/**
- * This intrface is pretty much the same as {@link Action javax.swing.Action}
- * but it assures that action is performed asynchronously
- * ({@link #actionPerformed(java.awt.event.ActionEvent)} must be implemented so
- * that it does not block the current thread).
- *
- * Also method {@link #invoke()} is provided that assures synchronous execution
- * of the action. I.e. it must be implemented so, that it does block the current
- * thread until the action is performed.
- */
-public interface AsynchronousAction extends Action {
-    /**
-     * Synchronous action invocation.
-     */
-    public void invoke() throws Exception;
+public class RemoteUserInfoProvider {
+    private final static ConcurrentMap<String, UserInfo> cache =
+            new ConcurrentHashMap<String, UserInfo>();
+
+    private RemoteUserInfoProvider() {
+    }
+
+    // @ThreadSafe
+    public static UserInfo getUserInfo(ExecutionEnvironment env, boolean interractive) {
+        String key = env.toString() + (interractive ? "-INT" : "-NOINT"); // NOI18N
+        UserInfo info = cache.get(key);
+
+        if (info == null) {
+            info = interractive ? new RemoteUserInfo.Interractive(env) : new RemoteUserInfo(env);
+            UserInfo oldInfo = cache.putIfAbsent(key, info);
+            if (oldInfo != null) {
+                info = oldInfo;
+            }
+        }
+        
+        return info;
+    }
 }
