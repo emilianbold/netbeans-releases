@@ -771,6 +771,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz148035.cc", 20, 16, "iz148035.cc", 13, 5);
     }
 
+    public void testIZ151591() throws Exception {
+        // IZ#151591 : Unresolved protected member of parent class in inner class of child class
+        performTest("iz151591.cc", 13, 17, "iz151591.cc", 3, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
