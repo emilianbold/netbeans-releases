@@ -37,57 +37,31 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.maven;
+package org.netbeans.modules.java.j2seproject.api;
 
-import java.io.IOException;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.hudson.spi.HudsonSCM;
-import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
-@ServiceProvider(service=ProjectHudsonJobCreatorFactory.class, position=100)
-public class JobCreator implements ProjectHudsonJobCreatorFactory {
+/**
+ * Ability to verify whether the project is currently sharable, and if not to make it so.
+ * Will be in lookup of a j2seproject.
+ * @since org.netbeans.modules.java.j2seproject/1 1.24
+ */
+public interface J2SEProjectSharability {
 
-    public ProjectHudsonJobCreator forProject(Project project) {
-        final NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
-        if (prj == null) {
-            return null;
-        }
-        return new ProjectHudsonJobCreator() {
-            final HudsonSCM.Configuration scm = Helper.prepareSCM(prj.getMavenProject().getBasedir());
-            
-            public String jobName() {
-                return prj.getMavenProject().getArtifactId();
-            }
+    /**
+     * Checks whether the project is currently sharable.
+     * @return true if it is self-contained, false if it has external file references
+     * @see AntProjectHelper#isSharableProject
+     */
+    boolean isSharable();
 
-            public JComponent customizer() {
-                return new JPanel();
-            }
-
-            public ConfigurationStatus status() {
-                if (scm == null) {
-                    return Helper.noSCMError();
-                }
-                return ConfigurationStatus.valid();
-            }
-
-            public void addChangeListener(ChangeListener listener) {}
-            public void removeChangeListener(ChangeListener listener) {}
-
-            public Document configure() throws IOException {
-                Document doc = XMLUtil.createDocument("maven2-moduleset", null, null, null);
-                scm.configure(doc);
-                Helper.addLogRotator(doc);
-                return doc;
-            }
-
-        };
-    }
+    /**
+     * Offers to make the project sharable.
+     * This should be called in EQ and just opens some GUI.
+     * The user may or may not proceed.
+     * @see SharableLibrariesUtils#showMakeSharableWizard
+     */
+    void makeSharable();
 
 }
