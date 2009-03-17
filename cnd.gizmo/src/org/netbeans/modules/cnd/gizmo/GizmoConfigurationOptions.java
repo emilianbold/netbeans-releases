@@ -77,6 +77,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     public void configure(Project project){
         this.currentProject = project;
         GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
+        turnCollectorsState(options.getDataCollectorEnabled());
         //set up as following:
         //get data from the project about selected provider of detailed voew
         Configuration activeConfiguration = getActiveConfiguration();

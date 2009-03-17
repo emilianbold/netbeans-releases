@@ -300,6 +300,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                     }
                 }
             }
+        }else{
+            collectors.clear();
         }
 
 

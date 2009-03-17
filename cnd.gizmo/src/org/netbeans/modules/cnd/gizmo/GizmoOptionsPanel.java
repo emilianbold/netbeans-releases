@@ -66,9 +66,13 @@ public class GizmoOptionsPanel extends javax.swing.JPanel{
         dataCollectorName.setSelectedItem(options.getDataCollectorName());
         jCheckBox1.setSelected(options.getDataCollectorEnabled());
         dataCollectorName.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 GizmoOptionsPanel.this.options.setDataCollectorName("" + dataCollectorName.getSelectedItem());
+                if ("DTrace".equals("" + dataCollectorName.getSelectedItem())){
+                    GizmoOptionsPanel.this.options.setUserInteractionRequiredActionsEnabled(true);
+                }else{
+                    GizmoOptionsPanel.this.options.setUserInteractionRequiredActionsEnabled(false);
+                }
             }
         });
 
