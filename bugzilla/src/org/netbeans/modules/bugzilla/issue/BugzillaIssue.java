@@ -117,7 +117,7 @@ public class BugzillaIssue extends Issue {
     static final int FIELD_STATUS_MODIFIED = 4;
 
     enum IssueField {
-        SUMMARY(TaskAttribute.SUMMARY),
+        SUMMARY(BugzillaAttribute.SHORT_DESC.getKey()),
         STATUS(TaskAttribute.STATUS),
         PRIORITY(TaskAttribute.PRIORITY),
         RESOLUTION(TaskAttribute.RESOLUTION),
@@ -141,7 +141,7 @@ public class BugzillaIssue extends Issue {
         URL(BugzillaAttribute.BUG_FILE_LOC.getKey()),
         KEYWORDS(BugzillaAttribute.KEYWORDS.getKey()),
         SEVERITY(BugzillaAttribute.BUG_SEVERITY.getKey()),
-        DESCRIPTION(TaskAttribute.DESCRIPTION),
+        DESCRIPTION(BugzillaAttribute.LONG_DESC.getKey()),
         CREATION(TaskAttribute.DATE_CREATION),
         MODIFICATION(TaskAttribute.DATE_MODIFICATION),
         COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, false),
@@ -670,13 +670,20 @@ public class BugzillaIssue extends Issue {
     void submitAndRefresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
 
-        final boolean wasSeenAlready = repository.getIssueCache().wasSeen(getID());
+        final boolean wasNew = data.isNew();
+        final boolean wasSeenAlready = !wasNew && repository.getIssueCache().wasSeen(getID());
         BugzillaCommand cmd = new BugzillaCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
                 RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
                 // XXX evaluate rr
-                refresh();
+                if (!wasNew) {
+                    refresh();
+                } else {
+                    // Ugly hack
+                    BugzillaIssue issue = (BugzillaIssue)repository.getIssue(rr.getTaskId());
+                    data = issue.getTaskData();
+                }
                 // it was the user who made the changes, so preserve the seen status if seen already
                 if (wasSeenAlready) {
                     try {
