@@ -223,6 +223,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
                         state = State.JSBLOCK;
                         return tokenFactory.createToken(OQLTokenId.COMMA);
                     }
+                    break;
                 }
 
                 case IN_CLASSNAME: {
@@ -312,7 +313,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
                         return tokenFactory.createToken(OQLTokenId.JSBLOCK);
                     } else {
                         state = State.ERROR;
-                        input.backup(input.readLength());
+                        return tokenFactory.createToken(OQLTokenId.ERROR);
                     }
                 } else {
                     return tokenFactory.createToken(OQLTokenId.JSBLOCK, input.readLength(), PartType.START);
@@ -352,7 +353,8 @@ class OQLLexer implements Lexer<OQLTokenId> {
                     TOKEN_INSTANCEOF.equals(lastToken) ||
                     TOKEN_WHERE.equals(lastToken)) {
                     state = State.ERROR;
-                    input.backup(input.readLength());
+//                    input.backup(input.readLength());
+                    return tokenFactory.createToken(OQLTokenId.ERROR);
                 } else {
                     return tokenFactory.createToken(OQLTokenId.IDENTIFIER);
                 }
