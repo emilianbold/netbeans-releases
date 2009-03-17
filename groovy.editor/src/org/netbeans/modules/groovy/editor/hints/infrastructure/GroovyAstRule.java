@@ -43,9 +43,10 @@ package org.netbeans.modules.groovy.editor.hints.infrastructure;
 
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.Rule.AstRule;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.groovy.editor.api.NodeType;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.Rule.AstRule;
 
 /**
  * Represents a rule to be run on the source file, passing in some
@@ -66,7 +67,7 @@ public abstract class GroovyAstRule implements AstRule {
      */
     public abstract void run(GroovyRuleContext context, List<Hint> result);
 
-    public final void run(org.netbeans.modules.gsf.api.RuleContext context, List<Hint> result) {
-        run((GroovyRuleContext)context, result);
+    public final void run(RuleContext context, List<Hint> result) {
+        run((GroovyRuleContext) context, result);
     }
 }

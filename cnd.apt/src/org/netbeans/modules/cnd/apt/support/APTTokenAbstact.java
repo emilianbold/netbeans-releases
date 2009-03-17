@@ -99,7 +99,7 @@ public abstract class APTTokenAbstact implements APTToken {
         if (this.getOffset() != other.getOffset()) {
             return false;
         }
-        if (!this.getText().equals(other.getText())) {
+        if (!this.getTextID().equals(other.getTextID())) {
             return false;
         }
         return true;
@@ -110,7 +110,7 @@ public abstract class APTTokenAbstact implements APTToken {
         int hash = 7;
         hash = 59 * hash + this.getType();
         hash = 59 * hash + this.getOffset();
-        hash = 59 * hash + this.getText().hashCode();
+        hash = 59 * hash + this.getTextID().hashCode();
         return hash;
     }
 }

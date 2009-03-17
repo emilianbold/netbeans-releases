@@ -41,12 +41,10 @@ package org.netbeans.modules.dlight.cpu;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.prefs.Preferences;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
@@ -64,7 +62,6 @@ import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -142,7 +139,7 @@ public final class DLightCPUToolConfigurationProvider
         //we have registered collectors, not show
         //register indicator data providers
         //if we are on Linux: use LL, prstat otherwise
-        String indicatorDataProvider = NbPreferences.root().get("DLightConfiguration.Gizmo.IndicatorDataProvider", "prstat");//NOI18N
+        String indicatorDataProvider = System.getProperty("dlight.cpu.indicator", "prstat");//NOI18N
         if (indicatorDataProvider.equals("prstat")) {//NOI18N
             // both use prstat as indicator data provider
             final DataTableMetadata indicatorTableMetadata =

@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.logging.Level;
 import junit.framework.Test;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.EditCookie;
@@ -164,12 +165,15 @@ public class FodDataObjectFactoryTest extends NbTestCase {
         DataObject obj = DataObject.find(fo);
         FileObject fo2 = FileUtil.createData(FileUtil.getConfigRoot(), "test/subdir/my.huh");
         DataObject obj2 = DataObject.find(fo2);
+        CharSequence log = Log.enable("org.openide.loaders", Level.WARNING);
         OpenCookie oc = obj.getLookup().lookup(OpenCookie.class);
         assertNotNull("Open cookie found", oc);
         assertEquals("Cookie is OK too", oc, obj.getCookie(OpenCookie.class));
         assertEquals("Node is OK too", oc, obj.getNodeDelegate().getCookie(OpenCookie.class));
         assertEquals("Node lookup is OK too", oc, obj.getNodeDelegate().getLookup().lookup(OpenCookie.class));
         assertTrue("It is our cookie: " + oc, oc.getClass().getName().contains("ergonomics"));
+        assertEquals("No warnings: " + log, 0, log.length());
+
         EditCookie ec = obj.getLookup().lookup(EditCookie.class);
         assertEquals("Edit cookie is available and same as open one", oc, ec);
         ec.edit();

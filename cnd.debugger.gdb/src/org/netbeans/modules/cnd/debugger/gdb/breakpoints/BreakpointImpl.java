@@ -43,12 +43,15 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -101,7 +104,15 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                     path = path.toLowerCase();
                     fullname = fullname.toLowerCase();
                 }
-                if (!fullname.equals(debugger.getPathMap().getRemotePath(path))) {
+                // fix for IZ 157752, we need to resolve sym links
+                String canonicalPath = path;
+                try {
+                    File srcFile = new File(path);
+                    canonicalPath = srcFile.getCanonicalPath();
+                } catch (IOException ex) {
+                    // do nothing
+                }
+                if (!fullname.equals(debugger.getPathMap().getRemotePath(canonicalPath))) {
                     debugger.getGdbProxy().break_delete(number);
                     breakpoint.setInvalid(err);
                     setState(BPSTATE_VALIDATION_FAILED);

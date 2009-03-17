@@ -1637,8 +1637,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                              }
                                          }
                                          ERR.fine("post-reload task posting to AWT");
-                                         Runnable run = new Runnable() {
 
+                                         //#160252: Set caret position synchronously.
+                                         Runnable run1 = new Runnable() {
                                              public void run() {
                                                  if (getDoc() == null) {
                                                      return;
@@ -1656,6 +1657,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                          }
                                                          panes[i].setCaretPosition(carets[i]);
                                                      }
+                                                 }
+                                             }
+                                         };
+
+                                         Runnable run2 = new Runnable() {
+                                             public void run() {
+                                                 if (getDoc() == null) {
+                                                     return;
                                                  }
                                                  // XXX do this from AWT???
                                                  ERR.fine("task-discardAllEdits");
@@ -1679,8 +1688,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                                          if (getDoc() != null) {
                                              ERR.fine("Posting the AWT runnable: " +
-                                                      run);
-                                             SwingUtilities.invokeLater(run);
+                                                      run2);
+                                             run1.run();
+                                             SwingUtilities.invokeLater(run2);
                                              ERR.fine("Posted in " +
                                                       Thread.currentThread());
                                          }

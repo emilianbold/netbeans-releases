@@ -682,7 +682,7 @@ public translation_unit:
 protected
 template_explicit_specialization
 	:
-	LITERAL_template LESSTHAN GREATERTHAN
+	LITERAL_template LESSTHAN GREATERTHAN   
 	(
 	// Template explicit specialisation function definition (VK 30/05/06)
 		(declaration_specifiers[false, false] function_declarator[true, false] LCURLY)=>
@@ -692,21 +692,17 @@ template_explicit_specialization
 		}
 		function_definition
 		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-	|
-	// Template explicit specialisation ctor definition 
-		(ctor_declarator[true] 
-		  (COLON        // DEFINITION :ctor_initializer
-		   |LCURLY       // DEFINITION (compound Statement) ?
-	 	  )
-                )=>
-		{if(statementTrace >= 1)
-			printf("template_explicit_specialization_0b[%d]: template " +
-				"explicit-specialisation ctor definition\n", LT(1).getLine());
-		}
-		ctor_definition
-		//{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+    |
+        // Template explicit specialisation ctor definition
+        (   ctor_decl_spec ctor_declarator[true]
+            ( COLON         // DEFINITION :ctor_initializer
+            | LCURLY        // DEFINITION (compound Statement) ?
+            )
+        ) =>
+        {if(statementTrace >= 1) printf("template_explicit_specialization_0b[%d]: template " + "explicit-specialisation ctor definition\n", LT(1).getLine());}
+        ctor_definition
         { #template_explicit_specialization = #(#[CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-	|
+    |
 	// Template explicit specialisation dtor definition
 		(dtor_declarator[true] LCURLY)=>
 		{if(statementTrace >= 1)
@@ -1327,29 +1323,29 @@ member_declaration
 		}
 		dtor_head[true] dtor_body	// Definition
 		{ #member_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #member_declaration); }
-	|
-		// Function declaration
-		(declaration_specifiers[false, false]	function_declarator[false, false] (EOF|SEMICOLON))=>
-		{if (statementTrace>=1) 
-			printf("member_declaration_6[%d]: Function declaration\n",
-				LT(1).getLine());
-		}
-		declaration[declOther]
-		{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
-	|  
-		// Function definition
-		(declaration_specifiers[false, false] function_declarator[true, false] LCURLY)=>
-		{beginFieldDeclaration();
-		 if (statementTrace>=1) 
-			printf("member_declaration_7[%d]: Function definition\n",
-				LT(1).getLine());
-		}
-		function_definition
-		{ #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
-	|  
-		// Member without a type (I guess it can only be a function declaration
-		// or definition)
-		((LITERAL_static)? function_declarator[false, false] (EOF|SEMICOLON))=>
+    |
+        // Function declaration
+        (   (LITERAL___extension__)?
+            declaration_specifiers[false, false]
+            function_declarator[false, false]
+            (EOF|SEMICOLON)
+        ) =>
+        {if (statementTrace>=1) printf("member_declaration_6[%d]: Function declaration\n", LT(1).getLine());}
+        declaration[declOther]
+        { #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
+    |
+        // Function definition
+        (   (LITERAL___extension__)?
+            declaration_specifiers[false, false]
+            function_declarator[true, false]
+            LCURLY
+        ) =>
+        {beginFieldDeclaration(); if(statementTrace>=1) printf("member_declaration_7[%d]: Function definition\n", LT(1).getLine());}
+        function_definition
+        { #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
+    |
+        // Member without a type (I guess it can only be a function declaration or definition)
+        ((LITERAL_static)? function_declarator[false, false] (EOF|SEMICOLON))=>
 		{beginFieldDeclaration();
                 if( reportOddWarnings ) {
                     printf("member_declaration[%d]: Warning Function declaration found without typename\n", LT(1).getLine());
@@ -1595,7 +1591,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 		|	LITERAL_typename
 		|	LITERAL_friend	{fd=true;}
 		|	literal_stdcall
-                |      { LT(1).getText().equals(LITERAL___global_ext) == true}? ID 
+        |   { LT(1).getText().equals(LITERAL___global_ext) == true}? ID
+        |   (options {greedy=true;} : attribute_specification)
 		)*
 		(	
                         (options {greedy=true;} :type_attribute_specification)?
@@ -2615,7 +2612,7 @@ template_parameter
 
 protected template_template_parameter
     :
-	LITERAL_template LESSTHAN tpl:template_parameter_list GREATERTHAN 
+    template_head
 	LITERAL_class ID (ASSIGNEQUAL assigned_type_name)?
 	{ #template_template_parameter = #(#[CSM_TEMPLATE_TEMPLATE_PARAMETER, "CSM_TEMPLATE_TEMPLATE_PARAMETER"], #template_template_parameter);}
 

@@ -50,6 +50,8 @@
 
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.BindingGenerator;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

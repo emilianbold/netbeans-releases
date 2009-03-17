@@ -109,7 +109,14 @@ public class RailsProjectUtil {
         
         return null;
     }
-    
+
+    /**
+     * Gets the rails version the given <code>project</code> uses. Returns
+     * <code>null</code> if the version could not be determined.
+     *
+     * @param project
+     * @return
+     */
     public static String getRailsVersion(Project project) {
         GemManager gemManager = RubyPlatform.gemManagerFor(project);
         // Add in the builtins first (since they provide some more specific

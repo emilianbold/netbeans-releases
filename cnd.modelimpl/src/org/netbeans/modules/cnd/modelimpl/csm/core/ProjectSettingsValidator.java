@@ -57,11 +57,11 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.ProjectSettingsValidatorKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
  * When project restored, we should validate whether settings for each item 
@@ -198,24 +198,24 @@ public class ProjectSettingsValidator {
 	    map = new HashMap<CharSequence, Long>();
 	}
 	
-	public long getCrc(String name) {
-	    Long crc = map.get(DefaultCache.getManager().getString(name));
+	public long getCrc(CharSequence name) {
+	    Long crc = map.get(FilePathCache.getManager().getString(name));
 	    return crc == null ? 0 : crc.longValue();
 	}
 	
-	public boolean exists(String name) {
-	    return map.containsKey(DefaultCache.getManager().getString(name));
+	public boolean exists(CharSequence name) {
+	    return map.containsKey(FilePathCache.getManager().getString(name));
 	}
 	
-	public void setCrc(String name, long crc) {
-	    map.put(DefaultCache.getManager().getString(name), crc);
+	public void setCrc(CharSequence name, long crc) {
+	    map.put(FilePathCache.getManager().getString(name), crc);
 	}
 	
 	public Data(DataInput stream) throws IOException {
 	    map = new HashMap<CharSequence, Long>();
 	    int cnt = stream.readInt();
 	    for (int i = 0; i < cnt; i++) {
-		CharSequence name = PersistentUtils.readUTF(stream, DefaultCache.getManager());
+		CharSequence name = PersistentUtils.readUTF(stream, FilePathCache.getManager());
 		long crc = stream.readLong();
 		map.put(name, crc);
 	    }

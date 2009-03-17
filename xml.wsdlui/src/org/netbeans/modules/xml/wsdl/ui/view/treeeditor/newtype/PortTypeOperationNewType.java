@@ -68,7 +68,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.OperationConfigurationPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationType;
 import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
 import org.netbeans.modules.xml.wsdl.ui.wizard.OperationGenerator;
-import org.netbeans.modules.xml.wsdl.ui.wizard.WSDLWizardConstants;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

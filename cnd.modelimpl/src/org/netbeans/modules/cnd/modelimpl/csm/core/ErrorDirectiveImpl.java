@@ -54,12 +54,12 @@ import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
  */
 public final class ErrorDirectiveImpl extends OffsetableBase implements CsmErrorDirective {
     private final CharSequence msg;
-    private ErrorDirectiveImpl(CsmFile file, String text, CsmOffsetable offs) {
+    private ErrorDirectiveImpl(CsmFile file, CharSequence text, CsmOffsetable offs) {
         super(file, offs);
         this.msg = DefaultCache.getManager().getString(text);
     }
 
-    public static ErrorDirectiveImpl create(CsmFile file, String msg, CsmOffsetable offs) {
+    public static ErrorDirectiveImpl create(CsmFile file, CharSequence msg, CsmOffsetable offs) {
         return new ErrorDirectiveImpl(file, msg, offs);
     }
 

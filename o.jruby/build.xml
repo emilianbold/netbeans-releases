@@ -6,7 +6,14 @@
     <description>Builds, tests, and runs the project o.jruby</description>
     <import file="../nbbuild/templates/projectized.xml"/>
 
-    <target name="init" depends="projectized.init">
+    <target name="jruby.init">
+        <uptodate property="jruby.build.uptodate" targetfile="${cluster}/${module.jar}">
+            <srcfiles dir="${src.dir}" includes="**/*"/>
+            <srcfiles dir="patched_files" includes="**/*"/>
+        </uptodate>
+    </target>
+
+    <target name="init" depends="projectized.init,jruby.init" unless="jruby.build.uptodate">
         <!-- Avoid confusing NetBeans when it has the project open. Having
              source files come and go underneath it makes the package view
              and friends very unhappy. Just rely on file overwrites instead;

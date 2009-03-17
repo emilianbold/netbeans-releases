@@ -113,11 +113,11 @@ import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
@@ -539,7 +539,7 @@ public class JavacParser extends Parser {
                 currentPhase = Phase.UP_TO_DATE;
             }
         } catch (CouplingAbort a) {
-            RepositoryUpdater.couplingAbort(a, currentInfo.jfo);
+            TreeLoader.dumpCouplingAbort(a, currentInfo.jfo);
             currentInfo.needsRestart = true;
             return currentPhase;            
         } catch (CancelAbort ca) {
@@ -601,7 +601,7 @@ public class JavacParser extends Parser {
                                   
             if (root != null && sourceLevel != null) {
                 try {
-                    RepositoryUpdater.getDefault().verifySourceLevel(root.getURL(), sourceLevel);
+                    JavaCustomIndexer.verifySourceLevel(root.getURL(), sourceLevel);
                 } catch (IOException ex) {
                     LOGGER.log(Level.FINE, null, ex);
                 }

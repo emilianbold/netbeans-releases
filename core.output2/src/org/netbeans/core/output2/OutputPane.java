@@ -55,6 +55,13 @@ import org.openide.util.NbPreferences;
 
 
 class OutputPane extends AbstractOutputPane {
+
+    OutputTab parent;
+
+    public OutputPane(OutputTab parent) {
+        this.parent = parent;
+    }
+
     @Override
     protected void documentChanged() {
         super.documentChanged();
@@ -189,7 +196,7 @@ class OutputPane extends AbstractOutputPane {
     }
 
     private OutputTab findOutputTab() {
-        return  (OutputTab) SwingUtilities.getAncestorOfClass (OutputTab.class, this);
+        return parent;
     }
 
     @Override

@@ -7,15 +7,15 @@ import org.jruby.nb.ast.Colon3Node;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.SClassNode;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
-
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 public class AstClassElement extends AstElement implements ClassElement {
+    
     private String fqn;
     private Set<String> includes;
 
-    public AstClassElement(CompilationInfo info, Node node) {
+    public AstClassElement(ParserResult info, Node node) {
         super(info, node);
     }
 

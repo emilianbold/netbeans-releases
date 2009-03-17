@@ -32,16 +32,15 @@ import java.util.Iterator;
 
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.AstPath;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.Element;
-import org.netbeans.modules.javascript.editing.IndexedFunction;
 import org.netbeans.modules.javascript.editing.AstElement;
+import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.openide.filesystems.FileObject;
 
 
@@ -58,7 +57,7 @@ import org.openide.filesystems.FileObject;
 public class JsElementCtx {
     private Node node;
     private Node root;
-    private CompilationInfo info;
+    private JsParseResult info;
     private FileObject fileObject;
     private AstPath path;
     private int caret;
@@ -74,17 +73,14 @@ public class JsElementCtx {
     //private Arity arity;
     private String defClass;
 
-    public JsElementCtx(Node root, Node node, Element element, FileObject fileObject,
-        CompilationInfo info) {
+    public JsElementCtx(Node root, Node node, Element element, FileObject fileObject, JsParseResult info) {
         initialize(root, node, element, fileObject, info);
     }
 
     /** Create a new element holder representing the node closest to the given caret offset in the given compilation job */
-    public JsElementCtx(CompilationInfo info, int caret) {
-        Node root = AstUtilities.getRoot(info);
-
+    public JsElementCtx(JsParseResult info, int caret) {
         int astOffset = AstUtilities.getAstOffset(info, caret);
-        path = new AstPath(root, astOffset);
+        path = new AstPath(info.getRootNode(), astOffset);
 
         Node leaf = path.leaf();
 
@@ -112,14 +108,15 @@ public class JsElementCtx {
             }
         }
 
-        BaseDocument doc = GsfUtilities.getDocument(info.getFileObject(), true);
+        FileObject f = info.getSnapshot().getSource().getFileObject();
+        BaseDocument doc = GsfUtilities.getDocument(f, true);
         try {
             if (doc != null) {
                 doc.readLock();
             }
-            Element element = AstElement.getElement(info, leaf);
+            Element e = AstElement.getElement(info, leaf);
 
-            initialize(root, leaf, element, info.getFileObject(), info);
+            initialize(root, leaf, e, f, info);
         } finally {
             if (doc != null) {
                 doc.readUnlock();
@@ -129,14 +126,14 @@ public class JsElementCtx {
 
     /** Create a new element holder representing the given node in the same context as the given existing context */
     public JsElementCtx(JsElementCtx ctx, Node node) {
-        BaseDocument doc = GsfUtilities.getDocument(info.getFileObject(), true);
+        BaseDocument doc = GsfUtilities.getDocument(ctx.getFileObject(), true);
         try {
             if (doc != null) {
                 doc.readLock();
             }
-            Element element = AstElement.getElement(info, node);
+            Element e = AstElement.getElement(ctx.getInfo(), node);
 
-            initialize(ctx.getRoot(), node, element, ctx.getFileObject(), ctx.getInfo());
+            initialize(ctx.getRoot(), node, e, ctx.getFileObject(), ctx.getInfo());
         } finally {
             if (doc != null) {
                 doc.readUnlock();
@@ -144,8 +141,7 @@ public class JsElementCtx {
         }
     }
 
-    private void initialize(Node root, Node node, Element element, FileObject fileObject,
-        CompilationInfo info) {
+    private void initialize(Node root, Node node, Element element, FileObject fileObject, JsParseResult info) {
         this.root = root;
         this.node = node;
         this.element = element;
@@ -226,7 +222,7 @@ public class JsElementCtx {
         this.node = node;
     }
 
-    public CompilationInfo getInfo() {
+    public JsParseResult getInfo() {
         return info;
     }
 
@@ -284,13 +280,14 @@ public class JsElementCtx {
 //        return arity;
 //    }
 
-    public BaseDocument getDocument() {
-        if (document == null) {
-            document = RetoucheUtils.getDocument(info, info.getFileObject());
-        }
-
-        return document;
-    }
+// XXX: parsingapi
+//    public BaseDocument getDocument() {
+//        if (document == null) {
+//            document = RetoucheUtils.getDocument(info, info.getFileObject());
+//        }
+//
+//        return document;
+//    }
     
     private String getViewControllerRequire(FileObject view) {
         return null;

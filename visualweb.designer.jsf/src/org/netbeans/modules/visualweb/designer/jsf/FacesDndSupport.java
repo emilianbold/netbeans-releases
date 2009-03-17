@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.visualweb.designer.jsf;
 
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.util.Arrays;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
@@ -391,7 +392,7 @@ class FacesDndSupport {
 
         // wrap process in a try to allow cleanup in the finally
         try {
-            comp.setCursor(org.openide.util.Utilities.createProgressCursor(comp));
+            comp.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
             // XXX TEMP First give the chance to the provider.
             // Later move it after the default behaviour.

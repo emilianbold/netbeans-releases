@@ -51,7 +51,6 @@ import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 //import org.openide.util.Utilities;
@@ -72,12 +71,11 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         setName(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "CTL_DLightIndicatorsTopComponent"));
         setToolTipText(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "HINT_DLightIndicatorsTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-        if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")){
-            if (WindowManager.getDefault().findMode("navigator") != null){
-                WindowManager.getDefault().findMode("navigator").dockInto(this);//NOI18N
-            }
-        }
-
+//        if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")){
+//            if (WindowManager.getDefault().findMode("navigator") != null){
+//                WindowManager.getDefault().findMode("navigator").dockInto(this);//NOI18N
+//            }
+//        }
     }
 
     public void setSession(DLightSession session) {
@@ -163,7 +161,7 @@ final class DLightIndicatorsTopComponent extends TopComponent {
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
+        return TopComponent.PERSISTENCE_ALWAYS;
     }
 
     @Override

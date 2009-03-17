@@ -57,7 +57,8 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.SimpleTypeVisitor6;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.Modifier;
+
 
 /**
  * This was copied from org.netbeans.modules.editor.java.Utilities.

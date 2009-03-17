@@ -109,6 +109,24 @@ is the proper place.
         <change>
             <api name="versioning_spi"/>
             <summary>Added getCollocationQueryImplementation() method to VersioningSystem</summary>
+            <version major="1" minor="9"/>
+            <date day="17" month="2" year="2009"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes"/>
+            <description>
+                New method getAttribute(File file, String attrName). Provides additional VCS specific information
+                about versioned files. The only supported attribute at this moment is 
+                "ProvidedExtensions.RemoteLocation" for which VCS systems
+                overrinding getAttribute should return the files remote repository, resp. remote origin.
+                (e.g. Repository URL in case of SVN or default pull in case of Mercurial).
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VCSInterceptor"/>
+            <issue number="158681"/>
+        </change>
+
+        <change>
+            <api name="versioning_spi"/>
+            <summary>Added getCollocationQueryImplementation() method to VersioningSystem</summary>
             <version major="1" minor="8"/>
             <date day="27" month="6" year="2008"/>
             <author login="msandor"/>

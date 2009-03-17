@@ -372,7 +372,7 @@ public class AstRenderer {
                 name = child.getFirstChild();
             }
         } else if (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
-            if (child.getNextSibling() != null) {
+            if (!isAbstractDeclarator(child.getNextSibling())) {
                 return false;
             }
             name = child.getFirstChild();
@@ -391,20 +391,69 @@ public class AstRenderer {
         CsmAST csmAST = AstUtil.getFirstCsmAST(name);
 
         StringBuilder varName = new StringBuilder(name.getText());
-        while (name.getNextSibling() != null) {
-            name = name.getNextSibling();
+        AST next = name.getNextSibling();
+        while (next != null) {
+            next = skipTemplateParameters(next);
+            if(next == null) {
+                break;
+            }
+            name = next;
             varName.append(name.getText());
+            next = next.getNextSibling();
         }
 
         if (findVariableOrFunction) {
             return findVariable(varName, csmAST.getOffset()) || findFunction(varName, csmAST.getOffset());
         } else {
-            if (name.getNextSibling() != null) {
+            next = name.getNextSibling();
+            next = skipTemplateParameters(next);
+            if (next != null) {
                 return isScopedId(name);
             }
             return true;
         }
     }
+
+    private AST skipTemplateParameters(AST node) {
+        int depth = 0;
+        while (node != null) {
+            switch (node.getType()) {
+                case CPPTokenTypes.LESSTHAN:
+                    depth++;
+                    break;
+                case CPPTokenTypes.GREATERTHAN:
+                    depth--;
+                    if (depth == 0) {
+                        return node.getNextSibling();
+                    }
+                    break;
+                default:
+                    if(depth == 0) {
+                        return node;
+                    }
+            }
+            node = node.getNextSibling();
+        }
+        return null;
+    }
+
+    private boolean isAbstractDeclarator(AST node) {
+        if(node == null) {
+            return true;
+        }
+        if(node.getType() != CPPTokenTypes.LPAREN) {
+            return false;
+        }
+        node = node.getNextSibling();
+        if(node == null || node.getType() != CPPTokenTypes.RPAREN) {
+            return false;
+        }
+        if(node.getNextSibling() !=  null) {
+            return false;
+        }
+        return true;
+    }
+
 
     /**
      * Finds variable in globals and in the current file
@@ -848,7 +897,7 @@ public class AstRenderer {
     }
 
     protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
-        ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file);
+        ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, !isRenderingLocalContext());
         if (container != null) {
             container.addDeclaration(cfdi);
         }
@@ -881,7 +930,7 @@ public class AstRenderer {
             case CPPTokenTypes.LITERAL_class:
             case CPPTokenTypes.LITERAL_struct:
             case CPPTokenTypes.LITERAL_union:
-                ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file);
+                ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, !isRenderingLocalContext);
                 if (container != null) {
                     container.addDeclaration(cfdi);
                 }
@@ -1499,6 +1548,7 @@ public class AstRenderer {
         }
         if (id.getType() == CPPTokenTypes.ID) {
             AST scope = id.getNextSibling();
+            scope = skipTemplateParameters(scope);
             if (scope != null && scope.getType() == CPPTokenTypes.SCOPE) {
                 return true;
             }

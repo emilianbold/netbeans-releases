@@ -163,8 +163,12 @@ implements PropertyChangeListener, ContextAwareAction {
         }
         if (obj instanceof AlwaysEnabledAction) {
             final AlwaysEnabledAction other = (AlwaysEnabledAction) obj;
+            if (this == this.equals && other == other.equals) {
+                return (this == other);
+            }
+
             if (this.equals.equals(other.equals)) {
-                return false;
+                return true;
             }
         }
         return false;

@@ -27,7 +27,7 @@ public class Installer extends ModuleInstall {
             public void run () {
                 RP.post(new Runnable() {
                     public void run() {
-                        RepositoryUpdater.getDefault().start();
+                        RepositoryUpdater.getDefault().start(false);
                     }
                 });
             }

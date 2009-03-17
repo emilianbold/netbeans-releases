@@ -57,6 +57,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFriendClass;
@@ -285,6 +286,39 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
         return list;
     }
 
+    public Collection<CsmUID<CsmOffsetableDeclaration>> getUIDsFQN(CharSequence fqn, Kind[] kinds) {
+        Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        char maxChar = 255; //Character.MAX_VALUE;
+        for(Kind kind : kinds) {
+            String prefix = Utils.getCsmDeclarationKindkey(kind) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + fqn;
+            CharSequence from  = CharSequenceKey.create(prefix);
+            CharSequence to  = CharSequenceKey.create(prefix+maxChar);
+            try {
+                declarationsLock.readLock().lock();
+                for (Map.Entry<CharSequence, Object> entry : declarations.subMap(from, to).entrySet()) {
+                    addAll(list, entry.getValue());
+                }
+            } finally {
+                declarationsLock.readLock().unlock();
+            }
+        }
+        return list;
+    }
+
+    // for unit test
+    SortedMap<CharSequence, Object> testDeclarations() {
+        try {
+            declarationsLock.readLock().lock();
+            return new TreeMap<CharSequence, Object>(declarations);
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
+    }
+
+    SortedMap<CharSequence, Set<CsmUID<? extends CsmFriend>>> testFriends(){
+        return new TreeMap<CharSequence, Set<CsmUID<? extends CsmFriend>>>(friends);
+    }
+
     /**
      * Adds ether object to the collection or array of objects
      * @param list
@@ -308,6 +342,10 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     public Collection<CsmOffsetableDeclaration> getDeclarationsRange(CharSequence from, CharSequence to) {
         return UIDCsmConverter.UIDsToDeclarations(getUIDsRange(from, to));
+    }
+
+    public Collection<CsmOffsetableDeclaration> getDeclarationsRange(CharSequence fqn, Kind[] kinds) {
+        return UIDCsmConverter.UIDsToDeclarations(getUIDsFQN(fqn, kinds));
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarationsUIDs() {

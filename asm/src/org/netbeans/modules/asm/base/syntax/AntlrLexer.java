@@ -98,14 +98,12 @@ public class AntlrLexer implements AsmHighlightLexer {
         } catch (TokenStreamException ex) {            
             if (scanner.getPartState() == AntlrScanner.PartState.IN_COMMENT ||
                 scanner.getPartState() == AntlrScanner.PartState.IN_STRING) {
-                length = scanner.getOffset() - start;
-                
+                // it's fine
             } else {
                 Logger.getLogger(this.getClass().getName()).
                     log(Level.SEVERE, "Unresolved symbol at position " + start); // NOI18N
-
-                length = 0;
             }            
+            length = scanner.getOffset() - start;
         }
         
         return tokId;

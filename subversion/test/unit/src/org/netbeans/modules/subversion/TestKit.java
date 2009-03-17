@@ -133,7 +133,15 @@ public class TestKit {
             client.commit(new File[] {wc}, "commit", true);                    
         }        
     }        
-    
+
+    public static void mkdirs(File repoDir, String folder) throws SVNClientException, MalformedURLException {
+        ISVNClientAdapter client = getClient();
+        String url = TestUtilities.formatFileURL(repoDir);
+        SVNUrl repoUrl = new SVNUrl(url);
+        repoUrl = repoUrl.appendPath(folder);
+        client.mkdir(repoUrl, "creating folder " + folder);
+    }
+
     public static void commit(File folder) throws SVNClientException {
         add(folder);
         getClient().commit(new File[]{ folder }, "commit", true);

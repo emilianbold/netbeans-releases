@@ -46,6 +46,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -118,7 +119,35 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
         result = UIDCsmConverter.UIDtoDeclaration(uid);
         return result;
     }
-    
+
+    // for unit teast
+    Map<CharSequence, CsmClassifier> getClassifiers(){
+        Map<CharSequence, CsmClassifier> res = new TreeMap<CharSequence, CsmClassifier>();
+        try {
+            declarationsLock.readLock().lock();
+            for(Map.Entry<CharSequence, CsmUID<CsmClassifier>> entry : classifiers.entrySet()) {
+                res.put(entry.getKey(), UIDCsmConverter.UIDtoDeclaration(entry.getValue()));
+            }
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
+        return res;
+    }
+
+    // for unit teast
+    Map<CharSequence, CsmClassifier> getTypedefs(){
+        Map<CharSequence, CsmClassifier> res = new TreeMap<CharSequence, CsmClassifier>();
+        try {
+            declarationsLock.readLock().lock();
+            for(Map.Entry<CharSequence, CsmUID<CsmClassifier>> entry : typedefs.entrySet()) {
+                res.put(entry.getKey(), UIDCsmConverter.UIDtoDeclaration(entry.getValue()));
+            }
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
+        return res;
+    }
+
     public boolean putClassifier(CsmClassifier decl) {
         boolean put = false;
         CharSequence qn = decl.getQualifiedName();

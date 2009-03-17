@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.html.editor.indent;
 
-import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -47,13 +47,10 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.junit.MockServices;
-import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.html.editor.test.TestBase2;
 import org.netbeans.modules.java.source.save.Reformatter;
@@ -63,7 +60,6 @@ import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
 
 public class HtmlIndenterTest extends TestBase2 {
 
@@ -76,22 +72,22 @@ public class HtmlIndenterTest extends TestBase2 {
         super.setUp();
         AbstractIndenter.inUnitTestRun = true;
 
-        MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class);
-        // init TestLanguageProvider
-        Lookup.getDefault().lookup(TestLanguageProvider.class);
-        TestLanguageProvider.register(CSSTokenId.language());
-        TestLanguageProvider.register(HTMLTokenId.language());
-        TestLanguageProvider.register(JspTokenId.language());
-        TestLanguageProvider.register(JavaTokenId.language());
+//        MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class);
+//        // init TestLanguageProvider
+//        Lookup.getDefault().lookup(TestLanguageProvider.class);
+//        TestLanguageProvider.register(CSSTokenId.language());
+//        TestLanguageProvider.register(HTMLTokenId.language());
+//        TestLanguageProvider.register(JspTokenId.language());
+//        TestLanguageProvider.register(JavaTokenId.language());
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory);
+        MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CSSTokenId.language());
         JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory());
+        MockMimeLookup.setInstances(MimePath.parse("text/x-jsp"), new JSPKit("text/x-jsp"), jspReformatFactory, new EmbeddingProviderImpl.Factory(), JspTokenId.language());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HTMLKit("text/html"));
+        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HTMLKit("text/html"), HTMLTokenId.language());
         Reformatter.Factory factory = new Reformatter.Factory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory);
+        MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, JavaTokenId.language());
     }
 
     @Override
@@ -115,8 +111,7 @@ public class HtmlIndenterTest extends TestBase2 {
     }
 
     @Override
-    protected void configureIndenters(final BaseDocument document, final Formatter formatter,
-            final CompilationInfo compilationInfo, boolean indentOnly, String mimeType) throws BadLocationException {
+    protected void configureIndenters(Document document, Formatter formatter, boolean indentOnly, String mimeType) {
         // override it because I've already done in setUp()
     }
 
@@ -156,6 +151,10 @@ public class HtmlIndenterTest extends TestBase2 {
 
     public void testFormattingHTML01() throws Exception {
         reformatFileContents("testfiles/simple01.html",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingHTML02() throws Exception {
+        reformatFileContents("testfiles/simple02.html",new IndentPrefs(4,4));
     }
 
     public void testIndentation() throws Exception {
@@ -216,6 +215,10 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline(
                 "          <table><tr><td>a\n                  ^</td>",
                 "          <table><tr><td>a\n                  \n                  ^</td>", null);
+
+        insertNewline(
+                "   <p>\n     <table>\n      <tbody>^</table>",
+                "   <p>\n     <table>\n      <tbody>\n     ^</table>", null);
     }
 
 }

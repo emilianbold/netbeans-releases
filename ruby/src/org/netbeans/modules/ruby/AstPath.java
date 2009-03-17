@@ -62,6 +62,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
  * @author Tor Norbye
  */
 public class AstPath implements Iterable<Node> {
+    
     private ArrayList<Node> path = new ArrayList<Node>(30);
 
     public AstPath() {

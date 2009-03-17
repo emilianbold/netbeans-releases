@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import java.awt.Component;
 import java.awt.Container;
 import java.beans.PropertyChangeEvent;

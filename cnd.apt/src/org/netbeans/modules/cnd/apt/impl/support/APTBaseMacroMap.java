@@ -141,11 +141,11 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
     
     private void defineImpl(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
-        active.macros.put(name.getTextID(), createMacro(file, name, params, value, macroType));
+        active.getMacros().put(name.getTextID(), createMacro(file, name, params, value, macroType));
     }
 
     public void undef(APTFile file, APTToken name) {
-        active.macros.put(name.getTextID(), APTMacroMapSnapshot.UNDEFINED_MACRO);
+        active.getMacros().put(name.getTextID(), APTMacroMapSnapshot.UNDEFINED_MACRO);
     }
     
     /** method to implement in children */

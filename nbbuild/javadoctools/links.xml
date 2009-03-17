@@ -148,6 +148,7 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-api-visual}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-visual"/>
 <link href="${javadoc.docs.org-netbeans-modules-editor-settings-storage}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-editor-settings-storage"/>
 <link href="${javadoc.docs.org-netbeans-modules-editor-guards}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-editor-guards"/>
+<link href="${javadoc.docs.org-netbeans-modules-kenai}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-kenai"/>
 <link href="${javadoc.docs.org-netbeans-modules-autoupdate-services}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-autoupdate-services"/>
 <link href="${javadoc.docs.org-netbeans-modules-refactoring-api}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-refactoring-api"/>
 <link href="${javadoc.docs.org-netbeans-core-startup}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-core-startup"/>
@@ -181,3 +182,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-gsf-api}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-gsf-api"/>
 <link href="${javadoc.docs.org-netbeans-modules-mobility-project}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-mobility-project"/>
 <link href="${javadoc.docs.org-netbeans-api-annotations-common}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-annotations-common"/>
+<link href="${javadoc.docs.org-netbeans-modules-kenai-ui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-kenai-ui"/>

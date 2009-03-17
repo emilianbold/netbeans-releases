@@ -94,7 +94,7 @@ public class FunctionNavigator implements NavigatorPanel {
         return null;
     }
 
-    private LookupListener getLookupListener() {
+    private synchronized LookupListener getLookupListener() {
         if (lookupListener == null) {
             lookupListener = new ContextListener();
         }
@@ -102,7 +102,7 @@ public class FunctionNavigator implements NavigatorPanel {
         return lookupListener;
     }
 
-    private StateListener getStateListener() {
+    private synchronized StateListener getStateListener() {
         if (stateListener == null) {
             stateListener = new StateListener();
         }
@@ -146,6 +146,7 @@ public class FunctionNavigator implements NavigatorPanel {
             try {
                 final EditorCookie ec = dob.getCookie(EditorCookie.class);
                 if (ec == null) {
+                    traceState = true;
                     return;
                 }
 

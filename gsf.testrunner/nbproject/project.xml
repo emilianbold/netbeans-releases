@@ -162,6 +162,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.junit</friend>
+                <friend>org.netbeans.modules.maven.junit</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.python.testrunner</friend>
                 <friend>org.netbeans.modules.ruby.testrunner</friend>

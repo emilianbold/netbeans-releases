@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import antlr.Token;
 import antlr.TokenImpl;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
 /**
  * lightweigth Token implementation (to reduce memory used by APT)
@@ -58,22 +58,19 @@ public class APTTestToken extends TokenImpl implements APTToken {
 
     }
 
-    public APTTestToken(Token token) {
+    public APTTestToken(APTToken token) {
         this(token, token.getType());
     }
     
-    public APTTestToken(Token token, int ttype) {
+    public APTTestToken(APTToken token, int ttype) {
         this.setColumn(token.getColumn());
         this.setFilename(token.getFilename());
         this.setLine(token.getLine());
         this.setText(token.getText());
         this.setType(ttype);
-        if (token instanceof APTToken) {
-            APTToken aptToken = (APTToken)token;
-            this.setOffset(aptToken.getOffset());
-            this.setEndOffset(aptToken.getEndOffset());
-            this.setTextID(aptToken.getTextID());
-        }        
+        this.setOffset(token.getOffset());
+        this.setEndOffset(token.getEndOffset());
+        this.setTextID(token.getTextID());
     }
     
     public int getOffset() {
@@ -93,7 +90,9 @@ public class APTTestToken extends TokenImpl implements APTToken {
     }
     
     public CharSequence getTextID() {
-        return getText();
+        CharSequence res = getText();
+        assert res instanceof TinyCharSequence;
+        return res;
     }
     
     public void setTextID(CharSequence textID) {

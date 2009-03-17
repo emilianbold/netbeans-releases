@@ -153,7 +153,7 @@ public class NbArtifact implements Artifact {
         }
         if (Artifact.SCOPE_SYSTEM.equals(getScope())) {
             File systemFile = original.getFile();
-            if (!systemFile.exists()) {
+            if (systemFile == null || !systemFile.exists()) {
                 File tempSystemFile = null;
                 JarOutputStream out = null;
                 try {

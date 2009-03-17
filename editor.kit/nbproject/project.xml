@@ -5,6 +5,7 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.editor.kit</code-name-base>
             <module-dependencies>
+<!-- Temporarily removing until css.visual is migrated and enabled in the distro again
                 <dependency>
                     <code-name-base>org.netbeans.modules.css.editor</code-name-base>
                     <run-dependency>
@@ -19,6 +20,7 @@
                         <specification-version>2.2</specification-version>
                     </run-dependency>
                 </dependency>
+-->
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor.bracesmatching</code-name-base>
                     <run-dependency>
