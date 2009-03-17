@@ -70,23 +70,25 @@ public class PhpUnitSupportImpl implements PhpUnitSupport {
     public Collection<? extends String> getClassNames(final FileObject fo) {
         final List<String> retval = new ArrayList<String>();
         Source source = Source.create(fo);
-        try {
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    Parser.Result pr = resultIterator.getParserResult();
-                    if (pr instanceof PHPParseResult) {
-                        Model model = ModelFactory.getModel((PHPParseResult) pr);
-                        FileScope fileScope = model.getFileScope();
-                        Collection<? extends ClassScope> allClasses = fileScope.getDeclaredClasses();
-                        for (ClassScope classScope : allClasses) {
-                            retval.add(classScope.getName());
+        if (source != null) {
+            try {
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        Parser.Result pr = resultIterator.getParserResult();
+                        if (pr instanceof PHPParseResult) {
+                            Model model = ModelFactory.getModel((PHPParseResult) pr);
+                            FileScope fileScope = model.getFileScope();
+                            Collection<? extends ClassScope> allClasses = fileScope.getDeclaredClasses();
+                            for (ClassScope classScope : allClasses) {
+                                retval.add(classScope.getName());
+                            }
                         }
                     }
-                }
-            });
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return retval;
     }
@@ -95,26 +97,28 @@ public class PhpUnitSupportImpl implements PhpUnitSupport {
             final String clsName) {
         final List<FileObject> retval = new ArrayList<FileObject>();
         Source source = Source.create(fo);
-        try {
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    Parser.Result pr = resultIterator.getParserResult();
-                    if (pr instanceof PHPParseResult) {
-                        PHPParseResult phpresult = (PHPParseResult) pr;
-                        PHPIndex index = PHPIndex.get(phpresult);
-                        Collection<IndexedClass> classes = index.getClasses(phpresult, clsName, QuerySupport.Kind.EXACT);
-                        for (IndexedClass indexedClass : classes) {
-                        FileObject fo = indexedClass.getFileObject();
-                        if (fo != null) {
-                            retval.add(fo);
-                        }
+        if (source != null) {
+            try {
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        Parser.Result pr = resultIterator.getParserResult();
+                        if (pr instanceof PHPParseResult) {
+                            PHPParseResult phpresult = (PHPParseResult) pr;
+                            PHPIndex index = PHPIndex.get(phpresult);
+                            Collection<IndexedClass> classes = index.getClasses(phpresult, clsName, QuerySupport.Kind.EXACT);
+                            for (IndexedClass indexedClass : classes) {
+                            FileObject fo = indexedClass.getFileObject();
+                            if (fo != null) {
+                                retval.add(fo);
+                            }
+                            }
                         }
                     }
-                }
-            });
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return retval;
     }
