@@ -57,6 +57,8 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.InputEvent;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -69,6 +71,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
+import javax.swing.plaf.TextUI;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -94,7 +97,9 @@ final class QuietEditorPane extends JEditorPane {
             throw new AssertionError(e);
         }
     }
-    
+
+    private StringBuffer sb;
+
     final static int FIRE = 0x1;
     final static int PAINT = 0x2;
     final static int ALL = FIRE | PAINT;
@@ -118,6 +123,30 @@ final class QuietEditorPane extends JEditorPane {
      */
     public QuietEditorPane() {
         setFontHeightWidth(getFont());
+    }
+    
+    String getLog () {
+        if (sb != null) {
+            return sb.toString();
+        } else {
+            return "";
+        }
+    }
+    
+    @Override
+    public void setUI(TextUI ui) {
+        if (sb == null) {
+            sb = new StringBuffer(1024);
+        }
+        sb.append("\n++ [" + Integer.toHexString(System.identityHashCode(this)) + "]"
+        + " QuietEditorPane.setUI ui:" + ui.getClass().getName()
+        + " th:" + Thread.currentThread().getName());
+        Exception ex = new Exception();
+        StringWriter sw = new StringWriter(500);
+        PrintWriter pw = new PrintWriter(sw);
+        ex.printStackTrace(pw);
+        sb.append("\n" + sw.toString());
+        super.setUI(ui);
     }
     
     @Override
