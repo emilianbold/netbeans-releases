@@ -43,6 +43,8 @@ import java.net.URL;
 import org.apache.tools.ant.module.run.LoggerTrampoline;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 
 /**
@@ -95,6 +97,10 @@ public class FakeAntSession implements LoggerTrampoline.AntSessionImpl {
 
     public OutputListener createStandardHyperlink(URL file, String message, int line1, int column1, int line2, int column2) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public InputOutput getIO() {
+        return IOProvider.getDefault().getIO("", true);
     }
 
 }
