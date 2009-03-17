@@ -72,8 +72,6 @@ import java.util.logging.Level;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.MessageFormat;
-import org.netbeans.modules.versioning.util.HyperlinkProvider;
-import org.openide.util.Lookup.Result;
 
 /**
  * Represents annotation sidebar componnet in editor. It's
@@ -86,7 +84,7 @@ import org.openide.util.Lookup.Result;
  *
  * @author Petr Kuzel
  */
-final class AnnotationBar extends JComponent implements Accessible, PropertyChangeListener, DocumentListener, ChangeListener, ActionListener, Runnable, ComponentListener, LookupListener {
+final class AnnotationBar extends JComponent implements Accessible, PropertyChangeListener, DocumentListener, ChangeListener, ActionListener, Runnable, ComponentListener {
 
     /**
      * Target text component for which the annotation bar is aiming.
@@ -176,12 +174,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      */
     private File repositoryRoot;
 
-    private Result<? extends HyperlinkProvider> hpResult;
-    /**
-     * Hyperlink providers available for the commit message TooltipWindow
-     */
-    private List<HyperlinkProvider> providers;
-
     /**
      * Creates new instance initializing final fields.
      */
@@ -192,14 +184,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         this.doc = editorUI.getDocument();
         this.caret = textComponent.getCaret();
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
-        hpResult.addLookupListener(this);
-        setHyperlinkProviders();
-    }
-
-    public void resultChanged(LookupEvent ev) {
-        hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
-        setHyperlinkProviders();
     }
 
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -414,24 +398,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             TooltipWindow ttw = new TooltipWindow(this, al);
             ttw.show(new Point(p.x - p2.x, p.y));
         }
-    }
-
-    /**
-     *
-     */
-    private void setHyperlinkProviders () {
-        Collection<? extends HyperlinkProvider> providersCol = hpResult.allInstances();
-        List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
-        providersList.addAll(providersCol);
-        providers = Collections.unmodifiableList(providersList);
-    }
-
-    /**
-     *
-     * @return registered hyperlink providers
-     */
-    public List<HyperlinkProvider> getHyperlinkProviders() {
-        return providers;
     }
 
     private JPopupMenu createPopup(MouseEvent e) {

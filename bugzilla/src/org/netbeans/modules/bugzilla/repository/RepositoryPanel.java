@@ -71,11 +71,11 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.jLabel1.text_1")); // NOI18N
+        urlLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.urlLabel.text_1")); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.jLabel2.text_1")); // NOI18N
+        userLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.userLabel.text_1")); // NOI18N
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.jLabel3.text_1")); // NOI18N
+        psswdLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.psswdLabel.text_1")); // NOI18N
 
         userField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -83,7 +83,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
             }
         });
 
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.jLabel5.text_1")); // NOI18N
+        nameLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.nameLabel.text_1")); // NOI18N
 
         validateButton.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.validateButton.text_1")); // NOI18N
         validateButton.addActionListener(new java.awt.event.ActionListener() {
@@ -102,10 +102,10 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
-                    .add(jLabel3)
-                    .add(jLabel2)
-                    .add(jLabel5))
+                    .add(urlLabel)
+                    .add(psswdLabel)
+                    .add(userLabel)
+                    .add(nameLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(urlField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
@@ -124,20 +124,20 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel5)
+                    .add(nameLabel)
                     .add(nameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(urlField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1))
+                    .add(urlLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
+                    .add(userLabel)
                     .add(userField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(psswdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel3))
+                    .add(psswdLabel))
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(8, 8, 8)
@@ -159,15 +159,15 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
-    final javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
-    final javax.swing.JLabel jLabel3 = new javax.swing.JLabel();
-    final javax.swing.JLabel jLabel5 = new javax.swing.JLabel();
     final javax.swing.JTextField nameField = new javax.swing.JTextField();
+    final javax.swing.JLabel nameLabel = new javax.swing.JLabel();
     final javax.swing.JPanel progressPanel = new javax.swing.JPanel();
     final javax.swing.JPasswordField psswdField = new javax.swing.JPasswordField();
+    final javax.swing.JLabel psswdLabel = new javax.swing.JLabel();
     final javax.swing.JTextField urlField = new javax.swing.JTextField();
+    final javax.swing.JLabel urlLabel = new javax.swing.JLabel();
     final javax.swing.JTextField userField = new javax.swing.JTextField();
+    final javax.swing.JLabel userLabel = new javax.swing.JLabel();
     final javax.swing.JButton validateButton = new javax.swing.JButton();
     final javax.swing.JLabel validateLabel = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
@@ -187,5 +187,16 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
     private void validateText() {
         String txt = urlField.getText();
         validateButton.setEnabled(txt != null && !txt.equals(""));
+    }
+
+    void enableFields(boolean bl) {
+        psswdLabel.setEnabled(bl);
+        psswdField.setEnabled(bl);
+        userField.setEnabled(bl);
+        userLabel.setEnabled(bl);
+        nameField.setEnabled(bl);
+        nameLabel.setEnabled(bl);
+        urlField.setEnabled(bl);
+        urlLabel.setEnabled(bl);
     }
 }
