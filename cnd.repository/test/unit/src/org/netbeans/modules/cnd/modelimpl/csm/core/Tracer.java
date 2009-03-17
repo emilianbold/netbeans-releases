@@ -42,14 +42,16 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.PrintStream;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.MyFile;
 
 /**
  *
@@ -62,6 +64,7 @@ public final class Tracer {
         dumpProjectContainers(project.getClassifierSorage(), printStream);
         dumpProjectContainers(project, printStream);
         dumpProjectContainers(project.getDeclarationsSorage(), printStream);
+        dumpProjectContainers(project.getFileContainer(), printStream);
     }
 
     private static void dumpProjectContainers(ClassifierContainer container, PrintStream printStream){
@@ -117,7 +120,7 @@ public final class Tracer {
     }
 
     private static void dumpProjectContainers(DeclarationContainer container, PrintStream printStream){
-        printStream.println("\n========== Dumping Dump Project declarations");
+        printStream.println("\n========== Dumping Project declarations");
         for(Map.Entry<CharSequence, Object> entry : container.testDeclarations().entrySet()){
             printStream.println("\t"+entry.getKey().toString());
             TreeMap<CharSequence, CsmDeclaration> set = new TreeMap<CharSequence, CsmDeclaration>();
@@ -139,7 +142,7 @@ public final class Tracer {
                 printStream.print("\t\t"+f.getValue());
             }
         }
-        printStream.println("\n========== Dumping Dump Project friends");
+        printStream.println("\n========== Dumping Project friends");
         for(Map.Entry<CharSequence, Set<CsmUID<? extends CsmFriend>>> entry : container.testFriends().entrySet()){
             printStream.print("\t"+entry.getKey().toString()+" ");
             TreeMap<CharSequence, CsmFriend> set = new TreeMap<CharSequence, CsmFriend>();
@@ -152,6 +155,42 @@ public final class Tracer {
             }
         }
     }
+
+    private static void dumpProjectContainers(FileContainer fileContainer, PrintStream printStream) {
+        printStream.println("\n========== Dumping File container");
+        Map<CharSequence, Object/*CharSequence or CharSequence[]*/> names = fileContainer.getCanonicalNames();
+        //for unit test only
+        Map<CharSequence, MyFile> files = fileContainer.getFileStorage();
+        for(Map.Entry<CharSequence, MyFile> entry : files.entrySet()){
+            CharSequence key = entry.getKey();
+            printStream.println("\tFile "+key.toString());
+            Object name = names.get(key);
+            if (name instanceof CharSequence[]) {
+                for(CharSequence alt : (CharSequence[])name) {
+                    printStream.println("\t\tAlias "+alt.toString());
+                }
+            } else if (name instanceof CharSequence) {
+                printStream.println("\t\tAlias "+name.toString());
+            }
+            MyFile file = entry.getValue();
+            CsmFile csmFile = file.getFileUID().getObject();
+            printStream.println("\t\tModel File "+csmFile.getAbsolutePath());
+            printStream.println("\t\tNumber of states "+file.getPrerocStates().size());
+//            for(APTPreprocHandler.State state : file.getPrerocStates()){
+//                StringTokenizer st = new StringTokenizer(state.toString(),"\n");
+//                boolean first = true;
+//                while (st.hasMoreTokens()) {
+//                    if (first) {
+//                        printStream.println("\t\tState "+st.nextToken());
+//                        first = false;
+//                    } else {
+//                        printStream.println("\t\t\t"+st.nextToken());
+//                    }
+//                }
+//            }
+        }
+    }
+
 
     private Tracer() {
     }

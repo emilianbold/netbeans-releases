@@ -296,9 +296,12 @@ public final class MemoryCache {
     /*package-local*/ void printDistribution(){
         Map<String, Integer> stat = new TreeMap<String, Integer>();
         Map<String, Integer> statSoft = new TreeMap<String, Integer>();
+        int fullSize = 0;
+        int nullSize = 0;
         for(Slice s : cache.slices){
             s.r.lock();
             try {
+                fullSize += s.storage.size();
                 for(Map.Entry<Key, Object> entry : s.storage.entrySet()){
                     Key key = entry.getKey();
                     Object value = entry.getValue();
@@ -314,6 +317,7 @@ public final class MemoryCache {
                         } else {
                             res += "-null"; // NOI18N
                         }
+                        nullSize++;
                     } else {
                         if (isSoft) {
                             res += "-soft "+value.getClass().getName(); // NOI18N
@@ -337,6 +341,7 @@ public final class MemoryCache {
                 s.r.unlock();
             }
         }
+        System.err.println("\tMemCache of size " + fullSize + " with null " + nullSize + " objects");
         System.err.println("\tSoft memory cache");
         for (Map.Entry<String, Integer> entry : statSoft.entrySet()){
             System.err.println("\t"+entry.getKey()+"="+entry.getValue());

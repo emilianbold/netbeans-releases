@@ -53,6 +53,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -190,6 +191,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     public void putPreprocState(File file, APTPreprocHandler.State state) {
         MyFile f = getMyFile(file, true);
         f.setState(state, null);
+        put();
     }
 
     public void invalidatePreprocState(File file) {
@@ -516,6 +518,16 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
     }
 
+    //for unit test only
+    Map<CharSequence, MyFile> getFileStorage() {
+        return new TreeMap<CharSequence, MyFile>(myFiles);
+    }
+
+    //for unit test only
+    Map<CharSequence, Object/*CharSequence or CharSequence[]*/> getCanonicalNames(){
+        return new TreeMap<CharSequence, Object>(canonicFiles);
+    }
+
     public static class StatePair {
         
         public final APTPreprocHandler.State state;
@@ -572,7 +584,8 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         public void setPendingReparse(boolean pendingReparse);
     }
 
-    private static final class MyFile implements Persistent, SelfPersistent, Entry {
+    // package access for unit tests only
+    static final class MyFile implements Persistent, SelfPersistent, Entry {
 
         private final CsmUID<CsmFile> fileNew;
         private final CharSequence canonical;
@@ -925,6 +938,11 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 }
                 return result;
             }
+        }
+
+        //for unit test only
+        CsmUID<CsmFile> getFileUID(){
+            return fileNew;
         }
 
         @Override
