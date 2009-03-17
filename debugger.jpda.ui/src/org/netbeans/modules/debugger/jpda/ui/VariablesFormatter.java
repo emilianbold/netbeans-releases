@@ -42,6 +42,7 @@ package org.netbeans.modules.debugger.jpda.ui;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.api.debugger.Properties;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -265,19 +266,19 @@ public class VariablesFormatter {
 
 
     private static VariablesFormatter[] createDefaultFormatters() {
-        VariablesFormatter collection = new VariablesFormatter("Default Collection Formatter");
+        VariablesFormatter collection = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_CollectionFormatter"));
         collection.setClassTypes("java.util.Collection");
         collection.setIncludeSubTypes(true);
         collection.setChildrenFormatCode("toArray()");
         collection.setValueFormatCode("\"size = \"+size()");
 
-        VariablesFormatter map = new VariablesFormatter("Default Map Formatter");
+        VariablesFormatter map = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_MapFormatter"));
         map.setClassTypes("java.util.Map");
         map.setIncludeSubTypes(true);
         map.setChildrenFormatCode("entrySet()");
         map.setValueFormatCode("\"size = \"+size()");
 
-        VariablesFormatter mapEntry = new VariablesFormatter("Default Map.Entry Formatter");
+        VariablesFormatter mapEntry = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_MapEntryFormatter"));
         mapEntry.setClassTypes("java.util.Map$Entry");
         mapEntry.setIncludeSubTypes(true);
         mapEntry.setUseChildrenVariables(true);

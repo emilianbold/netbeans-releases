@@ -67,10 +67,13 @@ public class ShowTransitionsAction extends SceneNodeAction
     {
         scene = actionContext.lookup(DesignerScene.class);
         pe = actionContext.lookup(IPresentationElement.class);
-        IElement e = pe.getFirstSubject();
-        if (e instanceof IState)
+        if(pe!=null)
         {
-            state = (IState) e;
+            IElement e = pe.getFirstSubject();
+            if (e instanceof IState)
+            {
+                state = (IState) e;
+            }
         }
         return this;
     }

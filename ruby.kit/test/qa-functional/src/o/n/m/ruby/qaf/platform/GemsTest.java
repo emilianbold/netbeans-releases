@@ -46,7 +46,6 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -118,7 +117,7 @@ public class GemsTest extends JellyTestCase {
         String reload = Bundle.getStringTrimmed("org.netbeans.modules.ruby.platform.gems.Bundle", "GemPanel.reloadInstalledButton.text");
         new JButtonOperator(jtpo, reload).push();
         JProgressBarOperator jpbo = new JProgressBarOperator(rgm);
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 60000);
+        jpbo.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 90000);
         jpbo.waitComponentShowing(false);
         gemsList = new JListOperator(jtpo);
         gemsList.selectItem(0);
@@ -145,7 +144,9 @@ public class GemsTest extends JellyTestCase {
         assertTrue(jtpo.getTitleAt(1).contains("17"));
         jtpo.selectPage(2);
         if (JProgressBarOperator.findJProgressBar(rgm.getContentPane()) != null) {
-            new JProgressBarOperator(rgm).waitComponentShowing(false);
+            JProgressBarOperator barOp = new JProgressBarOperator(rgm);
+            barOp.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 90000);
+            barOp.waitComponentShowing(false);
         }
         JListOperator gemsList = new JListOperator(jtpo);
         //select Abundance Gem
@@ -162,10 +163,11 @@ public class GemsTest extends JellyTestCase {
         //Close
         String closeLabel = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.ruby.platform.gems.Bundle", "CTL_Close");
         JButtonOperator close = new JButtonOperator(gemInst, closeLabel);
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 60000);
         close.push();
         if (JProgressBarOperator.findJProgressBar(rgm.getContentPane()) != null) {
-            new JProgressBarOperator(rgm).waitComponentShowing(false);
+            JProgressBarOperator barOp = new JProgressBarOperator(rgm);
+            barOp.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 90000);
+            barOp.waitComponentShowing(false);
         }
         jtpo.selectPage(1);
         try {
@@ -190,10 +192,11 @@ public class GemsTest extends JellyTestCase {
         //Close
         String closeLabel = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.ruby.platform.gems.Bundle", "CTL_Close");
         JButtonOperator close = new JButtonOperator(gemInst, closeLabel);
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 60000);
         close.push();
         if (JProgressBarOperator.findJProgressBar(rgm.getContentPane()) != null) {
-            new JProgressBarOperator(rgm).waitComponentShowing(false);
+            JProgressBarOperator barOp = new JProgressBarOperator(rgm);
+            barOp.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 90000);
+            barOp.waitComponentShowing(false);
         }
         try {
             Thread.sleep(1500);

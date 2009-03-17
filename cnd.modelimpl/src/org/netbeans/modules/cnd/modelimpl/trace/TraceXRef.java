@@ -110,6 +110,7 @@ public class TraceXRef extends TraceModel {
     private int column = 0;
 
     public TraceXRef() {
+        super(true);
     }
 
     public static void main(String[] args) {
@@ -182,7 +183,7 @@ public class TraceXRef extends TraceModel {
                 }
             }
         } finally {
-            super.shutdown();
+            super.shutdown(true);
             APTDriver.getInstance().close();
         }
     }
@@ -297,14 +298,13 @@ public class TraceXRef extends TraceModel {
 
     public static String toString(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
         String out = CsmTracer.getOffsetString(ref, true);
-        CsmReferenceKind kind = ref.getKind();
         String postfix = "";
-        if (kind == CsmReferenceKind.DECLARATION) {
+        if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DECLARATION))) {
             postfix = " (DECLARATION)"; // NOI18N
-        } else if (kind == CsmReferenceKind.DEFINITION) {
+        } else if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DEFINITION))) {
             postfix = " (DEFINITION)"; // NOI18N
-        } else if (kind == CsmReferenceKind.UNKNOWN) {
-            System.err.println("unknown reference kind " + kind + " for " + ref);
+        } else if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.UNKNOWN))) {
+            System.err.println("unknown reference kind " + ref);
         }
         return out + postfix;
     }
@@ -478,7 +478,7 @@ public class TraceXRef extends TraceModel {
                 // skip it
             }
         } else {
-            if (params.interestedReferences.contains(ref.getKind())) {
+            if (CsmReferenceResolver.getDefault().isKindOf(ref, params.interestedReferences)) {
                 XRefResultSet.DeclarationKind declaration = classifyDeclaration(target, printOut);
                 XRefResultSet.DeclarationScope declarationScope = classifyDeclarationScopeForFunction(declaration, target, fun, printOut);
                 XRefResultSet.IncludeLevel declarationIncludeLevel = classifyIncludeLevel(target, fun.objFile, printOut);

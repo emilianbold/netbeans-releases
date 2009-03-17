@@ -74,7 +74,7 @@ public class LibrariesAccess extends RepositoryAccessTestBase {
 	
 	int count = Integer.getInteger("test.library.access.laps", 1000);
 	
-	final TraceModelBase traceModel = new  TraceModelBase();
+	final TraceModelBase traceModel = new  TraceModelBase(true);
 	traceModel.setUseSysPredefined(true);
 	traceModel.processArguments(projectRoot.getAbsolutePath());
 	ModelImpl model = traceModel.getModel();

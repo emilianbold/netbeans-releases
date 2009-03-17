@@ -40,6 +40,7 @@ package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
@@ -47,8 +48,16 @@ import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -57,6 +66,7 @@ import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 public class SVGButtonCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGButton"); //NOI18N
+    private static final String OK = "OK";      // NOI18N
 
     static {
         SVGComponentCD.addPairType( TYPEID, SVGButtonEventSourceCD.TYPEID );
@@ -71,18 +81,43 @@ public class SVGButtonCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP_2;
     }
 
-    @Override
+   @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
-        return null;
-    }
+        return Arrays.asList (
+                new PropertyDescriptor( SVGLabelCD.PROP_TEXT,
+                        MidpTypes.TYPEID_JAVA_LANG_STRING,
+                        MidpTypes.createStringValue( OK ), true, true,
+                        MidpVersionable.MIDP_2));
+   }
 
-    protected List<? extends Presenter> createPresenters() {
+   protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
+                // properties
+                createPropertiesPresenter(),
+                createSetterPresenter(),
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
                 new SVGCodeFooter( SVGButtonEventSourceCD.TYPEID )
         );
+    }
+
+   private Presenter createSetterPresenter () {
+        return new CodeSetterPresenter ().
+                addParameters(MidpParameter.create(SVGLabelCD.PROP_TEXT)).
+                addSetters(MidpSetter.createSetter("setText",               // NOI18N
+                        MidpVersionable.MIDP_2).addParameters(SVGLabelCD.
+                                PROP_TEXT));
+    }
+
+    private static DefaultPropertiesPresenter createPropertiesPresenter() {
+        return new DefaultPropertiesPresenter()
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                .addProperty(NbBundle.getMessage(SVGButtonCD.class,
+                        "DISP_Text"),
+                        PropertyEditorString.createInstance(
+                                NbBundle.getMessage(SVGButtonCD.class,
+                                "LBL_SVGButton_Text")), SVGLabelCD.PROP_TEXT);
     }
 
 }

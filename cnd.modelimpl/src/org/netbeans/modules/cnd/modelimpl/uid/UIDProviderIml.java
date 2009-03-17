@@ -64,7 +64,7 @@ public final class UIDProviderIml implements UIDProvider {
     public UIDProviderIml() {
         // public constructor for service initialization
     }
-    
+
     public <T> CsmUID<T> get(T obj) {
         return get(obj, true);
     }
@@ -76,7 +76,7 @@ public final class UIDProviderIml implements UIDProvider {
             // we need to cast to the exact type
             @SuppressWarnings("unchecked") // checked
             CsmUID<T> uid = (CsmUID<T>) ident.getUID();
-            if (debugMode && !((obj instanceof CsmNamespace)||(obj instanceof CsmProject))) {
+            if (debugMode && !((obj instanceof CsmNamespace) || (obj instanceof CsmProject))) {
                 Object object = uid.getObject();
                 if (object == null) {
                     if (checkNull) {

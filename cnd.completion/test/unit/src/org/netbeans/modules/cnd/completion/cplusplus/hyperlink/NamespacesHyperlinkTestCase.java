@@ -259,6 +259,14 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz145142.cc", 16, 35, "iz145142.cc", 4, 13);
     }
 
+    public void testIZ150915() throws Exception {
+        // IZ#150915 : Unresolved duplicate of a static function
+        performTest("iz150915_2.cc", 2, 26, "iz150915_2.cc", 2, 5);
+        performTest("iz150915_2.cc", 8, 25, "iz150915_2.cc", 2, 5);
+        // File iz150915_1.cc is not referenced here, but it is important part of the test.
+        // We make sure that hyperlink does not link to iz150915_1.cc.
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

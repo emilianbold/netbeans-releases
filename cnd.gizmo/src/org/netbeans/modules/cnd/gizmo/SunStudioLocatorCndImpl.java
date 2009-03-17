@@ -53,7 +53,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 public final class SunStudioLocatorCndImpl implements SunStudioLocator {
 
-    private static final String LOCALHOST = "localhost"; // NOI18N
     private final ExecutionEnvironment env;
 
     
@@ -63,7 +62,7 @@ public final class SunStudioLocatorCndImpl implements SunStudioLocator {
 
     public Collection<SunStudioDescription> getSunStudioLocations() {
         Collection<SunStudioDescription> result = new ArrayList<SunStudioDescription>();
-        List<CompilerSet> compilerCollections = env.isLocal()? CompilerSetManager.getDefault().getCompilerSets() : CompilerSetManager.getDefault(env.getUser() + "@" + env.getHost()).getCompilerSets(); // NOI18N
+        List<CompilerSet> compilerCollections = env.isLocal()? CompilerSetManager.getDefault().getCompilerSets() : CompilerSetManager.getDefault(env).getCompilerSets(); // NOI18N
         if (compilerCollections.size() == 1 && compilerCollections.get(0).getName().equals(CompilerSet.None)) {
             return result;
         }

@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -290,5 +291,64 @@ public final class MemoryCache {
         int hitPercentage = (readCnt == 0) ? 0 : readHitCnt*100/readCnt;
         System.out.printf("\n\nMemory cache statistics %s: %d reads,  %d hits (%d%%)\n\n", // NOI18N
                 name, readCnt, readHitCnt, hitPercentage);
+    }
+
+    /*package-local*/ void printDistribution(){
+        Map<String, Integer> stat = new TreeMap<String, Integer>();
+        Map<String, Integer> statSoft = new TreeMap<String, Integer>();
+        int fullSize = 0;
+        int nullSize = 0;
+        for(Slice s : cache.slices){
+            s.r.lock();
+            try {
+                fullSize += s.storage.size();
+                for(Map.Entry<Key, Object> entry : s.storage.entrySet()){
+                    Key key = entry.getKey();
+                    Object value = entry.getValue();
+                    boolean isSoft = false;
+                    if ((value != null) && (value instanceof SoftReference)){
+                        isSoft = true;
+                        value = ((SoftReference) value).get();
+                    }
+                    String res = key.getClass().getName();
+                    if (value == null) {
+                        if (isSoft) {
+                            res += "-soft null"; // NOI18N
+                        } else {
+                            res += "-null"; // NOI18N
+                        }
+                        nullSize++;
+                    } else {
+                        if (isSoft) {
+                            res += "-soft "+value.getClass().getName(); // NOI18N
+                        } else {
+                            res += "-"+value.getClass().getName(); // NOI18N
+                        }
+                    }
+                    Integer i = isSoft ? statSoft.get(res) : stat.get(res);
+                    if (i == null) {
+                        i = Integer.valueOf(1);
+                    } else {
+                        i = Integer.valueOf(i.intValue()+1);
+                    }
+                    if (isSoft) {
+                        statSoft.put(res, i);
+                    } else {
+                        stat.put(res, i);
+                    }
+                }
+            } finally {
+                s.r.unlock();
+            }
+        }
+        System.err.println("\tMemCache of size " + fullSize + " with null " + nullSize + " objects");
+        System.err.println("\tSoft memory cache");
+        for (Map.Entry<String, Integer> entry : statSoft.entrySet()){
+            System.err.println("\t"+entry.getKey()+"="+entry.getValue());
+        }
+        System.err.println("\tHard memory cache");
+        for (Map.Entry<String, Integer> entry : stat.entrySet()){
+            System.err.println("\t"+entry.getKey()+"="+entry.getValue());
+        }
     }
 }

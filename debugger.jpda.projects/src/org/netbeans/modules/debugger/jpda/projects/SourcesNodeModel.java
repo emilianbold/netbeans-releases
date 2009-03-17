@@ -102,13 +102,14 @@ public class SourcesNodeModel implements NodeModel {
     }
     
     public String getIconBase (Object o) throws UnknownTypeException {
-        if (o instanceof String) {
+        return null;
+        /*if (o instanceof String) {
             if (((String) o).startsWith ("D"))
                 return FILTER;
             else
                 return SOURCE_ROOT;
         } else
-        throw new UnknownTypeException (o);
+        throw new UnknownTypeException (o);*/
     }
 
     public void addModelListener (ModelListener l) {

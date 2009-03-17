@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -274,7 +275,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         return elements;
     }
 
-    protected final ModificationResult processFiles(Collection<CsmFile> files) {
+    protected final ModificationResult processFiles(Collection<CsmFile> files, AtomicReference<Problem> outProblem) {
         // where used query does not modify files
         return null;
     }

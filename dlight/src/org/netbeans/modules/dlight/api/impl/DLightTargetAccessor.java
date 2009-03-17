@@ -46,30 +46,30 @@ import org.netbeans.modules.dlight.api.execution.DLightTarget;
  */
 public abstract class DLightTargetAccessor {
 
-  private static volatile DLightTargetAccessor DEFAULT;
+    private static volatile DLightTargetAccessor DEFAULT;
 
-  public static DLightTargetAccessor getDefault() {
-    DLightTargetAccessor a = DEFAULT;
-    if (a != null) {
-      return a;
+    public static DLightTargetAccessor getDefault() {
+        DLightTargetAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(DLightTarget.class.getName(), true,
+                    DLightTarget.class.getClassLoader());
+        } catch (Exception e) {
+        }
+
+        return DEFAULT;
     }
 
-    try {
-      Class.forName(DLightTarget.class.getName(), true, DLightTarget.class.getClassLoader());//
-    } catch (Exception e) {
+    public static void setDefault(DLightTargetAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        
+        DEFAULT = accessor;
     }
-    return DEFAULT;
-  }
 
-  public static void setDefault(DLightTargetAccessor accessor) {
-    if (DEFAULT != null) {
-      throw new IllegalStateException();
-    }
-    DEFAULT = accessor;
-  }
-
-  public DLightTargetAccessor() {
-  }
-
-  public abstract DLightTarget.DLightTargetExecutionService getDLightTargetExecution(DLightTarget target);
+    public abstract DLightTarget.DLightTargetExecutionService getDLightTargetExecution(DLightTarget target);
 }

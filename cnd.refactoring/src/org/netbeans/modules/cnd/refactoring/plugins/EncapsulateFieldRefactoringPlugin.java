@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -333,7 +334,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
 //    }
 
     @Override
-    protected void processFile(CsmFile csmFile, ModificationResult mr) {
+    protected void processFile(CsmFile csmFile, ModificationResult mr, AtomicReference<Problem> outProblem) {
         // add declaration/definition to file
         InsertPoint insPt = refactoring.getContext().lookup(InsertPoint.class);
         if (insPt == InsertPoint.DEFAULT) {

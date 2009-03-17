@@ -81,7 +81,7 @@ public class LinkSupport {
         } else if (new File(linkPath+".lnk").exists()){ // NOI18N
             return getOriginalFile(linkPath+".lnk", level); // NOI18N
         }
-        return null;
+        return linkPath;
     }
 
     private static class LinkReader {

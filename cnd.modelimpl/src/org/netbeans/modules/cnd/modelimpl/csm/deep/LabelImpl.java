@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 
 
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * Implements ... statement
@@ -59,7 +59,7 @@ public class LabelImpl extends StatementBase implements CsmStatement, CsmLabel {
 
     public LabelImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
-        label = QualifiedNameCache.getManager().getString(ast.getFirstChild().getText());
+        label = NameCache.getManager().getString(ast.getFirstChild().getText());
     }
     
     public CsmStatement.Kind getKind() {
