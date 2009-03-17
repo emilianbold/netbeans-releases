@@ -30,7 +30,7 @@ void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
 End cursor position = 744
-[<% "Hello World !".| %>, int hashCode (), <% "Hello World !".hashCode() %>, 867]
+[<% "Hello World !".| %>, int hashCode (), <% "Hello World !".hashCode(); %>, 868]
 Comparator <String> CASE_INSENSITIVE_ORDER
 char charAt (int index )
 int codePointAt (int index )
@@ -103,4 +103,4 @@ String valueOf (char[] data , int offset , int
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 897
+End cursor position = 899

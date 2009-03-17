@@ -33,14 +33,14 @@
 <%--CC
 <% tBean.setN| %>
 ...
-<% tBean.setName(name) %>
+<% tBean.setName(name); %>
 --%>
 
 <%-- completion for String object inside scriptlets --%>
 <%--CC
 <% "Hello World !".o| %>
 ...
-<% "Hello World !".offsetByCodePoints(index, codePointOffset) %>
+<% "Hello World !".offsetByCodePoints(index, codePointOffset); %>
 --%>
 
     </body>

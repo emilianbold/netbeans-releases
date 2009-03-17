@@ -36,7 +36,7 @@ boolean isNew ()
 <%--CC
 <%@|
 <%@ attribute % >
-<%@ attribute  %>
+<%@attribute  %>
 --%>
 
 <%-- completion for TAG attributes --%>

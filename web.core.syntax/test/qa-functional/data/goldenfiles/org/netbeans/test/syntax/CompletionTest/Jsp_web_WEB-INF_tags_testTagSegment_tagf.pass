@@ -262,7 +262,7 @@ End cursor position = 544
 <%@ taglib % >
 <%@ variable % >
 End cursor position = 787
-[<%@tag |, large-icon, <%@tag large-icon="", 868]
+[<%@tag |, large-icon, <%@tag large-icon="", 867]
 body-content
 description
 display-name
@@ -274,4 +274,4 @@ language
 large-icon
 pageEncoding
 small-icon
-End cursor position = 888
+End cursor position = 887
