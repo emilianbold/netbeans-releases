@@ -60,6 +60,7 @@ public class RepositoryValidationTest extends BaseTestSuite {
         
         addTestSuite(RepositoryValidationGoldens.class);
         addTestSuite(RepositoryValidation.class);
+        addTestSuite(RepositoryValidation2.class);
     }
 
     public static Test suite() {

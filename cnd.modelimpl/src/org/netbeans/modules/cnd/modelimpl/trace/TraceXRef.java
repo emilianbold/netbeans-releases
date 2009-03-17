@@ -110,6 +110,7 @@ public class TraceXRef extends TraceModel {
     private int column = 0;
 
     public TraceXRef() {
+        super(true);
     }
 
     public static void main(String[] args) {
@@ -182,7 +183,7 @@ public class TraceXRef extends TraceModel {
                 }
             }
         } finally {
-            super.shutdown();
+            super.shutdown(true);
             APTDriver.getInstance().close();
         }
     }

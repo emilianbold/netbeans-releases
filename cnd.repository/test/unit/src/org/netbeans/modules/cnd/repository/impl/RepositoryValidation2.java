@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,56 +31,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+package org.netbeans.modules.cnd.repository.impl;
 
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmModel;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Alexander Simon
  */
-public final class TestModelHelper {
-    private TraceModel traceModel;
-    
-    /**
-     * Creates a new instance of TestModelHelper
-     */
-    public TestModelHelper(boolean clearCache) {
-        traceModel = new TraceModel(clearCache);
-    }
-    
-    /*package-local*/ TraceModel getTraceModel() {
-        return traceModel;
-    }
-    
-    public void initParsedProject(String projectRoot, 
-            List<String> sysIncludes, List<String> usrIncludes) throws Exception {
-        traceModel.setIncludePaths(sysIncludes, usrIncludes);
-        traceModel.test(new String[]{projectRoot}, System.out, System.err);
-    } 
-    
-    public void initParsedProject(String projectRoot) throws Exception {
-        traceModel.test(new String[]{projectRoot}, System.out, System.err);
-        //traceModel.test(new File(projectRoot), System.out, System.err);
-    }     
-    
-    public ProjectBase getProject(){
-        return traceModel.getProject();
-    }
-    
-    public void resetProject() {
-	traceModel.resetProject();
+public class RepositoryValidation2 extends RepositoryValidationBase {
+
+    public RepositoryValidation2(String testName) {
+        super(testName);
     }
 
-    public CsmModel getModel(){
-        return traceModel.getModel();
+    protected @Override void setUp() throws Exception {
+        System.setProperty("cnd.repository.hardrefs", Boolean.FALSE.toString()); //NOI18N
+        System.setProperty("org.netbeans.modules.cnd.apt.level","OFF"); // NOI18N
+        assertNotNull("This test can only be run from suite", RepositoryValidationGoldens.getGoldenDirectory()); //NOI18N
+        System.setProperty(PROPERTY_GOLDEN_PATH, RepositoryValidationGoldens.getGoldenDirectory());
+        cleanCache = false;
+        super.setUp();
     }
-    
-    public void shutdown(boolean clearCache) {
-        traceModel.shutdown(clearCache);
+
+    public void testRepository() throws Exception {
+        List<String> args = find();
+        assert args.size() > 0;
+        //args.add("-fq"); //NOI18N
+
+        performTest(args.toArray(new String[]{}), nimi + ".out", nimi + ".err");
+        assertNoExceptions();
     }
 }
