@@ -321,8 +321,19 @@ public final class StandardLogger extends AntLogger {
         if (name != null) {
             // Avoid printing internal targets normally:
             int minlevel = (name.length() > 0 && name.charAt(0) == '-') ? AntEvent.LOG_VERBOSE : AntEvent.LOG_INFO;
-            if (event.getSession().getVerbosity() >= minlevel) {
-                event.getSession().println(NbBundle.getMessage(StandardLogger.class, "MSG_target_started_printed", name), false, null);
+            AntSession session = event.getSession();
+            if (session.getVerbosity() >= minlevel) {
+                String msg = NbBundle.getMessage(StandardLogger.class, "MSG_target_started_printed", name);
+                InputOutput io = session.getIO();
+                if (IOColorLines.isSupported(io)) {
+                    try {
+                        IOColorLines.println(io, msg, Color.GRAY);
+                    } catch (IOException x) {
+                        ERR.log(Level.INFO, null, x);
+                    }
+                } else {
+                    session.println(msg, false, null);
+                }
             }
         }
         event.consume();
