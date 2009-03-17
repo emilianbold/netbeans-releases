@@ -147,6 +147,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz151909.cpp");
     }
 
+    public void testIZ148236() throws Exception {
+        // IZ#148236 : IDE highlights some operator's definitions as wrong code
+        performStaticTest("iz148236.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
