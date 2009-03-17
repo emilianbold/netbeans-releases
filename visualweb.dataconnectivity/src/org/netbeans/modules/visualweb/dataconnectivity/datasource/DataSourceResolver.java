@@ -48,6 +48,7 @@
 
 package org.netbeans.modules.visualweb.dataconnectivity.datasource;
 
+import java.awt.Cursor;
 import java.io.IOException;
 import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
@@ -80,7 +81,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**

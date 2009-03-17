@@ -79,6 +79,14 @@ public class QueryAction extends SystemAction {
     }
 
     public static void openQuery(final Query query, final Repository repository) {
+        openQueryIntern(query, repository, false);
+    }
+
+    public static void openKenaiQuery(final Query query, final Repository repository) {
+        openQueryIntern(query, repository, true);
+    }
+
+    private static void openQueryIntern(final Query query, final Repository repository, final boolean forKenai) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 TopComponent tc = null;
@@ -86,7 +94,11 @@ public class QueryAction extends SystemAction {
                     tc = QueryTopComponent.find(query);
                 }
                 if(tc == null) {
-                    tc = new QueryTopComponent(query, repository);
+                    if(forKenai) {
+                        tc = QueryTopComponent.forKenai(query, repository);
+                    } else {
+                        tc = new QueryTopComponent(query, repository);
+                    }
                 }
                 if(!tc.isOpened()) {
                     tc.open();

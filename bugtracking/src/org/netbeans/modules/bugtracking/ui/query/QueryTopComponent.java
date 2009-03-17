@@ -70,9 +70,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -139,17 +139,13 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
             });
 
             DefaultComboBoxModel repoModel;
+            Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
+            repoModel = new DefaultComboBoxModel(repos);
+            repositoryComboBox.setModel(repoModel);
             if(toSelect != null) {
-                repoModel = new DefaultComboBoxModel();
-                repoModel.addElement(toSelect);
-                repositoryComboBox.setModel(repoModel);
                 repositoryComboBox.setSelectedItem(toSelect);
-                repositoryComboBox.setEnabled(false);
-                newButton.setEnabled(false);
                 onRepoSelected();
             } else {
-                Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
-                repoModel = new DefaultComboBoxModel(repos);
                 repositoryComboBox.setModel(repoModel);
                 if(repositoryComboBox.getModel().getSize() > 0) {
                     repositoryComboBox.setSelectedIndex(0);
@@ -165,8 +161,14 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
             });
 
             queriesPanel.setVisible(false);
-            
         }
+    }
+
+    public static QueryTopComponent forKenai(Query query, Repository toSelect) {
+        QueryTopComponent tc = new QueryTopComponent(query, toSelect);
+        tc.repositoryComboBox.setEnabled(false);
+        tc.newButton.setEnabled(false);
+        return tc;
     }
 
     private Query getQuery() {
@@ -388,16 +390,12 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
     @Override
     public void componentOpened() {
         openQueries.add(this);
-        if(query != null) {
-            query.getController().opened();
-        }
     }
 
     @Override
     public void componentClosed() {
         openQueries.remove(this);
         if(query != null) {
-            query.getController().closed();
             query.removePropertyChangeListener(this);
         }        
     }
@@ -443,8 +441,7 @@ final class QueryTopComponent extends TopComponent implements PropertyChangeList
      ***********/
 
     private void onNewClick() {
-        RepositorySelector rs = new RepositorySelector();
-        Repository repo = rs.create();
+        Repository repo = BugtrackingUtil.createRepository();
         if(repo != null) {
             repositoryComboBox.addItem(repo);
             repositoryComboBox.setSelectedItem(repo);

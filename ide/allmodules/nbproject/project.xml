@@ -99,6 +99,9 @@ made subject to such option by the copyright holder.
                 <project>../../bpel.refactoring</project>
                 <project>../../bpel.samples</project>
                 <project>../../bpel.validation</project>
+                <project>../../bugtracking</project>
+                <project>../../bugtracking.bridge</project>
+                <project>../../bugzilla</project>
                 <project>../../classfile</project>
                 <project>../../cnd</project>
                 <project>../../cnd.antlr</project>
@@ -114,6 +117,7 @@ made subject to such option by the copyright holder.
                 <project>../../cnd.dwarfdump</project>
                 <project>../../cnd.editor</project>
                 <project>../../cnd.folding</project>
+                <project>../../cnd.gizmo</project>
                 <project>../../cnd.gotodeclaration</project>
                 <project>../../cnd.highlight</project>
                 <project>../../cnd.kit</project>
@@ -141,6 +145,7 @@ made subject to such option by the copyright holder.
                 <project>../../compapp.projects.wizard</project>
                 <project>../../core.execution</project>
                 <project>../../core.ide</project>
+                <project>../../core.io.ui</project>
                 <project>../../core.kit</project>
                 <project>../../core.multiview</project>
                 <project>../../core.nativeaccess</project>
@@ -148,8 +153,8 @@ made subject to such option by the copyright holder.
                 <project>../../core.startup</project>
                 <project>../../core.ui</project>
                 <project>../../core.windows</project>
+                <project>../../csl.api</project>
                 <project>../../css.editor</project>
-                <project>../../css.visual</project>
                 <project>../../db</project>
                 <project>../../db.core</project>
                 <project>../../db.dataview</project>
@@ -171,6 +176,24 @@ made subject to such option by the copyright holder.
                 <project>../../deployment.wm</project>
                 <project>../../derby</project>
                 <project>../../diff</project>
+                <project>../../dlight</project>
+                <project>../../dlight.collector.stdout</project>
+                <project>../../dlight.core.stack</project>
+                <project>../../dlight.core.ui</project>
+                <project>../../dlight.cpu</project>
+                <project>../../dlight.derby.support</project>
+                <project>../../dlight.dtrace</project>
+                <project>../../dlight.indicators</project>
+                <project>../../dlight.kit</project>
+                <project>../../dlight.management</project>
+                <project>../../dlight.memory</project>
+                <project>../../dlight.nativeexecution</project>
+                <project>../../dlight.perfan</project>
+                <project>../../dlight.spi</project>
+                <project>../../dlight.sync</project>
+                <project>../../dlight.tools</project>
+                <project>../../dlight.util</project>
+                <project>../../dlight.visualizers</project>
                 <project>../../editor</project>
                 <project>../../editor.bookmarks</project>
                 <project>../../editor.bracesmatching</project>
@@ -228,6 +251,11 @@ made subject to such option by the copyright holder.
                 <project>../../html.editor.lib</project>
                 <project>../../html.lexer</project>
                 <project>../../httpserver</project>
+                <project>../../hudson</project>
+                <project>../../hudson.j2seproject</project>
+                <project>../../hudson.maven</project>
+                <project>../../hudson.mercurial</project>
+                <project>../../hudson.subversion</project>
                 <project>../../i18n</project>
                 <project>../../i18n.form</project>
                 <project>../../ide.branding</project>
@@ -335,11 +363,12 @@ made subject to such option by the copyright holder.
                 <project>../../jsp.lexer</project>
                 <project>../../jumpto</project>
                 <project>../../junit</project>
-                <project>../../languages</project>
+                <project>../../kenai</project>
+                <project>../../kenai.collab</project>
+                <project>../../kenai.ui</project>
                 <project>../../languages.bat</project>
                 <project>../../languages.diff</project>
                 <project>../../languages.manifest</project>
-                <project>../../languages.refactoring</project>
                 <project>../../languages.sh</project>
                 <project>../../languages.yaml</project>
                 <project>../../lexer</project>
@@ -352,6 +381,8 @@ made subject to such option by the copyright holder.
                 <project>../../lib.terminalemulator</project>
                 <project>../../lib.uihandler</project>
                 <project>../../libs.aguiswinglayout</project>
+                <project>../../libs.bugtracking</project>
+                <project>../../libs.bugzilla</project>
                 <project>../../libs.bytelist</project>
                 <project>../../libs.cglib</project>
                 <project>../../libs.commons_fileupload</project>
@@ -374,8 +405,10 @@ made subject to such option by the copyright holder.
                 <project>../../libs.jxpath</project>
                 <project>../../libs.lucene</project>
                 <project>../../libs.ppawtlayout</project>
+                <project>../../libs.smack</project>
                 <project>../../libs.springframework</project>
                 <project>../../libs.svnClientAdapter</project>
+                <project>../../libs.swingx</project>
                 <project>../../libs.xerces</project>
                 <project>../../localhistory</project>
                 <project>../../masterfs</project>
@@ -383,6 +416,7 @@ made subject to such option by the copyright holder.
                 <project>../../maven.apisupport</project>
                 <project>../../maven.embedder</project>
                 <project>../../maven.grammar</project>
+                <project>../../maven.graph</project>
                 <project>../../maven.gsf</project>
                 <project>../../maven.hints</project>
                 <project>../../maven.indexer</project>
@@ -395,6 +429,7 @@ made subject to such option by the copyright holder.
                 <project>../../maven.profiler</project>
                 <project>../../maven.repository</project>
                 <project>../../maven.samples</project>
+                <project>../../maven.search</project>
                 <project>../../maven.spring</project>
                 <project>../../mercurial</project>
                 <project>../../mobility.antext</project>

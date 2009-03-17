@@ -160,10 +160,10 @@ class IssueStorage {
         BugtrackingManager.LOG.log(Level.FINE, "start reading query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
         try {
             File folder = getNameSpaceFolder(nameSpace);
-            if(!folder.exists()) return Collections.EMPTY_LIST;
+            if(!folder.exists()) return Collections.emptyList();
 
             DataInputStream dis = getQueryInputStream(folder, queryName);
-            if(dis == null) return Collections.EMPTY_LIST;
+            if(dis == null) return Collections.emptyList();
             List<String> ids = new ArrayList<String>();
             while(true) {
                 String id = null;

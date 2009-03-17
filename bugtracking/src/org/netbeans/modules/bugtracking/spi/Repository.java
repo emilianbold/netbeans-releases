@@ -90,6 +90,11 @@ public abstract class Repository {
      */
     public abstract Issue getIssue(String id);
 
+    /**
+     * Removes this repository from its conector
+     *
+     */
+    public abstract void remove();
 
     /**
      * Returns the {@link BugtrackignController} for this repository
@@ -133,11 +138,11 @@ public abstract class Repository {
         return getIssueCache();
     }
 
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 

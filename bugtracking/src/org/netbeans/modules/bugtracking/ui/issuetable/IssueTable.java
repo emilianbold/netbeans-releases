@@ -110,20 +110,15 @@ public class IssueTable implements MouseListener, AncestorListener {
     private static Icon seenValueIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-value.png")); // NOI18N
     private Set<Issue> issues = new HashSet<Issue>();
 
-    private static final Comparator NodeComparator = new Comparator() {
-        public int compare(Object o1, Object o2) {
-            Node.Property p1 = (Node.Property) o1;
-            Node.Property p2 = (Node.Property) o2;
+    private static final Comparator<IssueProperty> NodeComparator = new Comparator<IssueProperty>() {
+        public int compare(IssueProperty p1, IssueProperty p2) {
             Integer sk1 = (Integer) p1.getValue("sortkey"); // NOI18N
             if (sk1 != null) {
                 Integer sk2 = (Integer) p2.getValue("sortkey"); // NOI18N
                 return sk1.compareTo(sk2);
             } else {
                 try {
-                    assert p1 instanceof Comparable;
-                    Comparable c1 = (Comparable) p1;
-                    Comparable c2 = (Comparable) p2;
-                    return c1.compareTo(c2);
+                    return p1.compareTo(p2);
                 } catch (Exception e) {
                     BugtrackingManager.LOG.log(Level.SEVERE, null, e);
                     return 0;
@@ -323,7 +318,7 @@ public class IssueTable implements MouseListener, AncestorListener {
             String tooltip = null;
             if(value instanceof IssueNode.SeenProperty) {
                 IssueNode.SeenProperty ps = (IssueNode.SeenProperty) value;
-                seenCell.setIcon(!((Boolean) ps.getValue()) ? seenValueIcon : null);
+                seenCell.setIcon(!ps.getValue() ? seenValueIcon : null);
                 renderer = seenCell;
             } else if(query.isSaved() && value instanceof IssueNode.IssueProperty) {
                 IssueProperty p = (IssueNode.IssueProperty) value;
@@ -424,13 +419,13 @@ public class IssueTable implements MouseListener, AncestorListener {
         public void finished() { }
     }
 
-    private class SeenDescriptor extends ColumnDescriptor {
+    private class SeenDescriptor extends ColumnDescriptor<Boolean> {
         public SeenDescriptor() {
             super(Issue.LABEL_NAME_SEEN, Boolean.class, "", NbBundle.getBundle(Issue.class).getString("CTL_Issue_Seen_Desc")); // NOI18N
         }
     }
 
-    private class RecentChangesDescriptor extends ColumnDescriptor {
+    private class RecentChangesDescriptor extends ColumnDescriptor<String> {
         public RecentChangesDescriptor() {
             super(Issue.LABEL_RECENT_CHANGES, String.class, NbBundle.getBundle(Issue.class).getString("CTL_Issue_Recent"), NbBundle.getBundle(Issue.class).getString("CTL_Issue_Recent_Desc")); // NOI18N
         }

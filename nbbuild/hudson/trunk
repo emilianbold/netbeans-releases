@@ -60,17 +60,6 @@ find * | egrep -v "^($expat)(/|$)" | zip -q $DIST/zip/moduleclusters/$BASENAME-n
 cp -p $DIST/zip/moduleclusters/$BASENAME-platform.zip $DIST/zip/
 
 cd ../..
-generated=nbbuild/build/generated
-rm -rf $generated
-ant generate-golden-files generate-files-layout index-layer-paths || exit
-cp -v nbbuild/netbeans/THIRDPARTYLICENSE-generated.txt $generated/external-libraries.txt || exit
-prev_generated=../lastSuccessful/archive/$generated
-if [ -d $prev_generated ]; then
-    diff -r -U 25 $prev_generated $generated > $generated.diff
-    if [ -s $generated.diff ]; then
-        (echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$generated/"; echo; cat $generated.diff) | mail -s "Golden file changes in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
-    fi
-fi
 
 sh sigtests || exit 1
 

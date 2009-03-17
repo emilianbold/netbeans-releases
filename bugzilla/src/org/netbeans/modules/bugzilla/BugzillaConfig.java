@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla;
 
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -134,7 +135,7 @@ public class BugzillaConfig {
         return getKeysWithPrefix(REPO_NAME);
     }
 
-    void removeRepository(String name) {
+    public void removeRepository(String name) {
         getPreferences().remove(REPO_NAME + name);
     }
 

@@ -399,7 +399,7 @@ public final class FileObjectFactory {
     }
 
     private BaseFileObj create(final FileInfo fInfo) {
-        if (fInfo.isWindowsFloppy()) {
+        if (fInfo.isFloppy()) {
             return null;
         }
 
