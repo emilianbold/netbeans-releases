@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.ruby.FindersHelper.FinderMethod;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.openide.filesystems.FileObject;
