@@ -45,6 +45,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -84,16 +87,16 @@ public final class XRefResultSet<T> {
         return out;
     }
     private final Map<ContextScope, Collection<ContextEntry>> scopeEntries;
-    private final Map<ContextScope, Integer> scopes;
-    private final Map<CharSequence, T> unresolved;
+    private final Map<ContextScope, AtomicInteger> scopes; // sync access
+    private final ConcurrentMap<CharSequence, T> unresolved;
 
     public XRefResultSet() {
         scopeEntries = new HashMap<ContextScope, Collection<ContextEntry>>(ContextScope.values().length);
-        scopes = new HashMap<ContextScope, Integer>(ContextScope.values().length);
-        unresolved = new HashMap<CharSequence, T>(100);
+        scopes = new HashMap<ContextScope, AtomicInteger>(ContextScope.values().length);
+        unresolved = new ConcurrentHashMap<CharSequence, T>(100);
         for (ContextScope scopeContext : ContextScope.values()) {
-            scopeEntries.put(scopeContext, new ArrayList<ContextEntry>(1024));
-            scopes.put(scopeContext, 0);
+            scopeEntries.put(scopeContext, Collections.synchronizedList(new ArrayList<ContextEntry>(1024))); // sync access
+            scopes.put(scopeContext, new AtomicInteger(0));
         }
     }
 
@@ -106,20 +109,19 @@ public final class XRefResultSet<T> {
     }
 
     public final void incrementScopeCounter(ContextScope contextScope) {
-        int val = scopes.get(contextScope);
-        scopes.put(contextScope, ++val);
+        scopes.get(contextScope).incrementAndGet();
     }
 
     public final int getNumberOfAllContexts() {
         int out = 0;
-        for (int val : scopes.values()) {
-            out += val;
+        for (AtomicInteger val : scopes.values()) {
+            out += val.get();
         }
         return out;
     }
 
     public final int getNumberOfContexts(ContextScope contextScope, boolean relative) {
-        int num = scopes.get(contextScope);
+        int num = scopes.get(contextScope).get();
         if (relative && (num != 0)) {
             assert num > 0;
             num = (num * 100) / getNumberOfAllContexts();
@@ -131,8 +133,9 @@ public final class XRefResultSet<T> {
         return unresolved.get(name);
     }
 
-    public void addUnresolvedEntry(CharSequence name, T value) {
-        unresolved.put(name, value);
+    public T addUnresolvedEntry(CharSequence name, T value) {
+        T prev = unresolved.putIfAbsent(name, value);
+        return prev == null ? value : prev;
     }
 
     public Collection<T> getUnresolvedEntries(Comparator<? super T> comparator) {
