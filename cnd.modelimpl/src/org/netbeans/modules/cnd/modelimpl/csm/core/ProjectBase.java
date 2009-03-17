@@ -1079,11 +1079,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         APTPreprocHandler.State state;
         state = createPreprocHandler(nativeFile).getState();
         File file = nativeFile.getFile();
-        FileContainer.Entry entry = getFileContainer().getEntry(file);
+        FileContainer fileContainer = getFileContainer();
+        FileContainer.Entry entry = fileContainer.getEntry(file);
         synchronized (entry.getLock()) {
             entry.invalidateStates();
             entry.setState(state, null);
         }
+        fileContainer.put();
         return state;
     }
 
@@ -1115,6 +1117,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      *          false if file was included before
      */
     public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, int mode) throws IOException {
+        boolean updateFileContainer = false;
         try {
             disposeLock.readLock().lock();
             if (disposing) {
@@ -1188,6 +1191,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     } else {
                         entry.setState(newState, null);
                     }
+                    updateFileContainer = true;
                 }
                 entryModCount = entry.getModCount();
             }
@@ -1278,11 +1282,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         traceIncludeScheduling(csmFile, newState, pcState, clean,
                                 statesToParse, statesToKeep);
                     }
+                    updateFileContainer = true;
                 }
             }
             return csmFile;
         } finally {
             disposeLock.readLock().unlock();
+            if (updateFileContainer) {
+                getFileContainer().put();
+            }
         }
     }
 
