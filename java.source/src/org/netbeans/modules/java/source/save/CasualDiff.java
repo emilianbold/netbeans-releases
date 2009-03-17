@@ -2422,7 +2422,8 @@ public class CasualDiff {
         }
         while (newC != null) {
             if (Style.WHITESPACE != newC.style()) {
-                printer.print(newC.getText());
+//                printer.print(newC.getText());
+                printer.printComment(newC, !trailing, false);
                 lastPos += newC.endPos() - newC.pos();
             }
             newC = safeNext(oldIter);
