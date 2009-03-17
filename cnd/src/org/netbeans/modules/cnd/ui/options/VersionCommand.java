@@ -49,7 +49,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Collections;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.LinkSupport;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
@@ -83,7 +82,7 @@ import org.openide.util.Lookup;
     }
 
     private void run() {
-        if (CompilerSetManager.LOCALHOST.equals(tool.getHostKey())) {
+        if (tool.getExecutionEnvironment().isLocal()) {
             // we're dealing with a local toolchain
             File file = new File(path);
             if (!file.exists() && new File(path+".lnk").exists()){ // NOI18N
@@ -107,7 +106,7 @@ import org.openide.util.Lookup;
             // it's a remote toolchain
             CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
             if (provider != null) {
-                provider.run(tool.getHostKey(),
+                provider.run(tool.getExecutionEnvironment(),
                         path + " " + getVersionFlags() + " 2>&1", // NOI18N
                         Collections.<String, String>emptyMap());
                 version = extractVersion(new StringReader(provider.getOutput()));

@@ -32,9 +32,9 @@ import java.util.logging.Logger;
 import javax.swing.JToolTip;
 
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
 import org.netbeans.modules.php.dbgp.ModelNode;
 import org.netbeans.modules.php.dbgp.SessionId;
+import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.UnsufficientValueException;
 import org.netbeans.modules.php.dbgp.models.nodes.AbstractModelNode;
 import org.netbeans.modules.php.dbgp.models.nodes.VariableNode;
@@ -432,7 +432,7 @@ public class VariablesModel extends ViewModelSupport
         if ( id == null ){
             return null;
         }
-        return StartActionProviderImpl.getInstance().getCurrentSession(id);
+        return SessionManager.getInstance().getCurrentSession(id);
     }
     
     private ContextProvider getContextProvider() {

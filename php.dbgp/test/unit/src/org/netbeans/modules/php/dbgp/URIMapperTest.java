@@ -69,7 +69,7 @@ public class URIMapperTest extends NbTestCase {
         sourceFolderBase = getWorkDir();
         webServerURIBase = URI.create("file:///var/www/dbgtest2/");//NOI18N
 
-        basesMapper = URIMapper.createBasedInstance(webServerURIBase, sourceFolderBase, true);
+        basesMapper = URIMapper.createBasedInstance(webServerURIBase, sourceFolderBase);
         allMappers = new URIMapper[]{basesMapper, oneToOneMapper};
     }
 
@@ -90,9 +90,6 @@ public class URIMapperTest extends NbTestCase {
 
         assertEquals(webServerURIBase, basesMapper.toWebServerURI(sourceFolderBase));
         assertEquals(sourceFolderBase, basesMapper.toSourceFile(webServerURIBase));
-
-        assertEquals(sourceFolderBase.getParentFile().toURI(), basesMapper.toWebServerURI(sourceFolderBase.getParentFile()));
-        assertEquals(new File(webServerURIBase).getParentFile(), basesMapper.toSourceFile(webServerURIBase.resolve("..")));
     }
 
     public void testSymetricToRemoteURI() throws IOException {
@@ -149,6 +146,6 @@ public class URIMapperTest extends NbTestCase {
         File sourceFile = new File(sourceFolderBase, path);
         return URIMapper.createMultiMapper(webServerURI,
                 FileUtil.createData(sourceFile),
-                FileUtil.toFileObject(sourceFolderBase));
+                FileUtil.toFileObject(sourceFolderBase), null);
     }
 }

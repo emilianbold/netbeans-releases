@@ -1858,6 +1858,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                             case UNARY_OPERATOR:
                             case MEMBER_POINTER:
                             case INSTANCEOF:
+                            case CONVERSION:
                                 CsmCompletionExpression top2 = peekExp2();
                                 switch (getValidExpID(top2)) {
                                     case ARRAY_OPEN:

@@ -198,14 +198,19 @@ public final class Manager {
         displayHandler.displaySuiteRunning(suiteName);
         displayInWindow(session, displayHandler);
     }
-    
+
+    public void displayReport(final TestSession session,
+                       final Report report) {
+        displayReport(session, report, true);
+    }
+
     /**
      */
     public synchronized void displayReport(final TestSession session,
-                       final Report report) {
+                       final Report report, boolean completed) {
 
         /* Called from the AntLogger's thread */
-
+        report.completed = completed;
         final ResultDisplayHandler displayHandler = getDisplayHandler(session);
         displayHandler.displayReport(report);
         displayInWindow(session, displayHandler);
@@ -237,12 +242,12 @@ public final class Manager {
         /* Called from the AntLogger's thread */
 
         final ResultDisplayHandler displayHandler = getDisplayHandler(session);
+        displayInWindow(session, displayHandler, sessionEnd);
         if (!sessionEnd) {
             displayHandler.displayMessage(message);
         } else {
             displayHandler.displayMessageSessionFinished(message);
         }
-        displayInWindow(session, displayHandler, sessionEnd);
         
         //<editor-fold defaultstate="collapsed" desc="disabled code">
         /*
@@ -340,7 +345,9 @@ public final class Manager {
         public void run() {
             final ResultWindow window = ResultWindow.getInstance();
             if (displayHandler != null) {
-               window.addDisplayComponent(displayHandler.getDisplayComponent());
+                window.addDisplayComponent(displayHandler.getDisplayComponent());
+                window.setOutputComp(displayHandler.getOutputComponent());
+                displayHandler.createIO(window.getIOContainer());
             }
             if (promote) {
                window.promote();

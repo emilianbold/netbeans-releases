@@ -46,6 +46,7 @@ import org.openide.util.NbBundle;
 import java.util.*;
 import java.io.Serializable;
 import java.io.File;
+import java.util.logging.Level;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
@@ -301,7 +302,8 @@ public class FileInformation implements Serializable {
         try {
             entry = Subversion.getInstance().getClient(true).getSingleStatus(file);
         } catch (SVNClientException e) {
-            // no entry for this file, ignore
+            // at least log the exception
+            Subversion.LOG.log(Level.INFO, null, e);
         }
     }    
 

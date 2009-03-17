@@ -98,7 +98,7 @@ public class RemoteInteractiveCommandSupport extends RemoteConnectionSupport {
         }
         cmdline.append(cmd);
 
-        echannel.setCommand(ShellUtils.wrapCommand(key, cmdline.toString()));
+        echannel.setCommand(ShellUtils.wrapCommand(executionEnvironment, cmdline.toString()));
         echannel.setInputStream(in);
         echannel.setOutputStream(out);
         echannel.setErrStream(out);

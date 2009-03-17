@@ -207,7 +207,7 @@ public final class ProjectImpl extends ProjectBase {
             }
             removeNativeFileItem(impl.getUID());
             impl.dispose();
-            removeFile(new File(impl.getAbsolutePath()));
+            removeFile(impl.getAbsolutePath());
             APTDriver.getInstance().invalidateAPT(impl.getBuffer());
             ParserQueue.instance().remove(impl);
         }

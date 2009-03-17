@@ -229,6 +229,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             }
         });
 
+        table.getTableHeader().setReorderingAllowed(false);
         // listens on clikcs on table header, detects column and sort accordingly to chosen one
         table.getTableHeader().addMouseListener(new MouseAdapter() {
             @Override
@@ -244,6 +245,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                 if (modelIndex < 0) {
                     return;
                 }
+                saveEditorValue(false);
                 structure.sort(modelIndex);
             }
         });
@@ -1050,9 +1052,9 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }
 
         @Override
-        public void columnMoved(TableColumnModelEvent arg0) {
+        public void columnMoved(TableColumnModelEvent evt) {
             firePropertyChange("columnMoved", null, null); //NOI18N
-            super.columnMoved(arg0);
+            super.columnMoved(evt);
         }
         @Override
         public void columnMarginChanged(ChangeEvent evt) {
@@ -1079,7 +1081,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                 }
                 
                 Rectangle cellRect = getCellRect(editingRow, editingColumn, false);
-                
+
                 setCellEditor(null);
                 setEditingColumn(-1);
                 setEditingRow(-1);

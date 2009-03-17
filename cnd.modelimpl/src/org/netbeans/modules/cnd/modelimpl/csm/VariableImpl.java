@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
@@ -87,7 +87,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         initInitialValue(ast);
         _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
-        this.name = QualifiedNameCache.getManager().getString(name);
+        this.name = NameCache.getManager().getString(name);
         this.type = type;
         _setScope(scope);
         if (registerInProject) {
@@ -106,7 +106,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         super(file, pos);
         this._static = _static;
         this._extern = _extern;
-        this.name = QualifiedNameCache.getManager().getString(name);
+        this.name = NameCache.getManager().getString(name);
         this.type = type;
         _setScope(scope);
         if (registerInProject) {
@@ -341,7 +341,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, output);
         byte pack = (byte) ((this._static ? 1 : 0) | (this._extern ? 2 : 0));
         output.writeByte(pack);
         PersistentUtils.writeExpression(initExpr, output);
@@ -353,7 +353,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 
     public VariableImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getManager().getString(input.readUTF());
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
         byte pack = input.readByte();
         this._static = (pack & 1) == 1;

@@ -45,7 +45,6 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import javax.swing.JOptionPane;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
@@ -111,7 +110,7 @@ public class DevelopmentHostCustomizer extends JOptionPane implements VetoableCh
                     try {
                         record.validate(true);
                         // initialize compiler sets for remote host if needed
-                        CompilerSetManager csm = CompilerSetManager.getDefault(record.getName());
+                        CompilerSetManager csm = CompilerSetManager.getDefault(record.getExecutionEnvironment());
                         csm.initialize(true, true);
                     } catch(Exception e) {
                         e.printStackTrace();

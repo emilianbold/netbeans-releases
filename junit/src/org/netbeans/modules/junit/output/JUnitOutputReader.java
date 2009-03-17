@@ -137,6 +137,8 @@ final class JUnitOutputReader {
 
     private JUnitTestcase testcase;
 
+    private Report report;
+
     enum State {DEFAULT, SUITE_STARTED, TESTCASE_STARTED, SUITE_FINISHED, TESTCASE_ISSUE};
 
     private State state = State.DEFAULT;
@@ -567,7 +569,10 @@ final class JUnitOutputReader {
                     }
                 }
             }
-            manager.displayReport(testSession, testSession.getReport(lastSuiteTime));
+//            manager.displayReport(testSession, testSession.getReport(lastSuiteTime));
+            report.update(testSession.getReport(lastSuiteTime));
+            manager.displayReport(testSession, report, true);
+            report = null;
             lastSuiteTime = 0;
         }
 
@@ -617,6 +622,12 @@ final class JUnitOutputReader {
     }
 
     private void testCaseFinished(){
+        if (report == null){
+            report = testSession.getReport(0);
+        }else{
+            report.update(testSession.getReport(0));
+        }
+        manager.displayReport(testSession, report, false);
         state = State.SUITE_STARTED;
     }
 

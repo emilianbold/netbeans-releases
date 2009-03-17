@@ -132,8 +132,7 @@ public class MakeSampleProjectGenerator {
             //changeXmlFileByTagName(doc, "executablePath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
-            String host = CompilerSetManager.getDefaultDevelopmentHost();
-            CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(host);
+            CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment());
             int platform = compilerSetManager.getPlatform();
             CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();
             String variant = MakeConfiguration.getVariant(compilerSet, platform);

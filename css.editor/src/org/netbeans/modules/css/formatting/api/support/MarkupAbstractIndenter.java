@@ -147,6 +147,9 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         int foundOffset = -1;
         do {
             Token tk = ts.token();
+            if (tk == null) {
+                break;
+            }
 
             if (isStartTagSymbol(tk) || isForeignLanguageStartToken(tk, ts)) {
                 try {

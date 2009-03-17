@@ -66,6 +66,8 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
 /**
  * utilities for APT serialization
@@ -284,13 +286,13 @@ public class APTSerializeUtils {
         return snap;
     }
 
-    public static void writeStringToMacroMap(Map<String, APTMacro> macros, DataOutput output) throws IOException {
+    public static void writeStringToMacroMap(Map<CharSequence, APTMacro> macros, DataOutput output) throws IOException {
         assert macros != null;
         output.writeInt(macros.size());
-        for (Entry<String, APTMacro> entry : macros.entrySet()) {
+        for (Entry<CharSequence, APTMacro> entry : macros.entrySet()) {
             assert entry != null;
-            String key = entry.getKey();
-            assert key != null;
+            assert entry.getKey() instanceof TinyCharSequence;
+            String key = entry.getKey().toString();
             output.writeUTF(key);
             APTMacro macro = entry.getValue();
             assert macro != null;
@@ -298,10 +300,10 @@ public class APTSerializeUtils {
         }
     }
 
-    public static void readStringToMacroMap(Map<String, APTMacro> macros, DataInput input) throws IOException {
+    public static void readStringToMacroMap(Map<CharSequence, APTMacro> macros, DataInput input) throws IOException {
         int collSize = input.readInt();
         for (int i = 0; i < collSize; ++i) {
-            String key = input.readUTF();
+            CharSequence key = CharSequenceKey.create(input.readUTF());
             assert key != null;
             APTMacro macro = readMacro(input);
             assert macro != null;

@@ -66,6 +66,7 @@ public class UIHandlerTest extends NbTestCase {
     protected void setUp() throws Exception {
         Installer o = Installer.findObject(Installer.class, true);
         System.setProperty("netbeans.user", getWorkDirPath());
+        UIHandler.flushImmediatelly();
         clearWorkDir();
         assertNotNull("Installer created", o);
         o.restored();

@@ -41,9 +41,10 @@
 
 package org.netbeans.modules.hudson.impl;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
+import java.beans.PropertyChangeSupport;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,11 +62,7 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
     
     private Sheet.Set set;
     
-    protected final List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
-    
-    public HudsonInstanceProperties(String name, String url) {
-        this(name, url, "0");
-    }
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
     public HudsonInstanceProperties(String name, String url, String sync) {
         put(INSTANCE_NAME, name);
@@ -80,18 +77,14 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
     @Override
     public synchronized String put(String key, String value) {
         String o = super.put(key, value);
-        
-        firePropertyChangeListeners( key, value);
-        
+        pcs.firePropertyChange(key, o, value);
         return o;
     }
     
     @Override
     public synchronized String remove(Object key) {
         String o = super.remove(key);
-        
-        firePropertyChangeListeners((String) key, null);
-        
+        pcs.firePropertyChange((String) key, o, null);
         return o;
     }
     
@@ -130,26 +123,17 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
     }
     
     public void addPropertyChangeListener(PropertyChangeListener l) {
-        listeners.add(l);
+        pcs.addPropertyChangeListener(l);
     }
     
     public void removePropertyChangeListener(PropertyChangeListener l) {
-        listeners.remove(l);
+        pcs.removePropertyChangeListener(l);
     }
     
-    private void firePropertyChangeListeners(String key, Object value) {
-        PropertyChangeEvent event = new PropertyChangeEvent(this, key, value, value);
-        ArrayList<PropertyChangeListener> tempList;
-        
-        synchronized (listeners) {
-            tempList = new ArrayList<PropertyChangeListener>(listeners);
-        }
-        
-        for (PropertyChangeListener l : tempList) {
-            l.propertyChange(event);
-        }
+    public List<PropertyChangeListener> getCurrentListeners() {
+        return Arrays.asList(pcs.getPropertyChangeListeners());
     }
-    
+
     private class HudsonInstanceProperty extends PropertySupport<String> {
         
         private String key;
@@ -170,4 +154,23 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
             return get(key);
         }
     }
+
+    public static List<String> split(String prop) {
+        return prop != null && prop.trim().length() > 0 ?
+            Arrays.asList(prop.split("/")) :
+            Collections.<String>emptyList();
+    }
+
+    public static String join(List<String> pieces) {
+        StringBuilder b = new StringBuilder();
+        for (String piece : pieces) {
+            assert !piece.contains("/") : piece;
+            if (b.length() > 0) {
+                b.append('/');
+            }
+            b.append(piece);
+        }
+        return b.toString();
+    }
+
 }

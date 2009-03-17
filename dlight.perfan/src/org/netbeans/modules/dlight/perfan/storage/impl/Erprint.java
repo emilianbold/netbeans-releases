@@ -79,14 +79,14 @@ public final class Erprint {
         this.erOutputProcessor = new FilteredInputProcessor();
     }
 
-    ExperimentStatistics getExperimentStatistics() {
-        restart();
+    public ExperimentStatistics getExperimentStatistics(boolean restart) {
+        restart(restart);
         String[] stat = exec("statistics"); // NOI18N
         return new ExperimentStatistics(stat);
     }
 
-    LeaksStatistics getExperimentLeaks() {
-        restart();
+    LeaksStatistics getExperimentLeaks(boolean restart) {
+        restart(restart);
         String[] stat = exec("leaks"); // NOI18N
         return new LeaksStatistics(stat);
     }
@@ -119,16 +119,25 @@ public final class Erprint {
         }
     }
 
-    final void stop() {
+    public final void stop() {
         // TODO: do it more gracefully
-        if (er_printTask != null) {
-            er_printTask.cancel(true);
-            er_printTask = null;
-            erOutputProcessor.reset(null);
+        synchronized (lock) {
+            if (er_printTask != null) {
+                er_printTask.cancel(true);
+                er_printTask = null;
+                try {
+                    erOutputProcessor.reset();
+                } catch (IOException ex) {
+                }
+            }
         }
     }
 
-    final void restart() {
+    public final void restart(boolean restart) {
+        if (!restart) {
+            return;
+        }
+
         synchronized (lock) {
             stop();
             start();
@@ -144,7 +153,7 @@ public final class Erprint {
 
         synchronized (lock) {
             if (er_printTask == null || er_printTask.isDone()) {
-                restart();
+                restart(true);
             }
 
             if (in == null) {
@@ -167,6 +176,7 @@ public final class Erprint {
             try {
                 doneSignal.await();
             } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
             }
 
             result = erOutputProcessor.getBuffer();
@@ -188,11 +198,14 @@ public final class Erprint {
                 : result[0].substring(result[0].indexOf(':') + 1); // NOI18N
     }
 
-    String[] getHotFunctions(int limit) {
+    public String[] getHotFunctions(Metrics metrics, int limit, boolean restart) {
         String[] result = null;
         synchronized (lock) {
+            restart(restart);
+            setMetrics(metrics.mspec);
+            setSortBy(metrics.msort);
             erOutputProcessor.setFilterType(FilterType.startsWithNumber);
-            result = exec("functions", limit);
+            result = exec("functions", limit); // NOI18N
             erOutputProcessor.setFilterType(FilterType.noFiltering);
         }
         return result;
@@ -211,7 +224,7 @@ public final class Erprint {
             return InputProcessors.copying(new OutputStreamWriter(System.err) {
 
                 final StringBuilder sb = new StringBuilder();
-                final static String prefix = "!!!!! ER_PRINT SAYS !!!! : ";
+                final static String prefix = "!!!!! ER_PRINT SAYS !!!! : "; // NOI18N
 
                 @Override
                 public void write(char[] chars) throws IOException {
@@ -236,6 +249,7 @@ public final class Erprint {
         // The problem may appear when one thread gets buffer, while another one
         // cleans it... 
 
+        private final Object lock = new String(FilteredInputProcessor.class.getName());
         private final List<String> buffer = Collections.synchronizedList(new ArrayList<String>());
         private FilterType filterType = FilterType.noFiltering;
         private String prompt = null;
@@ -251,31 +265,40 @@ public final class Erprint {
 
         @Override
         public void processInput(char[] chars) throws IOException {
-            String data = new String(chars, 0, chars.length);
-            String[] lines = data.split("\n"); // NOI18N
+            synchronized (lock) {
+                String data = new String(chars, 0, chars.length);
+                String[] lines = data.split("\n"); // NOI18N
 
-            for (String line : lines) {
-                if (prompt != null && line.startsWith(prompt)) {
-                    do {
-                        doneSignal.countDown();
-                        line = line.substring(prompt.length());
-                    } while (line.contains(prompt));
-                }
-
-                if (line.length() != 0) {
-                    switch (filterType) {
-                        // TODO: fixme Need correct filtering.
-                        case startsWithNumber:
-                            if (!line.matches("^ *[0-9]+.*")) {
-                                continue;
-                            }
+                for (String line : lines) {
+                    if (prompt != null && line.startsWith(prompt)) {
+                        do {
+                            doneSignal.countDown();
+                            line = line.substring(prompt.length());
+                        } while (line.contains(prompt));
                     }
-                    buffer.add(line.trim());
+
+                    if (line.length() != 0) {
+                        switch (filterType) {
+                            // TODO: fixme Need correct filtering.
+                            case startsWithNumber:
+                                if (!line.matches("^ *[0-9]+.*")) { // NOI18N
+                                    continue;
+                                }
+                        }
+                        buffer.add(line.trim());
+                    }
                 }
             }
         }
 
         public void reset() throws IOException {
+            synchronized (lock) {
+                while (doneSignal.getCount() > 0) {
+                    doneSignal.countDown();
+                }
+
+                reset(null);
+            }
         }
 
         public void close() throws IOException {
@@ -288,8 +311,8 @@ public final class Erprint {
 
         private void reset(CountDownLatch doneSignal) throws IllegalThreadStateException {
             if (this.doneSignal != null && this.doneSignal.getCount() > 0) {
-                String message = "SYNCHRONIZATION PROBLEM!!!\n" +
-                        "An attempt to reset er_print input processor \n" +
+                String message = "SYNCHRONIZATION PROBLEM!!!\n" + // NOI18N
+                        "An attempt to reset er_print input processor \n" + // NOI18N
                         "BEFORE previous output is processed"; // NOI18N
 
                 throw new IllegalThreadStateException(message);
@@ -332,6 +355,10 @@ public final class Erprint {
                                 writer.flush();
                                 String[] er_output;
                                 while (true) {
+                                    if (Thread.currentThread().isInterrupted()) {
+                                        break;
+                                    }
+
                                     er_output = erOutputProcessor.getBuffer();
                                     if (er_output.length == 1) {
                                         erOutputProcessor.setPrompt(er_output[0]);
@@ -340,6 +367,7 @@ public final class Erprint {
                                         try {
                                             Thread.sleep(100);
                                         } catch (InterruptedException ex) {
+                                            Thread.currentThread().interrupt();
                                         }
                                     }
                                 }

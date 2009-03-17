@@ -1472,7 +1472,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 currentPath = null; // Elements not resolved correctly
             }
         }
-        if (currentPath == null) {
+        if (currentPath == null || elm == null) {
             return getIdentifierByName(arg0, evaluationContext);
         }
         switch(elm.getKind()) {
@@ -2087,7 +2087,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 currentPath = null; // Elements not resolved correctly
             }
         }
-        if (currentPath == null) {
+        if (currentPath == null || elm == null) {
             Mirror expr = arg0.getExpression().accept(this, evaluationContext);
             String name = arg0.getIdentifier().toString();
             // try field:

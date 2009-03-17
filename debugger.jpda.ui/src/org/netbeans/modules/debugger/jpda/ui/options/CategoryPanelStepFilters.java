@@ -45,33 +45,25 @@
 
 package org.netbeans.modules.debugger.jpda.ui.options;
 
-import java.awt.Component;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.prefs.Preferences;
-import javax.swing.DefaultListModel;
 import javax.swing.JCheckBox;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+
 import org.netbeans.api.debugger.Properties;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbPreferences;
 
 /**
  *
- * @author martin
+ * @author Martin Entlicher
  */
 class CategoryPanelStepFilters extends StorablePanel {
 
@@ -79,6 +71,11 @@ class CategoryPanelStepFilters extends StorablePanel {
     public CategoryPanelStepFilters() {
         initComponents();
         initFilterClassesList();
+        // Set column sizes:
+        filterClassesTable.getColumnModel().getColumn(0).setPreferredWidth(new JCheckBox().getPreferredSize().width);
+        filterClassesTable.getColumnModel().getColumn(0).setMaxWidth(new JCheckBox().getPreferredSize().width);
+        filterClassesTable.getColumnModel().getColumn(0).setResizable(false);
+        filterClassesTable.getColumnModel().getColumn(1).setResizable(true);
     }
 
     /** This method is called from within the constructor to
@@ -96,7 +93,11 @@ class CategoryPanelStepFilters extends StorablePanel {
         filterConstructorsCheckBox = new javax.swing.JCheckBox();
         filterClassesLabel = new javax.swing.JLabel();
         filterClassesScrollPane = new javax.swing.JScrollPane();
-        filterClassesList = new javax.swing.JList();
+        filterClassesTable = new javax.swing.JTable() {
+            public boolean getScrollableTracksViewportHeight() {
+                return true;
+            }
+        };
         stepThroughFiltersCheckBox = new javax.swing.JCheckBox();
         filterAddButton = new javax.swing.JButton();
         filterRemoveButton = new javax.swing.JButton();
@@ -118,7 +119,27 @@ class CategoryPanelStepFilters extends StorablePanel {
 
         filterClassesLabel.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterClassesLabel.text")); // NOI18N
 
-        filterClassesScrollPane.setViewportView(filterClassesList);
+        filterClassesTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null},
+                {null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Boolean.class, java.lang.String.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        filterClassesTable.setShowHorizontalLines(false);
+        filterClassesTable.setShowVerticalLines(false);
+        filterClassesTable.setTableHeader(null);
+        filterClassesScrollPane.setViewportView(filterClassesTable);
 
         stepThroughFiltersCheckBox.setText(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.stepThroughFiltersCheckBox.text")); // NOI18N
 
@@ -206,49 +227,13 @@ class CategoryPanelStepFilters extends StorablePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void initFilterClassesList() {
-        filterClassesList.setCellRenderer(new ListCellRenderer() {
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                ClassFilter cf = (ClassFilter) value;
-                JCheckBox cb = classFilterComponents.get(cf);
-                if (cb == null) {
-                    cb = new JCheckBox(cf.toString(), cf.isEnabled());
-                    classFilterComponents.put(cf, cb);
-                }
-                cb.setEnabled(list.isEnabled());
-                cb.setFont(list.getFont());
-                cb.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
-                cb.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
-                return cb;
-            }
-        });
-        filterClassesList.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent event) {
-                JList list = (JList) event.getSource();
-                // Get index of item clicked
-                int index = list.locationToIndex(event.getPoint());
-                if (index < 0) return ;
-                int height = list.getUI().getCellBounds(filterClassesList, index, index).height;
-                Point cellLocation = list.getUI().indexToLocation(filterClassesList, index);
-                int x = event.getPoint().x - cellLocation.x;
-                if (x >= 0 && x <= height) {
-                    ClassFilter cf = (ClassFilter) list.getModel().getElementAt(index);
-                    // Toggle selected state
-                    cf.setEnabled(!cf.isEnabled());
-                    JCheckBox cb = classFilterComponents.get(cf);
-                    cb.setSelected(cf.isEnabled());
-                    // Repaint cell
-                    list.repaint(list.getCellBounds(index, index));
-                }
-            }
-        });
-        filterClassesList.addListSelectionListener(new ListSelectionListener() {
+        filterClassesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                filterRemoveButton.setEnabled(filterClassesList.getSelectedIndex() >= 0);
+                filterRemoveButton.setEnabled(filterClassesTable.getSelectedRow() >= 0);
             }
         });
-        filterClassesList.setModel(new DefaultListModel());
-        filterClassesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        filterRemoveButton.setEnabled(filterClassesTable.getSelectedRow() >= 0);
+        filterClassesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     private void useStepFiltersCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useStepFiltersCheckBoxActionPerformed
@@ -256,38 +241,69 @@ class CategoryPanelStepFilters extends StorablePanel {
     }//GEN-LAST:event_useStepFiltersCheckBoxActionPerformed
 
     private void filterAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterAddButtonActionPerformed
-        NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine("Class", "Add Class Filter");
-        DialogDisplayer.getDefault().notify(nd);
-        ((DefaultListModel) filterClassesList.getModel()).addElement(new ClassFilter(nd.getInputText(), true));
-        //JCheckBox cb = new JCheckBox(nd.getInputText());
-        //cb.setSelected(true);
-        //filterClassesList.add(cb);
-        filterClassesList.repaint();
+        final DefaultTableModel model = (DefaultTableModel) filterClassesTable.getModel();
+        model.addRow(new Object[] { Boolean.TRUE, "" });
+        final int index = model.getRowCount() - 1;
+        filterClassesTable.getSelectionModel().setSelectionInterval(index, index);
+        filterClassesTable.editCellAt(index, 1);
+        filterClassesTable.requestFocus();
+         //DefaultCellEditor ed = (DefaultCellEditor)
+        filterClassesTable.getCellEditor(index, 1).shouldSelectCell(
+                new ListSelectionEvent(filterClassesTable,
+                                       index, index, true));
+        filterRemoveButton.setEnabled(false);
+        filterAddButton.setEnabled(false);
+        filterClassesTable.getCellEditor(index, 1).addCellEditorListener(new CellEditorListener() {
+            public void editingStopped(ChangeEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (index < filterClassesTable.getRowCount()) {
+                            String value = (String) model.getValueAt(index, 1);
+                            if (value.trim().length() == 0) {
+                                model.removeRow(index);
+                            }
+                        }
+                    }
+                });
+                filterClassesTable.getCellEditor(index, 1).removeCellEditorListener(this);
+                filterRemoveButton.setEnabled(true);
+                filterAddButton.setEnabled(true);
+            }
+
+            public void editingCanceled(ChangeEvent e) {
+                model.removeRow(index);
+                filterClassesTable.getCellEditor(index, 1).removeCellEditorListener(this);
+                filterRemoveButton.setEnabled(true);
+                filterAddButton.setEnabled(true);
+            }
+        });
+
     }//GEN-LAST:event_filterAddButtonActionPerformed
 
     private void filterRemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterRemoveButtonActionPerformed
-        ((DefaultListModel) filterClassesList.getModel()).remove(filterClassesList.getSelectedIndex());
-        filterClassesList.repaint();
+        int index = filterClassesTable.getSelectedRow();
+        if (index < 0) return ;
+        DefaultTableModel model = (DefaultTableModel) filterClassesTable.getModel();
+        model.removeRow(index);
+        if (--index >= 0) {
+            filterClassesTable.setRowSelectionInterval(index, index);
+        }
     }//GEN-LAST:event_filterRemoveButtonActionPerformed
 
     private void filtersCheckAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filtersCheckAllButtonActionPerformed
-        DefaultListModel model = (DefaultListModel) filterClassesList.getModel();
-        for (int i = 0; i < model.getSize(); i++) {
-            ClassFilter cf = (ClassFilter) model.get(i);
-            cf.setEnabled(true);
-            classFilterComponents.get(cf).setSelected(true);
+        DefaultTableModel model = (DefaultTableModel) filterClassesTable.getModel();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            model.setValueAt(Boolean.TRUE, i, 0);
         }
-        filterClassesList.repaint();
+        filterClassesTable.repaint();
     }//GEN-LAST:event_filtersCheckAllButtonActionPerformed
 
     private void filtersUncheckAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filtersUncheckAllButtonActionPerformed
-        DefaultListModel model = (DefaultListModel) filterClassesList.getModel();
-        for (int i = 0; i < model.getSize(); i++) {
-            ClassFilter cf = (ClassFilter) model.get(i);
-            cf.setEnabled(false);
-            classFilterComponents.get(cf).setSelected(false);
+        DefaultTableModel model = (DefaultTableModel) filterClassesTable.getModel();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            model.setValueAt(Boolean.FALSE, i, 0);
         }
-        filterClassesList.repaint();
+        filterClassesTable.repaint();
     }//GEN-LAST:event_filtersUncheckAllButtonActionPerformed
 
     @Override
@@ -299,7 +315,7 @@ class CategoryPanelStepFilters extends StorablePanel {
         filterStaticInitCheckBox.setSelected(p.getBoolean("FilterStaticInitializers", false));
         filterConstructorsCheckBox.setSelected(p.getBoolean("FilterConstructors", false));
         //String[] filterClasses = (String[]) pp.getArray("FilterClasses", new String[] {});
-        DefaultListModel filterClassesModel = (DefaultListModel) filterClassesList.getModel();
+        DefaultTableModel filterClassesModel = (DefaultTableModel) filterClassesTable.getModel();
         Set enabledFilters = (Set) Properties.getDefault ().getProperties ("debugger").
                 getProperties ("sources").getProperties ("class_filters").
                 getCollection (
@@ -312,10 +328,9 @@ class CategoryPanelStepFilters extends StorablePanel {
                     "all",
                     Collections.EMPTY_SET
                 );
-        filterClassesModel.clear();
+        filterClassesModel.setRowCount(0);
         for (String filter : allFilters) {
-            ClassFilter cf = new ClassFilter(filter, enabledFilters.contains(filter));
-            filterClassesModel.addElement(cf);
+            filterClassesModel.addRow(new Object[] { enabledFilters.contains(filter), filter });
         }
         stepThroughFiltersCheckBox.setSelected(p.getBoolean("StepThroughFilters", false));
     }
@@ -327,15 +342,16 @@ class CategoryPanelStepFilters extends StorablePanel {
         p.setBoolean("FilterSyntheticMethods", filterSyntheticCheckBox.isSelected());
         p.setBoolean("FilterStaticInitializers", filterStaticInitCheckBox.isSelected());
         p.setBoolean("FilterConstructors", filterConstructorsCheckBox.isSelected());
-        ListModel filterClassesModel = filterClassesList.getModel();
+        TableModel filterClassesModel = filterClassesTable.getModel();
         Set<String> allFilters = new LinkedHashSet<String>();
         Set<String> enabledFilters = new HashSet<String>();
-        int n = filterClassesModel.getSize();
+        int n = filterClassesModel.getRowCount();
         for (int i = 0; i < n; i++) {
-            ClassFilter cf = (ClassFilter) filterClassesModel.getElementAt(i);
-            allFilters.add(cf.toString());
-            if (cf.isEnabled()) {
-                enabledFilters.add(cf.toString());
+            boolean isEnabled = (Boolean) filterClassesModel.getValueAt(i, 0);
+            String clazz = (String) filterClassesModel.getValueAt(i, 1);
+            allFilters.add(clazz);
+            if (isEnabled) {
+                enabledFilters.add(clazz);
             }
         }
         Properties.getDefault ().getProperties ("debugger").
@@ -357,8 +373,8 @@ class CategoryPanelStepFilters extends StorablePanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton filterAddButton;
     private javax.swing.JLabel filterClassesLabel;
-    private javax.swing.JList filterClassesList;
     private javax.swing.JScrollPane filterClassesScrollPane;
+    private javax.swing.JTable filterClassesTable;
     private javax.swing.JCheckBox filterConstructorsCheckBox;
     private javax.swing.JButton filterRemoveButton;
     private javax.swing.JCheckBox filterStaticInitCheckBox;
@@ -368,44 +384,5 @@ class CategoryPanelStepFilters extends StorablePanel {
     private javax.swing.JCheckBox stepThroughFiltersCheckBox;
     private javax.swing.JCheckBox useStepFiltersCheckBox;
     // End of variables declaration//GEN-END:variables
-    private Map<ClassFilter, JCheckBox> classFilterComponents = new WeakHashMap<ClassFilter, JCheckBox>();
-    
-    private static class ClassFilter {
 
-        private String clazz;
-        private boolean enabled;
-        //private JCheckBox checkBox;
-
-        private ClassFilter(String clazz, boolean enabled) {
-            this.clazz = clazz;
-            this.enabled = enabled;
-        }
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-            //if (checkBox != null) {
-            //    checkBox.setSelected(enabled);
-            //}
-        }
-
-        @Override
-        public String toString() {
-            return clazz;
-        }
-
-        void setClass(String clazz) {
-            this.clazz = clazz;
-        }
-
-        //JCheckBox getComponent() {
-        //    if (checkBox == null) {
-        //        checkBox = new JCheckBox(toString(), isEnabled());
-        //    }
-        //    return checkBox;
-        //}
-    }
 }

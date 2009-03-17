@@ -40,365 +40,365 @@
  */
 
 /**
- *	This generated bean class ElementOrTypeOrMessagePartChooser
- *	matches the schema element 'ElementOrTypeOrMessagePartChooser'.
+ *  This generated bean class ElementOrTypeOrMessagePartChooser
+ *  matches the schema element 'ElementOrTypeOrMessagePartChooser'.
  *  The root bean class is ElementProperties
  *
- *	===============================================================
- *	Shows a Tree based selector, which shows all the elements/types from Inline/Imported schemas and also the messages from all imported and existing wsdls.
- *	                                        elementAttributeName : the attribute on which GlobalElement data type would be set.
- *	                                        typeAttributeName : the attribute on which GlobalType data type would be set.
- *	                                        messageAttributeName : the attribute on which Message data type would be set.
- *	                                        partAttributeName : the attribute on which part would be set.
- *	                                        This chooser can select between a GlobalElement or GlobalType or a wsdl Part.
- *	                                        
- *	                                    
- *	===============================================================
- *	Generated on Mon Feb 05 17:54:51 PST 2007
+ *  ===============================================================
+ *  Shows a Tree based selector, which shows all the elements/types from Inline/Imported schemas and also the messages from all imported and existing wsdls.
+ *                                          elementAttributeName : the attribute on which GlobalElement data type would be set.
+ *                                          typeAttributeName : the attribute on which GlobalType data type would be set.
+ *                                          messageAttributeName : the attribute on which Message data type would be set.
+ *                                          partAttributeName : the attribute on which part would be set.
+ *                                          This chooser can select between a GlobalElement or GlobalType or a wsdl Part.
+ *                                          
+ *                                      
+ *  ===============================================================
+ *  Generated on Mon Feb 05 17:54:51 PST 2007
  * @Generated
  */
 
 package org.netbeans.modules.xml.wsdl.ui.property.model;
 
 public class ElementOrTypeOrMessagePartChooser {
-	public static final String ELEMENTATTRIBUTENAME = "ElementAttributeName";	// NOI18N
-	public static final String TYPEATTRIBUTENAME = "TypeAttributeName";	// NOI18N
-	public static final String MESSAGEATTRIBUTENAME = "MessageAttributeName";	// NOI18N
-	public static final String PARTATTRIBUTENAME = "PartAttributeName";	// NOI18N
+    public static final String ELEMENTATTRIBUTENAME = "ElementAttributeName";   // NOI18N
+    public static final String TYPEATTRIBUTENAME = "TypeAttributeName"; // NOI18N
+    public static final String MESSAGEATTRIBUTENAME = "MessageAttributeName";   // NOI18N
+    public static final String PARTATTRIBUTENAME = "PartAttributeName"; // NOI18N
 
-	private java.lang.String _ElementAttributeName;
-	private java.lang.String _TypeAttributeName;
-	private java.lang.String _MessageAttributeName;
-	private java.lang.String _PartAttributeName;
+    private java.lang.String _ElementAttributeName;
+    private java.lang.String _TypeAttributeName;
+    private java.lang.String _MessageAttributeName;
+    private java.lang.String _PartAttributeName;
 
-	/**
-	 * Normal starting point constructor.
-	 */
-	public ElementOrTypeOrMessagePartChooser() {
-	}
+    /**
+     * Normal starting point constructor.
+     */
+    public ElementOrTypeOrMessagePartChooser() {
+    }
 
-	/**
-	 * Deep copy
-	 */
-	public ElementOrTypeOrMessagePartChooser(org.netbeans.modules.xml.wsdl.ui.property.model.ElementOrTypeOrMessagePartChooser source) {
-		this(source, false);
-	}
+    /**
+     * Deep copy
+     */
+    public ElementOrTypeOrMessagePartChooser(org.netbeans.modules.xml.wsdl.ui.property.model.ElementOrTypeOrMessagePartChooser source) {
+        this(source, false);
+    }
 
-	/**
-	 * Deep copy
-	 * @param justData just copy the XML relevant data
-	 */
-	public ElementOrTypeOrMessagePartChooser(org.netbeans.modules.xml.wsdl.ui.property.model.ElementOrTypeOrMessagePartChooser source, boolean justData) {
-		_ElementAttributeName = source._ElementAttributeName;
-		_TypeAttributeName = source._TypeAttributeName;
-		_MessageAttributeName = source._MessageAttributeName;
-		_PartAttributeName = source._PartAttributeName;
-	}
+    /**
+     * Deep copy
+     * @param justData just copy the XML relevant data
+     */
+    public ElementOrTypeOrMessagePartChooser(org.netbeans.modules.xml.wsdl.ui.property.model.ElementOrTypeOrMessagePartChooser source, boolean justData) {
+        _ElementAttributeName = source._ElementAttributeName;
+        _TypeAttributeName = source._TypeAttributeName;
+        _MessageAttributeName = source._MessageAttributeName;
+        _PartAttributeName = source._PartAttributeName;
+    }
 
-	// This attribute is optional
-	public void setElementAttributeName(java.lang.String value) {
-		_ElementAttributeName = value;
-	}
+    // This attribute is optional
+    public void setElementAttributeName(java.lang.String value) {
+        _ElementAttributeName = value;
+    }
 
-	public java.lang.String getElementAttributeName() {
-		return _ElementAttributeName;
-	}
+    public java.lang.String getElementAttributeName() {
+        return _ElementAttributeName;
+    }
 
-	// This attribute is optional
-	public void setTypeAttributeName(java.lang.String value) {
-		_TypeAttributeName = value;
-	}
+    // This attribute is optional
+    public void setTypeAttributeName(java.lang.String value) {
+        _TypeAttributeName = value;
+    }
 
-	public java.lang.String getTypeAttributeName() {
-		return _TypeAttributeName;
-	}
+    public java.lang.String getTypeAttributeName() {
+        return _TypeAttributeName;
+    }
 
-	// This attribute is optional
-	public void setMessageAttributeName(java.lang.String value) {
-		_MessageAttributeName = value;
-	}
+    // This attribute is optional
+    public void setMessageAttributeName(java.lang.String value) {
+        _MessageAttributeName = value;
+    }
 
-	public java.lang.String getMessageAttributeName() {
-		return _MessageAttributeName;
-	}
+    public java.lang.String getMessageAttributeName() {
+        return _MessageAttributeName;
+    }
 
-	// This attribute is optional
-	public void setPartAttributeName(java.lang.String value) {
-		_PartAttributeName = value;
-	}
+    // This attribute is optional
+    public void setPartAttributeName(java.lang.String value) {
+        _PartAttributeName = value;
+    }
 
-	public java.lang.String getPartAttributeName() {
-		return _PartAttributeName;
-	}
+    public java.lang.String getPartAttributeName() {
+        return _PartAttributeName;
+    }
 
-	public void writeNode(java.io.Writer out) throws java.io.IOException {
-		String myName;
-		myName = "ElementOrTypeOrMessagePartChooser";
-		writeNode(out, myName, "");	// NOI18N
-	}
+    public void writeNode(java.io.Writer out) throws java.io.IOException {
+        String myName;
+        myName = "ElementOrTypeOrMessagePartChooser";
+        writeNode(out, myName, ""); // NOI18N
+    }
 
-	public void writeNode(java.io.Writer out, String nodeName, String indent) throws java.io.IOException {
-		writeNode(out, nodeName, null, indent, new java.util.HashMap());
-	}
+    public void writeNode(java.io.Writer out, String nodeName, String indent) throws java.io.IOException {
+        writeNode(out, nodeName, null, indent, new java.util.HashMap());
+    }
 
-	/**
-	 * It's not recommended to call this method directly.
-	 */
-	public void writeNode(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
-		out.write(indent);
-		out.write("<");
-		if (namespace != null) {
-			out.write((String)namespaceMap.get(namespace));
-			out.write(":");
-		}
-		out.write(nodeName);
-		writeNodeAttributes(out, nodeName, namespace, indent, namespaceMap);
-		writeNodeChildren(out, nodeName, namespace, indent, namespaceMap);
-		out.write("/>\n");
-	}
+    /**
+     * It's not recommended to call this method directly.
+     */
+    public void writeNode(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
+        out.write(indent);
+        out.write("<");
+        if (namespace != null) {
+            out.write((String)namespaceMap.get(namespace));
+            out.write(":");
+        }
+        out.write(nodeName);
+        writeNodeAttributes(out, nodeName, namespace, indent, namespaceMap);
+        writeNodeChildren(out, nodeName, namespace, indent, namespaceMap);
+        out.write("/>\n");
+    }
 
-	protected void writeNodeAttributes(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
-		// elementAttributeName is an attribute with namespace http://xml.netbeans.org/schema/wsdlui/property
-		if (_ElementAttributeName != null) {
-			out.write(" elementAttributeName='");
-			org.netbeans.modules.xml.wsdl.ui.property.model.ElementProperties.writeXML(out, _ElementAttributeName, true);
-			out.write("'");	// NOI18N
-		}
-		// typeAttributeName is an attribute with namespace http://xml.netbeans.org/schema/wsdlui/property
-		if (_TypeAttributeName != null) {
-			out.write(" typeAttributeName='");
-			org.netbeans.modules.xml.wsdl.ui.property.model.ElementProperties.writeXML(out, _TypeAttributeName, true);
-			out.write("'");	// NOI18N
-		}
-		// messageAttributeName is an attribute with namespace http://xml.netbeans.org/schema/wsdlui/property
-		if (_MessageAttributeName != null) {
-			out.write(" messageAttributeName='");
-			org.netbeans.modules.xml.wsdl.ui.property.model.ElementProperties.writeXML(out, _MessageAttributeName, true);
-			out.write("'");	// NOI18N
-		}
-		// partAttributeName is an attribute with namespace http://xml.netbeans.org/schema/wsdlui/property
-		if (_PartAttributeName != null) {
-			out.write(" partAttributeName='");
-			org.netbeans.modules.xml.wsdl.ui.property.model.ElementProperties.writeXML(out, _PartAttributeName, true);
-			out.write("'");	// NOI18N
-		}
-	}
+    protected void writeNodeAttributes(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
+        // elementAttributeName is an attribute with namespace http://xml.netbeans.org/schema/wsdlui/property
+        if (_ElementAttributeName != null) {
+            out.write(" elementAttributeName='");
+            org.netbeans.modules.xml.wsdl.ui.property.model.ElementProperties.writeXML(out, _ElementAttributeName, true);
+            out.write("'"); // NOI18N
+        }
+        // typeAttributeName is an attribute with namespace http://xml.netbeans.org/schema/wsdlui/property
+        if (_TypeAttributeName != null) {
+            out.write(" typeAttributeName='");
+            org.netbeans.modules.xml.wsdl.ui.property.model.ElementProperties.writeXML(out, _TypeAttributeName, true);
+            out.write("'"); // NOI18N
+        }
+        // messageAttributeName is an attribute with namespace http://xml.netbeans.org/schema/wsdlui/property
+        if (_MessageAttributeName != null) {
+            out.write(" messageAttributeName='");
+            org.netbeans.modules.xml.wsdl.ui.property.model.ElementProperties.writeXML(out, _MessageAttributeName, true);
+            out.write("'"); // NOI18N
+        }
+        // partAttributeName is an attribute with namespace http://xml.netbeans.org/schema/wsdlui/property
+        if (_PartAttributeName != null) {
+            out.write(" partAttributeName='");
+            org.netbeans.modules.xml.wsdl.ui.property.model.ElementProperties.writeXML(out, _PartAttributeName, true);
+            out.write("'"); // NOI18N
+        }
+    }
 
-	protected void writeNodeChildren(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
-	}
+    protected void writeNodeChildren(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
+    }
 
-	public void readNode(org.w3c.dom.Node node) {
-		readNode(node, new java.util.HashMap());
-	}
+    public void readNode(org.w3c.dom.Node node) {
+        readNode(node, new java.util.HashMap());
+    }
 
-	public void readNode(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
-		if (node.hasAttributes()) {
-			org.w3c.dom.NamedNodeMap attrs = node.getAttributes();
-			org.w3c.dom.Attr attr;
-			java.lang.String attrValue;
-			boolean firstNamespaceDef = true;
-			for (int attrNum = 0; attrNum < attrs.getLength(); ++attrNum) {
-				attr = (org.w3c.dom.Attr) attrs.item(attrNum);
-				String attrName = attr.getName();
-				if (attrName.startsWith("xmlns:")) {
-					if (firstNamespaceDef) {
-						firstNamespaceDef = false;
-						// Dup prefix map, so as to not write over previous values, and to make it easy to clear out our entries.
-						namespacePrefixes = new java.util.HashMap(namespacePrefixes);
-					}
-					String attrNSPrefix = attrName.substring(6, attrName.length());
-					namespacePrefixes.put(attrNSPrefix, attr.getValue());
-				}
-			}
-			readNodeAttributes(node, namespacePrefixes, attrs);
-		}
-		readNodeChildren(node, namespacePrefixes);
-	}
+    public void readNode(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
+        if (node.hasAttributes()) {
+            org.w3c.dom.NamedNodeMap attrs = node.getAttributes();
+            org.w3c.dom.Attr attr;
+            java.lang.String attrValue;
+            boolean firstNamespaceDef = true;
+            for (int attrNum = 0; attrNum < attrs.getLength(); ++attrNum) {
+                attr = (org.w3c.dom.Attr) attrs.item(attrNum);
+                String attrName = attr.getName();
+                if (attrName.startsWith("xmlns:")) {
+                    if (firstNamespaceDef) {
+                        firstNamespaceDef = false;
+                        // Dup prefix map, so as to not write over previous values, and to make it easy to clear out our entries.
+                        namespacePrefixes = new java.util.HashMap(namespacePrefixes);
+                    }
+                    String attrNSPrefix = attrName.substring(6, attrName.length());
+                    namespacePrefixes.put(attrNSPrefix, attr.getValue());
+                }
+            }
+            readNodeAttributes(node, namespacePrefixes, attrs);
+        }
+        readNodeChildren(node, namespacePrefixes);
+    }
 
-	protected void readNodeAttributes(org.w3c.dom.Node node, java.util.Map namespacePrefixes, org.w3c.dom.NamedNodeMap attrs) {
-		org.w3c.dom.Attr attr;
-		java.lang.String attrValue;
-		attr = (org.w3c.dom.Attr) attrs.getNamedItem("elementAttributeName");
-		if (attr != null) {
-			attrValue = attr.getValue();
-			_ElementAttributeName = attrValue;
-		}
-		attr = (org.w3c.dom.Attr) attrs.getNamedItem("typeAttributeName");
-		if (attr != null) {
-			attrValue = attr.getValue();
-			_TypeAttributeName = attrValue;
-		}
-		attr = (org.w3c.dom.Attr) attrs.getNamedItem("messageAttributeName");
-		if (attr != null) {
-			attrValue = attr.getValue();
-			_MessageAttributeName = attrValue;
-		}
-		attr = (org.w3c.dom.Attr) attrs.getNamedItem("partAttributeName");
-		if (attr != null) {
-			attrValue = attr.getValue();
-			_PartAttributeName = attrValue;
-		}
-	}
+    protected void readNodeAttributes(org.w3c.dom.Node node, java.util.Map namespacePrefixes, org.w3c.dom.NamedNodeMap attrs) {
+        org.w3c.dom.Attr attr;
+        java.lang.String attrValue;
+        attr = (org.w3c.dom.Attr) attrs.getNamedItem("elementAttributeName");
+        if (attr != null) {
+            attrValue = attr.getValue();
+            _ElementAttributeName = attrValue;
+        }
+        attr = (org.w3c.dom.Attr) attrs.getNamedItem("typeAttributeName");
+        if (attr != null) {
+            attrValue = attr.getValue();
+            _TypeAttributeName = attrValue;
+        }
+        attr = (org.w3c.dom.Attr) attrs.getNamedItem("messageAttributeName");
+        if (attr != null) {
+            attrValue = attr.getValue();
+            _MessageAttributeName = attrValue;
+        }
+        attr = (org.w3c.dom.Attr) attrs.getNamedItem("partAttributeName");
+        if (attr != null) {
+            attrValue = attr.getValue();
+            _PartAttributeName = attrValue;
+        }
+    }
 
-	protected void readNodeChildren(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
-	}
+    protected void readNodeChildren(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
+    }
 
-	public void changePropertyByName(String name, Object value) {
-		if (name == null) return;
-		name = name.intern();
-		if (name == "elementAttributeName")
-			setElementAttributeName((java.lang.String)value);
-		else if (name == "typeAttributeName")
-			setTypeAttributeName((java.lang.String)value);
-		else if (name == "messageAttributeName")
-			setMessageAttributeName((java.lang.String)value);
-		else if (name == "partAttributeName")
-			setPartAttributeName((java.lang.String)value);
-		else
-			throw new IllegalArgumentException(name+" is not a valid property name for ElementOrTypeOrMessagePartChooser");
-	}
+    public void changePropertyByName(String name, Object value) {
+        if (name == null) return;
+        name = name.intern();
+        if (name == "elementAttributeName")
+            setElementAttributeName((java.lang.String)value);
+        else if (name == "typeAttributeName")
+            setTypeAttributeName((java.lang.String)value);
+        else if (name == "messageAttributeName")
+            setMessageAttributeName((java.lang.String)value);
+        else if (name == "partAttributeName")
+            setPartAttributeName((java.lang.String)value);
+        else
+            throw new IllegalArgumentException(name+" is not a valid property name for ElementOrTypeOrMessagePartChooser");
+    }
 
-	public Object fetchPropertyByName(String name) {
-		if (name == "elementAttributeName")
-			return getElementAttributeName();
-		if (name == "typeAttributeName")
-			return getTypeAttributeName();
-		if (name == "messageAttributeName")
-			return getMessageAttributeName();
-		if (name == "partAttributeName")
-			return getPartAttributeName();
-		throw new IllegalArgumentException(name+" is not a valid property name for ElementOrTypeOrMessagePartChooser");
-	}
+    public Object fetchPropertyByName(String name) {
+        if (name == "elementAttributeName")
+            return getElementAttributeName();
+        if (name == "typeAttributeName")
+            return getTypeAttributeName();
+        if (name == "messageAttributeName")
+            return getMessageAttributeName();
+        if (name == "partAttributeName")
+            return getPartAttributeName();
+        throw new IllegalArgumentException(name+" is not a valid property name for ElementOrTypeOrMessagePartChooser");
+    }
 
-	public String nameSelf() {
-		return "ElementOrTypeOrMessagePartChooser";
-	}
+    public String nameSelf() {
+        return "ElementOrTypeOrMessagePartChooser";
+    }
 
-	public String nameChild(Object childObj) {
-		return nameChild(childObj, false, false);
-	}
+    public String nameChild(Object childObj) {
+        return nameChild(childObj, false, false);
+    }
 
-	/**
-	 * @param childObj  The child object to search for
-	 * @param returnSchemaName  Whether or not the schema name should be returned or the property name
-	 * @return null if not found
-	 */
-	public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName) {
-		return nameChild(childObj, returnConstName, returnSchemaName, false);
-	}
+    /**
+     * @param childObj  The child object to search for
+     * @param returnSchemaName  Whether or not the schema name should be returned or the property name
+     * @return null if not found
+     */
+    public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName) {
+        return nameChild(childObj, returnConstName, returnSchemaName, false);
+    }
 
-	/**
-	 * @param childObj  The child object to search for
-	 * @param returnSchemaName  Whether or not the schema name should be returned or the property name
-	 * @return null if not found
-	 */
-	public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName, boolean returnXPathName) {
-		if (childObj instanceof java.lang.String) {
-			java.lang.String child = (java.lang.String) childObj;
-			if (child == _ElementAttributeName) {
-				if (returnConstName) {
-					return ELEMENTATTRIBUTENAME;
-				} else if (returnSchemaName) {
-					return "elementAttributeName";
-				} else if (returnXPathName) {
-					return "@elementAttributeName";
-				} else {
-					return "ElementAttributeName";
-				}
-			}
-			if (child == _TypeAttributeName) {
-				if (returnConstName) {
-					return TYPEATTRIBUTENAME;
-				} else if (returnSchemaName) {
-					return "typeAttributeName";
-				} else if (returnXPathName) {
-					return "@typeAttributeName";
-				} else {
-					return "TypeAttributeName";
-				}
-			}
-			if (child == _MessageAttributeName) {
-				if (returnConstName) {
-					return MESSAGEATTRIBUTENAME;
-				} else if (returnSchemaName) {
-					return "messageAttributeName";
-				} else if (returnXPathName) {
-					return "@messageAttributeName";
-				} else {
-					return "MessageAttributeName";
-				}
-			}
-			if (child == _PartAttributeName) {
-				if (returnConstName) {
-					return PARTATTRIBUTENAME;
-				} else if (returnSchemaName) {
-					return "partAttributeName";
-				} else if (returnXPathName) {
-					return "@partAttributeName";
-				} else {
-					return "PartAttributeName";
-				}
-			}
-		}
-		return null;
-	}
+    /**
+     * @param childObj  The child object to search for
+     * @param returnSchemaName  Whether or not the schema name should be returned or the property name
+     * @return null if not found
+     */
+    public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName, boolean returnXPathName) {
+        if (childObj instanceof java.lang.String) {
+            java.lang.String child = (java.lang.String) childObj;
+            if (child == _ElementAttributeName) {
+                if (returnConstName) {
+                    return ELEMENTATTRIBUTENAME;
+                } else if (returnSchemaName) {
+                    return "elementAttributeName";
+                } else if (returnXPathName) {
+                    return "@elementAttributeName";
+                } else {
+                    return "ElementAttributeName";
+                }
+            }
+            if (child == _TypeAttributeName) {
+                if (returnConstName) {
+                    return TYPEATTRIBUTENAME;
+                } else if (returnSchemaName) {
+                    return "typeAttributeName";
+                } else if (returnXPathName) {
+                    return "@typeAttributeName";
+                } else {
+                    return "TypeAttributeName";
+                }
+            }
+            if (child == _MessageAttributeName) {
+                if (returnConstName) {
+                    return MESSAGEATTRIBUTENAME;
+                } else if (returnSchemaName) {
+                    return "messageAttributeName";
+                } else if (returnXPathName) {
+                    return "@messageAttributeName";
+                } else {
+                    return "MessageAttributeName";
+                }
+            }
+            if (child == _PartAttributeName) {
+                if (returnConstName) {
+                    return PARTATTRIBUTENAME;
+                } else if (returnSchemaName) {
+                    return "partAttributeName";
+                } else if (returnXPathName) {
+                    return "@partAttributeName";
+                } else {
+                    return "PartAttributeName";
+                }
+            }
+        }
+        return null;
+    }
 
-	/**
-	 * Return an array of all of the properties that are beans and are set.
-	 */
-	public java.lang.Object[] childBeans(boolean recursive) {
-		java.util.List children = new java.util.LinkedList();
-		childBeans(recursive, children);
-		java.lang.Object[] result = new java.lang.Object[children.size()];
-		return (java.lang.Object[]) children.toArray(result);
-	}
+    /**
+     * Return an array of all of the properties that are beans and are set.
+     */
+    public java.lang.Object[] childBeans(boolean recursive) {
+        java.util.List children = new java.util.LinkedList();
+        childBeans(recursive, children);
+        java.lang.Object[] result = new java.lang.Object[children.size()];
+        return (java.lang.Object[]) children.toArray(result);
+    }
 
-	/**
-	 * Put all child beans into the beans list.
-	 */
-	public void childBeans(boolean recursive, java.util.List beans) {
-	}
+    /**
+     * Put all child beans into the beans list.
+     */
+    public void childBeans(boolean recursive, java.util.List beans) {
+    }
 
-	public boolean equals(Object o) {
-		return o instanceof org.netbeans.modules.xml.wsdl.ui.property.model.ElementOrTypeOrMessagePartChooser && equals((org.netbeans.modules.xml.wsdl.ui.property.model.ElementOrTypeOrMessagePartChooser) o);
-	}
+    public boolean equals(Object o) {
+        return o instanceof org.netbeans.modules.xml.wsdl.ui.property.model.ElementOrTypeOrMessagePartChooser && equals((org.netbeans.modules.xml.wsdl.ui.property.model.ElementOrTypeOrMessagePartChooser) o);
+    }
 
-	public boolean equals(org.netbeans.modules.xml.wsdl.ui.property.model.ElementOrTypeOrMessagePartChooser inst) {
-		if (inst == this) {
-			return true;
-		}
-		if (inst == null) {
-			return false;
-		}
-		if (!(_ElementAttributeName == null ? inst._ElementAttributeName == null : _ElementAttributeName.equals(inst._ElementAttributeName))) {
-			return false;
-		}
-		if (!(_TypeAttributeName == null ? inst._TypeAttributeName == null : _TypeAttributeName.equals(inst._TypeAttributeName))) {
-			return false;
-		}
-		if (!(_MessageAttributeName == null ? inst._MessageAttributeName == null : _MessageAttributeName.equals(inst._MessageAttributeName))) {
-			return false;
-		}
-		if (!(_PartAttributeName == null ? inst._PartAttributeName == null : _PartAttributeName.equals(inst._PartAttributeName))) {
-			return false;
-		}
-		return true;
-	}
+    public boolean equals(org.netbeans.modules.xml.wsdl.ui.property.model.ElementOrTypeOrMessagePartChooser inst) {
+        if (inst == this) {
+            return true;
+        }
+        if (inst == null) {
+            return false;
+        }
+        if (!(_ElementAttributeName == null ? inst._ElementAttributeName == null : _ElementAttributeName.equals(inst._ElementAttributeName))) {
+            return false;
+        }
+        if (!(_TypeAttributeName == null ? inst._TypeAttributeName == null : _TypeAttributeName.equals(inst._TypeAttributeName))) {
+            return false;
+        }
+        if (!(_MessageAttributeName == null ? inst._MessageAttributeName == null : _MessageAttributeName.equals(inst._MessageAttributeName))) {
+            return false;
+        }
+        if (!(_PartAttributeName == null ? inst._PartAttributeName == null : _PartAttributeName.equals(inst._PartAttributeName))) {
+            return false;
+        }
+        return true;
+    }
 
-	public int hashCode() {
-		int result = 17;
-		result = 37*result + (_ElementAttributeName == null ? 0 : _ElementAttributeName.hashCode());
-		result = 37*result + (_TypeAttributeName == null ? 0 : _TypeAttributeName.hashCode());
-		result = 37*result + (_MessageAttributeName == null ? 0 : _MessageAttributeName.hashCode());
-		result = 37*result + (_PartAttributeName == null ? 0 : _PartAttributeName.hashCode());
-		return result;
-	}
+    public int hashCode() {
+        int result = 17;
+        result = 37*result + (_ElementAttributeName == null ? 0 : _ElementAttributeName.hashCode());
+        result = 37*result + (_TypeAttributeName == null ? 0 : _TypeAttributeName.hashCode());
+        result = 37*result + (_MessageAttributeName == null ? 0 : _MessageAttributeName.hashCode());
+        result = 37*result + (_PartAttributeName == null ? 0 : _PartAttributeName.hashCode());
+        return result;
+    }
 
 }
 
 
 /*
-		The following schema file has been used for generation:
+        The following schema file has been used for generation:
 
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -464,7 +464,7 @@ public class ElementOrTypeOrMessagePartChooser {
                             <xsd:element name="DependsOnCustomizer">
                                 <xsd:annotation>
                                     <xsd:documentation xml:lang="en-US">Use a built-in customizer whose value(s) depend on some other attribute 
-                                        of the the same element or some other source.                                        
+                                        of the same element or some other source.                                        
                                     </xsd:documentation>
                                 </xsd:annotation>
                                 <xsd:complexType>

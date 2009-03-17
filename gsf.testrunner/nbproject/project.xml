@@ -108,7 +108,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.14</specification-version>
+                        <specification-version>1.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -162,6 +162,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.junit</friend>
+                <friend>org.netbeans.modules.maven.junit</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.python.testrunner</friend>
                 <friend>org.netbeans.modules.ruby.testrunner</friend>

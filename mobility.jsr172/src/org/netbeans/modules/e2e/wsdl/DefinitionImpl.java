@@ -12,6 +12,9 @@ package org.netbeans.modules.e2e.wsdl;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.namespace.QName;
+
 import org.netbeans.modules.e2e.api.schema.SchemaHolder;
 import org.netbeans.modules.e2e.api.wsdl.Binding;
 import org.netbeans.modules.e2e.api.wsdl.Definition;
@@ -28,9 +31,9 @@ public class DefinitionImpl implements Definition {
     private SchemaHolder schemaHolder;
     
     private Map<String, Binding> bindings = new HashMap<String, Binding>();
-    private Map<String, Message> messages = new HashMap<String, Message>();
+    private Map<QName, Message> messages = new HashMap<QName, Message>();
     private Map<String, Service> services = new HashMap<String, Service>();
-    private Map<String, PortType> portTypes = new HashMap<String, PortType>();
+    private Map<QName, PortType> portTypes = new HashMap<QName, PortType>();
     
     private String documentation;
     
@@ -61,14 +64,14 @@ public class DefinitionImpl implements Definition {
     }
 
     public void addMessage( Message message ) {
-        messages.put( message.getName(), message );
+        messages.put( message.getQName(), message );
     }
 
-    public Message getMessage( String name ) {
+    public Message getMessage( QName name ) {
         return messages.get( name );
     }
 
-    public Map<String, Message> getMessages() {
+    public Map<QName, Message> getMessages() {
         return Collections.unmodifiableMap( messages );
     }
 
@@ -85,14 +88,14 @@ public class DefinitionImpl implements Definition {
     }
 
     public void addPortType( PortType portType ) {
-        portTypes.put( portType.getName(), portType );
+        portTypes.put( portType.getQName(), portType );
     }
 
-    public PortType getPortType( String name ) {
+    public PortType getPortType( QName name ) {
         return portTypes.get( name );
     }
 
-    public Map<String, PortType> getPortTypes() {
+    public Map<QName, PortType> getPortTypes() {
         return Collections.unmodifiableMap( portTypes );
     }
 
@@ -111,4 +114,5 @@ public class DefinitionImpl implements Definition {
     public String getTargetNamespace() {
         return targetNamespace;
     }
+
 }

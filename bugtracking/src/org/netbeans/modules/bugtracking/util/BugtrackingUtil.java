@@ -43,6 +43,7 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -63,6 +64,7 @@ import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.ui.issue.PatchContextChooser;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -204,6 +206,30 @@ public class BugtrackingUtil {
             issue = bar.getIssue();
         }
         return issue;
+    }
+
+    public static File selectPatchContext() {
+        PatchContextChooser chooser = new PatchContextChooser();
+        ResourceBundle bundle = NbBundle.getBundle(BugtrackingUtil.class);
+        JButton ok = new JButton(bundle.getString("LBL_Apply")); // NOI18N
+        JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
+        NotifyDescriptor descriptor = new NotifyDescriptor (
+                chooser,
+                bundle.getString("LBL_ApplyPatch"), // NOI18N
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.PLAIN_MESSAGE,
+                new Object [] { ok, cancel },
+                ok);
+        File context = null;
+        if (DialogDisplayer.getDefault().notify(descriptor) == ok) {
+            context = chooser.getSelectedFile();
+        }
+        return context;
+    }
+
+    public static void applyPatch(File patch, File context) {
+        // PENDING
+        System.out.println("Applying " + patch.getAbsolutePath() + "  to " + context.getAbsolutePath());
     }
 
 }

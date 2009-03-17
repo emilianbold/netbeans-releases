@@ -80,6 +80,8 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.EndpointsProvider;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.DialogDisplayer;
@@ -338,7 +340,162 @@ public class WSUtils {
         return false;
     }
 
-    public static void addSunJaxWsEntries(FileObject ddFolder, JaxWsService service) 
+    public static void updateClients(Project prj, JAXWSLightSupport jaxWsSupport) {
+        // get old clients
+        List<JaxWsService> oldClients = new ArrayList<JaxWsService>();
+        Set<String> oldNames = new HashSet<String>();
+        for (JaxWsService s : jaxWsSupport.getServices()) {
+            if (!s.isServiceProvider()) {
+                oldClients.add(s);
+                oldNames.add(s.getLocalWsdl());
+            }
+        }
+        FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
+        if (wsdlFolder != null) {
+            List<JaxWsService> newClients = getJaxWsClients(prj, jaxWsSupport, wsdlFolder);
+            Set<String> commonNames = new HashSet<String>();
+            for (JaxWsService client : newClients) {
+                String localWsdl = client.getLocalWsdl();
+                if (oldNames.contains(localWsdl)) {
+                    commonNames.add(localWsdl);
+                }
+            }
+            // removing old clients
+            for (JaxWsService oldClient : oldClients) {
+                if (!commonNames.contains(oldClient.getLocalWsdl())) {
+                    jaxWsSupport.removeService(oldClient);
+                }
+            }
+            // add new clients
+            for (JaxWsService newClient : newClients) {
+                if (!commonNames.contains(newClient.getLocalWsdl())) {
+                    newClient.setWsdlUrl(getOriginalWsdlUrl(prj, jaxWsSupport, newClient.getLocalWsdl(), false));
+                    jaxWsSupport.addService(newClient);
+                }
+            }
+        } else {
+            // removing all clients
+            for (JaxWsService client : oldClients) {
+                jaxWsSupport.removeService(client);
+            }
+        }
+
+    }
+
+    public static void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder)  {
+        List<WsimportPomInfo> candidates = MavenModelUtils.getWsdlFiles(prj);
+        if (candidates.size() > 0) {
+            for (WsimportPomInfo candidate : candidates) {
+                String wsdlPath = candidate.getWsdlPath();
+                if (isClient(prj, jaxWsSupport, wsdlPath)) {
+                    JaxWsService client = new JaxWsService(wsdlPath, false);
+                    if (candidate.getHandlerFile() != null) {
+                        client.setHandlerBindingFile(candidate.getHandlerFile());
+                    }
+                    client.setWsdlUrl(getOriginalWsdlUrl(prj, jaxWsSupport, wsdlPath, false));
+                    jaxWsSupport.addService(client);
+                }
+            }
+        } else {
+            // look for wsdl in wsdl folder
+        }
+    }
+
+    private static List<JaxWsService> getJaxWsClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder) {
+        List<WsimportPomInfo> canditates = MavenModelUtils.getWsdlFiles(prj);
+        List<JaxWsService> clients = new ArrayList<JaxWsService>();
+        for (WsimportPomInfo candidate : canditates) {
+            String wsdlPath = candidate.getWsdlPath();
+            if (isClient(prj, jaxWsSupport, wsdlPath)) {
+                JaxWsService client = new JaxWsService(wsdlPath, false);
+                if (candidate.getHandlerFile() != null) {
+                    client.setHandlerBindingFile(candidate.getHandlerFile());
+                }
+                clients.add(client);
+            }
+        }
+        return clients;
+    }
+
+    private static boolean isClient(Project prj, JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
+        Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class,true);
+        if (prefs != null) {
+            FileObject wsdlFo = getLocalWsdl(jaxWsSupport, localWsdlPath);
+            if (wsdlFo != null) {
+                // if client exists return true
+                if (prefs.get(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), null) != null) {
+                    return true;
+                // if service doesn't exist return true
+                } else if (prefs.get(MavenWebService.SERVICE_PREFIX+wsdlFo.getName(), null) == null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static FileObject getLocalWsdl(JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
+        FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
+        if (wsdlFolder!=null) {
+            return wsdlFolder.getFileObject(localWsdlPath);
+        }
+        return null;
+    }
+
+    public static String getOriginalWsdlUrl(Project prj, JAXWSLightSupport jaxWsSupport, String localWsdl, boolean forService) {
+        FileObject wsdlFo = WSUtils.getLocalWsdl(jaxWsSupport, localWsdl);
+        if (wsdlFo != null) {
+            Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class, true);
+            if (prefs != null) {
+                // remember original WSDL URL for service
+                if (forService) {
+                    return prefs.get(MavenWebService.SERVICE_PREFIX+wsdlFo.getName(), null);
+                } else {
+                    return prefs.get(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), null);
+                }
+            }
+        }
+        return null;
+    }
+    private static boolean webAppHasListener(WebApp webApp, String listenerClass){
+        Listener[] listeners = webApp.getListener();
+        for(int i = 0; i < listeners.length; i++){
+            Listener listener = listeners[i];
+            if(listenerClass.equals(listener.getListenerClass())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // useful methods to work with Deployment Descriptor 
+    
+    private static WebApp getWebApp(Project prj) {
+        try {
+            FileObject deploymentDescriptor = getDeploymentDescriptor(prj);
+            if(deploymentDescriptor != null) {
+                return DDProvider.getDefault().getDDRoot(deploymentDescriptor);
+            }
+        } catch (java.io.IOException e) {
+            Logger.getLogger("global").log(Level.INFO, e.getLocalizedMessage());
+        }
+        return null;
+    }
+
+    private static FileObject getDeploymentDescriptor(Project prj) {
+        J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml");
+            if (dd != null && dd.exists()) {
+                return FileUtil.toFileObject(dd);
+            }
+        }
+        return null;
+    }
+
+    // methods that handle sun-jaxws.xml file
+
+    public static void addSunJaxWsEntry(FileObject ddFolder, JaxWsService service)
             throws IOException {
         FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
         if(sunjaxwsFile == null){
@@ -349,11 +506,7 @@ public class WSUtils {
         String serviceName = service.getServiceName();
         Endpoint oldEndpoint = endpoints.findEndpointByName(service.getServiceName());
         if (oldEndpoint == null) {
-            Endpoint endpoint = endpoints.newEndpoint();
-            endpoint.setEndpointName(service.getServiceName());
-            endpoint.setImplementation(service.getImplementationClass());
-            endpoint.setUrlPattern("/" + service.getServiceName());
-            endpoints.addEnpoint(endpoint);
+            addService(endpoints, service);
             FileLock lock = null;
             OutputStream os = null;
             synchronized (sunjaxwsFile) {
@@ -372,9 +525,44 @@ public class WSUtils {
         }
     }
 
-    public static void removeSunJaxWsEntries(FileObject ddFolder, JaxWsService service)
+    private static void addJaxWsEntries(FileObject ddFolder, JAXWSLightSupport jaxWsSupport)
             throws IOException {
 
+        generateSunJaxwsFile(ddFolder);
+        FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
+        Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
+        for (JaxWsService service: jaxWsSupport.getServices()) {
+            if (service.isServiceProvider()) {
+                addService(endpoints, service);
+            }
+        }
+        FileLock lock = null;
+        OutputStream os = null;
+        synchronized (sunjaxwsFile) {
+            try {
+                lock = sunjaxwsFile.lock();
+                os = sunjaxwsFile.getOutputStream(lock);
+                endpoints.write(os);
+            } finally{
+                if (lock != null)
+                    lock.releaseLock();
+
+                if(os != null)
+                    os.close();
+            }
+        }
+    }
+
+    private static void addService(Endpoints endpoints, JaxWsService service) {
+        Endpoint endpoint = endpoints.newEndpoint();
+        endpoint.setEndpointName(service.getServiceName());
+        endpoint.setImplementation(service.getImplementationClass());
+        endpoint.setUrlPattern("/" + service.getServiceName());
+        endpoints.addEnpoint(endpoint);
+    }
+
+    public static void removeSunJaxWsEntry(FileObject ddFolder, JaxWsService service)
+            throws IOException {
         FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
         if (sunjaxwsFile != null) {
             Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
@@ -399,6 +587,14 @@ public class WSUtils {
                     }
                 }
             }
+        }
+    }
+
+    private static void removeSunJaxWs(FileObject ddFolder)
+            throws IOException {
+        FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
+        if (sunjaxwsFile != null) {
+            sunjaxwsFile.delete();
         }
     }
 
@@ -442,6 +638,15 @@ public class WSUtils {
         return NotifyDescriptor.YES_OPTION.equals(result);
     }
 
+    private static boolean removeNonJsr109Artifacts(Project prj) {
+        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(WSUtils.class,"MSG_RemoveDDEntries"),
+                NbBundle.getMessage(WSUtils.class,"TTL_RemoveDDEntries"),
+                NotifyDescriptor.YES_NO_OPTION);
+        Object result = DialogDisplayer.getDefault().notify(desc);
+        return NotifyDescriptor.YES_OPTION.equals(result);
+    }
+
     public static boolean isJsr109Supported(Project project) {
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (j2eeModuleProvider == null) {
@@ -453,25 +658,21 @@ public class WSUtils {
         }
     }
 
-    public static void addServiceEntriesToDD(Project prj, JaxWsService service)
+    /** Add service entries to deployment descriptor.
+     *
+     * @param prj
+     * @param service
+     * @throws java.io.IOException
+     */
+    public static void addServiceToDD(Project prj, JaxWsService service)
         throws IOException {
         //add servlet entry to web.xml
-        String servletName = service.getServiceName();
-
         WebApp webApp = getWebApp(prj);
         if (webApp != null) {
-            Servlet servlet = null;
-            Listener listener = null;
             try{
-                servlet = (Servlet)webApp.addBean("Servlet", new String[]{"ServletName","ServletClass"}, //NOI18N
-                        new Object[]{servletName, SERVLET_CLASS_NAME}, "ServletName"); //NOI18N
-                servlet.setLoadOnStartup(new java.math.BigInteger("1")); //NOI18N
-                ServletMapping servletMapping = (ServletMapping)
-                webApp.addBean("ServletMapping", new String[]{"ServletName","UrlPattern"}, //NOI18N
-                        new Object[]{servletName, "/" + servletName}, "ServletName"); //NOI18N
-
+                addServlet(webApp, service);
                 if (!webAppHasListener(webApp, SERVLET_LISTENER)){
-                    listener = (Listener)webApp.addBean("Listener", new String[]{"ListenerClass"}, //NOI18N
+                    webApp.addBean("Listener", new String[]{"ListenerClass"}, //NOI18N
                             new Object[]{SERVLET_LISTENER}, "ListenerClass"); //NOI18N
                 }
                 // This also saves server specific configuration, if necessary.
@@ -484,12 +685,44 @@ public class WSUtils {
         }
     }
 
+    private static void addServicesToDD(Project prj, JAXWSLightSupport jaxWsSupport)
+        throws IOException {
+        WebApp webApp = getWebApp(prj);
+        if (webApp != null) {
+            try {
+                if (!webAppHasListener(webApp, SERVLET_LISTENER)) {
+                    webApp.addBean("Listener", new String[]{"ListenerClass"}, //NOI18N
+                            new Object[]{SERVLET_LISTENER}, "ListenerClass"); //NOI18N
+                }
+                for (JaxWsService service : jaxWsSupport.getServices()) {
+                    if (service.isServiceProvider()) {
+                        addServlet(webApp, service);
+                    }
+                }
+            } catch (NameAlreadyUsedException exc) {
+                Logger.getLogger(WSUtils.class.getName()).log(Level.INFO, exc.getLocalizedMessage()); //NOI18N
+            } catch (ClassNotFoundException exc) {
+                Logger.getLogger(WSUtils.class.getName()).log(Level.INFO, exc.getLocalizedMessage()); //NOI18N
+            }
+            webApp.write(getDeploymentDescriptor(prj));
+        }
+    }
+
+    private static void addServlet(WebApp webApp, JaxWsService service) throws ClassNotFoundException, NameAlreadyUsedException {
+        String servletName = service.getServiceName();
+        Servlet servlet = (Servlet)webApp.addBean("Servlet", new String[]{"ServletName","ServletClass"}, //NOI18N
+                new Object[]{servletName, SERVLET_CLASS_NAME}, "ServletName"); //NOI18N
+        servlet.setLoadOnStartup(new java.math.BigInteger("1")); //NOI18N
+        webApp.addBean("ServletMapping", new String[] {"ServletName", "UrlPattern"}, //NOI18N
+                new Object[]{servletName, "/" + servletName}, "ServletName"); //NOI18N
+    }
+
     /**
-     * Remove the web.xml entries for the non-JSR 109 web service.
+     * Remove the service entries from deployment descriptor.
      *
      * @param serviceName Name of the web service to be removed
      */
-    public static void removeServiceEntriesFromDD(Project prj, JaxWsService service)
+    public static void removeServiceFromDD(Project prj, JaxWsService service)
         throws IOException {
         WebApp webApp = getWebApp(prj);
         if (webApp != null) {
@@ -514,6 +747,31 @@ public class WSUtils {
                         changed = true;
                         break;
                     }
+                }
+            }
+            if (changed) {
+                webApp.write(getDeploymentDescriptor(prj));
+            }
+        }
+    }
+
+    private static void removeServicesFromDD(Project prj, JAXWSLightSupport jaxWsSupport)
+        throws IOException {
+        WebApp webApp = getWebApp(prj);
+        if (webApp != null) {
+            boolean changed = false;
+            // remove all services
+            for (JaxWsService service : jaxWsSupport.getServices()) {
+                changed = removeServiceFromDD(webApp, service.getServiceName());
+            }
+            // remove servlet listener
+            Listener[] listeners = webApp.getListener();
+            for(int i = 0; i < listeners.length; i++){
+                Listener listener = listeners[i];
+                if(listener.getListenerClass().equals(SERVLET_LISTENER)){
+                    webApp.removeListener(listener);
+                    changed = true;
+                    break;
                 }
             }
             if (changed) {
@@ -598,139 +856,57 @@ public class WSUtils {
         return changed;
     }
 
-    private static boolean webAppHasListener(WebApp webApp, String listenerClass){
-        Listener[] listeners = webApp.getListener();
-        for(int i = 0; i < listeners.length; i++){
-            Listener listener = listeners[i];
-            if(listenerClass.equals(listener.getListenerClass())){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static WebApp getWebApp(Project prj) {
-        try {
-            FileObject deploymentDescriptor = getDeploymentDescriptor(prj);
-            if(deploymentDescriptor != null) {
-                return DDProvider.getDefault().getDDRoot(deploymentDescriptor);
-            }
-        } catch (java.io.IOException e) {
-            Logger.getLogger("global").log(Level.INFO, e.getLocalizedMessage());
-        }
-        return null;
-    }
-
-    public static FileObject getDeploymentDescriptor(Project prj) {
-        J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
-        if (provider != null) {
-            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml");
-            if (dd != null && dd.exists()) {
-                return FileUtil.toFileObject(dd);
-            }
-        }
-        return null;
-    }
-
-
-    public static void updateClients(Project prj, JAXWSLightSupport jaxWsSupport) {
-        // get old clients
-        List<JaxWsService> oldClients = new ArrayList<JaxWsService>();
-        Set<String> oldNames = new HashSet<String>();
-        for (JaxWsService s : jaxWsSupport.getServices()) {
-            if (!s.isServiceProvider()) {
-                oldClients.add(s);
-                oldNames.add(s.getLocalWsdl());
-            }
-        }
-        FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
-        if (wsdlFolder != null) {
-            List<JaxWsService> newClients = getJaxWsClients(prj, jaxWsSupport, wsdlFolder);
-            Set<String> commonNames = new HashSet<String>();
-            for (JaxWsService client : newClients) {
-                String localWsdl = client.getLocalWsdl();
-                if (oldNames.contains(localWsdl)) {
-                    commonNames.add(localWsdl);
-                }
-            }
-            // removing old clients
-            for (JaxWsService oldClient : oldClients) {
-                if (!commonNames.contains(oldClient.getLocalWsdl())) {
-                    jaxWsSupport.removeService(oldClient);
-                }
-            }
-            // add new clients
-            for (JaxWsService newClient : newClients) {
-                if (!commonNames.contains(newClient.getLocalWsdl())) {
-                    jaxWsSupport.addService(newClient);
-                }
-            }
-        } else {
-            // removing all clients
-            for (JaxWsService client : oldClients) {
-                jaxWsSupport.removeService(client);
-            }
-        }
-
-    }
-
-    public static void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder)  {
-        List<WsimportPomInfo> candidates = MavenModelUtils.getWsdlFiles(prj);
-        if (candidates.size() > 0) {
-            for (WsimportPomInfo candidate : candidates) {
-                String wsdlPath = candidate.getWsdlPath();
-                if (isClient(prj, jaxWsSupport, wsdlPath)) {
-                    JaxWsService client = new JaxWsService(wsdlPath, false);
-                    if (candidate.getHandlerFile() != null) {
-                        client.setHandlerBindingFile(candidate.getHandlerFile());
+    public static void checkNonJSR109Entries(Project prj) {
+        JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(prj.getProjectDirectory());
+        if (jaxWsSupport != null) {
+            WSStack<JaxWs> wsStack = new WSStackUtils(prj).getWsStack(JaxWs.class);
+            if (wsStack != null) {
+                FileObject ddFolder = jaxWsSupport.getDeploymentDescriptorFolder();
+                if (wsStack.isFeatureSupported(JaxWs.Feature.JSR109)) {
+                    if (ddFolder != null && ddFolder.getFileObject("sun-jaxws.xml") != null) {
+                        // remove non JSR109 artifacts
+                        if (removeNonJsr109Artifacts(prj)) {
+                            try {
+                                removeSunJaxWs(ddFolder);
+                            } catch (IOException ex) {
+                                Logger.getLogger(WSUtils.class.getName()).log(Level.WARNING,
+                                        "Cannot remove sun-jaxws.xml file.", ex); //NOI18N
+                            }
+                            try {
+                                removeServicesFromDD(prj, jaxWsSupport);
+                            } catch (IOException ex) {
+                                Logger.getLogger(WSUtils.class.getName()).log(Level.WARNING,
+                                        "Cannot remove services from web.xml.", ex); //NOI18N
+                            }
+                        }
                     }
-                    jaxWsSupport.addService(client);
-                }
-            }
-        } else {
-            // look for wsdl in wsdl folder
-        }
-    }
-
-    private static List<JaxWsService> getJaxWsClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder) {
-        List<WsimportPomInfo> canditates = MavenModelUtils.getWsdlFiles(prj);
-        List<JaxWsService> clients = new ArrayList<JaxWsService>();
-        for (WsimportPomInfo candidate : canditates) {
-            String wsdlPath = candidate.getWsdlPath();
-            if (isClient(prj, jaxWsSupport, wsdlPath)) {
-                JaxWsService client = new JaxWsService(wsdlPath, false);
-                if (candidate.getHandlerFile() != null) {
-                    client.setHandlerBindingFile(candidate.getHandlerFile());
-                }
-                clients.add(client);
-            }
-        }
-        return clients;
-    }
-
-    private static boolean isClient(Project prj, JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
-        Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class,true);
-        if (prefs != null) {
-            FileObject wsdlFo = getLocalWsdl(jaxWsSupport, localWsdlPath);
-            if (wsdlFo != null) {
-                // if client exists return true
-                if (prefs.get(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), null) != null) {
-                    return true;
-                // if service doesn't exist return true
-                } else if (prefs.get(MavenWebService.SERVICE_PREFIX+wsdlFo.getName(), null) == null) {
-                    return true;
+                } else {
+                    if (ddFolder == null || ddFolder.getFileObject("sun-jaxws.xml") == null) {
+                        // generate non JSR109 artifacts
+                        if (generateNonJsr109Artifacts(prj)) {
+                            if (ddFolder != null) {
+                                try {
+                                    addJaxWsEntries(ddFolder, jaxWsSupport);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(WSUtils.class.getName()).log(Level.WARNING,
+                                            "Cannot modify sun-jaxws.xml file", ex); //NOI18N
+                                }
+                                try {
+                                    addServicesToDD(prj, jaxWsSupport);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(WSUtils.class.getName()).log(Level.WARNING,
+                                            "Cannot modify web.xml file", ex); //NOI18N
+                                }
+                            } else {
+                                String mes = NbBundle.getMessage(MavenJAXWSSupportImpl.class, "MSG_CannotFindWEB-INF"); // NOI18N
+                                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                                DialogDisplayer.getDefault().notify(desc);
+                            }
+                        }
+                    }
                 }
             }
         }
-        return false;
-    }
-
-    private static FileObject getLocalWsdl(JAXWSLightSupport jaxWsSupport, String localWsdlPath) {
-        FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
-        if (wsdlFolder!=null) {
-            return wsdlFolder.getFileObject(localWsdlPath);
-        }
-        return null;
     }
     
 }

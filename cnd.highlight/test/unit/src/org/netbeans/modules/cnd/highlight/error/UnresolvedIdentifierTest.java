@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Test for IdentifierErrorProvider.
  *
@@ -123,13 +126,25 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
     }
 
     public void testIZ158873() throws Exception {
+        Logger.getLogger("cnd.logger").setLevel(Level.SEVERE);
         // IZ#158873 : recursion in Instantiation.Type.isInstantiation()
         performStaticTest("iz158873.cpp");
     }
 
     public void testIZ159615() throws Exception {
+        Logger.getLogger("cnd.logger").setLevel(Level.SEVERE);
         // IZ#159615 : recursion in CsmCompletionQuery.getClassifier()
         performStaticTest("iz159615.cpp");
+    }
+
+    public void testIZ143044() throws Exception {
+        // IZ#143044 : Wrong overloaded method is not highlighted as error
+        performStaticTest("iz143044.cpp");
+    }
+
+    public void testIZ151909() throws Exception {
+        // IZ#151909 : Template friend classes (parser problem)
+        performStaticTest("iz151909.cpp");
     }
 
     /////////////////////////////////////////////////////////////////////

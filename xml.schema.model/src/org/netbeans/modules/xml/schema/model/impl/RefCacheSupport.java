@@ -42,9 +42,12 @@ package org.netbeans.modules.xml.schema.model.impl;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
+import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelReference;
@@ -75,6 +78,30 @@ public class RefCacheSupport {
 
     public RefCacheSupport(SchemaModel sModel) {
         mSModel = sModel;
+    }
+
+    /**
+     * It is mainly intended to be used by JUnit tests.
+     * @return
+     */
+    public Collection<SchemaModelImpl> getCachedModels() {
+        return Collections.unmodifiableCollection(refModelCache.values());
+    }
+
+    /**
+     * It is mainly intended to be used by JUnit tests.
+     * @return
+     */
+    public SchemaModelImpl getCachedModel(SchemaModelReference ref) {
+        return refModelCache.get(ref);
+    }
+
+    /**
+     * It is mainly intended to be used by JUnit tests.
+     * @return
+     */
+    public boolean contains(SchemaModelImpl model) {
+        return refModelCache.containsValue(model);
     }
 
     /**
@@ -160,6 +187,14 @@ public class RefCacheSupport {
                         }
                     }
                     //
+                    if (Import.NAMESPACE_PROPERTY.equals(propName)) {
+                        Object source = evt.getSource();
+                        if (source != null && source instanceof Import) {
+                            excludeModelRef((Import)source);
+                            // System.out.println("Import's namespace changed");
+                        }
+                    }
+                    //
                     if (Model.STATE_PROPERTY.equals(propName)) {
                         Object oldValue = evt.getOldValue();
                         Object newValue = evt.getNewValue();
@@ -184,7 +219,7 @@ public class RefCacheSupport {
     /**
      * Starts listening changes of the specified external schema model.
      */
-    private void startListening(SchemaModel referencedModel) {
+    private synchronized void startListening(SchemaModel referencedModel) {
         if (mPropertyExtListener == null) {
             initExtListener();
         }
@@ -257,12 +292,14 @@ public class RefCacheSupport {
                 }
                 if (Schema.TARGET_NAMESPACE_PROPERTY.equals(propName)) {
                     Object source = evt.getSource();
-                    if (source instanceof SchemaModel) {
-                        excludeModel(SchemaModel.class.cast(source));
+                    if (source instanceof Schema) {
+                        Schema schema = Schema.class.cast(source);
+                        excludeModel(schema.getModel());
                         // System.out.println("target namespace changed");
                     }
                 }
             }
         };
     }
+
 }

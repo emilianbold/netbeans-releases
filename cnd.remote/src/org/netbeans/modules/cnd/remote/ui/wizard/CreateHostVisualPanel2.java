@@ -228,7 +228,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
 
     private ProgressHandle phandle;
     
-    /* package-local */ String hostFound() {
+    /* package-local */ ExecutionEnvironment getHost() {
         return hostFound;
     }
 
@@ -236,7 +236,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
         return runOnFinish;
     }
 
-    private String hostFound = null;
+    private ExecutionEnvironment hostFound = null;
     private Runnable runOnFinish = null;
 
     private ExecutionEnvironment getExecutionEnvironment() {
@@ -299,7 +299,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
                             csm.finishInitialization();
                         }
                     };
-                    hostFound = csm.getHost(); //TODO: no validations, pure cheat
+                    hostFound = csm.getExecutionEnvironment(); //TODO: no validations, pure cheat
                     wizardListener.stateChanged(null);
                 } else {
                     addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.ErrConn")
