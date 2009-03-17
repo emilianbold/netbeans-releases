@@ -85,9 +85,9 @@ public class ChatTopComponent extends TopComponent {
     private static ChatTopComponent instance;
 
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/kenai/collab/resources/online.gif";
+    static final String ICON_PATH = "org/netbeans/modules/kenai/collab/resources/online.gif"; // NOI18N
 
-    private static final String PREFERRED_ID = "ChatTopComponent";
+    private static final String PREFERRED_ID = "ChatTopComponent"; // NOI18N
     private final KenaiConnection kec = KenaiConnection.getDefault();
 
     //open chats
@@ -241,7 +241,7 @@ public class ChatTopComponent extends TopComponent {
 
     public void setActive(String name) {
         ChatNotifications.getDefault().removeGroup(name);
-        int indexOfTab = chats.indexOfTab(name+"    ");
+        int indexOfTab = chats.indexOfTab(name+"    "); // NOI18N
         if (indexOfTab < 0) {
             MultiUserChat muc = kec.getChat(name);
             if (muc != null) {
@@ -287,7 +287,7 @@ public class ChatTopComponent extends TopComponent {
             }
         }
         if (menu.getComponentCount()==0) {
-            final JMenuItem jMenuItem = new JMenuItem("<empty>");
+            final JMenuItem jMenuItem = new JMenuItem("<empty>"); // NOI18N
             jMenuItem.setEnabled(false);
             menu.add(jMenuItem);
         }
@@ -306,9 +306,9 @@ public class ChatTopComponent extends TopComponent {
             ChatPanel chatPanel = new ChatPanel(next);
             addChat(chatPanel);
         } else if (chs.size()!=0) {
-            String s = prefs.get("kenai.open.chats." + Kenai.getDefault().getPasswordAuthentication().getUserName(),"");
+            String s = prefs.get("kenai.open.chats." + Kenai.getDefault().getPasswordAuthentication().getUserName(),""); // NOI18N
             if (s.length() > 1) {
-                for (String chat : s.split(",")) {
+                for (String chat : s.split(",")) { // NOI18N
                     MultiUserChat muc = kec.getChat(chat);
                     if (muc != null) {
                         ChatPanel chatPanel = new ChatPanel(muc);
@@ -540,15 +540,15 @@ public class ChatTopComponent extends TopComponent {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(ChatTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); // NOI18N
             return getDefault();
         }
         if (win instanceof ChatTopComponent) {
             return (ChatTopComponent) win;
         }
         Logger.getLogger(ChatTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID + // NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior."); // NOI18N
         return getDefault();
     }
 
@@ -594,10 +594,10 @@ public class ChatTopComponent extends TopComponent {
         while (it.hasNext()) {
             b.append(it.next());
             if (it.hasNext()) {
-                b.append(",");
+                b.append(","); // NOI18N
             }
         }
-        prefs.put("kenai.open.chats." + Kenai.getDefault().getPasswordAuthentication().getUserName(), b.toString());
+        prefs.put("kenai.open.chats." + Kenai.getDefault().getPasswordAuthentication().getUserName(), b.toString()); // NOI18N
     }
 
     final class KenaiL implements PropertyChangeListener {

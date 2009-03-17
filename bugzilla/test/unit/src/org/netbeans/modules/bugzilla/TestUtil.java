@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla;
 
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.Set;

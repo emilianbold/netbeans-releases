@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
+import java.net.PasswordAuthentication;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.netbeans.modules.bugtracking.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -85,9 +86,13 @@ public class KenaiSupportImpl extends KenaiSupport {
                 productParamUrl = location.substring(idx);
                 product = location.substring(idx + productAttribute.length());
             }
-            String user = Kenai.getDefault().getPasswordAuthentication().getUserName();
-            String psswd = new String(Kenai.getDefault().getPasswordAuthentication().getPassword());
-
+            String user = "";
+            String psswd = "";
+            PasswordAuthentication passwordAuthentication = Kenai.getDefault().getPasswordAuthentication();
+            if(passwordAuthentication != null) {
+                user = passwordAuthentication.getUserName();
+                psswd = new String(passwordAuthentication.getPassword());
+            }
             return new KenaiRepository(project.getDisplayName(), url, user, psswd, host, productParamUrl, product);
         }
         return null;

@@ -193,11 +193,11 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
     @Override
     public void shutdown() {
       TIMER.removeHandler(phaseHandler);
-      CommonUtilities.deleteProject(project_name);
+      /*CommonUtilities.deleteProject(project_name);
       if (project.equals("Enterprise Application")) {
         CommonUtilities.deleteProject(project_name+"-ejb");
         CommonUtilities.deleteProject(project_name+"-war");
-      }
+      }*/
     }
     
 }

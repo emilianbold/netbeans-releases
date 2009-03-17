@@ -141,7 +141,17 @@ public class BugtrackingUtil {
 
     public static Repository createRepository() {
         RepositorySelector rs = new RepositorySelector();
-        return rs.create();
+        Repository repo = rs.create();
+        return repo;
+    }
+
+    public static boolean editRepository(Repository repository, String errorMessage) {
+        RepositorySelector rs = new RepositorySelector();
+        return rs.edit(repository, errorMessage);
+    }
+
+    public static boolean editRepository(Repository repository) {
+        return editRepository(repository, null);
     }
 
     public static Repository[] getKnownRepositories() {

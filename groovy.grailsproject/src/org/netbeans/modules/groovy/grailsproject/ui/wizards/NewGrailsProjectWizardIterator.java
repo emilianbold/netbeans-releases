@@ -52,7 +52,6 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
-import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
@@ -113,7 +112,7 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
             try {
                 Integer ret = future.get();
                 if (ret.intValue() != 0) {
-                    String msg = NbBundle.getMessage(NewArtifactWizardIterator.class, "WIZARD_ERROR_MESSAGE_APPLICATION");
+                    String msg = NbBundle.getMessage(NewGrailsProjectWizardIterator.class, "WIZARD_ERROR_MESSAGE_APPLICATION");
                     DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
                 }
@@ -124,6 +123,7 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
             }
         } finally {
             handle.progress(100);
+            handle.finish();
         }
 
         File dirF = (File) wiz.getProperty("projectFolder");

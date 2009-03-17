@@ -49,7 +49,7 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
  *

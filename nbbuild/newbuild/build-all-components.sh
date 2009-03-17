@@ -183,7 +183,7 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build UML modules"
-    exit $ERROR_CODE;
+#    exit $ERROR_CODE;
 fi
 
 #Build VisualWeb modules
@@ -192,7 +192,7 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build VisualWeb modules"
-    exit $ERROR_CODE;
+#    exit $ERROR_CODE;
 fi
 
 #Build the NB stableuc modules
@@ -201,7 +201,7 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build stableuc modules"
-    exit $ERROR_CODE;
+#    exit $ERROR_CODE;
 fi
 
 #Build JNLP
@@ -219,7 +219,7 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build NBMs"
-    exit $ERROR_CODE;
+#    exit $ERROR_CODE;
 fi
 
 #Build 110n kit for HG files
@@ -253,7 +253,7 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build stable UC NBMs"
-    exit $ERROR_CODE;
+#    exit $ERROR_CODE;
 fi
 
 #Build l10n kit for Stable UC modules

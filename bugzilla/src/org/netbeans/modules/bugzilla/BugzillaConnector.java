@@ -39,12 +39,14 @@
 
 package org.netbeans.modules.bugzilla;
 
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -56,13 +58,13 @@ public class BugzillaConnector extends BugtrackingConnector {
     private KenaiSupport kenaiSupport;
 
     public String getDisplayName() {
-        return "Bugzilla"; // XXX bundle me!
+        return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorName");
     }
 
     public String getTooltip() {
-        return "Bugzilla Bug-Tracking System"; // XXX bundle me!
+        return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorTooltip");
     }
-
+    
     @Override
     public Repository createRepository() {
         return new BugzillaRepository();
