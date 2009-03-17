@@ -63,6 +63,7 @@ public class OutputLogger {
     private InputOutput log;
     private boolean ignoreCommand = false;
     private String repositoryRootString;
+    private boolean empty;
     private static final RequestProcessor rp = new RequestProcessor("MercurialOutput", 1);
     public static final int MAX_LINES_TO_PRINT = 500;
 
@@ -106,12 +107,6 @@ public class OutputLogger {
     }
 
     public void closeLog() {
-        rp.post(new Runnable() {
-            public void run() {
-                getLog().getOut().flush();
-                getLog().getErr().flush();
-            }
-        });
     }
 
     public void flushLog() {
