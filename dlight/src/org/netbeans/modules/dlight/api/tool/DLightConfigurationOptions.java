@@ -51,9 +51,11 @@ public interface DLightConfigurationOptions {
     void turnCollectorsState(boolean turnState);
 
 
-    boolean getCollectorsState();
+    boolean areCollectorsTurnedOn();
 
     List<DataCollector> getCollectors(DLightTool tool);
     
     List<IndicatorDataProvider> getIndicatorDataProviders(DLightTool tool);
+
+    boolean validateToolsRequiredUserInteraction();
 }

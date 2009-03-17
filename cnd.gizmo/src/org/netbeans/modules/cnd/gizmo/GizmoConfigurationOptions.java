@@ -40,8 +40,11 @@ package org.netbeans.modules.cnd.gizmo;
 
 import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -59,11 +62,11 @@ import org.openide.util.Exceptions;
 public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 
     private String DLightCollectorString = "SunStudio";
-    private String DLightIndicatorDPString = "SunStudio";
+    private List<String> DLightIndicatorDPStrings = Arrays.asList("SunStudio");
     private static final String SUNSTUDIO = "SunStudio";
-    private static final String LL_Collectors = "ll";
-    private static final String Dtrace_Collectors = "ll";
-    private static final String prstate_indicators = "ll";
+    private static final String LL_MONITOR = "ll";
+    private static final String DTRACE = "DTrace";
+    private static final String PRSTAT_INDICATOR = "prstat";
     private Project currentProject;
     private boolean areCollectorsTurnedOn = false;
 
@@ -71,7 +74,9 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         areCollectorsTurnedOn = turnState;
     }
 
-    public void configure(Project project) {
+    public void configure(Project project){
+        this.currentProject = project;
+        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
         //set up as following:
         //get data from the project about selected provider of detailed voew
         Configuration activeConfiguration = getActiveConfiguration();
@@ -80,21 +85,44 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             return;
         }
         hkey = ((MakeConfiguration) activeConfiguration).getDevelopmentHost().getName();
-        //if we have sun studio compiler along compiler collections presented
-        if (((MakeConfiguration) activeConfiguration).getCompilerSet().getCompilerSet().isSunCompiler()) {
+        //if we have sun studio compiler along compiler collections presentedCompiler
+        CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
+        List<CompilerSet> compilers = compilerSetManager.getCompilerSets();
+        boolean hasSunStudio = false;
+        for (CompilerSet cs : compilers){
+            if (cs.isSunCompiler()){
+                hasSunStudio = true;
+                break;
+            }
+        }
+
+//        try {
+//            isLinux = HostInfoUtils.getOS(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment()).indexOf("linux") != -1;
+//            isSolaris = HostInfoUtils.getOS(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment()).equals("SunOS");
+//
+//        } catch (ConnectException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+
+        String dataCollectorSelectName = options.getDataCollectorName();//DTrace or SunStudio
+
+        if (hasSunStudio && dataCollectorSelectName.equals("SunStudio")) {
             DLightCollectorString = SUNSTUDIO;
-            DLightIndicatorDPString = SUNSTUDIO;
+            DLightIndicatorDPStrings = new ArrayList<String>();
+            DLightIndicatorDPStrings.add(SUNSTUDIO);
+            DLightIndicatorDPStrings.add(PRSTAT_INDICATOR);
         } else {
             try {
-                if (HostInfoUtils.getOS(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment()).indexOf("linux") != -1) { //we are on Linux
-                    DLightCollectorString = LL_Collectors;
-                    DLightIndicatorDPString = LL_Collectors;
+                String osName = HostInfoUtils.getOS(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
+                if (osName.indexOf("linux") != -1 ||  osName.equals("MacOS")){//Linux or Solaris
+                    DLightCollectorString = LL_MONITOR;
+                    DLightIndicatorDPStrings = Arrays.asList(LL_MONITOR);
                 }
             } catch (ConnectException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
-                DLightCollectorString = Dtrace_Collectors;
-                DLightIndicatorDPString = prstate_indicators;
+                DLightCollectorString = DTRACE;
+                DLightIndicatorDPStrings = Arrays.asList(PRSTAT_INDICATOR, DTRACE);
             }
         }
     }
@@ -103,7 +131,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         return ConfigurationSupport.getProjectDescriptor(currentProject).getConfs().getActive();
     }
 
-    public boolean getCollectorsState() {
+    public boolean areCollectorsTurnedOn() {
         return areCollectorsTurnedOn;
     }
 
@@ -122,10 +150,17 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         List<IndicatorDataProvider> idps = tool.getIndicatorDataProviders();
         List<IndicatorDataProvider> result = new ArrayList<IndicatorDataProvider>();
         for (IndicatorDataProvider idp : idps) {
-            if (idp.getName().equals(DLightIndicatorDPString)) {
-                result.add(idp);
+            for (String idpStringName : DLightIndicatorDPStrings){
+                if (idp.getName().equals(idpStringName)) {
+                    result.add(idp);
+                }
             }
         }
         return result;
+    }
+
+    public boolean validateToolsRequiredUserInteraction() {
+        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
+        return options.getUserInteractionRequiredActionsEnabled();
     }
 }

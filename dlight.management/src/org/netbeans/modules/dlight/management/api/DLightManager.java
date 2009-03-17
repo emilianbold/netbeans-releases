@@ -225,12 +225,12 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
     private DLightSession newSession(DLightTarget target, DLightConfiguration configuration) {
         DLightSession session = new DLightSession();
-        DLightSessionContext sessionContext = session.getSessionContext();
-        try {
-            DLightSessionContextAccessor.getDefault().put(sessionContext, "os", HostInfoUtils.getOS(target.getExecEnv()));
-        } catch (ConnectException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        //DLightSessionContext sessionContext = session.getSessionContext();
+//        try {
+//            DLightSessionContextAccessor.getDefault().put(sessionContext, "os", HostInfoUtils.getOS(target.getExecEnv()));
+//        } catch (ConnectException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
         session.setExecutionContext(new ExecutionContext(target, configuration));
         sessions.add(session);
         List<Indicator> indicators = session.getIndicators();

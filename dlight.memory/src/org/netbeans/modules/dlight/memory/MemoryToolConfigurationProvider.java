@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.memory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
@@ -176,7 +177,8 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
     private IndicatorConfiguration initIndicatorConfiguration() {
         IndicatorMetadata indicatorMetadata = null;
-        List<Column> indicatorColumns = Arrays.asList(SunStudioDCConfiguration.c_leakSize);
+        List<Column> indicatorColumns = new ArrayList<Column>();
+        indicatorColumns.add(SunStudioDCConfiguration.c_leakSize);
         indicatorColumns.addAll(LLDataCollectorConfiguration.MEM_TABLE.getColumns());
         indicatorColumns.addAll(Arrays.asList(totalColumn));
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);

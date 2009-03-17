@@ -51,5 +51,16 @@
             -->
         </folder>
     </folder>
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-cnd-makeproject">
+            <folder name="Customizer">
+                <file name="Gizmo.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.gizmo.GizmoOptionsPanel.createCategoryProvider"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 
 </filesystem>

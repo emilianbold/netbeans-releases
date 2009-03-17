@@ -141,7 +141,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         //VisualizerConfiguration vc = null;
 
         IndicatorMetadata indicatorMetadata = null;
-        List<Column> indicatorColumns = Arrays.asList(locksColumn);
+        List<Column> indicatorColumns = new ArrayList<Column>();
+        indicatorColumns.add(locksColumn);
         indicatorColumns.add(SunStudioDCConfiguration.c_ulockSummary);
         indicatorColumns.addAll(LLDataCollectorConfiguration.SYNC_TABLE.getColumns());
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);
@@ -170,9 +171,11 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         List<IndicatorDataProviderConfiguration> lockIndicatorDataProviders = new ArrayList<IndicatorDataProviderConfiguration>();
         final DataTableMetadata indicatorTableMetadata = new DataTableMetadata("locks", Arrays.asList(locksColumn));
         List<DataTableMetadata> indicatorTablesMetadata = Arrays.asList(indicatorTableMetadata);
-        lockIndicatorDataProviders.add(new CLIODCConfiguration(
+        CLIODCConfiguration lockConf = new CLIODCConfiguration(
             "/bin/prstat", "-mv -p @PID -c 1", // NOI18N
-            new SyncCLIOParser(locksColumn), indicatorTablesMetadata));
+            new SyncCLIOParser(locksColumn), indicatorTablesMetadata);
+        lockConf.setName("prstat");
+        lockIndicatorDataProviders.add(lockConf);
 
         lockIndicatorDataProviders.add(new SunStudioDCConfiguration(CollectedInfo.SYNCSUMMARY));
 

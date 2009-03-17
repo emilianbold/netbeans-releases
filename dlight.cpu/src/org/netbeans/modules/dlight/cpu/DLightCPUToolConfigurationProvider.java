@@ -143,10 +143,11 @@ public final class DLightCPUToolConfigurationProvider
         CLIODCConfiguration indicatorProviderConfiguration =
             new CLIODCConfiguration("/bin/prstat", "-mv -p @PID -c 1", // NOI18N
             new PrstatParser(), Arrays.asList(indicatorTableMetadata));
-
+        indicatorProviderConfiguration.setName("prstat");
         toolConfiguration.addIndicatorDataProviderConfiguration(
             indicatorProviderConfiguration);
-        List<Column> resultColumns = PRSTAT_COLUMNS;
+        List<Column> resultColumns = new ArrayList<Column>();
+        resultColumns.addAll(PRSTAT_COLUMNS);
         resultColumns.addAll(LLDataCollectorConfiguration.CPU_TABLE.getColumns());
         IndicatorMetadata indicatorMetadata =
             new IndicatorMetadata(resultColumns);

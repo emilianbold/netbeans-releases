@@ -75,9 +75,11 @@ final class ExecutionContext {
     // @GuardedBy("lock")
     private List<ExecutionContextListener> listeners = null;
     private volatile boolean validationInProgress = false;
+    private DLightConfiguration dlightConfiguration;
 
     ExecutionContext(final DLightTarget target, DLightConfiguration dlightConfiguration) {
         this.target = target;
+        this.dlightConfiguration = dlightConfiguration;
         tools = Collections.unmodifiableList(dlightConfiguration.getToolsSet());
         DataCollectorProvider.getInstance().reset();
         envProvider = new DLightTargetExecutionEnvProviderCollection();
@@ -89,6 +91,10 @@ final class ExecutionContext {
 
     DLightTarget getTarget() {
         return target;
+    }
+
+    DLightConfiguration getDLightConfiguration(){
+        return dlightConfiguration;
     }
 
     void addDLightTargetExecutionEnviromentProvider(DLightTarget.ExecutionEnvVariablesProvider executionEnvProvider) {

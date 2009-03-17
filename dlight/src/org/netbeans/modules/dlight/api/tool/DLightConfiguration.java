@@ -183,30 +183,30 @@ public final class DLightConfiguration {
     }
 
     private class DefaultConfigurationOption implements DLightConfigurationOptions {
-
-        public void setup(List<DLightTool> tools) {
-            //throw new UnsupportedOperationException("Not supported yet.");
-        }
+        private boolean turnState = false;
 
         public void turnCollectorsState(boolean turnState) {
-            // throw new UnsupportedOperationException("Not supported yet.");
+            this.turnState = turnState;
         }
 
-        public boolean getCollectorsState() {
-            return false;
-        //throw new UnsupportedOperationException("Not supported yet.");
+        public boolean areCollectorsTurnedOn() {
+            return turnState;
         }
 
         public List<DLightTool> getToolsSet() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return DLightConfiguration.this.toolsConfiguration.getToolsSet();
         }
 
         public List<DataCollector> getCollectors(DLightTool tool) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return tool.getCollectors();
         }
 
         public List<IndicatorDataProvider> getIndicatorDataProviders(DLightTool tool) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return tool.getIndicatorDataProviders();
+        }
+
+        public boolean validateToolsRequiredUserInteraction() {
+            return false;
         }
     }
 
