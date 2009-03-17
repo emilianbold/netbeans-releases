@@ -62,13 +62,13 @@ public class GizmoOptionsPanel extends javax.swing.JPanel{
     public GizmoOptionsPanel(GizmoProjectOptions options) {
         initComponents();
         this.options = options;
-        dataCollectorName.setModel(new DefaultComboBoxModel(new String[]{"SunStudio", "DTrace"}));
+        dataCollectorName.setModel(new DefaultComboBoxModel(new String[]{"SunStudio", "DTrace"}));//NOI18N
         dataCollectorName.setSelectedItem(options.getDataCollectorName());
         jCheckBox1.setSelected(options.getDataCollectorEnabled());
         dataCollectorName.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                GizmoOptionsPanel.this.options.setDataCollectorName("" + dataCollectorName.getSelectedItem());
-                if ("DTrace".equals("" + dataCollectorName.getSelectedItem())){
+                GizmoOptionsPanel.this.options.setDataCollectorName("" + dataCollectorName.getSelectedItem());//NOI18N
+                if ("DTrace".equals("" + dataCollectorName.getSelectedItem())){//NOI18N
                     GizmoOptionsPanel.this.options.setUserInteractionRequiredActionsEnabled(true);
                 }else{
                     GizmoOptionsPanel.this.options.setUserInteractionRequiredActionsEnabled(false);
