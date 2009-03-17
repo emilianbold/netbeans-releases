@@ -229,7 +229,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	if (s == null)
 	    return;
         out.append(s);
-    }
+    }           
 
     public final void print(Name n) {
 	out.appendUtf8(n.getByteArray(), n.getByteOffset(), n.getByteLength());
@@ -1958,7 +1958,7 @@ public final class VeryPretty extends JCTree.Visitor {
             printComment(c, false, printWhitespace);
     }
 
-    private void printComment(Comment comment, boolean preceding, boolean printWhitespace) {
+    public void printComment(Comment comment, boolean preceding, boolean printWhitespace) {
         if (Comment.Style.WHITESPACE == comment.style()) {
             if (false && printWhitespace) {
                 char[] data = comment.getText().toCharArray();

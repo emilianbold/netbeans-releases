@@ -28,20 +28,18 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
-import com.sun.tools.javac.util.Context;
 import org.junit.Test;
 import org.netbeans.api.java.source.*;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.java.source.builder.CommentHandlerService;
-import org.netbeans.modules.java.source.query.CommentHandler;
-import org.netbeans.modules.java.source.query.CommentSet;
+import org.netbeans.modules.java.source.save.PositionEstimator;
 
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 import java.io.File;
-import java.util.List;
-import java.util.EnumSet;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
 
 /**
  * @author Rastislav Komara (<a href="mailto:moonko@netbeans.orgm">RKo</a>)
@@ -73,13 +71,13 @@ public class CommentsManipulationTest extends GeneratorTest {
      *
      * @throws Exception if something goes wrong.
      */
-    @Test
+/*    @Test
     public void testEncapsulateField() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         String origin =
                 "public class EncapsulateField {\n" +
                         "\n" +
-                        "/** Level of encapsulation */\n" +
+                        "*//** Level of encapsulation *//*\n" +
                         "public int encapsulate = 5;" +
                         "}\n";
         TestUtilities.copyStringToFile(testFile, origin);
@@ -90,10 +88,10 @@ public class CommentsManipulationTest extends GeneratorTest {
                 "}\n";
 
 
-        JavaSource src = getJavaSource(testFile);        
+        JavaSource src = getJavaSource(testFile);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
-            public void run(WorkingCopy workingCopy) throws Exception {                
+            public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
                 ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
@@ -114,15 +112,15 @@ public class CommentsManipulationTest extends GeneratorTest {
         String res = TestUtilities.copyFileToString(testFile);
         System.out.println(res);
 //        assertEquals(golden, res);
-    }
+    }*/
 
     private Tree createSetter(TreeMaker make, String name) {
         VariableTree parameter = make.Variable(make.Modifiers(EnumSet.of(Modifier.FINAL)), "encapsulate", make.PrimitiveType(TypeKind.INT), null);
         return make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
-                "set"+name, make.PrimitiveType(TypeKind.INT),
+                "set" + name, make.PrimitiveType(TypeKind.INT),
                 Collections.<TypeParameterTree>emptyList(),
                 Collections.<VariableTree>singletonList(parameter),
-                Collections.<ExpressionTree>emptyList(),                 
+                Collections.<ExpressionTree>emptyList(),
                 "{;}",
                 make.Literal(5));
     }
@@ -133,13 +131,74 @@ public class CommentsManipulationTest extends GeneratorTest {
             ClassTree clazz = (ClassTree) classes.get(0);
             List<? extends Tree> trees = clazz.getMembers();
             if (trees.size() == 2) {
-                VariableTree tree = (VariableTree) trees.get(1);
-                return tree;
+                return trees.get(1);
             }
         }
 
         throw new IllegalStateException("There is no array declaration in expected place.");
 
     }
-    
+
+    @Test
+    public void testAddCommentOnClassTree() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        String origin =
+                "public class EncapsulateField {\n" +
+                        "\n" +
+                        "/** Level of encapsulation */\n" +
+                        "public int encapsulate = 5;" +
+                        "}\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+//
+                TreeMaker treeMaker = workingCopy.getTreeMaker();
+                CompilationUnitTree cu = workingCopy.getCompilationUnit();
+
+
+                List<? extends Tree> list = cu.getTypeDecls();
+                for (int i = 0; i < list.size(); i++) {
+                    Tree tree = list.get(i);
+                    if (tree instanceof ClassTree) {
+                        javax.lang.model.element.Name simpleName = ((ClassTree) tree).getSimpleName();
+                        Tree newClassTree = treeMaker.setLabel(tree, simpleName);
+                        // setup new coment
+                        setComment("What's up?\n", treeMaker, newClassTree, workingCopy.getTreeUtilities());
+                        workingCopy.rewrite(tree, newClassTree);
+                    }
+                }
+
+            }
+
+            public void setComment(String commentText, TreeMaker treeMaker, Tree commentTree, TreeUtilities utils) {
+                int found = -1;
+
+                List<Comment> comments = utils.getComments(commentTree, true);
+                for (int i = 0; i < comments.size() && found == -1; i++) {
+                    Comment comment = comments.get(i);
+                    if (comment.isDocComment()) {
+                        found = i;
+                    }
+                }
+
+                if (found != -1) {
+                    treeMaker.removeComment(commentTree, found, true);
+                }
+
+                if (commentText != null) {
+                    Comment comment = Comment.create(Comment.Style.JAVADOC, PositionEstimator.NOPOS, PositionEstimator.NOPOS, 1,
+                            commentText);
+                    treeMaker.insertComment(commentTree, comment, found, true);
+                }
+            }
+
+        };
+        src.runModificationTask(task).commit();        
+        System.out.println(TestUtilities.copyFileToString(testFile));
+    }
+
 }
