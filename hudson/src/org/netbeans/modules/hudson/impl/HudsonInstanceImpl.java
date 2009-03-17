@@ -162,7 +162,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         }
         
         //reassign listeners
-        List<PropertyChangeListener> list = ((ProjectHIP)properties).getCurrentListeners();
+        List<PropertyChangeListener> list = properties.getCurrentListeners();
         for (PropertyChangeListener listener : list) {
             newProps.addPropertyChangeListener(listener);
             properties.removePropertyChangeListener(listener);
@@ -178,22 +178,10 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         return HudsonManagerImpl.instancePrefs().node(HudsonManagerImpl.simplifyServerLocation(getName(), true));
     }
     
-    /**
-     *
-     * @param name
-     * @param url
-     * @return
-     */
     public static HudsonInstanceImpl createHudsonInstance(String name, String url, String sync) {
         return createHudsonInstance(new HudsonInstanceProperties(name, url, sync));
     }
     
-    /**
-     *
-     * @param name
-     * @param url
-     * @return
-     */
     public static HudsonInstanceImpl createHudsonInstance(HudsonInstanceProperties properties) {
         HudsonInstanceImpl instance = new HudsonInstanceImpl(properties);
         assert instance.getName() != null;
@@ -250,20 +238,26 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         return jobs;
     }
 
-    public synchronized Collection<HudsonJob> getPreferredJobs() {
-        Collection<HudsonJob> prefs = new ArrayList<HudsonJob>();
-        Collection<HudsonJob> all = getJobs();
-        String prop = getProperties().get(INSTANCE_PREF_JOBS);
-        if (prop != null && prop.trim().length() > 0) {
-            String[] ids = prop.trim().split("\\|");
-            List<String> idsList = Arrays.asList(ids);
-            for (HudsonJob jb : all) {
-                if (idsList.contains(jb.getName())) {
-                    prefs.add(jb);
-                }
-            }
+    boolean isSalient(HudsonJobImpl job) {
+        HudsonInstanceProperties props = getProperties();
+        if (HudsonInstanceProperties.split(props.get(INSTANCE_SUPPRESSED_JOBS)).contains(job.getName())) {
+            return false;
         }
-        return prefs;
+        List<String> preferred = HudsonInstanceProperties.split(props.get(INSTANCE_PREF_JOBS));
+        if (!preferred.isEmpty()) {
+            return preferred.contains(job.getName());
+        }
+        return true;
+    }
+    void setSalient(HudsonJobImpl job, boolean salient) {
+        HudsonInstanceProperties props = getProperties();
+        List<String> suppressed = new ArrayList<String>(HudsonInstanceProperties.split(props.get(INSTANCE_SUPPRESSED_JOBS)));
+        if (salient) {
+            suppressed.remove(job.getName());
+        } else if (!suppressed.contains(job.getName())) {
+            suppressed.add(job.getName());
+        }
+        props.put(INSTANCE_SUPPRESSED_JOBS, HudsonInstanceProperties.join(suppressed));
     }
     
     public synchronized Collection<HudsonView> getViews() {

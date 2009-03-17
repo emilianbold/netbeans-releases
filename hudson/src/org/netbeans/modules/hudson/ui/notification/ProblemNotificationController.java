@@ -60,11 +60,10 @@ public class ProblemNotificationController {
 
     public synchronized void updateNotifications() {
         LOG.log(Level.FINE, "Updating notifications for {0}", instance);
-        Collection<HudsonJob> jobs = instance.getPreferredJobs();
-        if (jobs.isEmpty()) {
-            jobs = instance.getJobs();
-        }
-        for (HudsonJob job : jobs) {
+        for (HudsonJob job : instance.getJobs()) {
+            if (!job.isSalient()) {
+                continue;
+            }
             ProblemNotification n;
             int build = job.getLastCompletedBuild();
             Color color = job.getColor();
