@@ -293,14 +293,14 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 List<DataCollector> toolCollectors = context.getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
                 //TODO: no algorithm here:) should be better
                 for (DataCollector c : toolCollectors) {
-                    if (c.getValidationStatus().isValid()) {//for valid collectors only
-                        if (!collectors.contains(c)) {
+                    if (!collectors.contains(c)) {
+                        if (c.getValidationStatus().isValid()) {//for valid collectors only
                             collectors.add(c);
                         }
                     }
                 }
             }
-        }else{
+        } else {
             collectors.clear();
         }
 

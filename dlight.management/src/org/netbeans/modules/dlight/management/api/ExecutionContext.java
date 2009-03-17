@@ -158,7 +158,11 @@ final class ExecutionContext {
             //there can be the situation when IndicatorDataProvider is collector
             //and not attacheble
             List<IndicatorDataProvider> tool_idps = getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
-            idps.addAll(tool_idps);
+            for (IndicatorDataProvider idp : tool_idps){
+                if (!collectors.contains(idp) && !idps.contains(idps)){
+                    idps.add(idp);
+                }
+            }
         }
 
         //collect all validatable from tools: collectors and indicator data providers
@@ -219,7 +223,7 @@ final class ExecutionContext {
 
 //                    System.out.printf("%d: Status of validation task %s: %s\n", count, tasks.toString(), toolNewStatus.toString());
 
-                    boolean thisToolStateChanged = !vNewStatus.equals(states.get(validatable));
+                    boolean thisValidatableStateChaged = !vNewStatus.equals(states.get(validatable));
 
                     if (performRequiredActions) {
                         if (!vNewStatus.isKnown()) {
@@ -242,10 +246,10 @@ final class ExecutionContext {
                                 }
                             },  validatable + " validation"); // NOI18N
                             vNewStatus = task.get();
-                            thisToolStateChanged = !vNewStatus.equals(states.get(validatable));
+                            thisValidatableStateChaged = !vNewStatus.equals(states.get(validatable));
                         }
 
-                        if (!vNewStatus.isKnown() && thisToolStateChanged) {
+                        if (!vNewStatus.isKnown() && thisValidatableStateChaged) {
                             states.put(validatable, vNewStatus);
                             tasks.put(validatable, task);
                             willReiterate = true;
@@ -255,7 +259,7 @@ final class ExecutionContext {
                         }
                     }
 
-                    if (changed == false && thisToolStateChanged) {
+                    if (changed == false && thisValidatableStateChaged) {
                         changed = true;
                     }
 
