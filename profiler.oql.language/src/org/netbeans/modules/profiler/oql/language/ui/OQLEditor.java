@@ -41,10 +41,9 @@ package org.netbeans.modules.profiler.oql.language.ui;
 
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JEditorPane;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
@@ -90,26 +89,8 @@ public class OQLEditor extends OQLEditorImpl{
         editorPane = new JEditorPane();
 
         editorPane.setEditorKit(MimeLookup.getLookup(mimeType).lookup(EditorKit.class));
-        editorPane.getDocument().addDocumentListener(new DocumentListener() {
-
-            public void insertUpdate(DocumentEvent e) {
-                if (textInputRef.compareAndSet(null, (MutableTextInput)e.getDocument().getProperty(MutableTextInput.class))) {
-                    textInputRef.get().tokenHierarchyControl().tokenHierarchy().addTokenHierarchyListener(thl);
-                }
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                if (textInputRef.compareAndSet(null, (MutableTextInput)e.getDocument().getProperty(MutableTextInput.class))) {
-                    textInputRef.get().tokenHierarchyControl().tokenHierarchy().addTokenHierarchyListener(thl);
-                }
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-                if (textInputRef.compareAndSet(null, (MutableTextInput)e.getDocument().getProperty(MutableTextInput.class))) {
-                    textInputRef.get().tokenHierarchyControl().tokenHierarchy().addTokenHierarchyListener(thl);
-                }
-            }
-        });
+        TokenHierarchy th = TokenHierarchy.get(editorPane.getDocument());
+        th.addTokenHierarchyListener(thl);
     }
 
     synchronized public JEditorPane getEditorPane() {

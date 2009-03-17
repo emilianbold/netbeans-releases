@@ -44,6 +44,9 @@ made subject to such option by the copyright holder.
 <fontscolors>
     <fontcolor default="keyword" name="keyword"/>
     <fontcolor default="keyword" name="instanceof"/>
+    <fontcolor default="error"   name="clazz-typo">
+        <font style="italic"/>
+    </fontcolor>
 
     <fontcolor default="identifier" name="clazz">
         <font style="italic"/>

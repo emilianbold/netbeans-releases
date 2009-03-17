@@ -72,6 +72,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
         FROM_INSTANCEOF,
         CLASS_ALIAS,
         JSBLOCK,
+        JSBLOCK1,
         ERROR
     };
 
@@ -118,6 +119,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
                         if (trimmed.length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
                         if (TOKEN_SELECT.equals(trimmed)) {
                             state = State.JSBLOCK;
+                            input.backup(1);
                             return tokenFactory.createToken(OQLTokenId.KEYWORD);
                         } else {
                             state = State.ERROR;
@@ -137,8 +139,9 @@ class OQLLexer implements Lexer<OQLTokenId> {
                         String lastToken = input.readText().toString().toUpperCase();
                         if (lastToken.trim().length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
                         if (TOKEN_FROM.equals(lastToken.trim())) {
+                            input.backup(1);
                             state = State.FROM;
-                            return tokenFactory.createToken(OQLTokenId.KEYWORD, lastToken.length(), PartType.COMPLETE);
+                            return tokenFactory.createToken(OQLTokenId.KEYWORD, lastToken.trim().length(), PartType.COMPLETE);
                         } else {
                             state = State.ERROR;
                             input.backup(input.readLength());
@@ -196,8 +199,30 @@ class OQLLexer implements Lexer<OQLTokenId> {
                             state = State.ERROR;
                             input.backup(input.readLength());
                         }
+                    } else if (actChar == '(' || actChar == ')' || actChar == '[' ||
+                               actChar == ']' || actChar == '{' || actChar == '}' ||
+                               actChar == '.' || actChar == ',') {
+                        state = State.JSBLOCK1;
+                        input.backup(1);
+                        if (input.readLength() > 0) {
+                            return tokenFactory.createToken(OQLTokenId.JSBLOCK);
+                        }
                     }
                     break;
+                }
+
+                case JSBLOCK1: {
+                    if (actChar == '(' || actChar == ')' || actChar == '[' ||
+                       actChar == ']' || actChar == '{' || actChar == '}') {
+                        state = State.JSBLOCK;
+                        return tokenFactory.createToken(OQLTokenId.BRACE);
+                    } else if (actChar == '.') {
+                        state = State.JSBLOCK;
+                        return tokenFactory.createToken(OQLTokenId.DOT);
+                    } else if (actChar == ',') {
+                        state = State.JSBLOCK;
+                        return tokenFactory.createToken(OQLTokenId.COMMA);
+                    }
                 }
 
                 case IN_CLASSNAME: {
@@ -206,8 +231,8 @@ class OQLLexer implements Lexer<OQLTokenId> {
                         Matcher matcher = classPattern.matcher(lastToken.trim());
                         if (matcher.matches()) {
                             if ((isEmpty(matcher.group(1)) ? 0 : 1) + (isEmpty(matcher.group(2)) ? 0 : 1) > 1) {
-                                state = State.ERROR;
-                                input.backup(input.readLength());
+                                return tokenFactory.createToken(OQLTokenId.CLAZZ_E);
+//                                input.backup(input.readLength());
                             }
                             state = State.CLASS_ALIAS;
                             return tokenFactory.createToken(OQLTokenId.CLAZZ);
@@ -316,7 +341,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
                     input.backup(1);
                     return tokenFactory.createToken(OQLTokenId.CLAZZ);
                 } else {
-                    return tokenFactory.createToken(OQLTokenId.ERROR);
+                    return tokenFactory.createToken(OQLTokenId.CLAZZ_E);
                 }
             }
             case CLASS_ALIAS: {
