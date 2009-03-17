@@ -394,8 +394,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
                 + " -- CloneableEditor.DoInitialize.initCustomEditor"
                 + " tmp.ui:" + tmp.getUI().getClass().getName());
-                if (!"org.netbeans.editor.BaseTextUI".equals(tmp.getUI().getClass().getName())) {
-                //if (true) {
+                try {
+                    customComponent = ce.createEditor(tmp);
+                } catch (NullPointerException ex) {
                     Logger logger = Logger.getLogger("org.netbeans.ui.text");   // NOI18N
                     LogRecord rec = new LogRecord(Level.INFO, "LOG_CLONEABLE_EDITOR");   // NOI18N
                     rec.setLoggerName(logger.getName());
@@ -407,10 +408,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     }
                     rec.setParameters(new Object [] {sb.toString(), log});
                     logger.log(rec);
-                    throw new IllegalStateException("Unexpected UI class:" + tmp.getUI().getClass().getName());
+                    throw new IllegalStateException("Unexpected UI class:" + tmp.getUI().getClass().getName(), ex);
                 }
-                customComponent = ce.createEditor(tmp);
-
+                
                 if (customComponent == null) {
                     throw new IllegalStateException(
                         "Document:" + doc // NOI18N
