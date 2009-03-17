@@ -81,7 +81,6 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -96,7 +95,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  *
  * @author Petr Kuzel
  */
-final class AnnotationBar extends JComponent implements Accessible, PropertyChangeListener, DocumentListener, ChangeListener, ActionListener, Runnable, ComponentListener, LookupListener {
+final class AnnotationBar extends JComponent implements Accessible, PropertyChangeListener, DocumentListener, ChangeListener, ActionListener, Runnable, ComponentListener {
 
     /**
      * Target text component for which the annotation bar is aiming.
@@ -180,12 +179,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      */
     private final Map renderingHints;
 
-    private Lookup.Result<? extends HyperlinkProvider> hpResult;
-    /**
-     * Hyperlink providers available for the commit message TooltipWindow
-     */
-    private List<HyperlinkProvider> providers;
-
     /**
      * Creates new instance initializing final fields.
      */
@@ -203,14 +196,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             renderingHints = null;
         }
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        hpResult = (Lookup.Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
-        hpResult.addLookupListener(this);
-        setHyperlinkProviders();
-    }
-
-    public void resultChanged(LookupEvent ev) {
-        hpResult = (Lookup.Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
-        setHyperlinkProviders();
     }
 
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -432,24 +417,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             TooltipWindow ttw = new TooltipWindow(this, al);
             ttw.show(new Point(p.x - p2.x, p.y));
         }
-    }
-
-    /**
-     *
-     */
-    private void setHyperlinkProviders () {
-        Collection<? extends HyperlinkProvider> providersCol = hpResult.allInstances();
-        List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
-        providersList.addAll(providersCol);
-        providers = Collections.unmodifiableList(providersList);
-    }
-
-    /**
-     *
-     * @return registered hyperlink providers
-     */
-    public List<HyperlinkProvider> getHyperlinkProviders() {
-        return providers;
     }
 
     private JPopupMenu createPopup(MouseEvent e) {
