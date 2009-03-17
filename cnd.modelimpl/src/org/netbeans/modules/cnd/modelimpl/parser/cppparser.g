@@ -1191,15 +1191,16 @@ member_declaration_template
 			}
 			function_definition
 			{ #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #member_declaration_template); }
-		|
-			{if (statementTrace>=1) 
-				printf("member_declaration_13d[%d]: Templated operator " +
-					    "function\n", LT(1).getLine());
-			}
-			definition = conversion_function_decl_or_def
-			{ if( definition ) #member_declaration_template = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration_template);
-			    else	   #member_declaration_template = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #member_declaration_template); }
-		|         
+    |
+        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline)*
+            conversion_function_decl_or_def
+        ) =>
+        {if (statementTrace>=1) printf("member_declaration_13d[%d]: Templated operator " + "function\n", LT(1).getLine());}
+        ((options {greedy=true;} :function_attribute_specification)|literal_inline)*
+        definition = conversion_function_decl_or_def
+        {if( definition )   #member_declaration_template = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration_template);
+         else               #member_declaration_template = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #member_declaration_template);}
+    |
                         // this rule must be after handling functions 
 			// templated forward class decl, init/decl of static member in template
 			(declaration_specifiers[true, false]
@@ -1388,17 +1389,17 @@ member_declaration
 		}
 		function_definition_with_fun_as_ret_type
 		{ #member_declaration = #(#[CSM_FUNCTION_RET_FUN_DEFINITION, "CSM_FUNCTION_RET_FUN_DEFINITION"], #member_declaration); }
-	|  
-		// User-defined type cast
-		((literal_inline)? conversion_function_decl_or_def)=>
-		{if (statementTrace>=1) 
-			printf("member_declaration_8[%d]: Operator function\n",
-				LT(1).getLine());
-		}
-		(literal_inline)? definition = conversion_function_decl_or_def
-		{ if( definition ) #member_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration);
-		    else	   #member_declaration = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #member_declaration); }
-	|  
+    |
+        // User-defined type cast
+        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual)*
+            conversion_function_decl_or_def
+        ) =>
+        {if (statementTrace>=1) printf("member_declaration_8[%d]: Operator function\n", LT(1).getLine());}
+        ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual)*
+        definition = conversion_function_decl_or_def
+        {if( definition )   #member_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration);
+         else               #member_declaration = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #member_declaration);}
+    |
 		// Hack to handle decls like "superclass::member",
 		// to redefine access to private base class public members
 		(qualified_id (EOF|SEMICOLON))=>
