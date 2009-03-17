@@ -20,7 +20,7 @@
               <Group type="103" groupAlignment="1" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="errorProgress" pref="380" max="32767" attributes="0"/>
+                      <Component id="errorProgress" pref="409" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
@@ -37,14 +37,14 @@
                           </Group>
                           <Component id="forgotPassword" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="chkRememberMe" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="password" alignment="0" pref="254" max="32767" attributes="0"/>
-                          <Component id="username" alignment="0" pref="254" max="32767" attributes="0"/>
+                          <Component id="password" alignment="0" pref="278" max="32767" attributes="0"/>
+                          <Component id="username" alignment="0" pref="278" max="32767" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="lblKenaiLogo" alignment="0" pref="392" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
+          <Component id="lblKenaiLogo" alignment="0" pref="449" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -72,7 +72,7 @@
               </Group>
               <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
               <Component id="errorProgress" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="16" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
