@@ -77,10 +77,9 @@ public class Folder implements FileChangeListener, ChangeListener {
     private ConfigurationDescriptor configurationDescriptor;
     private final String name;
     private String displayName;
-    private String sortName;
     private final Folder parent;
     private Vector<Object> items = null; // Folder or Item
-    private final Set<ChangeListener> changeListenerList = new HashSet<ChangeListener>();
+    private final Set<ChangeListener> changeListenerList = new HashSet<ChangeListener>(1);
     private final boolean projectFiles;
     private String id = null;
     private String root;
@@ -94,8 +93,6 @@ public class Folder implements FileChangeListener, ChangeListener {
         this.displayName = displayName;
         this.projectFiles = projectFiles;
         this.items = new Vector<Object>();
-        this.sortName = displayName.toLowerCase();
-
     }
 
     public void setRoot(String root) {
@@ -252,7 +249,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public String getSortName() {
-        return sortName;
+        return displayName;
     }
 
     public String getPath() {
@@ -288,7 +285,6 @@ public class Folder implements FileChangeListener, ChangeListener {
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
         configurationDescriptor.setModified();
-        sortName = displayName.toLowerCase();
         getParent().reInsertElement(this);
     }
 
@@ -357,7 +353,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 continue;
             }
             String name2 = ((Folder) o).getSortName();
-            int compareRes = name1.compareTo(name2);
+            int compareRes = name1.compareToIgnoreCase(name2);
             if (compareRes < 0) {
                 indexAt--;
                 continue;
@@ -377,7 +373,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 break;
             }
             String name2 = ((Item) o).getSortName();
-            int compareRes = name1.compareTo(name2);
+            int compareRes = name1.compareToIgnoreCase(name2);
             if (compareRes < 0) {
                 indexAt--;
                 continue;

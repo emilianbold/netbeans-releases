@@ -81,7 +81,6 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
 import org.netbeans.spi.debugger.jpda.EditorContext;
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.text.NbDocument;
@@ -124,9 +123,7 @@ public class WatchPanel {
                         }
                     }
                 });
-                Context c = retrieveContext(null);
-                if (c != null) setupContext(editorPane, c.url, c.line);
-                else setupUI(editorPane);
+                setupUI(editorPane);
                 return ;
             } else {
                 en = null;
@@ -159,7 +156,7 @@ public class WatchPanel {
         } else {
             EditorContext context = EditorContextBridge.getContext();
             String url = context.getCurrentURL();
-            if (url != null && url.length() > 0) {
+            if (url != null) {
                 Context c = new Context();
                 c.url = url;
                 c.line = context.getCurrentLineNumber();
@@ -168,18 +165,7 @@ public class WatchPanel {
                 }
                 return c;
             } else {
-                url = EditorContextDispatcher.getDefault().getMostRecentURLAsString();
-                if (url != null && url.length() > 0) {
-                    Context c = new Context();
-                    c.url = url;
-                    c.line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
-                    if (c.line == -1) {
-                        c.line = 0;
-                    }
-                    return c;
-                } else {
-                    return null;
-                }
+                return null;
             }
         }
     }
@@ -215,7 +201,6 @@ public class WatchPanel {
         try {
             int offset = NbDocument.findLineOffset(doc, line);
             //editorPane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
-            //System.err.println("WatchPanel.setupContext("+file+", "+line+", "+offset+")");
             DialogBinding.bindComponentToFile(file, offset, 0, editorPane);
         } catch (IndexOutOfBoundsException ioobex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
@@ -227,9 +212,10 @@ public class WatchPanel {
         Runnable runnable = new Runnable() {
             public void run() {
                 EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
-                if (eui != null) {
-                    eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+                if (eui == null) {
+                    return;
                 }
+                eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
                 // Do not draw text limit line
                 try {
                     java.lang.reflect.Field textLimitLineField = EditorUI.class.getDeclaredField("textLimitLineVisible"); // NOI18N
@@ -254,14 +240,6 @@ public class WatchPanel {
         panel.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_WatchPanel")); // NOI18N
         JLabel textLabel = new JLabel();
         Mnemonics.setLocalizedText(textLabel, bundle.getString ("CTL_Watch_Name")); // NOI18N
-        JEditorPane editor = EditorContextDispatcher.getDefault().getMostRecentEditor();
-        if (editor.getDocument() instanceof StyledDocument) {
-            StyledDocument doc = (StyledDocument) editor.getDocument();
-            String selectedExpression = getSelectedIdentifier(doc, editor, editor.getCaret ().getDot ());
-            if (selectedExpression != null) {
-                expression = selectedExpression;
-            }
-        }
         editorPane = new JEditorPane();//expression); // NOI18N
         editorPane.setText(expression);
 
@@ -274,16 +252,12 @@ public class WatchPanel {
         setupContext(editorPane, editorPaneUpdated);
         
         JScrollPane sp = createScrollableLineEditor(editorPane);
-        int h = sp.getPreferredSize().height;
-        int w = Math.min(70*editorPane.getFontMetrics(editorPane.getFont()).charWidth('a'),
-                         org.openide.windows.WindowManager.getDefault().getMainWindow().getSize().width);
-        sp.setPreferredSize(new Dimension(w, h));
         FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());
-        int size = 2*fm.getLeading() + fm.getMaxAscent() + fm.getMaxDescent();
+        int size = 2*fm.getLeading() + fm.getMaxAscent() + fm.getMaxDescent() + 2;
         Insets eInsets = editorPane.getInsets();
         Insets spInsets = sp.getInsets();
         sp.setPreferredSize(new Dimension(30*size,
-                size +
+                size + 2 +
                 eInsets.bottom + eInsets.top +
                 spInsets.bottom + spInsets.top));
         
@@ -345,57 +319,6 @@ public class WatchPanel {
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
         return sp;
     }
-
-    private static String getSelectedIdentifier (
-        StyledDocument doc,
-        JEditorPane ep,
-        int offset
-    ) {
-        String t = null;
-        if ( (ep.getSelectionStart () <= offset) &&
-             (offset <= ep.getSelectionEnd ())
-        )   t = ep.getSelectedText ();
-        if (t != null) return t;
-
-        int line = NbDocument.findLineNumber (
-            doc,
-            offset
-        );
-        int col = NbDocument.findLineColumn (
-            doc,
-            offset
-        );
-        try {
-            javax.swing.text.Element lineElem =
-                org.openide.text.NbDocument.findLineRootElement (doc).
-                getElement (line);
-
-            if (lineElem == null) return null;
-            int lineStartOffset = lineElem.getStartOffset ();
-            int lineLen = lineElem.getEndOffset() - lineStartOffset;
-            t = doc.getText (lineStartOffset, lineLen);
-            int identStart = col;
-            while (identStart > 0 &&
-                (Character.isJavaIdentifierPart (
-                    t.charAt (identStart - 1)
-                ) ||
-                (t.charAt (identStart - 1) == '.'))) {
-                identStart--;
-            }
-            int identEnd = col;
-            while (identEnd < lineLen &&
-                   Character.isJavaIdentifierPart(t.charAt(identEnd))
-            ) {
-                identEnd++;
-            }
-
-            if (identStart == identEnd) return null;
-            return t.substring (identStart, identEnd);
-        } catch (javax.swing.text.BadLocationException e) {
-            return null;
-        }
-    }
-
 
     private static final class Context {
         public String url;

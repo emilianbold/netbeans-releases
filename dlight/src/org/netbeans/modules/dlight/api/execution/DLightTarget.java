@@ -38,15 +38,14 @@
  */
 package org.netbeans.modules.dlight.api.execution;
 
+import java.net.ConnectException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
+import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
-import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.RequestProcessor;
 
 /**
  * D-Light Target.Target to be d-lighted, it can be anything: starting from shell script to
@@ -58,8 +57,8 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class DLightTarget {
 
-    private static final Logger log = DLightLogger.getLogger(DLightTarget.class);
-    private List<DLightTargetListener> listeners = Collections.synchronizedList(new ArrayList<DLightTargetListener>());
+    //@GuardedBy("this")
+    private final List<DLightTargetListener> listeners;
     private final DLightTargetExecutionService executionService;
 
 
@@ -74,6 +73,7 @@ public abstract class DLightTarget {
      */
     protected DLightTarget(DLightTarget.DLightTargetExecutionService executionService) {
         this.executionService = executionService;
+        this.listeners = new ArrayList<DLightTargetListener>();
     }
 
     private final DLightTargetExecutionService getExecutionService() {
@@ -86,8 +86,14 @@ public abstract class DLightTarget {
      * @param listener add listener
      */
     public final void addTargetListener(DLightTargetListener listener) {
-        if (listener != null && !listeners.contains(listener)) {
-            listeners.add(listener);
+        if (listener == null) {
+            return;
+        }
+
+        synchronized (this) {
+            if (!listeners.contains(listener)) {
+                listeners.add(listener);
+            }
         }
     }
 
@@ -96,7 +102,7 @@ public abstract class DLightTarget {
      * @param listener listener to remove from the list
      */
     public final void removeTargetListener(DLightTargetListener listener) {
-        if (listeners.contains(listener)) {
+        synchronized (this) {
             listeners.remove(listener);
         }
     }
@@ -107,19 +113,29 @@ public abstract class DLightTarget {
      * @param newState state  target is
      */
     protected final void notifyListeners(final DLightTarget.State oldState,
-        final DLightTarget.State newState) {
-        DLightTargetListener[] ls = listeners.toArray(new DLightTargetListener[0]);
-        for (DLightTargetListener l : ls) {
-            final DLightTargetListener listener = l;
-            RequestProcessor.getDefault().post(new Runnable() {
+            final DLightTarget.State newState) {
+        synchronized (this) {
+            final CountDownLatch doneFlag = new CountDownLatch(listeners.size());
 
-                public void run() {
-                    listener.targetStateChanged(DLightTarget.this, oldState, newState);
-                }
-            });
+            // Will do notification in parallel, but wait until all listeners
+            // finish processing of event.
+            for (final DLightTargetListener l : listeners) {
+                DLightExecutorService.submit(new Runnable() {
 
+                    public void run() {
+                        try {
+                            l.targetStateChanged(DLightTarget.this, oldState, newState);
+                        } finally {
+                            doneFlag.countDown();
+                        }
+                    }
+                }, "Notifying " + l); // NOI18N
+            }
 
-
+            try {
+                doneFlag.await();
+            } catch (InterruptedException ex) {
+            }
         }
     }
 
@@ -204,9 +220,12 @@ public abstract class DLightTarget {
         /**
          * Returns enviroment variables map (name - value) which should
          * be set up before DLightTarget is started
+         * @param target  target that is going to start
          * @return enviroment variables map to set up before target is starting
+         * @throws ConnectException in case connection to target host is needed,
+         *      but the host is not connected yet
          */
-        Map<String, String> getExecutionEnv();
+        Map<String, String> getExecutionEnv(DLightTarget target) throws ConnectException;
     }
 
     private static final class DLightTargetAccessorImpl extends DLightTargetAccessor {
@@ -216,5 +235,4 @@ public abstract class DLightTarget {
             return target.getExecutionService();
         }
     }
-
 }

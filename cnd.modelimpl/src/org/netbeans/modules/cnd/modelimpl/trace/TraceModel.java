@@ -791,7 +791,7 @@ public class TraceModel extends TraceModelBase {
                     File pathFile = new File(dirFile, path.toString());
                     path = pathFile.getAbsolutePath();
                 }
-                qInc.add(FilePathCache.getString(path));
+                qInc.add(FilePathCache.getManager().getString(path));
             }
         }
         StartEntry startEntry = new StartEntry(file.getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
@@ -1220,7 +1220,7 @@ public class TraceModel extends TraceModelBase {
 
         if (doCleanRepository) {
             CsmProject prj = fileImpl.getProject();
-            String absPath = fileImpl.getAbsolutePath();
+            CharSequence absPath = fileImpl.getAbsolutePath();
             fileImpl = null;
             ParserThreadManager.instance().waitEmptyProjectQueue((ProjectBase) prj);
             sleep(100);

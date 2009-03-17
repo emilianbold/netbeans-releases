@@ -265,7 +265,7 @@ public class MavenSettings  {
         RegExpConsumer cons = new RegExpConsumer();
         try {
             int ret = CommandLineUtils.executeCommandLine(cmdline, cons, cons);
-            return cons.version;
+            return cons.version != null ? cons.version.trim() : null;
         } catch (CommandLineException ex1) {
             Exceptions.printStackTrace(ex1);
             return null;

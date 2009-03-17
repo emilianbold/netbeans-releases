@@ -96,7 +96,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -119,6 +118,7 @@ import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
 import org.netbeans.modules.maven.execute.ReactorChecker;
 import org.netbeans.modules.maven.queries.MavenBinaryForSourceQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileEncodingQueryImpl;
+import org.netbeans.modules.maven.queries.MavenFileLocator;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
@@ -770,6 +770,7 @@ public final class NbMavenProjectImpl implements Project {
                     configEnabler,
                     new MavenDebuggerImpl(this),
                     new DefaultReplaceTokenProvider(this),
+                    new MavenFileLocator(this),
 
                     // default mergers..        
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),

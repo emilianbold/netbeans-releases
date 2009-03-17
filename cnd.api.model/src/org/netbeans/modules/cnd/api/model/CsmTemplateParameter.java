@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.api.model;
  * Represent one template parameter
  * @author Vladimir Kvashin
  */
-public interface CsmTemplateParameter extends CsmNamedElement {
+public interface CsmTemplateParameter extends CsmOffsetableDeclaration {
 
     /*enum Kind {
         DECLARATION,

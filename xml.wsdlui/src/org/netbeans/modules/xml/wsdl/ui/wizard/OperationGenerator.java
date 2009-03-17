@@ -50,6 +50,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -126,8 +127,8 @@ public class OperationGenerator implements Command {
     public void execute() {
         if(mModel != null) {
             //operation
-            String operationName = (String) this.mConfigurationMap.get(WizardPortTypeConfigurationStep.OPERATION_NAME);
-            OperationType ot = (OperationType) this.mConfigurationMap.get(WizardPortTypeConfigurationStep.OPERATION_TYPE);
+            String operationName = (String) this.mConfigurationMap.get(WSDLWizardConstants.OPERATION_NAME);
+            OperationType ot = (OperationType) this.mConfigurationMap.get(WSDLWizardConstants.OPERATION_TYPE);
             
             this.mOperation = createOperation(ot, mModel);
             this.mOperation.setName(operationName);
@@ -135,21 +136,21 @@ public class OperationGenerator implements Command {
             
             //opertion type
             List<PartAndElementOrTypeTableModel.PartAndElementOrType> inputMessageParts = 
-                    (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) this.mConfigurationMap.get(WizardPortTypeConfigurationStep.OPERATION_INPUT);
+                    (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) this.mConfigurationMap.get(WSDLWizardConstants.OPERATION_INPUT);
             
             List<PartAndElementOrTypeTableModel.PartAndElementOrType> outputMessageParts = 
-                    (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) this.mConfigurationMap.get(WizardPortTypeConfigurationStep.OPERATION_OUTPUT);
+                    (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) this.mConfigurationMap.get(WSDLWizardConstants.OPERATION_OUTPUT);
             
             List<PartAndElementOrTypeTableModel.PartAndElementOrType> faultMessageParts = 
-                    (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) this.mConfigurationMap.get(WizardPortTypeConfigurationStep.OPERATION_FAULT);
+                    (List<PartAndElementOrTypeTableModel.PartAndElementOrType>) this.mConfigurationMap.get(WSDLWizardConstants.OPERATION_FAULT);
 
             SchemaImportsGenerator schemaImportGenerator = new SchemaImportsGenerator(this.mModel, mConfigurationMap);
             schemaImportGenerator.execute();
             mImports.addAll(schemaImportGenerator.getImports());
             
-            String inputMessageName = (String) this.mConfigurationMap.get(WizardPortTypeConfigurationStep.OPERATION_INPUT_MESSAGE);
-            String outputMessageName = (String) this.mConfigurationMap.get(WizardPortTypeConfigurationStep.OPERATION_OUTPUT_MESSAGE);
-            String faultMessageName  = (String) this.mConfigurationMap.get(WizardPortTypeConfigurationStep.OPERATION_FAULT_MESSAGE);
+            String inputMessageName = (String) this.mConfigurationMap.get(WSDLWizardConstants.OPERATION_INPUT_MESSAGE);
+            String outputMessageName = (String) this.mConfigurationMap.get(WSDLWizardConstants.OPERATION_OUTPUT_MESSAGE);
+            String faultMessageName  = (String) this.mConfigurationMap.get(WSDLWizardConstants.OPERATION_FAULT_MESSAGE);
                     
             processOperationType(ot, 
                                 this.mOperation, 

@@ -164,4 +164,86 @@ public class SunCCCCompilerTest {
         }
         assert (golden.equals(out));
     }
+
+    @Test
+    public void testParseCompilerOutputSunC2() {
+        System.setProperty("os.name", "SunOS");
+        String s =
+"/shared/dp/sstrunk/090219/inst/intel-Linux.inst/opt/sun/sunstudioceres/prod/bin/acomp -Qy -Xa -xc99=%all -i /dev/null "+
+"-D__SUNPRO_C=0x5100 -D__unix -D__unix__ -Dlinux -D__linux -D__linux__ -D__gnu__linux__ \"-D__builtin_expect(e,x)=e\" "+
+"-D__x86_64 -D__x86_64__ -D__amd64 -D__amd64__ -D_LP64 -D__LP64__ -D__BUILTIN_VA_STRUCT -D__C99FEATURES__ "+
+"-D__PRAGMA_REDEFINE_EXTNAME -Dunix -D__RESTRICT -D__FLT_EVAL_METHOD__=0 -D__SUN_PREFETCH "+
+"-I/shared/dp/sstrunk/090219/inst/intel-Linux.inst/opt/sun/sunstudioceres/prod/include/cc -fsimple=0 -m64 -fparam_ir "+
+"-xF=%none -xdbggen=no%stabs+dwarf2+usedonly -xldscope=global -c99OS -xir_types "+
+"\"-g/shared/dp/sstrunk/090219/inst/intel-Linux.inst/opt/sun/sunstudioceres/prod/bin/cc -xdryrun -E /dev/null \" "+
+"-destination_ir=%none -E -o - \n";
+
+
+
+        BufferedReader buf = new BufferedReader(new StringReader(s));
+        if (TRACE) {
+            System.out.println("Parse Compiler Output of SunStudio C on Lunix");
+        }
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", Platform.PLATFORM_LINUX);
+        SunCCCompiler instance = new SunCCCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), flavor, Tool.CCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin") {
+
+            @Override
+            protected String normalizePath(String path) {
+                return path;
+            }
+        };
+        instance.setSystemIncludeDirectories(new ArrayList<String>());
+        instance.setSystemPreprocessorSymbols(new ArrayList<String>());
+        instance.parseCompilerOutput(buf);
+        List<String> out = instance.getSystemIncludeDirectories();
+        Collections.<String>sort(out);
+        List<String> golden = new ArrayList<String>();
+        golden.add("/shared/dp/sstrunk/090219/inst/intel-Linux.inst/opt/sun/sunstudioceres/prod/include/cc");
+
+        StringBuilder result = new StringBuilder();
+        for (String i : out) {
+            result.append(i);
+            result.append("\n");
+        }
+        if (TRACE) {
+            System.out.println(result);
+        }
+        assert (golden.equals(out));
+
+        out = instance.getSystemPreprocessorSymbols();
+        Collections.<String>sort(out);
+        golden = new ArrayList<String>();
+        golden.add("_LP64");
+        golden.add("__BUILTIN_VA_STRUCT");
+        golden.add("__C99FEATURES__");
+        golden.add("__FLT_EVAL_METHOD__=0");
+        golden.add("__LP64__");
+        golden.add("__PRAGMA_REDEFINE_EXTNAME");
+        golden.add("__RESTRICT");
+        golden.add("__SUNPRO_C=0x5100");
+        golden.add("__SUN_PREFETCH");
+        golden.add("__amd64");
+        golden.add("__amd64__");
+        golden.add("__builtin_expect(e,x)=e");
+        golden.add("__gnu__linux__");
+        golden.add("__linux");
+        golden.add("__linux__");
+        golden.add("__unix");
+        golden.add("__unix__");
+        golden.add("__x86_64");
+        golden.add("__x86_64__");
+        golden.add("linux");
+        golden.add("unix");
+
+        result = new StringBuilder();
+        for (String i : out) {
+            result.append(i);
+            result.append("\n");
+        }
+        if (TRACE) {
+            System.out.println(result);
+        }
+        assert (golden.equals(out));
+    }
+
 }

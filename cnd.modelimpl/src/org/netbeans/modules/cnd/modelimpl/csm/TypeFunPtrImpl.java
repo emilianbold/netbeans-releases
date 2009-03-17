@@ -105,7 +105,7 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
             }
         }
         sb.append(')');
-        sb.append(FunctionImpl.createParametersSignature(getParameters()));
+        FunctionImpl.appendParametersSignature(getParameters(), sb);
         return sb;
     }
 

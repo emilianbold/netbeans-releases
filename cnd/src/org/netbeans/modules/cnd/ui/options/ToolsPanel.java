@@ -51,6 +51,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -81,7 +82,6 @@ import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
@@ -171,18 +171,18 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         }
         cbDevHost.removeItemListener(this);
 
-        String[] hostList = cacheManager.getHostKeyList();
+        Collection<ExecutionEnvironment> hostList = cacheManager.getHosts();
         if (hostList != null) {
             cbDevHost.removeAllItems();
-            for (String key : hostList) {
-                cbDevHost.addItem(key);
+            for (ExecutionEnvironment env : hostList) {
+                cbDevHost.addItem(env);
             }
         } else {
-            cbDevHost.addItem(CompilerSetManager.LOCALHOST);
+            cbDevHost.addItem(ExecutionEnvironmentFactory.getLocalExecutionEnvironment());
         }
 
         if (model.getSelectedDevelopmentHost() != null) {
-            cbDevHost.setSelectedItem(ExecutionEnvironmentFactory.getHostKey(model.getSelectedDevelopmentHost()));
+            cbDevHost.setSelectedItem(model.getSelectedDevelopmentHost());
         } else {
             cbDevHost.setSelectedIndex(cacheManager.getDefaultHostIndex());
         }
@@ -231,7 +231,9 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
 
     private void addCompilerSet() {
         AddCompilerSetPanel panel = new AddCompilerSetPanel(csm);
-        String title = isRemoteHostSelected() ? getString("NEW_TOOL_SET_TITLE_REMOTE", csm.getHost()) : getString("NEW_TOOL_SET_TITLE");
+        String title = isRemoteHostSelected() ? 
+            getString("NEW_TOOL_SET_TITLE_REMOTE", ExecutionEnvironmentFactory.getHostKey(csm.getExecutionEnvironment())) :
+            getString("NEW_TOOL_SET_TITLE");
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
         panel.setDialogDescriptor(dialogDescriptor);
         DialogDisplayer.getDefault().notify(dialogDescriptor);
@@ -283,11 +285,11 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             log.fine("TP.itemStateChanged: About to update");
             changed = true;
             if (!cacheManager.hasCache()) {
-                String[] nulist = new String[cbDevHost.getItemCount()];
-                for (int i = 0; i < nulist.length; i++) {
-                    nulist[i] = (String) cbDevHost.getItemAt(i);
+                List<ExecutionEnvironment> nulist = new ArrayList<ExecutionEnvironment>(cbDevHost.getItemCount());
+                for (int i = 0; i < cbDevHost.getItemCount(); i++) {
+                    nulist.add((ExecutionEnvironment) cbDevHost.getItemAt(i));
                 }
-                cacheManager.setHostKeyList(nulist);
+                cacheManager.setHosts(nulist);
             }
             cacheManager.setDefaultIndex(cbDevHost.getSelectedIndex());
             execEnv = getSelectedEnvironment();
@@ -444,7 +446,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
 //                // always return true in remote mode, instead of call to very expensive operation
 //                return true;
 //            } else {
-//                return serverList.isValidExecutable(hkey, txt);
+//                return serverList.isValidExecutable(execEnv, txt);
 //            }
         }
     }
@@ -526,11 +528,11 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     }
 
     private boolean isRemoteHostSelected() {
-        return !RemoteUtils.isLocalhost((String)cbDevHost.getSelectedItem());
+        return ((ExecutionEnvironment)cbDevHost.getSelectedItem()).isRemote();
     }
 
     private ExecutionEnvironment getSelectedEnvironment() {
-        return ExecutionEnvironmentFactory.getExecutionEnvironment((String) cbDevHost.getSelectedItem());
+        return (ExecutionEnvironment) cbDevHost.getSelectedItem();
     }
 
     private boolean isHostValidForEditing() {
@@ -977,10 +979,10 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
             cbDevHost.removeAllItems();
-            log.fine("TP.editDevHosts: Adding " + cacheManager.getHostKeyList().length + " items to cbDevHost");
-            for (String key : cacheManager.getHostKeyList()) {
-                log.fine("    Adding " + key);
-                cbDevHost.addItem(key);
+            log.fine("TP.editDevHosts: Adding " + cacheManager.getHosts().size() + " items to cbDevHost");
+            for (ExecutionEnvironment env : cacheManager.getHosts()) {
+                log.fine("    Adding " + env);
+                cbDevHost.addItem(env);
             }
             log.fine("TP.editDevHosts: cbDevHost has " + cbDevHost.getItemCount() + " items");
             log.fine("TP.editDevHosts: getDefaultIndex returns " + cacheManager.getDefaultHostIndex());

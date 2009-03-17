@@ -40,13 +40,28 @@
 package org.netbeans.modules.dlight.tools.impl;
 
 import java.io.File;
+import java.text.ParseException;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.openide.modules.InstalledFileLocator;
 
 /**
- * An utility class that helps working with native mmonitor and magent
+ * An utility class that helps working with native prof_monitor and prof_agent
  * @author Vladimir Kvashin
  */
 // package-local
 class NativeToolsUtil {
+
+    private NativeToolsUtil() {}
+
+    public static String getLdPreloadName(String osname) {
+        if ("Mac_OS_X".equals(osname)) { // NOI18N
+            return "DYLD_INSERT_LIBRARIES"; // NOI18N
+        } else {
+            return "LD_PRELOAD"; // NOI18N
+        }
+    }
 
     public static String getExecutable(String name) {
         return getPlatformBinary(name);
@@ -59,4 +74,15 @@ class NativeToolsUtil {
     private static String getPlatformBinary(String nameWithSuffix) {
         return "bin" + File.separator + "${osname}-${platform}${_isa}" + File.separator + nameWithSuffix; //NOI18N
     }
+
+    public static File locateFile(ExecutionEnvironment env, String relativePathWithMacros) {
+        MacroExpander mef = MacroExpanderFactory.getExpander(env);
+        try {
+            String relativePath = mef.expandPredefinedMacros(relativePathWithMacros);
+            return InstalledFileLocator.getDefault().locate(relativePath, null, false);
+        } catch (ParseException ex) {
+            return null;
+        }
+    }
+
 }

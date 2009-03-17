@@ -41,7 +41,7 @@ package org.netbeans.modules.php.dbgp;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.Callable;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -51,12 +51,11 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.dbgp.breakpoints.LineBreakpoint;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.packets.RunCommand;
-import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.text.Line;
-import org.openide.util.Exceptions;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -86,7 +85,7 @@ public class DebuggerTest extends NbTestCase {
     /**
      * Test of debug method, of class Debugger.
      */
-    public void testStopAtBreakpoint() throws Exception {
+    public void testStopAtBreakpoint()  throws Exception {
         FileObject scriptFo = createPHPTestFile("index.php");//NOI18N
         assertNotNull(scriptFo);
         final SessionId sessionId = new SessionId(scriptFo);
@@ -95,10 +94,8 @@ public class DebuggerTest extends NbTestCase {
         assertTrue(scriptFile.exists());
         final TestWrapper testWrapper = new TestWrapper(getTestForSuspendState(sessionId));
         addBreakpoint(scriptFo, 7, testWrapper, new RunContinuation(sessionId));
-        ProcessBuilder processBuilder = startDebugging(sessionId, scriptFile);
-        Process process = processBuilder.start();        
+        startDebugging(sessionId, scriptFile);        
         sessionId.isInitialized(true);
-        process.waitFor();                
         testWrapper.assertTested();//sometimes, randomly fails 
     }
 
@@ -121,7 +118,8 @@ public class DebuggerTest extends NbTestCase {
             }
 
             public void show(int kind, int column) {
-                throw new UnsupportedOperationException("Not supported.");
+                testObj.test();
+                move.goAhead();
             }
 
             public void setBreakpoint(boolean b) {
@@ -227,8 +225,8 @@ public class DebuggerTest extends NbTestCase {
         }
 
         void test() {
-            setAsTested();
             this.test.run();
+            setAsTested();
         }
     }
 
@@ -287,28 +285,22 @@ public class DebuggerTest extends NbTestCase {
         };
     }
 
-    private ProcessBuilder startDebugging(final SessionId sessionId, File scriptFile) {
-        DebuggerOptions dOptions = new DebuggerOptions();
-        dOptions.debugForFirstPageOnly = true;
-        ProcessBuilder processBuilder = null;
-        Semaphore semaphore = getDebugger().debug(sessionId, DebuggerOptions.getGlobalInstance(), null);
-        try {
-            semaphore.acquire();
-            String command = gePHPInterpreter();
-            processBuilder = new ProcessBuilder(new String[]{command, scriptFile.getAbsolutePath()});
-            processBuilder.directory(scriptFile.getParentFile());
-            processBuilder.environment().put("XDEBUG_CONFIG", "idekey=" + sessionId.getId()); //NOI18N
+    private void startDebugging(final SessionId sessionId, File scriptFile) {
+        final Process[] processes =  new Process[1];
+        final ProcessBuilder processBuilder = new ProcessBuilder(new String[]{gePHPInterpreter(), scriptFile.getAbsolutePath()});
+        processBuilder.directory(scriptFile.getParentFile());
+        processBuilder.environment().put("XDEBUG_CONFIG", "idekey=" + sessionId.getId()); //NOI18N
+        SessionManager.getInstance().startSession(sessionId, DebuggerOptions.getGlobalInstance(), new Callable<Cancellable>() {
+            public Cancellable call() throws Exception {
+                processes[0] = processBuilder.start();
+                return new Cancellable() {
 
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-            semaphore.release();
-        }
-        return processBuilder;
-    }
-    
-    private DebuggerImpl getDebugger() {
-        DebuggerImpl retval = (DebuggerImpl) Lookup.getDefault().lookup(XDebugStarter.class);
-        return retval;
+                    public boolean cancel() {
+                        return true;
+                    }
+                };
+            }
+        });
+
     }
 }

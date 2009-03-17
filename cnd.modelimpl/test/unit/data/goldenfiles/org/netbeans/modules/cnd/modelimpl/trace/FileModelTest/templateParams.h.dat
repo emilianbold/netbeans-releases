@@ -46,7 +46,7 @@ CLASS OrderedStatic<class,class,Loki::NullType> (OrderedStatic<class,class,Loki:
             PARAMETERS:
                  [18:34/597-18:54/617]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [18:34/597-18:39/602]  INIT: null  SCOPE: operator = 
             RETURNS &$unresolved$::OrderedStatic TEXT=OrderedStatic&  [18:9/572-18:23/586]
-STRUCT RefCountedMTAdj<template<class,class>,class MX=LOKI_DEFAULT_MUTEX> (RefCountedMTAdj ) [21:5/632-32:6/1096] lcurly=765 SCOPE: $Global$ 
+STRUCT RefCountedMTAdj<template<class,class> class ThreadingModel,class MX=LOKI_DEFAULT_MUTEX> (RefCountedMTAdj ) [21:5/632-32:6/1096] lcurly=765 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         CLASS RefCountedMT<class P> (RefCountedMTAdj::RefCountedMT ) [25:9/775-31:10/1089] lcurly=876 SCOPE: RefCountedMTAdj 
@@ -153,7 +153,7 @@ CLASS OrderedStatic<class,class,Loki::NullType> (OrderedStatic<class,class,Loki:
             PARAMETERS:
                  [18:34/597-18:54/617]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [18:34/597-18:39/602]  INIT: null  SCOPE: operator = 
             RETURNS &$unresolved$::OrderedStatic TEXT=OrderedStatic&  [18:9/572-18:23/586]
-STRUCT RefCountedMTAdj<template<class,class>,class MX=LOKI_DEFAULT_MUTEX> (RefCountedMTAdj ) [21:5/632-32:6/1096] lcurly=765 SCOPE: $Global$ 
+STRUCT RefCountedMTAdj<template<class,class> class ThreadingModel,class MX=LOKI_DEFAULT_MUTEX> (RefCountedMTAdj ) [21:5/632-32:6/1096] lcurly=765 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         CLASS RefCountedMT<class P> (RefCountedMTAdj::RefCountedMT ) [25:9/775-31:10/1089] lcurly=876 SCOPE: RefCountedMTAdj 

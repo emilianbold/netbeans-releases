@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.jaxws;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -52,7 +53,11 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Dependency;
+import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.openide.filesystems.FileObject;
 import javax.xml.namespace.QName;
 import org.apache.maven.project.MavenProject;
@@ -64,6 +69,7 @@ import org.netbeans.modules.maven.model.pom.POMQName;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.PluginExecution;
 import org.netbeans.modules.maven.model.pom.Resource;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
 
 /**
  *
@@ -428,7 +434,7 @@ public final class MavenModelUtils {
      * @param project Project
      * @throws java.io.IOException throws when Library cannot be found
      */
-    public static void addJaxws21Library(Project project) throws IOException {
+    public static boolean addJaxws21Library(Project project) throws IOException {
         SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (srcGroups.length > 0) {
@@ -444,11 +450,13 @@ public final class MavenModelUtils {
                     ProjectClassPathModifier.addLibraries(new Library[] {metroLib},
                             srcGroups[0].getRootFolder(),
                             ClassPath.COMPILE);
+                    return true;
                 } catch (IOException e) {
                     throw new IOException("Unable to add Metro Library. " + e.getMessage()); //NOI18N
                 }
             }
         }
+        return false;
     }
 
     /** get list of wsdl files in Maven project
@@ -500,6 +508,51 @@ public final class MavenModelUtils {
             }
         }
         return null;
+    }
+
+    public static void updateLibraryScope(Project prj, POMModel model) {
+        assert model.isIntransaction() : "need to call model modifications under transaction."; //NOI18N
+        Properties props = model.getProject().getProperties();
+        if (props != null) {
+            WSStack<JaxWs> wsStack = new WSStackUtils(prj).getWsStack(JaxWs.class);
+            if (wsStack != null) {
+                boolean isMetro = wsStack.isFeatureSupported(JaxWs.Feature.WSIT);
+                Dependency wsDep = model.getProject().findDependencyById("com.sun.xml.ws", "webservices-rt", null); //NOI18N
+                if (wsDep != null) {
+                    String scope = wsDep.getScope();
+                    if (isMetro) {
+                        if (scope == null || "compile".equals(scope)) { //NOI18N
+                            wsDep.setScope("provided"); //NOI18N
+                        }
+                    } else {
+                        if ("provided".equals(scope)) {
+                            wsDep.setScope("compile"); //NOI18N
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** Update dependency scope for webservices-rt.
+     *
+     * @param prj Project
+     */
+    public static void reactOnServerChanges(final Project prj) {
+        ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+            public void performOperation(POMModel model) {
+                // update webservices-rt library dependency scope (provided or compile)
+                // depending whether J2EE Server contains metro jars or not
+                MavenModelUtils.updateLibraryScope(prj, model);
+            }
+        };
+        Utilities.performPOMModelOperations(prj.getProjectDirectory().getFileObject("pom.xml"), //NOI18N
+                Collections.singletonList(operation));
+        // add|remove sun-jaxws.xml and WS entries to web.xml file
+        // depending on selected target server
+        if (WSUtils.isWeb(prj)) {
+            WSUtils.checkNonJSR109Entries(prj);
+        }
     }
 
 }

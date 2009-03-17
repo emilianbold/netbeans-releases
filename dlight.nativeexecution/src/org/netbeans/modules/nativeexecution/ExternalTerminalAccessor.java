@@ -39,6 +39,7 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.util.List;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.support.TerminalProfile;
 
@@ -76,7 +77,8 @@ public abstract class ExternalTerminalAccessor {
 
     public abstract String getPrompt(final ExternalTerminal terminal);
 
-    public abstract List<String> wrapCommand(final ExternalTerminal terminal, String... args);
+    public abstract List<String> wrapCommand(final ExecutionEnvironment execEnv,
+            final ExternalTerminal terminal, String... args);
 
     public abstract String getTitle(final ExternalTerminal terminal);
 }
