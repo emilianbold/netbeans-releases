@@ -758,26 +758,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (fileAndHandler.preprocHandler == null) {
             fileAndHandler.preprocHandler = createPreprocHandler(nativeFile);
         }
-        boolean done = false;
         if (validator != null) {
+            // fill up needed collections based on validation
             if (fileAndHandler.fileImpl.validate()) {
                 if (validator.arePropertiesChanged(nativeFile)) {
                     if (TraceFlags.TRACE_VALIDATION) {
                         System.err.printf("Validation: %s properties are changed \n", nativeFile.getFile().getAbsolutePath());
                     }
                     reparseOnPropertyChanged.add(nativeFile);
-                    done = true;
                 }
             } else {
                 if (TraceFlags.TRACE_VALIDATION) {
                     System.err.printf("Validation: file %s is changed\n", nativeFile.getFile().getAbsolutePath());
                 }
                 reparseOnEdit.add(fileAndHandler.fileImpl);
-                done = true;
             }
-        }
-        if (!done && (isSourceFile || needParseOrphan)) {
-            ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+        } else {
+            // put directly into parser queue if needed
+            if (isSourceFile || needParseOrphan) {
+                ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+            }
         }
     }
 
@@ -900,7 +900,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (!file.getFile().exists()) {
                 removedPhysically.add(file);
             } else if (projectFiles != null) { // they might be null for library
-                if (!projectFiles.contains(file.getAbsolutePath())) {
+                if (!projectFiles.contains(file.getAbsolutePath().toString())) {
                     candidates.add(file);
                 }
             }
