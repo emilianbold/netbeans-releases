@@ -41,7 +41,12 @@
 
 package org.netbeans.modules.xml.xam.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.ComponentEvent;
+import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.ui.cookies.GetComponentCookie;
@@ -136,4 +141,91 @@ public class XAMUtils {
         }
         return false;
     }
+
+    /**
+     * A wrapper listener. It guarantees that the event processing
+     * will be executed in the Event Dispatch thread.
+     *
+     * WARNING! Hold the instance somewhere if you are going to wrap it
+     * with the WeakListener. Otherwise it will be garbage collected.
+     */
+    public static class AwtPropertyChangeListener implements PropertyChangeListener {
+
+        private PropertyChangeListener mListener;
+
+        public AwtPropertyChangeListener(PropertyChangeListener listener) {
+            mListener = listener;
+        }
+
+        public void propertyChange(final PropertyChangeEvent evt) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                mListener.propertyChange(evt);
+            }
+            else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        mListener.propertyChange(evt);
+                    }
+                });
+            }
+        }
+
+    }
+
+    /**
+     * A wrapper listener. It guarantees that the event processing
+     * will be executed in the Event Dispatch thread.
+     * 
+     * WARNING! Hold the instance somewhere if you are going to wrap it
+     * with the WeakListener. Otherwise it will be garbage collected.
+     */
+    public static class AwtComponentListener implements ComponentListener {
+
+        private ComponentListener mListener;
+
+        public AwtComponentListener(ComponentListener listener) {
+            mListener = listener;
+        }
+
+        public void valueChanged(final ComponentEvent evt) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                mListener.valueChanged(evt);
+            }
+            else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        mListener.valueChanged(evt);
+                    }
+                });
+            }
+        }
+
+        public void childrenAdded(final ComponentEvent evt) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                mListener.childrenAdded(evt);
+            }
+            else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        mListener.childrenAdded(evt);
+                    }
+                });
+            }
+        }
+
+        public void childrenDeleted(final ComponentEvent evt) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                mListener.childrenAdded(evt);
+            }
+            else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        mListener.childrenAdded(evt);
+                    }
+                });
+            }
+        }
+
+    }
+
 }

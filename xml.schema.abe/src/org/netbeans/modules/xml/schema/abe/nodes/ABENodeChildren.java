@@ -43,7 +43,6 @@ package org.netbeans.modules.xml.schema.abe.nodes;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIContainer;
@@ -52,9 +51,9 @@ import org.netbeans.modules.xml.axi.AbstractElement;
 import org.netbeans.modules.xml.axi.AnyElement;
 import org.netbeans.modules.xml.axi.Compositor;
 import org.netbeans.modules.xml.axi.ContentModel;
-import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
@@ -66,6 +65,7 @@ import org.openide.util.WeakListeners;
 public class ABENodeChildren extends Children.Keys
         implements ComponentListener {
     private AXIComponent component;
+    private ComponentListener awtCL = new XAMUtils.AwtComponentListener(this);
     
     /** Creates a new instance of ABENodeChildren */
     public ABENodeChildren(AXIComponent component) {
@@ -95,12 +95,13 @@ public class ABENodeChildren extends Children.Keys
         super.addNotify();
         refreshChildren();
         if(component != null && component.getModel() != null) {
-            ComponentListener cl = WeakListeners.create(ComponentListener.class, this,
-                    component.getModel());
+            ComponentListener cl = WeakListeners.create(ComponentListener.class,
+                    awtCL, component.getModel());
             component.getModel().addComponentListener(cl);
         }
     }
     
+    @Override
     protected void removeNotify() {
         super.removeNotify();
         setKeys(Collections.emptyList());
