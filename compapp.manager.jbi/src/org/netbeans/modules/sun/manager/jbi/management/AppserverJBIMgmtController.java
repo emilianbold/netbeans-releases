@@ -50,7 +50,6 @@ import com.sun.esb.management.client.ManagementClientFactory;
 import com.sun.esb.management.common.ManagementRemoteException;
 import java.io.File;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.management.MBeanServerConnection;
@@ -62,6 +61,9 @@ import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.impl.Performa
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.impl.RuntimeManagementServiceWrapperImpl;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReader;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  *
@@ -154,7 +156,25 @@ public class AppserverJBIMgmtController {
 
         if (!notificationServiceChecked && notificationService == null) {
             notificationServiceChecked = true;
-            String rmiPortString = managementClient.getAdministrationService().getJmxRmiPort();        
+            String rmiPortString = managementClient.getAdministrationService().getJmxRmiPort();  
+            
+            if (password == null || password.equals("") || userName == null || userName.equals("")) { // NOI18N
+                if (userName == null) {
+                    userName = ""; // NOI18N
+                }
+                PasswordPanel passwordPanel = new PasswordPanel(userName);
+            
+                DialogDescriptor dd = new DialogDescriptor(passwordPanel, hostName);
+                //passwordPanel.setPrompt(title);
+                java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog( dd );
+                dialog.setVisible(true);
+
+                if (dd.getValue().equals(NotifyDescriptor.OK_OPTION)) {
+                    userName = passwordPanel.getUsername();
+                    password = passwordPanel.getTPassword();
+                }
+            }
+            
             notificationService = 
                     //managementClient.getNotificationService(); // DOES NOT WORK
                     //ManagementClientFactory.getInstance(mBeanServerConnection, true).getNotificationService(); // DOES NOT WORK

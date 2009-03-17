@@ -194,7 +194,7 @@ public class JBIComponentInstallationConfigurationDialog
 
             propertySupports.add(
                     SchemaBasedConfigPropertySupportFactory.getPropertySupport(
-                    this, attr, attrInfo));
+                    this, attr, attrInfo, componentName));
 
         } else { // PropertyGroup or root descriptor
             for (JBIComponentConfigurationDescriptor childDescriptor : 

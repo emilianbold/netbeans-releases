@@ -53,9 +53,9 @@ import java.util.Map;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
-import org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.EndpointStatisticsDataBeanInfo;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,8 +64,7 @@ import org.openide.util.NbBundle;
  */
 public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
 
-    private TableModel pTableModel;
-    private TableModel cTableModel;
+    private TableModel tableModel;
     
     /** Creates new form EndpointStatisticsDialog */
     public ComponentEndpointsStatisticsDialog(AppserverJBIMgmtController controller,
@@ -74,15 +73,14 @@ public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
         setTitle(NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class, 
                 "TTL_ENDPOINT_STATISTICS", compName)); // NOI18N        
         
-        pTableModel = getStatisticsTableModel(controller, compName, false);
-        cTableModel = getStatisticsTableModel(controller, compName, true);
+        tableModel = getStatisticsTableModel(controller, compName);
         
         initComponents();
     }
 
     private TableModel getStatisticsTableModel(
             AppserverJBIMgmtController controller,
-            String compName, boolean isConsumes) 
+            String compName) 
             throws ManagementRemoteException {
 
         AdministrationService adminService =
@@ -93,13 +91,26 @@ public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
         Map<Endpoint, IEndpointStatisticsData> endpoint2Statistics =
                 new HashMap<Endpoint, IEndpointStatisticsData>();
         
-        String[] endpointStrings = isConsumes ? 
-            adminService.getConsumingEndpoints(compName,
-                AppserverJBIMgmtController.SERVER_TARGET) : 
-            adminService.getProvisioningEndpoints(compName,
-                AppserverJBIMgmtController.SERVER_TARGET);
-        
         List<Endpoint> endpoints = new ArrayList<Endpoint>();
+        
+        String[] endpointStrings =  
+            adminService.getProvisioningEndpoints(compName,
+                AppserverJBIMgmtController.SERVER_TARGET);       
+        addEndpoints(endpointStrings, endpoint2Statistics, endpoints, false, perfService);
+        
+        endpointStrings =  
+            adminService.getConsumingEndpoints(compName,
+                AppserverJBIMgmtController.SERVER_TARGET);
+        addEndpoints(endpointStrings, endpoint2Statistics, endpoints, true, perfService);
+
+        return new EndpointStatisticsTableModel(endpoints, endpoint2Statistics);
+    }
+    
+    private void addEndpoints(String[] endpointStrings, 
+            Map<Endpoint, IEndpointStatisticsData> endpoint2Statistics, 
+            List<Endpoint> endpoints, boolean isConsumes, 
+            PerformanceMeasurementServiceWrapper perfService) 
+            throws ManagementRemoteException {
         
         for (String endpointString : endpointStrings) {
             
@@ -107,7 +118,7 @@ public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
             //     ${namespaceURI},${service-name},${endpoint-name},[Provider|Consumer]
             
             assert (isConsumes && endpointString.endsWith(",Consumer")) || // NOI18N
-                    (!isConsumes && endpointString.endsWith(",Provider")); // NOI18N
+                   (!isConsumes && endpointString.endsWith(",Provider")); // NOI18N
             
             endpointString = endpointString.substring(0, endpointString.lastIndexOf(",")); // NOI18N
             IEndpointStatisticsData statistics =
@@ -115,13 +126,11 @@ public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
                     AppserverJBIMgmtController.SERVER_TARGET);
             
             String[] parts = endpointString.split(","); // NOI18N
-            Endpoint endpoint = new Endpoint(parts[0], parts[1], parts[2]);
+            Endpoint endpoint = new Endpoint(parts[0], parts[1], parts[2], isConsumes);
             endpoints.add(endpoint);
             
             endpoint2Statistics.put(endpoint, statistics);
         }
-
-        return new EndpointStatisticsTableModel(endpoints, endpoint2Statistics);
     }
         
     class Endpoint {
@@ -129,11 +138,14 @@ public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
         private String namespaceURI;
         private String serviceName;
         private String endpointName;
+        private boolean isConsumes;
 
-        Endpoint(String namespaceURI, String serviceName, String endpointName) {
+        Endpoint(String namespaceURI, String serviceName, String endpointName, 
+                boolean isConsumes) {
             this.namespaceURI = namespaceURI;
             this.serviceName = serviceName;
             this.endpointName = endpointName;
+            this.isConsumes = isConsumes;
         }
 
         public String getEndpointName() {
@@ -146,6 +158,10 @@ public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
 
         public String getServiceName() {
             return serviceName;
+        }
+        
+        public boolean isConsumes() {
+            return isConsumes;
         }
     }
 
@@ -165,7 +181,7 @@ public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
         }
 
         public int getColumnCount() {
-            return 7; // 10
+            return 12;
         }
 
         @Override
@@ -173,47 +189,66 @@ public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
             String ret = null;
 
             if (columnIndex == 0) {
-                ret = "Endpoint";
+                ret = NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class,
+                        "LBL_SERVICE_NAME_MULTILINE"); // NOI18N
+                 
             } else if (columnIndex == 1) {
-                ret = NbBundle.getMessage(EndpointStatisticsDataBeanInfo.class,
-                        "LBL_NUM_OF_RECEIVED_DONES"); // NOI18N
+                ret = NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class,
+                        "LBL_ENDPOINT_NAME_MULTILINE"); // NOI18N
 
             } else if (columnIndex == 2) {
-                ret = NbBundle.getMessage(EndpointStatisticsDataBeanInfo.class,
-                        "LBL_NUM_OF_RECEIVED_ERRORS"); // NOI18N
+                ret = NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class,
+                        "LBL_IS_CONSUMES_MULTILINE"); // NOI18N
 
             } else if (columnIndex == 3) {
-                ret = NbBundle.getMessage(EndpointStatisticsDataBeanInfo.class,
-                        "LBL_NUM_OF_RECEIVED_FAULTS"); // NOI18N
+                ret = NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class,
+                        "LBL_NUM_OF_RECEIVED_DONES_MULTILINE"); // NOI18N
 
             } else if (columnIndex == 4) {
-                ret = NbBundle.getMessage(EndpointStatisticsDataBeanInfo.class,
-                        "LBL_NUM_OF_SENT_DONES"); // NOI18N
+                ret = NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class,
+                        "LBL_NUM_OF_RECEIVED_ERRORS_MULTILINE"); // NOI18N
 
             } else if (columnIndex == 5) {
-                ret = NbBundle.getMessage(EndpointStatisticsDataBeanInfo.class,
-                        "LBL_NUM_OF_SENT_ERRORS"); // NOI18N
+                ret = NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class,
+                        "LBL_NUM_OF_RECEIVED_FAULTS_MULTILINE"); // NOI18N
 
             } else if (columnIndex == 6) {
-                ret = NbBundle.getMessage(EndpointStatisticsDataBeanInfo.class,
-                        "LBL_NUM_OF_SENT_FAULTS"); // NOI18N
+                ret = NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class,
+                        "LBL_NUM_OF_SENT_DONES_MULTILINE"); // NOI18N
 
             } else if (columnIndex == 7) {
-                ret = NbBundle.getMessage(EndpointStatisticsDataBeanInfo.class,
-                        "LBL_MSG_EXCHANGE_COMPONENT_TIME_AVERAGE"); // NOI18N
+                ret = NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class,
+                        "LBL_NUM_OF_SENT_ERRORS_MULTILINE"); // NOI18N
 
             } else if (columnIndex == 8) {
-                ret = NbBundle.getMessage(EndpointStatisticsDataBeanInfo.class,
-                        "LBL_MSG_EXCHANGE_DELIVERY_CHANNEL_TIME_AVERAGE"); // NOI18N
+                ret = NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class,
+                        "LBL_NUM_OF_SENT_FAULTS_MULTILINE"); // NOI18N
 
             } else if (columnIndex == 9) {
-                ret = NbBundle.getMessage(EndpointStatisticsDataBeanInfo.class,
-                        "LBL_MSG_EXCHANGE_MESSAGE_SERVICE_TIME_AVERAGE"); // NOI18N
+                ret = NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class,
+                        "LBL_MSG_EXCHANGE_COMPONENT_TIME_AVERAGE_MULTILINE"); // NOI18N
+                
+            } else if (columnIndex == 10) {
+                ret = NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class,
+                        "LBL_MSG_EXCHANGE_DELIVERY_CHANNEL_TIME_AVERAGE_MULTILINE"); // NOI18N
 
+            } else if (columnIndex == 11) {
+                ret = NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class,
+                        "LBL_MSG_EXCHANGE_MESSAGE_SERVICE_TIME_AVERAGE_MULTILINE"); // NOI18N
+                
             }
 
             return "<HTML><B>" + ret + "</B></HTML>"; // NOI18N
 
+        }
+        
+        @Override
+        public Class getColumnClass(int columnIndex) {
+            if (columnIndex == 2) {
+                return Boolean.class;
+            } else {
+                return String.class;
+            }
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {
@@ -221,25 +256,28 @@ public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
             Endpoint endpoint = endpoints.get(rowIndex);
 
             if (columnIndex == 0) {
-                return endpoint.getServiceName() + "," + endpoint.getEndpointName(); // NOI18N
-
+                return "{" + endpoint.getNamespaceURI() + "}" + endpoint.getServiceName(); // NOI18N
             } else if (columnIndex == 1) {
-                return statisticsMap.get(endpoint).getNumberOfReceivedDones();
+                return endpoint.getEndpointName(); // NOI18N
             } else if (columnIndex == 2) {
-                return statisticsMap.get(endpoint).getNumberOfReceivedErrors();
+                return endpoint.isConsumes();
             } else if (columnIndex == 3) {
-                return statisticsMap.get(endpoint).getNumberOfReceivedFaults();
+                return statisticsMap.get(endpoint).getNumberOfReceivedDones();
             } else if (columnIndex == 4) {
-                return statisticsMap.get(endpoint).getNumberOfSentDones();
+                return statisticsMap.get(endpoint).getNumberOfReceivedErrors();
             } else if (columnIndex == 5) {
-                return statisticsMap.get(endpoint).getNumberOfSentErrors();
+                return statisticsMap.get(endpoint).getNumberOfReceivedFaults();
             } else if (columnIndex == 6) {
-                return statisticsMap.get(endpoint).getNumberOfSentFaults();
+                return statisticsMap.get(endpoint).getNumberOfSentDones();
             } else if (columnIndex == 7) {
-                return statisticsMap.get(endpoint).getMessageExchangeComponentTimeAverage();
+                return statisticsMap.get(endpoint).getNumberOfSentErrors();
             } else if (columnIndex == 8) {
-                return statisticsMap.get(endpoint).getMessageExchangeDeliveryChannelTimeAverage();
+                return statisticsMap.get(endpoint).getNumberOfSentFaults();
             } else if (columnIndex == 9) {
+                return statisticsMap.get(endpoint).getMessageExchangeComponentTimeAverage();
+            } else if (columnIndex == 10) {
+                return statisticsMap.get(endpoint).getMessageExchangeDeliveryChannelTimeAverage();
+            } else if (columnIndex == 11) {
                 return statisticsMap.get(endpoint).getMessageExchangeServiceTimeAverage();
             }
 
@@ -259,31 +297,22 @@ public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
         jPanel1 = new javax.swing.JPanel();
         pLabel = new javax.swing.JLabel();
         pTableScrollPane = new javax.swing.JScrollPane();
-        pTable = new javax.swing.JTable();
-        cLabel = new javax.swing.JLabel();
-        cTableScrollPane = new javax.swing.JScrollPane();
-        cTable = new javax.swing.JTable();
+        table = new javax.swing.JTable();
         okButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         pLabel.setText(org.openide.util.NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class, "ComponentEndpointsStatisticsDialog.pLabel.text")); // NOI18N
 
-        pTable.setModel(pTableModel);
-        pTableScrollPane.setViewportView(pTable);
-        pTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        pTable.getTableHeader().setReorderingAllowed(false);
-        TableColumn pTableFirstTC = pTable.getColumnModel().getColumn(0);
-        pTableFirstTC.setPreferredWidth(300);
-
-        cLabel.setText(org.openide.util.NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class, "ComponentEndpointsStatisticsDialog.cLabel.text")); // NOI18N
-
-        cTable.setModel(cTableModel);
-        cTableScrollPane.setViewportView(cTable);
-        cTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        cTable.getTableHeader().setReorderingAllowed(false);
-        TableColumn cTableFirstTC = cTable.getColumnModel().getColumn(0);
-        cTableFirstTC.setPreferredWidth(300);
+        table.setModel(tableModel);
+        pTableScrollPane.setViewportView(table);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        table.getTableHeader().setReorderingAllowed(false);
+        TableColumnModel tcm = table.getColumnModel();
+        TableColumn tableFirstTC = tcm.getColumn(0);
+        TableColumn tableSecondTC = tcm.getColumn(1);
+        tableFirstTC.setPreferredWidth(150);
+        tableSecondTC.setPreferredWidth(150);
 
         okButton.setText(org.openide.util.NbBundle.getMessage(ComponentEndpointsStatisticsDialog.class, "ComponentEndpointsStatisticsDialog.okButton.text")); // NOI18N
         okButton.setSelected(true);
@@ -298,27 +327,20 @@ public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(pLabel)
-                    .add(cLabel))
-                .addContainerGap(860, Short.MAX_VALUE))
-            .add(pTableScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 971, Short.MAX_VALUE)
-            .add(cTableScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 971, Short.MAX_VALUE)
+                .add(pLabel)
+                .addContainerGap(920, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(okButton))
+            .add(pTableScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 971, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .add(pLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(pTableScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
+                .add(pTableScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(cLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cTableScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
-                .add(17, 17, 17)
                 .add(okButton))
         );
 
@@ -333,7 +355,7 @@ public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
@@ -347,13 +369,10 @@ private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 }//GEN-LAST:event_okButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel cLabel;
-    private javax.swing.JTable cTable;
-    private javax.swing.JScrollPane cTableScrollPane;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JButton okButton;
     private javax.swing.JLabel pLabel;
-    private javax.swing.JTable pTable;
     private javax.swing.JScrollPane pTableScrollPane;
+    private javax.swing.JTable table;
     // End of variables declaration//GEN-END:variables
 }
