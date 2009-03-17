@@ -336,7 +336,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                         runTest();
                     } catch (Throwable t) {
                         noteWorkDir(workdirNoCreate());
-                        throw t;
+                        throw noteRandomness(t);
                     } finally {
                         long last = System.nanoTime() - now;
                         if (last < 1) {
@@ -432,6 +432,19 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 is.close();
             }
         }
+    }
+    private Throwable noteRandomness(Throwable t) {
+        Class<?> c = getClass();
+        if (c.isAnnotationPresent(RandomlyFails.class)) {
+            return Log.wrapWithAddendum(t, "(" + c.getSimpleName() + " marked @RandomlyFails so try just running test again)");
+        }
+        try {
+            if (c.getMethod(getName()).isAnnotationPresent(RandomlyFails.class)) {
+                return Log.wrapWithAddendum(t, "(" + c.getSimpleName() + "." + getName() + " marked @RandomlyFails so try just running test again)");
+            }
+        } catch (NoSuchMethodException x) {}
+        return t;
+        // XXX would be nice to actually try to rerun the test (but would make runBare more complicated)
     }
 
     /** Parses the test name to find out whether it encodes a number. The
