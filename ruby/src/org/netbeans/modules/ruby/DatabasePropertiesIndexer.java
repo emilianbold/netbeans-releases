@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.ruby.FindersHelper.FinderMethod;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 
@@ -252,13 +253,7 @@ final class DatabasePropertiesIndexer {
             Map<String, String> fileUrls,
             Set<String> currentCols) {
 
-        List<FindersHelper.FinderMethod> finders = new ArrayList<FindersHelper.FinderMethod>();
-        for (String finderPrefix : FindersHelper.FINDER_PREFIXES) {
-            if (prefix.startsWith(finderPrefix) || finderPrefix.startsWith(prefix)) {
-                finders.addAll(FindersHelper.getFinderSignatures(finderPrefix, currentCols));
-            }
-        }
-
+        List<FinderMethod> finders = new ArrayList<FinderMethod>(FindersHelper.getFinderSignatures(prefix, currentCols));
 
         for (FindersHelper.FinderMethod finder : finders) {
             String methodName = finder.getName();
