@@ -80,7 +80,11 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
             int colIdx = 0;
             for (Column column : indicatorColumns) {
                 String strValue = row.getStringValue(column.getColumnName()); //TODO: change to Long
-                values[rowIdx][colIdx++] = (int) Float.parseFloat(strValue);
+                if (strValue != null) {
+                    values[rowIdx][colIdx++] = (int) Float.parseFloat(strValue);
+                } else {
+                    break;
+                }
             }
             panel.updated(values);
             rowIdx++;
