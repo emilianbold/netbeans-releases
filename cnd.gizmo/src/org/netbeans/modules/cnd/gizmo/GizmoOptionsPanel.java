@@ -99,8 +99,6 @@ public class GizmoOptionsPanel extends javax.swing.JPanel{
         jLabel2 = new javax.swing.JLabel();
         jCheckBox1 = new javax.swing.JCheckBox();
 
-        dataCollectorName.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
         jLabel1.setText(org.openide.util.NbBundle.getMessage(GizmoOptionsPanel.class, "GizmoOptionsPanel.jLabel1.text")); // NOI18N
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(GizmoOptionsPanel.class, "GizmoOptionsPanel.jLabel2.text")); // NOI18N
