@@ -152,6 +152,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz148236.cpp");
     }
 
+    public void testIZ155459() throws Exception {
+        // IZ#155459 : unresolved forward template declaration
+        performStaticTest("iz155459.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
