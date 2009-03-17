@@ -74,6 +74,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 
 /**
@@ -236,7 +237,7 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
         }
         positions = new Linker[commitMessage.length()];
         linkers = new LinkedList<Linker>();
-        List<HyperlinkProvider> providers = master.getHyperlinkProviders();
+        List<HyperlinkProvider> providers = Mercurial.getInstance().getHyperlinkProviders();
         for (HyperlinkProvider hp : providers) {
             int[] spans = hp.getSpans(commitMessage);
             if (spans == null) {
