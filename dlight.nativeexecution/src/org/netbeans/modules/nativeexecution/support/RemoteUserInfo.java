@@ -50,7 +50,7 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
-public class RemoteUserInfo implements UserInfo {
+final class RemoteUserInfo implements UserInfo {
 
     private final static PasswordManager pm = PasswordManager.getInstance();
     private final ExecutionEnvironment env;
@@ -83,10 +83,11 @@ public class RemoteUserInfo implements UserInfo {
     public void showMessage(String message) {
     }
 
-    public static class Interractive implements UserInfo, UIKeyboardInteractive {
+    static final class Interractive implements UserInfo, UIKeyboardInteractive {
 
         private final static Object lock = new String(RemoteUserInfo.Interractive.class.getName());
         private final static PasswordManager pm = PasswordManager.getInstance();
+
         private final Component parent;
         private final ExecutionEnvironment env;
         private volatile boolean cancelled = false;

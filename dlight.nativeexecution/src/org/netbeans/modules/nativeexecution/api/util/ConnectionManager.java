@@ -43,6 +43,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
+import java.io.IOException;
 import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,9 +60,8 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
-import org.netbeans.modules.nativeexecution.support.RemoteUserInfo;
+import org.netbeans.modules.nativeexecution.support.RemoteUserInfoProvider;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -153,7 +153,7 @@ public final class ConnectionManager {
     public boolean connectTo(
             final ExecutionEnvironment env,
             char[] password,
-            boolean storePassword) throws Throwable {
+            boolean storePassword) throws IOException, CancellationException {
 
         synchronized (lock) {
             if (getSession(env) != null) {
@@ -165,7 +165,7 @@ public final class ConnectionManager {
                 PasswordManager.getInstance().put(env, password, storePassword);
             }
 
-            return doConnect(env, new RemoteUserInfo(env));
+            return doConnect(env, RemoteUserInfoProvider.getUserInfo(env, false));
         }
     }
 
@@ -176,22 +176,18 @@ public final class ConnectionManager {
      * @throws java.lang.Throwable
      */
     public boolean connectTo(
-            final ExecutionEnvironment env) throws Throwable {
+            final ExecutionEnvironment env) throws IOException, CancellationException {
         synchronized (lock) {
-            boolean result;
+            boolean result = false;
 
             try {
                 result = connectTo(env, PasswordManager.getInstance().get(env), false);
-            } catch (Throwable ex) {
-                Throwable e = ex.getCause();
-                if (e == null) {
-                    throw ex;
-                }
-
-                if (e instanceof ConnectException && e.getMessage().equals("Auth fail")) { // NOI18N
-                    result = doConnect(env, new RemoteUserInfo.Interractive(env));
+            } catch (ConnectException ex) {
+                if (ex.getMessage().equals("Auth fail")) { // NOI18N
+                    // Try with user-interaction
+                    result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, true));
                 } else {
-                    throw e;
+                    throw ex;
                 }
             }
 
@@ -201,7 +197,7 @@ public final class ConnectionManager {
 
     private boolean doConnect(
             final ExecutionEnvironment env,
-            final UserInfo userInfo) throws Throwable {
+            final UserInfo userInfo) throws IOException, CancellationException {
         synchronized (lock) {
             Callable<Session> connectRunnable = new Callable<Session>() {
 
@@ -218,11 +214,20 @@ public final class ConnectionManager {
                             return session;
                         }
                     } catch (JSchException e) {
-                        if (e.getCause() != null) {
-                            throw new Exception(e.getCause());
+                        if (e.getMessage().equals("Auth fail")) { // NOI18N
+                            throw new ConnectException(e.getMessage());
+                        } else if (e.getMessage().equals("Auth cancel")) { // NOI18N
+                            throw new CancellationException(e.getMessage());
                         }
 
-                        throw new Exception(new ConnectException(e.getMessage()));
+                        Throwable cause = e.getCause();
+                        
+                        if (cause != null && cause instanceof IOException) {
+                            throw (IOException)cause;
+                        }
+
+                        // Should not happen
+                        throw new IOException(e.getMessage());
                     }
                 }
             };
@@ -247,13 +252,21 @@ public final class ConnectionManager {
 
             try {
                 session = connectResult.get();
-            } catch (CancellationException ex) {
-                // User canceled connection...
-                session = null;
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             } catch (ExecutionException ex) {
-                throw ex.getCause();
+                Throwable cause = ex.getCause();
+                if (cause != null) {
+                    if (cause instanceof IOException) {
+                        throw (IOException)cause;
+                    }
+
+                    if (cause instanceof CancellationException) {
+                        throw (CancellationException)cause;
+                    }
+                }
+                // Should not happen
+                throw new IOException(ex.getMessage());
             } finally {
                 ph.finish();
             }
@@ -332,22 +345,20 @@ public final class ConnectionManager {
             NativeTaskExecutorService.submit(new Runnable() {
 
                 public void run() {
-                    invoke();
+                    try {
+                        invoke();
+                    } catch (Throwable ex) {
+                        log.warning(ex.getMessage());
+                    }
                 }
             }, "Connecting to " + env.toString()); // NOI18N
         }
 
-        public void invoke() {
-            try {
-                boolean newConnectionEstablished = cm.connectTo(env);
+        public void invoke() throws IOException, CancellationException {
+            boolean newConnectionEstablished = cm.connectTo(env);
 
-                if (newConnectionEstablished) {
-                    onConnect.run();
-                }
-
-            } catch (Throwable ex) {
-                // TODO: handle this case...
-                Exceptions.printStackTrace(ex);
+            if (newConnectionEstablished) {
+                onConnect.run();
             }
         }
     }
