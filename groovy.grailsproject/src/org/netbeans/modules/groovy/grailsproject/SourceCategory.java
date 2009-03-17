@@ -34,29 +34,33 @@ package org.netbeans.modules.groovy.grailsproject;
  */
 public enum SourceCategory {
 
-    GRAILSAPP_CONF("grails-app/conf", null),
-    GRAILSAPP_CONTROLLERS("grails-app/controllers", "create-controller"),
-    GRAILSAPP_DOMAIN("grails-app/domain", "create-domain-class"),
-    GRAILSAPP_I18N("grails-app/i18n", null),
-    GRAILSAPP_SERVICES("grails-app/services", "create-service"),
-    GRAILSAPP_TAGLIB("grails-app/taglib", "create-tag-lib"),
-    GRAILSAPP_UTILS("grails-app/utils", null),
-    GRAILSAPP_VIEWS("grails-app/views", "generate-views"),
-    PLUGINS("plugins", null),
-    TEST_INTEGRATION("test/integration", "create-integration-test"),
-    TEST_UNIT("test/unit", "create-unit-test"),
-    SCRIPTS("scripts", "create-script"),
-    SRC_JAVA("src/java", null),
-    SRC_GROOVY("src/groovy", null),
-    WEBAPP("web-app", null),
-    LIB("lib", null);
+    GRAILSAPP_CONF("grails-app/conf", null, null),
+    GRAILSAPP_CONTROLLERS("grails-app/controllers", "create-controller", "Controller.groovy"),
+    GRAILSAPP_DOMAIN("grails-app/domain", "create-domain-class", null),
+    GRAILSAPP_I18N("grails-app/i18n", null, null),
+    GRAILSAPP_SERVICES("grails-app/services", "create-service", "Service.groovy"),
+    GRAILSAPP_TAGLIB("grails-app/taglib", "create-tag-lib", "TagLib.groovy"),
+    GRAILSAPP_UTILS("grails-app/utils", null, null),
+    GRAILSAPP_VIEWS("grails-app/views", null, null),
+    PLUGINS("plugins", null, null),
+    TEST_INTEGRATION("test/integration", "create-integration-test", "Tests.groovy"),
+    TEST_UNIT("test/unit", "create-unit-test", "Tests.groovy"),
+    SCRIPTS("scripts", "create-script", null),
+    SRC_JAVA("src/java", null, null),
+    SRC_GROOVY("src/groovy", null, null),
+    WEBAPP("web-app", null, null),
+    LIB("lib", null, null);
 
     private final String relativePath;
+    
     private final String command;
 
-    SourceCategory(String relativePath, String command) {
+    private final String suffix;
+
+    SourceCategory(String relativePath, String command, String suffix) {
         this.relativePath = relativePath;
         this.command = command;
+        this.suffix = suffix;
     }
 
     public String getRelativePath() {
@@ -65,6 +69,10 @@ public enum SourceCategory {
 
     public String getCommand() {
         return command;
+    }
+
+    public String getSuffix() {
+        return suffix;
     }
 
 }

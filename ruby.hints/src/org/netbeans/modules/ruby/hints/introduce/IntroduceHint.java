@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.ruby.hints.introduce;
 
-import org.netbeans.modules.ruby.ParseTreeWalker;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,20 +51,21 @@ import org.jruby.nb.ast.ClassNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.lexer.yacc.ISourcePosition;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.ParseTreeWalker;
 import org.netbeans.modules.ruby.RubyFormatter;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.hints.infrastructure.RubySelectionRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
+import org.netbeans.modules.ruby.hints.infrastructure.RubySelectionRule;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -94,7 +94,7 @@ import org.openide.util.NbBundle;
  */
 public class IntroduceHint extends RubySelectionRule {
     public void run(RubyRuleContext context, List<Hint> result) {
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
         int start = context.selectionStart;
         int end = context.selectionEnd;
 
@@ -156,7 +156,7 @@ public class IntroduceHint extends RubySelectionRule {
             
             // Adjust the fix range to be right around the dot so that the light bulb ends up
             // on the same line as the caret and alt-enter works
-            JTextComponent target = GsfUtilities.getPaneFor(info.getFileObject());
+            JTextComponent target = GsfUtilities.getPaneFor(RubyUtils.getFileObject(info));
             if (target != null) {
                 int dot = target.getCaret().getDot();
                 if (start == dot) {
@@ -185,7 +185,7 @@ public class IntroduceHint extends RubySelectionRule {
                 List<HintFix> fixList = new ArrayList<HintFix>(1);
                 fixList.add(fix);
                 String displayName = fix.getDescription();
-                Hint desc = new Hint(this, displayName, info.getFileObject(), range,
+                Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range,
                         fixList, 292);
                 result.add(desc);
             }
@@ -226,7 +226,7 @@ public class IntroduceHint extends RubySelectionRule {
         return HintSeverity.CURRENT_LINE_WARNING;
     }
 
-    private OffsetRange adjustOffsets(CompilationInfo info, BaseDocument doc, int start, int end) throws BadLocationException {
+    private OffsetRange adjustOffsets(ParserResult info, BaseDocument doc, int start, int end) throws BadLocationException {
         int startRowEnd = Utilities.getRowLastNonWhite(doc, start);
         if (startRowEnd == -1) {
             startRowEnd = Utilities.getRowEnd(doc, end);

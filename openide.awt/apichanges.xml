@@ -47,6 +47,28 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="Notifications">
+        <api name="awt"/>
+        <summary>Support for showing of notification-like messages in the main status line.</summary>
+        <version major="7" minor="6"/>
+        <date day="5" month="3" year="2009"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Notifications are generic events that require user's attention and are
+            visualized in a way similar to 'new email' notifications in e.g. Thunderbird.
+            Each notification has an associated icon, title, details text and an
+            action to be invoked on mouse click.
+            The default implementation of this API shows each new notification
+            in a balloon-like tooltip for a few seconds and a list of all notifications
+            is available on mouse-click in the main status bar.
+            Each notification is available until cleared either by user action
+            or programmatically by calling clear() method.
+        </description>
+        <class package="org.openide.awt" name="NotificationDisplayer"/>
+        <class package="org.openide.awt" name="Notification"/>
+        <issue number="159614"/>
+    </change>
     <change id="StatusTextImportance">
         <api name="awt"/>
         <summary>Allow messages to show in the main status line permanently.</summary>

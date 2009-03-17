@@ -92,7 +92,7 @@ public final class ParserManager {
                             sources, 
         final UserTask
                             userTask
-    ) throws ParseException {        
+    ) throws ParseException {
         TaskProcessor.runUserTask (new UserTaskAction(sources, userTask), sources);
     }
 

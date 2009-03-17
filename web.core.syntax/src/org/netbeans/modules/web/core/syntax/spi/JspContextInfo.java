@@ -121,15 +121,15 @@ public abstract class JspContextInfo {
         return instance;
     }
     
-    public abstract JSPColoringData getJSPColoringData(Document doc, FileObject fo);
+    public abstract JSPColoringData getJSPColoringData(FileObject fo);
     
-    public abstract JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent, boolean forceReload);
+    public abstract JspParserAPI.ParseResult getCachedParseResult(FileObject fo, boolean successfulOnly, boolean preferCurrent, boolean forceReload);
     
-    public abstract JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent);
+    public abstract JspParserAPI.ParseResult getCachedParseResult(FileObject fo, boolean successfulOnly, boolean preferCurrent);
     
-    public abstract JspParserAPI.JspOpenInfo getCachedOpenInfo(Document doc, FileObject fo, boolean preferCurrent);
+    public abstract JspParserAPI.JspOpenInfo getCachedOpenInfo(FileObject fo, boolean preferCurrent);
     
-    public abstract URLClassLoader getModuleClassLoader(Document doc, FileObject fo);
+    public abstract URLClassLoader getModuleClassLoader(FileObject fo);
     
     /** Returns the root of the web module containing the given file object.
      * If the resource belongs to the subtree of the project's web module,
@@ -142,12 +142,12 @@ public abstract class JspContextInfo {
      * @return the root of the web module, or null if a directory containing WEB-INF
      *   is not on the path from resource to the root
      */
-    public abstract FileObject guessWebModuleRoot(Document doc, FileObject fo);
+    public abstract FileObject guessWebModuleRoot(FileObject fo);
     
     /** Returns the taglib map as returned by the parser, taking data from the editor as parameters.
      * Returns null in case of a failure (exception, no web module, no parser etc.)
      */
-    public abstract Map getTaglibMap(Document doc, FileObject fo);
+    public abstract Map getTaglibMap(FileObject fo);
     
     /** This method returns an image, which is displayed for the FileObject in the explorer.
      * It is used to display objects in editor (e.g. in code completion).
@@ -155,6 +155,6 @@ public abstract class JspContextInfo {
      * @param fo file object for which the icon is looking for
      * @return an Image which is dislayed in the explorer for the file.
      */
-    public abstract java.awt.Image getIcon(Document doc, FileObject fo);
+    public abstract java.awt.Image getIcon(FileObject fo);
     
 }

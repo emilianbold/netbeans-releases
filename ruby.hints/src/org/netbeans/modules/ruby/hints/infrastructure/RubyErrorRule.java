@@ -44,9 +44,9 @@ package org.netbeans.modules.ruby.hints.infrastructure;
 import java.util.List;
 import java.util.Set;
 import org.jruby.nb.common.IRubyWarnings.ID;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.Rule.ErrorRule;
-import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.Rule.ErrorRule;
+import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.ruby.RubyParser.RubyError;
 
 /** 
@@ -54,7 +54,6 @@ import org.netbeans.modules.ruby.RubyParser.RubyError;
  * issued an error or a warning.
  *
  * (Copied from java/hints)
- * 
  *
  * @author Petr Hrebejk, Jan Lahoda
  */

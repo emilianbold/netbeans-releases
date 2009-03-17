@@ -643,7 +643,18 @@ public class CommitAction extends ContextAction {
                 for (List<File> l : managedTrees) {
                     hookFiles.addAll(l);
                 }
-                beforeCommit(hooks, hookFiles, message);
+                SvnHookContext context = new SvnHookContext(hookFiles.toArray(new File[hookFiles.size()]), message, null);
+                for (SvnHook hook : hooks) {
+                    try {
+                        // XXX handle returned context
+                        context = hook.beforeCommit(context);
+                        if(context != null) {
+                            message = context.getMessage();
+                        }
+                    } catch (IOException ex) {
+                        // XXX handle veto
+                    }
+                }
             }
             // finally commit
             for (Iterator<List<File>> itCandidates = managedTrees.iterator(); itCandidates.hasNext();) {
@@ -720,21 +731,6 @@ public class CommitAction extends ContextAction {
 
         } catch (SVNClientException ex) {
             support.annotate(ex);
-        }
-    }
-
-    private static void beforeCommit(List<SvnHook> hooks, List<File> files, String message) {
-        if(hooks.size() == 0) {
-            return;
-        }
-        SvnHookContext context = new SvnHookContext(files.toArray(new File[files.size()]), message, null);
-        for (SvnHook hook : hooks) {
-            try {
-                // XXX handle returned context
-                hook.beforeCommit(context);
-            } catch (IOException ex) {
-                // XXX handle veto
-            }
         }
     }
 

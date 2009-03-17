@@ -1,5 +1,5 @@
 Code completion result for source line:
 $clsVarA1=$clsVarA->|aCreateA();//test 1
-(QueryType=COMPLETION, NameKind=PREFIX)
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     aCreateA()                      [PUBLIC]   clsAVarAssignment
 METHOD     aCreateC()                      [PUBLIC]   clsAVarAssignment

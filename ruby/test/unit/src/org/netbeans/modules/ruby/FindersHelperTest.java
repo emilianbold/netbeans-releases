@@ -55,12 +55,22 @@ public class FindersHelperTest extends TestCase{
         List<FinderMethod> result = FindersHelper.getFinderSignatures("", Arrays.asList("name", "title", "price", "url"));
 
         assertEquals(64, result.size());
-//        // some basic checking
+        // some basic checking
         assertTrue(containsMethod("name(name, *options)", result));
         assertTrue(containsMethod("name_and_price(name, price, *options)", result));
         assertTrue(containsMethod("name_and_price_and_title(name, price, title, *options)", result));
         assertTrue(containsMethod("name_and_title_and_price(name, title, price, *options)", result));
     }
+
+    public void testGetScopedBy() {
+        List<FinderMethod> result = FindersHelper.getFinderSignatures(FindersHelper.SCOPED_BY, Arrays.asList("name", "title"));
+
+        assertEquals(4, result.size());
+        // scoped_by methods should not have the *options hash
+        assertTrue(containsMethod("scoped_by_name(name)", result));
+        assertTrue(containsMethod("scoped_by_name_and_title(name, title)", result));
+    }
+
 
     private boolean containsMethod(String methodName, List<FinderMethod> finders) {
         for (FinderMethod each : finders) {

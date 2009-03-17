@@ -59,9 +59,9 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.util.Exceptions;
@@ -81,14 +81,14 @@ import org.openide.util.NbBundle;
 public class ImportModulePanel extends javax.swing.JPanel {
 
     private final String ident;
-    private CompilationInfo info;
+    private ParserResult info;
     private DefaultListModel model;
     private final int position;
 
     /** Creates new form ImportClassPanel */
     @SuppressWarnings("deprecation")
     public ImportModulePanel(String ident, List</*TypeElement*/String> priviledged,
-            List</*TypeElement*/String> denied, Font font, CompilationInfo info, int position) {
+            List</*TypeElement*/String> denied, Font font, ParserResult info, int position) {
         this.ident = ident;
         // System.err.println("priviledged=" + priviledged);
         // System.err.println("denied=" + denied);
@@ -280,7 +280,7 @@ public class ImportModulePanel extends javax.swing.JPanel {
         PopupUtil.hidePopup();
 
         int basePosition = importInPreviousLine ? position : -1;
-        BaseDocument document = (BaseDocument) info.getDocument();
+        BaseDocument document = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         if (!importInPreviousLine) {
             TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(document, position);
             ts.move(position);

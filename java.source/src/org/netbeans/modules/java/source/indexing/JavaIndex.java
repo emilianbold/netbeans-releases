@@ -38,9 +38,19 @@
  */
 
 package org.netbeans.modules.java.source.indexing;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -50,13 +60,15 @@ import org.openide.filesystems.URLMapper;
 
 /**
  *
- * @author lahvac
+ * @author Jan Lahoda, Dusan Balek
  */
 public class JavaIndex {
 
     public static final String NAME = "java"; //NOI18N
-    public static final int    VERSION = 12;
-    public static final String CLASSES = "classes"; //NOI18N
+    public static final int VERSION = 12;
+    static final Logger LOG = Logger.getLogger(JavaIndex.class.getName());
+    private static final String CLASSES = "classes"; //NOI18N
+    private static final String ATTR_FILE_NAME = "attributes.properties"; //NOI18N
 
     public static File getIndex(Context c) {
         return FileUtil.toFile(c.getIndexFolder());
@@ -103,6 +115,83 @@ public class JavaIndex {
         if (folder == null)
             return null;
         return CacheFolder.getSourceRootForDataFolder(folder);
+    }
+
+    public static boolean ensureAttributeValue(final URL root, final String attributeName, final String attributeValue, final boolean markDirty) throws IOException {
+        Properties p = loadProperties(root);
+        final String current = p.getProperty(attributeName);
+        if (current == null) {
+            if (attributeValue != null) {
+                p.setProperty(attributeName, attributeValue);
+                storeProperties(root, p);
+            }
+            return false;
+        }
+        if (current.equals(attributeValue)) {
+            return false;
+        }
+        if (attributeValue != null) {
+            p.setProperty(attributeName, attributeValue);
+        } else {
+            p.remove(attributeName);
+        }
+//        if (markDirty) {
+//            p.setProperty(DIRTY_ROOT, "true"); //NOI18N
+//        }
+        storeProperties(root, p);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine ("ensureAttributeValue attr: " + attributeName + " current: " + current + " new: " + attributeValue); //NOI18N
+        }
+        return true;
+    }
+
+    public static void setAttribute(URL root, String attributeName, String attributeValue) throws IOException {
+        Properties p = loadProperties(root);
+        if (attributeValue != null) {
+            p.setProperty(attributeName, attributeValue);
+        } else {
+            p.remove(attributeName);
+        }
+        storeProperties(root, p);
+    }
+
+    public static String getAttribute(URL root, String attributeName, String defaultValue) throws IOException {
+        Properties p = loadProperties(root);
+        return p.getProperty(attributeName, defaultValue);
+    }
+
+    private static Properties loadProperties(URL root) throws IOException {
+        File f = getAttributeFile(root);
+        Properties result = new Properties();
+        if (!f.exists())
+            return result;
+        InputStream in = new BufferedInputStream(new FileInputStream(f));
+        try {
+            result.load(in);
+        } catch (IllegalArgumentException iae) {
+            //Issue #138704: Invalid unicode encoding in attribute file.
+            //Return newly constructed Properties, the result
+            //may already contain some pairs.
+            LOG.warning("Broken attribute file: " + f.getAbsolutePath()); //NOI18N
+            return new Properties();
+        } finally {
+            in.close();
+        }
+        return result;
+    }
+
+    private static void storeProperties(URL root, Properties p) throws IOException {
+        File f = getAttributeFile(root);
+        OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
+        try {
+            p.store(out, ""); //NOI18N
+        } finally {
+            out.close();
+        }
+    }
+
+    private static File getAttributeFile(URL root) throws IOException {
+        return new File(JavaIndex.getIndex(root), ATTR_FILE_NAME);
     }
 
     private static File processCandidate(File result, boolean onlyIfExists) {

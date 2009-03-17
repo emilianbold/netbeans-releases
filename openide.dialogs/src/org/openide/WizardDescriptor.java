@@ -921,8 +921,10 @@ public class WizardDescriptor extends DialogDescriptor {
 
                 if (autoWizardStyle) {
                     String overlayImageName = NbBundle.getMessage(WizardDescriptor.class, "STRING_WizardOverlayImage"); //NOI18N
-                    boolean isOverlayImage = overlayImageName.length() > 0 && !Boolean.getBoolean("netbeans.wizard.overlayimage.hide") //NOI18N
-                        || null != getProperty("OverlayImageName"); //NOI18N
+                    boolean isOverlayImage = (overlayImageName.length() > 0
+                                                && !Boolean.getBoolean("netbeans.wizard.overlayimage.hide") //NOI18N
+                                                && "Aqua".equals(UIManager.getLookAndFeel().getID()))
+                                    || null != getProperty("OverlayImageName"); //NOI18N
                     if( isOverlayImage && null == getProperty("OverlayImageName") ) //NOI18N
                         putProperty("OverlayImageName", overlayImageName); //NOI18N
                     wizardPanel = new WizardPanel(

@@ -40,87 +40,39 @@
  */
 package org.netbeans.modules.html.editor;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Vector;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source.Priority;
-import org.openide.filesystems.FileObject;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.gsf.api.DataLoadersBridge;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.napi.gsfret.source.support.CaretAwareSourceTaskFactory;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  * 
  * @author Marek Fukala
  */
-public final class HtmlCaretAwareSourceTask implements CancellableTask<CompilationInfo> {
+public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserResult> {
 
-    private static final String SOURCE_DOCUMENT_PROPERTY_NAME = Source.class.getName();
-    private FileObject file;
+    public static class Factory extends TaskFactory {
 
-    HtmlCaretAwareSourceTask(FileObject file) {
-        this.file = file;
-    }
-
-    public Document getDocument() {
-        return DataLoadersBridge.getDefault().getDocument(file);
-    }
-    private boolean cancel;
-
-    synchronized boolean isCanceled() {
-        return cancel;
-    }
-
-    public synchronized void cancel() {
-        cancel = true;
-    }
-
-    synchronized void resume() {
-        cancel = false;
-    }
-
-    public void run(CompilationInfo info) {
-        resume();
-        Document doc = getDocument();
-        if (doc == null) {
-            Logger.getLogger(HtmlCaretAwareSourceTask.class.getName()).log(Level.INFO, "Cannot get document!");
-            return;
-        }
-
-        Source source = HtmlCaretAwareSourceTask.forDocument(doc);
-        source.parsed(info);
-
-    }
-
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.napi.gsfret.source.SourceTaskFactory.class)
-    public static class HtmlCaretAwareSourceTaskFactory extends CaretAwareSourceTaskFactory {
-
-        public HtmlCaretAwareSourceTaskFactory() {
-            super(Phase.PARSED, Priority.BELOW_NORMAL);
-        }
-
-        public CancellableTask<CompilationInfo> createTask(FileObject file) {
-            String mimeType = file.getMIMEType();
-            if (mimeType.equals("text/html")
-                    || mimeType.equals("text/x-jsp")
-                    || mimeType.equals("text/x-tag")
-                    || mimeType.equals("text/x-php5")) {
-                return new HtmlCaretAwareSourceTask(file);
+        @Override
+        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+            String mimeType = snapshot.getMimeType();
+            if(mimeType.equals("text/html")) {
+                return Collections.singletonList(new HtmlCaretAwareSourceTask());
             } else {
-                return EMPTY_TASK; //is returning just one instance a problem?
+                return Collections.EMPTY_LIST;
             }
         }
     }
-    
-    private static final CancellableTask<CompilationInfo> EMPTY_TASK = new CancellableTask<CompilationInfo>() {
-        public void cancel() {
-        }
-        public void run(CompilationInfo parameter) throws Exception {
-        }
-    };
+
+    private static final String SOURCE_DOCUMENT_PROPERTY_NAME = Source.class.getName();
 
     public static synchronized Source forDocument(Document doc) {
         Source source = (Source) doc.getProperty(SOURCE_DOCUMENT_PROPERTY_NAME);
@@ -131,14 +83,39 @@ public final class HtmlCaretAwareSourceTask implements CancellableTask<Compilati
         return source;
     }
 
+    @Override
+    public int getPriority() {
+        return 100; //todo use reasonable number
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    @Override
+    public void cancel() {
+        //xxx cancel???
+    }
+
+    @Override
+    public void run(HtmlParserResult result, SchedulerEvent event) {
+        //xxx: how come I can get null event here? parsing api bug?
+        if(event == null) {
+            return ;
+        }
+
+        forDocument(result.getSnapshot().getSource().getDocument(true)).parsed(result, event);
+    }
+
     public static class Source {
 
         private Vector<SourceListener> listeners = new Vector<SourceListener>();
 
-        protected void parsed(CompilationInfo ci) {
+        protected void parsed(Result ci, SchedulerEvent event) {
             //distribute to clients
             for (SourceListener listener : listeners) {
-                listener.parsed(ci);
+                listener.parsed(ci, event);
             }
         }
 
@@ -153,7 +130,7 @@ public final class HtmlCaretAwareSourceTask implements CancellableTask<Compilati
 
     public static interface SourceListener {
 
-        public void parsed(CompilationInfo info);
+        public void parsed(Result info, SchedulerEvent event);
     }
 }
 

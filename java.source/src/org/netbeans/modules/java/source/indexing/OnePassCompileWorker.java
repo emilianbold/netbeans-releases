@@ -117,7 +117,7 @@ final class OnePassCompileWorker extends CompileWorker {
                         computeFQNs(file2FQNs, cut, tuple.jfo);
                     }
                 } catch (Throwable t) {
-                    if (JavaCustomIndexer.LOG.isLoggable(Level.FINEST)) {
+                    if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                         final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
                         final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                         final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
@@ -128,7 +128,7 @@ final class OnePassCompileWorker extends CompileWorker {
                                     classPath == null  ? null : classPath.toString(),
                                     sourcePath == null ? null : sourcePath.toString()
                                     );
-                        JavaCustomIndexer.LOG.log(Level.FINEST, message, t);  //NOI18N
+                        JavaIndex.LOG.log(Level.FINEST, message, t);  //NOI18N
                     }
                     if (t instanceof ThreadDeath) {
                         throw (ThreadDeath) t;
@@ -182,6 +182,7 @@ final class OnePassCompileWorker extends CompileWorker {
                         System.gc();
                         return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, root2Rebuild);
                     }
+                    TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), dc.getDiagnostics(active.jfo));
                     if (!context.isSupplementaryFilesIndexing()) {
                         for (Map.Entry<URL, Collection<URL>> toRebuild : RebuildOraculum.findFilesToRebuild(context.getRootURI(), active.jfo.toUri().toURL(), javaContext.cpInfo, jt.getElements(), types).entrySet()) {
                             Set<URL> urls = root2Rebuild.get(toRebuild.getKey());
@@ -189,7 +190,7 @@ final class OnePassCompileWorker extends CompileWorker {
                                 root2Rebuild.put(toRebuild.getKey(), urls = new HashSet<URL>());
                             }
                             urls.addAll(toRebuild.getValue());
-                    }
+                        }
                     }
                     for (JavaFileObject generated : jt.generate(types)) {
                         if (generated instanceof OutputFileObject) {
@@ -198,12 +199,11 @@ final class OnePassCompileWorker extends CompileWorker {
                             // presumably should not happen
                         }
                     }
-                    TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), dc.getDiagnostics(active.jfo));
                     finished.add(active.indexable);
                 }
                 return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, root2Rebuild);
             } catch (Throwable t) {
-                if (JavaCustomIndexer.LOG.isLoggable(Level.FINEST)) {
+                if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                     final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
                     final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                     final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
@@ -214,7 +214,7 @@ final class OnePassCompileWorker extends CompileWorker {
                                 classPath == null  ? null : classPath.toString(),
                                 sourcePath == null ? null : sourcePath.toString()
                                 );
-                    JavaCustomIndexer.LOG.log(Level.FINEST, message, t);  //NOI18N
+                    JavaIndex.LOG.log(Level.FINEST, message, t);  //NOI18N
                 }
                 if (t instanceof ThreadDeath) {
                     throw (ThreadDeath) t;

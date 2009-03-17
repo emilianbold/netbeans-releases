@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.ruby.hints;
 
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -50,15 +49,16 @@ import org.jruby.nb.ast.HashNode;
 import org.jruby.nb.ast.ListNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.PreviewableFix;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.PreviewableFix;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -77,7 +77,7 @@ public class HashListConvert extends RubyAstRule {
 
     public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.parserResult;
 
         HashNode hash = (HashNode)node;
         ListNode listNode = hash.getListNode();
@@ -97,7 +97,7 @@ public class HashListConvert extends RubyAstRule {
         OffsetRange range = new OffsetRange(commaOffset, commaOffset+1);
         String displayName = NbBundle.getMessage(HashListConvert.class, "HashListConvertGutter");
         List<HintFix> fixes = Collections.<HintFix>singletonList(new HashFix(context, listNode));
-        Hint desc = new Hint(this, displayName, info.getFileObject(), range, 
+        Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range, 
                 fixes, 140);
         result.add(desc);
     }
@@ -105,7 +105,7 @@ public class HashListConvert extends RubyAstRule {
     private static int getCommaOffset(RubyRuleContext context, ListNode listNode, int pair) {
         int prevEnd = listNode.get(2*pair).getPosition().getEndOffset();
         int nextStart = listNode.get(2*pair+1).getPosition().getStartOffset();
-        OffsetRange lexRange = LexUtilities.getLexerOffsets(context.compilationInfo, 
+        OffsetRange lexRange = LexUtilities.getLexerOffsets(context.parserResult, 
                 new OffsetRange(prevEnd, nextStart));
         if (lexRange == OffsetRange.NONE) {
             return -1;

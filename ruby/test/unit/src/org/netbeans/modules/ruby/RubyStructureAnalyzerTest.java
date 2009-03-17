@@ -46,9 +46,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Comparator;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.StructureItem;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
 
@@ -61,9 +63,14 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
         super(testName);
     }
 
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return rubyTestsClassPath();
+    }
+
     private void checkAttributes(String relFilePath) throws Exception {
-        CompilationInfo info = getInfo(relFilePath);
-        RubyParseResult rpr = AstUtilities.getParseResult(info);
+        Parser.Result parserResult = getParserResult(relFilePath);
+        RubyParseResult rpr = AstUtilities.getParseResult(parserResult);
         RubyStructureAnalyzer.AnalysisResult ar = rpr.getStructure();
         Map<AstClassElement, Set<AstAttributeElement>> attributes = ar.getAttributes();
 
@@ -149,10 +156,10 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
     }
 
     public void testRubyStructureItemEqualsAndHashCode() throws Exception {
-        CompilationInfo info = getInfo("testfiles/testRubyStructureItemEqualsAndHashCode.rb");
+        ParserResult parserResult = getParserResult("testfiles/testRubyStructureItemEqualsAndHashCode.rb");
         RubyStructureAnalyzer analyzer = new RubyStructureAnalyzer();
 
-        List<? extends StructureItem> structures = analyzer.scan(info);
+        List<? extends StructureItem> structures = analyzer.scan(parserResult);
         assertEquals("two methods", 3, structures.size());
         StructureItem twoParams = structures.get(0);
         StructureItem oneParamA = structures.get(1);
@@ -165,10 +172,10 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
     }
 
     public void testRubyStructureItemEqualsAndHashCodeForOptionalParams() throws Exception { // #131134
-        CompilationInfo info = getInfo("testfiles/testRubyStructureItemEqualsAndHashCodeForOptionalParams.rb");
+        ParserResult parserResult = getParserResult("testfiles/testRubyStructureItemEqualsAndHashCodeForOptionalParams.rb");
         RubyStructureAnalyzer analyzer = new RubyStructureAnalyzer();
 
-        List<? extends StructureItem> structures = analyzer.scan(info);
+        List<? extends StructureItem> structures = analyzer.scan(parserResult);
         assertEquals("two methods", 2, structures.size());
         StructureItem first = structures.get(0);
         StructureItem second = structures.get(1);
@@ -178,10 +185,10 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
     }
 
     public void testRubyStructureItemNotEqualsStaticVsInstance() throws Exception { // #115782
-        CompilationInfo info = getInfo("testfiles/testRubyStructureItemNotEqualsStaticVsInstance.rb");
+        ParserResult parserResult = getParserResult("testfiles/testRubyStructureItemNotEqualsStaticVsInstance.rb");
         RubyStructureAnalyzer analyzer = new RubyStructureAnalyzer();
 
-        List<? extends StructureItem> structures = analyzer.scan(info);
+        List<? extends StructureItem> structures = analyzer.scan(parserResult);
         assertEquals("one class", 1, structures.size());
         StructureItem clazz = structures.get(0);
         assertEquals("Foo class", ElementKind.CLASS, clazz.getKind());

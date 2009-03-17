@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
+import org.netbeans.modules.parsing.api.Source;
 
 /**
  * Currently serves (mainly) for analyzing RDoc of generated stubs of Ruby core
@@ -176,7 +177,8 @@ final class RDocAnalyzer {
         Node root = knowledge.getRoot();
         if (root instanceof MethodDefNode) {
             // Look for parameter hints
-            List<String> rdoc = AstUtilities.gatherDocumentation(null, knowledge.getDocument(), root);
+            Source source = Source.create(knowledge.getDocument());
+            List<String> rdoc = AstUtilities.gatherDocumentation(source.createSnapshot(), root);
 
             if ((rdoc != null) && (rdoc.size() > 0)) {
                 for (String line : rdoc) {
