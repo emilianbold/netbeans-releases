@@ -699,10 +699,17 @@ public class CasualDiff {
         copyTo(localPointer, vartypeBounds[0]);
         localPointer = diffTree(oldT.vartype, newT.vartype, vartypeBounds);
         if (nameChanged(oldT.name, newT.name)) {
-            copyTo(localPointer, oldT.pos);
+            boolean isOldError = oldT.name == Names.instance(context).error;
+            if (!isOldError) {
+                copyTo(localPointer, oldT.pos);
+            } else {
+                printer.print(" ");
+            }
             printer.print(newT.name);
             diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameVariable") + " " + oldT.name);
-            localPointer = oldT.pos + oldT.name.length();
+            if (!isOldError) {
+                localPointer = oldT.pos + oldT.name.length();
+            }
         }
         if (newT.init != null && oldT.init != null) {
             copyTo(localPointer, localPointer = getOldPos(oldT.init));
