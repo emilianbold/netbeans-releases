@@ -307,19 +307,21 @@ public abstract class CsmResultItem implements CompletionItem {
         }
         toAdd = addText;
         if (substituteText(component, substOffset, component.getCaret().getDot() - substOffset, false)) {
-            CsmIncludeResolver inclResolver = CsmIncludeResolver.getDefault();
-            BaseDocument doc = (BaseDocument) component.getDocument();
-            Object ob = getAssociatedObject();
-            if (CsmKindUtilities.isCsmObject(ob)) {
-                CsmFile currentFile = CsmUtilities.getCsmFile(doc, false);
-                if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
-                    String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
-                    if (include.length() != 0 && !isForwardDeclaration(component) && !isAlreadyIncluded(component, include)) {
-                        insertInclude(component, currentFile, include, include.charAt(include.length() - 1) == '>');
+            if (CsmCompletionUtils.isAutoInsertIncludeDirectives()) {
+                CsmIncludeResolver inclResolver = CsmIncludeResolver.getDefault();
+                BaseDocument doc = (BaseDocument) component.getDocument();
+                Object ob = getAssociatedObject();
+                if (CsmKindUtilities.isCsmObject(ob)) {
+                    CsmFile currentFile = CsmUtilities.getCsmFile(doc, false);
+                    if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
+                        String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
+                        if (include.length() != 0 && !isForwardDeclaration(component) && !isAlreadyIncluded(component, include)) {
+                            insertInclude(component, currentFile, include, include.charAt(include.length() - 1) == '>');
+                        }
                     }
+                } else {
+                    System.err.println("not yet handled object " + ob);
                 }
-            } else {
-                System.err.println("not yet handled object " + ob);
             }
             return true;
         } else {

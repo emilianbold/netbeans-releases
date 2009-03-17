@@ -42,6 +42,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -51,9 +52,6 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentListener {
-    public static final String CPP_AUTO_COMPLETION_TRIGGERS = "cppAutoCompletionTriggers"; //NOI18N
-    public static final String PREPRPOC_AUTO_COMPLETION_TRIGGERS = "autoCompletionTriggersPreproc"; //NOI18N
-    public static final String CPP_AUTO_INSERT_INCLUDE_DIRECTIVES = "autoInsertIncludeDirectives"; //NOI18N
 
     private final Preferences preferences;
 
@@ -61,9 +59,9 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
     public CodeCompletionPanel(Preferences preferences) {
         this.preferences = preferences;
         initComponents();
-        autoInsertIncludeDirectives.setSelected(preferences.getBoolean(CPP_AUTO_INSERT_INCLUDE_DIRECTIVES, true));
-        autoCompletionTriggersField.setText(preferences.get(CPP_AUTO_COMPLETION_TRIGGERS, ".->")); //NOI18N
-        autoCompletionTriggersPreprocField.setText(preferences.get(PREPRPOC_AUTO_COMPLETION_TRIGGERS, "\"<")); //NOI18N
+        autoInsertIncludeDirectives.setSelected(preferences.getBoolean(CsmCompletionUtils.CPP_AUTO_INSERT_INCLUDE_DIRECTIVES, true));
+        autoCompletionTriggersField.setText(preferences.get(CsmCompletionUtils.CPP_AUTO_COMPLETION_TRIGGERS, ".->::")); //NOI18N
+        autoCompletionTriggersPreprocField.setText(preferences.get(CsmCompletionUtils.PREPRPOC_AUTO_COMPLETION_TRIGGERS, "\"<")); //NOI18N
         autoCompletionTriggersField.getDocument().addDocumentListener(this);
         autoCompletionTriggersPreprocField.getDocument().addDocumentListener(this);
     }
@@ -126,13 +124,13 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
                     .add(autoCompletionTriggersPreprocField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(autoCompletionTriggersField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(33, 33, 33))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(14, Short.MAX_VALUE)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(12, 12, 12)
                 .add(autoInsertIncludeDirectives)
                 .addContainerGap(37, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -154,7 +152,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
     }// </editor-fold>//GEN-END:initComponents
 
     private void autoInsertIncludeDirectivesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoInsertIncludeDirectivesActionPerformed
-        preferences.putBoolean(CPP_AUTO_INSERT_INCLUDE_DIRECTIVES, autoInsertIncludeDirectives.isSelected());
+        preferences.putBoolean(CsmCompletionUtils.CPP_AUTO_INSERT_INCLUDE_DIRECTIVES, autoInsertIncludeDirectives.isSelected());
 }//GEN-LAST:event_autoInsertIncludeDirectivesActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField autoCompletionTriggersField;
@@ -179,9 +177,9 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
 
     private void update(DocumentEvent e) {
         if (e.getDocument() == autoCompletionTriggersField.getDocument()) {
-            preferences.put(CPP_AUTO_COMPLETION_TRIGGERS, autoCompletionTriggersField.getText());
+            preferences.put(CsmCompletionUtils.CPP_AUTO_COMPLETION_TRIGGERS, autoCompletionTriggersField.getText());
         } else if (e.getDocument() == autoCompletionTriggersPreprocField.getDocument()) {
-            preferences.put(PREPRPOC_AUTO_COMPLETION_TRIGGERS, autoCompletionTriggersPreprocField.getText());
+            preferences.put(CsmCompletionUtils.PREPRPOC_AUTO_COMPLETION_TRIGGERS, autoCompletionTriggersPreprocField.getText());
         }
     }
 
