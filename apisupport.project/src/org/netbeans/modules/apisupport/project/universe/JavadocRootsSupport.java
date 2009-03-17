@@ -90,7 +90,11 @@ public class JavadocRootsSupport implements JavadocRootsProvider {
      * @return a list of Javadoc root URLs (may be empty but not null)
      */
     public URL[] getJavadocRoots() {
-        maybeUpdateDefaultJavadoc();
+        if (javadocRoots.length == 0) {
+            URL[] defaults = getDefaultJavadocRoots();
+            if (defaults != null)
+                return defaults;
+        }
         return javadocRoots;
     }
 
