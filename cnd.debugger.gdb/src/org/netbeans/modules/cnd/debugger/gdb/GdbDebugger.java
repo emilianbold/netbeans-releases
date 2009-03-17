@@ -2049,6 +2049,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 String fullname = map.get("fullname"); // NOI18N
                 String lnum = map.get("line"); // NOI18N
                 String addr = map.get("addr"); // NOI18N
+                String from = map.get("from"); // NOI18N
                 if (fullname == null && file != null) {
                     if (file.charAt(0) == '/') {
                         fullname = file;
@@ -2066,7 +2067,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
                 }
 
-                callstack.add(i, new CallStackFrame(this, func, file, fullname, lnum, addr, i));
+                callstack.add(i, new CallStackFrame(this, func, file, fullname, lnum, addr, i, from));
             }
         }
 
