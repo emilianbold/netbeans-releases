@@ -107,14 +107,13 @@ public class IndentCasesTest extends J2eeTestCase {
         testJSP(5, 7, 6, 3);
     }
 
-//issue 120136
-//    public void testJSPAttribute() throws Exception {
-//        testJSP(8, 15, 9, 13);
-//    }
-//
-//    public void testJSPAttribute2() throws Exception {
-//        testJSP(8, 41, 9, 15);
-//    }
+    public void testJSPAttribute() throws Exception {
+        testJSP(8, 15, 9, 11);
+    }
+
+    public void testJSPAttribute2() throws Exception {
+        testJSP(8, 41, 9, 15);
+    }
 
     public void testJSPSmartEnter() throws Exception {
         testJSP(22, 21, 23, 19);
@@ -156,14 +155,13 @@ public class IndentCasesTest extends J2eeTestCase {
         testHTML(1, 7, 2, 3);
     }
     
-//issue 120136
-//    public void testHTMLAttribute() throws Exception {
-//        testHTML(4, 15, 5, 13);
-//    }
-//
-//    public void testHTMLAttribute2() throws Exception {
-//        testHTML(4, 41, 5, 13);
-//    }
+    public void testHTMLAttribute() throws Exception {
+        testHTML(4, 15, 5, 11);
+    }
+
+    public void testHTMLAttribute2() throws Exception {
+        testHTML(4, 41, 5, 15);
+    }
 
     public void testHTMLSmartEnter() throws Exception {
         testHTML(14, 21, 15, 19);
