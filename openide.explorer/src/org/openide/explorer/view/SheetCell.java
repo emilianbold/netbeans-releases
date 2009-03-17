@@ -747,7 +747,15 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
         }
         public void propertyChange(PropertyChangeEvent evt) {
             stopCellEditing();
-            outline.tableChanged(new TableModelEvent(outline.getModel(), 0, outline.getRowCount()));
+            if( SwingUtilities.isEventDispatchThread() ) {
+                outline.tableChanged(new TableModelEvent(outline.getModel(), 0, outline.getRowCount()));
+            } else {
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        outline.tableChanged(new TableModelEvent(outline.getModel(), 0, outline.getRowCount()));
+                    }
+                });
+            }
         }
         @Override
         protected void detachEditor() {
