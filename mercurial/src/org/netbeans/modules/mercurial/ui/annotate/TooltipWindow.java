@@ -220,7 +220,9 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
      */
     void shutdown() {
         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
-        popup.hide();
+        if (popup != null) {
+            popup.hide();
+        }
         popup = null;
     }
 
