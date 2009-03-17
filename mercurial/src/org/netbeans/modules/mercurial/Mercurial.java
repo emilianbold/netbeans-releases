@@ -153,7 +153,6 @@ public class Mercurial {
 
         hooksResult = (Result<? extends HgHook>) Lookup.getDefault().lookupResult(HgHook.class);
         hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
-        hpResult.addLookupListener(this);
         setHyperlinkProviders();
     }
 

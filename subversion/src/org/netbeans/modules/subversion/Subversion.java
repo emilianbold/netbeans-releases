@@ -142,11 +142,8 @@ public class Subversion {
         fileStatusCache.addVersioningListener(svcs);
         addPropertyChangeListener(svcs);
 
-
         hooksResult = (Result<? extends SvnHook>) Lookup.getDefault().lookupResult(SvnHook.class);
         hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
-        hpResult.addLookupListener(this);
-        setHyperlinkProviders();
         setHyperlinkProviders();
     }
 
