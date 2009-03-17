@@ -127,6 +127,10 @@ public class ScriptingProjectNodePopupTest extends  PerformanceTestCase {
         testNode(getProjectNode(Projects.PHP_PROJECT));
     }
 
+    public void testScriptingProjectNodePopupMenu() {
+        testNode(getProjectNode(Projects.SCRIPTING_PROJECT));
+    }
+
     public void testNode(Node node){
         dataObjectNode = node;
         doMeasurement();
