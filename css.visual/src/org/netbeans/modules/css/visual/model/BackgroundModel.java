@@ -77,7 +77,7 @@ public class BackgroundModel {
     public static class BackgroundRepeatList extends DefaultComboBoxModel{
         public BackgroundRepeatList(){
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.BACKGROUND_REPEAT);
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             for(int i=0; i< propValues.length; i++){
                 addElement(propValues[i]);
             }
@@ -87,7 +87,7 @@ public class BackgroundModel {
     public static class BackgroundScrollList extends DefaultComboBoxModel{
         public BackgroundScrollList(){
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.BACKGROUND_ATTACHMENT);
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             for(int i=0; i< propValues.length; i++){
                 addElement(propValues[i]);
             }
@@ -97,11 +97,11 @@ public class BackgroundModel {
     public static class BackgroundPositionList extends DefaultComboBoxModel{
         public BackgroundPositionList(){
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.BACKGROUND_POSITION);
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             for(int i=0; i< propValues.length; i++){
                 addElement(propValues[i]);
             }
-            addElement(CssRuleContent.VALUE);
+            addElement(Utils.VALUE);
         }
     }
 
