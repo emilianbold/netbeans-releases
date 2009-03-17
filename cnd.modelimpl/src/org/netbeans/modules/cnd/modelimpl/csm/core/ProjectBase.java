@@ -2562,7 +2562,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     DeclarationContainer getDeclarationsSorage() {
         DeclarationContainer dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
-        if (dc == null) {
+        if (dc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
         }
         return dc != null ? dc : DeclarationContainer.empty();
@@ -2570,7 +2570,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     FileContainer getFileContainer() {
         FileContainer fc = (FileContainer) RepositoryUtils.get(fileContainerKey);
-        if (fc == null) {
+        if (fc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get FileContainer by key " + fileContainerKey)); // NOI18N
         }
         return fc != null ? fc : FileContainer.empty();
@@ -2578,7 +2578,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public final GraphContainer getGraphStorage() {
         GraphContainer gc = (GraphContainer) RepositoryUtils.get(graphStorageKey);
-        if (gc == null) {
+        if (gc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get GraphContainer by key " + graphStorageKey)); // NOI18N
         }
         return gc != null ? gc : GraphContainer.empty();
@@ -2586,7 +2586,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     final ClassifierContainer getClassifierSorage() {
         ClassifierContainer cc = (ClassifierContainer) RepositoryUtils.get(classifierStorageKey);
-        if (cc == null) {
+        if (cc == null && isValid()) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get ClassifierSorage by key " + classifierStorageKey)); // NOI18N
         }
         return cc != null ? cc : ClassifierContainer.empty();
