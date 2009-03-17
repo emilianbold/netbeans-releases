@@ -257,7 +257,7 @@ public class TraceXRef extends TraceModel {
         if (callback != null) {
             callback.projectFilesCounted(csmPrj, allFiles.size());
         }
-        RequestProcessor rp = new RequestProcessor("TraceXRef", params.reportUnresolved ? 1 : Runtime.getRuntime().availableProcessors());
+        RequestProcessor rp = new RequestProcessor("TraceXRef", params.reportUnresolved ? 1 : Runtime.getRuntime().availableProcessors()); // NOI18N
         final CountDownLatch waitFinished = new CountDownLatch(allFiles.size());
         for (final CsmFile file : allFiles) {
             Runnable task = new Runnable() {
