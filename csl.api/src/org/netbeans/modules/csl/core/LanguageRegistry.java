@@ -279,19 +279,28 @@ public final class LanguageRegistry implements Iterable<Language> {
         }
     }
 
-    private synchronized Map<String, Language> getLanguages() {
-        if (cacheDirty) {
-            cacheDirty = false;
-            FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-            languagesCache = readSfs(sfs, languagesCache);
-            if (sfsTracker == null) {
-                // First time we run do the cleanup
-                userdirCleanup();
-                
-                // start listening on SystemFileSystem
-                sfsTracker = new FsTracker(sfs);
+    private Map<String, Language> getLanguages() {
+        boolean [] refreshLoader = new boolean [] { false };
+
+        synchronized (this) {
+            if (cacheDirty) {
+                cacheDirty = false;
+                FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+                languagesCache = readSfs(sfs, languagesCache, refreshLoader);
+                if (sfsTracker == null) {
+                    // First time we run do the cleanup
+                    userdirCleanup();
+
+                    // start listening on SystemFileSystem
+                    sfsTracker = new FsTracker(sfs);
+                }
             }
         }
+
+        if (refreshLoader[0]) {
+            GsfDataLoader.getLoader(GsfDataLoader.class).initExtensions();
+        }
+
         return languagesCache;
     }
 
@@ -313,7 +322,7 @@ public final class LanguageRegistry implements Iterable<Language> {
         return MimePath.validate(null, typeName) && !typeName.equals("base"); //NOI18N
     }
 
-    private static Map<String, Language> readSfs(FileSystem sfs, Map<String, Language> existingMap) {
+    private static Map<String, Language> readSfs(FileSystem sfs, Map<String, Language> existingMap, boolean changesDetected[]) {
         FileObject registryFolder = sfs.findResource(FOLDER);
 
         if (registryFolder == null) {
@@ -324,6 +333,7 @@ public final class LanguageRegistry implements Iterable<Language> {
         // Read languages
         LOG.fine("Reading " + FOLDER + " registry..."); //NOI18N
         Map<String, Language> newMap = new HashMap<String, Language>();
+        changesDetected[0] = false;
 
         // Go through mimetype types
         FileObject[] types = registryFolder.getChildren();
@@ -355,6 +365,7 @@ public final class LanguageRegistry implements Iterable<Language> {
                 Language language = new Language(mimeType);
                 newMap.put(mimeType, language);
                 LOG.fine("Adding new Language for '" + mimeType + "': " + language); //NOI18N
+                changesDetected[0] = true;
 
                 Boolean useCustomEditorKit = (Boolean)subtypes[j].getAttribute("useCustomEditorKit"); // NOI18N
                 if (useCustomEditorKit != null && useCustomEditorKit.booleanValue()) {
@@ -413,6 +424,10 @@ public final class LanguageRegistry implements Iterable<Language> {
                     LOG.warning("No GsfLanguage instance registered in " + subtypes[j].getPath()); //NOI18N
                 }
             }
+        }
+
+        if (existingMap != null && newMap.size() != existingMap.size()) {
+            changesDetected[0] = true;
         }
 
         LOG.fine("-- Finished reading " + FOLDER + " registry!"); //NOI18N
@@ -771,11 +786,17 @@ public final class LanguageRegistry implements Iterable<Language> {
         }
 
         public void run() {
+            boolean [] refreshLoader = new boolean [] { false };
+
             synchronized (LanguageRegistry.this) {
                 if (cacheDirty) {
                     cacheDirty = false;
-                    languagesCache = readSfs(fs, languagesCache);
+                    languagesCache = readSfs(fs, languagesCache, refreshLoader);
                 }
+            }
+
+            if (refreshLoader[0]) {
+                GsfDataLoader.getLoader(GsfDataLoader.class).initExtensions();
             }
         }
     } // End of SfsTracker class
