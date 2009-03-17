@@ -15,12 +15,12 @@
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/>
                     </file>
                 </folder>
-                <!--<folder name="ConfigurationOptions">
+                <folder name="ConfigurationOptions">
                     <file name="GizmoConfigurationOptions.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions"/>
                     </file>
                 </folder>
-                <folder name="KnownDataCollectorSources">
+                <!--<folder name="KnownDataCollectorSources">
                     <provider name="SunStudio" key="SS"/>
                     <provider name="DTrace" key="SS"/>
                 </folder>-->
@@ -49,6 +49,17 @@
                 <attr name="position" intvalue="0"/>
             </file>
             -->
+        </folder>
+    </folder>
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-cnd-makeproject">
+            <folder name="Customizer">
+                <file name="Gizmo.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.gizmo.GizmoOptionsPanel.createCategoryProvider"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
+            </folder>
         </folder>
     </folder>
 
