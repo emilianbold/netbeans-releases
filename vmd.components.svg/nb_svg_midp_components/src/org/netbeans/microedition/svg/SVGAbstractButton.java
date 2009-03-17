@@ -49,6 +49,14 @@ public abstract class SVGAbstractButton extends SVGComponent {
             myBodyElement = (SVGLocatableElement) getNestedElementByMeta( getElement(), 
                 TYPE, BODY );
         }
+
+        myText = (SVGLocatableElement) getElementById( getElement(),
+                getElement().getId() + SVGTextField.TEXT_SUFFIX);
+        if ( myText== null ){
+            myText = (SVGLocatableElement) getNestedElementByMeta( getElement(),
+                    TYPE, SVGTextField.TEXT );
+        }
+        
         initAnimation();
     }
 
@@ -75,6 +83,22 @@ public abstract class SVGAbstractButton extends SVGComponent {
                 }
             });
         }
+    }
+
+    public String getText(){
+        if ( myText != null ){
+            return myText.getTrait( SVGTextField.TRAIT_TEXT );
+        }
+        return null;
+    }
+
+    public void setText(String text){
+       if ( text == null ){
+           text ="";
+       }
+       if ( myText != null ){
+            setTraitSafely(myText, SVGTextField.TRAIT_TEXT, text.trim());
+       }
     }
 
     public abstract boolean isSelected();
@@ -127,6 +151,7 @@ public abstract class SVGAbstractButton extends SVGComponent {
     }
     
     private SVGLocatableElement myBodyElement;
+    private SVGLocatableElement myText;
     
     protected SVGAnimationElement myPressedAnimation;
     protected SVGAnimationElement myReleasedAnimation;
