@@ -223,10 +223,16 @@ public class ImportCDCProjectPanel extends javax.swing.JPanel implements Documen
     }
         
     private void bBrowseActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bBrowseActionPerformed
+	//GEN-HEADEREND:event_bBrowseActionPerformed
         if (location == null)
             location = tLocation.getText();                                            
-        if (location == null  ||  "".equals(location)) // NOI18N
-            location = System.getProperty("user.home", ""); // NOI18N//GEN-HEADEREND:event_bBrowseActionPerformed
+        if (location == null  ||  "".equals(location)){ // NOI18N
+            location = System.getProperty("user.home", ""); // NOI18N
+        } else {
+            File f = new File(location);
+            if (!f.exists() || !f.isDirectory())
+                location = System.getProperty("user.home", ""); // NOI18N
+        }
         File origLoc = ProjectChooser.getProjectsFolder();
         ProjectChooser.setProjectsFolder(new File(location));
         JFileChooser ch=createProjectChooser();
@@ -372,6 +378,7 @@ public class ImportCDCProjectPanel extends javax.swing.JPanel implements Documen
     
     private static boolean isOldProject(FileObject fo, String type)
     {
+        if (fo  == null || !fo.isValid()) return false;
         FileObject xml=fo.getFileObject("nbproject/project.xml");
         FileObject prop=fo.getFileObject("nbproject/project.properties");
         if (xml != null && prop != null)

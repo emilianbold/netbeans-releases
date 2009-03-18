@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.test.web.core.syntax.performance;
+package org.netbeans.test.syntax.performance;
 
 import java.io.File;
 import java.lang.ref.Reference;

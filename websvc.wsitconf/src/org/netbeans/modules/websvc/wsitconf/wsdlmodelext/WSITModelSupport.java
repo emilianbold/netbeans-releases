@@ -71,6 +71,7 @@ import org.netbeans.modules.websvc.wsitconf.WSITEditor;
 import org.netbeans.modules.websvc.wsitconf.api.DesignerListenerProvider;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfileRegistry;
+import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.security.listmodels.ServiceProviderElement;
 import org.netbeans.modules.websvc.wsitconf.util.AbstractTask;
@@ -168,8 +169,7 @@ public class WSITModelSupport {
                     logger.log(Level.INFO, "Implementation class is null or not valid, or just virtual: " + implClass + ", service: " + service);
                     return null;
                 }
-                JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(implClass);
-                return getModelForServiceFromJava(implClass, supp, create, createdFiles);
+                return getModelForServiceFromJava(implClass, p, create, createdFiles);
             } else {
                 if (p == null) return null;
                 JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(p.getProjectDirectory());
@@ -196,10 +196,14 @@ public class WSITModelSupport {
         }
         return model;
     }
+
+    public static WSDLModel getModelForClient(Project p, Client client, boolean create, Collection<FileObject> createdFiles) throws IOException {
+        return getModelForClient(p, URI.create(client.getWsdlUrl()), create, createdFiles);
+    }
     
     /* Retrieves WSDL model for a WS client - always has a wsdl
      */
-    public static WSDLModel getModelForClient(Project p, Client client, boolean create, Collection<FileObject> createdFiles) throws IOException {
+    static WSDLModel getModelForClient(Project p, URI fileUri, boolean create, Collection<FileObject> createdFiles) throws IOException {
         
         WSDLModel model = null;
         FileObject srcFolder = WSITEditor.getClientConfigFolder(p);
@@ -208,7 +212,7 @@ public class WSITModelSupport {
         
         try {
             CatalogModel cm = Utilities.getCatalogModel(catalogms);
-            ModelSource originalms = cm.getModelSource(URI.create(client.getWsdlUrl()));
+            ModelSource originalms = cm.getModelSource(fileUri);
             FileObject originalWsdlFO = Utilities.getFileObject(originalms);
             WSDLModel originalwsdlmodel = getModelFromFO(originalWsdlFO, true);
             
@@ -368,10 +372,10 @@ public class WSITModelSupport {
         FileObject wsdlFO = supp.getLocalWsdlFolderForService(service.getName(),false).getFileObject(wsdlLocation);
         return getModelFromFO(wsdlFO, true);
     }
-    
+
     /* Retrieves WSDL model for a WS from Java - if config file exists, reuses that one, otherwise generates new one
      */
-    public static WSDLModel getModelForServiceFromJava(FileObject jc, JAXWSSupport supp, boolean create, Collection<FileObject> createdFiles) throws IOException {
+    public static WSDLModel getModelForServiceFromJava(FileObject jc, Project p, boolean create, Collection<FileObject> createdFiles) throws IOException {
         
         WSDLModel model = null;
         String configWsdlName = CONFIG_WSDL_SERVICE_PREFIX;
@@ -396,21 +400,23 @@ public class WSITModelSupport {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+
+        WsitProvider wp = p.getLookup().lookup(WsitProvider.class);        
+        FileObject cfgFolder = wp.getConfigFilesFolder(false);
+
         // check whether config file already exists
-        FileObject wsdlFolder = supp.getWsdlFolder(create);
-        if ((wsdlFolder != null) && (wsdlFolder.isValid())) {
-            FileObject wsdlFO = wsdlFolder.getParent().getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
-            if ((wsdlFO != null) && (wsdlFO.isValid())) {   //NOI18N
+        if ((cfgFolder != null) && (cfgFolder.isValid())) {
+            FileObject wsdlFO = cfgFolder.getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);
+            if ((wsdlFO != null) && (wsdlFO.isValid())) {
                 return getModelFromFO(wsdlFO, true);
             }
         }
         
         if (create) {
             // config file doesn't exist - generate empty file
-            FileObject wsdlFO = wsdlFolder.getParent().getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);   //NOI18N
+            FileObject wsdlFO = cfgFolder.getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);
             if ((wsdlFO == null) || !(FileUtil.toFile(wsdlFO).exists())) {
-                wsdlFO = wsdlFolder.getParent().createData(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
+                wsdlFO = cfgFolder.createData(configWsdlName, CONFIG_WSDL_EXTENSION);
                 if (createdFiles != null) {
                     createdFiles.add(wsdlFO);
                 }
