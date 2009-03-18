@@ -117,7 +117,7 @@ public class BugtrackingOwnerSupport {
 
         if(repo == null && askIfUnknown) {
             repo = getBugtrackingOwner(file, issueId);
-            LOG.log(Level.FINER, " caching repository [" + repo + "] for file " + file); // NOI18N
+            LOG.log(Level.FINER, " caching repository [{0}] for file {1}", new Object[] {repo, file}); // NOI18N
             fileToRepo.put(file, repo);
         }
 
