@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,256 +34,164 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.nativeexecution.support;
 
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.support.ui.PasswordDlg;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.windows.WindowManager;
 
-public final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
+final class RemoteUserInfo implements UserInfo {
 
-    private static final String KEY_PREFIX = "remote.user.info"; // NOI18N
-    private static Map<String, RemoteUserInfo> hash;
-    private JTextField passwordField = (JTextField) new JPasswordField(20);
-    private final GridBagConstraints gbc =
-            new GridBagConstraints(0, 0, 1, 1, 1, 1,
-            GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
-            new Insets(0, 0, 0, 0), 0, 0);
-    private Container panel;
-    private boolean cancelled = false;
-    private final static Object DLGLOCK = new Object();
-    private Component parent;
-    private final Encrypter crypter;
-    private String passwordProperyKey;
-    private char[] encryptedPassword;
-    private ExecutionEnvironment execEnv;
+    private final static PasswordManager pm = PasswordManager.getInstance();
+    private final ExecutionEnvironment env;
 
-    private RemoteUserInfo(ExecutionEnvironment execEnv) {
-        this.execEnv = execEnv;
-        String key = execEnv.toString();
-        crypter = new Encrypter(key);
-        passwordProperyKey = crypter.encrypt(KEY_PREFIX + key);
-        String savePassword = NbPreferences.forModule(RemoteUserInfo.class).get(
-                passwordProperyKey, null);
-        encryptedPassword = savePassword == null
-                ? null : savePassword.toCharArray();
-        setParentComponent(this);
-    }
-
-    /**
-     * Get the UserInfo for the specified <tt>ExecutionEnvironment</tt>.
-     *
-     * @return The RemoteHostInfo instance for this key
-     */
-    public static synchronized RemoteUserInfo getUserInfo(
-            final ExecutionEnvironment execEnv,
-            final boolean retry) {
-        if (hash == null) {
-            hash = Collections.synchronizedMap(
-                    new HashMap<String, RemoteUserInfo>());
-        }
-
-        String key = execEnv.toString();
-        RemoteUserInfo result = null;
-
-        if (hash.containsKey(key)) {
-            result = hash.get(key);
-            if (retry) {
-                result.reset();
-            }
-        } else {
-            result = new RemoteUserInfo(execEnv);
-            hash.put(key, result);
-        }
-
-        return result;
-    }
-
-    private void reset() {
-        setPassword(null, false);
-        passwordField.setText(""); // clear textfield
-        cancelled = false;
-    }
-
-    public String getPassword() {
-        return encryptedPassword == null
-                ? null : String.valueOf(crypter.decrypt(encryptedPassword));
-    }
-
-    final public void setPassword(final char[] password,
-            final boolean rememberPassword) {
-        encryptedPassword = password == null ? null : crypter.encrypt(password);
-
-        if (rememberPassword && encryptedPassword != null) {
-            NbPreferences.forModule(RemoteUserInfo.class).put(
-                    passwordProperyKey, String.valueOf(encryptedPassword));
-        } else {
-            NbPreferences.forModule(RemoteUserInfo.class).remove(
-                    passwordProperyKey);
-        }
-    }
-
-    public synchronized boolean promptYesNo(String str) {
-        Object[] options = {"yes", "no"}; // NOI18N
-        int foo;
-
-        synchronized (DLGLOCK) {
-            foo = JOptionPane.showOptionDialog(parent, str,
-                    loc("TITLE_YN_Warning"), // NOI18N
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.WARNING_MESSAGE, null, options, options[0]);
-        }
-
-        return foo == 0;
+    public RemoteUserInfo(ExecutionEnvironment env) {
+        this.env = env;
     }
 
     public String getPassphrase() {
         return null;
     }
 
-    public boolean promptPassphrase(String message) {
+    public String getPassword() {
+        char[] clearPassword = pm.get(env);
+        return clearPassword == null ? "" : String.valueOf(clearPassword); // NOI18N
+    }
+
+    public boolean promptPassword(String arg0) {
         return true;
     }
 
-    public synchronized boolean promptPassword(String message) {
-        if (!isCancelled()) {
-            if (encryptedPassword != null) {
-                return true;
-            } else {
+    public boolean promptPassphrase(String arg0) {
+        return true;
+    }
+
+    public boolean promptYesNo(String str) {
+        return true;
+    }
+
+    public void showMessage(String message) {
+    }
+
+    static final class Interractive implements UserInfo, UIKeyboardInteractive {
+
+        private final static Object lock = new String(RemoteUserInfo.Interractive.class.getName());
+        private final static PasswordManager pm = PasswordManager.getInstance();
+
+        private final Component parent;
+        private final ExecutionEnvironment env;
+        private volatile boolean cancelled = false;
+        private volatile Component parentWindow = null;
+
+        public Interractive(ExecutionEnvironment env) {
+            this.env = env;
+            Mutex.EVENT.readAccess(new Runnable() {
+
+                public void run() {
+                    parentWindow = WindowManager.getDefault().getMainWindow();
+                }
+            });
+
+            parent = parentWindow;
+        }
+
+        public String getPassphrase() {
+            return null;
+        }
+
+        public String getPassword() {
+            char[] clearPassword = pm.get(env);
+            return clearPassword == null ? "" : String.valueOf(clearPassword); // NOI18N
+        }
+
+        public boolean promptPassword(String message) {
+            synchronized (lock) {
+                if (cancelled) {
+                    return false;
+                }
+
                 boolean result;
                 PasswordDlg pwdDlg = new PasswordDlg();
 
-                synchronized (DLGLOCK) {
-                    result = pwdDlg.askPassword(execEnv.getHost());
+                synchronized (lock) {
+                    result = pwdDlg.askPassword(env.toString());
                 }
 
                 if (result) {
                     char[] clearPassword = pwdDlg.getPassword();
-                    setPassword(clearPassword, pwdDlg.isRememberPassword());
+                    pm.put(env, clearPassword, pwdDlg.isRememberPassword());
                     Arrays.fill(clearPassword, (char) 0);
                     pwdDlg.clearPassword();
                     return true;
                 } else {
-                    setPassword(null, false);
+                    pm.clearPassword(env);
                     cancelled = true;
                     return false;
                 }
             }
-        } else {
-            return false;
         }
-    }
 
-    public boolean isCancelled() {
-        return cancelled;
-    }
-
-    public void showMessage(String message) {
-        synchronized (DLGLOCK) {
-            JOptionPane.showMessageDialog(parent, message);
+        public boolean promptPassphrase(String arg0) {
+            return true;
         }
-    }
 
-    public synchronized String[] promptKeyboardInteractive(
-            String destination,
-            String name,
-            String instruction,
-            String[] prompt,
-            boolean[] echo) {
+        public boolean promptYesNo(String str) {
+            Object[] options = {"yes", "no"}; // NOI18N
+            int foo;
 
-        if (prompt.length == 1 && !echo[0]) {
-            // this is password request
-            if (!promptPassword(loc("MSG_PasswordInteractive", // NOI18N
-                    destination, prompt[0]))) {
-                return null;
+            synchronized (lock) {
+                foo = JOptionPane.showOptionDialog(parent, str,
+                        loc("TITLE_YN_Warning"), // NOI18N
+                        JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+            }
+
+            return foo == 0;
+        }
+
+        public void showMessage(String message) {
+            synchronized (lock) {
+                JOptionPane.showMessageDialog(parent, message);
+            }
+        }
+
+        public String[] promptKeyboardInteractive(String destination,
+                String name,
+                String instruction,
+                String[] prompt,
+                boolean[] echo) {
+
+            if (prompt.length == 1 && !echo[0]) {
+                // this is password request
+                if (!promptPassword(loc("MSG_PasswordInteractive", // NOI18N
+                        destination, prompt[0]))) {
+                    return null;
+                } else {
+                    return new String[]{getPassword()};
+                }
             } else {
-                return new String[]{getPassword()};
-            }
-        } else {
-            panel = new JPanel();
-            panel.setLayout(new GridBagLayout());
+                // AK:
+                // What else it could ask about?
+                // There was a code here that constructed dialog with all prompts
+                // based on promt / echo arrays.
+                // As I don't know usecases for it, I removed it ;)
 
-            gbc.weightx = 1.0;
-            gbc.gridwidth = GridBagConstraints.REMAINDER;
-            gbc.gridx = 0;
-            panel.add(new JLabel(instruction), gbc);
-            gbc.gridy++;
-
-            gbc.gridwidth = GridBagConstraints.RELATIVE;
-
-            JTextField[] texts = new JTextField[prompt.length];
-            for (int i = 0; i < prompt.length; i++) {
-                gbc.fill = GridBagConstraints.NONE;
-                gbc.gridx = 0;
-                gbc.weightx = 1;
-                panel.add(new JLabel(prompt[i]), gbc);
-
-                gbc.gridx = 1;
-                gbc.fill = GridBagConstraints.HORIZONTAL;
-                gbc.weighty = 1;
-                if (echo[i]) {
-                    texts[i] = new JTextField(20);
-                } else {
-                    texts[i] = new JPasswordField(20);
-                }
-                panel.add(texts[i], gbc);
-                gbc.gridy++;
-            }
-
-            synchronized (DLGLOCK) {
-                String title = loc(
-                        "TITLE_KeyboardInteractive", // NOI18N
-                        destination, name);
-
-                if (!isCancelled() &&
-                        JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(
-                        parent, panel, title,
-                        JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.QUESTION_MESSAGE)) {
-                    String[] response = new String[prompt.length];
-                    for (int i = 0; i < prompt.length; i++) {
-                        response[i] = texts[i].getText();
-                    }
-                    return response;
-                } else {
-                    cancelled = true;
-                    return null;  // cancel
-                }
+                return null;
             }
         }
-    }
 
-    private static void setParentComponent(final RemoteUserInfo info) {
-        Mutex.EVENT.postReadRequest(new Runnable() {
-
-            public void run() {
-                info.parent = WindowManager.getDefault().getMainWindow();
-            }
-        });
-    }
-
-    private static String loc(String key, String... params) {
-        return NbBundle.getMessage(RemoteUserInfo.class, key, params);
+        private static String loc(String key, String... params) {
+            return NbBundle.getMessage(RemoteUserInfo.class, key, params);
+        }
     }
 }

@@ -202,14 +202,6 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.xml.search</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.5</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.xml.validation</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -382,6 +374,14 @@ made subject to such option by the copyright holder.
                         <specification-version>6.5.1</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.search</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.5.1</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <test-dependencies>
                 <test-type>
@@ -395,21 +395,29 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.zaz.nbmodules.screenscraping.project</friend>
+                <friend>org.netbeans.modules.bpel.core</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
+                <friend>org.netbeans.modules.bpel.mapper</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
+                <friend>org.netbeans.modules.sca.designer</friend>
+                <friend>org.netbeans.modules.sca.platform.openesb</friend>
+                <friend>org.netbeans.modules.sca.platform.tuscany</friend>
                 <friend>org.netbeans.modules.script.project</friend>
+                <friend>org.netbeans.modules.soa.pojo</friend>
+                <friend>org.netbeans.modules.xml.bindingwizard</friend>
+                <friend>org.netbeans.modules.xml.wsdl.bindingsupport.ui.util</friend>
                 <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
                 <friend>org.netbeans.modules.xml.wsdlextui</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
-                <friend>com.zaz.nbmodules.screenscraping.project</friend>
                 <package>org.netbeans.modules.xml.wsdl.ui.actions</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.api.property</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.netbeans.module</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.spi</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.view</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.view.treeeditor</package>
-                <package>org.netbeans.modules.xml.wsdl.ui.wizard</package>
+                <package>org.netbeans.modules.xml.wsdl.ui.wizard.common</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.wsdl.util</package>
             </friend-packages>
         </data>

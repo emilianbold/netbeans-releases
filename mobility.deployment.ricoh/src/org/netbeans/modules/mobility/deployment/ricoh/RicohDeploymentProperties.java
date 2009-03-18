@@ -81,11 +81,11 @@ public class RicohDeploymentProperties
     private static final String DEFAULT_OSGI_PORT = "8080";
     private static final String DEFAULT_SSHKEY_EXT  = File.separator + ".ssh" + File.separator + "known_hosts"; //NOI18N
     //tries to find a "good" default ssh path; either ~/.ssh for unix systems or %USERPROFILE%/.ssh for windows systems, or the default home directory for each
-    private static final String DEFAULT_SSHKEY_PATH = org.openide.util.Utilities.isUnix() ? 
+    /*private static final String DEFAULT_SSHKEY_PATH = org.openide.util.Utilities.isUnix() ?
                                                            (new File("~").getAbsolutePath() + DEFAULT_SSHKEY_EXT) :  //NOI18N
                                                            (new File(System.getenv("USERPROFILE") + File.separator + ".ssh").exists() ?  //NOI18N
                                                                 (new File(System.getenv("USERPROFILE")).getAbsolutePath() + DEFAULT_SSHKEY_EXT) :  //NOI18N
-                                                                (new File(System.getenv("USERPROFILE")).getAbsolutePath())); //NOI18N
+                                                               (new File(System.getenv("USERPROFILE")).getAbsolutePath())); //NOI18N */
     
     private static HashMap<String,Object> projectProp = new HashMap<String,Object>();
     static

@@ -647,7 +647,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
             }
             for (int i = 0; i < size; i++) {
 
-                String value = FilePathCache.getString(stream.readUTF()).toString();
+                String value = getFileKey(stream.readUTF());
                 cache.add(value);
 
                 // timestamp from master index -> unit2timestamp
@@ -693,6 +693,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
          */
         @Override
         protected int makeId(String unitName) {
+            unitName = getFileKey(unitName);
             int id = cache.indexOf(null);
             IntToStringCache fileCache = new IntToStringCache();
 

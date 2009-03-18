@@ -51,24 +51,39 @@ import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
 /**
  *
  * @author gorrus
  */
 public final class APTMacroMapSnapshot {
-    /*package*/ final Map<String/*getTokenTextKey(token)*/, APTMacro> macros = new HashMap<String, APTMacro>();
+    private final static Map<CharSequence/*getTokenTextKey(token)*/, APTMacro> EMPTY_MAP = Collections.<CharSequence, APTMacro>emptyMap();
+    private Map<CharSequence/*getTokenTextKey(token)*/, APTMacro> macros = new HashMap<CharSequence, APTMacro>(2);
     /*package*/ final APTMacroMapSnapshot parent;
-
+    
     public APTMacroMapSnapshot(APTMacroMapSnapshot parent) {
+        // optimization to prevent chaining of empty snapshots
+        // it is safe to change field "macros" to EMPTY_MAP,
+        // because even in concurrent access both gives the same answer 'null'
+        // for getMacro request
+        while (parent != null && (parent.macros != EMPTY_MAP) && parent.isEmtpy()) {
+            parent.macros = EMPTY_MAP;
+            parent = parent.parent;
+        }
         this.parent = parent;
     }
-    
+
+    /*package*/ final Map<CharSequence, APTMacro> getMacros() {
+        return macros;
+    }
+
     public final APTMacro getMacro(APTToken token) {
-        return getMacro(token.getText());
+        return getMacro(token.getTextID());
     }
     
-    public final APTMacro getMacro(String key) {
+    /*package*/ final APTMacro getMacro(CharSequence key) {
+        assert key instanceof TinyCharSequence : "string can't be here " + key;
         APTMacroMapSnapshot currentSnap = this;
         while (currentSnap != null) {
             APTMacro macro = currentSnap.macros.get(key);
@@ -82,16 +97,16 @@ public final class APTMacroMapSnapshot {
     
     @Override
     public String toString() {
-        Map<String, APTMacro> tmpMap = new HashMap<String, APTMacro>();
+        Map<CharSequence, APTMacro> tmpMap = new HashMap<CharSequence, APTMacro>();
         addAllMacros(this, tmpMap);
         return APTUtils.macros2String(tmpMap);
     }
     
-    public static void addAllMacros(APTMacroMapSnapshot snap, Map<String, APTMacro> out) {
+    public static void addAllMacros(APTMacroMapSnapshot snap, Map<CharSequence, APTMacro> out) {
         if (snap.parent != null) {
             addAllMacros(snap.parent, out);
         }
-        for (Map.Entry<String, APTMacro> cur : snap.macros.entrySet()) {
+        for (Map.Entry<CharSequence, APTMacro> cur : snap.macros.entrySet()) {
             if (cur.getValue() != UNDEFINED_MACRO) {
                 out.put(cur.getKey(), cur.getValue());
             } else {

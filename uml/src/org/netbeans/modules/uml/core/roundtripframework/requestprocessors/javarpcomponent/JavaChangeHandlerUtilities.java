@@ -110,6 +110,7 @@ public class JavaChangeHandlerUtilities
     implements IJavaChangeHandlerUtilities
 {
     private static final String GENERALIZATIONIMPLEMENTATIONWARNING = "Possible generalization-implementation resolve problem.";
+    private String reportProblems="";
     private IElementLocator m_loc = null;
     private IChangeRequest m_pRequest = null;
 
@@ -708,7 +709,7 @@ public class JavaChangeHandlerUtilities
             IClassifier pClass,
             IOperationCollectionBehavior behaviorControl)
     {
-        ETList < IOperation > retList = null;
+        ETList < IOperation > retList = new ETArrayList < IOperation >();
         if (pClass != null && behaviorControl != null)
         {
             try
@@ -3977,7 +3978,8 @@ public class JavaChangeHandlerUtilities
                     IClassifier pBaseClass,
                     IClassifier pDerivedClass)
     {
-	return buildExistingRedefinitions2(pBaseClass, pDerivedClass, null);
+        reportProblems="";
+        return buildExistingRedefinitions2(pBaseClass, pDerivedClass, null);
     }
 
     public ETPairT < ETList < IClassifier >, ETList < IOperation >> buildExistingRedefinitions2(
@@ -4001,14 +4003,14 @@ public class JavaChangeHandlerUtilities
                     IClassifier pItem = ppDerivedClasses.get(idx);
                     if (pItem != null)
                     {
-			if (analyzedSet != null) 
-			{
-			    if (analyzedSet.contains(pItem)) 
-			    {
-				continue;
-			    }
-			    analyzedSet.add(pItem);
-			}
+                        if (analyzedSet != null)
+                        {
+                            if (analyzedSet.contains(pItem))
+                            {
+                            continue;
+                            }
+                            analyzedSet.add(pItem);
+                        }
 
                         ETList < IOperation > newPairs =
                             discoverRedefinitions(pBaseClass, pItem);
@@ -4024,8 +4026,6 @@ public class JavaChangeHandlerUtilities
                 }
             }
         }
-//        return new ETPairT < ETList < IClassifier >,
-//            ETList < IOperation >> (existingClassifiers, ppExistingRedefs);
         return new ETPairT < ETList < IClassifier >,
             ETList < IOperation >> (ppDerivedClasses, ppExistingRedefs);
     }
@@ -4046,6 +4046,7 @@ public class JavaChangeHandlerUtilities
                     {
                         //check may have some perfomance impact, but shoud be minor (usually inheritance isn't really deep so derivedClasses isn't big list
                         UMLLogger.logMessage(GENERALIZATIONIMPLEMENTATIONWARNING, Level.WARNING);
+                        addToReport(GENERALIZATIONIMPLEMENTATIONWARNING);
                         return derivedClasses;
                     }
                     derivedClasses.add(pBaseClass);
@@ -4078,6 +4079,7 @@ public class JavaChangeHandlerUtilities
                                 {
                                     //check may have some perfomance impact, but shoud be minor (usually inheritance isn't really deep so derivedClasses isn't big list
                                     UMLLogger.logMessage(GENERALIZATIONIMPLEMENTATIONWARNING, Level.WARNING);
+                                    addToReport(GENERALIZATIONIMPLEMENTATIONWARNING);
                                     return derivedClasses;
                                 }
                                 derivedClasses.add(pItem);
@@ -4098,6 +4100,7 @@ public class JavaChangeHandlerUtilities
                                 {
                                     //check may have some perfomance impact, but shoud be minor (usually inheritance isn't really deep so derivedClasses isn't big list
                                     UMLLogger.logMessage(GENERALIZATIONIMPLEMENTATIONWARNING, Level.WARNING);
+                                    addToReport(GENERALIZATIONIMPLEMENTATIONWARNING);
                                     return derivedClasses;
                                 }
                                  derivedClasses.add(pItem);
@@ -4586,6 +4589,7 @@ public class JavaChangeHandlerUtilities
     {
     }
 
+    @Override
     public String getRelationType(IRelationProxy pRelation)
     {
         return super.getRelationType(pRelation);
@@ -5008,6 +5012,7 @@ public class JavaChangeHandlerUtilities
         return null;
     }
 
+    @Override
     public String getPreferenceKey()
     {
         return "Default";
@@ -5165,5 +5170,19 @@ public class JavaChangeHandlerUtilities
             }
         }
         return exists;
+    }
+
+    public String getErrorsReport()
+    {
+        return reportProblems;
+    }
+
+    private void addToReport(String add)
+    {
+        if(reportProblems==null)reportProblems="";
+        if(reportProblems.indexOf(add)==-1)
+        {
+            reportProblems+=(reportProblems.length()>0 ? "\n" : "")+ add;
+        }
     }
 }

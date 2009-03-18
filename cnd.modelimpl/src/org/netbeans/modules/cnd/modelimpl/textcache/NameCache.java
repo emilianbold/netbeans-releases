@@ -50,17 +50,17 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public class NameCache extends APTStringManager {
     private static final APTStringManager manager = new NameCache();
-    private final APTStringManager instance = 
+    private static final APTStringManager instance =
             APTStringManager.instance("Shared Qualified Names",APTStringManager.CacheKind.Sliced); // NOI18N;
             //APTStringManager.instance("Shared Names",APTStringManager.CacheKind.Sliced); // NOI18N;
 
     private NameCache() {
     }
-    
+
     public CharSequence getString(CharSequence text) {
         if (text == null) {
             throw new NullPointerException("null string is illegal to share"); // NOI18N
-        }        
+        }
         text = CharSequenceKey.create(text);
         return instance.getString(text);
     }

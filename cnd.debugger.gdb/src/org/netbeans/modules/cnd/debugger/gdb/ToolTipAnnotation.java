@@ -47,6 +47,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
@@ -166,7 +167,13 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             if (identStart == identEnd) {
                 return null;
             }
-            return t.substring(identStart, identEnd);
+            
+            String ident = t.substring (identStart, identEnd);
+            if (CndLexerUtilities.isKeyword(ident)) {
+                // keyword => Do not show anything
+                return null;
+            }
+            return ident;
         } catch (BadLocationException e) {
             return null;
         }

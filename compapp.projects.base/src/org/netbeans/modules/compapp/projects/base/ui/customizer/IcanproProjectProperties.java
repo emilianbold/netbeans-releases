@@ -216,6 +216,7 @@ public class IcanproProjectProperties {
             new PropertyDescriptor( JAVAC_TARGET, PROJECT, STRING_PARSER ),
             new PropertyDescriptor( JAVAC_ARGS, PROJECT, STRING_PARSER ),
             new PropertyDescriptor( IcanproConstants.VALIDATION_FLAG, PROJECT,BOOLEAN_PARSER ),
+            new PropertyDescriptor( IcanproConstants.BETA_FEATURES_FLAG, PROJECT,BOOLEAN_PARSER ),
 
             new PropertyDescriptor( SRC_DIR, PROJECT, STRING_PARSER ),
             new PropertyDescriptor( RESOURCE_DIR, PROJECT, STRING_PARSER ),

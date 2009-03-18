@@ -61,6 +61,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
 import org.openide.awt.HtmlBrowser;
@@ -208,6 +209,9 @@ public class AttachmentsPanel extends JPanel {
         JPopupMenu menu = new JPopupMenu();
         menu.add(new DefaultAttachmentAction(attachment));
         menu.add(new SaveAttachmentAction(attachment));
+        if ("1".equals(attachment.getIsPatch())) { // NOI18N
+            menu.add(new ApplyPatchAction(attachment));
+        }
         return menu;
     }
 
@@ -272,6 +276,16 @@ public class AttachmentsPanel extends JPanel {
         return infos;
     }
 
+    static File saveToTempFile(Attachment attachment) throws IOException {
+        String filename = attachment.getFilename();
+        int index = filename.lastIndexOf('.'); // NOI18N
+        String prefix = (index == -1) ? filename : filename.substring(0, index);
+        String suffix = (index == -1) ? null : filename.substring(index);
+        File file = File.createTempFile(prefix, suffix);
+        attachment.getAttachementData(new FileOutputStream(file));
+        return file;
+    }
+
     class AttachmentInfo {
         File file;
         String description;
@@ -321,12 +335,7 @@ public class AttachmentsPanel extends JPanel {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
-                        String filename = attachment.getFilename();
-                        int index = filename.lastIndexOf('.'); // NOI18N
-                        String prefix = (index == -1) ? filename : filename.substring(0, index);
-                        String suffix = (index == -1) ? null : filename.substring(index);
-                        File file = File.createTempFile(prefix, suffix);
-                        attachment.getAttachementData(new FileOutputStream(file));
+                        File file = saveToTempFile(attachment);
                         String contentType = attachment.getContentType();
                         if ("image/png".equals(contentType) // NOI18N
                                 || "image/gif".equals(contentType) // NOI18N
@@ -350,7 +359,6 @@ public class AttachmentsPanel extends JPanel {
                 }
             });
         }
-
     }
 
     static class SaveAttachmentAction extends AbstractAction {
@@ -376,7 +384,31 @@ public class AttachmentsPanel extends JPanel {
                 });
             }
         }
+    }
 
+    static class ApplyPatchAction extends AbstractAction {
+        private Attachment attachment;
+
+        public ApplyPatchAction(Attachment attachment) {
+            this.attachment = attachment;
+            putValue(Action.NAME, NbBundle.getMessage(ApplyPatchAction.class, "AttachmentsPanel.ApplyPatchAction.name")); // NOI18N
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            final File context = BugtrackingUtil.selectPatchContext();
+            if (context != null) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            File file = saveToTempFile(attachment);
+                            BugtrackingUtil.applyPatch(file, context);
+                        } catch (IOException ioex) {
+                            ioex.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }
     }
 
 }

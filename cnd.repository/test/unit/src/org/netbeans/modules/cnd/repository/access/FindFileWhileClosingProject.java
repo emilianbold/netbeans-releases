@@ -80,7 +80,7 @@ public class FindFileWhileClosingProject extends RepositoryAccessTestBase {
 
         int count = Integer.getInteger("test.get.file.while.closing.project.laps", 500);
 
-        final TraceModelBase traceModel = new TraceModelBase();
+        final TraceModelBase traceModel = new TraceModelBase(true);
         traceModel.processArguments(projectRoot.getAbsolutePath());
         ModelImpl model = traceModel.getModel();
 

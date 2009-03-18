@@ -45,7 +45,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
  *
  * @author tomas
  */
-public abstract class PopupItem {
+abstract class PopupItem {
     
     abstract void invoke();
     abstract String getDisplayText();

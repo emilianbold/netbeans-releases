@@ -84,15 +84,15 @@ public final class SessionProgress implements Cancellable {
     }
 
     public boolean cancel() {
-	finish();
-	SessionId id = (SessionId)session.lookupFirst( null , SessionId.class );
-	assert id != null;
-	DebugSession debugSession = (id != null) ? StartActionProviderImpl.getInstance().getCurrentSession(id) : null;
-	if (debugSession != null) {
-	    debugSession.stop();
-	} 		
-	StartActionProviderImpl.getInstance().stop(session);
-	return true;
+        finish();
+        SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
+        assert id != null;
+        DebugSession debugSession = (id != null) ? SessionManager.getInstance().getCurrentSession(id) : null;
+        if (debugSession != null) {
+            debugSession.cancel();
+        }
+        SessionManager.getInstance().stop(session);
+        return true;
     }
     
     void start() {        

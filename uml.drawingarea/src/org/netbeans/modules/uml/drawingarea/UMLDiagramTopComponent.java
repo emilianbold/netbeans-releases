@@ -751,12 +751,20 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
                         }
                         else
                         {
-                            scene.setActiveTool(DesignerTools.SELECT);
+                            if(DesignerTools.mapToolToButton.get(DesignerTools.SELECT)!=null)
+                            {
+                                DesignerTools.mapToolToButton.get(DesignerTools.SELECT).doClick();
+                            }
+                            else scene.setActiveTool(DesignerTools.SELECT);
                         }
                     }
                     else
                     {
-                        scene.setActiveTool(DesignerTools.SELECT);
+                            if(DesignerTools.mapToolToButton.get(DesignerTools.SELECT)!=null)
+                            {
+                                DesignerTools.mapToolToButton.get(DesignerTools.SELECT).doClick();
+                            }
+                            else scene.setActiveTool(DesignerTools.SELECT);
                     }
                 }
             }

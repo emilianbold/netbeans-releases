@@ -63,17 +63,19 @@ public class CallStackFrame {
     private final String fullname;
     private final int frameNumber;
     private final String address;
+    private final String from;
     
     private LocalVariable[] cachedLocalVariables = null;
     //private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
-    public CallStackFrame(GdbDebugger debugger, String func, String file, String fullname, String lnum, String address, int frameNumber) {
+    public CallStackFrame(GdbDebugger debugger, String func, String file, String fullname, String lnum, String address, int frameNumber, String from) {
         this.debugger = debugger;
         this.func = func;
         this.file = file;
         this.fullname = fullname;
         this.address = address;
         this.frameNumber = frameNumber;
+        this.from = from;
         int lNumber = -1;
         if (lnum != null) {
             try {
@@ -112,6 +114,14 @@ public class CallStackFrame {
      */
     public String getFunctionName() {
         return func;
+    }
+
+    /**
+     * Returns from value
+     * @return from value
+     */
+    public String getFrom() {
+        return from;
     }
     
     /**

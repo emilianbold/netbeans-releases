@@ -53,6 +53,7 @@ package org.netbeans.modules.xml.wsdl.bindingsupport.template.localized;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateType;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlElementType;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlTemplateType;
 
 /**
  *
@@ -60,7 +61,16 @@ import org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlElementType;
  */
 public class LocalizedTemplate {
     
+    public enum Mode {
+        INBOUND,OUTBOUND,BOTH, NOT_SPECIFIED
+    }
+    
     public static final String TEMPLATE = "TEMPLATE"; //NOI18N
+    public static final String INBOUND = "inbound"; //NOI18N
+    public static final String OUTBOUND = "outbound"; //NOI18N
+    public static final String BOTH = "both"; //NOI18N
+    public static final String MODE_NOT_INITIALIZED = "MODE_NOT_INITIALIZED"; //NOI18N
+    
     
     private LocalizedTemplateGroup mParent;
     
@@ -119,4 +129,40 @@ public class LocalizedTemplate {
         
         return wsdlElement;
     }
+    
+    public String getWSDLTemplateFile() {
+        WsdlTemplateType template = mTemplateType.getWsdlTemplate();
+        if (template != null) {
+            return template.getFile();
+        }
+        return null;
+    }
+    
+    public boolean isSkeleton() {
+        return mTemplateType.isSkeleton();
+    }
+    public Mode getMode() {
+        String mode = mTemplateType.getMode();
+        Mode returnMode = Mode.BOTH;
+        if ( mode != null) {
+            if ( mode.equals(INBOUND )){
+                returnMode = Mode.INBOUND;
+            } else if ( mode.equals(OUTBOUND)){
+                returnMode = Mode.OUTBOUND;
+            }
+        }
+        return returnMode;
+    }
+    public String getDescription() {
+        String lDescription = null;
+        try {
+         String description = TEMPLATE + "_description_" + // NOI18N
+                 this.mTemplateType.getName(); 
+         lDescription = this.mProvider.getLocalizedMessage(description, null);
+        } catch (Exception ex) {
+            lDescription = this.mTemplateType.getName();
+        }
+        
+        return lDescription;
+    }    
 }

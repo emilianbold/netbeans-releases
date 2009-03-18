@@ -51,12 +51,14 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -289,6 +291,11 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return declStorage.getUIDsRange(from, to);
     }
 
+    public Collection<CsmOffsetableDeclaration> getDeclarationsRange(CharSequence fqn, Kind[] kinds) {
+        DeclarationContainer declStorage = getDeclarationsSorage();
+        return declStorage.getDeclarationsRange(fqn, kinds);
+    }
+
     public Collection<CsmUID<CsmOffsetableDeclaration>> getUnnamedUids() {
         // add all declarations
         Collection<CsmUID<CsmOffsetableDeclaration>> uids;
@@ -510,7 +517,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
     }
     
-    public static String getSortKey(CsmNamespaceDefinition def) {
+    public static CharSequence getSortKey(CsmNamespaceDefinition def) {
         StringBuilder sb = new StringBuilder(def.getContainingFile().getAbsolutePath());
         int start = ((CsmOffsetable) def).getStartOffset();
         String s = Integer.toString(start);
@@ -520,7 +527,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
         sb.append(s);
         sb.append(def.getName());
-        return sb.toString();
+        return QualifiedNameCache.getManager().getString(sb.toString());
     }
     
     @SuppressWarnings("unchecked")
@@ -605,9 +612,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         theFactory.writeUID(this.parentUID, output);
         
         assert this.name != null;
-        output.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, output);
         assert this.qualifiedName != null;
-        output.writeUTF(this.qualifiedName.toString());
+        PersistentUtils.writeUTF(qualifiedName, output);
 
         theFactory.writeStringToUIDMap(this.nestedNamespaces, output, true);
         ProjectComponent.writeKey(this.declarationsSorageKey, output);
@@ -634,9 +641,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.parentRef = null;
        
 
-        this.name = NameCache.getManager().getString(input.readUTF());
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
-        this.qualifiedName = QualifiedNameCache.getManager().getString(input.readUTF());
+        this.qualifiedName = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.qualifiedName != null;
         theFactory.readStringToUIDMap(this.nestedNamespaces, input, QualifiedNameCache.getManager());
         declarationsSorageKey = ProjectComponent.readKey(input);

@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.CacheUtil;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * Miscellaneous AST-related static utility functions
@@ -82,16 +83,16 @@ public class AstUtil {
 	return (ast == null || ast.getType() == CPPTokenTypes.EOF);
     }
 
-    public static String[] getRawNameInChildren(AST ast) {
+    public static CharSequence[] getRawNameInChildren(AST ast) {
         return getRawName(findIdToken(ast));
     }
 
-    public static String[] getRawName(AST token) {
-        List<String> l = new ArrayList<String>();
+    public static CharSequence[] getRawName(AST token) {
+        List<CharSequence> l = new ArrayList<CharSequence>();
         for( ; token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.ID:
-                    l.add(token.getText());
+                    l.add(NameCache.getManager().getString(token.getText()));
                     break;
                 case CPPTokenTypes.SCOPE:
                     break;
@@ -100,7 +101,7 @@ public class AstUtil {
                     break;
             }
         }
-        return l.toArray(new String[l.size()]);
+        return l.toArray(new CharSequence[l.size()]);
     }
 
     private static AST findIdToken(AST ast) {

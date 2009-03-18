@@ -43,7 +43,7 @@ import java.awt.Color;
 import org.openide.util.Lookup;
 
 /**
- * Settings of colors for normal, error, hyperlink, important hyperlink lines
+ * Settings of colors for normal, error, hyperlink, important hyperlink lines.
  * <p>
  * Client usage:
  * <pre>
@@ -53,7 +53,7 @@ import org.openide.util.Lookup;
  * </pre>
  * How to support {@link IOColors} in own {@link IOProvider} implementation:
  * <ul>
- *   <li> {@link InputOutput} provided by {@link IOProvider} has to implement <a href="@org-openide-util@/org/openide/util/Lookup.Provider.html"><code>Lookup.Provider</code></a>
+ *   <li> {@link InputOutput} provided by {@link IOProvider} has to implement {@link org.openide.util.Lookup.Provider}
  *   <li> Extend {@link IOColors} and implement its abstract methods
  *   <li> Place instance of {@link IOColors} to {@link Lookup} provided by {@link InputOutput}
  * </ul>

@@ -111,6 +111,9 @@ public class SQLTableDataProvider implements TableDataProvider {
   public List<DataRow> queryData(DataTableMetadata tableMetadata) {
     List<Column> columns = tableMetadata.getColumns();
     List<DataRow> result = new ArrayList<DataRow>();
+    if (tableMetadata == null){
+        return null;
+    }
     try {
       ResultSet rs = storage.select(tableMetadata.getName(), columns, tableMetadata.getViewStatement());
       if (rs == null) {

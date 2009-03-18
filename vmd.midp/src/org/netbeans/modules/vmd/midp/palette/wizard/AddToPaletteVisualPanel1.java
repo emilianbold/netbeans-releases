@@ -39,6 +39,8 @@
  * made subject to such option by the copyright holder.
  */package org.netbeans.modules.vmd.midp.palette.wizard;
 
+import java.beans.PropertyChangeEvent;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -46,7 +48,10 @@ import org.netbeans.modules.vmd.api.io.javame.MidpProjectPropertiesSupport;
 
 import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeListener;
 import java.util.Vector;
+import java.util.concurrent.Future;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,7 +59,8 @@ import org.openide.util.NbBundle;
  */
 public final class AddToPaletteVisualPanel1 extends JPanel {
 
-    private static final String MSG_NO_PROJECTS = "MSG_ERR_NoOpenedProjects"; // NOI18N 
+    private static final String MSG_NO_PROJECTS = "MSG_ERR_NoOpenedProjects"; // NOI18N
+    private static final String MSG_WAIT_PROJECTS = "MSG_WaitOpenedProjects"; // NOI18N
     
     private AddToPaletteWizardPanel1 wizardPanel;
 
@@ -76,15 +82,54 @@ public final class AddToPaletteVisualPanel1 extends JPanel {
     }
 
     public int getProjectsCount () {
-        if (projectCombo.getItemAt(0).equals(MSG_NO_PROJECTS)){
+        if (projectCombo.getItemAt(0)==null  ||
+                projectCombo.getItemAt(0).equals(MSG_NO_PROJECTS))
+        {
             return 0;
         }
         return projectCombo.getItemCount();
     }
 
-    public void reload (Project project) {
-        Project[] projects = OpenProjects.getDefault ().getOpenProjects ();
+    public void reload(final Project project) {
+        reload( project , false );
+    }
+
+    public void reload(final Project project, boolean loaded) {
+        Future<Project[]> future =  OpenProjects.getDefault ().openProjects();
+        Project[] projects;
         Vector projectsVector = new Vector ();
+        if ( loaded || future.isDone() ){
+            projects = OpenProjects.getDefault ().getOpenProjects ();
+        }
+        else {
+            new Thread(){
+                @Override
+                public void run() {
+                    try {
+                        OpenProjects.getDefault().openProjects().get();
+                        reload( );
+                    } catch (InterruptedException ex) {
+                        reload( );
+                    } catch (ExecutionException ex) {
+                        reload();
+                    }
+                }
+
+                private void reload(){
+                    SwingUtilities.invokeLater( new Runnable() {
+                        public void run() {
+                            AddToPaletteVisualPanel1.this.reload( project, true);
+                        }
+                    });
+                }
+            }.start();
+            projectsVector.add(getMessage(MSG_WAIT_PROJECTS));
+            projectCombo.setEnabled( false );
+            projectCombo.setRenderer(new DefaultListCellRenderer());
+            projectCombo.setModel(new DefaultComboBoxModel(projectsVector));
+            return;
+        }
+        //Project[] projects = OpenProjects.getDefault ().getOpenProjects ();
         for (Project prj : projects) {
             if (MidpProjectPropertiesSupport.isMobileProject(prj)) {
                 projectsVector.add(prj);

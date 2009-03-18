@@ -79,7 +79,7 @@ public abstract class IOProvider {
     }
 
     /**
-     * Gets IOProvider of selected name or delegates to getDefault() if none was found
+     * Gets IOProvider of selected name or delegates to getDefault() if none was found.
      * @param name ID of provider
      * @return the instance corresponding to provided name or default instance if not found
      * @since 1.15
@@ -133,7 +133,7 @@ public abstract class IOProvider {
 
     /**
      * Gets a named instance of {@link InputOutput}. Corresponding IO tab will be placed
-     * in parent container corresponding to provided {@link IOContainer}
+     * in parent container corresponding to provided {@link IOContainer}.
      * @param name A localized display name for the tab
      * @param additionalActions array of actions that are added to the toolbar, Can be empty array, but not null.
      *   The number of actions should not exceed 5 and each should have the <code>Action.SMALL_ICON</code> property defined.

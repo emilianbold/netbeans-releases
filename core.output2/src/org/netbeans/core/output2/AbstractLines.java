@@ -709,6 +709,14 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         return curDefColors[type];
     }
 
+    /**
+     * @param line
+     * @return explicitly set color
+     */
+    Color getLineColor(int line) {
+        return (Color) linesToColors.get(line);
+    }
+
     public Color getColorForLine(int line) {
         Color color = (Color) linesToColors.get(line);
         if (color != null) {

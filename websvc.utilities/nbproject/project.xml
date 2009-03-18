@@ -209,6 +209,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.customization</friend>
                 <friend>org.netbeans.modules.websvc.design</friend>
                 <friend>org.netbeans.modules.websvc.editor.hints</friend>
+                <friend>org.netbeans.modules.websvc.metro.model</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <package>org.netbeans.modules.websvc.api.support</package>
                 <package>org.netbeans.modules.websvc.api.support.java</package>

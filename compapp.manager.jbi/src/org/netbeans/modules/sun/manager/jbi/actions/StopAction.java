@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sun.manager.jbi.actions;
 
 import org.netbeans.modules.sun.manager.jbi.nodes.Stoppable;
@@ -46,7 +45,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -55,57 +53,52 @@ import org.openide.util.actions.NodeAction;
  * @author jqian
  */
 public class StopAction extends NodeAction {
-   
+
     protected void performAction(final Node[] activatedNodes) {
-        
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                try {
-                    for (Node node : activatedNodes) {
-                        Lookup lookup = node.getLookup();
-                        Stoppable stoppable = lookup.lookup(Stoppable.class);
-                        
-                        if (stoppable != null) {
-                            stoppable.stop();
-                        }
-                    }
-                } catch(RuntimeException rex) {
-                    //gobble up exception
+        try {
+            for (Node node : activatedNodes) {
+                Lookup lookup = node.getLookup();
+                Stoppable stoppable = lookup.lookup(Stoppable.class);
+
+                if (stoppable != null) {
+                    stoppable.stop();
                 }
             }
-        });
+        } catch (RuntimeException rex) {
+            //gobble up exception
+        }
     }
-    
+
     protected boolean enable(Node[] activatedNodes) {
         boolean ret = false;
-        
-        if (activatedNodes != null && activatedNodes.length > 0) {            
-            ret = true;            
+
+        if (activatedNodes != null && activatedNodes.length > 0) {
+            ret = true;
             for (Node node : activatedNodes) {
-                Stoppable stoppable = node.getLookup().lookup(Stoppable.class);                
+                Stoppable stoppable = node.getLookup().lookup(Stoppable.class);
                 try {
                     if (stoppable != null && !stoppable.canStop()) {
                         ret = false;
                         break;
                     }
-                } catch(RuntimeException rex) {
+                } catch (RuntimeException rex) {
                     //gobble up exception
                 }
             }
         }
-        
+
         return ret;
     }
-    
+
     protected boolean asynchronous() {
         return false;
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     public String getName() {
         return NbBundle.getMessage(StopAction.class, "LBL_StopAction"); // NOI18N
-    }    
+    }
 }

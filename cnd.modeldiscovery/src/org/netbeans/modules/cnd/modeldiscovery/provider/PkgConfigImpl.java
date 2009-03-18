@@ -141,7 +141,7 @@ public class PkgConfigImpl implements PkgConfig {
     private void initPackages(List<String> folders) {
         Set<File> done = new HashSet<File>();
         for(String folder:folders) {
-            File file = RemoteFile.create(pi.getHkey(), folder);
+            File file = RemoteFile.create(pi.getExecutionEnvironment(), folder);
             if (done.contains(file)) {
                 continue;
             }
@@ -296,7 +296,7 @@ public class PkgConfigImpl implements PkgConfig {
         Map<String, Pair> res = new HashMap<String, Pair>();
         for (Map.Entry<String, Set<PackageConfiguration>> entry : map.entrySet()) {
             Pair pair = new Pair(entry.getKey(), entry.getValue());
-            File dir = RemoteFile.create(pi.getHkey(), entry.getKey());
+            File dir = RemoteFile.create(pi.getExecutionEnvironment(), entry.getKey());
             addLibraryItem(res, pair, "", dir, 0); // NOI18N
         }
         return res;

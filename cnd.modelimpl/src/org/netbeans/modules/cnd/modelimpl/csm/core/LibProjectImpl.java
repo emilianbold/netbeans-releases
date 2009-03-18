@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
@@ -56,11 +57,11 @@ import org.netbeans.modules.cnd.repository.spi.Key;
  */
 public final class LibProjectImpl extends ProjectBase {
 
-    private final String includePath;
+    private final CharSequence includePath;
 
     private LibProjectImpl(ModelImpl model, String includePathName) {
         super(model, includePathName, includePathName);
-        this.includePath = includePathName;
+        this.includePath = FilePathCache.getManager().getString(includePathName);
         this.projectRoots.fixFolder(includePathName);
         assert this.includePath != null;
     }
@@ -88,7 +89,7 @@ public final class LibProjectImpl extends ProjectBase {
 
     }
 
-    protected String getPath() {
+    protected CharSequence getPath() {
         return includePath;
     }
 
@@ -172,12 +173,12 @@ public final class LibProjectImpl extends ProjectBase {
     public void write(DataOutput aStream) throws IOException {
         super.write(aStream);
         assert this.includePath != null;
-        aStream.writeUTF(this.includePath);
+        PersistentUtils.writeUTF(includePath, aStream);
     }
 
     public LibProjectImpl(DataInput aStream) throws IOException {
         super(aStream);
-        this.includePath = FilePathCache.getString(aStream.readUTF()).toString();
+        this.includePath = PersistentUtils.readUTF(aStream, FilePathCache.getManager());
         assert this.includePath != null;
         setPlatformProject(this.includePath);
     }

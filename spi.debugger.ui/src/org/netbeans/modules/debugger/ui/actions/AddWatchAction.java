@@ -43,14 +43,18 @@ package org.netbeans.modules.debugger.ui.actions;
 
 import java.awt.Dialog;
 import java.util.ResourceBundle;
+import java.util.prefs.Preferences;
 import javax.swing.*;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.debugger.ui.WatchPanel;
 
+import org.netbeans.modules.debugger.ui.views.VariablesViewButtons;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.actions.CallableSystemAction;
 
 
@@ -143,6 +147,7 @@ public class AddWatchAction extends CallableSystemAction {
         watchHistory = watch;
         
         // open watches view
-        ViewActions.openComponent ("watchesView", false).requestVisible();
+        String viewName = VariablesViewButtons.isWatchesViewNested() ? "localsView" : "watchesView";
+        ViewActions.openComponent (viewName, false).requestVisible();
     }
 }
