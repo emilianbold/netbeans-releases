@@ -61,7 +61,7 @@ public class ClassnameCompletionItem implements CompletionItem {
     final private int caret;
     final private int correction;
 
-    final private static Color fieldColor = Color.decode("0x0000B2");
+    final private static Color fieldColor = Color.BLACK;
 
     public ClassnameCompletionItem(String sortPrefix, String text, int caretOffset) {
         this(sortPrefix, text, caretOffset, 0);
@@ -121,7 +121,7 @@ public class ClassnameCompletionItem implements CompletionItem {
     }
 
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
-        CompletionUtilities.renderHtml(null, text, null, g, defaultFont, (selected ? Color.white : fieldColor), width, height, selected);
+        CompletionUtilities.renderHtml(null, "<i>"+text+"</i>", null, g, defaultFont, (selected ? Color.white : fieldColor), width, height, selected);
     }
 
 }
