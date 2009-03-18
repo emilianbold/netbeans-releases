@@ -64,7 +64,7 @@ public class FindersHelperTest extends TestCase {
 
     public void testGetScopedBy() {
         List<FinderMethod> result =
-                FindersHelper.getFinderSignatures(FindersHelper.SCOPED_BY, Arrays.asList("name", "title"));
+                FindersHelper.getFinderSignatures("scoped_by_", Arrays.asList("name", "title"));
 
         assertEquals(4, result.size());
         // scoped_by methods should not have the *options hash
