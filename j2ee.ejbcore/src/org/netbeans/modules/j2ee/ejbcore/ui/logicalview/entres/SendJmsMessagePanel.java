@@ -314,7 +314,9 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
         }
         
         // no errors
-        statusLine.clearMessages();
+        if (statusLine != null) {
+            statusLine.clearMessages();
+        }
         return true;
     }
     
