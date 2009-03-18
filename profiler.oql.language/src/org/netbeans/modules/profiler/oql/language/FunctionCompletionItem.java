@@ -46,8 +46,6 @@ import java.awt.event.KeyEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -63,7 +61,7 @@ public class FunctionCompletionItem implements CompletionItem {
     final private int correction;
     final private int carretOffset;
 
-    final private static Color fieldColor = Color.decode("0x0000B2");
+    final private static Color fieldColor = Color.BLACK;
 
     public FunctionCompletionItem(String sortPrefix, String text, int carretOffset) {
         this(sortPrefix, text, carretOffset, 0);
