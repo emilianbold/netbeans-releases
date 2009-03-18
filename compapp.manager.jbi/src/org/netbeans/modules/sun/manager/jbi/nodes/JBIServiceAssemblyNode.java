@@ -42,6 +42,7 @@ package org.netbeans.modules.sun.manager.jbi.nodes;
 
 import com.sun.esb.management.api.administration.AdministrationService;
 import com.sun.esb.management.api.deployment.DeploymentService;
+import com.sun.esb.management.api.notification.EventNotification;
 import com.sun.esb.management.common.ManagementRemoteException;
 import com.sun.esb.management.common.data.ServiceAssemblyStatisticsData;
 import com.sun.jbi.ui.common.JBIComponentInfo;
@@ -54,13 +55,14 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
+import javax.management.Notification;
+import javax.management.openmbean.CompositeDataSupport;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 
-import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
 import org.netbeans.modules.sun.manager.jbi.actions.ShutdownAction;
 import org.netbeans.modules.sun.manager.jbi.actions.StartAction;
 import org.netbeans.modules.sun.manager.jbi.actions.StopAction;
@@ -73,8 +75,9 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
 import org.openide.actions.PropertiesAction;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+
+import static org.netbeans.modules.sun.manager.jbi.NotificationConstants.*;
 
 /**
  * Node for one JBI Service Assembly.
@@ -87,9 +90,11 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     private static final String SERVICE_ASSEMBLY_STATISTICS_SHEET_SET_NAME =
             "SERVICE_ASSEMBLY_STATISTICS"; // NOI18N
     private boolean busy;
-
     private static Logger logger = Logger.getLogger("org.netbeans.modules.sun.manager.jbi.nodes.JBIServiceAssemblyNode"); // NOI18N
 
+    // Current state of the SA
+    private String currentState;
+    
     /** Creates a new instance of ServiceAssemblyNode */
     public JBIServiceAssemblyNode(final AppserverJBIMgmtController controller,
             String name, String description) {
@@ -103,6 +108,29 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         setShortDescription(Utils.getTooltip(description));
         // Use non-HTML version in the property sheet's description area.
         setValue("nodeDescription", description); // NOI18N 
+
+        registerNotificationListener();
+    }
+    
+    protected boolean shouldProcessNotification(String sourceName, 
+            String sourceType, String eventType) {
+        return "ServiceAssembly".equals(sourceType) 
+                && sourceName.equals(getName()) 
+                && (NOTIFICATION_EVENT_TYPE_STARTED.equals(eventType) 
+                || NOTIFICATION_EVENT_TYPE_STOPPED.equals(eventType) 
+                || NOTIFICATION_EVENT_TYPE_SHUTDOWN.equals(eventType)); 
+    }
+    
+    protected void processNotificationData(CompositeDataSupport data) {
+        clearServiceAssemblyStatusCache();
+        currentState = (String) data.get("EventType"); // NOI18N
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                fireIconChange();
+                updatePropertySheet();
+            }
+        });
     }
 
     @Override
@@ -128,8 +156,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         return sheet;
     }
 
-    private Map<Attribute, MBeanAttributeInfo> 
-            getServiceAssemblyStatisticsSheetSetProperties()
+    private Map<Attribute, MBeanAttributeInfo> getServiceAssemblyStatisticsSheetSetProperties()
             throws ManagementRemoteException {
         AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
         PerformanceMeasurementServiceWrapper perfService =
@@ -154,17 +181,19 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     }
 
     private String getAssemblyState() {
-        ServiceAssemblyInfo assembly = getAssemblyInfo();
-        return assembly != null ? assembly.getState() : null;
+        if (currentState == null) {
+            ServiceAssemblyInfo assembly = getAssemblyInfo();
+            currentState = assembly == null ? 
+                JBIComponentInfo.UNKNOWN_STATE : assembly.getState();
+        }
+        return currentState;
     }
 
     private void clearServiceAssemblyStatusCache() {
+        currentState = null;
         getRuntimeManagementServiceWrapper().clearServiceAssemblyStatusCache();
     }
 
-    /**
-     *
-     */
     @Override
     public Image getIcon(int type) {
 
@@ -176,12 +205,12 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         if (busy) {
             externalBadgeIconName = IconConstants.BUSY_ICON;
         } else {
-            if (JBIComponentInfo.SHUTDOWN_STATE.equals(status)) {
-                externalBadgeIconName = IconConstants.INSTALLED_ICON;
-            } else if (JBIComponentInfo.STOPPED_STATE.equals(status)) {
-                externalBadgeIconName = IconConstants.STOPPED_ICON;
-            } else if (!JBIComponentInfo.STARTED_STATE.equals(status)) {
-                externalBadgeIconName = IconConstants.UNKNOWN_ICON;
+            if (JBIComponentInfo.SHUTDOWN_STATE.equalsIgnoreCase(status)) {
+                externalBadgeIconName = getInstalledIconBadgeName();
+            } else if (JBIComponentInfo.STOPPED_STATE.equalsIgnoreCase(status)) {
+                externalBadgeIconName = getStoppedIconBadgeName();
+            } else if (!JBIComponentInfo.STARTED_STATE.equalsIgnoreCase(status)) {
+                externalBadgeIconName = getUnknownIconBadgeName();
             }
         }
 
@@ -205,35 +234,35 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     @Override
     public Action[] getActions(boolean flag) {
         return new SystemAction[]{
-            SystemAction.get(StartAction.class),
-            SystemAction.get(StopAction.class),
-            SystemAction.get(ShutdownAction.Normal.class),
-            SystemAction.get(UndeployAction.Normal.class),
-            null,
-            //SystemAction.get(ShutdownAction.Force.class),
-            SystemAction.get(UndeployAction.Force.class),
-            null,
-            SystemAction.get(PropertiesAction.class),
-            SystemAction.get(RefreshAction.class)
-        };
+                    SystemAction.get(StartAction.class),
+                    SystemAction.get(StopAction.class),
+                    SystemAction.get(ShutdownAction.Normal.class),
+                    SystemAction.get(UndeployAction.Normal.class),
+                    null,
+                    //SystemAction.get(ShutdownAction.Force.class),
+                    SystemAction.get(UndeployAction.Force.class),
+                    null,
+                    SystemAction.get(PropertiesAction.class),
+                    SystemAction.get(RefreshAction.class)
+                };
     }
-    
+
     @Override
     public void refresh() {
         // clear the cache first
-        RuntimeManagementServiceWrapper service = 
+        RuntimeManagementServiceWrapper service =
                 getRuntimeManagementServiceWrapper();
         service.clearServiceAssemblyStatusCache();
-        
+
         super.refresh();
-        
+
         fireIconChange(); // necessary for the SA node to refresh
-        
+
         // Explicitly reset the property sheet (since the property sheet in 
         // AbstractNode is "sticky").
         setSheet(createSheet());
     }
-     
+
     /**
      * Return the SheetProperties to be displayed for this JVM.
      *
@@ -255,7 +284,16 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
      */
     private void setBusy(boolean busy) {
         this.busy = busy;
-        fireIconChange();
+        
+        if (SwingUtilities.isEventDispatchThread()) {
+            fireIconChange();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    fireIconChange();
+                }
+            });
+        }
     }
 
     private void updatePropertySheet() {
@@ -263,82 +301,61 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         setSheet(sheet);
         firePropertySetsChange(null, null);
     }
-    
-    protected boolean needRefresh(String notificationSourceType) {
-        return false;
-    }
 
     //========================== Startable =====================================
     public boolean canStart() {
 
         boolean ret = false;
 
-        if (!busy) {
-            ServiceAssemblyInfo saInfo = getAssemblyInfo();
-            String assemblyState = (saInfo != null) ? saInfo.getState() : null;
+//        if (!busy) {
+            String assemblyState = getAssemblyState(); 
 
-            if (ServiceAssemblyInfo.STOPPED_STATE.equals(assemblyState)) {
+            if (ServiceAssemblyInfo.STOPPED_STATE.equalsIgnoreCase(assemblyState)) {
                 ret = true;
-            } else if (ServiceAssemblyInfo.SHUTDOWN_STATE.equals(assemblyState)) {
+            } else if (ServiceAssemblyInfo.SHUTDOWN_STATE.equalsIgnoreCase(assemblyState)) {
                 ret = true;
-            } else if (ServiceAssemblyInfo.STARTED_STATE.equals(assemblyState)) {
+            } else if (ServiceAssemblyInfo.STARTED_STATE.equalsIgnoreCase(assemblyState)) {
+                ServiceAssemblyInfo saInfo = getAssemblyInfo();
                 List<ServiceUnitInfo> units = saInfo.getServiceUnitInfoList();
                 if (units != null) {
                     for (ServiceUnitInfo unit : units) {
                         String unitState = unit.getState();
-                        if (ServiceAssemblyInfo.STOPPED_STATE.equals(unitState) ||
-                                ServiceAssemblyInfo.SHUTDOWN_STATE.equals(unitState)) {
+                        if (ServiceAssemblyInfo.STOPPED_STATE.equalsIgnoreCase(unitState) ||
+                                ServiceAssemblyInfo.SHUTDOWN_STATE.equalsIgnoreCase(unitState)) {
                             ret = true;
                             break;
                         }
                     }
                 }
             }
-        }
+//        }
 
         return ret;
     }
 
     public void start() {
-        RuntimeManagementServiceWrapper mgmtService =
+        final RuntimeManagementServiceWrapper mgmtService =
                 getRuntimeManagementServiceWrapper();
-
         if (mgmtService == null) {
             return;
         }
 
-        final String assemblyName = getName();
+        setBusy(true);
 
-        String title =
-                NbBundle.getMessage(JBIServiceAssemblyNode.class,
-                "LBL_Starting_Service_Assembly", // NOI18N
-                new Object[]{assemblyName});
-        final ProgressUI progressUI = new ProgressUI(title, false);
-
-        SwingUtilities.invokeLater(new Runnable() {
+        postToRequestProcessorThread(new Runnable() {
             public void run() {
-                setBusy(true);
-                progressUI.start();
-            }
-        });
-
-        String result = null;
-        try {
-            result = mgmtService.startServiceAssembly(assemblyName, SERVER_TARGET);
-        } catch (ManagementRemoteException e) {
-            result = e.getMessage();
-        } finally {
-            JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                    GenericConstants.START_SERVICE_ASSEMBLY_OPERATION_NAME,
-                    assemblyName, result);
-        }
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                clearServiceAssemblyStatusCache();
-                progressUI.finish();
-                setBusy(false);
-                updatePropertySheet();
+                String assemblyName = getName();
+                String result = null;
+                try {
+                    result = mgmtService.startServiceAssembly(assemblyName, SERVER_TARGET);
+                } catch (ManagementRemoteException e) {
+                    result = e.getMessage();
+                } finally {
+                    JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                            GenericConstants.START_SERVICE_ASSEMBLY_OPERATION_NAME,
+                            assemblyName, result);
+                    setBusy(false);
+                }
             }
         });
     }
@@ -348,18 +365,73 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
 
         boolean ret = false;
 
-        if (!busy) {
-            ServiceAssemblyInfo saInfo = getAssemblyInfo();
-            String assemblyStatus = (saInfo != null) ? saInfo.getState() : null;
+//        if (!busy) {
+            String assemblyStatus = getAssemblyState(); 
 
-            if (ServiceAssemblyInfo.STARTED_STATE.equals(assemblyStatus)) {
+            if (ServiceAssemblyInfo.STARTED_STATE.equalsIgnoreCase(assemblyStatus)) {
                 ret = true;
-            } else if (ServiceAssemblyInfo.STOPPED_STATE.equals(assemblyStatus)) {
+            } else if (ServiceAssemblyInfo.STOPPED_STATE.equalsIgnoreCase(assemblyStatus)) {
+                ServiceAssemblyInfo saInfo = getAssemblyInfo();
                 List<ServiceUnitInfo> units = saInfo.getServiceUnitInfoList();
                 if (units != null) {
                     for (ServiceUnitInfo unit : units) {
                         String unitState = unit.getState();
-                        if (ServiceAssemblyInfo.STARTED_STATE.equals(unitState)) {
+                        if (ServiceAssemblyInfo.STARTED_STATE.equalsIgnoreCase(unitState)) {
+                            ret = true;
+                            break;
+                        }
+                    }
+                }
+            }
+//        }
+
+        return ret;
+    }
+
+    public void stop() {
+        final RuntimeManagementServiceWrapper mgmtService =
+                getRuntimeManagementServiceWrapper();
+        if (mgmtService == null) {
+            return;
+        }
+
+        setBusy(true);
+        
+        postToRequestProcessorThread(new Runnable() {
+            public void run() {
+                String assemblyName = getName();
+                String result = null;
+                try {
+                    result = mgmtService.stopServiceAssembly(assemblyName, SERVER_TARGET);
+                } catch (ManagementRemoteException e) {
+                    result = e.getMessage();
+                } finally {
+                    JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                            GenericConstants.STOP_SERVICE_ASSEMBLY_OPERATION_NAME,
+                            assemblyName, result);
+                    setBusy(false);
+                }
+            }
+        });
+    }
+
+    //========================== Shutdownable ==================================
+    public boolean canShutdown(boolean force) {
+
+        boolean ret = canStop();
+
+        if (!ret /*&& !busy*/) {
+            String assemblyStatus = getAssemblyState();
+
+            if (ServiceAssemblyInfo.STOPPED_STATE.equalsIgnoreCase(assemblyStatus)) {
+                ret = true;
+            } else if (ServiceAssemblyInfo.SHUTDOWN_STATE.equalsIgnoreCase(assemblyStatus)) {
+                ServiceAssemblyInfo saInfo = getAssemblyInfo();
+                List<ServiceUnitInfo> units = saInfo.getServiceUnitInfoList();
+                if (units != null) {
+                    for (ServiceUnitInfo unit : units) {
+                        String unitState = unit.getState();
+                        if (!ServiceUnitInfo.SHUTDOWN_STATE.equalsIgnoreCase(unitState)) {
                             ret = true;
                             break;
                         }
@@ -371,124 +443,31 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         return ret;
     }
 
-    public void stop() {
-        RuntimeManagementServiceWrapper mgmtService =
-                getRuntimeManagementServiceWrapper();
+    public void shutdown(final boolean force) {
 
+        final RuntimeManagementServiceWrapper mgmtService =
+                getRuntimeManagementServiceWrapper();
         if (mgmtService == null) {
             return;
         }
 
-        final String assemblyName = getName();
+        setBusy(true);
 
-        String title =
-                NbBundle.getMessage(JBIServiceAssemblyNode.class,
-                "LBL_Stopping_Service_Assembly", // NOI18N
-                new Object[]{assemblyName});
-        final ProgressUI progressUI = new ProgressUI(title, false);
-
-        SwingUtilities.invokeLater(new Runnable() {
+        postToRequestProcessorThread(new Runnable() {
             public void run() {
-                setBusy(true);
-                progressUI.start();
-            }
-        });
-
-        String result = null;
-        try {
-            result = mgmtService.stopServiceAssembly(assemblyName, SERVER_TARGET);
-        } catch (ManagementRemoteException e) {
-            result = e.getMessage();
-        } finally {
-            JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                    GenericConstants.STOP_SERVICE_ASSEMBLY_OPERATION_NAME,
-                    assemblyName, result);
-        }
-        
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                clearServiceAssemblyStatusCache();
-                progressUI.finish();
-                setBusy(false);
-                updatePropertySheet();
-            }
-        });
-    }
-
-    //========================== Shutdownable ==================================
-    public boolean canShutdown(boolean force) {
-
-        boolean ret = canStop();
-
-        if (!ret && !busy) {
-            ServiceAssemblyInfo saInfo = getAssemblyInfo();
-            String assemblyStatus = (saInfo != null) ? saInfo.getState() : null;
-
-            if (ServiceAssemblyInfo.STOPPED_STATE.equals(assemblyStatus)) {
-                ret = true;
-            } else if (ServiceAssemblyInfo.SHUTDOWN_STATE.equals(assemblyStatus)) {
-                List<ServiceUnitInfo> units = saInfo.getServiceUnitInfoList();
-                if (units != null) {
-                    for (ServiceUnitInfo unit : units) {
-                        String unitState = unit.getState();
-                        if (!ServiceUnitInfo.SHUTDOWN_STATE.equals(unitState)) {
-                            ret = true;
-                            break;
-                        }                
-                    }
+                String assemblyName = getName();
+                String result = null;
+                try {
+                    result = mgmtService.shutdownServiceAssembly(
+                            assemblyName, force, SERVER_TARGET);
+                } catch (ManagementRemoteException e) {
+                    result = e.getMessage();
+                } finally {
+                    JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                            GenericConstants.SHUTDOWN_SERVICE_ASSEMBLY_OPERATION_NAME,
+                            assemblyName, result);
+                    setBusy(false);
                 }
-            }
-        }
-
-        return ret;
-    }
-
-    public void shutdown(boolean force) {
-
-        if (canStop()) {
-            stop();
-        }
-
-        RuntimeManagementServiceWrapper mgmtService =
-                getRuntimeManagementServiceWrapper();
-
-        if (mgmtService == null) {
-            return;
-        }
-
-        final String assemblyName = getName();
-
-        String title =
-                NbBundle.getMessage(JBIServiceAssemblyNode.class,
-                "LBL_Shutting_Down_Service_Assembly", // NOI18N
-                new Object[]{assemblyName});
-        final ProgressUI progressUI = new ProgressUI(title, false);
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                setBusy(true);
-                progressUI.start();
-            }
-        });
-
-        String result = null;
-        try {
-            result = mgmtService.shutdownServiceAssembly(
-                    assemblyName, force, SERVER_TARGET);
-        } catch (ManagementRemoteException e) {            
-            result = e.getMessage();
-        } finally {
-            JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                    GenericConstants.SHUTDOWN_SERVICE_ASSEMBLY_OPERATION_NAME,
-                    assemblyName, result);
-        }
-        
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                clearServiceAssemblyStatusCache();
-                progressUI.finish();
-                setBusy(false);
-                updatePropertySheet();
             }
         });
     }
@@ -497,10 +476,10 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     public boolean canUndeploy(boolean force) {
         String assemblyStatus = getAssemblyState();
         return force || canShutdown(force) ||
-                !busy && ServiceAssemblyInfo.SHUTDOWN_STATE.equals(assemblyStatus);
+                /*!busy &&*/ ServiceAssemblyInfo.SHUTDOWN_STATE.equalsIgnoreCase(assemblyStatus);
     }
 
-    public boolean undeploy(boolean force) {
+    public void undeploy(final boolean force) {
 
         // The cached SA status is for performance purpose. The tradeoff is that
         // the actual SA status is not always correct. 
@@ -508,55 +487,38 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         // anyway for #111623.
         clearServiceAssemblyStatusCache();
 
-        if (canShutdown(force)) {
-            shutdown(force);
-        }
-
-        DeploymentService deploymentService = getDeploymentService();
-
-        if (deploymentService == null) {
-            return false;
-        }
-
-        final String assemblyName = getName();
-
-        String title =
-                NbBundle.getMessage(JBIServiceAssemblyNode.class,
-                "LBL_Undeploying_Service_Assembly", // NOI18N
-                new Object[]{assemblyName});
-        final ProgressUI progressUI = new ProgressUI(title, false);
-
-        SwingUtilities.invokeLater(new Runnable() {
+        setBusy(true);
+        
+        postToRequestProcessorThread(new Runnable()  {
             public void run() {
-                setBusy(true);
-                progressUI.start();
+                final DeploymentService deploymentService = getDeploymentService();
+                if (deploymentService == null) {
+                    return;
+                }
+
+                String assemblyName = getName();
+                String result = null;
+                try {
+                    if (canShutdown(force)) {
+                        RuntimeManagementServiceWrapper mgmtService =
+                                getRuntimeManagementServiceWrapper();
+                        result = mgmtService.shutdownServiceAssembly(
+                                assemblyName, force, SERVER_TARGET);
+                    }
+                    result = deploymentService.undeployServiceAssembly(
+                            assemblyName, force, SERVER_TARGET);
+                } catch (ManagementRemoteException e) {
+                    result = e.getMessage();
+                } finally {
+                    JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                            GenericConstants.UNDEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
+                            assemblyName, result);
+                    setBusy(false);
+                }
             }
         });
-
-        boolean success = true;
-        String result = null;
-        try {
-            result = deploymentService.undeployServiceAssembly(
-                    assemblyName, force, SERVER_TARGET);
-        } catch (ManagementRemoteException e) {
-            result = e.getMessage();
-        } finally {
-            success = JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                    GenericConstants.UNDEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
-                    assemblyName, result);
-        }
-        
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                clearServiceAssemblyStatusCache();
-                progressUI.finish();
-                setBusy(false);
-            }
-        });
-        
-        return success;
     }
-
+    
     // DnD Support for CASA
 
     /*

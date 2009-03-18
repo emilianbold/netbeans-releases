@@ -70,14 +70,6 @@ public class KenaiProjectTest {
     public void setUp() {
         try {
             System.setProperty("kenai.com.url","http://testkenai.com");
-//            if (uname == null) {
-//                BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
-//                uname = br.readLine();
-//                passw = br.readLine();
-//                br.close();
-//            }
-//            Kenai.getDefault().login(uname, passw.toCharArray());
-
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

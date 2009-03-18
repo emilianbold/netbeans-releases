@@ -41,6 +41,7 @@
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
 import com.sun.esb.management.api.administration.AdministrationService;
+import com.sun.esb.management.api.notification.EventNotification;
 import com.sun.esb.management.common.ManagementRemoteException;
 import com.sun.esb.management.common.data.ServiceAssemblyStatisticsData;
 import com.sun.esb.management.common.data.ServiceUnitStatisticsData;
@@ -57,6 +58,9 @@ import java.util.List;
 import java.util.Map;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
+import javax.management.Notification;
+import javax.management.openmbean.CompositeDataSupport;
+import javax.swing.SwingUtilities;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
@@ -72,6 +76,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import static org.netbeans.modules.sun.manager.jbi.NotificationConstants.*;
+
 /**
  * Node for one JBI Service Unit.
  *
@@ -84,6 +90,9 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
     
     private String componentName;
 
+    // Current state of the SU
+    private String currentState;
+    
     public JBIServiceUnitNode(final AppserverJBIMgmtController controller,
             final String name,
             final String displayName,
@@ -98,6 +107,25 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
         setShortDescription(Utils.getTooltip(description));         
         // Use non-HTML version in the property sheet's description area.
         setValue("nodeDescription", description); // NOI18N 
+        
+        registerNotificationListener();
+    }
+        
+    protected boolean shouldProcessNotification(String sourceName, 
+            String sourceType, String eventType) {
+        return NOTIFICATION_SOURCE_TYPE_SERVICE_UNIT.equals(sourceType) 
+                && sourceName.equals(getName());
+    }
+    
+    protected void processNotificationData(CompositeDataSupport data) {
+        //clearServiceAssemblyStatusCache();
+        currentState = (String) data.get(NOTIFICATION_EVENT_TYPE);
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                fireIconChange();
+            }
+        });
     }
 
     @Override
@@ -175,6 +203,14 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
 
         return null;
     }
+    
+    private String getState() {
+        if (currentState == null) {
+            ServiceUnitInfo unit = getServiceUnitInfo();
+            currentState = unit == null ? JBIComponentInfo.UNKNOWN_STATE : unit.getState();
+        }
+        return currentState;
+    }
 
     /**
      *
@@ -183,15 +219,14 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
 
         String baseIconName = IconConstants.SERVICE_UNIT_ICON;
 
-        ServiceUnitInfo suInfo = getServiceUnitInfo();
-        String status = (suInfo == null) ? null : suInfo.getState();
+        String status = getState();
 
         String externalBadgeIconName = null;
-        if (JBIComponentInfo.SHUTDOWN_STATE.equals(status)) {
+        if (JBIComponentInfo.SHUTDOWN_STATE.equalsIgnoreCase(status)) {
             externalBadgeIconName = IconConstants.INSTALLED_ICON;
-        } else if (JBIComponentInfo.STOPPED_STATE.equals(status)) {
+        } else if (JBIComponentInfo.STOPPED_STATE.equalsIgnoreCase(status)) {
             externalBadgeIconName = IconConstants.STOPPED_ICON;
-        } else if (!JBIComponentInfo.STARTED_STATE.equals(status)) {
+        } else if (!JBIComponentInfo.STARTED_STATE.equalsIgnoreCase(status)) {
             externalBadgeIconName = IconConstants.UNKNOWN_ICON;
         }
 

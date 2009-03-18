@@ -313,7 +313,10 @@ PropertyChangeListener {
                 String exceptionMessage = "";
                 try {
                     // replace {exceptionMessage}
-                    exceptionMessage = ((ObjectVariable) exception).invokeMethod("getLocalizedMessage", null, new Variable[]{}).getValue();
+                    Variable var = ((ObjectVariable) exception).invokeMethod("getLocalizedMessage", null, new Variable[]{});
+                    if (var != null) {
+                        exceptionMessage = var.getValue();
+                    }
                 } catch (NoSuchMethodException ex) {
                     exceptionMessage = "<"+ex.getLocalizedMessage()+">";
                 } catch (InvalidExpressionException ex) {

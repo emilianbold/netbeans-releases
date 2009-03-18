@@ -134,7 +134,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private SessionProvider providerToDisplay;
     private List<ViewModelListener> subListeners = new ArrayList<ViewModelListener>();
 
-    private Preferences preferences = NbPreferences.forModule(ContextProvider.class).node("variables_view");
+    private Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(VariablesViewButtons.PREFERENCES_NAME);
     private ViewPreferenceChangeListener prefListener = new ViewPreferenceChangeListener();
     
     // <RAVE>
