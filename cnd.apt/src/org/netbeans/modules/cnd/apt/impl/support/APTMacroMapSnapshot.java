@@ -58,17 +58,13 @@ import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
  * @author gorrus
  */
 public final class APTMacroMapSnapshot {
-    private final static Map<CharSequence/*getTokenTextKey(token)*/, APTMacro> EMPTY_MAP = Collections.<CharSequence, APTMacro>emptyMap();
-    private Map<CharSequence/*getTokenTextKey(token)*/, APTMacro> macros = new HashMap<CharSequence, APTMacro>(2);
+    private final Map<CharSequence/*getTokenTextKey(token)*/, APTMacro> macros = new HashMap<CharSequence, APTMacro>(2);
     /*package*/ final APTMacroMapSnapshot parent;
     
     public APTMacroMapSnapshot(APTMacroMapSnapshot parent) {
+        assert (parent == null || parent.parent == null || !parent.parent.isEmtpy()) : "how grand father could be empty " + parent;
         // optimization to prevent chaining of empty snapshots
-        // it is safe to change field "macros" to EMPTY_MAP,
-        // because even in concurrent access both gives the same answer 'null'
-        // for getMacro request
-        while (parent != null && (parent.macros != EMPTY_MAP) && parent.isEmtpy()) {
-            parent.macros = EMPTY_MAP;
+        while (parent != null && parent.isEmtpy()) {
             parent = parent.parent;
         }
         this.parent = parent;
