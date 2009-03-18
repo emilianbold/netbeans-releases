@@ -46,20 +46,14 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -69,37 +63,19 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.Utils;
-import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
-import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerLibraries;
-import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesClientSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ExtraLibrariesNode;
-import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
-import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.api.client.WebServicesClientView;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
@@ -109,16 +85,13 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
+import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.actions.FindAction;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -284,7 +257,8 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider2 {
         private boolean illegalState;   //Represents a state where project is not in legal state, eg invalid source/target level
         
         public AppClientLogicalViewRootNode() {
-            super(new LogicalViewChildren(project, evaluator, helper, resolver), Lookups.singleton(project));
+            super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-j2ee-clientproject/Nodes"),
+                  Lookups.singleton(project));
             setIconBaseWithExtension("org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif"); // NOI18N
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
             if (hasBrokenLinks()) {
@@ -559,450 +533,6 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider2 {
                 }
             }
         }        
-    }
-    
-    private static final class LogicalViewChildren extends Children.Keys<Object> implements ChangeListener {
-        
-        private static final Object LIBRARIES = "Libs"; //NOI18N
-        private static final Object TEST_LIBRARIES = "TestLibs"; //NOI18N
-        private static final String WSDL_FOLDER=AppClientProjectWebServicesClientSupport.WSDL_FOLDER;
-        
-        private final AppClientProject project;
-        private final PropertyEvaluator evaluator;
-        private final UpdateHelper helper;
-        private final ReferenceHelper resolver;
-        private final SourceRoots testSources;
-        
-        private final WsdlCreationListener wsdlListener;
-        private final MetaInfListener metaInfListener;
-        private final JaxWsChangeListener jaxWsListener;
-        private FileObject wsdlFolder;
-        private Car jp;
-        private final ClassPathSupport cs;
-        
-        public LogicalViewChildren(AppClientProject project, PropertyEvaluator evaluator, UpdateHelper helper, ReferenceHelper resolver) {
-            this.project = project;
-            this.evaluator = evaluator;
-            this.helper = helper;
-            this.resolver = resolver;
-            this.testSources = project.getTestSourceRoots();
-            this.metaInfListener = new MetaInfListener();
-            this.wsdlListener = new WsdlCreationListener();
-            this.jaxWsListener = new JaxWsChangeListener();
-            cs = new ClassPathSupport(evaluator, resolver, helper.getAntProjectHelper(), helper, 
-                    new ClassPathSupportCallbackImpl(helper.getAntProjectHelper()));
-            Car jps[] = Car.getCars(project);
-            assert jps.length > 0;
-            jp = jps[0];
-        }
-        
-        @Override
-        protected void addNotify() {
-            super.addNotify();
-            getSources().addChangeListener(this);
-            
-            AntProjectHelper projectHelper = helper.getAntProjectHelper();
-            String prop = evaluator.getProperty(AppClientProjectProperties.META_INF); //NOI18N
-            if (prop!=null) {
-                FileObject metaInf = projectHelper.resolveFileObject(prop);
-                if (metaInf!=null) {
-                    metaInf.addFileChangeListener(metaInfListener);
-                }
-            }
-            prop = evaluator.getProperty(AppClientProjectProperties.SRC_DIR); //NOI18N
-            if (prop!=null) {
-                FileObject srcDir = projectHelper.resolveFileObject(prop);
-                if (srcDir!=null) {
-                    srcDir.addFileChangeListener(metaInfListener);
-                }
-            }
-            
-            //XXX: Not very nice, the wsdlFolder should be hold by this class because it listens on it
-            WebServicesClientSupport wsClientSupportImpl = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
-            try {
-                if (wsClientSupportImpl != null) {
-                    wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            if (wsdlFolder != null) {
-                wsdlFolder.addFileChangeListener(wsdlListener);
-            }
-            JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
-            if (jaxWsModel!=null) jaxWsModel.addPropertyChangeListener(jaxWsListener);
-
-            setKeys(getKeys());
-        }
-        
-        @Override
-        protected void removeNotify() {
-            setKeys(Collections.<Object>emptySet());
-            getSources().removeChangeListener(this);
-            
-            AntProjectHelper projectHelper = helper.getAntProjectHelper();
-            String prop = evaluator.getProperty(AppClientProjectProperties.META_INF); //NOI18N
-            if (prop!=null) {
-                FileObject metaInf = projectHelper.resolveFileObject(prop);
-                if (metaInf!=null) {
-                    metaInf.addFileChangeListener(metaInfListener);
-                }
-            }
-            prop = evaluator.getProperty(AppClientProjectProperties.SRC_DIR); //NOI18N
-            if (prop!=null) {
-                FileObject srcDir = projectHelper.resolveFileObject(prop);
-                if (srcDir!=null) {
-                    srcDir.removeFileChangeListener(metaInfListener);
-                }
-            }
-            if (wsdlFolder != null) {
-                wsdlFolder.removeFileChangeListener(wsdlListener);
-            }
-            
-            JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
-            if (jaxWsModel!=null) jaxWsModel.removePropertyChangeListener(jaxWsListener);
-
-            super.removeNotify();
-        }
-        
-        protected Node[] createNodes(Object key) {
-            Node[] result;
-            if (key == LIBRARIES) {
-                //Libraries Node
-                result = new Node[]{
-                    new LibrariesNode(
-                    NbBundle.getMessage(AppClientLogicalViewProvider.class, "CTL_LibrariesNode"),
-                    project,
-                    evaluator,
-                    helper,
-                    resolver,
-                    ProjectProperties.RUN_CLASSPATH,
-                    new String[]{ProjectProperties.BUILD_CLASSES_DIR},
-                    AppClientProjectProperties.JAVA_PLATFORM,
-                    new Action[]{
-                        LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
-                        LibrariesNode.createAddLibraryAction(resolver, project.getSourceRoots(), null),
-                        LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
-                        null,
-                        new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE) // NOI18N
-                    },
-                    ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES,
-                    cs,
-                    new ExtraLibrariesNode(project, evaluator, AppClientProjectProperties.J2EE_SERVER_INSTANCE, cs)
-                    )
-                };
-            } else if (key == TEST_LIBRARIES) {
-                result = new Node[]{
-                    new LibrariesNode(
-                    NbBundle.getMessage(AppClientLogicalViewProvider.class, "CTL_TestLibrariesNode"),
-                    project,
-                    evaluator,
-                    helper,
-                    resolver,
-                    ProjectProperties.RUN_TEST_CLASSPATH,
-                    new String[]{
-                        ProjectProperties.BUILD_TEST_CLASSES_DIR,
-                        ProjectProperties.JAVAC_CLASSPATH,
-                        ProjectProperties.BUILD_CLASSES_DIR,
-                    },
-                    null,
-                    new Action[]{
-                        LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
-                        LibrariesNode.createAddLibraryAction(resolver, project.getTestSourceRoots(), null),
-                        LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
-                        null,
-                        new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
-                    },
-                    null,
-                    cs,
-                    null)
-                };
-            }
-            // else if (key instanceof SourceGroup) {
-            else if (key instanceof SourceGroupKey) {
-                //Source root
-                //result = new Node[] {new PackageViewFilterNode(((SourceGroupKey) key).group, project)};
-                result = new Node[] {PackageView.createPackageView(((SourceGroupKey) key).group)};
-            } else if (key == KEY_SETUP_DIR) {
-                result = new Node[] {J2eeProjectView.createServerResourcesNode(project)};
-            } else if (key == KEY_CONF_DIR) {
-                result = new Node[] {J2eeProjectView.createConfigFilesView(jp.getMetaInf())};
-            } else if (key == KEY_SERVICE_REFS) {
-                java.util.Map<String, String> properties = ((AppClientProject) project).getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
-                String serverInstance = properties.get(AppClientProjectProperties.J2EE_SERVER_INSTANCE);
-                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-                
-                Car wm = Car.getCar(project.getProjectDirectory());
-                result = null;
-                // we can have a mix of jaxrpc and jaxws clients in j2ee5
-                // we will check for clients list to be empty to create the ref node
-//                if (wm!=null && (J2eeModule.JAVA_EE_5.equals(wm.getJ2eePlatformVersion()))) {
-//                    JAXWSClientView view = JAXWSClientView.getJAXWSClientView();
-//                    result = view == null ? new Node[0] : new Node[] {view.createJAXWSClientView(project)};
-//                } else {
-                ArrayList<Node> refNodes = new ArrayList<Node>();
-                JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-                JAXWSClientSupport jwcss = JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory());
-                if ((jwcss != null) && (jaxWsModel != null) &&  (jaxWsModel.getClients().length > 0)) {
-                    JAXWSClientView view = JAXWSClientView.getJAXWSClientView();
-                    if (view != null) refNodes.add(view.createJAXWSClientView(project));
-                }
-                FileObject clientRoot = project.getProjectDirectory();
-                WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView(clientRoot);
-                if (clientView != null) {
-                    WebServicesClientSupport wss = WebServicesClientSupport.getWebServicesClientSupport(clientRoot);
-                    if (wss!=null && !wss.getServiceClients().isEmpty()) {
-                        FileObject wsdlFolder = wss.getWsdlFolder();
-                        if (wsdlFolder!=null) {
-                            FileObject[] children = wsdlFolder.getChildren();
-                            boolean foundWsdl = false;
-                            for (int i=0;i<children.length;i++) {
-                                if (children[i].getExt().equalsIgnoreCase(WSDL_FOLDER)) { //NOI18N
-                                    foundWsdl=true;
-                                    break;
-                                }
-                            }
-                            if (foundWsdl) {
-                                refNodes.add(clientView.createWebServiceClientView(wsdlFolder));
-                            }
-                        }
-                    }
-                }
-//                }
-                result = refNodes.toArray(new Node[refNodes.size()]);
-            } else {
-                assert false : "Unknown key type";  //NOI18N
-                result = new Node[0];
-            }
-            return result;
-        }
-        
-        public void stateChanged(ChangeEvent e) {
-            // setKeys(getKeys());
-            // The caller holds ProjectManager.mutex() read lock
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    setKeys(getKeys());
-                }
-            });
-        }
-        
-        // Private methods -----------------------------------------------------
-        
-        private Collection<Object> getKeys() {
-            //#60800, #61584 - when the project is deleted externally do not try to create children, the source groups
-            //are not valid
-            if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
-                return Collections.<Object>emptyList();
-            }
-            Sources sources = getSources();
-            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            
-            List<Object> result =  new ArrayList<Object>(groups.length);
-            result.add(KEY_CONF_DIR);
-            result.add(KEY_SETUP_DIR);
-            for( int i = 0; i < groups.length; i++ ) {
-                // XXX rewrite to use NodeFactorySupport and JavaSourceNodeFactory
-                result.add(new SourceGroupKey(groups[i]));
-            }
-            result.add(LIBRARIES);
-            URL[] testRoots = this.testSources.getRootURLs();
-            boolean addTestSources = false;
-            for (int i = 0; i < testRoots.length; i++) {
-                File f = new File(URI.create(testRoots[i].toExternalForm()));
-                if (f.exists()) {
-                    addTestSources = true;
-                    break;
-                }
-            }
-            if (addTestSources) {
-                result.add(TEST_LIBRARIES);
-            }
-            
-            //show the ws client node iff there are some clients
-            JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-            JAXWSClientSupport jwcss = JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory());
-            if ((jwcss != null) && (jaxWsModel != null) &&  (jaxWsModel.getClients().length > 0)) {
-                result.add(KEY_SERVICE_REFS);
-            } else {
-                WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
-                if (wscs != null) {
-                    List wsClients = wscs.getServiceClients();
-                    if ((wsClients != null)  && (!wsClients.isEmpty())) {
-                        result.add(KEY_SERVICE_REFS);
-                    }
-                }
-            }
-            
-            return result;
-        }
-        
-        private Sources getSources() {
-            return ProjectUtils.getSources(project);
-        }
-        
-        private static class SourceGroupKey {
-            
-            public final SourceGroup group;
-            public final FileObject fileObject;
-            
-            SourceGroupKey(SourceGroup group) {
-                this.group = group;
-                this.fileObject = group.getRootFolder();
-            }
-            
-            @Override
-            public int hashCode() {
-                return fileObject.hashCode();
-            }
-            
-            @Override
-            public boolean equals(Object obj) {
-                if (!(obj instanceof SourceGroupKey)) {
-                    return false;
-                } else {
-                    SourceGroupKey otherKey = (SourceGroupKey) obj;
-                    String thisDisplayName = this.group.getDisplayName();
-                    String otherDisplayName = otherKey.group.getDisplayName();
-                    // XXX what is the operator binding order supposed to be here??
-                    return fileObject.equals(otherKey.fileObject) &&
-                            thisDisplayName == null ? otherDisplayName == null : thisDisplayName.equals(otherDisplayName);
-                }
-            }
-            
-        }
-        
-        private final class WsdlCreationListener extends FileChangeAdapter {
-            
-            @Override
-            public void fileDataCreated(FileEvent fe) {
-                if (WSDL_FOLDER.equalsIgnoreCase(fe.getFile().getExt())) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            refreshKey(KEY_SERVICE_REFS);
-                        }
-                    });
-                }
-            }
-            
-            @Override
-            public void fileDeleted(FileEvent fe) {
-                if (WSDL_FOLDER.equalsIgnoreCase(fe.getFile().getExt())) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            refreshKey(KEY_SERVICE_REFS);
-                        }
-                    });
-                } else if (fe.getFile().isFolder() && WSDL_FOLDER.equals(fe.getFile().getName())) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            refreshKey(KEY_SERVICE_REFS);
-                        }
-                    });
-                }
-            }
-        }
-        
-        private final class MetaInfListener extends FileChangeAdapter {
-            
-            @Override
-            public void fileFolderCreated(FileEvent fe) {
-                if (fe.getFile().isFolder() && WSDL_FOLDER.equals(fe.getFile().getName())) {
-                    fe.getFile().addFileChangeListener(wsdlListener);
-                } else if (fe.getFile().isFolder() && "META-INF".equals(fe.getFile().getName())) { //NOI18N
-                    fe.getFile().addFileChangeListener(metaInfListener);
-                }
-            }
-            
-            @Override
-            public void fileDeleted(FileEvent fe) {
-                if (fe.getFile().isFolder() && WSDL_FOLDER.equals(fe.getFile().getName())) {
-                    fe.getFile().removeFileChangeListener(wsdlListener);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            refreshKey(KEY_SERVICE_REFS);
-                        }
-                    });
-                } else if (fe.getFile().isFolder() && "META-INF".equals(fe.getFile().getName())) { //NOI18N
-                    fe.getFile().removeFileChangeListener(metaInfListener);
-                }
-            }
-        }
-
-        private final class JaxWsChangeListener implements PropertyChangeListener {
-            public void propertyChange(PropertyChangeEvent evt) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        refreshKey(KEY_SERVICE_REFS);
-                    }
-                });
-            }
-        }
-    }
-    
-    /** Yet another cool filter node just to add properties action
-     */
-    private static class PackageViewFilterNode extends FilterNode {
-        
-        private final String nodeName;
-        private final Project project;
-        
-        Action[] actions;
-        
-        public PackageViewFilterNode(SourceGroup sourceGroup, Project project) {
-            super(PackageView.createPackageView(sourceGroup));
-            this.project = project;
-            this.nodeName = "Sources"; // NOI18N
-        }
-        
-        
-        @Override
-        public Action[] getActions(boolean context) {
-            if (!context) {
-                if (actions == null) {
-                    Action superActions[] = super.getActions(context);
-                    actions = new Action[superActions.length + 2];
-                    System.arraycopy(superActions, 0, actions, 0, superActions.length);
-                    actions[superActions.length] = null;
-                    actions[superActions.length + 1] = new PreselectPropertiesAction(project, nodeName);
-                }
-                return actions;
-            } else {
-                return super.getActions(context);
-            }
-        }
-        
-    }
-    
-    
-    /** The special properties action
-     */
-    private static class PreselectPropertiesAction extends AbstractAction {
-        private static final long serialVersionUID = 1L;
-        
-        private final Project project;
-        private final String nodeName;
-        private final String panelName;
-        
-        public PreselectPropertiesAction(Project project, String nodeName) {
-            this(project, nodeName, null);
-        }
-        
-        public PreselectPropertiesAction(Project project, String nodeName, String panelName) {
-            super(NbBundle.getMessage(AppClientLogicalViewProvider.class, "LBL_Properties_Action"));
-            this.project = project;
-            this.nodeName = nodeName;
-            this.panelName = panelName;
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            // J2SECustomizerProvider cp = (J2SECustomizerProvider) project.getLookup().lookup(J2SECustomizerProvider.class);
-            CustomizerProviderImpl cp = project.getLookup().lookup(CustomizerProviderImpl.class);
-            if (cp != null) {
-                cp.showCustomizer(nodeName, panelName);
-            }
-            
-        }
     }
     
 }

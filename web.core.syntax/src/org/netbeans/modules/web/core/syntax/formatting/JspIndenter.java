@@ -40,8 +40,10 @@
 package org.netbeans.modules.web.core.syntax.formatting;
 
 import java.util.Set;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
 import org.netbeans.modules.editor.indent.spi.Context;
@@ -150,6 +152,35 @@ public class JspIndenter extends MarkupAbstractIndenter<JspTokenId> {
             }
         }
         return false;
+    }
+
+    @Override
+    protected int getPreservedLineInitialIndentation(JoinedTokenSequence<JspTokenId> ts)
+            throws BadLocationException {
+        int index = ts.index();
+        boolean found = false;
+        do {
+            if (ts.token().id() == JspTokenId.COMMENT) {
+                String comment = ts.token().text().toString().trim();
+                if (comment.startsWith("<%--")) {
+                    found = true;
+                    break;
+                }
+            } else {
+                break;
+            }
+        } while (ts.movePrevious());
+        int indent = 0;
+        if (found) {
+            int lineStart = Utilities.getRowStart(getDocument(), ts.offset());
+            // TODO: can comment token start with spaces?? if yes then adjust
+            // column to point to first non-whitespace
+            int column = ts.offset();
+            indent = column - lineStart;
+        }
+        ts.moveIndex(index);
+        ts.moveNext();
+        return indent;
     }
 
     @Override

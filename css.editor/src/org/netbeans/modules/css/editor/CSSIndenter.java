@@ -46,6 +46,7 @@ import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
 import org.netbeans.modules.css.formatting.api.support.IndentCommand;
@@ -53,11 +54,11 @@ import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.openide.util.Exceptions;
 
 public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
 
     private Stack<CssStackItem> stack = null;
+    private int preservedLineIndentation = -1;
 
     public CSSIndenter(Context context) {
         super(CSSTokenId.language(), context);
@@ -169,7 +170,8 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
     }
 
     @Override
-    protected List<IndentCommand> getLineIndent(IndenterContextData<CSSTokenId> context, List<IndentCommand> preliminaryNextLineIndent) {
+    protected List<IndentCommand> getLineIndent(IndenterContextData<CSSTokenId> context,
+            List<IndentCommand> preliminaryNextLineIndent) throws BadLocationException {
         Stack<CssStackItem> blockStack = getStack();
         List<IndentCommand> iis = new ArrayList<IndentCommand>();
         getIndentFromState(iis, true, context.getLineStartOffset());
@@ -223,7 +225,7 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
                         //
                         item = blockStack.pop();
                     }
-                    assert item.state == StackItemState.IN_RULE;
+                    assert item.state == StackItemState.IN_RULE : item;
                     if (ts.offset() == context.getLineNonWhiteStartOffset()) {
                         // if "}" is first character on line then it changes line's indentation:
                         iis.add(new IndentCommand(IndentCommand.Type.RETURN, context.getLineStartOffset()));
@@ -238,35 +240,42 @@ public class CSSIndenter extends AbstractIndenter<CSSTokenId> {
                     }
                 }
             } else if (isCommentToken(token)) {
-                try {
                     int start = context.getLineStartOffset();
                     if (start < ts.offset()) {
                         start = ts.offset();
                     }
+                    int commentEndOffset = ts.offset()+ts.token().text().toString().trim().length()-1;
                     int end = context.getLineEndOffset();
-                    if (end > ts.offset()+ts.token().text().toString().length()) {
-                        end = ts.offset()+ts.token().text().toString().length();
+                    if (end > commentEndOffset) {
+                        end = commentEndOffset;
                     }
-                    int length = end - start;
-                    String text = getDocument().getText(start, length).trim();
-                    if (text.startsWith("/*")) {
-                        if (!text.endsWith("*/")) {
-                            assert !isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" line="+text+" block="+blockStack;
+                    if (start > end) {
+                        assert !isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" start="+start+" end="+end;
+                        // do nothing
+                    } else if (start == ts.offset()) {
+                        if (end < commentEndOffset) {
+                            // if comment ends on next line put formatter to IN_COMMENT state
                             blockStack.push(new CssStackItem(StackItemState.IN_COMMENT));
+                            int lineStart = Utilities.getRowStart(getDocument(), ts.offset());
+                            preservedLineIndentation = start - lineStart;
                         }
-                    } else if (text.endsWith("*/")) {
+                    } else if (end == commentEndOffset) {
+                        String text = getDocument().getText(start, end-start).trim();
                         if (!text.startsWith("*/")) {
                             // if line does not start with '*/' then treat it as unformattable
-                            iis.add(new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset()));
+                            IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
+                            ic.setFixedIndentSize(preservedLineIndentation);
+                            iis.add(ic);
                         }
-                        assert isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" line="+text+" block="+blockStack;
+                        assert isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" start="+start+" end="+end;
                         blockStack.pop();
-                    } else if (isInState(blockStack, StackItemState.IN_COMMENT)) {
-                        iis.add(new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset()));
+                        preservedLineIndentation = -1;
+                    } else {
+                        assert isInState(blockStack, StackItemState.IN_COMMENT) : "token="+token.text()+" start="+start+" end="+end;
+                        IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
+                        ic.setFixedIndentSize(preservedLineIndentation);
+                        iis.add(ic);
                     }
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
             }
         }
 
