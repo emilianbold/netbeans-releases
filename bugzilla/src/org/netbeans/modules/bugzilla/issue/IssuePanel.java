@@ -1000,8 +1000,13 @@ public class IssuePanel extends javax.swing.JPanel {
         if (!isNew && !"".equals(addCommentArea.getText().trim())) { // NOI18N
             issue.addComment(addCommentArea.getText());
         }
-        String submitMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitMessage"); // NOI18N
-        String submitMessage = MessageFormat.format(submitMessageFormat, issue.getID());
+        String submitMessage;
+        if (isNew) {
+            submitMessage = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitNewMessage"); // NOI18N
+        } else {
+            String submitMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitMessage"); // NOI18N
+            submitMessage = MessageFormat.format(submitMessageFormat, issue.getID());
+        }
         final ProgressHandle handle = ProgressHandleFactory.createHandle(submitMessage);
         handle.start();
         handle.switchToIndeterminate();
