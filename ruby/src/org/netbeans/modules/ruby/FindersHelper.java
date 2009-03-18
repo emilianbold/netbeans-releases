@@ -62,6 +62,10 @@ final class FindersHelper {
     private static final String ATTRIBUTE_SEPARATOR_BASE = "_and"; //NOI18N
     private static final String ATTRIBUTE_SEPARATOR = ATTRIBUTE_SEPARATOR_BASE + "_"; //NOI18N
     /**
+     * The name of the "find" method.
+     */
+    private static final String STANDARD_FINDER = "find"; //NOI18N
+    /**
      * The max amount of dynamic finders to compute.
      */
     private static final int MAX_ITEMS = 2000;
@@ -203,6 +207,15 @@ final class FindersHelper {
         return finderMethodName.substring(0, attributeSeparatorIndex + ATTRIBUTE_SEPARATOR.length() - 1);
     }
 
+    static boolean isFinderMethod(String name) {
+        for (FinderType each : FinderType.values()) {
+            if (name.startsWith(each.getPrefix())) {
+                return true;
+            }
+        }
+        return name.equals(STANDARD_FINDER);
+    }
+
     /**
      * Look up the right return type for the given finder call.
      */
@@ -219,7 +232,7 @@ final class FindersHelper {
             }
         }
         // regular "find" (which is not a dynamic finder)
-        if (!foundMatching && method.equals("find")) { // NOI18N
+        if (!foundMatching && method.equals(STANDARD_FINDER)) { // NOI18N
             // Finder method that does both - gotta inspect it
             List<Node> nodes = new ArrayList<Node>();
             AstUtilities.addNodesByType(call, new NodeType[]{NodeType.SYMBOLNODE}, nodes);

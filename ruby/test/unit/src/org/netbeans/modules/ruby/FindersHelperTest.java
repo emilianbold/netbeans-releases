@@ -125,6 +125,18 @@ public class FindersHelperTest extends TestCase {
         return false;
     }
 
+    public void testIsFinderMethod() {
+        assertTrue(FindersHelper.isFinderMethod("find_by_name"));
+        assertTrue(FindersHelper.isFinderMethod("find_by_name_and_title"));
+        assertTrue(FindersHelper.isFinderMethod("find_all_by_name_and_title"));
+        assertTrue(FindersHelper.isFinderMethod("find_last_by_name_and_title"));
+        assertTrue(FindersHelper.isFinderMethod("scoped_by_title"));
+        assertTrue(FindersHelper.isFinderMethod("find"));
+
+        assertFalse(FindersHelper.isFinderMethod("not_a_finder"));
+        assertFalse(FindersHelper.isFinderMethod("findery"));
+    }
+
     public void testNextAttributeLocation() {
         String name = "find_by_name_and_price_and_url";
         assertEquals(12, FindersHelper.nextAttributeLocation(name, 2));

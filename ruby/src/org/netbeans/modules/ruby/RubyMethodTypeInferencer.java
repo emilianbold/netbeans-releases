@@ -97,7 +97,7 @@ final class RubyMethodTypeInferencer {
         // If you call Foo.new I'm going to assume the type of the expression if "Foo"
         if ("new".equals(name)) { // NOI18N
             return receiverType;
-        } else if (name.startsWith("find")) {
+        } else if (FindersHelper.isFinderMethod(name)) {
             // -Possibly- ActiveRecord finders, very important
             if (receiverType.isSingleton() && getIndex() != null) {
                 IndexedClass superClass = getIndex().getSuperclass(receiverType.first());
