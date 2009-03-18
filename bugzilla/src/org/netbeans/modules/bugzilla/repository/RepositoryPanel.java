@@ -53,13 +53,21 @@ import javax.swing.event.DocumentListener;
  * @author Tomas Stupka
  */
 public class RepositoryPanel extends javax.swing.JPanel implements DocumentListener {
+    private RepositoryController controller;
 
     /** Creates new form RepositoryPanel */
-    public RepositoryPanel() {
+    public RepositoryPanel(RepositoryController controller) {
         initComponents();
+        this.controller = controller;
         urlField.getDocument().addDocumentListener(this);
         validateLabel.setVisible(false);
         progressPanel.setVisible(false);
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        controller.populate();
     }
 
     /** This method is called from within the constructor to
