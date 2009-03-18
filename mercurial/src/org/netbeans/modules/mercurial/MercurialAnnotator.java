@@ -632,7 +632,8 @@ public class MercurialAnnotator extends VCSAnnotator {
                     break;
                 }
             }
-            if (!repo.getAbsolutePath().equals(root.getAbsolutePath())) {
+            // repo = null iff the file' status is actually unversioned, but cache has not yet have the right value
+            if (repo == null || !repo.getAbsolutePath().equals(root.getAbsolutePath())) {
                 // not from repo root => do not annnotate with folder name 
                 return uptodateFormat.format(new Object [] { nameHtml, ""});
             }             
@@ -659,14 +660,16 @@ public class MercurialAnnotator extends VCSAnnotator {
                 } else if (!repo.getAbsolutePath().equals(parentFile.getAbsolutePath())) {
                     // not from repo root => do not annnotate with folder name 
                     return uptodateFormat.format(new Object [] { nameHtml, ""});
-                } 
-                break;
+                } else {
+                    break;
+                }
             }
         }
-        
-        if (!repo.getName().equals(name)){
+
+        // file is versioned
+        if (repo != null && !repo.getName().equals(name)){
             folderAnotation = repo.getName();
-        }                
+        }
 
         return uptodateFormat.format(new Object [] { nameHtml, folderAnotation != null ? " [" + folderAnotation + "]" : ""}); // NOI18N
     }
