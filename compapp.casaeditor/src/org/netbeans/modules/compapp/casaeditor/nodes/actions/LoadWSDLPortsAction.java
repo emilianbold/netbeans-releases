@@ -162,23 +162,28 @@ public class LoadWSDLPortsAction extends NodeAction {
     
     private void showDialog(CasaNode node, final CasaWrapperModel model) {
         // final CasaWrapperModel model = node.getModel();
-        String suName = "";
         ModelSource ms = model.getModelSource();
         Lookup lookup = ms.getLookup();
         CatalogModel catalogModel = lookup.lookup(CatalogModel.class);
         FileObject casaFO = lookup.lookup(FileObject.class);
         File srcDir = FileUtil.toFile(casaFO).getParentFile().getParentFile();
-        String suRootPath = File.separator + "jbiasa" + File.separator ;
-        if ((node != null) && (node instanceof ServiceUnitNode)) {
+        
+        String suName;
+        String rootPath;
+        if ((node != null) && (node instanceof ServiceUnitNode)) { // load WSDL ports defined in some JBI Module
             CasaServiceEngineServiceUnit sesu = (CasaServiceEngineServiceUnit) node.getData();
             suName = sesu.getUnitName();
-            suRootPath = File.separator + "jbiServiceUnits" + File.separator + suName; // NOI18N
+            rootPath = File.separator + JBI_SU_JAR_DIR + File.separator + suName;
+        } else { // load WSDL ports defined in CompApp
+            suName = null;
+            rootPath = File.separator + JBI_SOURCE_DIR + File.separator;
         }
-        File suRoot = new File(srcDir.getAbsolutePath() + suRootPath); // NOI18N
+
+        File root = new File(srcDir.getAbsolutePath() + rootPath); // NOI18N
         List<File> fs = new ArrayList<File>();
         List<Port> portList = new ArrayList<Port>();
         Map<Port, File> fileMap = new HashMap<Port, File>();
-        visitAllWsdlFiles(suRoot, fs);
+        visitAllWsdlFiles(root, fs);
         
         for (File f : fs) {
             try {
@@ -218,10 +223,12 @@ public class LoadWSDLPortsAction extends NodeAction {
                 String fPath = getWsdlFilename(f, suName);
                 slist[i] = "Service=" + sName + ", Port=" + p.getName() + fPath;
             }
-            
-            final LoadWsdlPortPanel panel = new LoadWsdlPortPanel(
-                    NbBundle.getMessage(getClass(), "LBL_AvailableWSDLPortsFor", suName),
-                    slist);
+
+            String title = (suName == null) ?
+                NbBundle.getMessage(getClass(), "LBL_AvailableWSDLPortsInCompApp") :
+                NbBundle.getMessage(getClass(), "LBL_AvailableWSDLPortsInJBIModule", suName);
+            final LoadWsdlPortPanel panel = new LoadWsdlPortPanel(title, slist);
+
             DialogDescriptor descriptor = new DialogDescriptor(
                     panel,
                     NbBundle.getMessage(LoadWsdlPortPanel.class, "LBL_WsdlPort_Selection_Panel"),   // NOI18N

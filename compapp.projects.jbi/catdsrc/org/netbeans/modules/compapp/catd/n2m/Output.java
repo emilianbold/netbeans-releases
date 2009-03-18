@@ -38,11 +38,62 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.compapp.casaeditor.model.jbi;
+
+/*
+ * Output.java
+ *
+ * Created on March 25, 2005, 2:22 PM
+ */
+
+package org.netbeans.modules.compapp.catd.n2m;
+
+import org.netbeans.modules.compapp.catd.util.Util;
+import java.io.*;
 
 /**
  *
- * @author jqian
+ * @author blu
  */
-public interface Consumer extends ConnectionEnd {
+public class Output {
+    private String mName;
+    private File mActual;
+    private File mExpected;
+
+    /** Creates a new instance of Output */
+    public Output(String name, File actual, File expected) {
+        mName = name;
+        mActual = actual;
+        mExpected = expected;
+    }
+
+    public String getName() {
+        return mName;
+    }
+
+    public String getExpected() {
+        String ret = Util.getFileContent(mExpected);
+        return ret;
+    }
+
+    public String getExpectedWithoutCRNL() {
+        String ret = Util.getFileContentWithoutCRNL(mExpected);
+        return ret;
+    }
+
+    public String getActual() {
+        String ret = Util.getFileContent(mActual);
+        return ret;
+    }
+
+    public String getActualWithoutCRNL() {
+        String ret = Util.getFileContentWithoutCRNL(mActual);
+        return ret;
+    }
+
+    public void removeActual() {
+        if (mActual != null && mActual.exists()) {
+            mActual.delete();
+        }
+    }
+
 }

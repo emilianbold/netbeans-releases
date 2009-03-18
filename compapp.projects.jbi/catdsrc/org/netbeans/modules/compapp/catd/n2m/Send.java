@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,63 +31,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * Output.java
- *
- * Created on March 25, 2005, 2:22 PM
- */
+package org.netbeans.modules.compapp.catd.n2m;
 
-package org.netbeans.modules.compapp.catd;
-
+import java.io.StringReader;
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.soap.SOAPPart;
+import javax.xml.soap.SOAPConnection;
+import javax.xml.transform.stream.StreamSource;
 import org.netbeans.modules.compapp.catd.util.Util;
-import java.io.*;
 
 /**
  *
- * @author blu
+ * @author Bing Lu
  */
-public class Output {
+public class Send implements Runnable {
     private String mName;
-    private File mActual;
-    private File mExpected;
+        String mExpectedHttpWarning;
+        String mDestination;
+        SOAPConnection mConnection;
+        Input mInput;
+        int mBatches;
 
-    /** Creates a new instance of Output */
-    public Output(String name, File actual, File expected) {
-        mName = name;
-        mActual = actual;
-        mExpected = expected;
-    }
+        public Send(String destination, String httpWarning, SOAPConnection connection, Input input, String batches) throws Exception {
+            mDestination = destination;
+            mExpectedHttpWarning = httpWarning;
+            mConnection = connection;
+            mInput = input;
+            mBatches = Integer.parseInt(batches);
+        }
 
-    public String getName() {
-        return mName;
-    }
-
-    public String getExpected() {
-        String ret = Util.getFileContent(mExpected);
-        return ret;
-    }
-
-    public String getExpectedWithoutCRNL() {
-        String ret = Util.getFileContentWithoutCRNL(mExpected);
-        return ret;
-    }
-
-    public String getActual() {
-        String ret = Util.getFileContent(mActual);
-        return ret;
-    }
-
-    public String getActualWithoutCRNL() {
-        String ret = Util.getFileContentWithoutCRNL(mActual);
-        return ret;
-    }
-
-    public void removeActual() {
-        if (mActual != null && mActual.exists()) {
-            mActual.delete();
+        public void run() {
+            String action = mInput.getAction();
+            for (int i = 0; i < mBatches; i++) {
+                try {
+                    String data = mInput.nextData();
+//                    System.out.println("data: " + data);
+                    SOAPMessage message = MessageFactory.newInstance().createMessage();
+                    message.getMimeHeaders().addHeader("soapaction", action);
+                    SOAPPart soapPart = message.getSOAPPart();
+                    soapPart.setContent(new StreamSource(new StringReader(data)));
+                    message.saveChanges();
+                    Util.sendMessage(mInput.getName(), false, mConnection, mDestination, message, null, mExpectedHttpWarning, null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
-
-}

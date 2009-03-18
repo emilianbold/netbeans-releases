@@ -44,7 +44,6 @@ package org.netbeans.modules.compapp.casaeditor.nodes;
 import java.awt.Image;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -59,11 +58,17 @@ public class ProvidesNode extends EndpointNode {
         super(component, factory);
     }
         
+    @Override
     public Image getIcon(int type) {
         return ICON;
     }
     
+    @Override
     public Image getOpenedIcon(int type) {
         return ICON;
+    }
+
+    protected String getConfigExtensionSubType() {
+        return "provide"; // NOI18N
     }
 }

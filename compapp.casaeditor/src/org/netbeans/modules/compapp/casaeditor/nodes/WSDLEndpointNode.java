@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.WSDLEndpointAction;
-import org.netbeans.modules.compapp.casaeditor.nodes.actions.LoadWSDLPortsAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.CloneWSDLPortAction;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
@@ -62,7 +61,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
 import org.netbeans.modules.compapp.casaeditor.properties.PortTypeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortNode;
@@ -81,6 +79,7 @@ public class WSDLEndpointNode extends CasaNode {
     private static final String CHILD_ID_PROVIDES = "Provides"; // NOI18N
     private static final String CHILD_ID_CONSUMES = "Consumes"; // NOI18N
     private static final String SOAP_BINDING = "soap"; // NOI18N
+    private static final String SOAP12_BINDING = "soap12"; // NOI18N
 
     
     public WSDLEndpointNode(CasaPort component, CasaNodeFactory factory) {
@@ -125,7 +124,9 @@ public class WSDLEndpointNode extends CasaNode {
         CasaWrapperModel model = (CasaWrapperModel) cp.getModel();
         if (model.isEditable(cp)) {
             // only add this for soap port...
-            if (model.getBindingType(cp).equalsIgnoreCase(SOAP_BINDING)) {
+            String bindingType = model.getBindingType(cp);
+            if (bindingType.equalsIgnoreCase(SOAP_BINDING) ||
+                    bindingType.equalsIgnoreCase(SOAP12_BINDING)) {
                 actions.add(new WSDLEndpointAction());
             }
         } else { // non-editable port
@@ -133,6 +134,7 @@ public class WSDLEndpointNode extends CasaNode {
         }
     }
 
+    @Override
     protected void setupPropertySheet(Sheet sheet) {
         final CasaPort casaPort = (CasaPort) getData();
         if (casaPort == null) {
@@ -177,7 +179,7 @@ public class WSDLEndpointNode extends CasaNode {
         // Add JBI extensions on connection
         String bcName = this.getModel().getBindingComponentName(casaPort);
         ExtensionPropertyHelper.setupExtensionPropertySheet(this,
-                casaPort, sheet, "port", bcName); // NOI18N
+                casaPort, sheet, "port", null, bcName); // NOI18N
     }
     
     private static void addPortChildrenProperties(Sheet sheet, Children children, boolean bEditable) {
@@ -203,21 +205,33 @@ public class WSDLEndpointNode extends CasaNode {
     
     
     private static class MyChildren extends CasaNodeChildren {
-        public MyChildren(CasaComponent component, CasaNodeFactory factory) {
+        private boolean editable;
+        
+        public MyChildren(CasaPort component, CasaNodeFactory factory) {
             super(component, factory);
+            editable = component != null && 
+                    ((CasaWrapperModel)component.getModel()).isEditable(component);
         }
         
         protected Node[] createNodes(Object key) {
+            
             if (key instanceof Port) {
                 Node pn = NodesFactory.getInstance().create((Port) key);
+                if (!editable) {
+                    pn = new ReadOnlyFilterNode(pn);
+                }
                 return new Node[] { pn };
             } else if (key instanceof Binding) {
                 Node bn = NodesFactory.getInstance().create((Binding) key);
+                if (!editable) {
+                    bn = new ReadOnlyFilterNode(bn);
+                }
                 return new Node[] { bn };
             }
             return null;
         }
         
+        @Override
         public Object getChildKeys(Object data)  {
             List<Object> children = new ArrayList<Object>();
             CasaPort endpoint = (CasaPort) getData();
@@ -255,14 +269,17 @@ public class WSDLEndpointNode extends CasaNode {
         }
     }
     
+    @Override
     public Image getIcon(int type) {
         return ICON;
     }
     
+    @Override
     public Image getOpenedIcon(int type) {
         return ICON;
     }
     
+    @Override
     public boolean isEditable(String propertyType) {
         CasaPort port = (CasaPort) getData();
         if (port != null) {
@@ -279,6 +296,7 @@ public class WSDLEndpointNode extends CasaNode {
         return false;
     }
 
+    @Override
     public boolean isDeletable() {
         CasaPort port = (CasaPort) getData();
         if (port != null) {

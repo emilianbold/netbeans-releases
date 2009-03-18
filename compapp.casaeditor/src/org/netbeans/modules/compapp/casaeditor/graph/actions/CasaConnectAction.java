@@ -64,6 +64,13 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
+import org.netbeans.modules.xml.wsdl.bindingsupport.configeditor.ConfigurationEditorProviderFactory;
+import org.netbeans.modules.xml.wsdl.bindingsupport.configeditor.ui.ExtensibilityElementConfigurationUtils;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementConfigurationEditorComponent;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementConfigurationEditorProvider;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
+import org.netbeans.modules.xml.wsdl.model.Port;
 
 /**
  * This is a version of ConnectAction that causes the connection
@@ -129,7 +136,38 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
                             return;
                         }
                     }
-                    mScene.getModel().addConnection(info.mConsumes, info.mProvides, info.getConsumesToProvidesDirection());
+                    
+                    CasaEndpointRef endpointRefNeedingBindingConfiguration = null;
+                    CasaWrapperModel model = mScene.getModel();
+		    if (model.isConfigurableBCEndpoint(info.mConsumes)) {
+                        endpointRefNeedingBindingConfiguration = info.mConsumes;
+                    } else if (model.isConfigurableBCEndpoint(info.mProvides)) {
+                        endpointRefNeedingBindingConfiguration = info.mProvides;
+                    }
+                    
+                    mScene.getModel().addConnection(info.mConsumes, info.mProvides, 
+                            info.getConsumesToProvidesDirection());
+                    
+                    if (endpointRefNeedingBindingConfiguration != null) {
+                        CasaPort casaPort = model.getCasaPort(endpointRefNeedingBindingConfiguration);
+                        Port wsdlPort = model.getLinkedWSDLPort(casaPort);
+                        
+		        String bType = model.getBindingType(casaPort);
+			LocalizedTemplateGroup bindingType = CasaWrapperModel.getBindingType(bType);
+
+			String namespace = bindingType.getNamespace();
+                        ExtensibilityElementConfigurationEditorProvider provider =
+                                ConfigurationEditorProviderFactory.getDefault()
+                                .getConfigurationProvider(namespace);
+                        if (provider != null) {
+
+                            String direction = (endpointRefNeedingBindingConfiguration == info.mConsumes) ?
+                                ExtensibilityElementConfigurationEditorComponent.BC_TO_BP_DIRECTION : 
+                                ExtensibilityElementConfigurationEditorComponent.BP_TO_BC_DIRECTION;
+
+                            ExtensibilityElementConfigurationUtils.configureBinding(provider, wsdlPort, direction);
+                        }
+                    }
                 }
             }
     

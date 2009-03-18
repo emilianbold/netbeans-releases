@@ -726,6 +726,7 @@ public class CasaBuilder {
                             casaConnections.appendChild(newConnection);
                         } else {
                             // Mark user created connection as "new"
+                            assert newConnection != null : "Cannot find user-created connection: " + newConsumerID + "->" + newProviderID;
                             newConnection.setAttribute(CASA_STATE_ATTR_NAME, CASA_NEW_ATTR_VALUE);
                         }
                     }
@@ -1328,11 +1329,40 @@ public class CasaBuilder {
         if (jbiDocument == null) {
           return new ArrayList<Endpoint>();
         }
+
         NodeList jbiSUs = jbiDocument.getElementsByTagName(JBI_SERVICE_UNIT_ELEM_NAME);
         for (int i = 0; i < jbiSUs.getLength(); i++) {
             Element jbiSU = (Element) jbiSUs.item(i);
             String suName = getJBIServiceUnitName(jbiSU);
             List<Endpoint> suEndpoints = loadSUEndpoints(suName);
+            su2Endpoints.put(suName, suEndpoints);
+            if (suEndpoints != null) {
+                for (Endpoint suEndpoint : suEndpoints) {
+                    if (!newSUEndpoints.contains(suEndpoint)) {
+                        newSUEndpoints.add(suEndpoint);
+                    }
+                }
+            }
+        }
+
+        // SU name defined in AssemblyInformation.xml might not match the
+        // project reference name defined in project.xml. Possible reasons:
+        //   * (#160061) SU project containing "." in its name gets a different
+        //               project reference name ("." replaced by "_")
+        //   * (#160062) SU project gets renamed after being added into CompApp
+        File projectDir = project.getBaseDir();
+        for (String projRefName : getProjectReferenceNames()) {
+
+            String suProjLoc = project.getProperty("project." + projRefName);
+            File suProjDir = new File(suProjLoc);
+            if (!suProjDir.isAbsolute()) {
+                suProjDir = new File(projectDir, suProjLoc);
+            }
+
+            // Get SU name from the SU project's project.xml
+            String suName = getProjectName(suProjDir);
+
+            List<Endpoint> suEndpoints = loadSUEndpoints(projRefName);
             su2Endpoints.put(suName, suEndpoints);
             if (suEndpoints != null) {
                 for (Endpoint suEndpoint : suEndpoints) {
@@ -1396,6 +1426,41 @@ public class CasaBuilder {
         }
 
         return newCasaEndpoints;
+    }
+
+    private List<String> getProjectReferenceNames() {
+        List<String> ret = new ArrayList<String>();
+
+        try {
+            File projectXmlFile = new File(project.getBaseDir(), "nbproject/project.xml");
+            DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = fact.newDocumentBuilder();
+            Document document = builder.parse(projectXmlFile);
+            NodeList foreignProjectNodes =
+                    document.getElementsByTagName("foreign-project");
+            for (int i = 0; i < foreignProjectNodes.getLength(); i++) {
+                ret.add(foreignProjectNodes.item(i).getTextContent());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    private String getProjectName(File projBaseDir) {
+
+        try {
+            File projectXmlFile = new File(projBaseDir, "nbproject/project.xml");
+            DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = fact.newDocumentBuilder();
+            Document document = builder.parse(projectXmlFile);
+            return document.getElementsByTagName("name").item(0).getTextContent();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     /**
@@ -1515,11 +1580,17 @@ public class CasaBuilder {
         element.setAttribute(attrName, attrQValue);
     }
 
-    private List<Endpoint> loadSUEndpoints(String suName) {
+    /**
+     * Gets endpoints from the given service unit.
+     *
+     * @param projRefName   foreign project reference name (as defined in project.xml)
+     * @return              a list of endpoints from the given service unit
+     */
+    private List<Endpoint> loadSUEndpoints(String projRefName) {
 
         List<Endpoint> suEndpointList = new ArrayList<Endpoint>();
 
-        File suJbiFile = new File(serviceUnitsDirLoc + suName + File.separator + "jbi.xml"); // NOI18N
+        File suJbiFile = new File(serviceUnitsDirLoc + projRefName + File.separator + "jbi.xml"); // NOI18N
         if (suJbiFile.exists()) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(false);

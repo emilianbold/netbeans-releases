@@ -80,6 +80,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 
@@ -132,9 +133,10 @@ class JbiViews {
         /**
          * DOCUMENT ME!
          */
+        @Override
         protected void addNotify() {
             super.addNotify();
-            projectDir.addFileChangeListener(this);
+            projectDir.addFileChangeListener(FileUtil.weakFileChangeListener(this, projectDir));
             createNodes();
         }
         
@@ -172,6 +174,7 @@ class JbiViews {
         /**
          * DOCUMENT ME!
          */
+        @Override
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
             projectDir.removeFileChangeListener(this);

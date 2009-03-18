@@ -81,6 +81,7 @@ public class JbiProjectGenerator {
     private static final String DEFAULT_COMPONENTASA_FOLDER = "jbiServiceUnits"; // NOI18N
     private static final String DEFAULT_BUILD_DIR = "build"; // NOI18N
     private static final String DEFAULT_JBI_ROUTING = "true"; // NOI18N
+    private static final String DEFAULT_JBI_ROUTING_BC_AUTOCONNECT = "true"; // NOI18N
     private static final String DEFAULT_JBI_SA_INTERNAL_ROUTING = "true"; // NOI18N
     // Start Test Framework
     private static final String DEFAULT_TEST_FOLDER = "test"; // NOI18N
@@ -146,6 +147,7 @@ public class JbiProjectGenerator {
         Charset enc = FileEncodingQuery.getDefaultEncoding();
         ep.setProperty(JbiProjectProperties.SOURCE_ENCODING, enc.name());
         ep.setProperty(JbiProjectProperties.JBI_ROUTING, DEFAULT_JBI_ROUTING);
+        ep.setProperty(JbiProjectProperties.JBI_ROUTING_BC_AUTOCONNECT, DEFAULT_JBI_ROUTING_BC_AUTOCONNECT);
         ep.setProperty(JbiProjectProperties.JBI_SA_INTERNAL_ROUTING, DEFAULT_JBI_SA_INTERNAL_ROUTING);
         // Start Test Framework
         ep.setProperty(JbiProjectProperties.TEST_DIR, DEFAULT_TEST_FOLDER);

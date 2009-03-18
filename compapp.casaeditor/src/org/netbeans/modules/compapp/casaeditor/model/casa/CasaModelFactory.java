@@ -38,59 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.compapp.casaeditor.model.jbi.impl;
+package org.netbeans.modules.compapp.casaeditor.model.casa;
 
-import org.netbeans.modules.compapp.casaeditor.Constants;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIModel;
-import org.netbeans.modules.compapp.casaeditor.model.visitor.JBIVisitor;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Consumer;
-import org.openide.util.NbBundle;
-import org.w3c.dom.Element;
+import javax.swing.text.Document;
+import org.netbeans.modules.xml.xam.AbstractModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author jqian
  */
-public class ConsumerImpl extends ConnectionEndImpl implements Consumer {
+public class CasaModelFactory extends AbstractModelFactory<CasaModel> {  
     
-    /** Creates a new instance of ConsumerImpl */
-    public ConsumerImpl(JBIModel model, Element element) {
-        super(model, element);
-    }
+    private static final CasaModelFactory FACTORY = new CasaModelFactory();
     
-    public ConsumerImpl(JBIModel model) {
-        this(model, createElementNS(model, JBIQNames.CONSUMER));
+    public static CasaModelFactory getInstance(){
+        return FACTORY;
     }
 
-    public void accept(JBIVisitor visitor) {
-        visitor.visit(this);
+    
+    private CasaModelFactory() {
     }
     
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        
-        //sb.append("Consumer: service-name=\"");
-        sb.append(NbBundle.getMessage(getClass(), "Consumer"));     // NOI18N
-        sb.append(Constants.COLON_STRING);
-        sb.append(Constants.SPACE);
-        sb.append(NbBundle.getMessage(getClass(), "service-name")); // NOI18N
-        sb.append(Constants.EQUAL_TO);
-        sb.append(Constants.DOUBLE_QUOTE);
-       
-        sb.append(getServiceName());
-        //sb.append("\" endpoint-name=\"");
-        sb.append(Constants.DOUBLE_QUOTE);
-        sb.append(Constants.SPACE);
-        sb.append(NbBundle.getMessage(getClass(), "endpoint-name")); // NOI18N
-        sb.append(Constants.EQUAL_TO);
-        sb.append(Constants.DOUBLE_QUOTE);
-
-        sb.append(getEndpointName());
-        
-        //sb.append("\"]");
-        sb.append(Constants.DOUBLE_QUOTE);
-        sb.append(Constants.SQUARE_BRACKET_CLOSE);
-        
-        return sb.toString();
+    /**
+     * Gets CASA model from given model source.  Model source should 
+     * provide lookup for:
+     * 1. FileObject of the model source
+     * 2. DataObject represent the model
+     * 3. Swing Document buffer for in-memory text of the model source
+     */
+    public CasaModel getModel(ModelSource source) {
+        if (source == null) return null;
+        Lookup lookup = source.getLookup();
+        assert lookup.lookup(Document.class) != null;
+        return super.getModel(source);
     }
+     
+    protected CasaModel createModel(ModelSource source) {
+        return new CasaWrapperModel(source);
+    }
+    
 }

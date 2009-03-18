@@ -53,10 +53,13 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.compapp.projects.jbi.api.POJOHelper;
+
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 
@@ -168,7 +171,7 @@ public class AntArtifactChooser extends javax.swing.JPanel
         try {
             ProjectManager projectManager = ProjectManager.getDefault();
             for (File projectDir : projectDirs) {
-                FileObject projectRoot = FileUtil.toFileObject(projectDir);
+                FileObject projectRoot = FileUtil.toFileObject(projectDir.getCanonicalFile());
 
                 if (projectRoot != null) {
                     Project project = projectManager.findProject(projectRoot);
@@ -216,8 +219,20 @@ public class AntArtifactChooser extends javax.swing.JPanel
                             if (artifacts[i].getType().startsWith(artifactType)) {
                                 model.addElement(new ArtifactItem(artifacts[i]));
                                 break;
+                            } else {
+                                //POJOSE: If the project is a POJO SE based project 
+                                //add the artifact
+                                if (artifacts[i].getType().equals("jar") && 
+                                    project.getClass().getName().equals(JbiProjectConstants.JAVA_SE_PROJECT_CLASS_NAME) && 
+                                    POJOHelper.getProjectProperty(project, 
+                                                                  JbiProjectConstants.POJO_PROJECT_PROPERTY) != 
+                                    null) {
+                                    model.addElement(new ArtifactItem(artifacts[i]));
+                                    break;
+                                }
                             }
                         }
+                        
                     }
                 }
             }
