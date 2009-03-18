@@ -54,6 +54,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider2;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
+import org.netbeans.modules.java.j2seproject.api.J2SEProjectSharability;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -67,9 +68,9 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Petr Hrebejk
  */
-public class CustomizerProviderImpl implements CustomizerProvider2 {
+public class CustomizerProviderImpl implements CustomizerProvider2, J2SEProjectSharability {
     
-    private final Project project;
+    private final J2SEProject project;
     private final UpdateHelper updateHelper;
     private final PropertyEvaluator evaluator;
     private final ReferenceHelper refHelper;
@@ -90,7 +91,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
     
     private static Map<Project,Dialog> project2Dialog = new HashMap<Project,Dialog>();
     
-    public CustomizerProviderImpl(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper, GeneratedFilesHelper genFileHelper) {
+    public CustomizerProviderImpl(J2SEProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper, GeneratedFilesHelper genFileHelper) {
         this.project = project;
         this.updateHelper = updateHelper;
         this.evaluator = evaluator;
@@ -115,7 +116,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
             return;
         }
         else {
-            J2SEProjectProperties uiProperties = new J2SEProjectProperties( (J2SEProject)project, updateHelper, evaluator, refHelper, genFileHelper );
+            J2SEProjectProperties uiProperties = createJ2SEProjectProperties();
             Lookup context = Lookups.fixed(new Object[] {
                 project,
                 uiProperties,
@@ -133,8 +134,20 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
             project2Dialog.put(project, dialog);
             dialog.setVisible(true);
         }
-    }    
-    
+    }
+
+    private J2SEProjectProperties createJ2SEProjectProperties() {
+        return new J2SEProjectProperties(project, updateHelper, evaluator, refHelper, genFileHelper);
+    }
+
+    public boolean isSharable() {
+        return project.getAntProjectHelper().isSharableProject();
+    }
+
+    public void makeSharable() {
+        createJ2SEProjectProperties().makeSharable();
+    }
+
     private class StoreListener implements ActionListener {
     
         private J2SEProjectProperties uiProperties;
@@ -183,11 +196,11 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
         
         // Listening to window events ------------------------------------------
                 
-        public void windowClosed( WindowEvent e) {
+        public @Override void windowClosed(WindowEvent e) {
             project2Dialog.remove( project );
         }    
         
-        public void windowClosing (WindowEvent e) {
+        public @Override void windowClosing(WindowEvent e) {
             //Dispose the dialog otherwsie the {@link WindowAdapter#windowClosed}
             //may not be called
             Dialog dialog = project2Dialog.get(project);

@@ -41,10 +41,12 @@ package org.netbeans.modules.hudson.spi;
 
 import java.io.File;
 import java.io.IOException;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -83,9 +85,9 @@ public interface ProjectHudsonJobCreatorFactory {
 
         /**
          * Checks whether current configuration seems valid.
-         * @return an error message if invalid, null if valid
+         * @return a status including potential error messages
          */
-        String error();
+        ConfigurationStatus status();
 
         /**
          * Adds listener to change in validity.
@@ -112,9 +114,73 @@ public interface ProjectHudsonJobCreatorFactory {
     }
 
     /**
+     * Return value of {@link ProjectHudsonJobCreator#error}.
+     */
+    final class ConfigurationStatus {
+
+        private String errorMessage;
+        private String warningMessage;
+        private JButton extraButton;
+
+        private ConfigurationStatus() {}
+
+        /** Creates a valid configuration. */
+        public static ConfigurationStatus valid() {
+            return new ConfigurationStatus();
+        }
+
+        /** Creates a configuration with a fatal error. */
+        public static ConfigurationStatus withError(String error) {
+            ConfigurationStatus s = new ConfigurationStatus();
+            s.errorMessage = error;
+            return s;
+        }
+
+        /** Creates a configuration with a nonfatal warning. */
+        public static ConfigurationStatus withWarning(String warning) {
+            ConfigurationStatus s = new ConfigurationStatus();
+            s.warningMessage = warning;
+            return s;
+        }
+
+        /**
+         * Creates a similar configuration but with an extra button added to the dialog.
+         * @see NotifyDescriptor#setAdditionalOptions
+         */
+        public ConfigurationStatus withExtraButton(JButton extraButton) {
+            if (this.extraButton != null) {
+                throw new IllegalArgumentException();
+            }
+            ConfigurationStatus s = new ConfigurationStatus();
+            s.errorMessage = errorMessage;
+            s.warningMessage = warningMessage;
+            s.extraButton = extraButton;
+            return s;
+        }
+
+        /** for internal use only */
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+
+        /** for internal use only */
+        public String getWarningMessage() {
+            return warningMessage;
+        }
+
+        /** for internal use only */
+        public JButton getExtraButton() {
+            return extraButton;
+        }
+
+    }
+
+    /**
      * Utilities which can be used by {@link ProjectHudsonJobCreator#configure}.
      */
     class Helper {
+
+        private Helper() {}
 
         /**
          * Prepares to add version control information appropriate to the project's basedir.
@@ -134,8 +200,8 @@ public interface ProjectHudsonJobCreatorFactory {
         /**
          * @return error message for {@link ProjectHudsonJobCreator#error} in case {@link #prepareSCM} is null
          */
-        public static String noSCMError() {
-            return "The project does not use any supported version control system."; // XXX I18N
+        public static ConfigurationStatus noSCMError() {
+            return ConfigurationStatus.withError("The project does not use any supported version control system."); // XXX I18N
         }
 
         /**
