@@ -1450,7 +1450,6 @@ abstract public class CsmCompletionQuery {
                         case BAR:
                         case CARET:
                         case PERCENT:
-
                             if (findType && !mtdList.isEmpty()) {
                                 List<CsmType> typeList = getTypeList(item, 0);
                                 Collection<CsmFunction> filtered = CompletionSupport.filterMethods(mtdList, typeList, false);
