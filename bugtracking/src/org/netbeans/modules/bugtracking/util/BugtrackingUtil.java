@@ -44,10 +44,12 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -59,6 +61,8 @@ import javax.swing.SwingConstants;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
+import org.netbeans.modules.bugtracking.patch.ContextualPatch;
+import org.netbeans.modules.bugtracking.patch.PatchException;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
@@ -71,6 +75,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -79,8 +84,6 @@ import org.openide.windows.TopComponent;
  * @author Tomas Stupka, Jan Stola
  */
 public class BugtrackingUtil {
-
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.issues");
 
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
@@ -228,8 +231,14 @@ public class BugtrackingUtil {
     }
 
     public static void applyPatch(File patch, File context) {
-        // PENDING
-        System.out.println("Applying " + patch.getAbsolutePath() + "  to " + context.getAbsolutePath());
+        try {
+            ContextualPatch cp = ContextualPatch.create(patch, context);
+            cp.patch(false);
+        } catch (PatchException ex) {
+            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
 }
