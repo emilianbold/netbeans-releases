@@ -77,6 +77,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
     private ValidationStatus validationStatus = ValidationStatus.initialStatus();
     private final List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
     private boolean collectorsTurnedOn = true;
+    private final String iconPath;
     //register accessor which will be used ne friend packages of API/SPI accessor packages
     //to get access to tool creation, etc.
 
@@ -87,6 +88,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
     private DLightTool(DLightToolConfiguration configuration) {
         this.toolName = DLightToolConfigurationAccessor.getDefault().getToolName(configuration);
+        this.iconPath = DLightToolConfigurationAccessor.getDefault().getIconPath(configuration);
         dataCollectors = Collections.synchronizedList(new ArrayList<DataCollector>());
         indicators = Collections.synchronizedList(new ArrayList<Indicator>());
         indicatorDataProviders = Collections.synchronizedList(new ArrayList<IndicatorDataProvider>());
@@ -172,6 +174,14 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
     public final String getName() {
         return toolName;
+    }
+
+    public final boolean hasIcon(){
+        return iconPath != null;
+    }
+
+    public final String getIconPath(){
+        return iconPath;
     }
 
     /**
