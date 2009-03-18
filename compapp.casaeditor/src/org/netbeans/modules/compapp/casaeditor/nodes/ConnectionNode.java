@@ -161,7 +161,7 @@ public class ConnectionNode extends CasaNode {
 
         // Add JBI extensions on connection
         ExtensionPropertyHelper.setupExtensionPropertySheet(this,
-                casaConnection, sheet, "connection", "all"); // NOI18N
+                casaConnection, sheet, "connection", null, "all"); // NOI18N
         
     }
 
@@ -171,8 +171,8 @@ public class ConnectionNode extends CasaNode {
         CasaConnection casaConnection = (CasaConnection) getData();
         if (casaConnection != null) {
             try {
-                return casaConnection.getConsumer().get().getEndpointName() +
-                        "<->" + casaConnection.getProvider().get().getEndpointName();   // NOI18N
+                return casaConnection.getConsumer().get().getDisplayName() +
+                        "<->" + casaConnection.getProvider().get().getDisplayName();   // NOI18N
             } catch (Throwable t) {
                 // getName MUST recover gracefully.
                 return getBadName();
@@ -184,8 +184,8 @@ public class ConnectionNode extends CasaNode {
     private String getEncodingName() {
         CasaConnection casaConnection = (CasaConnection) getData();
         if (casaConnection != null) {
-            return casaConnection.getConsumer().get().getEndpointName() +
-                    "&#60;-&#62;" + casaConnection.getProvider().get().getEndpointName();   // NOI18N
+            return casaConnection.getConsumer().get().getDisplayName() +
+                    "&#60;-&#62;" + casaConnection.getProvider().get().getDisplayName();   // NOI18N
         }
         return super.getName();
     }
@@ -244,7 +244,7 @@ public class ConnectionNode extends CasaNode {
     protected void addCustomActions(List<Action> actions) {
         CasaConnection casaConnection = (CasaConnection) getData();
 
-        if (isConnectionConfiguredWithQoS(casaConnection)) {
+        if (casaConnection != null && isConnectionConfiguredWithQoS(casaConnection)) {
             actions.add(new ClearConfigExtensionsAction(
                     NbBundle.getMessage(ConnectionNode.class,
                     "CLEAR_QOS_CONFIG"), this));  // NOI18N

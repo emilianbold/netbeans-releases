@@ -38,11 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.compapp.casaeditor.model.jbi;
+package org.netbeans.modules.compapp.casaeditor.model.casa;
+
+import javax.swing.text.Document;
+import org.netbeans.modules.xml.xam.AbstractModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author jqian
  */
-public interface Consumer extends ConnectionEnd {
+public class CasaModelFactory extends AbstractModelFactory<CasaModel> {  
+    
+    private static final CasaModelFactory FACTORY = new CasaModelFactory();
+    
+    public static CasaModelFactory getInstance(){
+        return FACTORY;
+    }
+
+    
+    private CasaModelFactory() {
+    }
+    
+    /**
+     * Gets CASA model from given model source.  Model source should 
+     * provide lookup for:
+     * 1. FileObject of the model source
+     * 2. DataObject represent the model
+     * 3. Swing Document buffer for in-memory text of the model source
+     */
+    public CasaModel getModel(ModelSource source) {
+        if (source == null) return null;
+        Lookup lookup = source.getLookup();
+        assert lookup.lookup(Document.class) != null;
+        return super.getModel(source);
+    }
+     
+    protected CasaModel createModel(ModelSource source) {
+        return new CasaWrapperModel(source);
+    }
+    
 }

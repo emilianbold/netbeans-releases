@@ -58,6 +58,7 @@ import org.netbeans.api.visual.widget.Widget;
 public class CasaBindingBadges {
     
     private static final String SOAP_BINDING = "soap"; // NOI18N
+    private static final String SOAP12_BINDING = "soap12"; // NOI18N
     
     public enum Badge {
         IS_EDITABLE(RegionUtilities.IMAGE_EDIT_16_ICON),
@@ -88,6 +89,7 @@ public class CasaBindingBadges {
         for (Badge badge : Badge.values()) {
             // skip WSIT config for non-soap binding
             if (bindingType.equalsIgnoreCase(SOAP_BINDING) ||
+                    bindingType.equalsIgnoreCase(SOAP12_BINDING) ||
                     (badge != Badge.WS_POLICY)) {
                 ImageWidget badgeWidget = new ImageWidget(scene);
                 mBadgeWidgets.put(badge, badgeWidget);
@@ -97,7 +99,10 @@ public class CasaBindingBadges {
     }
     
     public void setBadge(Badge badge, boolean isActive) {
-        mBadgeWidgets.get(badge).setImage(isActive ? badge.getImage() : null);
+        ImageWidget imageWidget = mBadgeWidgets.get(badge);
+        if (imageWidget != null) {
+            imageWidget.setImage(isActive ? badge.getImage() : null);
+        }
     }
     
     public void setBadgePressed(Badge badge, boolean isPressed) {
