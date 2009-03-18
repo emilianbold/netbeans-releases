@@ -414,7 +414,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
 
         @Override
         public String toString() {
-            return origParamsText + "[" + startOffset + "-" + endOffset +"] params:" + paramText;
+            return origParamsText + "[" + startOffset + "-" + endOffset +"] params:" + paramText; // NOI18N
         }
     }
     
