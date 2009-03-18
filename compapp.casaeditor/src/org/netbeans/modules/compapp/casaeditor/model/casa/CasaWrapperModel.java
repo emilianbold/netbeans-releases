@@ -737,31 +737,9 @@ public class CasaWrapperModel extends CasaModel {
         PortType portType = casaWrapperModel.getPortType(interfaceQName);
         assert portType != null;
         String wsdlLocation = casaWrapperModel.getWSDLLocation(interfaceQName);
-
-        ExtensibilityElementTemplateFactory factory = ExtensibilityElementTemplateFactory.getDefault();
-        Collection<TemplateGroup> groups = factory.getExtensibilityElementTemplateGroups();
-        Vector<LocalizedTemplateGroup> protocols = new Vector<LocalizedTemplateGroup>();
-        LocalizedTemplateGroup ltg = null;
-        LocalizedTemplateGroup bindingType = null;
-        for (TemplateGroup group : groups) {
-            ltg = factory.getLocalizedTemplateGroup(group);
-            protocols.add(ltg);
-            // System.out.println(bType+" Add Potocol: "+ltg.getName());
-            if (ltg.getName().equalsIgnoreCase(bType)) {
-                bindingType = ltg;
-                break;
-            }
-        }
-        if (bindingType == null) {
-            String msg = NbBundle.getMessage(CasaWrapperModel.class,
-                    "MSG_FAIL_TO_POPULATE_BINDING", // NOI18N
-                    bType == null ? "null" : bType.toUpperCase()); // NOI18N
-            NotifyDescriptor d =
-                    new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
-            throw new RuntimeException(msg);
-        }
-
+        
+        LocalizedTemplateGroup bindingType = getBindingType(bType);
+        
         Binding binding = port.getBinding().get();
         String bindingName = binding.getName();
         Service service = (Service) port.getParent();
@@ -803,15 +781,13 @@ public class CasaWrapperModel extends CasaModel {
             }
 
             String targetNamespace = definitions.getTargetNamespace();
-
-            boolean invalidBinding = true;
-
-            for (int k = 0; (k < templates.length) && invalidBinding; k++) {
-                bindingSubType = templates[k];
+            
+            //For bindings having file templates, generate using skeleton template.
+            //and then let the dialog determine the exact values.
+            if (bindingType.getSkeletonTemplate() != null) {
                 configurationMap.put(
-                        WSDLWizardConstants.BINDING_SUBTYPE,
-                        bindingSubType);
-
+                            WSDLWizardConstants.BINDING_SUBTYPE,
+                            bindingType.getSkeletonTemplate());
                 if (binding != null) {
                     definitions.removeBinding(binding);
                 }
@@ -821,26 +797,48 @@ public class CasaWrapperModel extends CasaModel {
                         port.removeExtensibilityElement(ex);
                     }
                 }
+                BindingGenerator generator = new BindingGenerator(wsdlModel, portType, configurationMap);
+                generator.execute();
+                binding = generator.getBinding();
+            } else {
+                boolean invalidBinding = true;
 
-                BindingGenerator bGen =
-                        new BindingGenerator(wsdlModel, portType, configurationMap);
-                bGen.execute();
+                for (int k = 0; (k < templates.length) && invalidBinding; k++) {
+                    bindingSubType = templates[k];
+                    configurationMap.put(
+                            WSDLWizardConstants.BINDING_SUBTYPE,
+                            bindingSubType);
 
-                binding = bGen.getBinding();
+                    if (binding != null) {
+                        definitions.removeBinding(binding);
+                    }
 
-                if (binding != null) {
-                    bindingSubType.getMProvider().postProcess(targetNamespace, binding);
+                    if (port != null) {
+                        for (ExtensibilityElement ex : port.getExtensibilityElements()) {
+                            port.removeExtensibilityElement(ex);
+                        }
+                    }
+
+                    BindingGenerator bGen =
+                            new BindingGenerator(wsdlModel, portType, configurationMap);
+                    bGen.execute();
+
+                    binding = bGen.getBinding();
+
+                    if (binding != null) {
+                        bindingSubType.getMProvider().postProcess(targetNamespace, binding);
+                    }
+
+                    if (port != null) {
+                        bindingSubType.getMProvider().postProcess(targetNamespace, port);
+                    }
+
+                    List<ValidationInfo> vBindingInfos =
+                            bindingSubType.getMProvider().validate(binding);
+                    invalidBinding = vBindingInfos.size() > 0;
+                    //System.out.println(invalidBinding + " subType: " + // NOI18N
+                    //        bindingSubType.getName());
                 }
-
-                if (port != null) {
-                    bindingSubType.getMProvider().postProcess(targetNamespace, port);
-                }
-
-                List<ValidationInfo> vBindingInfos =
-                        bindingSubType.getMProvider().validate(binding);
-                invalidBinding = vBindingInfos.size() > 0;
-            //System.out.println(invalidBinding + " subType: " + // NOI18N
-            //        bindingSubType.getName());
             }
 //        } catch (RuntimeException e) {
 //            if (wsdlModel.isIntransaction()) {
@@ -852,6 +850,47 @@ public class CasaWrapperModel extends CasaModel {
                 wsdlModel.endTransaction();
             }
         }
+    }
+    
+    public static LocalizedTemplateGroup getBindingType(String bType) {
+        ExtensibilityElementTemplateFactory factory = ExtensibilityElementTemplateFactory.getDefault();
+        Collection<TemplateGroup> groups = factory.getExtensibilityElementTemplateGroups();
+        Vector<LocalizedTemplateGroup> protocols = new Vector<LocalizedTemplateGroup>();
+        LocalizedTemplateGroup ltg = null;
+        LocalizedTemplateGroup bindingType = null;
+        for (TemplateGroup group : groups) {
+            ltg = factory.getLocalizedTemplateGroup(group);
+            protocols.add(ltg);
+            // System.out.println(bType+" Add Potocol: "+ltg.getName());
+            if (ltg.getName().equalsIgnoreCase(bType)) {
+                bindingType = ltg;
+                break;
+            }
+        }
+        
+        if (bindingType == null) {
+            String msg = NbBundle.getMessage(CasaWrapperModel.class,
+                    "MSG_FAIL_TO_POPULATE_BINDING", // NOI18N
+                    bType == null ? "null" : bType.toUpperCase()); // NOI18N
+            NotifyDescriptor d =
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            throw new RuntimeException(msg);
+        }
+        
+        return bindingType;        
+    }
+    
+    public boolean isConfigurableBCEndpoint(final CasaEndpointRef casaEndpointRef) {
+        CasaPort casaPort = getCasaPort(casaEndpointRef);
+        if (casaPort != null // is BC endpoint
+                && getConnections(getCasaPort(casaEndpointRef), false).size() == 0 // no existing connections
+                && !isEndpointDefined(casaEndpointRef) // interface is not defined
+                && isEditable(casaPort) // WSDL port is editable
+                ) { 
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -1121,7 +1160,7 @@ public class CasaWrapperModel extends CasaModel {
      * Gets the casa connection between the two given casa endpoints, including
      * connection that is marked as deleted.
      */
-    private CasaConnection getCasaConnection(final CasaConsumes consumes,
+    public CasaConnection getCasaConnection(final CasaConsumes consumes,
             final CasaProvides provides) {
         // Get all the connections, including deleted ones
         List<CasaConnection> connectionList = getCasaConnectionList(true);
@@ -1482,7 +1521,8 @@ public class CasaWrapperModel extends CasaModel {
                 return null;
             }
 
-            String newServiceName = ((Service) (port.getParent())).getName();
+            Service newService = (Service) port.getParent();
+            String newServiceName = newService.getName();
             String newPortName = port.getName();
             String fname = wsdlFile.getCanonicalPath();
             String relativePath = fname;
@@ -1505,16 +1545,16 @@ public class CasaWrapperModel extends CasaModel {
                 }
             }
 
-            String tns = port.getModel().getDefinitions().getTargetNamespace();
-            String newInterfaceName = port.getBinding().get().getType().get().getName();
-            String newPortTypeHref = getPortTypeHref(relativePath, newInterfaceName);
+            PortType newPortType = port.getBinding().get().getType().get();
+            String newPortTypeName = newPortType.getName();
+            String newPortTypeHref = getPortTypeHref(relativePath, newPortTypeName);
 
             String bindingType = bi.getBindingType();
             String componentName = bi.getBindingComponentName();
 
             return addCasaPortToModel(componentName, bindingType,
-                    new QName(tns, newInterfaceName),
-                    new QName(tns, newServiceName),
+                    new QName(newPortType.getModel().getDefinitions().getTargetNamespace(), newPortTypeName),
+                    new QName(newService.getModel().getDefinitions().getTargetNamespace(), newServiceName),
                     newPortName, portHref, newPortTypeHref, 0, 0);
         } catch (Exception ex) {
             // add failed...
@@ -1649,8 +1689,10 @@ public class CasaWrapperModel extends CasaModel {
      * Consumes and Provides endpoint are deleted or marked as deleted as a
      * side effect.
      *
-     * If the casa port is defined in compapp, then the corresponding WSDL port
-     * and binding in casa wsdl are cleaned up.
+     * If the corresponding WSDL port is defined in &lt;compapp&gt;.wsdl,
+     * then the port, service and binding are all removed from the WSDL file;
+     * if the WSDL port is defined in a user WSDL file, then the WSDL is not
+     * modified.
      *
      * @param casaPort          a casa port
      */
@@ -1733,24 +1775,29 @@ public class CasaWrapperModel extends CasaModel {
                         Service service = (Service) port.getParent();
                         Definitions definitions = (Definitions) service.getParent();
 
-                        WSDLModel compAppWSDLModel = port.getModel();
-                        compAppWSDLModel.startTransaction();
-                        try {
-                            // Added null-checking to avoid exception when dealing
-                            // with corrupted WSDL model (for example, a port w/o
-                            // binding).
-                            if (service != null) {
-                                if (port != null) {
-                                    service.removePort(port);
+                        WSDLModel wsdlModel = port.getModel();
+                        
+                        // #160282: do clean up if and only if the WSDL port is
+                        // defined in <compapp>.wsdl
+                        if (wsdlModel == getCompAppWSDLModel(false)) {
+                            wsdlModel.startTransaction();
+                            try {
+                                // Added null-checking to avoid exception when dealing
+                                // with corrupted WSDL model (for example, a port w/o
+                                // binding).
+                                if (service != null) {
+                                    if (port != null) {
+                                        service.removePort(port);
+                                    }
+                                    definitions.removeService(service);
                                 }
-                                definitions.removeService(service);
-                            }
-                            if (binding != null) {
-                                definitions.removeBinding(binding);
-                            }
-                        } finally {
-                            if (compAppWSDLModel.isIntransaction()) {
-                                compAppWSDLModel.endTransaction();
+                                if (binding != null) {
+                                    definitions.removeBinding(binding);
+                                }
+                            } finally {
+                                if (wsdlModel.isIntransaction()) {
+                                    wsdlModel.endTransaction();
+                                }
                             }
                         }
 
@@ -2203,6 +2250,7 @@ public class CasaWrapperModel extends CasaModel {
                 }
             }
         }
+        /* #138989 Don't show consume endpoints from external SUs.
         List<JBIServiceUnitTransferObject.Endpoint> cList =
                 suTransfer.getConsumesEndpoints();
         for (JBIServiceUnitTransferObject.Endpoint c : cList) {
@@ -2219,7 +2267,7 @@ public class CasaWrapperModel extends CasaModel {
                     model.endTransaction();
                 }
             }
-        }
+        } */
     }
 
     /**
@@ -2515,7 +2563,7 @@ public class CasaWrapperModel extends CasaModel {
      * @param endpointRef       an endpoint reference
      * @param includeDeleted    whether to include connections that are marked as deleted
      */
-    private List<CasaConnection> getConnections(
+    public List<CasaConnection> getConnections(
             final CasaEndpointRef endpointRef,
             boolean includeDeleted) {
         List<CasaConnection> ret = new ArrayList<CasaConnection>();
@@ -2800,7 +2848,8 @@ public class CasaWrapperModel extends CasaModel {
             }
             
             // Can't edit interface name if defined outside of CompApp.wsdl
-            if (!isDefinedInCompAppWSDL(casaPort)) {
+            //if (!isDefinedInCompAppWSDL(casaPort)) {
+            if (!isDefinedInCompApp(casaPort)) {
                 return false;
             }
         }        
@@ -3076,7 +3125,7 @@ public class CasaWrapperModel extends CasaModel {
             } else {
                 try {
                     populateBindingAndPort(casaPort, port, interfaceQName,
-                            casaPort.getBindingType());
+                            getBindingType(casaPort));
                 } catch (RuntimeException e) {
                     // TODO: we need better transaction rollback handling.
                     startTransaction();
@@ -3349,6 +3398,13 @@ public class CasaWrapperModel extends CasaModel {
         // allow JavaEE project types
         if (JbiDefaultComponentInfo.isJavaEEProject(p)) {
             return JbiProjectConstants.JAVA_EE_SE_COMPONENT_NAME;
+        }
+        //allow POJO based JavaSE projects
+        if (p.getClass().getName().equals(JbiProjectConstants.JAVA_SE_PROJECT_CLASS_NAME) && 
+            POJOHelper.getProjectProperty(p, 
+                                          JbiProjectConstants.POJO_PROJECT_PROPERTY) != 
+            null) {
+            return JbiProjectConstants.JAVA_SE_POJO_ENGINE;
         }
 
         AntArtifactProvider prov = p.getLookup().lookup(AntArtifactProvider.class);
