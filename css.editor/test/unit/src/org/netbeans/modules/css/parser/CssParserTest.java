@@ -115,5 +115,29 @@ public class CssParserTest extends TestBase {
         check("h1 @@@ h2 { }");
         check("t@@@ble { }");
 
+        check("table > @@@ { }");
+        check("t[@@@] { }");
+        check("t[x=@@@] { }");
+        check("* > t[x=@@@] { }");
+        check("E:lang(@@@){ }");
+        check("E:@@@{ }");
+        check("t[x|=@@@] { }");
+
+//        check("#@@@ { }");//fails
+//        check("E#@@@ { }");//fails
+
+        check("@@@ + t[x=@@@] { }");
+
+        check("h1 { @@@: rgb(@@@); }");
+        check("span[hello=@@@][@@@]{}");
+
+        check("EXAMPLE { /* @@@ */ }");
+        check("p.@@@:first-letter {color: @@@}");
+
+//        check("h1 {color: #@@@}");//fails
+        check("media @@@{}");
+
+//        check("media TV{ @@@ { } }");//fails
+        check("@page:left{margin-left:@@@;}");
     }
 }

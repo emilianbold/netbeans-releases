@@ -88,6 +88,10 @@ public class KenaiTest extends NbTestCase {
             System.setProperty("kenai.com.url", "http://testkenai.com");
             instance = Kenai.getDefault();
             if (uname == null) {
+                uname = System.getProperty("kenai.user.login");
+                passw = System.getProperty("kenai.user.password");
+            }
+            if (uname == null) { // if it is still null, check the file in ~
                 BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
                 uname = br.readLine();
                 passw = br.readLine();
@@ -124,6 +128,20 @@ public class KenaiTest extends NbTestCase {
         for (KenaiProject prj : result) {
             assertEquals(prj.getDisplayName(), "JRuby-parser: A Ruby parser");
             System.out.println("Search projects: " + prj.getDisplayName());
+        }
+    }
+
+    /**
+     * Test of searchProjects method, of class Kenai.
+     */
+    @Test
+    public void testSearchProjectsLessSpecific() throws Exception {
+        System.out.println("testSearchProjects");
+        String pattern = "java";
+        Collection<KenaiProject> result = instance.searchProjects(pattern);
+
+        if (result.size() == 0) {
+            fail("The search returned no results when [java] was entered");
         }
     }
 
@@ -429,7 +447,7 @@ public class KenaiTest extends NbTestCase {
                 System.out.println(feature.getDisplayName());
                 // Check feature's location
                 line = br.readLine().trim();
-                if (line.equals("null")) { // feature is not present 
+                if (line.equals("null")) { // feature is not present
                     assertEquals(null, feature.getLocation());
                 } else {
                     assertEquals(line, feature.getLocation().toString());
@@ -521,6 +539,7 @@ public class KenaiTest extends NbTestCase {
     static public junit.framework.Test suite() {
         junit.framework.TestSuite _suite = new junit.framework.TestSuite();
         _suite.addTest(new KenaiTest("testSearchProjects"));
+        _suite.addTest(new KenaiTest("testSearchProjectsLessSpecific"));
         _suite.addTest(new KenaiTest("testSearchProjectsWithSpace"));
         _suite.addTest(new KenaiTest("testGetProject"));
         _suite.addTest(new KenaiTest("testGetProjectGit"));
@@ -538,7 +557,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testGetFeatures"));
         _suite.addTest(new KenaiTest("testGetLicenses"));
         _suite.addTest(new KenaiTest("testGetServices"));
-        _suite.addTest(new KenaiTest("testGetMyProjects"));
+//        _suite.addTest(new KenaiTest("testGetMyProjects"));
         return _suite;
     }
     ;

@@ -46,7 +46,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -57,22 +56,18 @@ import org.openide.util.actions.NodeAction;
 public abstract class UninstallAction extends NodeAction {
     
     protected void performAction(final Node[] activatedNodes) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                try {                    
-                    for (Node node : activatedNodes) {
-                        Lookup lookup = node.getLookup();
-                        Uninstallable uninstallable = lookup.lookup(Uninstallable.class);
-                        
-                        if (uninstallable != null) {
-                            uninstallable.uninstall(isForceAction());
-                        }
-                    }                    
-                } catch (RuntimeException rex) {
-                    //gobble up exception
+        try {                    
+            for (Node node : activatedNodes) {
+                Lookup lookup = node.getLookup();
+                Uninstallable uninstallable = lookup.lookup(Uninstallable.class);
+
+                if (uninstallable != null) {
+                    uninstallable.uninstall(isForceAction());
                 }
-            }
-        });
+            }                    
+        } catch (RuntimeException rex) {
+            //gobble up exception
+        }
     }
     
     protected boolean enable(Node[] activatedNodes) {

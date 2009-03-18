@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sun.manager.jbi.actions;
 
 import org.netbeans.modules.sun.manager.jbi.nodes.Shutdownable;
@@ -46,7 +45,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -55,30 +53,25 @@ import org.openide.util.actions.NodeAction;
  * @author jqian
  */
 public abstract class ShutdownAction extends NodeAction {
-    
+
     protected void performAction(final Node[] activatedNodes) {
-        
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                try {
-                    for (Node node : activatedNodes) {
-                        Lookup lookup = node.getLookup();
-                        Shutdownable shutdownable = lookup.lookup(Shutdownable.class);
-                        
-                        if (shutdownable != null) {
-                            shutdownable.shutdown(isForceAction());
-                        }
-                    }
-                } catch (RuntimeException rex) {
-                    //gobble up exception
+        try {
+            for (Node node : activatedNodes) {
+                Lookup lookup = node.getLookup();
+                Shutdownable shutdownable = lookup.lookup(Shutdownable.class);
+
+                if (shutdownable != null) {
+                    shutdownable.shutdown(isForceAction());
                 }
             }
-        });
+        } catch (RuntimeException rex) {
+            //gobble up exception
+        }
     }
-    
+
     protected boolean enable(Node[] activatedNodes) {
         boolean ret = false;
-        
+
         if (activatedNodes != null && activatedNodes.length > 0) {
             ret = true;
             for (Node node : activatedNodes) {
@@ -94,50 +87,45 @@ public abstract class ShutdownAction extends NodeAction {
                 }
             }
         }
-        
+
         return ret;
     }
-    
+
     protected boolean asynchronous() {
         return false;
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
 //    void clearEnabledState() {
 //        putProperty(PROP_ENABLED, null);
 //    }
-    
     protected abstract boolean isForceAction();
-    
-    
     //========================================================================//
-    
     /**
      * Normal shutdown action.
      */
     public static class Normal extends ShutdownAction {
-        
+
         public String getName() {
             return NbBundle.getMessage(ShutdownAction.class, "LBL_ShutdownAction");  // NOI18N
         }
-        
+
         protected boolean isForceAction() {
             return false;
         }
     }
-    
+
     /**
      * Force shutdown action.
      */
     public static class Force extends ShutdownAction {
-        
+
         public String getName() {
             return NbBundle.getMessage(ShutdownAction.class, "LBL_ForceShutdownAction");  // NOI18N
         }
-        
+
         protected boolean isForceAction() {
             return true;
         }

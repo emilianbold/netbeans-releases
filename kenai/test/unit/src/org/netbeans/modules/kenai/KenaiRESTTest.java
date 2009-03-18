@@ -39,7 +39,6 @@
 package org.netbeans.modules.kenai;
 
 import java.net.URL;
-import java.util.HashMap;
 import org.codeviation.pojson.PojsonLoad;
 import org.junit.After;
 import org.junit.AfterClass;

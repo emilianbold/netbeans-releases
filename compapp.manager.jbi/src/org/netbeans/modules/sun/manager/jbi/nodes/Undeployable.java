@@ -58,6 +58,6 @@ public interface Undeployable {
      * @return <code>true</code> if undeployment is successful; 
      *         <code>false</code> if the undeployment is cancelled or failed.
      */
-    public boolean undeploy(boolean force);
+    public void undeploy(boolean force);
 
 }
