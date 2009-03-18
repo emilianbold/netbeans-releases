@@ -21,7 +21,9 @@ set -e
 
 script_dir=`dirname "$0"`
 
-"$script_dir"/unpack200.sh "$2" "$2"
+jdk_home=`"$script_dir"/get_current_jdk.sh`
+
+"$script_dir"/unpack200.sh "$2" "$2" "$jdk_home"
 
 cd "$2"
 cd ..
