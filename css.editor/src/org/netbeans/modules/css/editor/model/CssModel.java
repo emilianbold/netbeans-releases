@@ -66,7 +66,6 @@ public final class CssModel {
     
     private final List<CssRule> rules = new ArrayList<CssRule>(10);
     private Snapshot snapshot;
-    private SimpleNode root;
 
     
     public static CssModel create(CssParserResult result) {
@@ -76,11 +75,15 @@ public final class CssModel {
 
     private CssModel(Snapshot snapshot, SimpleNode root) {
         this.snapshot = snapshot;
-        this.root = root;
         updateModel(snapshot, root);
     }
 
     //--- API methods ---
+
+    /** @return an instance of the source Snapshot of the parser result used to construct this model. */
+    public Snapshot getSnapshot() {
+        return snapshot;
+    }
 
     /** @return List of {@link CssRule}s or null if the document hasn't been parsed yet. */
     public List<CssRule> rules() {
@@ -110,8 +113,6 @@ public final class CssModel {
 
     private synchronized void updateModel(final Snapshot snapshot, SimpleNode root) {
         synchronized (rules) {
-            List<CssRule> oldRules = rules;
-
             NodeVisitor styleRuleVisitor = new NodeVisitor() {
 
                 public void visit(SimpleNode node) {

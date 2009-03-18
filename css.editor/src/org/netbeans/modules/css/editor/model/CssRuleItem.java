@@ -78,6 +78,7 @@ public final class CssRuleItem {
         return value;
     }
 
+    @Override
     public String toString() {
         return "CssRuleItem[" + key + "; " + value + "]"; //NOI18N
     }
@@ -123,6 +124,7 @@ public final class CssRuleItem {
             return offset;
         }
 
+        @Override
         public String toString() {
             return "Item[" + name + "; " + offset + "]"; //NOI18N
         }

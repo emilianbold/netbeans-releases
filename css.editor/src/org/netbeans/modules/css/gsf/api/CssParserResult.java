@@ -41,56 +41,50 @@ package org.netbeans.modules.css.gsf.api;
 
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
-//import org.netbeans.modules.csl.api.Phase; 
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.editor.model.CssModel;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  *
- * @author marek
+ * @author marek.fukala@sun.com
  */
 public class CssParserResult extends ParserResult {
 
     private SimpleNode root;
-    private Snapshot snapshot;
     private List<Error> errors;
-//    private Phase currentPhase;
-    private CssModel model;
     
     public CssParserResult(Parser parser, Snapshot snapshot, SimpleNode root, List<Error> errors) {
         super(snapshot);
-        this.snapshot = snapshot;
+
+        if(root == null) {
+            throw new NullPointerException("root cannot be null!");
+        }
+
         this.root = root;
         this.errors = errors;
-//        this.currentPhase = Phase.PARSED;
     }
     
     public SimpleNode root() {
+        if(root == null) {
+            throw new IllegalStateException("The CssParserResult already invalidated!");
+        }
         return root;
     }
-    
-//    @Override
-//    public Phase toPhase(Phase phase) {
-//        if(phase == Phase.ELEMENTS_RESOLVED) {
-//            //create css model
-//
-//
-//        }
-//        return phase; //no phases support
-//    }
 
     @Override
     public List<? extends Error> getDiagnostics() {
+        if(root == null) {
+            throw new IllegalStateException("The CssParserResult already invalidated!");
+        }
         return errors;
     }
 
     @Override
     protected void invalidate() {
-        //xxx am I really suppose to throw any references? why? who holds me?
+        root = null;
+        errors = null;
     }
 
 //        @Override
