@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
+import java.io.IOException;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,9 @@ import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
+import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 
@@ -115,14 +119,23 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             DLightIndicatorDPStrings.add(SUNSTUDIO);
             DLightIndicatorDPStrings.add(PRSTAT_INDICATOR);
         } else {
+
+            ExecutionEnvironment execEnv = ((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment();
+            if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                try {
+                    ConnectionManager.getInstance().connectTo(execEnv);
+                } catch (IOException ex) {
+                    DLightLogger.instance.warning(ex.toString());
+                }
+            }
             try {
-                String osName = HostInfoUtils.getOS(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
-                if (osName.indexOf("Linux") != -1 ||  osName.equals("MacOS")){////NOI18N
+                String osName = HostInfoUtils.getOS(execEnv);
+                if (osName.indexOf("Linux") != -1 || osName.equals("MacOS")){//NOI18N
                     DLightCollectorString = LL_MONITOR;
                     DLightIndicatorDPStrings = Arrays.asList(LL_MONITOR);
                 }
             } catch (ConnectException ex) {
-                Exceptions.printStackTrace(ex);
+                //Exceptions.printStackTrace(ex);
             }
         }
     }
