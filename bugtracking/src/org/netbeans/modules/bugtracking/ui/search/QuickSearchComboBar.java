@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.bugtracking.ui.search;
 
-import org.netbeans.modules.bugtracking.ui.search.*;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;

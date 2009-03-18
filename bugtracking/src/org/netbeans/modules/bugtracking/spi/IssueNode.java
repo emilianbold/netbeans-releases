@@ -44,7 +44,6 @@ package org.netbeans.modules.bugtracking.spi;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;

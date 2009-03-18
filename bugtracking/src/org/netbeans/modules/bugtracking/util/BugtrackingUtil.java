@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -75,7 +74,6 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 

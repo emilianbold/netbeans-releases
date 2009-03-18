@@ -49,7 +49,6 @@ import java.util.List;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 

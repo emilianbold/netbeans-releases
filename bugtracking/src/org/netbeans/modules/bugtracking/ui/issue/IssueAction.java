@@ -47,8 +47,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**

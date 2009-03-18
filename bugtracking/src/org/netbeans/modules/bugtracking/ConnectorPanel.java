@@ -37,16 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * ConnectorPanel.java
- *
- * Created on Oct 15, 2008, 9:41:51 PM
- */
-
 package org.netbeans.modules.bugtracking;
 
 import java.awt.Component;
-import java.awt.event.ItemEvent;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
