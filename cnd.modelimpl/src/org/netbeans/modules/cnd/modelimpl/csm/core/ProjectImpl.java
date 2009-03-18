@@ -374,7 +374,7 @@ public final class ProjectImpl extends ProjectBase {
         if (task != null) {
             task.cancel();
         }
-        task = RequestProcessor.getDefault().create(new Runnable() {
+         task = RequestProcessor.getDefault().create(new Runnable() {
 
             public void run() {
                 try {
@@ -387,7 +387,9 @@ public final class ProjectImpl extends ProjectBase {
             }
         }, true);
         task.setPriority(Thread.MIN_PRIORITY);
-        task.schedule(TraceFlags.REPARSE_DELAY);
+        int delay = TraceFlags.REPARSE_DELAY;
+        delay = Math.max(delay, file.getLastParseTime()*10);
+        task.schedule(delay);
     }
 
     @Override
