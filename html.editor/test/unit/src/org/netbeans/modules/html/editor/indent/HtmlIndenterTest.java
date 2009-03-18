@@ -72,14 +72,6 @@ public class HtmlIndenterTest extends TestBase2 {
         super.setUp();
         AbstractIndenter.inUnitTestRun = true;
 
-//        MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class);
-//        // init TestLanguageProvider
-//        Lookup.getDefault().lookup(TestLanguageProvider.class);
-//        TestLanguageProvider.register(CSSTokenId.language());
-//        TestLanguageProvider.register(HTMLTokenId.language());
-//        TestLanguageProvider.register(JspTokenId.language());
-//        TestLanguageProvider.register(JavaTokenId.language());
-
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CSSTokenId.language());
         JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
@@ -219,6 +211,23 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline(
                 "   <p>\n     <table>\n      <tbody>^</table>",
                 "   <p>\n     <table>\n      <tbody>\n     ^</table>", null);
+
+        insertNewline(
+            "<html> <!--^comment",
+            "<html> <!--\n       ^comment", null);
+        insertNewline(
+            "<html> <!--\n             ^comment",
+            "<html> <!--\n             \n       ^comment", null);
+        insertNewline(
+            "<html>\n    <!--\n    comment\n          -->\n^",
+            "<html>\n    <!--\n    comment\n          -->\n\n          ^", null);
+
+        insertNewline(
+            "  <html\n     a=b\n       c=d^",
+            "  <html\n     a=b\n       c=d\n       ^", null);
+        insertNewline(
+            "  <html\n     a=b\n       c=d>^",
+            "  <html\n     a=b\n       c=d>\n      ^", null);
     }
 
 }
