@@ -957,6 +957,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 break;
                             case TYPE:
                             case TYPE_REFERENCE:
+                            case GENERIC_TYPE:
                                 // we have type or type reference and then * or &,
                                 // join into TYPE_REFERENCE
                                 popExp();
