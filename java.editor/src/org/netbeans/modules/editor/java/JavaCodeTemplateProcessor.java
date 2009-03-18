@@ -617,27 +617,33 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 if (tree.getLeaf().getKind() == Tree.Kind.ASSIGNMENT) {
                     AssignmentTree as = (AssignmentTree)tree.getLeaf();
                     TypeMirror left = cInfo.getTrees().getTypeMirror(new TreePath(tree, as.getVariable()));
+                    if (left == null)
+                        return null;
                     TreePath exp = new TreePath(tree, as.getExpression());
                     if (exp.getLeaf() instanceof TypeCastTree)
                         exp = new TreePath(exp, ((TypeCastTree)exp.getLeaf()).getExpression());
                     TypeMirror right = cInfo.getTrees().getTypeMirror(exp);
-                    if (right == null || left == null)
+                    if (right == null)
                         return null;
+                    if (right.getKind() == TypeKind.ERROR)
+                        right = cInfo.getTrees().getOriginalType((ErrorType)right);
                     if (cInfo.getTypes().isAssignable(right, left))
                         return null;
                     return left;
                 }
                 VariableTree vd = (VariableTree)tree.getLeaf();
                 TypeMirror left = cInfo.getTrees().getTypeMirror(new TreePath(tree, vd.getType()));
+                if (left == null)
+                    return null;
                 TreePath exp = new TreePath(tree, vd.getInitializer());
                 if (exp.getLeaf() instanceof TypeCastTree)
                     exp = new TreePath(exp, ((TypeCastTree)exp.getLeaf()).getExpression());
                 TypeMirror right = cInfo.getTrees().getTypeMirror(exp);
                 if (right == null)
                     return null;
-                if (left == null)
-                    return null;
-                if (right.getKind() == TypeKind.ERROR || cInfo.getTypes().isAssignable(right, left))
+                if (right.getKind() == TypeKind.ERROR)
+                    right = cInfo.getTrees().getOriginalType((ErrorType)right);
+                if (cInfo.getTypes().isAssignable(right, left))
                     return null;
                 return left;
             }
