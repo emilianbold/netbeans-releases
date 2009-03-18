@@ -64,13 +64,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     private Item item;
     // General
     private BooleanConfiguration excluded;
-    private int tool = -1;
+    private byte tool = -1;
     // Tools
-    private CustomToolConfiguration customToolConfiguration;
-    private CCompilerConfiguration cCompilerConfiguration;
-    private CCCompilerConfiguration ccCompilerConfiguration;
-    private FortranCompilerConfiguration fortranCompilerConfiguration;
-    private AssemblerConfiguration assemblerConfiguration;
+    private ConfigurationBase lastConfiguration;
 
     // cached id of item
 //    private String id;
@@ -79,17 +75,21 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         this.configuration = configuration;
         setItem(item);
         excluded = new BooleanConfiguration(null, false);
-        // Compilers
-        //customToolConfiguration = new CustomToolConfiguration();
-        //cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), item.getFolder().getFolderConfiguration(configuration).getCCompilerConfiguration());
-        //ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), item.getFolder().getFolderConfiguration(configuration).getCCCompilerConfiguration());
-        //fortranCompilerConfiguration = new FortranCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), ((MakeConfiguration)configuration).getFortranCompilerConfiguration());
 
         // This is side effect of lazy configuration. We should init folder configuration
         // TODO: remove folder initialization. Folder should be responsible for it
         item.getFolder().getFolderConfiguration(configuration);
 
         clearChanged();
+    }
+
+    public ItemConfiguration(ItemConfiguration itemConfiguration) {
+        this.configuration = itemConfiguration.configuration;
+        this.item = itemConfiguration.item;
+        this.excluded = itemConfiguration.excluded;
+        this.needSave = itemConfiguration.needSave;
+        this.tool = itemConfiguration.tool;
+        this.lastConfiguration = itemConfiguration.lastConfiguration;
     }
 
     public boolean isDefaultConfiguration() {
@@ -99,34 +99,33 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         if (getTool() != item.getDefaultTool()) {
             return false;
         }
-        if ((customToolConfiguration != null && customToolConfiguration.getModified()) ||
-                (cCompilerConfiguration != null && cCompilerConfiguration.getModified()) ||
-                (ccCompilerConfiguration != null && ccCompilerConfiguration.getModified()) ||
-                (fortranCompilerConfiguration != null && fortranCompilerConfiguration.getModified()) ||
-                (assemblerConfiguration != null && assemblerConfiguration.getModified())) {
+        if (lastConfiguration != null && lastConfiguration.getModified()) {
             return false;
         }
         return true;
     }
 
     public boolean isCompilerToolConfiguration() {
-        return getTool() == Tool.CCompiler ||
-                getTool() == Tool.CCCompiler ||
-                getTool() == Tool.FortranCompiler ||
-                getTool() == Tool.Assembler;
+        switch (getTool()) {
+            case Tool.Assembler:
+            case Tool.CCCompiler:
+            case Tool.CCompiler:
+            case Tool.FortranCompiler:
+                return true;
+        }
+        return false;
     }
 
     public BasicCompilerConfiguration getCompilerConfiguration() {
-        if (getTool() == Tool.CCompiler) {
-            return getCCompilerConfiguration();
-        } else if (getTool() == Tool.CCCompiler) {
-            return getCCCompilerConfiguration();
-        } else if (getTool() == Tool.FortranCompiler) {
-            return getFortranCompilerConfiguration();
-        } else if (getTool() == Tool.Assembler) {
-            return getAssemblerConfiguration();
-        } else {
-            assert false;
+        switch (getTool()) {
+            case Tool.Assembler:
+                return getAssemblerConfiguration();
+            case Tool.CCCompiler:
+                return getCCCompilerConfiguration();
+            case Tool.CCompiler:
+                return getCCompilerConfiguration();
+            case Tool.FortranCompiler:
+                return getFortranCompilerConfiguration();
         }
         return null;
     }
@@ -172,12 +171,15 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public void setTool(int tool) {
-        this.tool = tool;
-    }
+        if (this.tool != tool){
+            lastConfiguration = null;
+        }
+        this.tool = (byte)tool;
+   }
 
     public int getTool() {
         if (tool == -1) {
-            tool = item.getDefaultTool();
+            tool = (byte)item.getDefaultTool();
         }
         return tool;
     }
@@ -194,72 +196,92 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
     // Custom Tool
     public void setCustomToolConfiguration(CustomToolConfiguration customToolConfiguration) {
-        this.customToolConfiguration = customToolConfiguration;
+        this.lastConfiguration = customToolConfiguration;
     }
 
     public synchronized CustomToolConfiguration getCustomToolConfiguration() {
-        if (customToolConfiguration == null) {
-            customToolConfiguration = new CustomToolConfiguration();
+        if (getTool() == Tool.CustomTool) {
+            if (lastConfiguration == null) {
+                lastConfiguration = new CustomToolConfiguration();
+            }
+            assert lastConfiguration instanceof CustomToolConfiguration;
+            return  (CustomToolConfiguration) lastConfiguration;
         }
-        return customToolConfiguration;
+        return null;
     }
 
     // C Compiler
     public void setCCompilerConfiguration(CCompilerConfiguration cCompilerConfiguration) {
-        this.cCompilerConfiguration = cCompilerConfiguration;
+        this.lastConfiguration = cCompilerConfiguration;
     }
 
     public synchronized CCompilerConfiguration getCCompilerConfiguration() {
-        if (cCompilerConfiguration == null) {
-            FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
-            if (folderConfiguration != null) {
-                cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), folderConfiguration.getCCompilerConfiguration());
-            } else {
-                cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), null);
+        if (getTool() == Tool.CCompiler) {
+            if (lastConfiguration == null) {
+                FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
+                if (folderConfiguration != null) {
+                    lastConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), folderConfiguration.getCCompilerConfiguration());
+                } else {
+                    lastConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), null);
+                }
             }
+            assert lastConfiguration instanceof CCompilerConfiguration;
+            return  (CCompilerConfiguration) lastConfiguration;
         }
-        return cCompilerConfiguration;
+        return null;
     }
 
     // CC Compiler
     public void setCCCompilerConfiguration(CCCompilerConfiguration ccCompilerConfiguration) {
-        this.ccCompilerConfiguration = ccCompilerConfiguration;
+        this.lastConfiguration = ccCompilerConfiguration;
     }
 
     public synchronized CCCompilerConfiguration getCCCompilerConfiguration() {
-        if (ccCompilerConfiguration == null) {
-            FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
-            if (folderConfiguration != null) {
-                ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), folderConfiguration.getCCCompilerConfiguration());
-            } else {
-                ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), null);
+        if (getTool() == Tool.CCCompiler) {
+            if (lastConfiguration == null) {
+                FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
+                if (folderConfiguration != null) {
+                    lastConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), folderConfiguration.getCCCompilerConfiguration());
+                } else {
+                    lastConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), null);
+                }
             }
+            assert lastConfiguration instanceof CCCompilerConfiguration;
+            return  (CCCompilerConfiguration) lastConfiguration;
         }
-        return ccCompilerConfiguration;
+        return null;
     }
 
     // Fortran Compiler
     public void setFortranCompilerConfiguration(FortranCompilerConfiguration fortranCompilerConfiguration) {
-        this.fortranCompilerConfiguration = fortranCompilerConfiguration;
+        this.lastConfiguration = fortranCompilerConfiguration;
     }
 
     public synchronized FortranCompilerConfiguration getFortranCompilerConfiguration() {
-        if (fortranCompilerConfiguration == null) {
-            fortranCompilerConfiguration = new FortranCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getFortranCompilerConfiguration());
+        if (getTool() == Tool.FortranCompiler) {
+            if (lastConfiguration == null) {
+                lastConfiguration = new FortranCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getFortranCompilerConfiguration());
+            }
+            assert lastConfiguration instanceof FortranCompilerConfiguration;
+            return  (FortranCompilerConfiguration) lastConfiguration;
         }
-        return fortranCompilerConfiguration;
+        return null;
     }
 
     // Assembler
     public void setAssemblerConfiguration(AssemblerConfiguration assemblerConfiguration) {
-        this.assemblerConfiguration = assemblerConfiguration;
+        this.lastConfiguration = assemblerConfiguration;
     }
 
     public synchronized AssemblerConfiguration getAssemblerConfiguration() {
-        if (assemblerConfiguration == null) {
-            assemblerConfiguration = new AssemblerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getAssemblerConfiguration());
+        if (getTool() == Tool.Assembler) {
+            if (lastConfiguration == null) {
+                lastConfiguration = new AssemblerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getAssemblerConfiguration());
+            }
+            assert lastConfiguration instanceof AssemblerConfiguration;
+            return  (AssemblerConfiguration) lastConfiguration;
         }
-        return assemblerConfiguration;
+        return null;
     }
 
     // interface ConfigurationAuxObject
@@ -311,12 +333,25 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         setItem(i.getItem());
         getExcluded().assign(i.getExcluded());
         setTool(i.getTool());
-
-        getCustomToolConfiguration().assign(i.getCustomToolConfiguration());
-        getCCompilerConfiguration().assign(i.getCCompilerConfiguration());
-        getCCCompilerConfiguration().assign(i.getCCCompilerConfiguration());
-        getFortranCompilerConfiguration().assign(i.getFortranCompilerConfiguration());
-        getAssemblerConfiguration().assign(i.getAssemblerConfiguration());
+        switch (getTool()) {
+            case Tool.Assembler:
+                getAssemblerConfiguration().assign(i.getAssemblerConfiguration());
+                break;
+            case Tool.CCCompiler:
+                getCCCompilerConfiguration().assign(i.getCCCompilerConfiguration());
+                break;
+            case Tool.CCompiler:
+                getCCompilerConfiguration().assign(i.getCCompilerConfiguration());
+                break;
+            case Tool.CustomTool:
+                getCustomToolConfiguration().assign(i.getCustomToolConfiguration());
+                break;
+            case Tool.FortranCompiler:
+                getFortranCompilerConfiguration().assign(i.getFortranCompilerConfiguration());
+                break;
+            default:
+                assert false;
+        }
     }
 
     public void assignValues(ConfigurationAuxObject profileAuxObject) {
@@ -328,12 +363,25 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         ItemConfiguration i = (ItemConfiguration) profileAuxObject;
         getExcluded().assign(i.getExcluded());
         setTool(i.getTool());
-
-        getCustomToolConfiguration().assign(i.getCustomToolConfiguration());
-        getCCompilerConfiguration().assign(i.getCCompilerConfiguration());
-        getCCCompilerConfiguration().assign(i.getCCCompilerConfiguration());
-        getFortranCompilerConfiguration().assign(i.getFortranCompilerConfiguration());
-        getAssemblerConfiguration().assign(i.getAssemblerConfiguration());
+        switch (getTool()) {
+            case Tool.Assembler:
+                getAssemblerConfiguration().assign(i.getAssemblerConfiguration());
+                break;
+            case Tool.CCCompiler:
+                getCCCompilerConfiguration().assign(i.getCCCompilerConfiguration());
+                break;
+            case Tool.CCompiler:
+                getCCompilerConfiguration().assign(i.getCCompilerConfiguration());
+                break;
+            case Tool.CustomTool:
+                getCustomToolConfiguration().assign(i.getCustomToolConfiguration());
+                break;
+            case Tool.FortranCompiler:
+                getFortranCompilerConfiguration().assign(i.getFortranCompilerConfiguration());
+                break;
+            default:
+                assert false;
+        }
     }
 
     public ItemConfiguration copy(MakeConfiguration makeConfiguration) {
@@ -350,12 +398,25 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
         i.setExcluded(getExcluded().clone());
         i.setTool(getTool());
-
-        i.setCustomToolConfiguration(getCustomToolConfiguration().clone());
-        i.setCCompilerConfiguration(getCCompilerConfiguration().clone());
-        i.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
-        i.setFortranCompilerConfiguration(getFortranCompilerConfiguration().clone());
-        i.setAssemblerConfiguration(getAssemblerConfiguration().clone());
+        switch (getTool()) {
+            case Tool.Assembler:
+                i.setAssemblerConfiguration(getAssemblerConfiguration().clone());
+                break;
+            case Tool.CCCompiler:
+                i.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
+                break;
+            case Tool.CCompiler:
+                i.setCCompilerConfiguration(getCCompilerConfiguration().clone());
+                break;
+            case Tool.CustomTool:
+                i.setCustomToolConfiguration(getCustomToolConfiguration().clone());
+                break;
+            case Tool.FortranCompiler:
+                i.setFortranCompilerConfiguration(getFortranCompilerConfiguration().clone());
+                break;
+            default:
+                assert false;
+        }
         return i;
     }
 

@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class FortranCompilerConfiguration extends BasicCompilerConfiguration implements AllOptionsProvider {
+public class FortranCompilerConfiguration extends BasicCompilerConfiguration implements AllOptionsProvider, ConfigurationBase  {
 
     // Constructors
     public FortranCompilerConfiguration(String baseDir, FortranCompilerConfiguration master) {
