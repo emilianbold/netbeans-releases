@@ -49,14 +49,20 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -380,7 +386,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         acceptEditedValue(); 
         int rowCount = model.getRowCount();
-        model.addRow(new Object[] { "par" + rowCount, "void", "0", Integer.valueOf(-1), Boolean.TRUE }); // NOI18N
+        model.addRow(new Object[] { "par" + rowCount, "int", "0", Integer.valueOf(-1), Boolean.TRUE }); // NOI18N
     }//GEN-LAST:event_addButtonActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -471,13 +477,28 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             typeList.add(par.getType());
         }
 
-        Collection<CsmFunction> allMethods = new ArrayList<CsmFunction>();
-//        allMethods.addAll(RetoucheUtils.getOverridenMethods(method, info));
-//        allMethods.addAll(RetoucheUtils.getOverridingMethods(method, info));
+        Collection<CsmFunction> allMethods = new LinkedHashSet<CsmFunction>();
         allMethods.add(functionObj);
-        
-        for (CsmFunction currentMethod: allMethods) {
+        if (CsmKindUtilities.isMethod(functionObj)) {
+            CsmMethod method = (CsmMethod)functionObj;
+            if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
+                allMethods.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, true));
+                assert !allMethods.isEmpty() : "must be at least start object " + method;
+            }
+        }
+
+        Collection<CsmFunction> allFunctions = new LinkedHashSet<CsmFunction>();
+        for (CsmFunction csmFunction : allMethods) {
+            CsmFunctionDefinition definition = csmFunction.getDefinition();
+            if (definition != null) {
+                allFunctions.add(definition);
+            } else {
+                allFunctions.add(csmFunction);
+            }
+        }
+        for (CsmFunction currentMethod: allFunctions) {
             int originalIndex = 0;
+            CsmFile containingFile = currentMethod.getContainingFile();
             for (CsmParameter par: currentMethod.getParameters()) {
                 CsmType desc = par.getType();
                 String typeRepresentation;
@@ -486,10 +507,11 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 } else {
                     typeRepresentation = getTypeStringRepresentation(desc);
                 }
-//                LocalVarScanner scan = new LocalVarScanner(info, null);
-//                scan.scan(info.getTrees().getPath(method), par);
-//                Boolean removable = !scan.hasRefernces();
-                Boolean removable = false;
+                Collection<CsmReference> references = Collections.emptySet();
+                if (CsmKindUtilities.isFunctionDefinition(currentMethod)) {
+                    references = CsmReferenceRepository.getDefault().getReferences(par, containingFile, CsmReferenceKind.ALL, null);
+                }
+                Boolean removable = references.size() <= 1;
                 if (model.getRowCount()<=originalIndex) {
                     Object[] parRep = new Object[] { par.getName().toString(), typeRepresentation, "", Integer.valueOf(originalIndex), removable };
                     model.addRow(parRep);
