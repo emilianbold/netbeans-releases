@@ -119,7 +119,7 @@ public class BugzillaIssue extends Issue {
     enum IssueField {
         SUMMARY(BugzillaAttribute.SHORT_DESC.getKey()),
         STATUS(TaskAttribute.STATUS),
-        PRIORITY(TaskAttribute.PRIORITY),
+        PRIORITY(BugzillaAttribute.PRIORITY.getKey()),
         RESOLUTION(TaskAttribute.RESOLUTION),
         PRODUCT(BugzillaAttribute.PRODUCT.getKey()),
         COMPONENT(BugzillaAttribute.COMPONENT.getKey()),
