@@ -168,9 +168,10 @@ class Hyperlinker {
                         // XXX permit localPath to include ../ segments; for Hg this is reasonable
                         f = p.getProjectDirectory().getFileObject(localPath);
                         LOG.log(Level.FINE, "Tried to find local file in {0} at {1} using {2}", new Object[] {p, f, localPath});
-                        // XXX consider aligning local line number with remote line number somehow
+                        // XXX #159829: consider aligning local line number with remote line number somehow
                     }
                     if (f == null) {
+                        StatusDisplayer.getDefault().setStatusText("Looking for " + path + "..."); // XXX I18N
                         f = job.getRemoteWorkspace().findResource(path);
                         LOG.log(Level.FINE, "Tried to find remote file at {0} using {1}", new Object[] {f, path});
                     }
@@ -181,7 +182,7 @@ class Hyperlinker {
                         }
                         return;
                     }
-                    // XXX could be useful to select this file in the workspace node
+                    // XXX could be useful to select this file in the workspace node (see related #159838)
                     StatusDisplayer.getDefault().setStatusText(message);
                     HudsonLogger.Helper.openAt(f, row, col, force);
                 }
