@@ -69,7 +69,7 @@ public final class FetchPrivilegesTask implements Computable<ExecutionEnvironmen
         CharArrayWriter outWriter = new CharArrayWriter();
 
         NativeProcessBuilder npb =
-                new NativeProcessBuilder(execEnv, "/bin/ppriv").setArguments("-v $$ | /bin/grep [IL]"); // NOI18N
+                new NativeProcessBuilder(execEnv, "/bin/sh").setArguments("-c", "/bin/ppriv -v $$ | /bin/grep [IL]"); // NOI18N
 
         ExecutionDescriptor d = new ExecutionDescriptor();
         d = d.inputOutput(InputOutput.NULL);
