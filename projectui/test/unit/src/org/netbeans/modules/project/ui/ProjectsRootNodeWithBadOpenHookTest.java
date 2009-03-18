@@ -149,6 +149,7 @@ public class ProjectsRootNodeWithBadOpenHookTest extends NbTestCase {
         h.setLevel(Level.WARNING);
         OpenProjectList.LOGGER.addHandler(h);
         OpenProjectList.LOGGER.setUseParentHandlers(false);
+        OpenProjectList.LOGGER.setLevel(Level.WARNING);
 
         // let project open code run
         down.countDown();
