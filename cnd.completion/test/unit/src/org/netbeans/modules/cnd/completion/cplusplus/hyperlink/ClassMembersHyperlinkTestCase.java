@@ -782,6 +782,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz151763.cc", 18, 11, "iz151763.cc", 2, 5);
     }
 
+    public void testIZ154792() throws Exception {
+        // IZ#154792 : Completion fails on question mark
+        performTest("iz154792.cc", 10, 32, "iz154792.cc", 5, 9);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

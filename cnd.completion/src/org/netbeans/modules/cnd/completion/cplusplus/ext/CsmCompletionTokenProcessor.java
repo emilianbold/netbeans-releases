@@ -957,6 +957,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 break;
                             case TYPE:
                             case TYPE_REFERENCE:
+                            case GENERIC_TYPE:
                                 // we have type or type reference and then * or &,
                                 // join into TYPE_REFERENCE
                                 popExp();
@@ -966,7 +967,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 pointer = true;
                                 break;
                             case OPERATOR:
-                                if (top.getTokenCount() == 1 && isEqOperator(top.getTokenID(0))) {
+                                if ((top.getTokenCount() == 1 && isEqOperator(top.getTokenID(0))) ||
+                                        (top.getTokenID(0) == CppTokenId.COLON)) {
                                     // member pointer operator
                                     CsmCompletionExpression memPtrExp = createTokenExp(MEMBER_POINTER_OPEN);
                                     pushExp(memPtrExp); // add operator as new exp
