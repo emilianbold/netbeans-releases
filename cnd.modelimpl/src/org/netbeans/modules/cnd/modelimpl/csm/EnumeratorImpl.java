@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
@@ -127,7 +128,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, output);
     
         // not null UID
         assert this.enumerationUID != null;
@@ -136,7 +137,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     
     public EnumeratorImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getManager().getString(input.readUTF());
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
         this.enumerationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // not null UID

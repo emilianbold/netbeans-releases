@@ -57,15 +57,23 @@ made subject to such option by the copyright holder.
         </xsd:complexType>
     </xsd:element>
     <xsd:complexType name="templateType">
-        <xsd:sequence>
+        <xsd:choice>
             <xsd:element name="wsdlElement" type="tns:wsdlElementType" maxOccurs="unbounded"/>
-        </xsd:sequence>
+            <xsd:element name="wsdlTemplate" type="tns:wsdlTemplateType" maxOccurs="1"/>
+        </xsd:choice>
         <xsd:attribute name="name" type="xsd:string"/>
         <xsd:attribute name="default" type="xsd:boolean"/>
+        <xsd:attribute name="skeleton" type="xsd:boolean"/>
     </xsd:complexType>
     <xsd:complexType name="wsdlElementType">
         <xsd:sequence>
             <xsd:element name="extensionElement" type="tns:extensionElementType" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string"/>
+    </xsd:complexType>
+    <xsd:complexType name="wsdlTemplateType">
+        <xsd:sequence>
+            <xsd:element name="file" type="xsd:string" maxOccurs="1"/>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string"/>
     </xsd:complexType>

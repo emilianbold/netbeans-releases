@@ -151,7 +151,7 @@ public class LoginPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(errorProgress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
+                        .add(errorProgress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -165,10 +165,10 @@ public class LoginPanel extends javax.swing.JPanel {
                                 .add(register))
                             .add(forgotPassword)
                             .add(chkRememberMe)
-                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
-                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, lblKenaiLogo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE))
+                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
+                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))))
                 .addContainerGap())
+            .add(lblKenaiLogo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -192,7 +192,7 @@ public class LoginPanel extends javax.swing.JPanel {
                     .add(register))
                 .add(26, 26, 26)
                 .add(errorProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

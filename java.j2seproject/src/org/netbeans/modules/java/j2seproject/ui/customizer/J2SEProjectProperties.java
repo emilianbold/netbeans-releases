@@ -47,9 +47,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -67,6 +69,7 @@ import javax.swing.text.PlainDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
@@ -80,6 +83,7 @@ import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -803,6 +807,43 @@ public class J2SEProjectProperties {
     void storeIncludesExcludes(IncludeExcludeVisualizer v) {
         includes = v.getIncludePattern();
         excludes = v.getExcludePattern();
+    }
+
+    boolean makeSharable() {
+        List<String> libs = new ArrayList<String>();
+        List<String> jars = new ArrayList<String>();
+        collectLibs(JAVAC_CLASSPATH_MODEL, libs, jars);
+        collectLibs(JAVAC_TEST_CLASSPATH_MODEL, libs, jars);
+        collectLibs(RUN_CLASSPATH_MODEL, libs, jars);
+        collectLibs(RUN_TEST_CLASSPATH_MODEL, libs, jars);
+        libs.add("CopyLibs"); // #132201 - copylibs is integral part of j2seproject
+        String customTasksLibs = getProject().evaluator().getProperty(AntBuildExtender.ANT_CUSTOMTASKS_LIBS_PROPNAME);
+        if (customTasksLibs != null) {
+            String libIDs[] = customTasksLibs.split(",");
+            for (String libID : libIDs) {
+                libs.add(libID.trim());
+            }
+        }
+        return SharableLibrariesUtils.showMakeSharableWizard(getProject().getAntProjectHelper(),
+                getProject().getReferenceHelper(), libs, jars);
+    }
+    private void collectLibs(DefaultListModel model, List<String> libs, List<String> jarReferences) {
+        for (int i = 0; i < model.size(); i++) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+                if (!item.isBroken() && !libs.contains(item.getLibrary().getName())) {
+                    libs.add(item.getLibrary().getName());
+                }
+            }
+            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+                if (item.getReference() != null && item.getVariableBasedProperty() == null && !jarReferences.contains(item.getReference())) {
+                    //TODO reference is null for not yet persisted items.
+                    // there seems to be no way to generate a reference string without actually
+                    // creating and writing the property..
+                    jarReferences.add(item.getReference());
+                }
+            }
+        }
     }
 
 }

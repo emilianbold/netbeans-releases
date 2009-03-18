@@ -38,38 +38,53 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
-
+import java.net.ConnectException;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTarget.ExecutionEnvVariablesProvider;
+import org.netbeans.modules.dlight.api.execution.Validateable;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
+import org.netbeans.modules.dlight.api.impl.DLightToolAccessor;
 import org.netbeans.modules.dlight.management.api.ExecutionContextEvent.Type;
-import org.netbeans.modules.dlight.management.api.impl.DLightToolAccessor;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.impl.DataCollectorProvider;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.openide.util.Exceptions;
 
-
 final class ExecutionContext {
+
     private static final Object lock = new Object();
     private static final Logger log = DLightLogger.getLogger(ExecutionContext.class);
-    private volatile boolean validationInProgress = false;
+    // ***
     private final DLightTarget target;
     private final DLightTargetExecutionEnvProviderCollection envProvider;
-    private final List<DLightTool> tools = Collections.synchronizedList(new ArrayList<DLightTool>());
+    // Immutable
+    private final List<DLightTool> tools;
+    // @GuardedBy("lock")
     private List<ExecutionContextListener> listeners = null;
+    private volatile boolean validationInProgress = false;
+    private DLightConfiguration dlightConfiguration;
 
-    ExecutionContext(final DLightTarget target, final List<DLightTool> tools) {
+    ExecutionContext(final DLightTarget target, DLightConfiguration dlightConfiguration) {
         this.target = target;
-        this.tools.addAll(tools);
+        this.dlightConfiguration = dlightConfiguration;
+        tools = Collections.unmodifiableList(dlightConfiguration.getToolsSet());
+        DataCollectorProvider.getInstance().reset();
         envProvider = new DLightTargetExecutionEnvProviderCollection();
     }
 
@@ -81,18 +96,25 @@ final class ExecutionContext {
         return target;
     }
 
-    void addDLightTargetExecutionEnviromentProvider(DLightTarget.ExecutionEnvVariablesProvider executionEnvProvider){
+    DLightConfiguration getDLightConfiguration() {
+        return dlightConfiguration;
+    }
+
+    void addDLightTargetExecutionEnviromentProvider(DLightTarget.ExecutionEnvVariablesProvider executionEnvProvider) {
         envProvider.add(executionEnvProvider);
     }
 
-    DLightTarget.ExecutionEnvVariablesProvider getDLightTargetExecutionEnvProvider(){
+    DLightTarget.ExecutionEnvVariablesProvider getDLightTargetExecutionEnvProvider() {
         return envProvider;
     }
+
     /**
      * Do not call directly - use DLightSession.addDLightContextListener()
      */
     void setListeners(List<ExecutionContextListener> listeners) {
-        this.listeners = listeners;
+        synchronized (lock) {
+            this.listeners = listeners;
+        }
     }
 
     void validateTools() {
@@ -102,7 +124,7 @@ final class ExecutionContext {
 //    static int count = 0;
     void validateTools(boolean performRequiredActions) {
         DLightLogger.assertNonUiThread();
-        
+
         synchronized (lock) {
             if (validationInProgress) {
                 return;
@@ -110,47 +132,103 @@ final class ExecutionContext {
             validationInProgress = true;
         }
 
-        Map<DLightTool, Future<ValidationStatus>> tasks =
-                new HashMap<DLightTool, Future<ValidationStatus>>();
+        Map<Validateable, Future<ValidationStatus>> tasks =
+            new HashMap<Validateable, Future<ValidationStatus>>();
 
-        Map<DLightTool, ValidationStatus> states =
-                new HashMap<DLightTool, ValidationStatus>();
+        Map<Validateable, ValidationStatus> states =
+            new HashMap<Validateable, ValidationStatus>();
 
 //        count++;
-        
-        for (DLightTool tool : tools.toArray(new DLightTool[0])) {
-//            System.out.printf("%d: VALIDATING TOOL: %s\n", count, tool.getName());
-            ValidationStatus toolCurrentStatus = tool.getValidationStatus();
+        List<DataCollector> collectors = new ArrayList<DataCollector>();
+        if (getDLightConfiguration().getConfigurationOptions(false).areCollectorsTurnedOn()) {
+            for (DLightTool tool : tools) {
+                List<DataCollector> toolCollectors = getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
+                //TODO: no algorithm here:) should be better
+                for (DataCollector c : toolCollectors) {
+//                    if (c.getValidationStatus().isValid()) {//for valid collectors only
+                    if (!collectors.contains(c)) {
+                        collectors.add(c);
+                    }
+                }
+            }
+        }
+        List<IndicatorDataProvider> idps = new ArrayList<IndicatorDataProvider>();
+        for (DLightTool tool : tools) {
+            // Try to subscribe every IndicatorDataProvider to every Indicator
+            //there can be the situation when IndicatorDataProvider is collector
+            //and not attacheble
+            List<IndicatorDataProvider> tool_idps = getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
+            for (IndicatorDataProvider idp : tool_idps){
+                if (!collectors.contains(idp) && !idps.contains(idps)){
+                    idps.add(idp);
+                }
+            }
+        }
 
-            states.put(tool, toolCurrentStatus);
-//            System.out.printf("%d: CurrentStatus: %s\n", count, toolCurrentStatus.toString());
-            
-            tasks.put(tool, tool.validate(target));
-//            System.out.printf("%d: Future for validation task: %s\n", count, tasks.get(tool).toString());
+        //collect all validatable from tools: collectors and indicator data providers
+//        for (final DLightTool tool : tools) {
+////            System.out.printf("%d: VALIDATING TOOL: %s\n", count, tool.getName());
+//            ValidationStatus toolCurrentStatus = tool.getValidationStatus();
+//
+//            states.put(tool, toolCurrentStatus);
+////            System.out.printf("%d: CurrentStatus: %s\n", count, toolCurrentStatus.toString());
+//
+//            tasks.put(tool, DLightExecutorService.submit(new Callable<ValidationStatus>() {
+//
+//                public ValidationStatus call() throws Exception {
+//                    return tool.validate(target);
+//                }
+//            }, "Tool " + tool.getName() + " validation")); // NOI18N
+//
+////            System.out.printf("%d: Future for validation task: %s\n", count, tasks.get(tool).toString());
+//        }
+        for (final DataCollector c : collectors){
+            ValidationStatus collectorCurrentStatus = c.getValidationStatus();
+            states.put(c, collectorCurrentStatus);
+            tasks.put(c, DLightExecutorService.submit(new Callable<ValidationStatus>() {
+
+                public ValidationStatus call() throws Exception {
+                    return c.validate(target);
+                }
+            }, "Data Collector " + c.getName() + " validation")); // NOI18N
+
+
+        }
+        for (final IndicatorDataProvider idp : idps){
+            ValidationStatus collectorCurrentStatus = idp.getValidationStatus();
+            states.put(idp, collectorCurrentStatus);
+            tasks.put(idp, DLightExecutorService.submit(new Callable<ValidationStatus>() {
+
+                public ValidationStatus call() throws Exception {
+                    return idp.validate(target);
+                }
+            }, "Indicator Data Provider " + idp.getName() + " validation")); // NOI18N
+
+
         }
 
         boolean changed = false;
         boolean willReiterate = true;
 
         while (willReiterate) {
-            DLightTool[] toolsToValidate = tasks.keySet().toArray(new DLightTool[0]);
+            Validateable[] toValidate = tasks.keySet().toArray(new Validateable[0]);
             willReiterate = false;
 
-            for (DLightTool tool : toolsToValidate) {
-                Future<ValidationStatus> task = tasks.get(tool);
+            for (final Validateable validatable : toValidate) {
+                Future<ValidationStatus> task = tasks.get(validatable);
 
                 try {
                     //TODO: Could use timeouts. Should we?
-                    ValidationStatus toolNewStatus = task.get();
+                    ValidationStatus vNewStatus = task.get();
 
 //                    System.out.printf("%d: Status of validation task %s: %s\n", count, tasks.toString(), toolNewStatus.toString());
 
-                    boolean thisToolStateChanged = !toolNewStatus.equals(states.get(tool));
+                    boolean thisValidatableStateChaged = !vNewStatus.equals(states.get(validatable));
 
                     if (performRequiredActions) {
-                        if (!toolNewStatus.isKnown()) {
-                            Collection<AsynchronousAction> actions = toolNewStatus.getRequiredActions();
-                            
+                        if (!vNewStatus.isKnown()) {
+                            Collection<AsynchronousAction> actions = vNewStatus.getRequiredActions();
+
                             if (actions != null) {
                                 for (AsynchronousAction a : actions) {
                                     try {
@@ -161,22 +239,27 @@ final class ExecutionContext {
                                 }
                             }
 
-                            task = tool.validate(target);
-                            toolNewStatus = task.get();
-                            thisToolStateChanged = !toolNewStatus.equals(states.get(tool));
+                            task = DLightExecutorService.submit(new Callable<ValidationStatus>() {
+
+                                public ValidationStatus call() throws Exception {
+                                    return validatable.validate(target);
+                                }
+                            },  validatable + " validation"); // NOI18N
+                            vNewStatus = task.get();
+                            thisValidatableStateChaged = !vNewStatus.equals(states.get(validatable));
                         }
 
-                        if (!toolNewStatus.isKnown() && thisToolStateChanged) {
-                            states.put(tool, toolNewStatus);
-                            tasks.put(tool, task);
+                        if (!vNewStatus.isKnown() && thisValidatableStateChaged) {
+                            states.put(validatable, vNewStatus);
+                            tasks.put(validatable, task);
                             willReiterate = true;
                         } else {
-                            tasks.remove(tool);
-                            states.remove(tool);
+                            tasks.remove(validatable);
+                            states.remove(validatable);
                         }
                     }
 
-                    if (changed == false && thisToolStateChanged) {
+                    if (changed == false && thisValidatableStateChaged) {
                         changed = true;
                     }
 
@@ -196,22 +279,26 @@ final class ExecutionContext {
 
     }
 
-    private void notifyListeners(ExecutionContextEvent event) {
-        if (listeners == null) {
-            return;
+    private void notifyListeners(final ExecutionContextEvent event) {
+        ExecutionContextListener[] lls = null;
+
+        synchronized (lock) {
+            if (listeners == null) {
+                return;
+            }
+
+            lls = listeners.toArray(new ExecutionContextListener[0]);
         }
 
-        for (ExecutionContextListener l : listeners.toArray(new ExecutionContextListener[0])) {
+        for (ExecutionContextListener l : lls) {
             l.contextChanged(event);
         }
     }
 
     List<Indicator> getIndicators() {
         ArrayList<Indicator> result = new ArrayList<Indicator>();
-        if (tools != null) {
-            for (DLightTool tool : tools) {
-                result.addAll(DLightToolAccessor.getDefault().getIndicators(tool));
-            }
+        for (DLightTool tool : tools) {
+            result.addAll(DLightToolAccessor.getDefault().getIndicators(tool));
         }
 
         return result;
@@ -221,24 +308,40 @@ final class ExecutionContext {
         return tools;
     }
 
-    final class DLightTargetExecutionEnvProviderCollection implements DLightTarget.ExecutionEnvVariablesProvider{
-        private Map<String, String> envs;
+    final class DLightTargetExecutionEnvProviderCollection implements ExecutionEnvVariablesProvider {
 
-        DLightTargetExecutionEnvProviderCollection(){
-            envs = new HashMap<String, String>();
+        private List<ExecutionEnvVariablesProvider> providers;
+
+        DLightTargetExecutionEnvProviderCollection() {
+            providers = new ArrayList<DLightTarget.ExecutionEnvVariablesProvider>();
         }
 
-        void clear(){
-            envs.clear();
+        void clear() {
+            synchronized (this) {
+                providers.clear();
+            }
         }
 
-        void add(DLightTarget.ExecutionEnvVariablesProvider provider){
-            envs.putAll(provider.getExecutionEnv());
-        }
-        
-        public Map<String, String> getExecutionEnv() {
-            return envs;
+        void add(DLightTarget.ExecutionEnvVariablesProvider provider) {
+            synchronized (this) {
+                providers.add(provider);
+            }
         }
 
+        public Map<String, String> getExecutionEnv(DLightTarget target) throws ConnectException {
+            Map<String, String> env = new HashMap<String, String>();
+            ExecutionEnvVariablesProvider[] pp = null;
+
+            synchronized (this) {
+                pp = providers.toArray(new ExecutionEnvVariablesProvider[0]);
+            }
+
+            for (ExecutionEnvVariablesProvider provider : pp) {
+                env.putAll(provider.getExecutionEnv(target));
+            }
+
+            return env;
+        }
     }
+
 }

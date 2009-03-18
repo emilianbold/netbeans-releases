@@ -85,7 +85,7 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
         return instance;
     }
 
-    public void setContent (List<PopupItem> results) {
+    void setContent (List<PopupItem> results) {
         this.results = results;
         maybeFireChanges();
     }

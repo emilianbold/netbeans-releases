@@ -133,6 +133,7 @@ public final class IndentCommand {
     private int fixedIndentSize;
     private int lineOffset;
     private int indentation;
+    private boolean wasContinue;
 
     public IndentCommand(Type type, int lineOffset) {
         this.type = type;
@@ -162,6 +163,22 @@ public final class IndentCommand {
 
     int getCalculatedIndentation() {
         return indentation;
+    }
+
+    IndentCommand cloneMe() {
+        IndentCommand ic = new IndentCommand(type, lineOffset);
+        ic.fixedIndentSize = fixedIndentSize;
+        ic.indentation = indentation;
+        ic.wasContinue = wasContinue;
+        return ic;
+    }
+
+    boolean wasContinue() {
+        return wasContinue;
+    }
+
+    void setWasContinue() {
+        this.wasContinue = true;
     }
 
     @Override

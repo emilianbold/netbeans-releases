@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -96,16 +97,16 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         return cancelRequest;
     }
 
-    protected abstract ModificationResult processFiles(Collection<CsmFile> files);
+    protected abstract ModificationResult processFiles(Collection<CsmFile> files, AtomicReference<Problem> outProblem);
 
-    private Collection<ModificationResult> processFiles(Iterable<? extends List<CsmFile>> fileGroups) {
+    private Collection<ModificationResult> processFiles(Iterable<? extends List<CsmFile>> fileGroups, AtomicReference<Problem> outProblem) {
         Collection<ModificationResult> results = new LinkedList<ModificationResult>();
         for (List<CsmFile> list : fileGroups) {
             if (isCancelled()) {
                 // may be return partial "results"?
                 return Collections.<ModificationResult>emptyList();
             }
-            ModificationResult modification = processFiles(list);
+            ModificationResult modification = processFiles(list, outProblem);
             if (modification != null) {
                 results.add(modification);
             }
@@ -113,9 +114,10 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         return results;
     }
 
-    protected final void createAndAddElements(Collection<CsmFile> files, RefactoringElementsBag elements, AbstractRefactoring refactoring) {
+    protected final Problem createAndAddElements(Collection<CsmFile> files, RefactoringElementsBag elements, AbstractRefactoring refactoring) {
         Iterable<? extends List<CsmFile>> fileGroups = groupByRoot(files);
-        final Collection<ModificationResult> results = processFiles(fileGroups);
+        AtomicReference<Problem> outProblem = new AtomicReference<Problem>(null);
+        final Collection<ModificationResult> results = processFiles(fileGroups, outProblem);
         elements.registerTransaction(new RefactoringCommit(results));
         for (ModificationResult result : results) {
             for (FileObject fo : result.getModifiedFileObjects()) {
@@ -124,26 +126,27 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
                 }
             }
         }
+        return outProblem.get();
     }
 
-    protected static final Problem createProblem(Problem result, boolean isFatal, String message) {
+    protected static final Problem createProblem(Problem prevProblem, boolean isFatal, String message) {
         Problem problem = new Problem(isFatal, message);
-        if (result == null) {
+        if (prevProblem == null) {
             return problem;
         } else if (isFatal) {
-            problem.setNext(result);
+            problem.setNext(prevProblem);
             return problem;
         } else {
             //problem.setNext(result.getNext());
             //result.setNext(problem);
 
             // [TODO] performance
-            Problem p = result;
+            Problem p = prevProblem;
             while (p.getNext() != null) {
                 p = p.getNext();
             }
             p.setNext(problem);
-            return result;
+            return prevProblem;
         }
     }
 

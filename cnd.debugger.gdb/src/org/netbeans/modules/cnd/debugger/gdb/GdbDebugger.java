@@ -2049,6 +2049,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 String fullname = map.get("fullname"); // NOI18N
                 String lnum = map.get("line"); // NOI18N
                 String addr = map.get("addr"); // NOI18N
+                String from = map.get("from"); // NOI18N
                 if (fullname == null && file != null) {
                     if (file.charAt(0) == '/') {
                         fullname = file;
@@ -2066,7 +2067,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
                 }
 
-                callstack.add(i, new CallStackFrame(this, func, file, fullname, lnum, addr, i));
+                callstack.add(i, new CallStackFrame(this, func, file, fullname, lnum, addr, i, from));
             }
         }
 
@@ -2101,6 +2102,8 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
+    private static final String VALUE_PREFIX = "value="; // NOI18N
+
     public String evaluate(String expression) {
         // IZ:131315 (gdb may not be initialized yet)
         if (gdb == null) {
@@ -2126,9 +2129,12 @@ public class GdbDebugger implements PropertyChangeListener {
         }
 
         String response = cb.getResponse();
-        // response have the form ",value=...", so we trim it
-        response = response.substring(7, response.length() - 1);
-
+        // response have the form "value="..."", so we trim it and skip commas also
+        if (response.startsWith(VALUE_PREFIX)) {
+            response = response.substring(VALUE_PREFIX.length() + 1, response.length() - 1);
+        } else {
+            log.severe("GDBDebugger.evaluate: unexpected response " + response + " for expression " + expression); // NOI18N
+        }
         if (response.startsWith("@0x")) { // NOI18N
             cb = gdb.print(expression);
             response = cb.getResponse();

@@ -196,5 +196,20 @@ made subject to such option by the copyright holder.
             </folder>            
         </folder>
     </folder>
-    
+
+    <folder name="OptionsDialog">
+        <folder name="Editor">
+            <folder name="CodeCompletion">
+                <folder name="text">
+                    <folder name="x-c++">
+                        <file name="CppSpecific.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.completion.options.CodeCompletionPanel.getCustomizerFactory"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

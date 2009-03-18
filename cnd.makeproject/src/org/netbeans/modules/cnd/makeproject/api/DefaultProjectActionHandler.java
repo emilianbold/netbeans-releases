@@ -112,7 +112,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
             }
 
-            PlatformInfo pi = PlatformInfo.getDefault(conf.getDevelopmentHost().getName());
+            PlatformInfo pi = PlatformInfo.getDefault(conf.getDevelopmentHost().getExecutionEnvironment());
 
             boolean unbuffer = false;
             if (pae.getType() == ProjectActionEvent.Type.RUN) {

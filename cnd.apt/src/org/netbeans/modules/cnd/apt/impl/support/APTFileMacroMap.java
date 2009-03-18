@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
  */
 public class APTFileMacroMap extends APTBaseMacroMap {
     private APTMacroMap sysMacroMap;
-    private Map<String,APTMacro> macroCache = new HashMap<String,APTMacro>();
+    private Map<CharSequence,APTMacro> macroCache = new HashMap<CharSequence,APTMacro>();
 
     public APTFileMacroMap() {
     }
@@ -90,7 +90,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     @Override
     public APTMacro getMacro(APTToken token) {
         // check own map
-        String macroText = token.getText();
+        CharSequence macroText = token.getTextID();
         APTMacro res = macroCache.get(macroText);
         if (res == null) {
             res = super.getMacro(token);
@@ -116,7 +116,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             // TODO: report error about redefining system macros
         } else {
             super.define(file, name, params, value, Kind.DEFINED);
-            macroCache.remove(name.getText());
+            macroCache.remove(name.getTextID());
         }
     }
 
@@ -126,7 +126,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             // TODO: report warning about undefined system macros
         }
         super.undef(file, name);
-        macroCache.remove(name.getText());
+        macroCache.remove(name.getTextID());
     }
 
     protected APTMacro createMacro(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
@@ -222,12 +222,12 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     ////////////////////////////////////////////////////////////////////////////
     // manage macro expanding stack
 
-    private Stack<String> expandingMacros = new Stack<String>();
+    private Stack<CharSequence> expandingMacros = new Stack<CharSequence>();
 
     public boolean pushExpanding(APTToken token) {
         assert (token != null);
         if (!isExpanding(token)) {
-            expandingMacros.push(token.getText());
+            expandingMacros.push(token.getTextID());
             return true;
         }
         return false;
@@ -243,7 +243,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
 
     public boolean isExpanding(APTToken token) {
         try {
-            return expandingMacros.contains(token.getText());
+            return expandingMacros.contains(token.getTextID());
         } catch (ArrayIndexOutOfBoundsException ex) {
             assert (false) : "why ask empty stack?"; // NOI18N
         }

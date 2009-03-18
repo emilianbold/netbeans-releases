@@ -316,26 +316,33 @@ public final class Log extends Handler {
             // no wrapping
             return ex;
         }
+        return wrapWithAddendum(ex, "Log:\n" + messages);
+    }
 
-
+    static Throwable wrapWithAddendum(Throwable ex, String addendum) {
         if (ex instanceof AssertionFailedError) {
-            AssertionFailedError ne = new AssertionFailedError (ex.getMessage () + " Log:\n" + messages);
+            AssertionFailedError ne = new AssertionFailedError(combineMessages(ex, addendum));
             ne.setStackTrace (ex.getStackTrace ());
             return ne;
         }
-
-
+        if (ex instanceof AssertionError) { // preferred in JUnit 4
+            AssertionError ne = new AssertionError(combineMessages(ex, addendum));
+            ne.setStackTrace(ex.getStackTrace());
+            return ne;
+        }
         if (ex instanceof IOException) {//#66208
-            IOException ne = new IOException (ex.getMessage () + " Log:\n" + messages);
+            IOException ne = new IOException(combineMessages(ex, addendum));
             ne.setStackTrace (ex.getStackTrace ());
             return ne;
         }
-
         if (ex instanceof Exception) {
-            return new InvocationTargetException(ex, ex.getMessage() + " Log:\n" + messages);
+            return new InvocationTargetException(ex, combineMessages(ex, addendum));
         }
-
         return ex;
+    }
+    private static String combineMessages(Throwable ex, String addendum) {
+        String baseMessage = ex.getMessage();
+        return (baseMessage == null || baseMessage.equals("null")) ? addendum : baseMessage + " " + addendum;
     }
 
         

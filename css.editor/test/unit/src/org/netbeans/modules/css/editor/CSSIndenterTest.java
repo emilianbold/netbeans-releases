@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.css.editor;
 
-import java.util.List;
-import java.util.concurrent.Semaphore;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
@@ -48,11 +46,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.editor.ext.html.parser.SyntaxParserListener;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.editor.test.TestBase;
@@ -81,14 +75,6 @@ public class CSSIndenterTest extends TestBase {
         NbReaderProvider.setupReaders();
         AbstractIndenter.inUnitTestRun = true;
 
-//        MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class);
-//        // init TestLanguageProvider
-//        Lookup.getDefault().lookup(TestLanguageProvider.class);
-//        TestLanguageProvider.register(CSSTokenId.language());
-//        TestLanguageProvider.register(HTMLTokenId.language());
-//        TestLanguageProvider.register(JspTokenId.language());
-//        TestLanguageProvider.register(JavaTokenId.language());
-        
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CSSTokenId.language());
         JspIndentTaskFactory jspReformatFactory = new JspIndentTaskFactory();
@@ -129,29 +115,6 @@ public class CSSIndenterTest extends TestBase {
         // override it because I've already done in setUp()
     }
 
-    private static class Listener implements SyntaxParserListener {
-        private Semaphore s;
-        public Listener(Document doc, Semaphore s) throws InterruptedException {
-            this.s = s;
-            s.acquire();
-        }
-        public void parsingFinished(List<SyntaxElement> elements) {
-            s.release();
-        }
-
-    }
-
-    private void forceHTMLParsingAndWait(String file, String mimeType, Language language) throws Exception {
-        FileObject fo = getTestFile(file);
-        BaseDocument doc = getDocument(fo, mimeType, language);
-        LanguagePath htmlLP = LanguagePath.get(language);
-        Semaphore s = new Semaphore(1);
-        Listener l = new Listener(doc, s);
-        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(l);
-        s.acquire();
-        s.release();
-    }
-
     public void testFormatting() throws Exception {
         format("a{\nbackground: red,\nblue;\n  }\n",
                "a{\n    background: red,\n        blue;\n}\n", null);
@@ -172,15 +135,19 @@ public class CSSIndenterTest extends TestBase {
                "a{\n    background: red,", null);
         format("a{\nbackground: red,\n",
                "a{\n    background: red,\n", null);
+
+        // #160105:
+        format("/* unfinished comment\n* /\n\n/* another comment\n*/",
+               "/* unfinished comment\n* /\n\n/* another comment\n*/", null);
+        format("a{\n    /*\n    comment\n    */\n    color: green;\n}",
+               "a{\n    /*\n    comment\n    */\n    color: green;\n}", null);
     }
 
     public void testNativeEmbeddingFormattingCase1() throws Exception {
-        forceHTMLParsingAndWait("testfiles/format1.html", "text/html", HTMLTokenId.language());
         reformatFileContents("testfiles/format1.html", new IndentPrefs(4,4));
     }
 
     public void testNativeEmbeddingFormattingCase2() throws Exception {
-        forceHTMLParsingAndWait("testfiles/format2.html", "text/html", HTMLTokenId.language());
         reformatFileContents("testfiles/format2.html", new IndentPrefs(4,4));
     }
 
@@ -207,6 +174,8 @@ public class CSSIndenterTest extends TestBase {
         insertNewline("a{\n    background: red;\n  }^", "a{\n    background: red;\n  }\n  ^", null);
         // check that indentation cooperates with bracket insertion:
         insertNewline("a{^}", "a{\n    ^\n}", null);
+        insertNewline("a{\n/**/^\n}", "a{\n/**/\n^\n}", null);
+        insertNewline("a{\n     /*^comment\n     */\n}", "a{\n     /*\n     ^comment\n     */\n}", null);
     }
 
 }

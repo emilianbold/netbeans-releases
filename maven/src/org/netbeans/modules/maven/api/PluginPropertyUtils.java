@@ -280,6 +280,9 @@ public class PluginPropertyUtils {
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
                 (Constants.PLUGIN_COMPILER.equals(artifactId) || //NOI18N
                  Constants.PLUGIN_SUREFIRE.equals(artifactId) || //NOI18N
+                 Constants.PLUGIN_EAR.equals(artifactId) || //NOI18N
+                 Constants.PLUGIN_JAR.equals(artifactId) || //NOI18N
+                 Constants.PLUGIN_WAR.equals(artifactId) || //NOI18N
                  Constants.PLUGIN_RESOURCES.equals(artifactId))) {  //NOI18N
             if (prj.getPluginManagement() != null) {
                 for (Object obj : prj.getPluginManagement().getPlugins()) {

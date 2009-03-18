@@ -65,7 +65,7 @@ public abstract class AbstractOutputTab extends JComponent implements Accessible
     private boolean inputVisible = false;
     private AbstractOutputPane outputPane;
     private Action[] actions = new Action[0];  
-    
+
     private Component toFocus;
     
     public AbstractOutputTab() {
@@ -81,7 +81,15 @@ public abstract class AbstractOutputTab extends JComponent implements Accessible
             ((OutputDocument)doc).setPane(outputPane);
         }
     }
-    
+
+    public AbstractOutputPane setOutputPane(AbstractOutputPane pane) {
+        AbstractOutputPane old = outputPane;
+        remove(outputPane);
+        outputPane = pane;
+        add(outputPane);
+        return old;
+    }
+
     /* Read accessible context
      * @return - accessible context
      */

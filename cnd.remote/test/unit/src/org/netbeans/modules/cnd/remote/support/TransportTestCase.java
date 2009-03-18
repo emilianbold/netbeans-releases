@@ -93,6 +93,8 @@ public class TransportTestCase extends RemoteTestBase {
             HostInfoProvider hip = HostInfoProvider.getDefault();
             assert hip.fileExists(getExecutionEnvironment(), "/etc/passwd");
             assert !hip.fileExists(getExecutionEnvironment(), "/etc/passwd/noway");
+        } else {
+            System.err.println("Remote tests are not configured.");
         }
     }
 
@@ -102,6 +104,8 @@ public class TransportTestCase extends RemoteTestBase {
             System.err.println("Environment: " + env);
             assert env != null && env.size() > 0;
             assert env.containsKey("PATH") || env.containsKey("Path") || env.containsKey("path");
+        } else {
+            System.err.println("Remote tests are not configured.");
         }
     }
 
@@ -128,6 +132,8 @@ public class TransportTestCase extends RemoteTestBase {
             assert rcs2.run() == 0;
             assert rcs2.getOutput().equals(sb.toString());
             assert RemoteCommandSupport.run(getExecutionEnvironment(), "rm " + remoteFile) == 0;
+        } else {
+            System.err.println("Remote tests are not configured.");
         }
     }
     

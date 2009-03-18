@@ -172,6 +172,8 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
         InputStream input = getPrimaryFile().getInputStream();
         try {
             return javax.imageio.ImageIO.read(input);
+        } catch (IndexOutOfBoundsException ioobe) {
+            return null;
         } finally {
             input.close();
         }

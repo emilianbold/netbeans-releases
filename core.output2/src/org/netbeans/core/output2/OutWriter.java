@@ -475,34 +475,26 @@ class OutWriter extends PrintWriter {
     }
 
     public synchronized void println(String s, OutputListener l, boolean important) throws IOException {
-        if (checkError()) {
-            return;
-        }
-        int addedCount = doWrite(s, 0, s.length());
-        println();
-        addedCount++;
-        int newCount = lines.getLineCount()-1;
-        for (int i = newCount - addedCount; i < newCount; i++) {
-            lines.addListener(i, l, important);
-            //#48485 we should update the UI, since the lines are in the model
-            // and jump next/previous can't jump to appropriate place.
-            lines.fire();
-        }
+        print(s, l, important, null, true);
     }
 
-    void println(CharSequence s, OutputListener l, boolean important, Color c) throws IOException {
+    synchronized void print(CharSequence s, OutputListener l, boolean important, Color c, boolean addLS) throws IOException {
         if (checkError()) {
             return;
         }
         int addedCount = doWrite(s, 0, s.length());
-        println();
-        addedCount++;
+        if (addLS) {
+            println();
+            addedCount++;
+        }
         int newCount = lines.getLineCount()-1;
         for (int i = newCount - addedCount; i < newCount; i++) {
             if (l != null) {
                 lines.addListener(i, l, important);
             }
-            lines.setColor(i, c);
+            if (c != null) {
+                lines.setColor(i, c);
+            }
             lines.fire();
         }
     }

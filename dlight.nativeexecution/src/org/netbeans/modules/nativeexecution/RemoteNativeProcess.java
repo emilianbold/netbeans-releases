@@ -41,6 +41,12 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
         ChannelExec echannel = null;
         synchronized (mgr) {
             final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
+            
+            try {
+                ConnectionManager.getInstance().connectTo(execEnv);
+            } catch (Throwable ex) {
+                Exceptions.printStackTrace(ex);
+            }
 
             final Session session = ConnectionManagerAccessor.getDefault().
                     getConnectionSession(mgr, execEnv);

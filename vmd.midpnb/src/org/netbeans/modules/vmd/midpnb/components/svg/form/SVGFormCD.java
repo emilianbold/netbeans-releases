@@ -54,7 +54,11 @@ import org.netbeans.modules.vmd.api.flow.FlowPinOrderPresenter;
 import org.netbeans.modules.vmd.api.flow.visual.FlowPinDescriptor;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignEvent;
+import org.netbeans.modules.vmd.api.model.DesignEventFilter;
+import org.netbeans.modules.vmd.api.model.DynamicPresenter;
 import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.vmd.api.model.PresenterEvent;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
@@ -189,28 +193,28 @@ public class SVGFormCD extends ComponentDescriptor {
                 new SVGFormFileChangePresenter(),
                 //flow
                 new SVGComponentEventSourceOrder(),
-                new SVGListElementOrderCategory(),
+                new SVGFlowListElementPinOrderPresenter(),
                 //delete
                 new DeleteDependencyPresenter() {
 
-            @Override
-            protected boolean requiresToLive(Collection<DesignComponent> componentsToDelete) {
-                return false;
-            }
+                    @Override
+                    protected boolean requiresToLive(Collection<DesignComponent> componentsToDelete) {
+                        return false;
+                    }
 
-            @Override
-            protected void componentsDeleting(Collection<DesignComponent> componentsToDelete) {
-                DesignComponent svgImage = getComponent().readProperty(PROP_SVG_IMAGE).getComponent();
-                if (svgImage == null || !componentsToDelete.contains(svgImage)) {
-                    return;
-                }
-                SVGFormSupport.removeAllSVGFormComponents(getComponent());
-                getComponent().resetToDefault(PROP_SVG_IMAGE);
-            }
-        },
+                    @Override
+                    protected void componentsDeleting(Collection<DesignComponent> componentsToDelete) {
+                            DesignComponent svgImage = getComponent().readProperty(PROP_SVG_IMAGE).getComponent();
+                            if (svgImage == null || !componentsToDelete.contains(svgImage)) {
+                                return;
+                            }
+                            SVGFormSupport.removeAllSVGFormComponents(getComponent());
+                            getComponent().resetToDefault(PROP_SVG_IMAGE);
+                        }
+                    },
                 //inspector
                 MidpInspectorSVGComponentSupport.createCategory()
-                );
+            );
     }
 
     private class SVGFormPresenterCodeClassInitHeaderFooterPresenter extends CodeClassInitHeaderFooterPresenter {
@@ -327,26 +331,6 @@ public class SVGFormCD extends ComponentDescriptor {
         }
     }
 
-    class SVGListElementOrderCategory extends FlowPinOrderPresenter {
-
-        static final String CATEGORY_ID = "SVGListElement"; //NOI18N
-
-        @Override
-        public String getCategoryID() {
-            return CATEGORY_ID;
-        }
-
-        @Override
-        public String getCategoryDisplayName() {
-            return "SVG List Elements";
-        }
-
-        @Override
-        public List<FlowPinDescriptor> sortCategory(final ArrayList<FlowPinDescriptor> descriptors) {
-
-
-            return descriptors;
-        }
-    }
+    
 
 }

@@ -90,6 +90,7 @@ public class InstallerInitTest extends NbTestCase {
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath());
         clearWorkDir();
+        UIHandler.flushImmediatelly();
         
         installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);

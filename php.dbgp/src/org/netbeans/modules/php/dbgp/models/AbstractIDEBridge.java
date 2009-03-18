@@ -35,14 +35,14 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
 import org.netbeans.modules.php.dbgp.actions.AbstractActionProvider;
 import org.netbeans.modules.php.dbgp.annotations.CurrentLineAnnotation;
 import org.netbeans.modules.php.dbgp.annotations.DebuggerAnnotation;
 import org.netbeans.modules.php.dbgp.SessionId;
+import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.breakpoints.BreakpointModel;
 import org.netbeans.spi.debugger.ActionsProvider;
-import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.text.Line;
 
@@ -90,7 +90,7 @@ public abstract class AbstractIDEBridge {
 
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    line.show(Line.SHOW_GOTO);
+                    line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
                 }
             });
         }
@@ -138,10 +138,10 @@ public abstract class AbstractIDEBridge {
     public BreakpointModel getBreakpointModel() {
         DebuggerManager debuggerManager = DebuggerManager.getDebuggerManager();
         Iterator it = debuggerManager != null ? debuggerManager.lookup(
-                BREAKPOINTS_VIEW_NAME, TableModel.class).iterator() : null;
+                BREAKPOINTS_VIEW_NAME, NodeModel.class).iterator() : null;
 
         while(it != null && it.hasNext()) {
-            TableModel model = (TableModel)it.next();
+            NodeModel model = (NodeModel)it.next();
             if (model instanceof BreakpointModel) {
                 return (BreakpointModel) model;
             }
@@ -161,13 +161,13 @@ public abstract class AbstractIDEBridge {
     
     public void setSuspended( boolean flag ) {
         isSuspended.set( flag );
-        synchronized ( StartActionProviderImpl.getInstance()) {
+        synchronized (SessionManager.getInstance()) {
             SessionId id = getDebugSession().getSessionId();
             if ( id == null ){
                 return;
             }
             DebugSession current = 
-                StartActionProviderImpl.getInstance().getCurrentSession(id);
+                SessionManager.getInstance().getCurrentSession(id);
             if ( current != null && !current.equals( getDebugSession() ) ){
                 return;
             }

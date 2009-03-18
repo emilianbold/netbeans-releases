@@ -64,6 +64,8 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
 /**
  * APTMacroMap base implementation
@@ -139,11 +141,11 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
     
     private void defineImpl(APTFile file, APTToken name, Collection<APTToken> params, List<APTToken> value, Kind macroType) {
-        active.macros.put(name.getText(), createMacro(file, name, params, value, macroType));
+        active.getMacros().put(name.getTextID(), createMacro(file, name, params, value, macroType));
     }
 
     public void undef(APTFile file, APTToken name) {
-        active.macros.put(name.getText(), APTMacroMapSnapshot.UNDEFINED_MACRO);
+        active.getMacros().put(name.getTextID(), APTMacroMapSnapshot.UNDEFINED_MACRO);
     }
     
     /** method to implement in children */
@@ -157,6 +159,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     } 
 
     public final boolean isDefined(CharSequence token) {
+        token = CharSequenceKey.create(token);
         return getMacro(token) != null;
     } 
 
@@ -166,7 +169,8 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
 
     protected APTMacro getMacro(CharSequence token) {
-        APTMacro res = active.getMacro(token.toString());
+        assert token instanceof TinyCharSequence : "must not be String object " + token;
+        APTMacro res = active.getMacro(token);
         return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
     }
     
@@ -241,7 +245,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
 
     @Override
     public String toString() {
-        Map<String, APTMacro> tmpMap = new HashMap<String, APTMacro>();
+        Map<CharSequence, APTMacro> tmpMap = new HashMap<CharSequence, APTMacro>();
         APTMacroMapSnapshot.addAllMacros(active, tmpMap);
         return APTUtils.macros2String(tmpMap);
     }

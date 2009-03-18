@@ -69,7 +69,7 @@ public class CreateHostWizardPanel2 implements WizardDescriptor.Panel<WizardDesc
     }
 
     public boolean isValid() {
-        return component.hostFound() != null;
+        return component.getHost() != null;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -97,11 +97,11 @@ public class CreateHostWizardPanel2 implements WizardDescriptor.Panel<WizardDesc
         );
     }
 
-    static final String PROP_HOSTKEY = "hostkey"; //NOI18N
+    static final String PROP_HOST = "hostkey"; //NOI18N
     static final String PROP_RUN_ON_FINISH = "run-on-finish"; //NOI18N
 
     public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(PROP_HOSTKEY, getComponent().hostFound());
+        settings.putProperty(PROP_HOST, getComponent().getHost());
         settings.putProperty(PROP_RUN_ON_FINISH, getComponent().getRunOnFinish());
     }
 }

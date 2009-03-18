@@ -14,6 +14,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.namespace.QName;
+
 import org.netbeans.modules.e2e.api.wsdl.Message;
 import org.netbeans.modules.e2e.api.wsdl.Part;
 
@@ -23,21 +26,21 @@ import org.netbeans.modules.e2e.api.wsdl.Part;
  */
 public class MessageImpl implements Message {
     
-    private String name;
+    private QName myName;
     private Map<String, Part> parts;
     
     /** Creates a new instance of MessageImpl */
-    public MessageImpl( String name ) {
-        parts = new HashMap();
-        this.name = name;
-    }
-
-    public void setName( String name ) {
-        this.name = name;
+    public MessageImpl( QName name ) {
+        parts = new HashMap<String, Part>();
+        myName = name;
     }
 
     public String getName() {
-        return name;
+        return getQName().getLocalPart();
+    }
+    
+    public QName getQName(){
+        return myName;
     }
     
     public void addPart( Part part ) {
@@ -51,4 +54,22 @@ public class MessageImpl implements Message {
     public List<Part> getParts() {
         return Collections.unmodifiableList( new ArrayList( parts.values()));
     }    
+    
+    public static class MessageReferenceImpl extends MessageImpl 
+        implements MessageReference 
+    {
+
+        public MessageReferenceImpl( QName name  ) {
+            super(name);
+            
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.e2e.api.wsdl.Message.MessageReference#isValid()
+         */
+        public boolean isValid() {
+            return false;
+        }
+       
+    }
 }

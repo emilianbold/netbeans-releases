@@ -42,6 +42,7 @@
 package org.netbeans.performance.languages.menus;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager.RegionFilter;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
@@ -73,13 +74,13 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
     public EditorMenuPopupTest(String testName) {
         super(testName);
         expectedTime = UI_RESPONSE;           
-        WAIT_AFTER_PREPARE = 200;
+        WAIT_AFTER_OPEN = 200;
     }
 
     public EditorMenuPopupTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;           
-        WAIT_AFTER_PREPARE = 200;
+        WAIT_AFTER_OPEN = 200;
     }
 
     public static NbTestSuite suite() {
@@ -100,26 +101,28 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
     public void initialize() {
         String path = pathName+docName;
         fileToBeOpened = new Node(getProjectNode(testProject),path);
-
         new OpenAction().performAPI(fileToBeOpened);
         editorOperator = EditorWindowOperator.getEditor(docName);
-
     }
     
     @Override
     public void prepare() {
+          repaintManager().addRegionFilter(repaintManager().IGNORE_EXPLORER_TREE_FILTER);
+          repaintManager().addRegionFilter(repaintManager().IGNORE_DIFF_SIDEBAR_FILTER);
+          repaintManager().addRegionFilter(repaintManager().IGNORE_STATUS_LINE_FILTER);
+          repaintManager().addRegionFilter(NE_FILTER);
     }
 
     @Override
     public ComponentOperator open() {
         editorOperator.clickForPopup();
-        JPopupMenuOperator jpmo=new JPopupMenuOperator();
-        return jpmo;
+        return new JPopupMenuOperator();
     }
     
     @Override
     public void close() {
         editorOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+        repaintManager().resetRegionFilters();
     }    
         
     public void test_RB_EditorPopup() {
@@ -131,7 +134,7 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
 
     public void test_RHTML_EditorPopup() {
         testProject = Projects.RAILS_PROJECT;
-        pathName = "Unit Tests"+"|";
+        pathName = "Test Files|unit"+"|";
         docName = "rhtml20kb.rhtml"; 
         doMeasurement();        
     }
@@ -166,7 +169,7 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
 
     public void test_YML_EditorPopup() {
         testProject = Projects.RAILS_PROJECT;
-        pathName = "Unit Tests"+"|";
+        pathName = "Test Files|unit"+"|";
         docName = "yaml20kb.yml"; 
         doMeasurement();        
     }
@@ -198,5 +201,18 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
         docName = "sh20kb.sh";            
         doMeasurement();        
     }
+
+    private static final RegionFilter NE_FILTER =
+            new RegionFilter() {
+
+                public boolean accept(javax.swing.JComponent c) {
+                    return !(c.getClass().getName().equals("org.openide.text.QuietEditorPane")||c.getClass().getName().equals("org.netbeans.modules.editor.errorstripe.AnnotationView"));
+                }
+
+                public String getFilterName() {
+                    return "Accept paints from org.netbeans.modules.editor.completion.CompletionScrollPane || org.openide.text.QuietEditorPane";
+                }
+            };
+
 
 }

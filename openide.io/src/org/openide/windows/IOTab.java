@@ -43,7 +43,7 @@ import javax.swing.Icon;
 import org.openide.util.Lookup;
 
 /**
- * Settings of tool tip/icon for IO component (tab)
+ * Settings of tool tip/icon for IO component (tab).
  * <p>
  * Client usage:
  * <pre>
@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
  * </pre>
  * How to support {@link IOTab} in own {@link IOProvider} implementation:
  * <ul>
- *   <li> {@link InputOutput} provided by {@link IOProvider} has to implement <a href="@org-openide-util@/org/openide/util/Lookup.Provider.html"><code>Lookup.Provider</code></a>
+ *   <li> {@link InputOutput} provided by {@link IOProvider} has to implement {@link org.openide.util.Lookup.Provider}
  *   <li> Extend {@link IOTab} and implement its abstract methods
  *   <li> Place instance of {@link IOTab} to {@link Lookup} provided by {@link InputOutput}
  * </ul>

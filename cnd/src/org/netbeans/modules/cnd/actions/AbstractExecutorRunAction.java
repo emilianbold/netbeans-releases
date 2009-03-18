@@ -96,11 +96,6 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
 
     protected abstract boolean accept(DataObject object);
 
-    /** TODO: deprecate and remove */
-    protected static String getDevelopmentHost(FileObject fileObject, Project project) {
-        return ExecutionEnvironmentFactory.getHostKey(getExecutionEnvironment(fileObject, project));
-    }
-
     protected static ExecutionEnvironment getExecutionEnvironment(FileObject fileObject, Project project) {
         if (project == null) {
             project = findInOpenedProject(fileObject);
