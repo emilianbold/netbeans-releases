@@ -152,6 +152,7 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
         }
     }
 
+    @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = prepareGraphics( g );
         super.paintComponent(g2);

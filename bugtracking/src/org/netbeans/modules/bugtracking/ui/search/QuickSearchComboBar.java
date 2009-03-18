@@ -96,10 +96,12 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     }
 
 
+    @Override
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         getChangeSupport().removePropertyChangeListener(listener);
     }
 
+    @Override
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         getChangeSupport().addPropertyChangeListener(listener);
     }
