@@ -449,7 +449,13 @@ public class TraceXRef extends TraceModel {
                                     CharSequence text = ref.getText();
                                     UnresolvedEntry unres = bag.getUnresolvedEntry(text);
                                     if (unres == null) {
-                                        unres = new UnresolvedEntry(text, new RefLink(ref));
+                                        RefLink refLink;
+                                        if (params.reportUnresolved) {
+                                            refLink = new RefLink(ref);
+                                        } else {
+                                            refLink = null;
+                                        }
+                                        unres = new UnresolvedEntry(text, refLink);
                                         bag.addUnresolvedEntry(text, unres);
                                     }
                                     unres.increment();
@@ -816,6 +822,9 @@ public class TraceXRef extends TraceModel {
         printOut.println(unresolvedStatistics);
         String performanceStatistics = String.format("Line count: %d, time %.0f ms, \nspeed %.2f lines/sec, %.2f refs/sec", bag.getLineCount(), bag.getTimeMs(), bag.getLinesPerSec(), (double)numProjectProints / bag.getTimeSec()); // NOI18N
         printOut.println(performanceStatistics);
+        if (!params.reportUnresolved) {
+            return;
+        }
         if (!params.analyzeSmartAlgorith) {
             // dump unresolved statistics
             if (allUnresolvedPoints > 0) {
