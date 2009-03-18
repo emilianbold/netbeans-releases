@@ -62,9 +62,12 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.schema.model.Element;
 
+import org.netbeans.modules.xml.wsdl.bindingsupport.configeditor.ConfigurationEditorProviderFactory;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementConfigurationEditorProvider;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.NewTypesFactory;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.ui.actions.ConfigureExtensibilityElementAction;
 import org.netbeans.modules.xml.wsdl.ui.actions.RemoveAttributesAction;
 import org.netbeans.modules.xml.wsdl.ui.actions.extensibility.AddAttributeAction;
 import org.netbeans.modules.xml.wsdl.ui.commands.ConstraintNamedPropertyAdapter;
@@ -133,8 +136,14 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
             mQName = new QName(namespace, qName.getLocalPart(), qName.getPrefix());
         } else {
             mQName = qName;
+            namespace = qName.getNamespaceURI();
         }
-
+//        if (namespace != null) {
+//            ExtensibilityElementConfigurationEditorProvider configurationProvider = ConfigurationEditorProviderFactory.getDefault().getConfigurationProvider(namespace);
+//            if (configurationProvider != null) {
+//                getLookupContents().add(configurationProvider);
+//            }
+//        }
         String displayName = mQName != null ? Utility.fromQNameToString(mQName) : "Missing Name";
         mConfigurator = ExtensibilityElementConfiguratorFactory.getDefault().getExtensibilityElementConfigurator(mQName);
         boolean isNameSet = false;
@@ -199,14 +208,43 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
                 String docStr = sdFinder.getDocumentation();
                 if (docStr != null && docStr.length() > 0) {
                     String shortDesc = docStr;
-
-                    if (info != null) {
-                        if (bundle != null) {
-                            try {
-                                shortDesc = bundle.getString(docStr);
-                            } catch (MissingResourceException e) {
-                                //ignore exception
+                    if (info == null) {
+                        ExtensibilityElement lastExtensibilityElement = mWSDLConstruct;
+                        WSDLComponent parentComponent = mWSDLConstruct.getParent();
+                        if (parentComponent != null) {
+                            while (parentComponent != null) {
+                                if (parentComponent instanceof ExtensibilityElement) {
+                                    lastExtensibilityElement = (ExtensibilityElement) parentComponent;
+                                    parentComponent = parentComponent.getParent();
+                                } else {
+                                    break;
+                                }
                             }
+                        }
+                        String eeType = ExtensibilityUtils.getExtensibilityElementType(parentComponent);
+                        if (eeType != null) {
+                            try {
+                                WSDLExtensibilityElements elements = WSDLExtensibilityElementsFactory.getInstance().getWSDLExtensibilityElements();
+                                WSDLExtensibilityElement mExtensibilityElement = elements.getWSDLExtensibilityElement(eeType);
+                                if (mExtensibilityElement != null) {
+                                    info = mExtensibilityElement.getWSDLExtensibilityElementInfos(lastExtensibilityElement.getQName());
+                                    if (info != null && info.getElement() != null) {
+                                        bundle = info.getBundle();
+                                    }
+                                }
+                            } catch (Exception e) {
+                                ErrorManager.getDefault().notify(e);
+                            }
+                        }
+                    } else {
+                        bundle = info.getBundle();
+                    }
+                        
+                    if (bundle != null) {
+                        try {
+                            shortDesc = bundle.getString(docStr);
+                        } catch (MissingResourceException e) {
+                            //ignore exception
                         }
                     }
                     this.setShortDescription(shortDesc);
@@ -280,7 +318,7 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
 
     private Action[] createDynamicActions() {
         List<Action> actions = new ArrayList<Action>();
-
+       // actions.add(SystemAction.get(ConfigureExtensibilityElementAction.class));
         //add these always
         actions.add(SystemAction.get(CutAction.class));
         actions.add(SystemAction.get(CopyAction.class));

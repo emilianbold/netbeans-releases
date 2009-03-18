@@ -42,9 +42,12 @@
 package org.netbeans.modules.sun.manager.jbi.editors;
 
 
+import java.awt.Component;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularType;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptor;
+import org.netbeans.modules.xml.wsdl.bindingsupport.appconfig.spi.ApplicationConfigurationEditorProvider;
+import org.netbeans.modules.xml.wsdl.bindingsupport.appconfigeditor.ApplicationConfigurationEditorProviderFactory;
 
 
 /**
@@ -57,6 +60,8 @@ public class ApplicationConfigurationsEditor extends SimpleTabularDataEditor {
     
     private String[] keys;
     
+    private String componentName;
+    
     /**
      * Constructs a property editor for Application Configurations.
      * 
@@ -64,14 +69,36 @@ public class ApplicationConfigurationsEditor extends SimpleTabularDataEditor {
      * @param tablelabelDescription description for the table
      * @param tabularType           type of the tabular data
      * @param keys                  key columns in the tabular type
+     * @param componentName         name of the component
      */
     public ApplicationConfigurationsEditor(String tableLabelText,
             String tableLabelDescription, TabularType tabularType,
             String[] keys, JBIComponentConfigurationDescriptor descriptor,
-            boolean isWritable){
+            boolean isWritable, 
+            String componentName){
         super(tableLabelText, tableLabelDescription, tabularType, descriptor,
                 isWritable);
         this.keys = keys;
+        this.componentName = componentName;
+    }    
+    
+    @Override
+    public Component getCustomEditor() {
+        ApplicationConfigurationEditorProvider provider = 
+                ApplicationConfigurationEditorProviderFactory.getDefault().
+                getConfigurationProvider(componentName);
+        
+        if (provider == null) { // use system default
+            customEditor = new ApplicationConfigurationsDefaultCustomEditor(this,
+                    tableLabelText, tableLabelDescription, 
+                    descriptor, isWritable);
+        } else {
+            customEditor = new ApplicationConfigurationsPluginCustomEditor(this,
+                    tableLabelText, tableLabelDescription, 
+                    descriptor, isWritable, componentName);
+        }
+        
+        return customEditor;
     }
     
     @Override

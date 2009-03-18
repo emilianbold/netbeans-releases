@@ -202,7 +202,6 @@ public class WSDLDesignMultiViewElement extends TopComponent
         removeAll();
         graphComponent = null;
         wsdlModel = null;
-        ExplorerUtils.activateActions(explorerManager, false);
         explorerManager = null;
         multiViewObserver = null;
         setActivatedNodes(new Node[0]);
@@ -220,7 +219,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
-    
+
     @Override
     public int getPersistenceType() {
         // This is likely ignored, the one in MultiViewDesc matters.

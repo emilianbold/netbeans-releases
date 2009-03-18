@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.textcache;
 
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
@@ -49,23 +48,27 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @author Alexander Simon
  */
 public class UniqueNameCache extends APTStringManager {
+
     private static final APTStringManager manager = new UniqueNameCache();
     //private final APTStringManager instance = 
     //        APTStringManager.instance("Shared Unique Names",APTStringManager.CacheKind.Sliced); // NOI18N;
 
     private UniqueNameCache() {
     }
-    
+
     public CharSequence getString(CharSequence text) {
+        if (text == null){
+            return text;
+        }
         text = CharSequenceKey.create(text);
         return text;
         //return instance.getString(text);
     }
-    
+
     public void dispose() {
         //instance.dispose();
     }
-    
+
     public static APTStringManager getManager() {
         return manager;
     }

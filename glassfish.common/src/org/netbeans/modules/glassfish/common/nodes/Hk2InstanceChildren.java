@@ -75,7 +75,7 @@ public class Hk2InstanceChildren extends Children.Keys<Hk2ItemNode> implements R
                     NbBundle.getMessage(Hk2InstanceNode.class, "LBL_Apps"),
                     Hk2ItemNode.J2EE_APPLICATION_FOLDER));
             keys.add(new Hk2ItemNode(serverInstance.getLookup(), 
-                    new Hk2ResourcesChildren(serverInstance.getLookup()),
+                    new Hk2ResourceContainers(serverInstance.getLookup()),
                     NbBundle.getMessage(Hk2InstanceNode.class, "LBL_Resources"),
                     Hk2ItemNode.RESOURCES_FOLDER));
         }

@@ -1281,7 +1281,10 @@ abstract public class CsmCompletionQuery {
                                             lastType = null;
                                             cont = false;
                                         } else {
-                                            List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly && !memberPointer, false, true, this.scopeAccessedClassifier, skipConstructors, sort);
+                                            // IZ#143044
+                                            // There is no need for searching in parents for global declarations/definitions
+                                            boolean inspectParentClasses = (this.contextElement != null);
+                                            List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly && !memberPointer, false, inspectParentClasses, this.scopeAccessedClassifier, skipConstructors, sort);
                                             List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, openingSource, true, sort);
                                             res.addAll(nestedClassifiers);
                                             // add base classes as well
@@ -1323,7 +1326,7 @@ abstract public class CsmCompletionQuery {
                                         if (last) { // get all matching fields/methods/packages
                                             List res = finder.findNestedNamespaces(lastNamespace, var, openingSource, false); // find matching nested namespaces
                                             res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, false, false)); // matching classes
-//                                        res.addAll(finder.findStaticNamespaceElements(lastNamespace, endOffset, var, openingSource, false, false));
+                                            res.addAll(finder.findStaticNamespaceElements(lastNamespace, var, openingSource)); // matching static elements
                                             result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*', item, 0, isProjectBeeingParsed(), contextElement);
                                         }
                                     }
@@ -1729,7 +1732,10 @@ abstract public class CsmCompletionQuery {
                                     CsmClassifier classifier = extractLastTypeClassifier(kind);
                                     // try to find method in last resolved class appropriate for current context
                                     if (CsmKindUtilities.isClass(classifier)) {
-                                        mtdList.addAll(finder.findMethods(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, true, scopeAccessedClassifier, this.sort));
+                                        // IZ#143044
+                                        // There is no need for searching in parents for global declarations/definitions
+                                        boolean inspectParentClasses = (this.contextElement != null);
+                                        mtdList.addAll(finder.findMethods(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, inspectParentClasses, scopeAccessedClassifier, this.sort));
                                         if ((!last || findType) && (mtdList == null || mtdList.size() == 0)) {
                                             // could be pointer to function-type field
                                             lastType = null;

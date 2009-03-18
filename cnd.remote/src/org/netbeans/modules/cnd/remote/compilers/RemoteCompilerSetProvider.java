@@ -44,11 +44,8 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
-import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
 import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
-import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**

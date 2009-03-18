@@ -43,6 +43,7 @@ import java.util.Map;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
+import org.openide.windows.InputOutput;
 
 /**
  * This class is configuration class used as constructor 
@@ -59,6 +60,7 @@ public final class NativeExecutableTargetConfiguration {
     private int port = 0;
     private boolean isSubstitutable;
     private ExternalTerminal externalTerminal = null;
+    private InputOutput io;
 
     /**
      * Creates new configuration for {@link org.netbeans.modules.dlight.api.support.NativeExecutableTarget}
@@ -118,6 +120,14 @@ public final class NativeExecutableTargetConfiguration {
      */
     public void useExternalTerminal(@NullAllowed ExternalTerminal terminal) {
         this.externalTerminal = terminal;
+    }
+
+    public void setIO(InputOutput io) {
+        this.io = io;
+    }
+
+    public InputOutput getIO() {
+        return io;
     }
 
     /**

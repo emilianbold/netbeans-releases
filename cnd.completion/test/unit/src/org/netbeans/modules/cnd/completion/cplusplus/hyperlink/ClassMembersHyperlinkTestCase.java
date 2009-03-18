@@ -766,6 +766,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz151592.cc", 10, 14, "iz151592.cc", 10, 5);
     }
 
+    public void testIZ148035() throws Exception {
+        //IZ#148035 : Code assistance errors from instances of complex template classes
+        performTest("iz148035.cc", 20, 16, "iz148035.cc", 13, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

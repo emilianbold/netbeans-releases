@@ -128,6 +128,11 @@ public interface Unit {
      */
     public void debugClear();
     
+    /**
+     * Show distributions of object in repository
+     */
+    void debugDistribution();
+
     /** 
      * Determines the necessity of maintenance.
      * When a maintenancy is to be done, repository

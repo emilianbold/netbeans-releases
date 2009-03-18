@@ -54,8 +54,8 @@ public final class ResolvedPath {
     private final int index;
     
     public ResolvedPath(CharSequence folder, CharSequence path, boolean isDefaultSearchPath, int index) {
-        this.folder = FilePathCache.getString(folder);
-        this.path = FilePathCache.getString(path);
+        this.folder = FilePathCache.getManager().getString(folder);
+        this.path = FilePathCache.getManager().getString(path);
         this.isDefaultSearchPath = isDefaultSearchPath;
         this.index = index;
     }
