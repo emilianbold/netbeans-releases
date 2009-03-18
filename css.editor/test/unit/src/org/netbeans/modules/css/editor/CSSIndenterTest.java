@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.css.editor;
 
-import java.util.List;
-import java.util.concurrent.Semaphore;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
@@ -48,11 +46,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.editor.ext.html.parser.SyntaxParserListener;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.editor.test.TestBase;

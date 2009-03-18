@@ -179,7 +179,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             // so can result in wrong pair matching:
             if (isCloseTagNameToken(tk) && !isClosingTagOptional(getTokenName(tk)) && !isOpeningTagOptional(getTokenName(tk))) {
                 int rangeEnd;
-                if (ts.moveNext()) {
+                // if document is being editted end tag symbol might be accidentally missing:
+                if (ts.moveNext() && isEndTagSymbol(ts.token())) {
                     // add ">":
                     assert isEndTagSymbol(ts.token()) : "token="+ts.token()+" ts="+ts;
                     rangeEnd = ts.offset()+getTokenName(ts.token()).length();
@@ -190,7 +191,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 // find tag open and keep searching backwards ignoring it:
                 if (moveToOpeningTag(ts)) {
                     int rangeStart;
-                    if (ts.movePrevious()) {
+                    // if document is being editted end tag symbol might be accidentally missing:
+                    if (ts.movePrevious() && isStartTagSymbol(ts.token())) {
                         // add "<"
                         assert isStartTagSymbol(ts.token()) : "token="+ts.token()+" ts="+ts;
                         rangeStart = ts.offset();
@@ -523,8 +525,13 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
 
     private void addTags(List<MarkupItem> lineItems) {
-        // if a tag was opened and closed within one line then it can be ignored:
-        lineItems = eliminateTagsOpenedAndClosedOnOneLine(lineItems);
+
+//  for now disable this: it does not work in case when opened and closed tag
+//  closes a previous tag with option end; in that scenario if opened and closed
+//  tags are ignored we are missing knowledge that option end should have been generated
+//
+//        // if a tag was opened and closed within one line then it can be ignored:
+//        lineItems = eliminateTagsOpenedAndClosedOnOneLine(lineItems);
 
         for (MarkupItem newItem : lineItems) {
             if (!newItem.virtual) {
