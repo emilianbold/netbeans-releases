@@ -16,10 +16,10 @@ CLASS A<class T> (A ) [2:1/1-7:2/98] lcurly=28 SCOPE: $Global$
     MEMBERS:
         FUNCTION operator  TT [5:5/42-5:38/75] MethodImpl SCOPE: A 
             DEFINITION: null
-            SIGNATURE operator  TT()
-            UNIQUE NAME F:A::operator  TT()
+            SIGNATURE operator  TT<class>()
+            UNIQUE NAME F:A::operator  TT<class>()
             PARAMETERS:
-            RETURNS $unresolved$::TT TEXT=TT  [5:34/71-5:36/73]
+            RETURNS A::operator  TT::TT TEXT=TT  [5:34/71-5:36/73]
         FUNCTION operator  int [6:5/81-6:19/95] MethodImpl SCOPE: A 
             DEFINITION: null
             SIGNATURE operator  int()
@@ -27,19 +27,19 @@ CLASS A<class T> (A ) [2:1/1-7:2/98] lcurly=28 SCOPE: $Global$
             PARAMETERS:
             RETURNS int TEXT=int  [6:14/90-6:17/93]
 FUNCTION DEFINITION operator  TT  [9:1/101-13:2/184] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE operator  TT()
-    UNIQUE NAME f:operator  TT()
+    SIGNATURE operator  TT<class>()
+    UNIQUE NAME f:operator  TT<class>()
     DECLARATION: operator  TT  [9:1/101-13:2/184]
     PARAMETERS:
-    RETURNS $unresolved$::T TEXT=T  [11:10/149-11:11/150]
+    RETURNS operator  TT::T TEXT=T  [11:10/149-11:11/150]
     STATEMENT COMPOUND  [11:28/167-13:2/184] SCOPE: operator  TT 
         STATEMENT RETURN  [12:5/173-12:14/182] SCOPE: Stmt  [11:28/167-13:2/184] text: 'return 0;'
 FUNCTION DEFINITION operator  int  [15:1/186-18:2/250] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE operator  int()
-    UNIQUE NAME f:operator  int()
+    SIGNATURE operator  int<class>()
+    UNIQUE NAME f:operator  int<class>()
     DECLARATION: operator  int  [15:1/186-18:2/250]
     PARAMETERS:
-    RETURNS $unresolved$::T TEXT=T  [16:10/214-16:11/215]
+    RETURNS operator  int::T TEXT=T  [16:10/214-16:11/215]
     STATEMENT COMPOUND  [16:29/233-18:2/250] SCOPE: operator  int 
         STATEMENT RETURN  [17:5/239-17:14/248] SCOPE: Stmt  [16:29/233-18:2/250] text: 'return 0;'
 CLASS B (B ) [20:1/252-24:2/330] lcurly=260 SCOPE: $Global$ 
@@ -47,10 +47,10 @@ CLASS B (B ) [20:1/252-24:2/330] lcurly=260 SCOPE: $Global$
     MEMBERS:
         FUNCTION operator  TT [22:5/274-22:38/307] MethodImpl SCOPE: B 
             DEFINITION: null
-            SIGNATURE operator  TT()
-            UNIQUE NAME F:B::operator  TT()
+            SIGNATURE operator  TT<class>()
+            UNIQUE NAME F:B::operator  TT<class>()
             PARAMETERS:
-            RETURNS $unresolved$::TT TEXT=TT  [22:34/303-22:36/305]
+            RETURNS B::operator  TT::TT TEXT=TT  [22:34/303-22:36/305]
         FUNCTION operator  int [23:5/313-23:19/327] MethodImpl SCOPE: B 
             DEFINITION: null
             SIGNATURE operator  int()
@@ -58,11 +58,11 @@ CLASS B (B ) [20:1/252-24:2/330] lcurly=260 SCOPE: $Global$
             PARAMETERS:
             RETURNS int TEXT=int  [23:14/322-23:17/325]
 FUNCTION DEFINITION operator  TT  [26:1/333-29:2/394] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE operator  TT()
-    UNIQUE NAME f:operator  TT()
+    SIGNATURE operator  TT<class>()
+    UNIQUE NAME f:operator  TT<class>()
     DECLARATION: operator  TT  [26:1/333-29:2/394]
     PARAMETERS:
-    RETURNS $unresolved$::TT TEXT=TT  [27:20/372-27:22/374]
+    RETURNS operator  TT::TT TEXT=TT  [27:20/372-27:22/374]
     STATEMENT COMPOUND  [27:25/377-29:2/394] SCOPE: operator  TT 
         STATEMENT RETURN  [28:5/383-28:14/392] SCOPE: Stmt  [27:25/377-29:2/394] text: 'return 0;'
 FUNCTION DEFINITION operator  int  [31:1/396-33:2/438] FunctionDDImpl SCOPE: $Global$ 
@@ -80,25 +80,33 @@ CLASS A<class T> (A ) [2:1/1-7:2/98] lcurly=28 SCOPE: $Global$
     MEMBERS:
         FUNCTION operator  TT [5:5/42-5:38/75] MethodImpl SCOPE: A 
             DEFINITION: null
-            SIGNATURE operator  TT()
-            UNIQUE NAME F:A::operator  TT()
+            SIGNATURE operator  TT<class>()
+            UNIQUE NAME F:A::operator  TT<class>()
             PARAMETERS:
-            RETURNS $unresolved$::TT TEXT=TT  [5:34/71-5:36/73]
+            RETURNS A::operator  TT::TT TEXT=TT  [5:34/71-5:36/73]
         FUNCTION operator  int [6:5/81-6:19/95] MethodImpl SCOPE: A 
             DEFINITION: null
             SIGNATURE operator  int()
             UNIQUE NAME F:A::operator  int()
             PARAMETERS:
             RETURNS int TEXT=int  [6:14/90-6:17/93]
+FUNCTION DEFINITION operator  int  [15:1/186-18:2/250] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE operator  int<class>()
+    UNIQUE NAME f:operator  int<class>()
+    DECLARATION: operator  int  [15:1/186-18:2/250]
+    PARAMETERS:
+    RETURNS operator  int::T TEXT=T  [16:10/214-16:11/215]
+    STATEMENT COMPOUND  [16:29/233-18:2/250] SCOPE: operator  int 
+        STATEMENT RETURN  [17:5/239-17:14/248] SCOPE: Stmt  [16:29/233-18:2/250] text: 'return 0;'
 CLASS B (B ) [20:1/252-24:2/330] lcurly=260 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION operator  TT [22:5/274-22:38/307] MethodImpl SCOPE: B 
             DEFINITION: null
-            SIGNATURE operator  TT()
-            UNIQUE NAME F:B::operator  TT()
+            SIGNATURE operator  TT<class>()
+            UNIQUE NAME F:B::operator  TT<class>()
             PARAMETERS:
-            RETURNS $unresolved$::TT TEXT=TT  [22:34/303-22:36/305]
+            RETURNS B::operator  TT::TT TEXT=TT  [22:34/303-22:36/305]
         FUNCTION operator  int [23:5/313-23:19/327] MethodImpl SCOPE: B 
             DEFINITION: null
             SIGNATURE operator  int()
@@ -106,11 +114,11 @@ CLASS B (B ) [20:1/252-24:2/330] lcurly=260 SCOPE: $Global$
             PARAMETERS:
             RETURNS int TEXT=int  [23:14/322-23:17/325]
 FUNCTION DEFINITION operator  TT  [26:1/333-29:2/394] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE operator  TT()
-    UNIQUE NAME f:operator  TT()
+    SIGNATURE operator  TT<class>()
+    UNIQUE NAME f:operator  TT<class>()
     DECLARATION: operator  TT  [26:1/333-29:2/394]
     PARAMETERS:
-    RETURNS $unresolved$::TT TEXT=TT  [27:20/372-27:22/374]
+    RETURNS operator  TT::TT TEXT=TT  [27:20/372-27:22/374]
     STATEMENT COMPOUND  [27:25/377-29:2/394] SCOPE: operator  TT 
         STATEMENT RETURN  [28:5/383-28:14/392] SCOPE: Stmt  [27:25/377-29:2/394] text: 'return 0;'
 FUNCTION DEFINITION operator  int  [31:1/396-33:2/438] FunctionDDImpl SCOPE: $Global$ 

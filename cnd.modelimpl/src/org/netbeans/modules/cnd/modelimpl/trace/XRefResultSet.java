@@ -89,7 +89,9 @@ public final class XRefResultSet<T> {
     private final Map<ContextScope, Collection<ContextEntry>> scopeEntries;
     private final Map<ContextScope, AtomicInteger> scopes; // sync access
     private final ConcurrentMap<CharSequence, T> unresolved;
-
+    private final AtomicInteger lineCounter = new AtomicInteger(0);
+    private long time = 0;
+    
     public XRefResultSet() {
         scopeEntries = new HashMap<ContextScope, Collection<ContextEntry>>(ContextScope.values().length);
         scopes = new HashMap<ContextScope, AtomicInteger>(ContextScope.values().length);
@@ -112,6 +114,14 @@ public final class XRefResultSet<T> {
         scopes.get(contextScope).incrementAndGet();
     }
 
+    public final void incrementLineCounter(int fileLinesNum) {
+        lineCounter.addAndGet(fileLinesNum);
+    }
+
+    public final int getLineCount() {
+        return lineCounter.get();
+    }
+    
     public final int getNumberOfAllContexts() {
         int out = 0;
         for (AtomicInteger val : scopes.values()) {
@@ -143,7 +153,24 @@ public final class XRefResultSet<T> {
         Collections.sort(out, comparator);
         return out;
     }
+    public final void setTime(long nanoTime) {
+        time = nanoTime;
+    }
+    public final long getTime() {
+        return time;
+    }
 
+    public final double getTimeMs() {
+        return (((double)time)/(double)(1000*1000));
+    }
+
+    public final double getTimeSec() {
+        return ((double)time/(double)(1000*1000*1000));
+    }
+
+    public final double getLinesPerSec() {
+        return time == 0 ? 0 : (((double)getLineCount()) / getTimeSec());
+    }
     public enum ContextScope {
 
         GLOBAL_FUNCTION,

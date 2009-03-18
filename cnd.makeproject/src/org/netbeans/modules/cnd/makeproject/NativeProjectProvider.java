@@ -413,6 +413,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
 
             if (newItemConf.getTool() == Tool.CCompiler) {
+                if (oldItemConf.getTool() != Tool.CCompiler) {
+                    list.add(items[i]);
+                    continue;
+                }
                 if (!oldItemConf.getCCompilerConfiguration().getPreprocessorOptions().equals(newItemConf.getCCompilerConfiguration().getPreprocessorOptions())) {
                     list.add(items[i]);
                     continue;
@@ -423,6 +427,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 }
             }
             if (newItemConf.getTool() == Tool.CCCompiler) {
+                if (oldItemConf.getTool() != Tool.CCCompiler) {
+                    list.add(items[i]);
+                    continue;
+                }
                 if (!oldItemConf.getCCCompilerConfiguration().getPreprocessorOptions().equals(newItemConf.getCCCompilerConfiguration().getPreprocessorOptions())) {
                     list.add(items[i]);
                     continue;
@@ -459,14 +467,14 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         boolean ccFiles = false;
         boolean libsChanged = false;
         boolean projectChanged = false;
-        VectorConfiguration<String> cIncludeDirectories;
-        BooleanConfiguration cInheritIncludes;
-        VectorConfiguration<String> cPpreprocessorOption;
-        BooleanConfiguration cInheritMacros;
-        VectorConfiguration<String> ccIncludeDirectories;
-        BooleanConfiguration ccInheritIncludes;
-        VectorConfiguration<String> ccPreprocessorOption;
-        BooleanConfiguration ccInheritMacros;
+        VectorConfiguration<String> cIncludeDirectories = null;
+        BooleanConfiguration cInheritIncludes = null;
+        VectorConfiguration<String> cPpreprocessorOption = null;
+        BooleanConfiguration cInheritMacros = null;
+        VectorConfiguration<String> ccIncludeDirectories = null;
+        BooleanConfiguration ccInheritIncludes = null;
+        VectorConfiguration<String> ccPreprocessorOption = null;
+        BooleanConfiguration ccInheritMacros = null;
         Item[] items;
 
         // Check first whether the development host has changed
@@ -495,14 +503,18 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             items = folder.getAllItemsAsArray();
         } else if (item != null) {
             ItemConfiguration itemConfiguration = item.getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(item.getPath()));
-            cIncludeDirectories = itemConfiguration.getCCompilerConfiguration().getIncludeDirectories();
-            cInheritIncludes = itemConfiguration.getCCompilerConfiguration().getInheritIncludes();
-            cInheritMacros = itemConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
-            cPpreprocessorOption = itemConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
-            ccIncludeDirectories = itemConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
-            ccInheritIncludes = itemConfiguration.getCCCompilerConfiguration().getInheritIncludes();
-            ccPreprocessorOption = itemConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
-            ccInheritMacros = itemConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
+            if (itemConfiguration.getTool() == Tool.CCompiler) {
+                cIncludeDirectories = itemConfiguration.getCCompilerConfiguration().getIncludeDirectories();
+                cInheritIncludes = itemConfiguration.getCCompilerConfiguration().getInheritIncludes();
+                cInheritMacros = itemConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
+                cPpreprocessorOption = itemConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+            }
+            if (itemConfiguration.getTool() == Tool.CCCompiler) {
+                ccIncludeDirectories = itemConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
+                ccInheritIncludes = itemConfiguration.getCCCompilerConfiguration().getInheritIncludes();
+                ccPreprocessorOption = itemConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
+                ccInheritMacros = itemConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
+            }
             if (itemConfiguration.getExcluded().getDirty()) {
                 itemConfiguration.getExcluded().setDirty(false);
                 ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
@@ -531,16 +543,18 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             ccFiles = true;
         }
 
-        if (cIncludeDirectories.getDirty() || cPpreprocessorOption.getDirty() ||
-                cInheritIncludes.getDirty() || cInheritMacros.getDirty()) {
+        if (cIncludeDirectories != null &&
+            (cIncludeDirectories.getDirty() || cPpreprocessorOption.getDirty() ||
+             cInheritIncludes.getDirty() || cInheritMacros.getDirty())) {
             cFiles = true;
             cIncludeDirectories.setDirty(false);
             cPpreprocessorOption.setDirty(false);
             cInheritIncludes.setDirty(false);
             cInheritMacros.setDirty(false);
         }
-        if (ccIncludeDirectories.getDirty() || ccPreprocessorOption.getDirty() ||
-                ccInheritIncludes.getDirty() || ccInheritMacros.getDirty()) {
+        if (ccIncludeDirectories != null &&
+            (ccIncludeDirectories.getDirty() || ccPreprocessorOption.getDirty() ||
+             ccInheritIncludes.getDirty() || ccInheritMacros.getDirty())) {
             ccFiles = true;
             ccIncludeDirectories.setDirty(false);
             ccPreprocessorOption.setDirty(false);

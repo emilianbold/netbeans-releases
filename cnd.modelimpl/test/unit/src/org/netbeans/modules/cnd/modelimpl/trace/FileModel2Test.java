@@ -230,4 +230,8 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("iz158615.cc");
     }
 
+    public void testIZ158684() throws Exception {
+        // IZ#158684 : Invalid syntax error
+        performTest("iz158684.cc");
+    }
 }

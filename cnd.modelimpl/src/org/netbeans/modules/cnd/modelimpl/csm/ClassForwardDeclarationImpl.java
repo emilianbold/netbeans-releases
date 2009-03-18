@@ -199,10 +199,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
      * Creates a fake class this forward declaration refers to
      */
     protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
-        if (!isTemplate()) { // FIXUP until completion/xref can not distinguishing specializations correctly
-            return ForwardClass.create(name.toString(), getContainingFile(), ast, scope, registerInProject);
-        }
-        return null;
+        return ForwardClass.create(name.toString(), getContainingFile(), ast, scope, registerInProject);
     }
 
     @Override

@@ -36,49 +36,13 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api.util;
 
-import java.security.SignatureException;
-import java.util.MissingResourceException;
-import java.util.concurrent.ConcurrentHashMap;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.sps.impl.SPSLocalImpl;
-import org.netbeans.modules.nativeexecution.sps.impl.SPSRemoteImpl;
-import org.netbeans.modules.nativeexecution.support.Logger;
+package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-public final class SolarisPrivilegesSupportProvider {
-
-    private static final ConcurrentHashMap<ExecutionEnvironment, SolarisPrivilegesSupport> instances =
-            new ConcurrentHashMap<ExecutionEnvironment, SolarisPrivilegesSupport>();
-
-    private SolarisPrivilegesSupportProvider() {
-    }
-
-    public static SolarisPrivilegesSupport getSupportFor(ExecutionEnvironment execEnv) {
-        SolarisPrivilegesSupport result = instances.get(execEnv);
-
-        if (result == null) {
-            if (execEnv.isLocal()) {
-                try {
-                    result = SPSLocalImpl.getNewInstance(execEnv);
-                } catch (SignatureException ex) {
-                    Logger.getInstance().severe("Resource signature is wrong: " + ex.getMessage()); // NOI18N
-                } catch (MissingResourceException ex) {
-                    Logger.getInstance().severe("Resource not found: " + ex.getMessage()); // NOI18N
-                }
-            } else {
-                result = SPSRemoteImpl.getNewInstance(execEnv);
-            }
-
-            if (result != null) {
-                SolarisPrivilegesSupport oldRef = instances.putIfAbsent(execEnv, result);
-
-                if (oldRef != null) {
-                    result = oldRef;
-                }
-            }
-        }
-
-        return result;
-    }
+/**
+ *
+ * @author Alexander Simon
+ */
+public interface ConfigurationBase {
+    boolean getModified();
 }
