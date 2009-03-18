@@ -117,7 +117,7 @@ public class HgRepositoryContextCache {
     public synchronized void reset() {
         pushCtxRootFiles = null;
         pullCtxRootFiles = null;
-        rootToDefaultPaths.clear();
+        getRootToDefaultPaths().clear();
     }
 
     public synchronized String getPushDefault(VCSContext ctx) {
