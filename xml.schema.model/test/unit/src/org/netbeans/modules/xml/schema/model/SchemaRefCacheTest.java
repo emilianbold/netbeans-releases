@@ -42,6 +42,7 @@
 package org.netbeans.modules.xml.schema.model;
 import junit.framework.*;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import org.netbeans.modules.xml.schema.model.impl.RefCacheSupport;
 import org.netbeans.modules.xml.schema.model.impl.SchemaModelImpl;
@@ -96,6 +97,7 @@ public class SchemaRefCacheTest extends TestCase {
         suite.addTest(new SchemaRefCacheTest("testIncludedTargetNamespaceChanged")); // NOI18N
         suite.addTest(new SchemaRefCacheTest("testRedefinedTargetNamespaceChanged")); // NOI18N
         suite.addTest(new SchemaRefCacheTest("testImportedTargetNamespaceDeleted")); // NOI18N
+        suite.addTest(new SchemaRefCacheTest("testDetachedSchemaGarbageCollected")); // NOI18N
         return suite;
     }
 
@@ -117,7 +119,7 @@ public class SchemaRefCacheTest extends TestCase {
         //
         Collection<GlobalElement> gElements = schema.getElements();
         //
-        assertEquals(0, cache.getCachedModels().size());
+        assertEquals(0, cache.getCachedModelsSize());
         //
         assertEquals(3, gElements.size());
         for (GlobalElement gElem : gElements) {
@@ -127,7 +129,7 @@ public class SchemaRefCacheTest extends TestCase {
             assertNotNull(gType);
         }
         //
-        assertEquals(3, cache.getCachedModels().size());
+        assertEquals(3, cache.getCachedModelsSize());
         //
         return cache;
     }
@@ -151,7 +153,7 @@ public class SchemaRefCacheTest extends TestCase {
         }
         //
         // Cache has to be empty after it was discarded
-        assertEquals(0, cache.getCachedModels().size());
+        assertEquals(0, cache.getCachedModelsSize());
     }
 
     /**
@@ -501,7 +503,6 @@ public class SchemaRefCacheTest extends TestCase {
         assertFalse(cache.contains(importedSm));
     }
 
-
     /**
      * Checks if the included schema model is removed from the cache after
      * the targetNamespace attribute is changed (included schema)
@@ -534,7 +535,6 @@ public class SchemaRefCacheTest extends TestCase {
         // Check the model's cache is updated
         assertFalse(cache.contains(includedSm));
     }
-
 
     /**
      * Checks if the redefinded schema model is removed from the cache after
@@ -602,5 +602,45 @@ public class SchemaRefCacheTest extends TestCase {
         assertFalse(cache.contains(importedSm));
     }
 
+    /**
+     * Checks if the imported schema model is deleted from cache after
+     * the corresponding import declaration is deleted.
+     */
+    public void testDetachedSchemaGarbageCollected() throws Exception {
+        SchemaModel sm = Util.loadSchemaModel(TEST_XSD);
+        RefCacheSupport cache = loadReferencedModels(sm);
+        //
+        Schema schema = sm.getSchema();
+        assertNotNull(schema);
+        //
+        Collection<Import> imports = schema.getImports();
+        assertEquals(1, imports.size());
+        Import imp = imports.iterator().next();
+        assertNotNull(imp);
+        SchemaModelImpl importedSm = cache.getCachedModel(imp);
+        assertNotNull(importedSm);
+        //
+        // Add weak reference to the base schema model which is going to be
+        // garbage collected.
+        WeakReference<SchemaModel> smWeakRef = new WeakReference<SchemaModel>(sm);
+        //
+        // Clear all reference to the base schema model to allow it to be
+        // garbage collected.
+        sm = null;
+        cache = null;
+        schema = null;
+        imports = null;
+        imp = null;
+        //
+        System.gc();
+        System.gc();
+        System.gc();
+        System.gc();
+        System.gc();
+        Thread.sleep(100);
+        //
+        sm = smWeakRef.get();
+        assertNull("Detached schema model has to be garbage collected", sm); // NOI18N
+    }
 
 }
