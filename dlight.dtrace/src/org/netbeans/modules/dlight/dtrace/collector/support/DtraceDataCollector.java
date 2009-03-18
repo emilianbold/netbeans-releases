@@ -352,6 +352,12 @@ public final class DtraceDataCollector
         // /usr/sbin/dtrace exists...
         // check for permissions ...
         SolarisPrivilegesSupport sps = SolarisPrivilegesSupportProvider.getSupportFor(execEnv);
+
+        if (sps == null) {
+            return ValidationStatus.invalidStatus(
+                    "No privileges support for " + execEnv.toString()); // NOI18N
+        }
+
         boolean status = sps.hasPrivileges(requiredPrivilegesList);
 
         if (!status) {
