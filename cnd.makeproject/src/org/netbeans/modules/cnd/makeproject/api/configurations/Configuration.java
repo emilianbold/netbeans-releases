@@ -142,13 +142,13 @@ public abstract class Configuration implements ProjectConfiguration {
     }
 
 
-    public void removeAuxObject(ConfigurationAuxObject pao) {
-        auxObjectsMap.remove(pao.getId());
+    public ConfigurationAuxObject removeAuxObject(ConfigurationAuxObject pao) {
+        return auxObjectsMap.remove(pao.getId());
     }
 
 
-    public void removeAuxObject(String id) {
-        auxObjectsMap.remove(id);
+    public ConfigurationAuxObject removeAuxObject(String id) {
+        return auxObjectsMap.remove(id);
     }
 
     public ConfigurationAuxObject getAuxObject(String id) {
