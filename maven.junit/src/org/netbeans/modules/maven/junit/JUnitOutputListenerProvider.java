@@ -240,7 +240,7 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
                 Element error = testcase.getChild("error"); //NOI18N
                 if (error != null) {
                     status = Status.ERROR;
-                    trouble = constructTrouble(error.getAttributeValue("type"), error.getAttributeValue("message"), failure.getText());
+                    trouble = constructTrouble(error.getAttributeValue("type"), error.getAttributeValue("message"), error.getText());
                     trouble.setError(true);
                 }
                 test.setStatus(status);

@@ -45,25 +45,49 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JToggleButton;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 
 public class VariablesViewButtons {
 
+    public static final String PREFERENCES_NAME = "variables_view"; // NOI18N
+    public static final String SHOW_VALUE_AS_STRING = "show_value_as_string"; // NOI18N
+    private static final String SHOW_FORMATTERS_PROP_NAME = "org.netbeans.modules.debugger.jpda.ui.options.SHOW_FORMATTERS"; // NOI18N
+
+    private static JToggleButton showValueAsStringToggle = null;
+
     public static JButton createOpenOptionsButton() {
         JButton button = createButton(
                 "org/netbeans/modules/debugger/jpda/resources/show_formatters_16.png",
-                "Open Formatters Options"
+                NbBundle.getMessage (VariablesViewButtons.class, "Hint_Open_Formatters")
             );
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                System.setProperty(SHOW_FORMATTERS_PROP_NAME, "true"); // NOI18N
                 OptionsDisplayer.getDefault().open("Advanced/org-netbeans-modules-debugger-jpda-ui-options-JavaDebuggerAdvancedOption"); // NOI18N
             }
         });
         return button;
+    }
+
+    public static synchronized JToggleButton createShowValueAsStringButton() {
+        if (showValueAsStringToggle != null) {
+            return showValueAsStringToggle;
+        }
+        showValueAsStringToggle = createToggleButton(
+                SHOW_VALUE_AS_STRING,
+                "org/netbeans/modules/debugger/jpda/resources/class.gif",
+                NbBundle.getMessage (VariablesViewButtons.class, "Hint_Show_Value_As_String")
+            );
+        showValueAsStringToggle.addActionListener(new ShowValueAsStringActionListener(showValueAsStringToggle));
+        return showValueAsStringToggle;
     }
 
     private static JButton createButton (String iconPath, String tooltip) {
@@ -76,6 +100,49 @@ public class VariablesViewButtons {
         button.setToolTipText(tooltip);
         button.setFocusable(false);
         return button;
+    }
+
+    private static JToggleButton createToggleButton (final String id, String iconPath, String tooltip) {
+        Icon icon = ImageUtilities.loadImageIcon(iconPath, false);
+        boolean isSelected = isButtonSelected(id);
+        final JToggleButton toggleButton = new JToggleButton(icon, isSelected);
+        // ensure small size, just for the icon
+        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8); // [TODO]
+        toggleButton.setPreferredSize(size);
+        toggleButton.setMargin(new Insets(0, 0, 0, 0));
+        toggleButton.setToolTipText(tooltip);
+        toggleButton.setFocusable(false);
+        return toggleButton;
+    }
+
+    private static boolean isButtonSelected(String name) {
+        Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(PREFERENCES_NAME);
+        if (name.equals(SHOW_VALUE_AS_STRING)) {
+            return preferences.getBoolean(SHOW_VALUE_AS_STRING, false);
+        }
+        return false;
+    }
+
+    private static void setButtonSelected(String name, boolean selected) {
+        Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(PREFERENCES_NAME);
+        preferences.putBoolean(name, selected);
+    }
+
+    // **************************************************************************
+
+    private static class ShowValueAsStringActionListener implements ActionListener {
+
+        private JToggleButton button;
+
+        ShowValueAsStringActionListener(JToggleButton toggleButton) {
+            this.button = toggleButton;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            boolean isSelected = button.isSelected();
+            setButtonSelected(SHOW_VALUE_AS_STRING, isSelected);
+        }
+
     }
 
 }
