@@ -118,7 +118,8 @@ public abstract class SVGComponentEventSourceCD extends ComponentDescriptor {
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, ActionsPresenter.class);
         DocumentSupport.removePresentersOfClass(presenters, InspectorFolderPresenter.class);
-        MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, true, false, true);
+        MidpActionsSupport.addCommonEventSourceActionsPresenters(presenters, false,
+                true, true, false, true);
 
         super.gatherPresenters(presenters);
     }
