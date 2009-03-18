@@ -957,7 +957,6 @@ public class IssuePanel extends javax.swing.JPanel {
         handle.switchToIndeterminate();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                boolean wasNew = issue.getTaskData().isNew();
                 try {
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
                         if (attachment.file.exists()) {
@@ -970,14 +969,6 @@ public class IssuePanel extends javax.swing.JPanel {
                         }
                     }
                     issue.submitAndRefresh();
-                    if (wasNew) {
-                        EventQueue.invokeLater(new Runnable() {
-                            public void run() {
-                                BugzillaIssue newIssue = (BugzillaIssue)issue.getRepository().getIssueCache().getIssue(issue.getID());
-                                setIssue(newIssue);
-                            }
-                        });
-                    }
                 } finally {
                     handle.finish();
                     reloadFormInAWT(true);
