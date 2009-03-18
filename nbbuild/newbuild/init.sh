@@ -3,6 +3,33 @@ set -x
 
 #Initialize all the environment
 
+#Create test result xml file - call:
+#create_test_result( testname, message, failures=0 )
+create_test_result() {
+    if [ -z "$3" ]; then
+        FAILURES="0"
+    else
+        FAILURES="$3"
+    fi
+
+    FILE="$WORKSPACE/results/TEST-.$1.xml"
+    echo '<?xml version="1.0" encoding="UTF-8" ?>' >$FILE
+    echo '<testsuite errors="0" failures="'$FAILURES'" name="'$1'" tests="1" time="1">' >>$FILE
+    echo '  <properties>' >>$FILE
+    echo '  </properties>' >>$FILE
+    echo '  <testcase classname="'$1'" name="'$1'" time="1">' >>$FILE
+    if [ "$FAILURES" -gt "0" ]; then
+        echo '  <failure message="Failed"/>' >>$FILE
+    fi
+    echo '  </testcase>' >>$FILE
+    echo '  <system-out><![CDATA[' >>$FILE
+    echo "$2" >>$FILE
+    echo ']]></system-out>' >>$FILE
+    echo '  <system-err></system-err>' >>$FILE
+    echo '</testsuite>' >>$FILE
+}
+
+
 #ML BUILD yes/no 1/0
 if [ -z ${ML_BUILD} ]; then
     export ML_BUILD=1
