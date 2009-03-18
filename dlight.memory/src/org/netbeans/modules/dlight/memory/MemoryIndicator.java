@@ -77,6 +77,7 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
                     String value = lastRow.getStringValue(c.getColumnName()); //TODO: change to Long
                     if (value != null){
                         panel.setValue(Long.parseLong(value));
+                        break;
                     }
                 }
             }
