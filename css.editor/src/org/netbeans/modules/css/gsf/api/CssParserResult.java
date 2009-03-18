@@ -83,8 +83,8 @@ public class CssParserResult extends ParserResult {
 
     @Override
     protected void invalidate() {
-        root = null;
-        errors = null;
+//        root = null;
+//        errors = null;
     }
 
 //        @Override

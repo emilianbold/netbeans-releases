@@ -40,10 +40,12 @@
  */
 package org.netbeans.modules.css.editor;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
@@ -107,8 +109,15 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
         }
 
         List<? extends Error> errors = result.getDiagnostics();
+        List<Error> onlyErrors = new ArrayList<Error>(errors.size());
+        //filter out warnings
+        for(Error e : errors) {
+            if(e.getSeverity() == Severity.ERROR) {
+                onlyErrors.add(e);
+            }
+        }
 
-        if(errors.size() > 0) {
+        if(onlyErrors.size() > 0) {
             //filter out warnings if present here!?!?
             CssEditorSupport.getDefault().parsedWithError(result);
         } else {
