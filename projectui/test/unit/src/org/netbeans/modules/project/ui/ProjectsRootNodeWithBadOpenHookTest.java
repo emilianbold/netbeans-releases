@@ -57,6 +57,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -83,6 +84,7 @@ public class ProjectsRootNodeWithBadOpenHookTest extends NbTestCase {
         return Level.OFF;
     }
 
+    @RandomlyFails // NB-Core-Build #2288
     public void testIsBrokenInitializationReportedAsWarning() throws Exception {
         MockLookup.setInstances(new TestSupport.TestProjectFactory());
         CountDownLatch down = new CountDownLatch(1);
@@ -156,7 +158,8 @@ public class ProjectsRootNodeWithBadOpenHookTest extends NbTestCase {
         
         OpenProjectList.waitProjectsFullyOpen();
 
-        assertEquals("30 nodes", 30, logicalView.getChildren().getNodesCount());
+        List<Node> arrNodes = logicalView.getChildren().snapshot();
+        assertEquals("30 nodes:\n" + arrNodes, 30, arrNodes.size());
 
         assertEquals("One message: " + h.recs, 1, h.recs.size());
         assertEquals("It is a warning ", Level.WARNING, h.recs.get(0).getLevel());

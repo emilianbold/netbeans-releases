@@ -48,8 +48,8 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
 import org.netbeans.modules.php.dbgp.SessionId;
+import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.packets.BrkpntRemoveCommand;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand;
 import org.netbeans.modules.php.dbgp.packets.BrkpntUpdateCommand;
@@ -67,6 +67,7 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.LazyDebuggerManagerListener#getProperties()
      */
+    @Override
     public String[] getProperties() {
         if ( myProperties == null ) {
             myProperties = new String[] { DebuggerManager.PROP_BREAKPOINTS }; 
@@ -77,6 +78,7 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.DebuggerManagerListener#breakpointAdded(org.netbeans.api.debugger.Breakpoint)
      */
+    @Override
     public void breakpointAdded( Breakpoint breakpoint ) {
         performCommand(breakpoint, Lazy.SET_COMMAND);
     }
@@ -84,6 +86,7 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.DebuggerManagerListener#breakpointRemoved(org.netbeans.api.debugger.Breakpoint)
      */
+    @Override
     public void breakpointRemoved( Breakpoint breakpoint ) {
         performCommand(breakpoint, Lazy.REMOVE_COMMAND );
     }
@@ -91,8 +94,9 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
     /* (non-Javadoc)
      * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
      */
+    @Override
     public void propertyChange( PropertyChangeEvent event ) {
-        if (event.getPropertyName() != Breakpoint.PROP_ENABLED) {
+        if (!Breakpoint.PROP_ENABLED.equals(event.getPropertyName())) {
             return;
         }
         Object source = event.getSource();
@@ -110,8 +114,9 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
             if ( id == null ){
                 continue;
             }
+            SessionManager sessionManager = SessionManager.getInstance();
             Collection<DebugSession> collection =  
-                StartActionProviderImpl.getInstance().getSessions(id);
+                sessionManager.findSessionsById(id);
             for (DebugSession debugSession : collection) {
                 command.perform(bpoint, id, debugSession);
             }

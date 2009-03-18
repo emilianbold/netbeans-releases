@@ -200,15 +200,15 @@ public class AcceptanceTestCase  extends JellyTestCase {
         new JButtonOperator(opSelectElementOrType, "OK").pushNoBlock();
         opSelectElementOrType.waitClosed();
         
-        opNewFileWizard.next();
-        
-        JDialogOperator opConcreteConfigStep = new JDialogOperator("New WSDL Document");
-        
-        JComboBoxOperator opCombo = new JComboBoxOperator(opConcreteConfigStep);
-        opCombo.selectItem("SOAP");
-        
-        JRadioButtonOperator opRadio = new JRadioButtonOperator(opConcreteConfigStep, "Document Literal");
-        opRadio.pushNoBlock();
+//        opNewFileWizard.next();
+//
+//        JDialogOperator opConcreteConfigStep = new JDialogOperator("New WSDL Document");
+//
+//        JComboBoxOperator opCombo = new JComboBoxOperator(opConcreteConfigStep);
+//        opCombo.selectItem("SOAP");
+//
+//        JRadioButtonOperator opRadio = new JRadioButtonOperator(opConcreteConfigStep, "Document Literal");
+//        opRadio.pushNoBlock();
         
         opNewFileWizard.finish();
         

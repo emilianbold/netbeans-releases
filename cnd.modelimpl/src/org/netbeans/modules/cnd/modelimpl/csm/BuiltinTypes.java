@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.ObjectBasedUID;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
@@ -61,6 +62,9 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @author Vladimir Kvasihn
  */
 public class BuiltinTypes {
+
+    private BuiltinTypes() {
+    }
 
     private static class BuiltinImpl implements CsmBuiltIn, CsmIdentifiable {
 
@@ -151,7 +155,7 @@ public class BuiltinTypes {
     }
 
     public static ObjectBasedUID readUID(DataInput aStream) throws IOException {
-        String name = aStream.readUTF(); // no need for text manager
+        CharSequence name = PersistentUtils.readUTF(aStream, QualifiedNameCache.getManager()); // no need for text manager
         CsmBuiltIn builtIn = BuiltinTypes.getBuiltIn(name);
         ObjectBasedUID anUID = (ObjectBasedUID) UIDs.get(builtIn);
         assert anUID != null;
@@ -177,7 +181,8 @@ public class BuiltinTypes {
             BuiltinImpl ref = (BuiltinImpl) getObject();
             assert ref != null;
             assert ref.getName() != null;
-            output.writeUTF(ref.getName().toString());
+            PersistentUtils.writeUTF(ref.getName(), output);
         }
-    }     
+    }
+
 }

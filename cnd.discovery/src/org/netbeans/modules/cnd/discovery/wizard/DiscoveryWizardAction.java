@@ -161,6 +161,9 @@ public final class DiscoveryWizardAction extends NodeAction {
             Folder folder = make.getLogicalFolders();
             Vector sources = folder.getFolders();
             List<String> roots = make.getAbsoluteSourceRoots();
+            if (roots.size() > 0){
+                return roots.get(0);
+            }
             //List<String> roots = new ArrayList<String>();
             for (Object o : sources){
                 Folder sub = (Folder)o;

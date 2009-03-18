@@ -45,19 +45,21 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public final class ErrorDirectiveImpl extends OffsetableBase implements CsmErrorDirective {
-    private final String msg;
-    private ErrorDirectiveImpl(CsmFile file, String text, CsmOffsetable offs) {
+    private final CharSequence msg;
+    private ErrorDirectiveImpl(CsmFile file, CharSequence text, CsmOffsetable offs) {
         super(file, offs);
-        this.msg = text;
+        this.msg = DefaultCache.getManager().getString(text);
     }
 
-    public static ErrorDirectiveImpl create(CsmFile file, String msg, CsmOffsetable offs) {
+    public static ErrorDirectiveImpl create(CsmFile file, CharSequence msg, CsmOffsetable offs) {
         return new ErrorDirectiveImpl(file, msg, offs);
     }
 
@@ -92,12 +94,12 @@ public final class ErrorDirectiveImpl extends OffsetableBase implements CsmError
     @SuppressWarnings("unchecked")
     public ErrorDirectiveImpl(DataInput input) throws IOException {
         super(input);
-        this.msg = input.readUTF();
+        this.msg = PersistentUtils.readUTF(input, DefaultCache.getManager());
     }
 
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        output.writeUTF(msg);
+        PersistentUtils.writeUTF(msg, output);
     }
 }

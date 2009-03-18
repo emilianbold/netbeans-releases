@@ -83,7 +83,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
     protected ClassEnumBase(String name, CsmFile file, AST ast) {
         super(file, getStartOffset(ast), getEndOffset(ast));
-        this.name = (name == null) ? CharSequenceKey.empty() : NameCache.getManager().getString(CharSequenceKey.create(name));
+        this.name = (name == null) ? CharSequenceKey.empty() : NameCache.getManager().getString(name);
     }
 
     protected static int getEndOffset(AST node) {
@@ -286,10 +286,10 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         output.writeBoolean(this.isValid);
 
         assert this.name != null;
-        output.writeUTF(this.name.toString());
+        PersistentUtils.writeUTF(name, output);
 
         assert this.qualifiedName != null;
-        output.writeUTF(this.qualifiedName.toString());
+        PersistentUtils.writeUTF(qualifiedName, output);
 
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
 
@@ -309,10 +309,10 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         super(input);
         this.isValid = input.readBoolean();
 
-        this.name = NameCache.getManager().getString(input.readUTF());
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
 
-        this.qualifiedName = QualifiedNameCache.getManager().getString(input.readUTF());
+        this.qualifiedName = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.qualifiedName != null;
 
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);

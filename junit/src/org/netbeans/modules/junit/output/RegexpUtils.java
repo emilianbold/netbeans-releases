@@ -108,6 +108,7 @@ final class RegexpUtils {
               + CALLSTACK_LINE_PREFIX
               + RegexpPatterns.JAVA_ID_REGEX + "(?:\\."                 //NOI18N
               + RegexpPatterns.JAVA_ID_REGEX + ")+"                     //NOI18N
+              + "(?:\\.<init>)?"                                        //NOI18N
               + "(?: ?\\([^()]+\\))?";                                  //NOI18N
     /** */
     static final String NESTED_EXCEPTION_PREFIX = "Caused by: ";        //NOI18N

@@ -64,12 +64,15 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.debugger.jpda.projects.SourcePathProviderImpl.FileObjectComparator;
+import org.netbeans.spi.viewmodel.CheckNodeModel;
+import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -85,7 +88,7 @@ import org.openide.util.WeakListeners;
 /**
  * @author   Jan Jancura
  */
-public class SourcesRemoteModel implements TreeModel, TableModel,
+public class SourcesRemoteModel implements TreeModel, CheckNodeModelFilter,
 NodeActionsProvider {
 
     private Vector<ModelListener>   listeners = new Vector<ModelListener>();
@@ -220,39 +223,6 @@ NodeActionsProvider {
     }
 
 
-    // TableModel ..............................................................
-
-    public Object getValueAt (Object node, String columnID) throws
-    UnknownTypeException {
-        if ("use".equals (columnID)) {
-            if (node instanceof String)
-                return Boolean.valueOf (
-                    isEnabled ((String) node)
-                );
-        }
-        throw new UnknownTypeException (node);
-    }
-
-    public boolean isReadOnly (Object node, String columnID) throws
-    UnknownTypeException {
-        if ( "use".equals (columnID) &&
-             (node instanceof String))
-            return false;
-        throw new UnknownTypeException (node);
-    }
-
-    public void setValueAt (Object node, String columnID, Object value)
-    throws UnknownTypeException {
-        if ("use".equals (columnID)) {
-            if (node instanceof String) {
-                setEnabled ((String) node, ((Boolean) value).booleanValue ());
-                return;
-            }
-        }
-        throw new UnknownTypeException (node);
-    }
-
-
     // NodeActionsProvider .....................................................
 
     public Action[] getActions (Object node) throws UnknownTypeException {
@@ -360,6 +330,45 @@ NodeActionsProvider {
 //            sourceRootsSet.add(roots[x]);
 //        }
     }
+
+    // CheckNodeModelFilter
+
+    public boolean isCheckable(NodeModel original, Object node) throws UnknownTypeException {
+        return true;
+    }
+
+    public boolean isCheckEnabled(NodeModel original, Object node) throws UnknownTypeException {
+        return true;
+    }
+
+    public Boolean isSelected(NodeModel original, Object node) throws UnknownTypeException {
+        if (node instanceof String) {
+            return isEnabled ((String) node);
+        } else {
+            throw new UnknownTypeException (node);
+        }
+    }
+
+    public void setSelected(NodeModel original, Object node, Boolean selected) throws UnknownTypeException {
+        if (node instanceof String) {
+            setEnabled ((String) node, selected.booleanValue ());
+            return;
+        }
+        throw new UnknownTypeException (node);
+    }
+
+    public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
+        return original.getDisplayName(node);
+    }
+
+    public String getIconBase(NodeModel original, Object node) throws UnknownTypeException {
+        return original.getIconBase(node);
+    }
+
+    public String getShortDescription(NodeModel original, Object node) throws UnknownTypeException {
+        return original.getShortDescription(node);
+    }
+
 
     // innerclasses ............................................................
 

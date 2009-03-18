@@ -42,6 +42,8 @@ package org.netbeans.modules.hudson.ui.notification;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.CharConversionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -60,7 +62,9 @@ import org.openide.xml.XMLUtil;
  */
 class ProblemNotification implements ActionListener {
 
-    private final HudsonJob job;
+    private static final Logger LOG = Logger.getLogger(ProblemNotification.class.getName());
+
+    final HudsonJob job;
     private final int build;
     private final boolean failed;
     private final boolean running;
@@ -107,11 +111,13 @@ class ProblemNotification implements ActionListener {
     }
 
     void add() {
+        LOG.log(Level.FINE, "Adding {0}", this);
         notification = NotificationDisplayer.getDefault().notify(getTitle(), getIcon(), getDescription(), this, getPriority());
     }
 
     void remove() {
         if (notification != null) {
+            LOG.log(Level.FINE, "Removing {0}", this);
             notification.clear();
             notification = null;
         }

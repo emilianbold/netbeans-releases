@@ -42,7 +42,7 @@ package org.netbeans.modules.xml.wsdl.refactoring;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.xml.refactoring.spi.RefactoringEngine;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
@@ -58,7 +58,6 @@ import org.netbeans.modules.xml.wsdl.model.Output;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPAddress;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
@@ -69,11 +68,13 @@ import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeaderFault;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
 import org.netbeans.modules.xml.wsdl.model.visitor.ChildVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
+import org.netbeans.modules.xml.wsdl.refactoring.spi.WSDLExtensibilityElementRefactoringSupport;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.ErrorManager;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -179,6 +180,19 @@ public class FindWSDLUsageVisitor extends ChildVisitor implements WSDLVisitor {
     public void visit(ExtensibilityElement ee) {
         if (ee instanceof SOAPComponent) {
             ((SOAPComponent) ee).accept(new SOAPVisitor());
+        } else {
+            QName qname = ee.getQName();
+            if (qname != null && qname.getNamespaceURI() != null) {
+                for (WSDLExtensibilityElementRefactoringSupport support : Lookup.getDefault().lookupAll(WSDLExtensibilityElementRefactoringSupport.class)) {
+                    if (support.getNamespace().equals(qname.getNamespaceURI())) {
+                        List<Component> components= new ArrayList<Component>();
+                        ee.accept(support.getReferenceFinderVisitor(referenced, components));
+                        for (Component component : components) {
+                            elements.add(new WSDLRefactoringElement(component.getModel(), (Referenceable)referenced, component));
+                        }
+                    }
+                }
+            }
         }
         super.visit(ee);
     }

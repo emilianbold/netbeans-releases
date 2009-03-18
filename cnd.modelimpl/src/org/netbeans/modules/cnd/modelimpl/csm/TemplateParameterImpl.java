@@ -43,14 +43,18 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifierBasedTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -66,23 +70,26 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  *
  * @author eu155513
  */
-public class TemplateParameterImpl extends OffsetableDeclarationBase implements CsmClassifierBasedTemplateParameter, SelfPersistent {
+public class TemplateParameterImpl extends OffsetableDeclarationBase implements CsmClassifierBasedTemplateParameter, CsmTemplate, SelfPersistent {
     private final CharSequence name;
     private CsmUID<CsmScope> scope;
 
     private CsmType defaultValue = null;
+
+    private TemplateDescriptor templateDescriptor = null;
     
-    public TemplateParameterImpl(AST ast, String name, CsmFile file, CsmScope scope) {
+    public TemplateParameterImpl(AST ast, String name, CsmFile file, CsmScope scope, boolean global) {
         super(ast, file);
         // TODO what about explicite type in ast?
         this.name = NameCache.getManager().getString(name);
+        templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, scope, global);
         if ((scope instanceof CsmIdentifiable)) {
             this.scope = UIDCsmConverter.scopeToUID(scope);
         }
     }
 
-    public TemplateParameterImpl(AST ast, String name, CsmFile file, CsmScope scope, AST defaultValue) {
-        this(ast, name, file, scope);
+    public TemplateParameterImpl(AST ast, String name, CsmFile file, CsmScope scope, boolean global, AST defaultValue) {
+        this(ast, name, file, scope, global);
         this.defaultValue = TypeFactory.createType(defaultValue, file, null, 0);
     }
     
@@ -108,6 +115,18 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     public int hashCode() {
         return name.hashCode();
     }
+
+    public boolean isTemplate() {
+        return templateDescriptor != null;
+    }
+
+    public List<CsmTemplateParameter> getTemplateParameters() {
+        return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
+    }
+
+    public CharSequence getDisplayName() {
+        return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
+    }
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
@@ -115,16 +134,18 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output); 
-        output.writeUTF(name.toString());
+        PersistentUtils.writeUTF(name, output);
         UIDObjectFactory.getDefaultFactory().writeUID(scope, output);
         PersistentUtils.writeType(defaultValue, output);
+        PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
     }
     
     public TemplateParameterImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getManager().getString(input.readUTF());
+        this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         this.scope = UIDObjectFactory.getDefaultFactory().readUID(input);
         this.defaultValue = PersistentUtils.readType(input);
+        this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
     }
     
     public CsmScope getScope() {

@@ -843,7 +843,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             // phase one, outside EQ thread
             String version = MavenSettings.getCommandLineMavenVersion();
             synchronized (MAVEN_VERSION_LOCK) {
-                mavenVersion = version != null ? new DefaultArtifactVersion(version) : null;
+                mavenVersion = version != null ? new DefaultArtifactVersion(version.trim()) : null;
             }
             // trigger revalidation -> phase two
             SwingUtilities.invokeLater(this);

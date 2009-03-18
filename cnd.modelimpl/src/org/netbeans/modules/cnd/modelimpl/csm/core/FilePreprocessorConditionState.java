@@ -71,7 +71,7 @@ public class FilePreprocessorConditionState
 
     public FilePreprocessorConditionState(FileImpl file/*, APTPreprocHandler preprocHandler*/) {
         offsets = new int[MIN_SIZE];
-        fileName = file.getAbsolutePath();
+        fileName = file.getBuffer().getAbsolutePath();
         //this.isCpp = preprocHandler.getMacroMap().isDefined("__cplusplus");
     }
 

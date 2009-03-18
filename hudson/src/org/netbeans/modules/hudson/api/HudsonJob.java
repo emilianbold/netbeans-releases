@@ -46,8 +46,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  * Instance of the Hudson Job in specified instance
- *
- * @author Michal Mocnak
  */
 public interface HudsonJob extends Comparable<HudsonJob> {
     
@@ -172,5 +170,10 @@ public interface HudsonJob extends Comparable<HudsonJob> {
      * Obtains a filesystem representing the remote workspace as accessed by Hudson web services.
      */
     FileSystem getRemoteWorkspace();
+
+    /**
+     * Normally true, but may be false if a job is not considered interesting on this server.
+     */
+    boolean isSalient();
 
 }

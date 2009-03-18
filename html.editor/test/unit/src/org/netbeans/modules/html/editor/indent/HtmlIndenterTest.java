@@ -153,11 +153,15 @@ public class HtmlIndenterTest extends TestBase2 {
         reformatFileContents("testfiles/simple01.html",new IndentPrefs(4,4));
     }
 
+    public void testFormattingHTML02() throws Exception {
+        reformatFileContents("testfiles/simple02.html",new IndentPrefs(4,4));
+    }
+
     public void testIndentation() throws Exception {
-        insertNewline("<html>  ^  </html>", "<html>  \n    ^\n</html>", null);
-//        insertNewline("        <table>\n            <tr>\n                <td>^</td>\n            </tr>\n</table>",
-//                      "        <table>\n            <tr>\n                <td>\n                    ^\n                </td>\n            </tr>\n</table>", null);
-        
+        insertNewline("<html>^</html>", "<html>\n    ^\n</html>", null);
+        insertNewline("        <table>\n            <tr>\n                <td>^</td>\n            </tr>\n</table>",
+                      "        <table>\n            <tr>\n                <td>\n                    ^\n                </td>\n            </tr>\n</table>", null);
+
         insertNewline("  <html><table      color=aaa^", "  <html><table      color=aaa\n                    ^", null);
         // property tag indentation:
         insertNewline("<html>^<table>", "<html>\n    ^<table>", null);
@@ -169,13 +173,22 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline("<html><table^>", "<html><table\n        ^>", null);
         insertNewline("<html>^\n    <table>\n", "<html>\n    ^\n    <table>\n", null);
 
-        // test that returning </body> tag matches opening one:
+         //test that returning </body> tag matches opening one:
         insertNewline(
             "<html>\n  <body>\n        <h1>Hello World!</h1>\n                <p>text^</body>",
             "<html>\n  <body>\n        <h1>Hello World!</h1>\n                <p>text\n  ^</body>", null);
         insertNewline(
             "<html><body><table><tr>   <td>aa^</td></tr></table>",
             "<html><body><table><tr>   <td>aa\n                ^</td></tr></table>", null);
+        insertNewline(
+            "   <html><body><table><tr>   <td>aa^</td></tr></table>",
+            "   <html><body><table><tr>   <td>aa\n                   ^</td></tr></table>", null);
+        insertNewline(
+            "   <html><body><table><tr>   <td\n                             style=\"xx\">aa^</td></tr></table>",
+            "   <html><body><table><tr>   <td\n                             style=\"xx\">aa\n                   ^</td></tr></table>", null);
+        insertNewline(
+            "   <html><body><table><tr>   <td\n style=\"xx\">aa^</td></tr></table>",
+            "   <html><body><table><tr>   <td\n style=\"xx\">aa\n                   ^</td></tr></table>", null);
         insertNewline(
             "<html>\n    <body><table><tr>   <td>a\n                ^</td></tr></table>",
             "<html>\n    <body><table><tr>   <td>a\n                \n                ^</td></tr></table>", null);
@@ -202,6 +215,10 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline(
                 "          <table><tr><td>a\n                  ^</td>",
                 "          <table><tr><td>a\n                  \n                  ^</td>", null);
+
+        insertNewline(
+                "   <p>\n     <table>\n      <tbody>^</table>",
+                "   <p>\n     <table>\n      <tbody>\n     ^</table>", null);
     }
 
 }
