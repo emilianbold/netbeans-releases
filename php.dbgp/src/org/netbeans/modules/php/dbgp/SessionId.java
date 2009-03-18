@@ -43,6 +43,7 @@ package org.netbeans.modules.php.dbgp;
 import java.io.File;
 
 import java.net.URI;
+import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -80,6 +81,10 @@ public class SessionId {
     }
     public Project getProject(){
         return FileOwnerQuery.getOwner( sessionFileObject );
+    }
+
+    synchronized void initialize(String uri, List<Pair<String, String>> pathMapping) {
+        // XXX needs to be fixed after changes from main-whatever are propagated to web-main
     }
 
     synchronized void initialize(String uri, Pair<String, String> pathMapping) {
