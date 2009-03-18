@@ -50,7 +50,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.Toolkit;
@@ -153,6 +152,7 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
         }
     }
 
+    @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = prepareGraphics( g );
         super.paintComponent(g2);

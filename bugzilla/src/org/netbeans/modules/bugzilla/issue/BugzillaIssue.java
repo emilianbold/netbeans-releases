@@ -88,7 +88,7 @@ public class BugzillaIssue extends Issue {
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
     private IssueController controller;
     private IssueNode node;
-    
+
     static final String LABEL_NAME_ID           = "bugzilla.issue.id"; // NOI18N
     static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity"; // NOI18N
     static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority"; // NOI18N
@@ -119,7 +119,7 @@ public class BugzillaIssue extends Issue {
     enum IssueField {
         SUMMARY(BugzillaAttribute.SHORT_DESC.getKey()),
         STATUS(TaskAttribute.STATUS),
-        PRIORITY(TaskAttribute.PRIORITY),
+        PRIORITY(BugzillaAttribute.PRIORITY.getKey()),
         RESOLUTION(TaskAttribute.RESOLUTION),
         PRODUCT(BugzillaAttribute.PRODUCT.getKey()),
         COMPONENT(BugzillaAttribute.COMPONENT.getKey()),
@@ -133,7 +133,7 @@ public class BugzillaIssue extends Issue {
         ASSIGNED_TO_NAME(BugzillaAttribute.ASSIGNED_TO_NAME.getKey()),
         QA_CONTACT(BugzillaAttribute.QA_CONTACT.getKey()),
         QA_CONTACT_NAME(BugzillaAttribute.QA_CONTACT_NAME.getKey()),
-        NEWCC(BugzillaAttribute.NEWCC.getKey()),        
+        NEWCC(BugzillaAttribute.NEWCC.getKey()),
         REMOVECC(BugzillaAttribute.REMOVECC.getKey()),
         CC(BugzillaAttribute.CC.getKey()),
         DEPENDS_ON(BugzillaAttribute.DEPENDSON.getKey()),
@@ -252,11 +252,11 @@ public class BugzillaIssue extends Issue {
                     case REPORTER_NAME:
                     case QA_CONTACT_NAME:
                     case ASSIGNED_TO_NAME:
-                        continue;                    
-                    default:    
+                        continue;
+                    default:
                         value = getFieldValue(field);
                 }
-                if(value != null && !value.trim().equals("")) {                    
+                if(value != null && !value.trim().equals("")) {
                     attributes.put(field.key, value);
                 }
             }
@@ -364,7 +364,7 @@ public class BugzillaIssue extends Issue {
                     }
                     return ret;
                 }
-            }            
+            }
         }
         return "";
     }
@@ -403,7 +403,7 @@ public class BugzillaIssue extends Issue {
     }
 
     public void setTaskData(TaskData taskData) {
-        assert !taskData.isPartial();
+//        assert !taskData.isPartial(); XXX doesn't work with simple search
         data = taskData;
         attributes = null; // reset
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
@@ -412,7 +412,7 @@ public class BugzillaIssue extends Issue {
                 fireDataChanged();
             }
         });
-    }    
+    }
 
     TaskData getTaskData() {
         return data;
@@ -441,7 +441,7 @@ public class BugzillaIssue extends Issue {
     /**
      * Returns a comma separated list created
      * from the values returned by TaskAttribute.getValues()
-     * 
+     *
      * @param a
      * @return
      */
@@ -643,7 +643,7 @@ public class BugzillaIssue extends Issue {
         if(comment != null) {
             addComment(comment);
         }
-        
+
         BugzillaCommand submitCmd = new BugzillaCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
@@ -671,18 +671,19 @@ public class BugzillaIssue extends Issue {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
 
         final boolean wasNew = data.isNew();
-        final boolean wasSeenAlready = !wasNew && repository.getIssueCache().wasSeen(getID());
+        final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
         BugzillaCommand cmd = new BugzillaCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
+                // submit
                 RepositoryResponse rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
                 // XXX evaluate rr
+
                 if (!wasNew) {
                     refresh();
                 } else {
-                    // Ugly hack
-                    BugzillaIssue issue = (BugzillaIssue)repository.getIssue(rr.getTaskId());
-                    data = issue.getTaskData();
+                    refresh(rr.getTaskId(), true);
+
                 }
                 // it was the user who made the changes, so preserve the seen status if seen already
                 if (wasSeenAlready) {
@@ -700,12 +701,17 @@ public class BugzillaIssue extends Issue {
 
     public boolean refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
+        return refresh(getID(), false);
+    }
+
+    public boolean refresh(String id, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache 
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt";
         try {
-            TaskData td = BugzillaUtil.getTaskData(repository, getID());
+            TaskData td = BugzillaUtil.getTaskData(repository, id);
             if(td == null) {
                 return false;
             }
-            getRepository().getIssueCache().setIssueData(getID(), td); // XXX
+            getRepository().getIssueCache().setIssueData(id, td, this); // XXX
             if (controller != null) {
                 controller.refreshViewData();
             }
@@ -730,14 +736,14 @@ public class BugzillaIssue extends Issue {
         private final Long number;
         private final String text;
 
-        public Comment(TaskAttribute a) {            
+        public Comment(TaskAttribute a) {
             Date d = null;
             try {
                 d = CC_DATE_FORMAT.parse(a.getMappedAttribute(TaskAttribute.COMMENT_DATE).getValue());
             } catch (ParseException ex) {
                 Bugzilla.LOG.log(Level.SEVERE, null, ex);
             }
-            when = d;            
+            when = d;
             // XXX check for NULL
             who = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR).getMappedAttribute(TaskAttribute.PERSON_NAME).getValue();
             number = Long.parseLong(a.getMappedAttribute(TaskAttribute.COMMENT_NUMBER).getValues().get(0));// XXX value or values?

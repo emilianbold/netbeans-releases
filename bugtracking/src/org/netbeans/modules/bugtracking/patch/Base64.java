@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,71 +38,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bugtracking.ui.issue;
+package org.netbeans.modules.bugtracking.patch;
 
-import org.openide.util.actions.SystemAction;
-import org.openide.util.HelpCtx;
-
-import java.awt.event.ActionEvent;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.openide.util.NbBundle;
+import java.io.ByteArrayOutputStream;
+import java.util.*;
 
 /**
- * 
- * @author Tomas Stupka
+ * Base64 utility methods.
+ *
+ * @author Maros Sandor
  */
-public class IssueAction extends SystemAction {
-
-    public IssueAction() {
-        setIcon(null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+class Base64 {
+    
+    private Base64() {
+    }
+    
+    public static byte [] decode(List<String> ls) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        for (String s : ls) {
+            decode(s, bos);
+        }
+        return bos.toByteArray();
+    }
+  
+    private static void decode(String s, ByteArrayOutputStream bos) {
+        int i = 0;
+        int len = s.length();
+        while (true) {
+            while (i < len && s.charAt(i) <= ' ') i++;
+            if (i == len) break;
+            int tri = (decode(s.charAt(i)) << 18)
+            + (decode(s.charAt(i+1)) << 12)
+            + (decode(s.charAt(i+2)) << 6)
+            + (decode(s.charAt(i+3)));
+          
+            bos.write((tri >> 16) & 255);
+            if (s.charAt(i+2) == '=') break;
+            bos.write((tri >> 8) & 255);
+            if (s.charAt(i+3) == '=') break;
+            bos.write(tri & 255);
+          
+            i += 4;
+        }
     }
 
-    public String getName() {
-        return NbBundle.getMessage(IssueAction.class, "CTL_IssueAction");
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(IssueAction.class);
-    }
-
-    public void actionPerformed(ActionEvent ev) {
-        openQuery(null);
-    }
-
-    public static void openQuery(Issue issue) {
-        openIssue(issue, null);
-    }
-
-    public static void openIssue(final Issue issue, final Repository repository) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                IssueTopComponent tc = null;
-                if(issue != null) {
-                    tc = IssueTopComponent.find(issue);
-                }
-                if(tc == null) {
-                    tc = new IssueTopComponent();
-                }
-                tc.initNewIssue(repository);
-                if(!tc.isOpened()) {
-                    tc.open();
-                }
-                tc.requestActive();
+    private static int decode(char c) {
+        if (c >= 'A' && c <= 'Z') return ((int) c) - 65;
+        else if (c >= 'a' && c <= 'z') return ((int) c) - 97 + 26;
+        else if (c >= '0' && c <= '9') return ((int) c) - 48 + 26 + 26;
+        else {
+            switch (c) {
+                case '+': return 62;
+                case '/': return 63;
+                case '=': return 0;
+                default:
+                    throw new RuntimeException("unexpected code: " + c);
             }
-        });
+        }
     }
-
-    public static void closeIssue(final Issue issue) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                IssueTopComponent tc = IssueTopComponent.find(issue);
-                if(tc != null) {
-                    tc.close();
-                }
-            }
-        });
-    }
+    
 }

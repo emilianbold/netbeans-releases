@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,71 +38,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bugtracking.ui.issue;
-
-import org.openide.util.actions.SystemAction;
-import org.openide.util.HelpCtx;
-
-import java.awt.event.ActionEvent;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.bugtracking.patch;
 
 /**
- * 
- * @author Tomas Stupka
+ * The patch is invalid or cannot be applied on the specified file.
+ *
+ * @author Maros Sandor
  */
-public class IssueAction extends SystemAction {
+public final class PatchException extends Exception {
 
-    public IssueAction() {
-        setIcon(null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-
-    public String getName() {
-        return NbBundle.getMessage(IssueAction.class, "CTL_IssueAction");
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(IssueAction.class);
-    }
-
-    public void actionPerformed(ActionEvent ev) {
-        openQuery(null);
-    }
-
-    public static void openQuery(Issue issue) {
-        openIssue(issue, null);
-    }
-
-    public static void openIssue(final Issue issue, final Repository repository) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                IssueTopComponent tc = null;
-                if(issue != null) {
-                    tc = IssueTopComponent.find(issue);
-                }
-                if(tc == null) {
-                    tc = new IssueTopComponent();
-                }
-                tc.initNewIssue(repository);
-                if(!tc.isOpened()) {
-                    tc.open();
-                }
-                tc.requestActive();
-            }
-        });
-    }
-
-    public static void closeIssue(final Issue issue) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                IssueTopComponent tc = IssueTopComponent.find(issue);
-                if(tc != null) {
-                    tc.close();
-                }
-            }
-        });
+    public PatchException(String msg) {
+        super(msg);
     }
 }

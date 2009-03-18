@@ -85,6 +85,10 @@ public abstract class IssueCache {
     protected abstract void setTaskData(Issue issue, TaskData taskData);
 
     public Issue setIssueData(String id, TaskData taskData) throws IOException {
+        return setIssueData(id, taskData, null);
+    }
+
+    public Issue setIssueData(String id, TaskData taskData, Issue issue) throws IOException {
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
 
@@ -93,9 +97,16 @@ public abstract class IssueCache {
             }
 
             if(entry.issue == null) {
-                entry.issue = createIssue(taskData);
-                BugtrackingManager.LOG.log(Level.FINE, "created issue {0} ", new Object[] {id}); // NOI18N
-                readIssue(entry);
+                if(issue != null) {
+                    entry.issue = issue;
+//                    entry.status = Issue.ISSUE_STATUS_SEEN;
+                    BugtrackingManager.LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
+                    setTaskData(entry.issue, taskData);
+                } else {
+                    entry.issue = createIssue(taskData);
+                    BugtrackingManager.LOG.log(Level.FINE, "created issue {0} ", new Object[] {id}); // NOI18N
+                    readIssue(entry);
+                }
             } else {
                 BugtrackingManager.LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
                 setTaskData(entry.issue, taskData);

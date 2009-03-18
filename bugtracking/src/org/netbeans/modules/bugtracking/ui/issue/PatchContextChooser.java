@@ -97,6 +97,12 @@ public class PatchContextChooser extends javax.swing.JPanel implements ExplorerM
                         } else {
                             fob = lookup.lookup(FileObject.class);
                         }
+                        if (fob == null) {
+                            Project project = lookup.lookup(Project.class);
+                            if (project != null) {
+                                fob = project.getProjectDirectory();
+                            }
+                        }
                     }
                     locationField.setText((fob==null) ? "" : FileUtil.getFileDisplayName(fob)); // NOI18N
                 }

@@ -37,12 +37,6 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-/*
- * NoContentPanel2.java
- *
- * Created on Feb 5, 2009, 12:04:19 PM
- */
-
 package org.netbeans.modules.bugtracking.util;
 
 import java.awt.Component;

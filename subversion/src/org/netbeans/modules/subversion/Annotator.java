@@ -438,7 +438,14 @@ public class Annotator {
         boolean folderAnnotation = false;
 
         for (File file : context.getRootFiles()) {
-            FileInformation info = cache.getStatus(file);
+            FileInformation info = cache.getCachedStatus(file);
+            if (info == null) {
+                // status not in cache, plan refresh
+                File parentFile = file.getParentFile();
+                Subversion.LOG.log(Level.FINE, "null cached status for: {0} in {1}", new Object[] {file, parentFile});
+                cache.refreshAsync(true, parentFile);
+                info = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
+            }
             int status = info.getStatus();
             if ((status & includeStatus) == 0) continue;
 
@@ -619,7 +626,13 @@ public class Annotator {
         FileInformation mostImportantInfo = null;
 
         for (File file : context.getRootFiles()) {
-            FileInformation info = cache.getStatus(file);
+            FileInformation info = cache.getCachedStatus(file);
+            if (info == null) {
+                File parentFile = file.getParentFile();
+                Subversion.LOG.log(Level.FINE, "null cached status for: {0} in {1}", new Object[] {file, parentFile});
+                cache.refreshAsync(true, parentFile);
+                info = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
+            }
             int status = info.getStatus();
             if ((status & includeStatus) == 0) continue;
 

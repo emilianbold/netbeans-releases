@@ -37,15 +37,8 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * IzPanel.java
- *
- * Created on Nov 11, 2008, 3:32:39 PM
- */
-
 package org.netbeans.modules.bugtracking.bridge.exportdiff;
 
-import org.netbeans.modules.bugtracking.vcshooks.*;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
