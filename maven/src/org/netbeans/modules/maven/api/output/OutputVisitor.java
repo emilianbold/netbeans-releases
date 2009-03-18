@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.api.output;
 
+import java.awt.Color;
 import javax.swing.Action;
 import org.openide.windows.OutputListener;
 
@@ -53,6 +54,7 @@ public final class OutputVisitor {
     private boolean important;
     private String line;
     private boolean skipLine = false;
+    private Color color;
     
     /**
      * property for success Action. Holds question text.
@@ -78,6 +80,7 @@ public final class OutputVisitor {
         important = false;
         line = null;
         skipLine = false;
+        color = null;
     }
     
 
@@ -140,6 +143,14 @@ public final class OutputVisitor {
     
     public boolean isLineSkipped() {
         return skipLine;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
     
 }
