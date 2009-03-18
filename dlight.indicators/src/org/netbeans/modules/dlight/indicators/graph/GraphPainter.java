@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
@@ -60,8 +61,9 @@ class GraphPainter {
     private final static Stroke outlineStroke = new BasicStroke(2.0f);
     private boolean optimize = Boolean.getBoolean("percentage.graph.optimize");
 
-    private Color gridColor = Color.LIGHT_GRAY;
-    private Color backgroundColor = Color.WHITE;
+    private Color gridColor = new Color(0xD7, 0xE0, 0xE3, 0x80);
+    private Color backgroundTopColor = Color.WHITE;
+    private Color backgroundBottomColor = new Color(0xD6, 0xE3, 0xF3);
 
     private final GraphDescriptor[] descriptors;
     private final int seriesCount;
@@ -113,7 +115,7 @@ class GraphPainter {
     }
 
     public void setBackgroundColor(Color color) {
-        this.backgroundColor = color;
+        this.backgroundBottomColor = color;
     }
 
     public void setSize(int width, int height) {
@@ -155,7 +157,7 @@ class GraphPainter {
     }
 
     public Color getBackgroundColor() {
-        return backgroundColor;
+        return backgroundTopColor;
     }
 
     public void addData(int... newData) {
@@ -195,8 +197,7 @@ class GraphPainter {
                 if (optimize) {
                     paintAll = false;
                 }
-                g.setColor(getBackgroundColor());
-                g.fillRect(x, y, w, h);
+                paintGradient(g, x, y, w, h);
                 paintGraph(g, x, y, w, h);
                 paintGrid(g, x, y, w, h);
             } else {
@@ -236,6 +237,14 @@ class GraphPainter {
         } else {
             return 0;
         }
+    }
+
+    private void paintGradient(Graphics g, int x, int y, int w, int h) {
+        Graphics2D g2 = (Graphics2D)g;
+
+        GradientPaint gradient = new GradientPaint(0, 0, backgroundTopColor, 0, height, backgroundBottomColor);
+        g2.setPaint(gradient);
+        g2.fillRect(x, y, w, h);
     }
 
     /**
@@ -336,16 +345,6 @@ class GraphPainter {
             g.setColor(color);
             g.drawLine(x, yStart, x, yEnd);
             yEnd = yStart - 1;
-        }
-        if (top < yEnd-1) {
-            g.setColor(getBackgroundColor());
-            g.drawLine(x, top, x, yEnd-1);
-        }
-        // painting grid
-        int gridSize = getGridSize();
-        g.setColor(gridColor);
-        for (int gridY = top+height-1; gridY >= 0; gridY -= gridSize) {
-            g.drawLine(x, gridY, x, gridY);
         }
     }
 

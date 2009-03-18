@@ -40,17 +40,8 @@
 package org.netbeans.modules.dlight.cpu.impl;
 
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.indicators.graph.PercentageGraph;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,9 +49,7 @@ import java.util.List;
 import java.util.logging.Level;
 import javax.swing.*;
 import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -68,84 +57,16 @@ import org.openide.util.NbBundle;
  */
 class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
 
-    private PercentageGraph graph;
-    private JComponent panel;
-    private JLabel lblSysLabel;
-    private JLabel lblSysValue;
-    private JLabel lblUsrLabel;
-    private JLabel lblUsrValue;
+    private CpuIndicatorPanel panel;
     private Collection<ActionListener> listeners;
 
     CpuIndicator(CpuIndicatorConfiguration configuration) {
         super(configuration);
+        panel = new CpuIndicatorPanel(this);
     }
 
     @Override
-    public synchronized  JComponent getComponent() {
-        if (panel == null) {
-
-            Color colorSys = Color.RED;
-            Color colorUsr = Color.BLUE;
-            Color borderColor = new Color(0x77, 0x88, 0x88);
-
-            graph = new PercentageGraph(
-                    new GraphDescriptor(colorSys, "System"),
-                    new GraphDescriptor(colorUsr, "User"));
-            graph.setBorder(BorderFactory.createLineBorder(borderColor));
-            graph.setMinimumSize(new Dimension(66, 32));
-            graph.setPreferredSize(new Dimension(150, 80));
-
-            lblSysLabel = new JLabel(NbBundle.getMessage(getClass(), "label.sys"));
-            lblSysValue = new JLabel();
-            lblSysLabel.setForeground(colorSys);
-            lblSysValue.setForeground(colorSys);
-
-            lblUsrLabel = new JLabel(NbBundle.getMessage(getClass(), "label.usr"));
-            lblUsrValue = new JLabel();
-            lblUsrLabel.setForeground(colorUsr);
-            lblUsrValue.setForeground(colorUsr);
-
-            panel = new JPanel();
-            panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-            panel.add(graph);
-
-            JPanel legend = new JPanel(new GridBagLayout());
-            legend.setBackground(Color.WHITE);
-            legend.setBorder(BorderFactory.createLineBorder(borderColor));
-            legend.setMinimumSize(new Dimension(120, 32));
-            legend.setMaximumSize(new Dimension(120, Integer.MAX_VALUE));
-            legend.setPreferredSize(new Dimension(100, 80));
-
-            GridBagConstraints c = new GridBagConstraints();
-            c.insets = new Insets(0, 6, 0, 0);
-            c.anchor = GridBagConstraints.WEST;
-            c.gridy = 0;
-            c.gridx = 0;
-            legend.add(lblSysLabel, c);
-            c.gridx = 1;
-            legend.add(lblSysValue, c);
-
-            c.insets = new Insets(0, 6, 0, 0);
-            c.anchor = GridBagConstraints.WEST;
-            c.gridy = 1;
-
-            c.gridx = 0;
-            legend.add(lblUsrLabel, c);
-            c.gridx = 1;
-            legend.add(lblUsrValue, c);
-
-            panel.add(legend);
-
-            MouseListener ml = new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (e.getClickCount() > 1) {
-                        fireActionPerformed();
-                    }
-                }
-            };
-            graph.addMouseListener(ml);
-        }
+    public JComponent getComponent() {
         return panel;
     }
 
@@ -161,19 +82,19 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
             Float usr = (Float) row.getData("utime"); // NOI18N
             Float sys = (Float) row.getData("stime"); // NOI18N
             if (usr != null && sys != null) {
-                graph.addData(sys.shortValue(), usr.shortValue());
+                panel.addData(sys.intValue(), usr.intValue());
                 lastRow = row;
             }
         }
         if (lastRow != null) {
             Float usr = (Float) lastRow.getData("utime"); // NOI18N
             Float sys = (Float) lastRow.getData("stime"); // NOI18N
-            lblSysValue.setText(formatValue(sys.intValue()));
-            lblUsrValue.setText(formatValue(usr.intValue()));
+            panel.setSysValue(sys.intValue());
+            panel.setUsrValue(usr.intValue());
         }
     }
 
-    private void fireActionPerformed() {
+    /*package*/ void fireActionPerformed() {
         ActionEvent ae = new ActionEvent(this, 0, null);
         for (ActionListener al : getActionListeners()) {
             al.actionPerformed(ae);
@@ -201,9 +122,5 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
                 listeners.remove(listener);
             }
         }
-    }
-
-    private String formatValue(int value) {
-        return String.format("%02d%%", value);
     }
 }
