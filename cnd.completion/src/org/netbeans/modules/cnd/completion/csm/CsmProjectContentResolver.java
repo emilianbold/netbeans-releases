@@ -1366,8 +1366,16 @@ public final class CsmProjectContentResolver {
                 inheritanceLevel = EXACT_CLASS;
             } else if (contextClass != null) {
                 // check how clazz is visible in context class
-                if (CsmInheritanceUtilities.isAssignableFrom(contextClass, clazz)) {
-                    inheritanceLevel = CHILD_INHERITANCE;
+                while (contextClass != null) {
+                    if (CsmInheritanceUtilities.isAssignableFrom(contextClass, clazz)) {
+                        inheritanceLevel = CHILD_INHERITANCE;
+                    }
+                    CsmScope nextScope = contextClass.getScope();
+                    if(nextScope != null && CsmKindUtilities.isClass(nextScope) && !contextClass.equals((CsmClass)nextScope)) {
+                        contextClass = (CsmClass) nextScope;
+                    } else {
+                        break;
+                    }
                 }
             // TODO: think about opposite usage C extends B extends A; C is used in A context
             // what is by spec? Are there additional visibility for A about C?

@@ -117,6 +117,8 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
             case CPPTokenTypes.CSM_CTOR_TEMPLATE_DECLARATION: 
             case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:  
             case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
+            case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION:
+            case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION:
                 _template = true;
                 break;
             case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
