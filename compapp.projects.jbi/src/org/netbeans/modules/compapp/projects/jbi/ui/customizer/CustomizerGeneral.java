@@ -267,11 +267,11 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, "OSGi Platform Support:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_OSGI_PLATFORM_SUPPORT")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(osgiContainerLabel, "OSGi Container Location:");
+        org.openide.awt.Mnemonics.setLocalizedText(osgiContainerLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_OSGI_CONTAINER_LOCATION")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, "Browse...");
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_BROWSE")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -371,9 +371,10 @@ private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
 private void osgiSupportItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_osgiSupportItemStateChanged
     boolean osgiSupport = evt.getStateChange() == ItemEvent.SELECTED;
-    osgiContainerLabel.setEnabled(osgiSupport);
-    jTextFieldOsgiContainerDir.setEnabled(osgiSupport);
-    browseButton.setEnabled(osgiSupport);
+    // 02/04/09, IZ#153580, disable fuji deployment
+    // osgiContainerLabel.setEnabled(osgiSupport);
+    // jTextFieldOsgiContainerDir.setEnabled(osgiSupport);
+    // browseButton.setEnabled(osgiSupport);
 }//GEN-LAST:event_osgiSupportItemStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

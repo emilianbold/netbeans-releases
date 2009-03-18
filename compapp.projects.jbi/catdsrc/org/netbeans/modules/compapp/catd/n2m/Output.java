@@ -45,7 +45,7 @@
  * Created on March 25, 2005, 2:22 PM
  */
 
-package org.netbeans.modules.compapp.catd;
+package org.netbeans.modules.compapp.catd.n2m;
 
 import org.netbeans.modules.compapp.catd.util.Util;
 import java.io.*;

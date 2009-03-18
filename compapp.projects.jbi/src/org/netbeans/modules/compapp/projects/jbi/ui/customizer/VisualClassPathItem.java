@@ -52,6 +52,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
+import org.netbeans.modules.compapp.projects.jbi.api.POJOHelper;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
@@ -155,6 +156,13 @@ public class VisualClassPathItem {
             
             // extract the JBI component type info
             String aType = aa.getType(); // e.x., CAPS.asa:sun-bpel-engine
+            //POJOSE:
+            if ( aType.equals("jar") && aa.getProject().getClass().getName().equals(JbiProjectConstants.JAVA_SE_PROJECT_CLASS_NAME) && 
+                    POJOHelper.getProjectProperty(aa.getProject(), JbiProjectConstants.POJO_PROJECT_PROPERTY) != null
+                    ) {
+                aType = JbiProjectConstants.POJO_SE_PROJECT_ANT_ARTIFACT_TYPE;
+                this.cpElement = new POJOAntArtifact(aa.getProject(), aa);
+            }
             int idx = aType.indexOf(':');
             if (idx > 0) {
                 asaType = aType.substring(idx + 1); 

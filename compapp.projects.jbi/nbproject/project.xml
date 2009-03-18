@@ -510,10 +510,14 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.bpel.validation</friend>
                 <friend>org.netbeans.modules.bpel.project</friend>
                 <friend>org.netbeans.modules.bpel.samples</friend>
+                <friend>org.netbeans.modules.soa.samples</friend>
                 <friend>org.netbeans.modules.iep.samples</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.wlm.model</friend>
                 <friend>com.sun.soabi.caps.earlink</friend>
+                <friend>org.netbeans.modules.sca.designer</friend>
+                <friend>org.netbeans.modules.sca.platform.openesb</friend>
+                <friend>org.netbeans.modules.sca.platform.tuscany</friend>
                 <package>org.netbeans.modules.compapp.projects.jbi.api</package>
                 <package>org.netbeans.modules.compapp.projects.jbi.ui.actions</package>
             </friend-packages>

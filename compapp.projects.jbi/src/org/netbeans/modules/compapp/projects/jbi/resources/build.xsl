@@ -136,8 +136,19 @@ made subject to such option by the copyright holder.
                 <property name="from.commandline" value="true"/>
             </target>
 
+            <target name="-check-catd-context">
+                <condition property="no.catd.context">
+                    <not>
+                        <isset property="org.netbeans.modules.compapp.catd.context"/>
+                    </not>
+                </condition>
+            </target>
+            <target name="-init-catd" if="no.catd.context">
+                <property name="org.netbeans.modules.compapp.catd.context" value=""/>
+            </target>
+
             <target name="pre-init">
-                <xsl:attribute name="depends">-check-netbeans-home,-init-caps</xsl:attribute>
+                <xsl:attribute name="depends">-check-netbeans-home,-init-caps,-check-catd-context,-init-catd</xsl:attribute>
                 <!--
                 <echo>netbeans.home: ${netbeans.home}</echo>
                 <echo>netbeans.user: ${netbeans.user}</echo>
