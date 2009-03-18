@@ -40,10 +40,6 @@ package org.netbeans.modules.cnd.gizmo;
 
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;

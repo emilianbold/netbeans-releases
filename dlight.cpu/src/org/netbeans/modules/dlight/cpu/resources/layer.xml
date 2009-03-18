@@ -5,7 +5,6 @@
     <folder name="ToolConfigurationProviders">
       <file name="DLightCPUToolConfigurationProvider.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.dlight.cpu.DLightCPUToolConfigurationProvider"/>
-        <attr name="provider" stringvalue="SunStudio"/>
       </file>
     </folder>
   </folder>

@@ -83,5 +83,7 @@ public abstract class DLightToolConfigurationAccessor {
   public abstract List<IndicatorConfiguration> getIndicators(DLightToolConfiguration conf);
 
   public abstract String getToolName(DLightToolConfiguration conf);
+  
+  public abstract String getIconPath(DLightToolConfiguration conf);
 
 }
