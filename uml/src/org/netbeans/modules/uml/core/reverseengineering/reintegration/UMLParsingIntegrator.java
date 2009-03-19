@@ -3271,13 +3271,6 @@ public class UMLParsingIntegrator
         if ((loc > 0) && (clazz != null))
         {
             String namespaceName = resolveNameSpaceFromUMLName(typeName);
-            String packageNamespace=resolvePackageFromUMLName(typeName);
-            boolean gotInner=false;
-            if((""+namespaceName).length()!=(""+packageNamespace).length())
-            {   //99% it's inner class(100% for java library classes) but because we just parse and do not compile in general we can do nothing with remaining 1% yet.
-                //also we have a problem with libraries only because own classes are parsed/created on previous step when libary still need to be created
-                gotInner=true;
-            }
             StringBuffer query = new StringBuffer("./UML:ResDeps/UML:Dependency[ ends-with( @supplier, '");
             query.append(namespaceName);
             query.append("')]");
@@ -7920,7 +7913,17 @@ public class UMLParsingIntegrator
             else
             {
                 String fullName = resolveInnerClassName(typeName, clazzNode);
-                if(!typeName.equals(fullName))
+                //above resolve do not work well with library classes, so recheck based on java convensions
+                String namespaceName = resolveNameSpaceFromUMLName(typeName);
+                String packageNamespace=resolvePackageFromUMLName(typeName);
+                boolean gotInner=false;
+                if((""+namespaceName).length()!=(""+packageNamespace).length())
+                {   //99% it's inner class(100% for java library classes) but because we just parse and do not compile in general we can do nothing with remaining 1% yet.
+                    //also we have a problem with libraries only because own classes are parsed/created on previous step when libary still need to be created
+                    gotInner=true;
+                }
+                //
+                if(!typeName.equals(fullName) || gotInner)
                 {
                     String outerClass = resolveNameSpaceFromUMLName(fullName);
                     
