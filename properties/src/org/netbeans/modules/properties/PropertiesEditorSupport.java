@@ -1154,6 +1154,10 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
                 LOG.finer(" - current file: "                           //NOI18N
                           + FileUtil.getFileDisplayName((FileObject) evt.getSource()));
             }
+            //see #160338
+            if (evt.firedFrom(SaveImpl.DEFAULT)) {
+                return;
+            }
             Environment environment = reference.get();
             if (environment != null) {
                 if(!environment.getFileImpl().equals(evt.getFile()) ) {
