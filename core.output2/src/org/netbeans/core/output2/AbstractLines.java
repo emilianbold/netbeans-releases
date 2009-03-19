@@ -267,7 +267,6 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         linesToColors = new IntMap();
         longestLineLen = 0;
         errLines = null;
-        matcher = null;
         listener = null;
         dirty = false;
         curDefColors = DEF_COLORS.clone();
@@ -299,7 +298,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             return 0;
         }
         Storage storage = getStorage();
-        return storage == null ? 0 : AbstractLines.toCharIndex(getStorage().size());
+        return storage == null ? 0 : AbstractLines.toCharIndex(storage.size());
     }
 
     /**
@@ -322,7 +321,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     /**
      * Get a length of single line in bytes.
      */
-    private int getLineLength(int idx) {
+    private int getByteLineLength(int idx) {
         if (isDisposed()) {
             return 0;
         }
@@ -346,7 +345,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
      * @return The number of characters
      */
     public int length (int idx) {
-        return toCharIndex(getLineLength(idx));
+        return toCharIndex(getByteLineLength(idx));
     }
 
     /**
@@ -619,7 +618,6 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             if (isFinished) {
                 lineStartList.add(lineStart + lineLength);
             }
-            matcher = null;
             lastLineFinished = isFinished;
             lastLineLength = isFinished ? -1 : charLineLength;
         }
@@ -727,75 +725,116 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         return isErr ? curDefColors[IOColors.OutputType.ERROR.ordinal()] : curDefColors[IOColors.OutputType.OUTPUT.ordinal()];
     }
 
-    private String lastSearchString = null;
-    private Matcher matcher = null;
-    public Matcher getForwardMatcher() {
-        return matcher;
-    }
+    private static final int MAX_FIND_SIZE = 16*1024;
+    private Pattern pattern;
 
-    public Matcher getReverseMatcher() {
-        try {
-            Storage storage = getStorage();
-            if (storage == null) {
-                return null;
-            }
-            if (matcher != null && lastSearchString != null && lastSearchString.length() > 0 && storage.size() > 0) {
-                StringBuffer sb = new StringBuffer (lastSearchString);
-                sb.reverse();
-                CharBuffer buf = storage.getReadBuffer(0, storage.size()).asCharBuffer();
-                //This could be very slow for large amounts of data
-                StringBuffer data = new StringBuffer (buf.toString());
-                data.reverse();
+   private boolean regExpChanged(String pattern, boolean matchCase) {
+       return this.pattern != null && (!this.pattern.toString().equals(pattern) || (this.pattern.flags() == Pattern.CASE_INSENSITIVE) == matchCase);
+   }
 
-                Pattern pat = escapePattern(sb.toString());
-                return pat.matcher(data);
-            }
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
-        }
-        return null;
-    }
-
-    public Matcher find(String s) {
-        if (Controller.LOG) Controller.log (this + ": Executing find for string " + s + " on " );
+    public int[] find(int start, String pattern, boolean regExp, boolean matchCase) {
         Storage storage = getStorage();
         if (storage == null) {
             return null;
         }
-        if (matcher != null && s.equals(lastSearchString)) {
-            matcher.reset();
-            return matcher;
+        if (regExp && regExpChanged(pattern, matchCase)) {
+            this.pattern = null;
         }
-        try {
-            int size = storage.size();
-            if (size > 0) {
-                Pattern pat = escapePattern(s);
-                CharBuffer buf = storage.getReadBuffer(0, size).asCharBuffer();
-                Matcher m = pat.matcher(buf);
-                if (!m.find(0)) {
-                    return null;
-                }
-                m.reset();
-                matcher = m;
-                lastSearchString = s;
-                return matcher;
+        if (!regExp && !matchCase) {
+            pattern = pattern.toLowerCase();
+        }
+        while (true) {
+            int size = getCharCount() - start;
+            if (size > MAX_FIND_SIZE) {
+                int l = getLineAt(start + MAX_FIND_SIZE);
+                size = getLineStart(l) + length(l) - start;
+            } else if (size <= 0) {
+                break;
             }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+            CharBuffer buff = null;
+            try {
+                buff = storage.getReadBuffer(toByteIndex(start), toByteIndex(size)).asCharBuffer();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (buff == null) {
+                break;
+            }
+            if (regExp) {
+                if (this.pattern == null) {
+                    this.pattern =  matchCase ? Pattern.compile(pattern) : Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+                }
+                Matcher matcher = this.pattern.matcher(buff);
+                if (matcher.find()) {
+                    return new int[]{start + matcher.start(), start + matcher.end()};
+                }
+            } else {
+                int idx = matchCase ? buff.toString().indexOf(pattern)
+                        : buff.toString().toLowerCase().indexOf(pattern);
+                if (idx != -1) {
+                    return new int[] {start + idx, start + idx + pattern.length()};
+                }
+            }
+            start += buff.length();
         }
         return null;
     }
-    
-    /**
-     * escape all the special regexp characters to simulate plain search using regexp..
-     *
-     */ 
-    static Pattern escapePattern(String s) {
-        // fix for issue #50170, test for this method created, if necessary refine..
-        // [jglick] Probably this would work as well and be a bit more readable:
-        // String replacement = "\\Q" + s + "\\E";
-        String replacement = s.replaceAll("([\\(\\)\\[\\]\\^\\*\\.\\$\\{\\}\\?\\+\\\\])", "\\\\$1");
-        return Pattern.compile(replacement, Pattern.CASE_INSENSITIVE);
+
+    public int[] rfind(int start, String pattern, boolean regExp, boolean matchCase) {
+        Storage storage = getStorage();
+        if (storage == null) {
+            return null;
+        }
+        if (regExp && regExpChanged(pattern, matchCase)) {
+            this.pattern = null;
+        }
+        if (!regExp && !matchCase) {
+            pattern = pattern.toLowerCase();
+        }
+        while (true) {
+            int end = start;
+            start = end - MAX_FIND_SIZE;
+            if (start < 0) {
+                start = 0;
+            } else {
+                int l = getLineAt(start);
+                start = getLineStart(l);
+            }
+            if (start == end) {
+                break;
+            }
+            CharBuffer buff = null;
+            try {
+                buff = storage.getReadBuffer(toByteIndex(start), toByteIndex(end - start)).asCharBuffer();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (buff == null) {
+                break;
+            }
+            if (regExp) {
+                if (this.pattern == null) {
+                    this.pattern =  matchCase ? Pattern.compile(pattern) : Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+                }
+                Matcher matcher = this.pattern.matcher(buff);
+                int mStart = -1;
+                int mEnd = -1;
+                while (matcher.find()) {
+                    mStart = matcher.start();
+                    mEnd = matcher.end();
+                }
+                if (mStart != -1) {
+                    return new int[]{start + mStart, start + mEnd};
+                }
+            } else {
+                int idx = matchCase ? buff.toString().lastIndexOf(pattern)
+                        : buff.toString().toLowerCase().lastIndexOf(pattern);
+                if (idx != -1) {
+                    return new int[] {start + idx, start + idx + pattern.length()};
+                }
+            }
+        }
+        return null;
     }
 
     @Override
