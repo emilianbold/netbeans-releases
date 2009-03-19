@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import java.util.concurrent.TimeUnit;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -81,8 +80,7 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -114,8 +112,19 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         this.configuration = configuration;
         this.dataProvider = dataProvider;
         treeModel = new DefaultTreeModel(TREE_ROOT);
-        setEmptyContent();
+        setLoadingContent();
 
+    }
+
+    protected void setLoadingContent() {
+        isEmptyContent = true;
+        this.removeAll();
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        JLabel label = new JLabel(NbBundle.getMessage(AdvancedTableViewVisualizer.class, "Loading")); // NOI18N
+        label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+        this.add(label);
+        repaint();
+        revalidate();
     }
 
     protected void setEmptyContent() {
@@ -127,7 +136,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             mainPanel.removeAll();
         }
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        JLabel label = new JLabel("No data available yet");
+        JLabel label = new JLabel(NbBundle.getMessage(TreeTableVisualizer.class, "NoDataAvailableYet"));//NOI18N
         //(timerHandler.isSessionAnalyzed() ?
         //TableVisualizerConfigurationAccessor.getDefault().getEmptyAnalyzeMessage(configuration) : TableVisualizerConfigurationAccessor.getDefault().getEmptyRunningMessage(configuration)); // NOI18N
         label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
