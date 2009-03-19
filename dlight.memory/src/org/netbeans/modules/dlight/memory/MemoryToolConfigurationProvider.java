@@ -202,6 +202,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
 
         List<Column> viewColumns = Arrays.asList(
+                new Column("id", Integer.class, loc("MemoryTool.ColumnName.func_id"), null), // NOI18N
                 new Column("func_name", MangledNameType.class, loc("MemoryTool.ColumnName.func_name"), null), // NOI18N
                 new Column("leak", Long.class, loc("MemoryTool.ColumnName.leak"), null)); // NOI18N
 
@@ -213,7 +214,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 "   ) AS vt1 WHERE address = leak_address GROUP BY address " + // NOI18N
                 ") AS vt2 WHERE timestamp = leak_timestamp " + // NOI18N
                 "AND stackid = node.node_id and node.func_id = func.func_id " + // NOI18N
-                "GROUP BY node.func_id, func.func_name"; // NOI18N
+                " GROUP BY node.func_id, func.func_id, func.func_name"; // NOI18N
 
         DataTableMetadata viewTableMetadata = new DataTableMetadata(
                 "mem", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N
