@@ -153,13 +153,18 @@ public abstract class IssueNode extends AbstractNode {
     }
 
     protected void fireDataChanged() {
-        Property[] properties = getProperties();
-        for (Property p : properties) {
-            if(p instanceof IssueNode.IssueProperty) {
-                String pName = ((IssueProperty)p).getName();
-                firePropertyChange(pName, null, null);
+        // table sortes isn't thread safe
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                Property[] properties = getProperties();
+                for (Property p : properties) {
+                    if(p instanceof IssueNode.IssueProperty) {
+                        String pName = ((IssueProperty)p).getName();
+                        firePropertyChange(pName, null, null);
+                    }
+                }
             }
-        }
+        });
     }
 
     /**
