@@ -83,6 +83,7 @@ import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -144,6 +145,10 @@ public class ActionProviderImpl implements ActionProvider {
             if (added != null) {
                 supp.addAll( added);
             }
+        }
+        if (RunUtils.hasTestCompileOnSaveEnabled(project)) {
+            supp.add(SingleMethod.COMMAND_RUN_SINGLE_METHOD);
+            supp.add(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD);
         }
         return supp.toArray(new String[0]);
     }
