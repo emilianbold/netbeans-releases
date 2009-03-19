@@ -435,7 +435,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return true;
     }
 
-    public final void unregisterDeclaration(CsmDeclaration decl) {
+    public final void unregisterDeclaration(CsmOffsetableDeclaration decl) {
         if (TraceFlags.TRACE_REGISTRATION) {
             traceRegistration("unregistered " + decl + " UID " + UIDs.get(decl)); //NOI18N
         }
