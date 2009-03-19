@@ -60,6 +60,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
@@ -249,9 +251,6 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             filtOut.readFrom(io.out());
         }
         boolean hadOutputListeners = hasOutputListeners;
-        if (getFirstNavigableListenerLine() == -1) {
-            return;
-        }
         hasOutputListeners = getOut() != null && getOut().getLines().firstListenerLine() >= 0;
         if (hasOutputListeners != hadOutputListeners) {
             hasOutputListenersChanged(hasOutputListeners);
@@ -306,7 +305,6 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     public void closed() {
         io.setClosed(true);
         Controller.getDefault().removeTab(io);
-        io.setClosed(true);
         NbWriter w = io.writer();
         if (w != null && w.isClosed()) {
             //Will dispose the document
@@ -417,62 +415,34 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     }
 
     /**
-     * Find the next match for the previous search contents, starting at
-     * the current caret position.
-     *
+     * Searching from current position
+     * @param reversed true for reverse search
+     * @return true if found
      */
-    private void findNext() {
+    private boolean find(boolean reversed) {
         OutWriter out = getOut();
         if (out != null) {
-            String lastPattern = FindDialogPanel.getPanel().getPattern();
-            if (lastPattern != null) {
-                out.getLines().find(lastPattern);
+            String lastPattern = FindDialogPanel.result();
+            if (lastPattern == null) {
+                return false;
             }
-            Matcher matcher = out.getLines().getForwardMatcher();
-            int pos = getOutputPane().getCaretPos();
-            if (pos >= getOutputPane().getLength() || pos < 0) {
+            int pos = reversed ? getOutputPane().getSelectionStart() : getOutputPane().getCaretPos();
+            if (pos > getOutputPane().getLength() || pos < 0) {
                 pos = 0;
             }
-
-            if (matcher != null && matcher.find(pos)) {
-                getOutputPane().setSelection(matcher.start(), matcher.end());
-                copyAction.setEnabled(true);
+            boolean regExp = FindDialogPanel.regExp();
+            boolean matchCase = FindDialogPanel.matchCase();
+            int[] sel = reversed ? out.getLines().rfind(pos, lastPattern, regExp, matchCase)
+                    : out.getLines().find(pos, lastPattern, regExp, matchCase);
+            if (sel != null) {
+                getOutputPane().unlockScroll();
+                getOutputPane().setSelection(sel[0], sel[1]);
+                return true;
             } else {
                 Toolkit.getDefaultToolkit().beep();
             }
         }
-    }
-
-    /**
-     * Find the match before the current caret position, using the previously
-     * searched for value.
-     *
-     * @param tab The tab
-     */
-    private void findPrevious() {
-        OutWriter out = getOut();
-        if (out != null) {
-            String lastPattern = FindDialogPanel.getPanel().getPattern();
-            if (lastPattern != null) {
-                out.getLines().find(lastPattern);
-            }
-            Matcher matcher = out.getLines().getReverseMatcher();
-
-            int length = getOutputPane().getLength();
-            int pos = length - getOutputPane().getSelectionStart();
-
-            if (pos >= getOutputPane().getLength() - 1 || pos < 0) {
-                pos = 0;
-            }
-            if (matcher != null && matcher.find(pos)) {
-                int start = length - matcher.end();
-                int end = length - matcher.start();
-                getOutputPane().setSelection(start, end);
-                copyAction.setEnabled(true);
-            } else {
-                Toolkit.getDefaultToolkit().beep();
-            }
-        }
+        return false;
     }
 
     /**
@@ -654,7 +624,6 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         OutputPane pane = (OutputPane) getOutputPane();
         int len = pane.getLength();
         boolean enable = len > 0;
-        findAction.setEnabled(enable);
         OutWriter out = getOut();
         saveAsAction.setEnabled(enable);
         selectAllAction.setEnabled(enable);
@@ -684,7 +653,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     FilteredOutput filtOut;
     AbstractOutputPane origPane;
 
-    private void setFilter(String pattern) {
+    private void setFilter(String pattern, boolean regExp, boolean matchCase) {
         if (pattern == null) {
             assert origPane != null;
             setOutputPane(origPane);
@@ -694,7 +663,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         } else {
             assert origPane == null;
             origPane = getOutputPane();
-            filtOut = new FilteredOutput(pattern);
+            filtOut = new FilteredOutput(pattern, regExp, matchCase);
             setOutputPane(filtOut.getPane());
             filtOut.readFrom(io.out());
             installKBActions();
@@ -702,23 +671,6 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         validate();
         getOutputPane().repaint();
         requestFocus();
-    }
-
-    private void find(String pattern) {
-
-        OutWriter out = getOut();
-        if (out != null && !out.isDisposed()) {
-            Matcher matcher = out.getLines().find(pattern);
-            if (matcher != null && matcher.find()) {
-                int start = matcher.start();
-                int end = matcher.end();
-                getOutputPane().setSelection(start, end);
-                findNextAction.setEnabled(true);
-                findPreviousAction.setEnabled(true);
-                copyAction.setEnabled(true);
-                requestFocus();
-            }
-        }
     }
 
     OutWriter getOut() {
@@ -782,7 +734,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     Action prevTabAction = new TabAction(ACTION_PREVTAB, "PreviousViewAction", //NOI18N
             (KeyStroke) null);
     private Object[] popupItems = new Object[]{
-        copyAction, new JSeparator(), findAction, findNextAction, filterAction, new JSeparator(),
+        copyAction, new JSeparator(), findAction, findNextAction, findPreviousAction, filterAction, new JSeparator(),
         wrapAction, largerFontAction, smallerFontAction, fontTypeAction, new JSeparator(), saveAsAction,
         clearAction, closeAction,};
 
@@ -880,16 +832,20 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     getOutputPane().selectAll();
                     break;
                 case ACTION_FIND:
-                    String pattern = FindDialogPanel.getResult(lastDir, "LBL_Find_Title", "LBL_Find_What", "BTN_Find"); //NOI18N
-                    if (pattern != null) {
-                        find(pattern);
+                     {
+                        String pattern = getFindDlgResult(getOutputPane().getSelectedText(), "LBL_Find_Title", "LBL_Find_What", "BTN_Find"); //NOI18N
+                        if (pattern != null && find(false)) {
+                            findNextAction.setEnabled(true);
+                            findPreviousAction.setEnabled(true);
+                            requestFocus();
+                        }
                     }
                     break;
                 case ACTION_FINDNEXT:
-                    findNext();
+                    find(false);
                     break;
                 case ACTION_FINDPREVIOUS:
-                    findPrevious();
+                    find(true);
                     break;
                 case ACTION_NAVTOLINE:
                     openLineIfError();
@@ -919,12 +875,12 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     break;
                 case ACTION_FILTER:
                     if (origPane != null) {
-                        setFilter(null);
+                        setFilter(null, false, false);
                     } else {
-                        String str = FindDialogPanel.getResult(getOutputPane().getSelectedText(), 
+                        String pattern = getFindDlgResult(getOutputPane().getSelectedText(),
                                 "LBL_Filter_Title", "LBL_Filter_What", "BTN_Filter"); //NOI18N
-                        if (str != null) {
-                            setFilter(str);
+                        if (pattern != null) {
+                            setFilter(pattern, FindDialogPanel.regExp(), FindDialogPanel.matchCase());
                         }
                     }
                     break;
@@ -932,6 +888,29 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     assert false;
             }
         }
+    }
+
+    private boolean validRegExp(String pattern) {
+        try {
+            Pattern.compile(pattern);
+            return true;
+        } catch (PatternSyntaxException ex) {
+            JOptionPane.showMessageDialog(getTopLevelAncestor(), 
+                    NbBundle.getMessage(OutputTab.class, "FMT_Invalid_RegExp", pattern),
+                    NbBundle.getMessage(OutputTab.class, "LBL_Invalid_RegExp"), JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+    }
+
+    private String getFindDlgResult(String selection, String title, String label, String button) {
+        String pattern = FindDialogPanel.getResult(selection, title, label, button); //NOI18N
+        while (pattern != null && FindDialogPanel.regExp()) {
+            if (validRegExp(pattern)) {
+                break;
+            }
+            pattern = FindDialogPanel.getResult(pattern, title, label, button); //NOI18N
+        }
+        return pattern;
     }
 
     private static class ProxyAction implements Action {
@@ -1020,10 +999,14 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         OutputPane pane;
         OutputDocument doc;
         int readCount;
-        //Pattern compPattern;
+        Pattern compPattern;
+        boolean regExp;
+        boolean matchCase;
 
-        public FilteredOutput(String pattern) {
-            this.pattern = pattern;
+        public FilteredOutput(String pattern, boolean regExp, boolean matchCase) {
+            this.pattern = (regExp || matchCase) ? pattern : pattern.toLowerCase();
+            this.regExp = regExp;
+            this.matchCase = matchCase;
             out = new OutWriter();
             pane = new OutputPane(OutputTab.this);
             doc = new OutputDocument(out);
@@ -1031,11 +1014,14 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         }
 
         boolean passFilter(String str) {
-            /*if (compPattern == null) {
-                compPattern = Pattern.compile(pattern );
+            if (regExp) {
+                if (compPattern == null) {
+                    compPattern = matchCase ? Pattern.compile(pattern) : Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+                }
+                return compPattern.matcher(str).find();
+            } else {
+                return matchCase ? str.contains(pattern) : str.toLowerCase().matches(pattern);
             }
-            return compPattern.matcher(str).find();*/
-            return str.contains(pattern);
         }
 
         OutputPane getPane() {

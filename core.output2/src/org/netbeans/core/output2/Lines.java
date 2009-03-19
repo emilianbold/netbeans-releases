@@ -243,37 +243,24 @@ public interface Lines {
     void saveAs(String path) throws IOException;
 
     /**
-     * Do a forward search for the last matched text (from a call to find()).
      *
-     * @return A matcher, if there has been a successful call to find
+     * @param start start position for search
+     * @param pattern pattern to search
+     * @param regExp pattern is regexp (false to escape meta chars)
+     * @param matchCase true to match case
+     * @return [start, end] position of match
      */
-    Matcher getForwardMatcher();
+    public int[] find(int start, String pattern, boolean regExp, boolean matchCase);
+
     /**
-     * Do a reverse search for the last matched text.  Using this is a little tricky -
-     * since there is no direct support for reverse searches in java.util.regex, what
-     * we do is take the last pattern and the entire buffer text, and reverse them,
-     * and produce a matcher based on that.
-     * <p>
-     * What this means is that the caller gets the job of flipping things back around,
-     * as follows:
-     * <pre>
-     * int matchStart = getLength() - matcher.end();
-     * int matchEnd = getLength() - matcher.start()
      *
-     * will return the actual positions in the data of the match.
-     *
-     * @return A matcher over a reversed version of the data
+     * @param start start position for reverse search
+     * @param pattern pattern to search
+     * @param regExp pattern is regexp (false to escape meta chars)
+     * @param matchCase true to match case
+     * @return [start, end] position of match
      */
-    Matcher getReverseMatcher();
-    /**
-     * Get a regular expression matcher over the backing storage.  Note that the resulting Matcher object
-     * should not be held across reset or other events that can destroy the contents of the buffer.
-     *
-     * @param s A pattern as defined in javax.regex
-     * @return A pattern matcher object, or null if the pattern is invalid or there is a problem with the
-     *   backing storage
-     */
-    Matcher find(String s);
+    public int[] rfind(int start, String pattern, boolean regExp, boolean matchCase);
 
     /**
      * Indicates a line was written to the stderr, not stdout
