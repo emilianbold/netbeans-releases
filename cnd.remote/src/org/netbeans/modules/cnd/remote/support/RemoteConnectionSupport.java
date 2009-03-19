@@ -40,6 +40,8 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.UnknownHostException;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -75,10 +77,9 @@ public abstract class RemoteConnectionSupport {
                 try {
                     ConnectionManager.getInstance().connectTo(env, ui.getPassword().toCharArray(), false);
                 } catch (IOException ex) {
-                    log.warning("RCS<Init>: Got JSchException [" + ex.getMessage() + "]");
+                    log.warning("RCS<Init>: Got " + ex.getClass().getSimpleName() + " [" + ex.getMessage() + "]");
                     String msg = ex.getMessage();
-                    //TODO (execution): error processinf
-                    if (msg.equals("Auth fail")) { // NOI18N
+                    if ((ex instanceof  ConnectException) &&  msg.equals("Auth fail")) { // NOI18N
                         JButton btRetry = new JButton(NbBundle.getMessage(RemoteConnectionSupport.class, "BTN_Retry"));
                         NotifyDescriptor d = new NotifyDescriptor(
                                 NbBundle.getMessage(RemoteConnectionSupport.class, "MSG_AuthFailedRetry"),
@@ -89,11 +90,11 @@ public abstract class RemoteConnectionSupport {
                              retry = true;
                         } else {
                             failed = true;
-                            failureReason = msg;
+                            failureReason = getMessage(ex);
                         }
                     } else {
                         failed = true;
-                        failureReason = msg;
+                        failureReason = getMessage(ex);
                     }
 
                 } catch (CancellationException ex) {
@@ -104,6 +105,19 @@ public abstract class RemoteConnectionSupport {
                 log.fine("RCS<Init>: Connection failed on " + executionEnvironment);
             }
         }
+    }
+
+    private static String getMessage(IOException e) {
+        String result;
+        String reason = e.getMessage();
+        if (e instanceof UnknownHostException) {
+            result = NbBundle.getMessage(RemoteConnectionSupport.class, "REASON_UnknownHost", e.getMessage());
+        } else if (reason.startsWith("Auth fail")) { // NOI18N
+            result = NbBundle.getMessage(RemoteConnectionSupport.class, "REASON_AuthFailed");
+        } else {
+            result = reason;
+        }
+        return result;
     }
 
     public ExecutionEnvironment getExecutionEnvironment() {
