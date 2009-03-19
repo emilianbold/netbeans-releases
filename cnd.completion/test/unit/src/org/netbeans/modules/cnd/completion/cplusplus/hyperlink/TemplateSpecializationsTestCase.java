@@ -101,8 +101,9 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
     public void testIZ160659() throws Exception {
         // IZ#160659 : Unresolved ids in case of specialization of templated class forward declaration
         performTest("iz160659.cc", 11, 45, "iz160659.cc", 7, 12);
+        performTest("iz160659.cc", 25, 51, "iz160659.cc", 21, 16);
     }
-    
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
