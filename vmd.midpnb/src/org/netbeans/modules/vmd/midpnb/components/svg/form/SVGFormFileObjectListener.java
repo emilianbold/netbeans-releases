@@ -133,7 +133,7 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
     }
 
     private void regenerateComponents(FileObject fe) {
-        if (component == null || component.get() == null || component.get().getDocument() == null || fe == null || !fe.isValid()) {
+        if (component == null || component.get() == null || component.get().getDocument() == null || fe == null) {
             return;
         }
         final DesignComponent svgForm = component.get();
@@ -146,6 +146,9 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
             return;
         }
 
+        //Updating Screen Designer
+        updateScreenDesigner(svgForm);
+        
         InputStream is = null;
         try {
             if (fo.isValid()) {
@@ -157,24 +160,7 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
         if (fo == null && is == null) {
             return;
         }
-        //Updating Screen Designer
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                svgForm.getDocument().getTransactionManager().readAccess(new Runnable() {
-
-                    public void run() {
-                        Project project = MidpProjectSupport.getProjectForDocument(svgForm.getDocument());
-                        if (project == null) {
-                            return;
-                        }
-                        ScreenDisplayPresenter sdp = svgForm.getPresenter(ScreenDisplayPresenter.class);
-                        ScreenDeviceInfo di = ScreenSupport.getDeviceInfo(svgForm.getDocument());
-                        sdp.reload(di);
-                    }
-                });
-            }
-        });
+        
         Object[][] idsArray = SVGFormImageParser.getComponentsInformation(is);
 
         final Map<String, String> exisitngIDs = new HashMap<String, String>();
@@ -255,6 +241,26 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
                 }
             }
         }
+    }
+
+    private static void updateScreenDesigner(final DesignComponent svgForm){
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                svgForm.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                    public void run() {
+                        Project project = MidpProjectSupport.getProjectForDocument(svgForm.getDocument());
+                        if (project == null) {
+                            return;
+                        }
+                        ScreenDisplayPresenter sdp = svgForm.getPresenter(ScreenDisplayPresenter.class);
+                        ScreenDeviceInfo di = ScreenSupport.getDeviceInfo(svgForm.getDocument());
+                        sdp.reload(di);
+                    }
+                });
+            }
+        });
     }
 
     private static void addComponents(Map<String, String> ids, 
