@@ -103,11 +103,12 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
             return envCache;
         }
 
+        //TODO (execution): do we still need this?
         public boolean isCshShell() {
             if (isCshShell == null) {
                 //N.B.: this is only place where RemoteCommandSupport should take PATH= !!
                 RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "PATH=/bin:/usr/bin export"); // NOI18N
-                support.setPreserveCommand(true); // to avoid endless loop
+//                support.setPreserveCommand(true); // to avoid endless loop
                 isCshShell = Boolean.valueOf(support.run() != 0);
             }
             return isCshShell.booleanValue();

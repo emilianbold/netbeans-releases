@@ -43,10 +43,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * This implementation of NativeExecution provides execution on a remote server.
@@ -76,11 +76,28 @@ public class RemoteNativeExecution extends NativeExecution {
             boolean unbuffer) throws IOException, InterruptedException {
         RemoteNativeExecutionSupport support = null;
         if (execEnv != null ) {
-            support = new RemoteNativeExecutionSupport(execEnv, runDirFile, executable, arguments, envp, out, in);
+            support = new RemoteNativeExecutionSupport(execEnv, runDirFile, executable, 
+                    arguments, envToMap(envp), out, in);
         }
         return support == null ? -1 : support.getExitStatus();
     }
 
     public void stop() {
+    }
+
+    private Map<String, String> envToMap(String[] envp) {
+        Map<String, String> map = new HashMap<String, String>(envp.length);
+        for (int i = 0; i < envp.length; i++) {
+            String line = envp[i];
+            int pos = line.indexOf('=');
+            if (pos < 0) {
+                log.warning("Incorrect environmant setting: " + line);
+            } else {
+                String key = line.substring(0, pos).trim();
+                String val = line.substring(pos+1).trim();
+                map.put(key, val);
+            }
+        }
+        return map;
     }
 }

@@ -61,9 +61,8 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
 
     public void init(ExecutionEnvironment env) {
         this.env = env;
-        manager = new CompilerSetScriptManager();
-        new RemoteScriptSupport(env, manager);
-
+        manager = new CompilerSetScriptManager(env);
+        manager.runScript();
     }
     
     public int getPlatform() {

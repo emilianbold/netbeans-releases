@@ -39,7 +39,6 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import java.util.Map;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -52,6 +51,7 @@ public class ShellUtils {
     private ShellUtils() {
     }
 
+    //TODO (exection): ???
     public static String wrapCommand(ExecutionEnvironment env, String command) {
         StringBuilder wrappedCmd = new StringBuilder();
         wrappedCmd.append(ShellUtils.getPrefix(env)).append("bash -c '"); //NOI18N

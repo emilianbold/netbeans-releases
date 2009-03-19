@@ -239,7 +239,7 @@ public class GdbProxyEngine {
                 } catch (IOException ioe) {
                 } finally {
                     if (provider != null) {
-                        provider.disconnect();
+//                        provider.disconnect();
                         provider = null;
                     }
                 }
