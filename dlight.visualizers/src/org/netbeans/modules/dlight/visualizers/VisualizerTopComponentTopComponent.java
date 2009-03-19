@@ -156,9 +156,11 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         } else {
             //we should remove the tabs and add
             int index = tabbedPane.indexOfTab(toolName);
-            closePerformanceMonitor(visualizerComponents.get(toolName));
-            tabbedPane.insertTab(toolName, null, viewComponent, toolName, index);
-            tabbedPane.setSelectedComponent(viewComponent);
+            if (index == -1){
+                closePerformanceMonitor(visualizerComponents.get(toolName));
+                tabbedPane.insertTab(toolName, null, viewComponent, toolName, index);
+                tabbedPane.setSelectedComponent(viewComponent);
+            }
         }
 
         visualizerComponents.put(toolName, view);
@@ -211,16 +213,8 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
         if (tabbedPane != null) {
             tabbedPane.remove(viewComponent);
-//      if (tabbedPane.getTabCount() == 1) {
-//        JComponent tabComponent = (JComponent) tabbedPane.getComponent(0);
-//        tabbedPane.remove(tabComponent);
-//        performanceMonitorViewsArea.remove(tabbedPane);
-//        tabbedPane = null;
-//        performanceMonitorViewsArea.add(tabComponent);
-//      }
-        } else {
-            performanceMonitorViewsArea.remove(viewComponent);
         }
+        performanceMonitorViewsArea.remove(viewComponent);
         viewComponent = null;
         validate();
         repaint();

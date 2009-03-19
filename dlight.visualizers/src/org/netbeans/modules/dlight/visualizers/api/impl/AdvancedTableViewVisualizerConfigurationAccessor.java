@@ -49,4 +49,6 @@ public abstract class AdvancedTableViewVisualizerConfigurationAccessor {
     public abstract String getEmptyRunningMessage(AdvancedTableViewVisualizerConfiguration configuration);
 
     public abstract String getEmptyAnalyzeMessage(AdvancedTableViewVisualizerConfiguration configuration);
+
+    public abstract String getRowNodeColumnName(AdvancedTableViewVisualizerConfiguration configuration);
 }
