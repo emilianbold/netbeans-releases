@@ -126,6 +126,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         
         doc = ec.openDocument();
         doc.putProperty(Language.class, JavaTokenId.language());
+        doc.putProperty("mimeType", "text/x-java");
         
         JavaSource js = JavaSource.forFileObject(data);
         
