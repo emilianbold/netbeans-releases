@@ -50,11 +50,15 @@ import org.netbeans.api.lexer.TokenId;
  */
 public enum OQLTokenId implements TokenId {
     WHITESPACE("whitespace"),
+    BRACE("brace"),
+    COMMA("comma"),
+    DOT("dot"),
     KEYWORD("keyword"),
     IDENTIFIER("identifier"),
     JSBLOCK("js-block"),
     UNKNOWN("unknown"),
     CLAZZ("clazz"),
+    CLAZZ_E("clazz-typo"),
     ERROR("error");
 
     final private String primaryCategory;
