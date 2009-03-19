@@ -186,6 +186,7 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
         }
 
         public void setEditableName(DesignComponent component, String enteredName) {
+            component.writeProperty(PROP_STRING, MidpTypes.createStringValue(enteredName));
         }
 
         public Image getIcon(DesignComponent component, IconType iconType) {
