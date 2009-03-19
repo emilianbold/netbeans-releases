@@ -75,7 +75,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             NativeProcessBuilder pb = new NativeProcessBuilder(executionEnvironment, cmd + " 2>&1"); //NOI18N
             pb = pb.addEnvironmentVariables(env);
             if (args != null) {
-                pb = pb.setArguments(args);
+                pb = pb.setArguments(args.trim().split("[ \t]+")); //NOI18N
             }
             String path = null;
             if (dirf != null) {
