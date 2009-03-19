@@ -100,7 +100,11 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
 
     @Override
     public boolean isExecuteInsideWriteTransactionUsed() {
-        if (component.get().getType() == SVGListCD.TYPEID) {
+        PropertyValue.Kind kind = null;
+        if (getValue() instanceof PropertyValue) {
+            kind = ((PropertyValue) getValue()).getKind();
+        }
+        if (component.get().getType() == SVGListCD.TYPEID && kind != PropertyValue.Kind.USERCODE) {
             return true;
         } else {
             return false;
@@ -114,6 +118,13 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
 
     @Override
     public String getAsText() {
+        PropertyValue.Kind kind = null;
+        if (getValue() instanceof PropertyValue) {
+            kind = ((PropertyValue) getValue()).getKind();
+        }
+        if (kind == PropertyValue.Kind.USERCODE) {
+            return super.getAsText();
+        }
         return myModelText;
     }
 
@@ -262,6 +273,13 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
                                 child.writeProperty(SVGListElementEventSourceCD.PROP_STRING, MidpTypes.createStringValue(myCustomEditor.getValue().get(childIndex)));
                             }
                         }
+                    }
+                });
+                component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                    public void run() {
+                         PropertyValue value = component.get().readProperty(SVGListCD.PROP_ELEMENTS);
+                         PropertyEditorListModel.super.setValue(value);
                     }
                 });
             }
