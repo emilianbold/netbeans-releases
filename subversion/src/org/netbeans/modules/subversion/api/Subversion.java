@@ -41,6 +41,10 @@ package org.netbeans.modules.subversion.api;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -48,6 +52,7 @@ import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.openide.util.NbPreferences;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -269,7 +274,24 @@ public class Subversion {
                 false,             // do not checkout at working dir level
                 scanForNewProjects).waitFinished();
 
+        try {
+            storeWorkingDir(new URL(repositoryUrl), localFolder.toURI().toURL());
+        } catch (Exception e) {
+            Logger.getLogger(Subversion.class.getName()).log(Level.FINE, "Cannot store subversion workdir preferences", e);
+        }
         return true;
+    }
+
+    private static final String WORKINGDIR_KEY_PREFIX = "working.dir."; //NOI18N
+
+    /**
+     * Stores working directory for specified remote root
+     * into NetBeans preferences.
+     * These are later used in kenai.ui module
+     */
+    private static void storeWorkingDir(URL remoteUrl, URL localFolder) {
+        Preferences prf = NbPreferences.forModule(Subversion.class);
+        prf.put(WORKINGDIR_KEY_PREFIX + remoteUrl, localFolder.toString());
     }
 
     private static String polishRelativePath(String path) {

@@ -37,48 +37,65 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
+package org.netbeans.modules.kenai.ui;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.net.URL;
+import javax.swing.Icon;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
-import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
-import org.netbeans.modules.kenai.ui.spi.SourceHandle;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
- * Node for project's sources section.
- *
- * @author S. Aubrecht, Jan Becicka
+ * Handle representing netbeans project in kenai dashboard
+ * @author Jan Becicka
  */
-public class SourceListNode extends SectionNode {
+public class NbProjectHandleImpl extends NbProjectHandle{
 
-    public SourceListNode( ProjectNode parent ) {
-        super( NbBundle.getMessage(SourceListNode.class, "LBL_Sources"), parent, ProjectHandle.PROP_SOURCE_LIST ); //NOI18N
+    Icon icon;
+    String displayName;
+    URL url;
+
+    NbProjectHandleImpl(Project p) throws IOException {
+        displayName = ProjectUtils.getInformation(p).getDisplayName();
+        icon = ProjectUtils.getInformation(p).getIcon();
+            url = p.getProjectDirectory().getURL();
+    }
+
+    NbProjectHandleImpl(UnloadedProjectInformation i) {
+        displayName = i.getDisplayName();
+        icon = i.getIcon();
+        url = i.getURL();
     }
 
     @Override
-    protected List<TreeListNode> createChildren() {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        SourceAccessor accessor = SourceAccessor.getDefault();
-        List<SourceHandle> sources = accessor.getSources(project);
-        for (SourceHandle s : sources) {
-            res.add(new SourceNode(s, this));
-            res.addAll(getRecentProjectsNodes(s));
-            if (s.getWorkingDirectory() != null) {
-                res.add(new OpenNbProjectNode(s, this));
-            }
-        }
-        return res;
+    public String getDisplayName() {
+        return displayName;
     }
 
-    private List<TreeListNode> getRecentProjectsNodes(SourceHandle handle) {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>();
-        for( NbProjectHandle s : handle.getRecentProjects()) {
-            res.add( new NbProjectNode( s, this ) );
-        }
-        return res;
+    @Override
+    public Icon getIcon() {
+        return icon;
     }
+
+    /**
+     * Getter fot NB Project
+     * @return
+     */
+    public Project getProject() {
+        try {
+            Project project = ProjectManager.getDefault().findProject(URLMapper.findFileObject(url));
+            return project;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
 }
