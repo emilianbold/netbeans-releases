@@ -37,65 +37,34 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.api.execution;
+package org.netbeans.modules.dlight.visualizers.spi.support;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.netbeans.modules.dlight.api.impl.DLightSessionContextAccessor;
+import org.netbeans.modules.dlight.visualizers.spi.AdvancedTableViewVisualizerActionsProvider;
+import org.netbeans.modules.dlight.visualizers.api.*;
+import javax.swing.Action;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 
 /**
- * This class represents DLight Session context
- * The following keys are supported:
- * <ul>
- * <li>executable</li>
- *  <li>line</li>
- *  <li>os</li>
- *  <li>offset</li>
- *  <li>useCollectors</li>
- *  <li>collectors</li>
- * </ul>
  *
+ * @author mt154047
  */
-public final class DLightSessionContext {
-    private final Map<String, String> map;
+public final class GoToSourceActionProvider implements AdvancedTableViewVisualizerActionsProvider{
 
-    static{
-        DLightSessionContextAccessor.setDefault(new DLightSessionContextAccessorImpl());
+    public boolean hasActions(DataRow row){
+        return false;
     }
 
-    private DLightSessionContext(){
-        map = new ConcurrentHashMap<String, String>();
+    public Action[] getActions(DataRow row) {
+
+        //we should find the proper implementator which can provide
+        //ask if there are some services which can provide this info
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public String get(String key){
-        return map.get(key);
+    public AdvancedTableViewVisualizerActionsProvider getProviderFor(AdvancedTableViewVisualizerConfiguration configuration) {
+        //try to find someone who can give the information about source line
+        //throw new UnsupportedOperationException("Not supported yet.");
+        return this;
     }
 
-    String put(String key, String value){
-        return map.put(key, value);
-    }
-
-    void clear(){
-        map.clear();
-    }
-
-    private static class DLightSessionContextAccessorImpl extends DLightSessionContextAccessor{
-
-        @Override
-        public void clear(DLightSessionContext context) {
-            context.clear();
-        }
-
-        @Override
-        public String put(DLightSessionContext context, String key, String value) {
-            return context.put(key, value);
-        }
-
-        @Override
-        public DLightSessionContext newContext() {
-            return new DLightSessionContext();
-        }
-
-    }
 }

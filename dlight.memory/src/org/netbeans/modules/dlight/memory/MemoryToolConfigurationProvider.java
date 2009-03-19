@@ -193,7 +193,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             SunStudioDCConfiguration.c_leakCount);
 
         indicatorConfiguration.addVisualizerConfiguration(
-            new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata, SunStudioDCConfiguration.c_name.getColumnName()));
+            new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata, SunStudioDCConfiguration.c_name.getColumnName(), SunStudioDCConfiguration.c_name.getColumnName()));
 
         indicatorConfiguration.addVisualizerConfiguration(getDetails(rawTableMetadata));
         return indicatorConfiguration;
@@ -206,7 +206,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 new Column("leak", Long.class, loc("MemoryTool.ColumnName.leak"), null)); // NOI18N
 
         String sql =
-                "SELECT func.func_name as func_name, SUM(size) as leak " + // NOI18N
+                "SELECT func.func_id as id, func.func_name as func_name, SUM(size) as leak " + // NOI18N
                 "FROM mem, node AS node, func, ( " + // NOI18N
                 "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " + // NOI18N
                 "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " + // NOI18N
@@ -219,7 +219,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 "mem", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N
 
         AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration =
-                new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name"); // NOI18N
+                new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name", "id"); // NOI18N
 //        TableVisualizerConfiguration tableVisualizerConfiguration = new TableVisualizerConfiguration(viewTableMetadata);
         tableVisualizerConfiguration.setEmptyAnalyzeMessage(
                 loc("DetailedView.EmptyAnalyzeMessage")); // NOI18N

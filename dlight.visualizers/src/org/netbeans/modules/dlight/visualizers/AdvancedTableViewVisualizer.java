@@ -92,6 +92,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private boolean isShown = true;
     private OutlineView outlineView;
     private final String nodeColumnName;
+    private final String nodeRowColumnID;
 
     AdvancedTableViewVisualizer(TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
         // timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
@@ -103,12 +104,13 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         AdvancedTableViewVisualizerConfigurationAccessor accessor = AdvancedTableViewVisualizerConfigurationAccessor.getDefault();
 //        tableView = new TableView();
         nodeColumnName = accessor.getNodeColumnName(configuration);
+        nodeRowColumnID = accessor.getRowNodeColumnName(configuration);
         outlineView = new OutlineView(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnUName());
         outlineView.getOutline().setRootVisible(false);
         outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
         List<Property> result = new ArrayList();
         for (String columnName : configuration.getMetadata().getColumnNames()) {
-            if (!nodeColumnName.equals(columnName)) {
+            if (!nodeColumnName.equals(columnName) && !nodeRowColumnID.equals(columnName)) {
                 final Column c = configuration.getMetadata().getColumnByName(columnName);
                 result.add(new PropertySupport(c.getColumnName(), c.getColumnClass(),
                         c.getColumnUName(), c.getColumnUName(), true, false) {
@@ -681,7 +683,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
                 public Property<?>[] getProperties() {
                     List<Property> result = new ArrayList();
                     for (String columnName : dataRow.getColumnNames()) {
-                        if (!columnName.equals(nodeColumnName)) {
+                        if (!columnName.equals(nodeColumnName) && !columnName.equals(nodeRowColumnID)) {
                             final Column c = configuration.getMetadata().getColumnByName(columnName);
                             result.add(new PropertySupport(columnName, c.getColumnClass(),
                                     c.getColumnUName(), c.getColumnUName(), true, false) {
@@ -705,6 +707,11 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             };
         }
 
+        public DataRow getDataRow() {
+            return dataRow;
+        }
+        
+
         @Override
         public String getDisplayName() {
             return dataRow.getData(nodeColumnName) + "";
@@ -725,15 +732,11 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             }
 
             PropertyEditor editor = PropertyEditorManager.findEditor(configuration.getMetadata().getColumnByName(nodeColumnName).getColumnClass());
-            if (editor != null) {
+            if (editor != null && value!= null && !(value + "").trim().equals("")) {
                 editor.setValue(value);
                 return super.getTableCellRendererComponent(table, editor.getAsText(), isSelected, hasFocus, row, column);
-//                synchronized (nodesMapLock) {
-            //                  nodes.put(value + "", editor.getAsText());
             }
 
-
-            //            }
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
     }
