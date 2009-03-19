@@ -9,6 +9,17 @@
     <propertyfile file="../jruby/nbproject/project.properties"/>
     -->
 
+    <target name="jruby.distro.init">
+        <uptodate property="jruby.distro.build.uptodate" targetfile="${cluster}/jruby-${jruby_src_version}">
+            <srcfiles dir="${src.dir}" includes="**/*"/>
+            <srcfiles dir="external" includes="**/*"/>
+            <srcfiles dir="../o.jruby/external">
+                <include name="jruby-src-${jruby_src_version}.zip"/>
+            </srcfiles>
+            <srcfiles dir="unpatched_files" includes="**/*"/>
+        </uptodate>
+    </target>
+
     <target name="files-init" depends="projectized-common.files-init">
         <!-- Override module.files definition performed by parent, used for NBMs etc. -->
         <patternset id="module.files" includes="${release.files},${extra.module.files}">
@@ -20,7 +31,9 @@
             <include name="ant/nblib/${code.name.base.dashes}.jar"/>
             <!-- JRuby+Rails stuff -->
             <include name="jruby-${jruby_src_version}/**"/>
+            <!-- preindexing not supported in Parsing API, so just delete the files
             <exclude name="jruby-${jruby_src_version}/**/netbeans-index-*.zip"/>
+            -->
         </patternset>
     </target>    
 
@@ -61,7 +74,7 @@
         <untar compression="gzip" dest="${cluster}" src="${unpatched_source}/jruby-${jruby_src_version}/jruby-bin-${jruby_src_version}.tar.gz" />
     </target>
 
-    <target name="release" depends="init">
+    <target name="release" depends="init,jruby.distro.init" unless="jruby.distro.build.uptodate">
         <property name="jruby_dir" location="${cluster}/jruby-${jruby_src_version}"/>
     
         <!-- Build JRuby from source (using its own build files -->
