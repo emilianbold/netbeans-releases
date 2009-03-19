@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -202,7 +203,7 @@ public final class AntProjectHelper {
     /**
      * Hook waiting to be called. See issue #57794.
      */
-    private ProjectXmlSavedHook pendingHook;
+    private Collection<? extends ProjectXmlSavedHook> pendingHook = null;
     /**
      * Number of metadata files remaining to be written before {@link #pendingHook} can be called.
      * Javadoc for {@link ProjectXmlSavedHook} only guarantees that project.xml will be written,
@@ -576,7 +577,7 @@ public final class AntProjectHelper {
                 if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
                     // Saving project.xml so look for that hook.
                     Project p = AntBasedProjectFactorySingleton.getProjectFor(this);
-                    pendingHook = p.getLookup().lookup(ProjectXmlSavedHook.class);
+                    pendingHook = p.getLookup().lookupAll(ProjectXmlSavedHook.class);
                     // might still be null
                 }
                 Iterator<String> it = modifiedMetadataPaths.iterator();
@@ -597,7 +598,9 @@ public final class AntProjectHelper {
                 }
                 if (pendingHook != null && pendingHookCount == 0) {
                     try {
-                        pendingHook.projectXmlSaved();
+                        for (ProjectXmlSavedHook hook : pendingHook) {
+                            hook.projectXmlSaved();
+                        }
                     } catch (IOException e) {
                         // Treat it as still modified.
                         modifiedMetadataPaths.add(PROJECT_XML_PATH);
@@ -629,7 +632,9 @@ public final class AntProjectHelper {
             try {
                 ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                     public Void run() throws IOException {
-                        pendingHook.projectXmlSaved();
+                        for (ProjectXmlSavedHook hook : pendingHook) {
+                            hook.projectXmlSaved();
+                        }
                         return null;
                     }
                 });
