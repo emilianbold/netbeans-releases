@@ -115,7 +115,10 @@ public class SVGComponentDisplayPresenter extends ScreenDisplayPresenter {
     @Override
     public Shape getSelectionShape() {
         Rectangle rect = getRectangle();
-        return new Rectangle((int) rect.getWidth(), (int) rect.getHeight());
+        if (rect != null) {
+            return new Rectangle((int) rect.getWidth(), (int) rect.getHeight());
+        }
+        return null;
     }
 
     @Override

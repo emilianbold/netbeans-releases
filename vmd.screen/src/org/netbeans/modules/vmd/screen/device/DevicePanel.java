@@ -256,8 +256,11 @@ public class DevicePanel extends JPanel {
             if (ret != null)
                 return ret;
         }
-        return presenter.getSelectionShape().contains(viewPoint)
-                ? presenter.getRelatedComponent() : null;
+        Shape shape = presenter.getSelectionShape();
+        if (shape != null && shape.contains(viewPoint)) {
+            return presenter.getRelatedComponent();
+        }
+        return null;
     }
     
     public Point calculateTranslation(Container view, Point viewLocation) {

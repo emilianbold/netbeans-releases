@@ -385,8 +385,12 @@ public class TopPanel extends JPanel {
                     // Useful for SVG components
                     if (presenter != null){
                         Point point = devicePanel.calculateTranslation(presenter.getView(), presenter.getLocation());
-                        hoverShape = new SelectionShape(point.x, point.y, presenter.getSelectionShape(), component.getComponentID(), false);
-                        return;
+                        Shape shape = presenter.getSelectionShape();
+                        if (shape != null) {
+                            hoverShape = new SelectionShape(point.x, point.y, shape,
+                                    component.getComponentID(), false);
+                            return;
+                        }
                     }
                     hoverShape = null;
                 }
