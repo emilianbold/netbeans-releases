@@ -59,7 +59,6 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
@@ -109,19 +108,18 @@ public class InstantiationProviderImpl extends CsmInstantiationProvider {
                     return resolved;
                 }
             }
-            if(template instanceof ForwardClass) {
+            if (template instanceof ForwardClass) {
                 // try to find specialization of class forward
                 CsmClass decl = (CsmClass) template;
                 CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(decl.getName(), true, true, false);
                 Iterator<? extends CsmObject> it = getScopeObjectsIterator(filter, decl.getScope());
                 while (it != null && it.hasNext()) {
                     CsmObject obj = it.next();
-                    if(obj instanceof ClassImplSpecialization) {
+                    if (obj instanceof ClassImplSpecialization) {
                         return obj;
                     }
                 }
             }
-
             return Instantiation.create(template, mapping);
         }
         return template;
@@ -130,11 +128,11 @@ public class InstantiationProviderImpl extends CsmInstantiationProvider {
     private static Iterator<? extends CsmObject> getScopeObjectsIterator(CsmFilter offsetFilter, CsmScope scope) {
         Iterator<? extends CsmObject> out = Collections.<CsmObject>emptyList().iterator();
         if (CsmKindUtilities.isFile(scope)) {
-            out = CsmSelect.getDeclarations((CsmFile)scope, offsetFilter);
+            out = CsmSelect.getDeclarations((CsmFile) scope, offsetFilter);
         } else if (CsmKindUtilities.isClass(scope)) {
-            out = CsmSelect.getClassMembers(((CsmClass)scope), offsetFilter);
+            out = CsmSelect.getClassMembers(((CsmClass) scope), offsetFilter);
         } else if (CsmKindUtilities.isNamespace(scope)) {
-            out = CsmSelect.getDeclarations(((CsmNamespace)scope), offsetFilter);
+            out = CsmSelect.getDeclarations(((CsmNamespace) scope), offsetFilter);
         }
         return out;
     }
