@@ -936,16 +936,17 @@ public class GoToSupportTest extends NbTestCase {
     private String performTest(String sourceCode, final int offset, final UiUtilsCaller validator, boolean tooltip) throws Exception {
         GoToSupport.CALLER = validator;
         
-        FileObject root = makeScratchDir(this);
+        clearWorkDir();
+        FileUtil.refreshFor(getWorkDir());
+
+        FileObject wd = FileUtil.toFileObject(getWorkDir());
+        FileObject sourceDir = FileUtil.createFolder(wd, "src");
+        FileObject buildDir = FileUtil.createFolder(wd, "build");
+        FileObject cacheDir = FileUtil.createFolder(wd, "cache");
         
-        FileObject sourceDir = root.createFolder("src");
-        FileObject buildDir = root.createFolder("build");
-        FileObject cacheDir = root.createFolder("cache");
-        FileObject testDir  = sourceDir.createFolder("test");
+        source = FileUtil.createData(sourceDir, "test/Test.java");
         
-        source = testDir.createData("Test.java");
-        
-        FileObject auxiliarySource = testDir.createData("Auxiliary.java");
+        FileObject auxiliarySource = FileUtil.createData(sourceDir, "test/Auxiliary.java");
 
         TestUtilities.copyStringToFile(source, sourceCode);
         TestUtilities.copyStringToFile(auxiliarySource, "package test; public class Auxiliary {}"); //test go to "syntetic" constructor

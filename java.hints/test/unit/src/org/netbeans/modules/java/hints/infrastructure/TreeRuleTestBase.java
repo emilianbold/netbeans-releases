@@ -91,24 +91,14 @@ public abstract class TreeRuleTestBase extends NbTestCase {
 
     private void prepareTest(String fileName, String code) throws Exception {
         clearWorkDir();
-        
-        FileUtil.refreshFor(File.listRoots());
-        
-        FileObject workFO = FileUtil.toFileObject(getWorkDir());
-        
-        assertNotNull(workFO);
-        
-        workFO.refresh();
-        
-        sourceRoot = workFO.createFolder("src");
-        FileObject buildRoot  = workFO.createFolder("build");
-        FileObject cache;
-        FileObject fileObject = workFO.getFileObject("cache");
-        if (fileObject == null || !fileObject.isValid())
-            cache = workFO.createFolder("cache");
-        else
-            cache = fileObject;
+        File wdFile = getWorkDir();
+        FileUtil.refreshFor(wdFile);
 
+        FileObject wd = FileUtil.toFileObject(wdFile);
+        assertNotNull(wd);
+        sourceRoot = FileUtil.createFolder(wd, "src");
+        FileObject buildRoot = FileUtil.createFolder(wd, "build");
+        FileObject cache = FileUtil.createFolder(wd, "cache");
 
         FileObject data = FileUtil.createData(sourceRoot, fileName);
         File dataFile = FileUtil.toFile(data);
@@ -268,7 +258,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
             LOG.info("testing position " + i + " at " + before.charAt(i));
             clearWorkDir();
             performAnalysisTest("test/Test.java", before, i);
-        }
+}
     }
     public void testIssue108246() throws Exception {
 
