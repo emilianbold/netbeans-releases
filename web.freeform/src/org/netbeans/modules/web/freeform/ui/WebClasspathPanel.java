@@ -44,11 +44,13 @@ package org.netbeans.modules.web.freeform.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.web.freeform.WebProjectGenerator;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -324,7 +326,7 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
     }//GEN-LAST:event_removeClasspathActionPerformed
 
     private void addClasspathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addClasspathActionPerformed
-        JFileChooser chooser = new JFileChooser();
+        FileChooser chooser = new FileChooser(this.projectFolder, null);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode (JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(true);
@@ -349,19 +351,16 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
         chooser.setAcceptAllFileFilterUsed( false );
 
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File files[] = chooser.getSelectedFiles();
-            for (int i=0; i<files.length; i++) {
-                File file = FileUtil.normalizeFile(files[i]);
-                
-                //Check if the file is acceted by the FileFilter,
-                //user may enter the name of non displayed file into JFileChooser
-                if (!fileFilter.accept(file)) {
-                    continue;
-                }
-
-                listModel.addElement(file.getAbsolutePath());
-                lastChosenFile = file;
+            String[] filePaths = null;
+            try {
+                filePaths = chooser.getSelectedPaths();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
+            for (String filePath : filePaths) {
+                listModel.addElement(filePath);
+            }
+            lastChosenFile = chooser.getCurrentDirectory();
             updateButtons();
         }
     }//GEN-LAST:event_addClasspathActionPerformed
@@ -379,9 +378,7 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
     public String getClasspath(){
         StringBuffer sf = new StringBuffer();
         for (int i = 1; i < listModel.getSize(); i++){
-            File f = new File((String)listModel.get(i));
-            String path = org.netbeans.modules.ant.freeform.spi.support.Util
-                    .relativizeLocation(projectFolder, nbProjectFolder, f);
+            String path = (String)listModel.get(i);
             sf.append(path);
             if (i < listModel.getSize()-1)
                 sf.append(File.pathSeparatorChar);
@@ -398,7 +395,6 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
         String[] cpa = PropertyUtils.tokenizePath(evaluator.evaluate(classpath));
         for (int i=0; i<cpa.length; i++) {
             String path = cpa[i];
-            path = PropertyUtils.resolveFile(nbProjectFolder, path).getAbsolutePath();
             if (path != null) {
                 listModel.addElement(path);
             }
