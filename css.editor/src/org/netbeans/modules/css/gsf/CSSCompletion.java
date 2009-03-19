@@ -74,6 +74,7 @@ import org.netbeans.modules.css.editor.CssPropertyValue;
 import org.netbeans.modules.css.editor.LexerUtils;
 import org.netbeans.modules.css.editor.Property;
 import org.netbeans.modules.css.editor.PropertyModel;
+import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
@@ -97,7 +98,7 @@ public class CSSCompletion implements CodeCompletionHandler {
     private static final Collection<String> AT_RULES = Arrays.asList(new String[]{"@media", "@page", "@import", "@charset", "@font-face"}); //NOI18N
 
     public CodeCompletionResult complete(CodeCompletionContext context) {
-        CSSGSFParserResult info = (CSSGSFParserResult)context.getParserResult();
+        CssParserResult info = (CssParserResult)context.getParserResult();
         Snapshot snapshot = info.getSnapshot();
 
         int caretOffset = context.getCaretOffset();

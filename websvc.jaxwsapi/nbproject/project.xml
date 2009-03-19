@@ -155,6 +155,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.design</friend>
                 <friend>org.netbeans.modules.websvc.editor.hints</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
+                <friend>org.netbeans.modules.websvc.metro.model</friend>
                 <friend>org.netbeans.modules.websvc.restapi</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <friend>org.netbeans.modules.websvc.wsitest</friend>

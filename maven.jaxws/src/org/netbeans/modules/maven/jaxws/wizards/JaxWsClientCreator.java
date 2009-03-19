@@ -163,6 +163,8 @@ public class JaxWsClientCreator implements ClientCreator {
                         project,
                         "JAX-WS:wsimport", //NOI18N
                         Collections.singletonList("compile")); //NOI18N
+                
+                RunUtils.executeMaven(cfg);
              }
         }
     }

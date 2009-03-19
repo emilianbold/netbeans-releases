@@ -68,6 +68,8 @@ import org.apache.tools.ant.module.spi.TaskStructure;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 //import org.openide.windows.OutputListener;
 
@@ -355,6 +357,10 @@ public class J2MEAntLoggerTest extends NbTestCase {
         
         public String getDisplayName() {
             return "Mock Session";
+        }
+
+        public InputOutput getIO() {
+            return IOProvider.getDefault().getIO("", true);
         }
     }
     

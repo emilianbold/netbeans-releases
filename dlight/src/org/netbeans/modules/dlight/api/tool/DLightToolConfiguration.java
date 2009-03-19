@@ -23,7 +23,7 @@ public final class DLightToolConfiguration {
     private final List<DataCollectorConfiguration> dataCollectors;
     private final List<IndicatorDataProviderConfiguration> indicatorDataProvidersConfiguration;
     private final List<IndicatorConfiguration> indicators;
-
+    private String iconPath = null;
 
     static {
         DLightToolConfigurationAccessor.setDefault(new DLightToolConfigurationAccessorIml());
@@ -46,6 +46,10 @@ public final class DLightToolConfiguration {
      */
     public void addDataCollectorConfiguration(DataCollectorConfiguration collector) {
         dataCollectors.add(collector);
+    }
+
+    public void setIcon(String iconPath){
+        this.iconPath = iconPath;
     }
 
     /**
@@ -104,6 +108,11 @@ public final class DLightToolConfiguration {
         @Override
         public String getToolName(DLightToolConfiguration conf) {
             return conf.getToolName();
+        }
+
+        @Override
+        public String getIconPath(DLightToolConfiguration conf) {
+            return conf.iconPath;
         }
     }
 }

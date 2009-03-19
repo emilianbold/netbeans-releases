@@ -310,6 +310,11 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
             
     
     private static RequestProcessor PRCS = new RequestProcessor();
+
+    @Override
+    protected InputOutput getIO() {
+        return this.inputOutput;
+    }
     
     private class StreamBridge extends PrintStream implements Runnable {
         StringBuffer buff = new StringBuffer();

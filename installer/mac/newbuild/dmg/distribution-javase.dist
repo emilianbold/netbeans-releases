@@ -51,7 +51,35 @@ function checkSystemversion() {
 		my.result.type = 'Fatal';
 		my.result.title = system.localizedStringWithFormat('ERR_INVALID_VERSION_TITLE');
 		my.result.message = system.localizedStringWithFormat('ERR_INVALID_VERSION_MSG');
-	}
+	} else {
+		try {
+			result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.5') == true;
+		} catch (e) {}
+
+		if(!result) {
+		    try {
+                        result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0') == true;
+		    } catch (e) {}
+		}
+		if(!result) {
+		    try {
+                        result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6') == true;
+		    } catch (e) {}
+		}
+		if(!result) {
+		    try {
+                        result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0') == true;
+		    } catch (e) {}
+		}
+		
+
+		if(!result) {
+			my.result.type = 'Fatal';
+			my.result.title = system.localizedStringWithFormat('ERR_NO_JAVA_TITLE');
+			my.result.message = system.localizedStringWithFormat('ERR_NO_JAVA_MSG');
+		}
+        }
+
 	return result;
 }
 /* js:pkmk:end */

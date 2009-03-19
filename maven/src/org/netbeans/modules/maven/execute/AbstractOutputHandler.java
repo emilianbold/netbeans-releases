@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.execute;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,8 +57,11 @@ import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputProcessorFactory;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.api.project.Project;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.IOColorLines;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -98,6 +102,8 @@ public abstract class AbstractOutputHandler {
             }
         });
     }
+
+    protected abstract InputOutput getIO();
 
     protected void checkSleepiness() {
         RequestProcessor.Task task = sleepTask;
@@ -172,7 +178,15 @@ public abstract class AbstractOutputHandler {
                     ex.printStackTrace();
                 }
             } else {
-                writer.println(visitor.getLine());
+                if (visitor.getColor() != null && IOColorLines.isSupported(getIO())) {
+                    try {
+                        IOColorLines.println(getIO(), visitor.getLine(), visitor.getColor());
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    writer.println(visitor.getLine());
+                }
             }
         }
     }
@@ -278,7 +292,15 @@ public abstract class AbstractOutputHandler {
                     ex.printStackTrace();
                 }
             } else {
-                writer.println((levelText.length() == 0 ? "" : ("[" + levelText + "]")) + line); //NOI18N
+                if (visitor.getColor() != null && IOColorLines.isSupported(getIO())) {
+                    try {
+                        IOColorLines.println(getIO(), line, visitor.getColor());
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    writer.println((levelText.length() == 0 ? "" : ("[" + levelText + "]")) + line); //NOI18N
+                }
             }
         }
     }

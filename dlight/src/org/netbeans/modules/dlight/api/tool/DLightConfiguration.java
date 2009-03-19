@@ -51,7 +51,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
 
 /**
  * Represents D-Light Configuration. Register your D-Light in D-Light filesystem.
@@ -112,6 +111,21 @@ public final class DLightConfiguration {
      */
     public List<DLightTool> getToolsSet() {
         return toolsConfiguration.getToolsSet();
+    }
+
+    public DLightTool getToolByName(String name){
+        if (name == null){
+            return null;
+        }
+        List<DLightTool> list = toolsConfiguration.getToolsSet();
+        for (DLightTool tool : list){
+            if (name.equals(tool.getName())){
+                return tool;
+            }
+        }
+        return null;
+
+
     }
 
     public DLightConfigurationOptions getConfigurationOptions(boolean template) {

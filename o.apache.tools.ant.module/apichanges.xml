@@ -107,6 +107,23 @@ is the proper place.
 
     <changes>
 
+        <change id="AntSession.getIO">
+            <api name="general"/>
+            <summary>Added <code>AntSession.getIO</code></summary>
+            <version major="3" minor="35"/>
+            <date day="16" month="3" year="2009"/>
+            <author login="jglick"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added ability to get the underlying <code>InputOutput</code>
+                    object for advanced formatting.
+                </p>
+            </description>
+            <class package="org.apache.tools.ant.module.spi" name="AntSession"/>
+            <issue number="124366"/>
+        </change>
+
         <change id="AntScriptUtils">
             <api name="general"/>
             <summary>Added <code>AntScriptUtils</code></summary>

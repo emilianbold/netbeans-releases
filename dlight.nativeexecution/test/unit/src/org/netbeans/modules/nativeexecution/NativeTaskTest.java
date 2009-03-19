@@ -81,7 +81,7 @@ public class NativeTaskTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         String dirs = System.getProperty("netbeans.dirs", "");
-        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/dlight.suite/build/cluster:" + dirs);
+//        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/nbbuild/netbeans/dlight1:" + dirs);
 //        System.setProperty("netbeans.dirs", "E:\\work\\netbeans-src\\main\\nbbuild\\netbeans\\dlight1" + dirs);
 //        Handler handler = new LogHandler();
 //        Logger l = Logger.getLogger(ExecutionService.class.getName());
@@ -126,12 +126,10 @@ public class NativeTaskTest {
     public void fake() {
     }
 
-//    @Test
+    @Test
     public void simpleTest() {
-        String cmd = "ls";
-        ExternalTerminal term = ExternalTerminalProvider.getTerminal("cmd.exe");
-        NativeProcessBuilder npb = new NativeProcessBuilder(new ExecutionEnvironment(), cmd).useExternalTerminal(term);
-        npb = npb.setArguments("/eetc");
+        ExternalTerminal term = ExternalTerminalProvider.getTerminal("gnome-terminal");
+        NativeProcessBuilder npb = new NativeProcessBuilder(new ExecutionEnvironment(), "ls").useExternalTerminal(term);
         StringWriter result = new StringWriter();
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));
         ExecutionService execService = ExecutionService.newService(
@@ -147,6 +145,7 @@ public class NativeTaskTest {
             Exceptions.printStackTrace(ex);
         }
 
+        System.out.println(result.toString());
 
     }
 

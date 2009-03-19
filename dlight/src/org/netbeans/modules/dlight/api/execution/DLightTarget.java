@@ -114,29 +114,34 @@ public abstract class DLightTarget {
      */
     protected final void notifyListeners(final DLightTarget.State oldState,
             final DLightTarget.State newState) {
+        DLightTargetListener[] ll;
+
         synchronized (this) {
-            final CountDownLatch doneFlag = new CountDownLatch(listeners.size());
-
-            // Will do notification in parallel, but wait until all listeners
-            // finish processing of event.
-            for (final DLightTargetListener l : listeners) {
-                DLightExecutorService.submit(new Runnable() {
-
-                    public void run() {
-                        try {
-                            l.targetStateChanged(DLightTarget.this, oldState, newState);
-                        } finally {
-                            doneFlag.countDown();
-                        }
-                    }
-                }, "Notifying " + l); // NOI18N
-            }
-
-            try {
-                doneFlag.await();
-            } catch (InterruptedException ex) {
-            }
+            ll = listeners.toArray(new DLightTargetListener[0]);
         }
+        
+        final CountDownLatch doneFlag = new CountDownLatch(ll.length);
+
+        // Will do notification in parallel, but wait until all listeners
+        // finish processing of event.
+        for (final DLightTargetListener l : ll) {
+            DLightExecutorService.submit(new Runnable() {
+
+                public void run() {
+                    try {
+                        l.targetStateChanged(DLightTarget.this, oldState, newState);
+                    } finally {
+                        doneFlag.countDown();
+                    }
+                }
+            }, "Notifying " + l); // NOI18N
+        }
+
+        try {
+            doneFlag.await();
+        } catch (InterruptedException ex) {
+        }
+
     }
 
     /**

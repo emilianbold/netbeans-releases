@@ -42,6 +42,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -172,9 +174,13 @@ public class TypeChooserPanelImpl  extends javax.swing.JPanel{
     
     private boolean isNetBeansOrgFolder() {
         File folder = ModuleTypePanelExtended.getProjectFolder(getSettings());
+        final Logger logger = Logger.getLogger(this.getClass().getName());
         if (folder != null){
-            return BasicInfoVisualPanel.isNetBeansOrgFolder(folder);
+            boolean ret = BasicInfoVisualPanel.isNetBeansOrgFolder(folder);
+            logger.log(Level.FINE, "isNetBeansOrgFolder '" + folder + "'? " + (ret ? "YES" : "NO"));
+            return ret;
         }
+        logger.log(Level.FINE, "isNetBeansOrgFolder 'null'? NO");
         return false;
     }
     
@@ -235,7 +241,9 @@ public class TypeChooserPanelImpl  extends javax.swing.JPanel{
             attachModuleTypeGroup();
         }
         updateEnabled();
-        ModuleTypePanelExtended.setIsNetBeansOrg(getSettings(), isNetBeansOrgFolder());
+        boolean nbOrg = isNetBeansOrgFolder();
+        ModuleTypePanelExtended.setIsNetBeansOrg(getSettings(), nbOrg);
+        ModuleTypePanelExtended.setIsStandaloneOrSuiteComponent(getSettings(), nbOrg ? null : isStandAlone());
     }
 
     private void storeInitialValuesToWD(WizardDescriptor settings){
@@ -247,7 +255,14 @@ public class TypeChooserPanelImpl  extends javax.swing.JPanel{
     }
 
     private void attachPropertyChangeListener(WizardDescriptor settings){
-        settings.addPropertyChangeListener(new ProjectFolderChangeListener());
+        settings.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                String name = evt.getPropertyName();
+                if (PROJECT_FOLDER.equals(name)) {
+                    projectFolderIsUpdated();
+                }
+            }
+        });
     }
         
     private void detachModuleTypeGroup() {
@@ -257,7 +272,6 @@ public class TypeChooserPanelImpl  extends javax.swing.JPanel{
             moduleTypeGroup.remove(suiteComponent);
             standAloneModule.setSelected(false);
             suiteComponent.setSelected(false);
-            ModuleTypePanelExtended.setIsStandaloneOrSuiteComponent(getSettings(), null);
             moduleTypeGroupAttached = false;
         }
     }
@@ -572,19 +586,6 @@ JFileChooser chooser = ProjectChooser.projectChooser();
             : false;
     }
 
-    private class ProjectFolderChangeListener extends ModuleTypePanelExtended
-            implements PropertyChangeListener 
-    {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            String name = evt.getPropertyName();
-
-            if (PROJECT_FOLDER.equals(name)) {
-                projectFolderIsUpdated();
-            }
-        }
-    }
-    
     /**
      * Extends org.netbeans.modules.apisupport.project.ui.wizard.spi.ModuleTypePanel
      * functionality. Doesn't extends ModuleTypePanel directly, because 
@@ -592,7 +593,7 @@ JFileChooser chooser = ProjectChooser.projectChooser();
      */
     private static class ModuleTypePanelExtended {
         
-        protected static void setIsStandaloneOrSuiteComponent(
+        static void setIsStandaloneOrSuiteComponent(
                 WizardDescriptor settings, Boolean value)
         {
             if (settings != null){
@@ -600,31 +601,31 @@ JFileChooser chooser = ProjectChooser.projectChooser();
             }
         }
         
-        protected static void setIsNetBeansOrg( WizardDescriptor settings, Boolean value) {
+        static void setIsNetBeansOrg( WizardDescriptor settings, Boolean value) {
             if (settings != null){
                 settings.putProperty(IS_NETBEANS_ORG, value);
             }
         }
         
-        protected static void setActivePlatformId( WizardDescriptor settings, String value) {
+        static void setActivePlatformId( WizardDescriptor settings, String value) {
             if (settings != null){
                 settings.putProperty(ACTIVE_PLATFORM_ID, value);
             }
         }
         
-        protected static void setActiveNbPlatform( WizardDescriptor settings, NbPlatform value) {
+        static void setActiveNbPlatform( WizardDescriptor settings, NbPlatform value) {
             if (settings != null){
                 settings.putProperty(ACTIVE_NB_PLATFORM, value);
             }
         }
         
-        protected static void setSuiteRoot( WizardDescriptor settings, String value) {
+        static void setSuiteRoot( WizardDescriptor settings, String value) {
             if (settings != null){
                 settings.putProperty(SUITE_ROOT, value);
             }
         }
         
-        protected static File getProjectFolder( WizardDescriptor settings) {
+        static File getProjectFolder( WizardDescriptor settings) {
             if (settings != null) {
                 Object value = settings.getProperty(PROJECT_FOLDER);
                 if (value != null && value instanceof File) {
