@@ -40,6 +40,7 @@
 package org.netbeans.modules.maven.execute;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -54,6 +55,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.SingleMethod;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -71,6 +73,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
     private static final String CLASSNAME = "className";//NOI18N
     private static final String CLASSNAME_EXT = "classNameWithExtension";//NOI18N
     private static final String PACK_CLASSNAME = "packageClassName";//NOI18N
+    public static final String METHOD_NAME = "nb.single.run.methodName"; //NOI18N
 
     public DefaultReplaceTokenProvider(Project prj) {
         project = prj;
@@ -86,6 +89,12 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             FileObject f = d.getPrimaryFile();
             files.add(f);
         }
+        Collection<? extends SingleMethod> methods = lookup.lookupAll(SingleMethod.class);
+        if (methods.size() == 1) {
+            SingleMethod method = methods.iterator().next();
+            files.add(method.getFile());
+        }
+
         return files.toArray(new FileObject[files.size()]);
     }
 
@@ -127,6 +136,14 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             }
 
         }
+
+        Collection<? extends SingleMethod> methods = lookup.lookupAll(SingleMethod.class);
+        if (methods.size() == 1) {
+            //sort of hack to push the method name through the current apis..
+            SingleMethod method = methods.iterator().next();
+            replaceMap.put(METHOD_NAME, method.getMethodName());
+        }
+
         if (group != null && MavenSourcesImpl.NAME_TESTSOURCE.equals(group.getName())) {
             replaceMap.put(CLASSPATHSCOPE,"test"); //NOI18N
         } else {
@@ -183,6 +200,12 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
 //    }
 
     public String convert(String action, Lookup lookup) {
+        if (SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(action)) {
+            return ActionProvider.COMMAND_DEBUG_TEST_SINGLE;
+        }
+        if (SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(action)) {
+            return ActionProvider.COMMAND_TEST_SINGLE;
+        }
         if (ActionProvider.COMMAND_RUN_SINGLE.equals(action) ||
             ActionProvider.COMMAND_DEBUG_SINGLE.equals(action)) {
             FileObject[] fos = extractFileObjectsfromLookup(lookup);
