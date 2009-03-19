@@ -51,17 +51,25 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImplSpecialization;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
@@ -100,9 +108,32 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     return resolved;
                 }
             }
+            if (template instanceof ForwardClass) {
+                // try to find specialization of class forward
+                CsmClass decl = (CsmClass) template;
+                CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(decl.getName(), true, true, false);
+                Iterator<? extends CsmObject> it = getScopeObjectsIterator(filter, decl.getScope());
+                while (it != null && it.hasNext()) {
+                    CsmObject obj = it.next();
+                    if (obj instanceof ClassImplSpecialization) {
+                        return obj;
+                    }
+                }
+            }
             return Instantiation.create(template, mapping);
         }
         return template;
     }
 
+    private static Iterator<? extends CsmObject> getScopeObjectsIterator(CsmFilter offsetFilter, CsmScope scope) {
+        Iterator<? extends CsmObject> out = Collections.<CsmObject>emptyList().iterator();
+        if (CsmKindUtilities.isFile(scope)) {
+            out = CsmSelect.getDeclarations((CsmFile) scope, offsetFilter);
+        } else if (CsmKindUtilities.isClass(scope)) {
+            out = CsmSelect.getClassMembers(((CsmClass) scope), offsetFilter);
+        } else if (CsmKindUtilities.isNamespace(scope)) {
+            out = CsmSelect.getDeclarations(((CsmNamespace) scope), offsetFilter);
+        }
+        return out;
+    }
 }
