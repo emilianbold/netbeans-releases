@@ -49,7 +49,6 @@ import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectInputValidation;
 import java.io.OutputStream;
 import java.io.SyncFailedException;
@@ -168,6 +167,7 @@ public class LocalFileSystem extends AbstractFileSystem {
      * @deprecated Useless.
     */
     @Deprecated
+    @Override
     public void prepareEnvironment(FileSystem.Environment environment) {
         environment.addClassPath(rootFile.getAbsolutePath());
     }
@@ -225,6 +225,7 @@ public class LocalFileSystem extends AbstractFileSystem {
     /*
     * @return true if RefreshAction should be enabled
     */
+    @Override
     boolean isEnabledRefreshFolder() {
         return true;
     }
@@ -441,14 +442,16 @@ public class LocalFileSystem extends AbstractFileSystem {
         final File f = getFile(name);
         final long lModified = f.lastModified();
         OutputStream retVal = new FilterOutputStream(originalStream) {
-                public void close() throws IOException {
-                    super.close();
 
-                    if ((f.length() == 0) && (f.lastModified() == lModified)) {
-                        f.setLastModified(System.currentTimeMillis());
-                    }
+            @Override
+            public void close() throws IOException {
+                super.close();
+
+                if ((f.length() == 0) && (f.lastModified() == lModified)) {
+                    f.setLastModified(System.currentTimeMillis());
                 }
-            };
+            }
+        };
 
         return retVal;
     }
@@ -691,6 +694,7 @@ public class LocalFileSystem extends AbstractFileSystem {
             this.lfs = lfs;
         }
 
+        @Override
         public Object readAttribute(String name, String attrName) {
             if (attrName.equals("java.io.File")) { // NOI18N
 
