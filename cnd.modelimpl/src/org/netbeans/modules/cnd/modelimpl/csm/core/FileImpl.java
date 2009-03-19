@@ -361,11 +361,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (handlers == DUMMY_HANDLERS) {
             handlers = getPreprocHandlers();
         }
+        long time;
         synchronized (stateLock) {
             switch (stateRef.get()) {
                 case INITIAL:
                 case PARTIAL:
                     state = State.BEING_PARSED;
+                    time = System.currentTimeMillis();
                     try {
                         for (APTPreprocHandler preprocHandler : handlers) {
                             _parse(preprocHandler);
@@ -381,6 +383,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             }  // if not, someone marked it with new state
                         }
                         stateLock.notifyAll();
+                        lastParseTime = (int)(System.currentTimeMillis() - time);
+                        //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                     }
                     if (TraceFlags.DUMP_PARSE_RESULTS) {
                         new CsmTracer().dumpModel(this);
@@ -389,7 +393,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 case MODIFIED:
                     state = State.BEING_PARSED;
                     boolean first = true;
-                    long time = System.currentTimeMillis();
+                    time = System.currentTimeMillis();
                     try {
                         for (APTPreprocHandler preprocHandler : handlers) {
                             if (first) {
@@ -411,7 +415,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         postParse();
                         stateLock.notifyAll();
                         lastParseTime = (int)(System.currentTimeMillis() - time);
-
+                        //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                     }
                     if (TraceFlags.DUMP_PARSE_RESULTS || TraceFlags.DUMP_REPARSE_RESULTS) {
                         new CsmTracer().dumpModel(this);
