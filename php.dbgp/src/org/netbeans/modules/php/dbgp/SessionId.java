@@ -84,10 +84,6 @@ public class SessionId {
     }
 
     synchronized void initialize(String uri, List<Pair<String, String>> pathMapping) {
-        // XXX needs to be fixed after changes from main-whatever are propagated to web-main
-    }
-
-    synchronized void initialize(String uri, Pair<String, String> pathMapping) {
         if (uriMapper == null) {
             Project project = getProject();
             FileObject sourceRoot = project != null ? getSourceRoot() : sessionFileObject.getParent();

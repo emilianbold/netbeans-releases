@@ -196,7 +196,7 @@ public class RunAsWebAdvanced extends JPanel {
         }
 
         String warning = null;
-        if (doNotOpenBrowserRadioButton.isSelected()
+        if ((doNotOpenBrowserRadioButton.isSelected() || askUrlRadioButton.isSelected())
                 && !isAnyRemotePathDefined()) {
             warning = NbBundle.getMessage(RunAsWebAdvanced.class, "MSG_WarningNoPathMapping");
         }
@@ -299,6 +299,7 @@ public class RunAsWebAdvanced extends JPanel {
         pathMappingTable = new JTable();
         newPathMappingButton = new JButton();
         removePathMappingButton = new JButton();
+        infoLabel = new JLabel();
 
         debugUrlLabel.setLabelFor(defaultUrlRadioButton);
 
@@ -339,33 +340,35 @@ public class RunAsWebAdvanced extends JPanel {
 
         Mnemonics.setLocalizedText(removePathMappingButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.removePathMappingButton.text")); // NOI18N
         removePathMappingButton.setEnabled(false);
+
         removePathMappingButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 removePathMappingButtonActionPerformed(evt);
             }
         });
-
+        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.infoLabel.text"));
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
-            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
                             .add(removePathMappingButton)
                             .add(newPathMappingButton)))
-                    .add(GroupLayout.LEADING, debugUrlLabel)
-                    .add(GroupLayout.LEADING, layout.createSequentialGroup()
+                    .add(debugUrlLabel)
+                    .add(layout.createSequentialGroup()
                         .add(defaultUrlRadioButton)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(defaultUrlPreviewLabel))
-                    .add(GroupLayout.LEADING, askUrlRadioButton)
-                    .add(GroupLayout.LEADING, doNotOpenBrowserRadioButton)
-                    .add(GroupLayout.LEADING, pathMappingLabel))
+                    .add(askUrlRadioButton)
+                    .add(doNotOpenBrowserRadioButton)
+                    .add(pathMappingLabel)
+                    .add(infoLabel))
                 .addContainerGap())
         );
 
@@ -392,8 +395,10 @@ public class RunAsWebAdvanced extends JPanel {
                         .add(newPathMappingButton)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(removePathMappingButton))
-                    .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
-                .addContainerGap())
+                    .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(infoLabel)
+                .add(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -431,6 +436,7 @@ public class RunAsWebAdvanced extends JPanel {
     private JLabel defaultUrlPreviewLabel;
     private JRadioButton defaultUrlRadioButton;
     private JRadioButton doNotOpenBrowserRadioButton;
+    private JLabel infoLabel;
     private JButton newPathMappingButton;
     private JLabel pathMappingLabel;
     private JScrollPane pathMappingScrollPane;

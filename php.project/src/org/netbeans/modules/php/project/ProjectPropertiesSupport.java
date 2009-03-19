@@ -286,7 +286,8 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
-     * @return list of pairs of remote path (as a String) and local path (absolute path, as a String)
+     * @return list of pairs of remote path (as a String) and local path (absolute path, as a String); empty remote paths are skipped
+     *         as well as invalid local paths
      */
     public static List<Pair<String, String>> getDebugPathMapping(PhpProject project) {
         List<String> remotes = PhpProjectUtils.explode(
@@ -301,16 +302,12 @@ public final class ProjectPropertiesSupport {
         List<Pair<String, String>> paths = new ArrayList<Pair<String, String>>(size);
         for (int i = 0; i < size; ++i) {
             String remotePath = remotes.get(i);
-            String localPath = ""; // NOI18N
             if (PhpProjectUtils.hasText(remotePath)) {
                 FileObject subDir = getSourceSubdirectory(project, locals.get(i));
                 if (subDir != null && subDir.isValid()) {
-                    localPath = FileUtil.toFile(subDir).getAbsolutePath();
-                } else {
-                    localPath = FileUtil.toFile(getSourcesDirectory(project)).getAbsolutePath();
+                    paths.add(Pair.of(remotePath, FileUtil.toFile(subDir).getAbsolutePath()));
                 }
             }
-            paths.add(Pair.of(remotePath, localPath));
         }
         return paths;
     }
