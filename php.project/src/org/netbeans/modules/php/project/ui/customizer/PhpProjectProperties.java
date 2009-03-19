@@ -98,6 +98,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String SHORT_TAGS = "tags.short"; // NOI18N
     public static final String ASP_TAGS = "tags.asp"; // NOI18N
 
+    public static final String DEBUG_PATH_MAPPING_SEPARATOR = "||NB||"; // NOI18N
+
     public static final String[] CFG_PROPS = new String[] {
         URL,
         INDEX_FILE,

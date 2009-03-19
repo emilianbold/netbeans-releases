@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.dbgp;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
@@ -62,7 +63,7 @@ public class DebuggerImpl implements XDebugStarter {
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.Debugger#debug()
      */
-    public void start(Project project, Callable<Cancellable> run, FileObject startFile, boolean closeSession, Pair<String, String> pathMapping) {
+    public void start(Project project, Callable<Cancellable> run, FileObject startFile, boolean closeSession, List<Pair<String, String>> pathMapping) {
         assert startFile != null;
         SessionId sessionId = getSessionId(project);
         if (sessionId == null) {

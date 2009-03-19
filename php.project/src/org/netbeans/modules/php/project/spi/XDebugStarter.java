@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.project.spi;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.api.Pair;
@@ -59,7 +60,7 @@ public interface XDebugStarter {
      * @param closeSession
      * @param pathMapping path mapping (remote, local); strings, never null
      */
-    void start(Project project, Callable<Cancellable> run, FileObject startFile, boolean closeSession, Pair<String, String> pathMapping);
+    void start(Project project, Callable<Cancellable> run, FileObject startFile, boolean closeSession, List<Pair<String, String>> pathMapping);
 
     /**
      * @return true if session is already running
