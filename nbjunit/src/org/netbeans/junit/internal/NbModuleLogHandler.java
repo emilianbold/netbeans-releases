@@ -38,24 +38,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.junit;
+package org.netbeans.junit.internal;
 
+import java.text.MessageFormat;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestResult;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=Handler.class)
-public final class NbModuleLogHandler extends Handler implements Test {
+public final class NbModuleLogHandler extends Handler {
     private static StringBuffer text;
     private static Level msg;
     private static Level exc;
 
-    static Test registerBuffer(Level msg, Level exc) {
+    public static Test registerBuffer(Level msg, Level exc) {
         if (msg == null) {
             msg = Level.OFF;
         }
@@ -76,12 +80,42 @@ public final class NbModuleLogHandler extends Handler implements Test {
             min = exc;
         }
         l.setLevel(min);
-        return new NbModuleLogHandler();
+        return new FailOnException(msg, exc);
     }
 
-    static void finish() {
+    public static void finish() {
         text = null;
     }
+
+    public static StringBuffer toString(LogRecord record) {
+        StringBuffer sb = new StringBuffer();
+        sb.append('[');
+        sb.append(record.getLoggerName());
+        sb.append("] THREAD: ");
+        sb.append(Thread.currentThread().getName());
+        sb.append(" MSG: ");
+        String txt = record.getMessage();
+        ResourceBundle b = record.getResourceBundle();
+        if (b != null) {
+            try {
+                txt = b.getString(txt);
+            } catch (MissingResourceException ex) {
+                // ignore
+            }
+        }
+        if (txt != null && record.getParameters() != null) {
+            txt = MessageFormat.format(txt, record.getParameters());
+        }
+        sb.append(txt);
+        Throwable t = record.getThrown();
+        if (t != null) {
+            for (StackTraceElement s : t.getStackTrace()) {
+                sb.append("\n  ").append(s.toString());
+            }
+        }
+        return sb;
+    }
+
 
     public NbModuleLogHandler() {
     }
@@ -95,11 +129,11 @@ public final class NbModuleLogHandler extends Handler implements Test {
 
         if (record.getThrown() != null) {
             if (exc.intValue() <= record.getLevel().intValue()) {
-                t.append(Log.toString(record)).append('\n');
+                t.append(toString(record)).append('\n');
             }
         } else {
             if (msg.intValue() <= record.getLevel().intValue()) {
-                t.append(Log.toString(record)).append('\n');
+                t.append(toString(record)).append('\n');
             }
         }
     }
@@ -112,13 +146,33 @@ public final class NbModuleLogHandler extends Handler implements Test {
     public void close() throws SecurityException {
     }
 
-    public int countTestCases() {
-        return 1;
+    private static final class FailOnException extends TestCase {
+        private final Level msg;
+        private final Level exc;
+
+        private FailOnException(Level msg, Level exc) {
+            super("testNoWarningsReportedDuringExecution");
+            this.msg = msg;
+            this.exc = exc;
+        }
+        @Override
+        public int countTestCases() {
+            return 1;
+        }
+
+        @Override
+        public void run(TestResult res) {
+            if (text.length() > 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("NbModuleSuite has been started with failOnMessage(");
+                sb.append(msg);
+                sb.append(") and failOnException(").append(exc);
+                sb.append("). The following failures have been captured:\n");
+                sb.append(text);
+                res.addFailure(this, new AssertionFailedError(sb.toString()));
+            }
+        }
+
     }
 
-    public void run(TestResult res) {
-        if (text.length() > 0) {
-            res.addFailure(this, new AssertionFailedError("There shall have been no warnings:\n" + text));
-        }
-    }
 }

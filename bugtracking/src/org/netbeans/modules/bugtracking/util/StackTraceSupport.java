@@ -53,6 +53,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
@@ -300,7 +301,7 @@ public class StackTraceSupport {
                         try {
                             l = lc.getLineSet().getCurrent(line);
                         } catch (IndexOutOfBoundsException e) {
-                            BugtrackingUtil.LOG.log(Level.FINE, null, e);
+                            BugtrackingManager.LOG.log(Level.FINE, null, e);
                             ec.open();
                             return false;
                         }
@@ -318,7 +319,7 @@ public class StackTraceSupport {
                 return true;
             }
         } catch (IOException e) {
-            BugtrackingUtil.LOG.log(Level.SEVERE, null, e);
+            BugtrackingManager.LOG.log(Level.SEVERE, null, e);
         }
 
         return false;

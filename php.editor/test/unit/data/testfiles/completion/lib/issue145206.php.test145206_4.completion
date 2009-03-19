@@ -2,3 +2,4 @@ Code completion result for source line:
 echo TestIssue145206 :: createStatic()->create() ->create() -> c|reate();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     create()                        [PUBLIC]   TestIssue145206
+METHOD     createStatic()                  [STATIC]   TestIssue145206

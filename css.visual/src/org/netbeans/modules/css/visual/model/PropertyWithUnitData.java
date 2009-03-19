@@ -86,7 +86,7 @@ public class PropertyWithUnitData extends PropertyData{
     }
 
     public void clear(){
-      setValue(CssRuleContent.NOT_SET);
+      setValue(Utils.NOT_SET);
       setUnit("px"); //NOI18N
     }
 

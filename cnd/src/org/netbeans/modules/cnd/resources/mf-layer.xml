@@ -225,7 +225,6 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="2050"/>
                 <attr name="extends" stringvalue="SunStudio"/>
             </file>
-
             <file name="Cygwin.xml" url="toolchain/Cygwin.xml">
                 <attr name="position" intvalue="2100"/>
                 <attr name="extends" stringvalue="GNU"/>

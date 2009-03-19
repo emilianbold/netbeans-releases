@@ -52,6 +52,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -141,11 +142,10 @@ public class GdbProxyEngine {
         
         String pathname = Path.getPathName();
         for (String var : debuggerEnvironment) {
-            String key, value;
             int idx = var.indexOf('=');
             if (idx != -1) {
-                key = var.substring(0, idx);
-                value = var.substring(idx + 1);
+                String key = var.substring(0, idx);
+                String value = var.substring(idx + 1);
                 if (key.equals(pathname)) {
                     env.put(key, value + File.pathSeparator + cspath);
                 } else {
@@ -201,9 +201,19 @@ public class GdbProxyEngine {
             sb.append(arg);
             sb.append(' ');
         }
+
+        Map<String, String> env = new HashMap<String, String>(debuggerEnvironment.length);
+        for (String var : debuggerEnvironment) {
+            int idx = var.indexOf('=');
+            if (idx != -1) {
+                String key = var.substring(0, idx);
+                String value = var.substring(idx + 1);
+                env.put(key, value);
+            }
+        }
         
         provider = InteractiveCommandProviderFactory.create(debugger.getHostExecutionEnvironment());
-        if (provider != null && provider.run(debugger.getHostExecutionEnvironment(), sb.toString(), null)) {
+        if (provider != null && provider.run(debugger.getHostExecutionEnvironment(), sb.toString(), env)) {
             try {
                 toGdb = gdbReader(provider.getInputStream(), provider.getOutputStream());
             } catch (IOException ioe) {

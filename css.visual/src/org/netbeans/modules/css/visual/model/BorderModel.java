@@ -71,7 +71,7 @@ public class BorderModel {
 
     public static class StyleList extends DefaultComboBoxModel{
         public StyleList(){
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
 
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.BORDER_STYLE);
             for(int i=0; i< propValues.length; i++){
@@ -83,7 +83,7 @@ public class BorderModel {
 
     public static class WidthList extends DefaultComboBoxModel{
         public WidthList(){
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             addElement("1"); //NOI18N
             addElement("2"); //NOI18N
             addElement("3"); //NOI18N
@@ -92,7 +92,7 @@ public class BorderModel {
             addElement("6"); //NOI18N
             addElement("8"); //NOI18N
             addElement("10"); //NOI18N
-            addElement(CssRuleContent.VALUE);
+            addElement(Utils.VALUE);
         }
     }
 

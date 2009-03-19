@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.gizmo;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
@@ -50,6 +52,7 @@ import org.openide.util.Mutex;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -62,6 +65,8 @@ public class GizmoProjectOptions {
     private static final String GizmoData = "gizmo-options"; //NOI18N
     private static final String GizmoDataCollectorEnabled = "gizmo-datacollector-enabled"; //NOI18N
     private static final String GizmoDataCollectorName = "gizmo-datacollector-name"; //NOI18N
+    private static final String GizmoSelectedToolsName = "gizmo-selected-tools-names"; //NOI18N
+    private static final String GizmoToolName = "tool-name"; //NOI18N
     private static final String GizmoUserIntreactionRequiredActionsEnabled = "gizmo-user-interaction-required-actions-enabled"; //NOI18N
     private final String namespace;
     private final boolean shared;
@@ -89,6 +94,16 @@ public class GizmoProjectOptions {
         doSave(GizmoDataCollectorEnabled, enabled.toString());
     }
 
+//// options
+    public String[] getSelectedTools() {
+        String[] values = doLoadChildrenContent(GizmoSelectedToolsName);
+        return values;
+    }
+
+    public void setSelectedTools(String[] toolNames) {
+        doSave(GizmoSelectedToolsName, GizmoToolName, toolNames);
+    }
+
   // options
     public boolean getUserInteractionRequiredActionsEnabled() {
         String value = doLoad(GizmoUserIntreactionRequiredActionsEnabled);
@@ -108,9 +123,9 @@ public class GizmoProjectOptions {
         doSave(GizmoDataCollectorName, name);
     }
 
-    // private methods
+    // private methods, default value - false
     private boolean str2bool(String value) {
-        return (value == null) || (value.length() == 0) || Boolean.parseBoolean(value);
+        return (value == null) || (value.length() == 0) ? false : Boolean.parseBoolean(value);
     }
 
     private Element getConfigurationFragment() {
@@ -149,6 +164,53 @@ public class GizmoProjectOptions {
         });
     }
 
+    private String[] doLoadChildrenContent(final String name) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
+
+            public String[] run() {
+                Element configurationFragment = getConfigurationFragment();
+                if (configurationFragment == null) {
+                    return null;
+                }
+                Node n = getNode(configurationFragment, name);
+
+                NodeList list = n.getChildNodes();
+                if (list == null || list.getLength() == 0){
+                    return null;
+                }
+                List<String> result = new ArrayList<String>();
+                for (int i = 0, size = list.getLength(); i < size; i++){
+                    if (list.item(i).getNodeType() == Node.ELEMENT_NODE){
+                        result.add(list.item(i).getTextContent());
+                    }
+                }
+                return result.toArray(new String[0]);
+            }
+        });
+    }
+
+    private void doSave(final String name, final String childName, final String[] values) {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+
+            public void run() {
+                Element configurationFragment = getConfigurationFragment();
+                if (configurationFragment != null) {
+                    Element oldElement = getNode(configurationFragment, name);
+                    Element newElement = configurationFragment.getOwnerDocument().createElementNS(namespace, name);
+                    for (int i = 0; i < values.length; i++){
+                        Node child = configurationFragment.getOwnerDocument().createElement(childName);
+                        child.setTextContent(values[i]);
+                        newElement.appendChild(child);
+                    }
+                    configurationFragment.removeChild(oldElement);
+                    //configurationFragment.getOwnerDocument().replaceChild(newElement, oldElement);
+                     configurationFragment.appendChild(newElement);
+                    aux.putConfigurationFragment(configurationFragment, shared);
+                }
+            }
+        });
+    }
+
     private void doSave(final String name, final String value) {
         ProjectManager.mutex().writeAccess(new Runnable() {
 
@@ -173,3 +235,4 @@ public class GizmoProjectOptions {
         }
     }
 }
+

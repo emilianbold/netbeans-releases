@@ -245,13 +245,17 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         //In ideal case this should do nothing,
         //but in Netbeans newlly created folder may
         //already contain files
-        final FileObject fo = fe.getFile();
-        final URL root = getOwningSourceRoot(fo);
         boolean processed = false;
+        FileObject fo = fe.getFile();
+        URL root = null;
         
-        if ( root != null && VisibilityQuery.getDefault().isVisible(fo)) {
-            scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
-            processed = true;
+        if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
+            root = getOwningSourceRoot(fo);
+
+            if (root != null) {
+                scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
+                processed = true;
+            }
         }
 
         if (LOGGER.isLoggable(Level.FINE)) {
@@ -261,33 +265,22 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void fileDataCreated(FileEvent fe) {
-        final FileObject fo = fe.getFile();
-        final URL root = getOwningSourceRoot (fo);
-        boolean processed = false;
-
-        if (root != null && VisibilityQuery.getDefault().isVisible(fo) &&
-            isMonitoredMimeType(fo, PathRecognizerRegistry.getDefault().getMimeTypes()))
-        {
-            scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
-            processed = true;
-        }
-
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("File created (" + (processed ? "processed" : "ignored") + "): " //NOI18N
-                    + FileUtil.getFileDisplayName(fo) + " Owner: " + root); //NOI18N
-        }
+        fileChanged(fe);
     }
 
     public void fileChanged(FileEvent fe) {
-        final FileObject fo = fe.getFile();
-        final URL root = getOwningSourceRoot (fo);
         boolean processed = false;
+        FileObject fo = fe.getFile();
+        URL root = null;
 
-        if (root != null && VisibilityQuery.getDefault().isVisible(fo) &&
-            isMonitoredMimeType(fo, PathRecognizerRegistry.getDefault().getMimeTypes()))
-        {
-            scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
-            processed = true;
+        if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo) &&
+            isMonitoredMimeType(fo, PathRecognizerRegistry.getDefault().getMimeTypes())
+        ) {
+            root = getOwningSourceRoot (fo);
+            if (root != null) {
+                scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
+                processed = true;
+            }
         }
 
         if (LOGGER.isLoggable(Level.FINE)) {

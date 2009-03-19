@@ -162,11 +162,13 @@ public class CommandRunner extends BasicTask<OperationState> {
         try {
             GetPropertyCommand cmd;
             String query;
-            if (null != name) {
-                query = "resources.*."+name+".*"; // NOI18N
-            } else {
+            // see https:/glassfish.dev.java.net/issues/show_bug.cgi?id=7296
+            // revert this, when the server side of issue is resolved
+            //if (null != name) {
+            //    query = "resources.*."+name+".*"; // NOI18N
+            //} else {
                 query = "resources.*"; // NOI18N
-            }
+            //}
             cmd = new ServerCommand.GetPropertyCommand(query); // NOI18N
             serverCmd = cmd;
             Future<OperationState> task = executor().submit(this);

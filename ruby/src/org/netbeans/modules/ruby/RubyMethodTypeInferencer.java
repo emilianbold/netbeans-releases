@@ -97,7 +97,7 @@ final class RubyMethodTypeInferencer {
         // If you call Foo.new I'm going to assume the type of the expression if "Foo"
         if ("new".equals(name)) { // NOI18N
             return receiverType;
-        } else if (name.startsWith("find")) {
+        } else if (FindersHelper.isFinderMethod(name)) {
             // -Possibly- ActiveRecord finders, very important
             if (receiverType.isSingleton() && getIndex() != null) {
                 IndexedClass superClass = getIndex().getSuperclass(receiverType.first());
@@ -109,7 +109,7 @@ final class RubyMethodTypeInferencer {
                     // it's an item, and for find(1,2,3) it's an array etc.
                     // There are other find signatures which define other
                     // semantics
-                    return pickFinderType((CallNode) callNodeToInfer, name, receiverType);
+                    return FindersHelper.pickFinderType((CallNode) callNodeToInfer, name, receiverType);
                 }
             }
         }
@@ -123,7 +123,7 @@ final class RubyMethodTypeInferencer {
                     // fallback to the RDoc comment
                     IndexedElement match = RubyCodeCompleter.findDocumentationEntry(null, indexedMethod);
                     if (match != null) {
-                        List<? extends String> comment = RubyCodeCompleter.getComments(null, match);
+                        List<String> comment = RubyCodeCompleter.getComments(null, match);
                         if (comment != null) {
                             type = RDocAnalyzer.collectTypesFromComment(comment);
                         }
@@ -133,42 +133,6 @@ final class RubyMethodTypeInferencer {
             }
         }
         return resultType;
-    }
-
-    /**
-     * Look up the right return type for the given finder call.
-     */
-    private static RubyType pickFinderType(final CallNode call, final String method, final RubyType model) {
-        // Dynamic finders
-        boolean multiple;
-        if (method.startsWith("find_all")) { // NOI18N
-            multiple = true;
-        } else if (method.startsWith("find_by_") || method.equals("find_first")) { // NOI18N
-            multiple = false;
-        } else if (method.equals("find")) { // NOI18N
-            // Finder method that does both - gotta inspect it
-            List<Node> nodes = new ArrayList<Node>();
-            AstUtilities.addNodesByType(call, new NodeType[]{NodeType.SYMBOLNODE}, nodes);
-            boolean foundAll = false;
-            for (Node n : nodes) {
-                SymbolNode symbol = (SymbolNode) n;
-                if ("all".equals(symbol.getName())) { // NOI18N
-                    foundAll = true;
-                    break;
-                }
-            }
-            multiple = foundAll;
-        } else {
-            // Not sure - probably some other locally defined finder method;
-            // just default to the model name
-            multiple = false;
-        }
-
-        if (multiple) {
-            return RubyType.create("Array<" + model.first() + ">"); // NOI18N
-        } else {
-            return model;
-        }
     }
 
     private RubyType getReceiverType(final Node receiver) {

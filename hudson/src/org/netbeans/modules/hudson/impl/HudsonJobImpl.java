@@ -113,7 +113,11 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     }
     
     public boolean isInQueue() {
-        return properties.getProperty(JOB_IN_QUEUE, Boolean.class);
+        try {
+            return properties.getProperty(JOB_IN_QUEUE, Boolean.class);
+        } catch (NullPointerException x) {
+            return false;
+        }
     }
     
     public boolean isBuildable() {
