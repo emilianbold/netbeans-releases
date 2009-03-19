@@ -77,4 +77,12 @@ public class PhpUnitTest extends NbTestCase {
         assertNotNull(version);
         assertTrue(Arrays.equals(new int[] {323324, 3877987, 165456}, version));
     }
+
+    public void testPhpUnitLinePattern() {
+        assertTrue(PhpUnit.LINE_PATTERN.matcher("at /home/gapon/test/Calculator.php:635").matches());
+        assertTrue(PhpUnit.LINE_PATTERN.matcher("at /h o m e/gapon/test/Calculator.php:635").matches());
+        assertTrue(PhpUnit.LINE_PATTERN.matcher("at C:\\home\\gapon\\test\\Calculator.php:635").matches());
+
+        assertFalse(PhpUnit.LINE_PATTERN.matcher("").matches());
+    }
 }
