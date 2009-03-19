@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,18 +40,16 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
-<fontscolors>
-    <fontcolor default="keyword" name="keyword"/>
-    <fontcolor default="keyword" name="instanceof"/>
-    <fontcolor default="error"   name="clazz-typo">
-        <font style="italic"/>
-    </fontcolor>
-
-    <fontcolor default="identifier" name="clazz">
-        <font style="italic"/>
-    </fontcolor>
-
-    <fontcolor default="separator" name="braces"/>
-    <fontcolor foreColor="gray" name="js-block"/>
-</fontscolors>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.lib.profiler.charts</code-name-base>
+            <module-dependencies/>
+            <friend-packages>
+                <friend>org.netbeans.lib.profiler.ui</friend>
+                <package>org.netbeans.lib.profiler.charts.canvas</package>
+            </friend-packages>
+        </data>
+    </configuration>
+</project>

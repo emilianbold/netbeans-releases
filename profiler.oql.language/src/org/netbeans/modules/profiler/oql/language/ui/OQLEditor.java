@@ -39,18 +39,15 @@
 
 package org.netbeans.modules.profiler.oql.language.ui;
 
-import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JEditorPane;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.profiler.oql.language.OQLTokenId;
 import org.netbeans.modules.profiler.spi.OQLEditorImpl;
-import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -59,8 +56,6 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=OQLEditorImpl.class)
 public class OQLEditor extends OQLEditorImpl{
-    private final AtomicReference<MutableTextInput<OQLTokenId>> textInputRef = new AtomicReference<MutableTextInput<OQLTokenId>>();
-    private JEditorPane editorPane;
     volatile boolean validFlag = false;
 
     final private TokenHierarchyListener thl = new TokenHierarchyListener() {
@@ -85,35 +80,17 @@ public class OQLEditor extends OQLEditorImpl{
         }
     };
 
-    private void init() {
+    private JEditorPane createEditor() {
         String mimeType = "text/x-oql"; // NOI18N
-        editorPane = new JEditorPane();
+        JEditorPane editorPane = new JEditorPane();
 
         editorPane.setEditorKit(MimeLookup.getLookup(mimeType).lookup(EditorKit.class));
-        editorPane.getDocument().addDocumentListener(new DocumentListener() {
-
-            public void insertUpdate(DocumentEvent e) {
-                if (textInputRef.compareAndSet(null, (MutableTextInput)e.getDocument().getProperty(MutableTextInput.class))) {
-                    textInputRef.get().tokenHierarchyControl().tokenHierarchy().addTokenHierarchyListener(thl);
-                }
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                if (textInputRef.compareAndSet(null, (MutableTextInput)e.getDocument().getProperty(MutableTextInput.class))) {
-                    textInputRef.get().tokenHierarchyControl().tokenHierarchy().addTokenHierarchyListener(thl);
-                }
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-                if (textInputRef.compareAndSet(null, (MutableTextInput)e.getDocument().getProperty(MutableTextInput.class))) {
-                    textInputRef.get().tokenHierarchyControl().tokenHierarchy().addTokenHierarchyListener(thl);
-                }
-            }
-        });
+        TokenHierarchy th = TokenHierarchy.get(editorPane.getDocument());
+        th.addTokenHierarchyListener(thl);
+        return editorPane;
     }
 
     synchronized public JEditorPane getEditorPane() {
-        if (editorPane == null) init();
-        return editorPane;
+        return createEditor();
     }
 }
