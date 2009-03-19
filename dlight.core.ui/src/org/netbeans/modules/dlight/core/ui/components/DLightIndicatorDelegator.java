@@ -47,7 +47,6 @@ public final class DLightIndicatorDelegator implements IndicatorComponentDelegat
                     indicators.setSession(session);
                     indicators.open();
                     indicators.requestActive();
-                    indicators.requestAttention(true);
                 }
             });
         }
