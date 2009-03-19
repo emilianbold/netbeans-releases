@@ -135,7 +135,7 @@ public final class ParserThread implements Runnable {
                         try {
                             queue.onFileParsingFinished(file);
                             if (TraceFlags.TRACE_PARSER_QUEUE) {
-                                trace("parsing done for " + file.getLastParseTime() + " ms."); // NOI18N
+                                trace("parsing done for " + file.getAbsolutePath() + " took " + file.getLastParseTime() + "ms"); // NOI18N
                             }
                             Notificator.instance().flush();
                             if (TraceFlags.TRACE_PARSER_QUEUE) {

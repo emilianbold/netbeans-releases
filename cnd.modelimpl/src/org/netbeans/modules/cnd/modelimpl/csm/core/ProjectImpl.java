@@ -388,7 +388,9 @@ public final class ProjectImpl extends ProjectBase {
         }, true);
         task.setPriority(Thread.MIN_PRIORITY);
         int delay = TraceFlags.REPARSE_DELAY;
-        delay = Math.max(delay, file.getLastParseTime()*10);
+        if (file.getLastParseTime() / (delay+1) > 2) {
+            delay = Math.max(delay, file.getLastParseTime()+2000);
+        }
         task.schedule(delay);
     }
 
