@@ -54,10 +54,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Utilities;
 import org.netbeans.core.startup.layers.ArchiveURLMapper;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.MasterURLMapper;
 
 // XXX needs to test listening as well
+import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -69,11 +69,12 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase {
     
     public JavadocForBinaryQueryPlatformImplTest(java.lang.String testName) {
         super(testName);
-        MockLookup.setInstances(
-                new JavaPlatformProviderImpl(),
-                new ArchiveURLMapper(),
-                new JavadocForBinaryQueryPlatformImpl(),
-                new MasterURLMapper());
+        MockLookup.setLookup(
+                Lookups.fixed (
+                    new JavaPlatformProviderImpl(),
+                    new ArchiveURLMapper(),
+                    new JavadocForBinaryQueryPlatformImpl(),
+                    new MasterURLMapper()));
     }
     
     protected @Override void setUp() throws Exception {
@@ -90,7 +91,6 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase {
         return dir;
     }
 
-    @RandomlyFails
     public void testQuery() throws Exception {
         JavaPlatform platform = JavaPlatform.getDefault();
         
