@@ -797,6 +797,18 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz160637.cc", 9, 25, "iz160637.cc", 5, 5);
     }
 
+    public void testIZ151043() throws Exception {
+        // IZ#151043 : Unresolved dereferencing
+        performTest("iz151043.cc", 8, 11, "iz151043.cc", 3, 5);
+        performTest("iz151043.cc", 9, 13, "iz151043.cc", 3, 5);
+        performTest("iz151043.cc", 10, 25, "iz151043.cc", 3, 5);
+    }
+
+    public void testIZ160677() throws Exception {
+        // IZ#160677 : Unresolved members of global variables in global context
+        performTest("iz160677.cc", 6, 14, "iz160677.cc", 2, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

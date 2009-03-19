@@ -161,7 +161,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             SunStudioDCConfiguration.c_iSyncn);
 
         indicatorConfiguration.addVisualizerConfiguration(new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata,
-            SunStudioDCConfiguration.c_name.getColumnName()));
+            SunStudioDCConfiguration.c_name.getColumnName(), SunStudioDCConfiguration.c_name.getColumnName()));
 
 
         return indicatorConfiguration;
@@ -233,17 +233,18 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
         DataTableMetadata viewTableMetadata = null;
         List<Column> viewColumns = Arrays.asList(
-            new Column("func_name", MangledNameType.class, "Function", null),
-            new Column("time", Long.class, "Time, ms", null),
-            new Column("count", Long.class, "Count", null));
-        String sql = "SELECT func.func_name as func_name, SUM(sync.time/1000000) as time, COUNT(*) as count" +
-            " FROM sync, node AS node, func" +
-            " WHERE  sync.stackid = node.node_id and node.func_id = func.func_id" +
-            " GROUP BY node.func_id, func.func_name";
+            new Column("id", Integer.class, "id", null),// NOI18N
+            new Column("func_name", MangledNameType.class, "Function", null),// NOI18N
+            new Column("time", Long.class, "Time, ms", null),// NOI18N
+            new Column("count", Long.class, "Count", null));// NOI18N
+        String sql = "SELECT func.func_id as id, func.func_name as func_name, SUM(sync.time/1000000) as time, COUNT(*) as count" +// NOI18N
+            " FROM sync, node AS node, func" +// NOI18N
+            " WHERE  sync.stackid = node.node_id and node.func_id = func.func_id" +// NOI18N
+            " GROUP BY node.func_id, func.func_id, func.func_name"; // NOI18N
 
-        viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));
+        viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));// NOI18N
         AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration =
-            new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name");
+            new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name", "id");// NOI18N
 
         tableVisualizerConfiguration.setEmptyAnalyzeMessage(
             loc("DetailedView.EmptyAnalyzeMessage")); // NOI18N

@@ -68,7 +68,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
 
 class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTableNode> {
 
@@ -89,7 +88,7 @@ class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTreeTable
         this.configuration.setNodeActionProvider(new NodeActionsProviderImpl());
         this.dataProvider = dataProvider;
         isCalls = NbPreferences.forModule(CallersCalleesVisualizer.class).getBoolean(IS_CALLS, true);
-        setEmptyContent();
+       
     }
 
     public TreeTableVisualizerConfiguration getConfiguration() {

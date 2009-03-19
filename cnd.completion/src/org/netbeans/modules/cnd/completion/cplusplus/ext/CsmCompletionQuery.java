@@ -1281,9 +1281,10 @@ abstract public class CsmCompletionQuery {
                                             lastType = null;
                                             cont = false;
                                         } else {
-                                            // IZ#143044
+                                            // IZ#143044, IZ#160677
                                             // There is no need for searching in parents for global declarations/definitions
-                                            boolean inspectParentClasses = (this.contextElement != null);
+                                            // in case of csope access
+                                            boolean inspectParentClasses = (this.contextElement != null || !scopeAccessedClassifier);
                                             List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly && !memberPointer, false, inspectParentClasses, this.scopeAccessedClassifier, skipConstructors, sort);
                                             List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, openingSource, true, sort);
                                             res.addAll(nestedClassifiers);

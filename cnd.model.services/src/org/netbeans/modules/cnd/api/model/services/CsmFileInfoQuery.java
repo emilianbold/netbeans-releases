@@ -69,7 +69,8 @@ public abstract class CsmFileInfoQuery {
     /** Static method to obtain the resolver.
      * @return the resolver
      */
-    public static synchronized CsmFileInfoQuery getDefault() {
+    public static CsmFileInfoQuery getDefault() {
+        /*no need for sync synchronized access*/
         if (defaultResolver != null) {
             return defaultResolver;
         }
