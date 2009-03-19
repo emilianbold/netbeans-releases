@@ -83,9 +83,13 @@ import org.openide.util.Lookup;
  * @author Jan Lahoda
  */
 public class SourceUtilsTest extends NbTestCase {       
-    
+
     private JavaSource js;
     private CompilationInfo info;
+
+    static {
+        System.setProperty("org.openide.util.Lookup", SourceUtilsTestUtil.class.getName());
+    }
     
     public SourceUtilsTest(String testName) {
         super(testName);

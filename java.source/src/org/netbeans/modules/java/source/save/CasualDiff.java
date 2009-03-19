@@ -1205,7 +1205,7 @@ public class CasualDiff {
                 //find {:
                 moveFwdToToken(tokenSequence, localPointer, JavaTokenId.LBRACE);
                 tokenSequence.moveNext();
-//                copyTo(localPointer, localPointer = tokenSequence.offset());
+                copyTo(localPointer, localPointer = tokenSequence.offset());
                 localPointer = diffParameterList(oldT.elems, newT.elems, null, localPointer, Measure.ARGUMENT);
             }
         } else if (newT.elems != null && !newT.elems.isEmpty()) {
