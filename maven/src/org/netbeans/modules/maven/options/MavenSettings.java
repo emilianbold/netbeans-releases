@@ -72,6 +72,7 @@ public class MavenSettings  {
     public static final String PROP_SOURCE_DOWNLOAD = "sourceDownload"; //NOI18N
     public static final String PROP_JAVADOC_DOWNLOAD = "javadocDownload"; //NOI18N
     public static final String PROP_BINARY_DOWNLOAD = "binaryDownload"; //NOI18N
+    public static final String PROP_LAST_ARCHETYPE_GROUPID = "lastArchetypeGroupId"; //NOI18N
 
     
     private static final MavenSettings INSTANCE = new MavenSettings();
@@ -146,6 +147,15 @@ public class MavenSettings  {
     public void setFailureBehaviour(String failureBehaviour) {
         putProperty(PROP_FAILURE_BEHAVIOUR, failureBehaviour);
     }
+
+    public String getLastArchetypeGroupId() {
+        return getPreferences().get(PROP_LAST_ARCHETYPE_GROUPID, "com.mycompany"); //NOI18N
+    }
+
+    public void setLastArchetypeGroupId(String groupId) {
+        putProperty(PROP_LAST_ARCHETYPE_GROUPID, groupId);
+    }
+
 
     public boolean isUsePluginRegistry() {
         return getPreferences().getBoolean(PROP_USE_REGISTRY, true);
