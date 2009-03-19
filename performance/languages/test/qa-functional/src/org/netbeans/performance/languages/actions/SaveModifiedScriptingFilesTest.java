@@ -106,7 +106,7 @@ public class SaveModifiedScriptingFilesTest extends PerformanceTestCase {
 
     public void test_SaveRHTML_File() {
         testProject = Projects.RAILS_PROJECT;
-        pathName = "Unit Tests"+"|";
+        pathName = "Test Files|unit"+"|";
         docName = "rhtml20kb.rhtml";        
         doMeasurement();
     }
@@ -134,7 +134,7 @@ public class SaveModifiedScriptingFilesTest extends PerformanceTestCase {
 
     public void test_SaveYML_File() {
         testProject = Projects.RAILS_PROJECT;
-        pathName = "Unit Tests"+"|";
+        pathName = "Test Files|unit"+"|";
         docName = "yaml20kb.yml";        
         doMeasurement();
     }
