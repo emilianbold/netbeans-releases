@@ -59,12 +59,12 @@ public class PropertyData {
     /**
      * Holds value of property value.
      */
-    protected String value=CssRuleContent.NOT_SET;
+    protected String value=Utils.NOT_SET;
 
 
     public String toString(){
         String valueString = value;
-        if (value.startsWith(CssRuleContent.NOT_SET) || value.startsWith(CssRuleContent.VALUE)){
+        if (value.startsWith(Utils.NOT_SET) || value.startsWith(Utils.VALUE)){
             valueString = "";
         }
         return valueString;
@@ -91,8 +91,8 @@ public class PropertyData {
 
 
     public boolean hasValue(){
-        if (value.equals("") || value.startsWith(CssRuleContent.NOT_SET) ||
-                value.startsWith(CssRuleContent.VALUE)){
+        if (value.equals("") || value.startsWith(Utils.NOT_SET) ||
+                value.startsWith(Utils.VALUE)){
             return false;
         }else{
             return true;

@@ -43,6 +43,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
+import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.ASCII_CharStream;
 import java.io.StringReader;
 import java.util.List;
@@ -68,7 +69,7 @@ import org.openide.util.NbBundle;
 public class CSSGSFParser extends Parser {
 
     private final CSSParser PARSER = new CSSParser();
-    private CSSGSFParserResult lastResult = null;
+    private CssParserResult lastResult = null;
 
     //string which is substituted instead of any 
     //templating language in case of css embedding
@@ -94,7 +95,7 @@ public class CSSGSFParser extends Parser {
         errors.addAll(errors(parseExceptions, snapshot.getSource().getFileObject())); //parser errors
         errors.addAll(CssAnalyser.checkForErrors(snapshot, root));
         
-        this.lastResult = new CSSGSFParserResult(this, snapshot, root, errors);
+        this.lastResult = new CssParserResult(this, snapshot, root, errors);
     }
 
         @Override

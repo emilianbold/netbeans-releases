@@ -48,6 +48,7 @@ import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 
 /**
@@ -94,6 +95,7 @@ public final class LoggerTrampoline {
         int getVerbosity();
         String getDisplayName();
         OutputListener createStandardHyperlink(URL file, String message, int line1, int column1, int line2, int column2);
+        InputOutput getIO();
     }
     
     public interface AntEventImpl {

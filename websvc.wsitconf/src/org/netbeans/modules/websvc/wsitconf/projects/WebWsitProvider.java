@@ -56,6 +56,7 @@ import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -86,6 +87,12 @@ public class WebWsitProvider extends WsitProvider {
             }
         }
         return false;
+    }
+
+    @Override
+    public FileObject getConfigFilesFolder(boolean client) {
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        return wm.getWebInf();
     }
 
     @Override

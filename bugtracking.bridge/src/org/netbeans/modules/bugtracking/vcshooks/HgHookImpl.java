@@ -218,7 +218,7 @@ public class HgHookImpl extends HgHook {
             panel = new HookPanel(repos, null);
         } else {
             File file = context.getFiles()[0];
-            Repository repoToSelect = BugtrackingOwnerSupport.getInstance().getRepository(file);
+            Repository repoToSelect = BugtrackingOwnerSupport.getInstance().getRepository(file, false);
             if(repoToSelect == null) {
                 LOG.log(Level.FINE, " could not find repository for " + file);  // NOI18N
             }

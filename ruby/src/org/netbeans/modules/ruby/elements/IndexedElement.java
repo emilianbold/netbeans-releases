@@ -171,6 +171,10 @@ public abstract class IndexedElement extends RubyElement {
     }
 
     public String getFileUrl() {
+        if (file == null) {
+            // there's no file for e.g. for dynamic methods
+            return null;
+        }
         File f = FileUtil.toFile(file);
         try {
             return f == null ? null : f.toURI().toURL().toExternalForm();
