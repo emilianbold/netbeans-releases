@@ -108,12 +108,18 @@ public class ProgressTransferListener implements TransferListener {
         if (contribRef.get() == null) {
             return;
         }
-        countRef.set((int)Math.min((long)Integer.MAX_VALUE, (long)countRef.get() + i));
+        long cnt = (long)countRef.get();
+        if (i > 0) {
+            cnt = cnt + i;
+        }
+        cnt = Math.min((long)Integer.MAX_VALUE, cnt);
         if (lengthRef.get() < 0) {
             contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferring")); 
         } else {
-            contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferred", countRef.get()), countRef.get()); 
+            cnt = Math.min(cnt, (long)lengthRef.get());
+            contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferred", cnt), (int)cnt);
         }
+        countRef.set((int)cnt);
     }
     
     public void transferCompleted(TransferEvent transferEvent) {
