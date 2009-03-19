@@ -9,6 +9,17 @@
     <propertyfile file="../jruby/nbproject/project.properties"/>
     -->
 
+    <target name="jruby.distro.init">
+        <uptodate property="jruby.distro.build.uptodate" targetfile="${cluster}/jruby-${jruby_src_version}">
+            <srcfiles dir="${src.dir}" includes="**/*"/>
+            <srcfiles dir="external" includes="**/*"/>
+            <srcfiles dir="../o.jruby/external">
+                <include name="jruby-src-${jruby_src_version}.zip"/>
+            </srcfiles>
+            <srcfiles dir="unpatched_files" includes="**/*"/>
+        </uptodate>
+    </target>
+
     <target name="files-init" depends="projectized-common.files-init">
         <!-- Override module.files definition performed by parent, used for NBMs etc. -->
         <patternset id="module.files" includes="${release.files},${extra.module.files}">
@@ -20,7 +31,9 @@
             <include name="ant/nblib/${code.name.base.dashes}.jar"/>
             <!-- JRuby+Rails stuff -->
             <include name="jruby-${jruby_src_version}/**"/>
+            <!-- preindexing not supported in Parsing API, so just delete the files
             <exclude name="jruby-${jruby_src_version}/**/netbeans-index-*.zip"/>
+            -->
         </patternset>
     </target>    
 
@@ -47,13 +60,13 @@
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/rake-0.8.3.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-base-0.10.3-java.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-ide-0.4.4.gem"/>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbcpostgresql-adapter-0.9.gem"/>
+        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbcpostgresql-adapter-0.9.1.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/jdbc-postgres-8.2.gem"/>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbcmysql-adapter-0.9.gem"/>
+        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbcmysql-adapter-0.9.1.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/jdbc-mysql-5.0.4.gem"/>
-        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbc-adapter-0.9.gem"/>
+        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbc-adapter-0.9.1.gem"/>
         <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rspec-1.1.4.zip"/>
-        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rails-gems-2.1.0.zip"/>
+        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rails-gems-2.3.2.zip"/>
         <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rcov-0.8.1.5.0-java.zip"/>
         <!-- Run dist-bin target in JRuby's own build.xml file -->
         <ant dir="${unpatched_source}/jruby-${jruby_src_version}" target="dist-bin" inheritall="false" inheritrefs="false"/>
@@ -61,7 +74,7 @@
         <untar compression="gzip" dest="${cluster}" src="${unpatched_source}/jruby-${jruby_src_version}/jruby-bin-${jruby_src_version}.tar.gz" />
     </target>
 
-    <target name="release" depends="init">
+    <target name="release" depends="init,jruby.distro.init" unless="jruby.distro.build.uptodate">
         <property name="jruby_dir" location="${cluster}/jruby-${jruby_src_version}"/>
     
         <!-- Build JRuby from source (using its own build files -->
