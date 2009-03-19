@@ -53,7 +53,6 @@ import javax.swing.JRadioButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
