@@ -256,8 +256,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public final CsmNamespace findNamespace(CharSequence qualifiedName, boolean findInLibraries) {
         CsmNamespace result = findNamespace(qualifiedName);
         if (result == null && findInLibraries) {
-            for (Iterator it = getLibraries().iterator(); it.hasNext();) {
-                CsmProject lib = (CsmProject) it.next();
+            for (Iterator<CsmProject> it = getLibraries().iterator(); it.hasNext();) {
+                CsmProject lib = it.next();
                 result = lib.findNamespace(qualifiedName);
                 if (result != null) {
                     break;
@@ -309,8 +309,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public final CsmClassifier findClassifier(CharSequence qualifiedName, boolean findInLibraries) {
         CsmClassifier result = findClassifier(qualifiedName);
         if (result == null && findInLibraries) {
-            for (Iterator it = getLibraries().iterator(); it.hasNext();) {
-                CsmProject lib = (CsmProject) it.next();
+            for (Iterator<CsmProject> it = getLibraries().iterator(); it.hasNext();) {
+                CsmProject lib = it.next();
                 result = lib.findClassifier(qualifiedName);
                 if (result != null) {
                     break;
@@ -1101,7 +1101,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     public final void debugInvalidateFiles() {
         getFileContainer().debugClearState();
-        for (Iterator it = getLibraries().iterator(); it.hasNext();) {
+        for (Iterator<CsmProject> it = getLibraries().iterator(); it.hasNext();) {
             ProjectBase lib = (ProjectBase) it.next();
             lib.debugInvalidateFiles();
         }
@@ -2503,7 +2503,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     /**
      * for tests only
      */
-    public static List testGetRestoredFiles() {
+    public static List<String> testGetRestoredFiles() {
         return testRestoredFiles;
     }
     private static List<String> testRestoredFiles = null;
