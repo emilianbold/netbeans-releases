@@ -186,7 +186,7 @@ class FileMapStorage implements Storage {
      * Fetch a getWriteBuffer of a specified size to use for appending new data to the
      * end of the file.
      */
-    public synchronized ByteBuffer getWriteBuffer (int size) throws IOException {
+    public synchronized ByteBuffer getWriteBuffer (int size) {
         if (master.capacity() - master.position() < size) {
             int newSize = Math.max (BASE_BUFFER_SIZE * 2, 
                 size + BASE_BUFFER_SIZE);

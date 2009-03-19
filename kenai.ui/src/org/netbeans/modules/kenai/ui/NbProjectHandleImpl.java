@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,29 +34,68 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.remote.mapper;
 
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+package org.netbeans.modules.kenai.ui;
+
+import java.io.IOException;
+import java.net.URL;
+import javax.swing.Icon;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
+import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
- *
- * @author Sergey Grinev
+ * Handle representing netbeans project in kenai dashboard
+ * @author Jan Becicka
  */
-public class HostMappingProviderLinux extends HostMappingProviderUnixAbstract {
+public class NbProjectHandleImpl extends NbProjectHandle{
 
-    public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
-        return hostPlatform.isLinux() && otherPlatform.isUnix();
+    Icon icon;
+    String displayName;
+    URL url;
+
+    NbProjectHandleImpl(Project p) throws IOException {
+        displayName = ProjectUtils.getInformation(p).getDisplayName();
+        icon = ProjectUtils.getInformation(p).getIcon();
+            url = p.getProjectDirectory().getURL();
+    }
+
+    NbProjectHandleImpl(UnloadedProjectInformation i) {
+        displayName = i.getDisplayName();
+        icon = i.getIcon();
+        url = i.getURL();
     }
 
     @Override
-    protected String getShareCommand() {
-        return "cat /etc/exports"; // NOI18N
+    public String getDisplayName() {
+        return displayName;
     }
 
     @Override
-    protected String fetchPath(String[] values) {
-        return values.length > 0 ? values[0] : null;
+    public Icon getIcon() {
+        return icon;
     }
+
+    /**
+     * Getter fot NB Project
+     * @return
+     */
+    public Project getProject() {
+        try {
+            Project project = ProjectManager.getDefault().findProject(URLMapper.findFileObject(url));
+            return project;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
 }

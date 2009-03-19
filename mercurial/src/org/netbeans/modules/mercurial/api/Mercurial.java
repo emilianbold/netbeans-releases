@@ -42,12 +42,15 @@ package org.netbeans.modules.mercurial.api;
 import java.awt.EventQueue;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.log.SearchHistoryAction;
-import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -111,6 +114,24 @@ public class Mercurial {
                                  null,
                                  pullUrl,
                                  pushUrl).waitFinished();
+
+        try {
+            storeWorkingDir(new URL(repositoryUrl), targetDir.toURI().toURL());
+        } catch (Exception e) {
+            Logger.getLogger(Mercurial.class.getName()).log(Level.FINE, "Cannot store mercurial workdir preferences", e);
+        }
+    }
+    
+    private static final String WORKINGDIR_KEY_PREFIX = "working.dir."; //NOI18N
+
+    /**
+     * Stores working directory for specified remote root
+     * into NetBeans preferences.
+     * These are later used in kenai.ui module
+     */
+    private static void storeWorkingDir(URL remoteUrl, URL localFolder) {
+        Preferences prf = NbPreferences.forModule(Mercurial.class);
+        prf.put(WORKINGDIR_KEY_PREFIX + remoteUrl, localFolder.toString());
     }
 
     /**

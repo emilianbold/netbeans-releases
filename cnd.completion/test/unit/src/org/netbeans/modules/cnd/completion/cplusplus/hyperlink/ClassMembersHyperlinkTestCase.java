@@ -787,6 +787,16 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz154792.cc", 10, 32, "iz154792.cc", 5, 9);
     }
 
+    public void testIZ151765() throws Exception {
+        // IZ#151765 : Unresolved shifted pointers
+        performTest("iz151765.cc", 11, 12, "iz151765.cc", 3, 5);
+    }
+
+    public void testIZ160637() throws Exception {
+        // IZ#160637 : space between destructor and parens makes destructor unresolved
+        performTest("iz160637.cc", 9, 25, "iz160637.cc", 5, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
