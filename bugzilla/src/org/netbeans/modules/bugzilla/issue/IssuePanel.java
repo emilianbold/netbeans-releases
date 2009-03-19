@@ -60,11 +60,16 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -181,7 +186,7 @@ public class IssuePanel extends javax.swing.JPanel {
         attachmentsPanel.setVisible(!isNew);
         refreshButton.setVisible(!isNew);
         cancelButton.setVisible(!isNew);
-        if (isNew) {
+        if (isNew && force) {
             // Preselect the first product
             productCombo.setSelectedIndex(0);
             initStatusCombo("NEW"); // NOI18N
@@ -239,6 +244,9 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private String reloadField(boolean force, JComponent component, BugzillaIssue.IssueField field) {
         String currentValue = null;
+        if (issue.getTaskData().isNew()) {
+            force = true;
+        }
         if (!force) {
             if (component instanceof JComboBox) {
                 currentValue  = ((JComboBox)component).getSelectedItem().toString();
@@ -926,6 +934,17 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         targetMilestoneLabel.setVisible(usingTargetMilestones);
         targetMilestoneCombo.setVisible(usingTargetMilestones);
+        TaskData data = issue.getTaskData();
+        if (data.isNew()) {
+            issue.setFieldValue(BugzillaIssue.IssueField.PRODUCT, product);
+            BugzillaRepositoryConnector connector = Bugzilla.getInstance().getRepositoryConnector();
+            try {
+                connector.getTaskDataHandler().initializeTaskData(issue.getRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
+                reloadForm(false);
+            } catch (CoreException cex) {
+                cex.printStackTrace();
+            }
+        }
     }//GEN-LAST:event_productComboActionPerformed
 
     private void statusComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statusComboActionPerformed
