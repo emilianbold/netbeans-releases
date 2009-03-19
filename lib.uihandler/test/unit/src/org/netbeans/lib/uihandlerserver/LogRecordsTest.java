@@ -340,7 +340,7 @@ public class LogRecordsTest extends NbTestCase {
         }
         H h = new H();
         
-        CharSequence log = Log.enable("", Level.INFO);
+        CharSequence log = Log.enable("", Level.FINEST);
         LogRecords.scan(new ByteArrayInputStream(os.toByteArray()), h);
 
         assertEquals("One record", 1, h.cnt);
