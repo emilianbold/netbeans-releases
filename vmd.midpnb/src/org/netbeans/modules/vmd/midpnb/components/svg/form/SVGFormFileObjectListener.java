@@ -146,9 +146,6 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
             return;
         }
 
-        //Updating Screen Designer
-        updateScreenDesigner(svgForm);
-        
         InputStream is = null;
         try {
             if (fo.isValid()) {
@@ -161,6 +158,9 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
             return;
         }
         
+        //Updating Screen Designer
+        updateScreenDesigner(svgForm);
+
         Object[][] idsArray = SVGFormImageParser.getComponentsInformation(is);
 
         final Map<String, String> exisitngIDs = new HashMap<String, String>();
