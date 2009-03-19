@@ -58,6 +58,7 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
@@ -79,7 +80,7 @@ public class CSSStructureScanner implements StructureScanner {
 //
 //        ParserResult presult = presultIterator.next();
 //        final TranslatedSource source = presult.getTranslatedSource();
-        SimpleNode root = ((CSSGSFParserResult) info).root();
+        SimpleNode root = ((CssParserResult) info).root();
         final Snapshot snapshot = info.getSnapshot();
 
         if (root == null) {
@@ -174,7 +175,7 @@ public class CSSStructureScanner implements StructureScanner {
 //
 //        ParserResult presult = presultIterator.next();
 //        final TranslatedSource source = presult.getTranslatedSource();
-        SimpleNode root = ((CSSGSFParserResult) info).root();
+        SimpleNode root = ((CssParserResult) info).root();
         final Snapshot snapshot = info.getSnapshot();
 
         if (root == null) {

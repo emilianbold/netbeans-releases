@@ -57,6 +57,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
+import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.openide.filesystems.FileObject;
@@ -107,25 +108,23 @@ public abstract class WsitProvider {
 
     public FileObject getConfigFilesFolder(boolean client) {
         FileObject folder = null;
-        if (client) {
-            Sources sources = ProjectUtils.getSources(project);
-            if (sources == null) return null;
-            SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
 
-            if ((sourceGroups != null) && (sourceGroups.length > 0)) {
-                folder = sourceGroups[0].getRootFolder();
-                if (folder != null) {
-                    folder = folder.getFileObject(CLIENT_CFG_FOLDER);
-                }
-                if ((folder == null) || (!folder.isValid())) {
-                    try {
-                        folder = sourceGroups[0].getRootFolder().createFolder(CLIENT_CFG_FOLDER);
-                    } catch (IOException ex) {
-                        logger.log(Level.SEVERE, null, ex);
-                    }
+        Sources sources = ProjectUtils.getSources(project);
+        if (sources == null) return null;
+        SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+
+        if ((sourceGroups != null) && (sourceGroups.length > 0)) {
+            folder = sourceGroups[0].getRootFolder();
+            if (folder != null) {
+                folder = folder.getFileObject(CLIENT_CFG_FOLDER);
+            }
+            if ((folder == null) || (!folder.isValid())) {
+                try {
+                    folder = sourceGroups[0].getRootFolder().createFolder(CLIENT_CFG_FOLDER);
+                } catch (IOException ex) {
+                    logger.log(Level.SEVERE, null, ex);
                 }
             }
-
         }
         return folder;
     }
@@ -149,6 +148,14 @@ public abstract class WsitProvider {
             }
         }
         return false;
+    }
+
+    public void createUser() {
+        try {
+            project.getProjectDirectory().getFileObject("nbproject").createData("wsit.createuser");
+        } catch (IOException ex) {
+            logger.log(Level.FINE, null, ex);
+        }
     }
 
 }

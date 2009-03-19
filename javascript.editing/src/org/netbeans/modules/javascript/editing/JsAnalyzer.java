@@ -326,7 +326,7 @@ public class JsAnalyzer implements StructureScanner {
                                         break;
                                     }
 
-                                    if (!Character.isLowerCase(propertyNode.getString().charAt(0))) {
+                                    if (propertyNode == null || !Character.isLowerCase(propertyNode.getString().charAt(0))) {
                                         break;
                                     }
 

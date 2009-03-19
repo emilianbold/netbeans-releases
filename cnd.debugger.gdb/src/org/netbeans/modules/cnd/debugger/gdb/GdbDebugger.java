@@ -445,19 +445,24 @@ public class GdbDebugger implements PropertyChangeListener {
         });
     }
 
-    private final void initGdbVersion() {
-        String message = gdb.gdb_version().getResponse();
+    private final void initGdbVersion() throws GdbErrorException {
+        CommandBuffer res = gdb.gdb_version();
+        if (res.isOK()) {
+            String message = res.getResponse();
 
-        if (startupTimer != null) {
-            // Cancel the startup timer - we've got our first response from gdb
-            startupTimer.cancel();
-            startupTimer = null;
-        }
+            if (startupTimer != null) {
+                // Cancel the startup timer - we've got our first response from gdb
+                startupTimer.cancel();
+                startupTimer = null;
+            }
 
-        gdbVersion = parseGdbVersionString(message.substring(8));
-        versionPeculiarity = GdbVersionPeculiarity.create(gdbVersion, platform);
-        if (message.contains("cygwin")) { // NOI18N
-            cygwin = true;
+            gdbVersion = parseGdbVersionString(message.substring(8));
+            versionPeculiarity = GdbVersionPeculiarity.create(gdbVersion, platform);
+            if (message.contains("cygwin")) { // NOI18N
+                cygwin = true;
+            }
+        } else {
+            throw new GdbErrorException("gdb version check failed, exiting"); //NOI18N
         }
     }
 
@@ -465,7 +470,7 @@ public class GdbDebugger implements PropertyChangeListener {
         return gdbVersion;
     }
 
-    public void testSuiteInit(GdbProxy gdb) {
+    public void testSuiteInit(GdbProxy gdb) throws GdbErrorException {
         if (!isUnitTest()) {
             throw new IllegalStateException(NbBundle.getMessage(GdbDebugger.class, "Cannot call testSuiteInit outside of a testsuite!"));
         }

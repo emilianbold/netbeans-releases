@@ -413,7 +413,7 @@ public final class PPCompletionProvider implements CompletionProvider {
             try {
                 final BaseDocument doc = (BaseDocument) component.getDocument();
                 final int lineNumber = Utilities.getLineOffset(doc, component.getCaret().getDot());
-                final ArrayList<PPLine> lineList = (ArrayList) doc.getProperty(J2MEEditorDocument.PREPROCESSOR_LINE_LIST);
+                final ArrayList<PPLine> lineList = (ArrayList) doc.getProperty(DocumentPreprocessor.PREPROCESSOR_LINE_LIST);
                 if (lineList != null) {
                     PPLine myPpLine = null;
                     if (lineNumber >= 0 && lineNumber < lineList.size()) {

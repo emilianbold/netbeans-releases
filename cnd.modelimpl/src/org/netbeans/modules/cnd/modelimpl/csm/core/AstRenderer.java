@@ -120,7 +120,8 @@ public class AstRenderer {
                 //nobreak!
                 case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
                 case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
-                case CPPTokenTypes.CSM_USER_TYPE_CAST:
+                case CPPTokenTypes.CSM_USER_TYPE_CAST_DECLARATION:
+                case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION:
                     try {
                         FunctionImpl fi = new FunctionImpl(token, file, currentNamespace, !isRenderingLocalContext(), !isRenderingLocalContext());
                         container.addDeclaration(fi);
@@ -151,6 +152,7 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
                 case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
                 case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
+                case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION:
                     try {
                         if (isMemberDefinition(token)) {
                             container.addDeclaration(new FunctionDefinitionImpl(token, file, null, !isRenderingLocalContext(), !isRenderingLocalContext()));

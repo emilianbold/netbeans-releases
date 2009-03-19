@@ -103,13 +103,7 @@ final class ToolsConfiguration {
         }
 
         for (FileObject child : children) {
-            Enumeration<String> attrs = child.getAttributes();
-            if (!attrs.hasMoreElements()){
-                System.out.println("$$$$$$$$$$$$$$$$$$$$ NO attrs");
-            }
-            for (String attrName = attrs.nextElement();attrs.hasMoreElements();){
-                System.out.println("n@@@@@@@@@@@@@@@@@@@@@@@2ame="  +attrName + " value=" + child.getAttribute(attrName));
-            }
+            Enumeration<String> attrs = child.getAttributes();          
             DataObject dobj = null;
             try {
                 dobj = DataObject.find(child);

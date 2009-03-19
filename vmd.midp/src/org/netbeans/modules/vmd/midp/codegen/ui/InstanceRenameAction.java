@@ -100,7 +100,10 @@ import org.openide.windows.TopComponent;
  *
  * @author ads
  */
-public final class InstanceRenameAction extends SystemAction implements ActionContext {
+public class InstanceRenameAction extends SystemAction implements ActionContext {
+
+    InstanceRenameAction(){
+    }
 
     public static final String DISPLAY_NAME = NbBundle.getMessage(
             InstanceRenameAction.class, "NAME_RenameAction"); //NOI18N
@@ -275,8 +278,12 @@ public final class InstanceRenameAction extends SystemAction implements ActionCo
     }
 
     public void setComponent(DesignComponent component) {
-        myComponent = new WeakReference<DesignComponent>(component);
+        setActionComponent(component);
         SystemAction.get(RenameAction.class).setComponent(component);
+    }
+
+    protected void setActionComponent( DesignComponent component ){
+        myComponent = new WeakReference<DesignComponent>(component);
     }
 
     static String getGetterName(final DesignComponent component, 

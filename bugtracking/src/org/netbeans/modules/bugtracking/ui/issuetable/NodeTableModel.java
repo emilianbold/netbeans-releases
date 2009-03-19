@@ -59,7 +59,6 @@ import java.util.TreeMap;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import org.netbeans.modules.bugtracking.ui.issuetable.*;
 import javax.swing.table.AbstractTableModel;
 import org.openide.awt.Mnemonics;
 

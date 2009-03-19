@@ -57,7 +57,9 @@ import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
 import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
@@ -91,16 +93,6 @@ public class MavenWsitProvider extends WsitProvider {
         if ((txFO != null)) {
             return true;
         }
-//        J2eePlatform j2eePlatform = ServerUtils.getJ2eePlatform(project);
-//        if (j2eePlatform != null) {
-//            Collection<WSStack> wsStacks = (Collection<WSStack>)
-//                    j2eePlatform.getLookup().lookupAll(WSStack.class);
-//            for (WSStack stack : wsStacks) {
-//                if (stack.isFeatureSupported(JaxWs.Feature.WSIT)) {
-//                    return true;
-//                }
-//            }
-//        }
         return false;
     }
 
@@ -194,4 +186,23 @@ public class MavenWsitProvider extends WsitProvider {
         return false;
     }
 
+    @Override
+    public FileObject getConfigFilesFolder(boolean client) {
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            J2eeModule j2eeModule = provider.getJ2eeModule();
+            if (j2eeModule != null) {
+                Object type = j2eeModule.getModuleType();
+                if (J2eeModule.WAR.equals(type)) {
+                    return project.getProjectDirectory().getFileObject("src/main/webapp/WEB-INF");
+                }
+            }
+        }
+        return project.getProjectDirectory().getFileObject("src/main/resources/META-INF");
+    }
+
+    @Override
+    public void createUser() {
+        // TODO - unsupported yet in Maven projects
+    }
 }

@@ -37,15 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * HtmlPanel.java
- *
- * Created on Oct 27, 2008, 11:48:29 AM
- */
-
 package org.netbeans.modules.bugzilla.commands;
-
-import org.netbeans.modules.bugzilla.*;
 
 /**
  *

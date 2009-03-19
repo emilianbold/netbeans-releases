@@ -281,18 +281,7 @@ public class RemoteServerSetup {
      * @return The reason, possibly localized and more readable
      */
     public String getReason() {
-        String msg;
-        
-        if (reason.contains("UnknownHostException")) { // NOI18N
-            int pos = reason.lastIndexOf(' ');
-            String host = reason.substring(pos + 1);
-            msg = NbBundle.getMessage(RemoteServerSetup.class, "REASON_UnknownHost", host);
-        } else if (reason.equals("Auth failed")) { // NOI18N
-            msg = NbBundle.getMessage(RemoteServerSetup.class, "REASON_AuthFailed");
-        } else {
-            msg = reason;
-        }
-        return msg;
+        return reason;
     }
     
     protected boolean isCancelled() {

@@ -304,7 +304,38 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             collectors.clear();
         }
 
-
+        //if we have IDP which are collectors add them into the list of collectors
+for (DLightTool tool : validTools) {
+            // Try to subscribe every IndicatorDataProvider to every Indicator
+            //there can be the situation when IndicatorDataProvider is collector
+            //and not attacheble
+            List<IndicatorDataProvider> idps = context.getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
+            if (idps != null) {
+                for (IndicatorDataProvider idp : idps) {
+                    if (idp.getValidationStatus().isValid()) {
+                        if (idp instanceof DLightTarget.ExecutionEnvVariablesProvider) {
+                            context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) idp);
+                        }
+                        if (idp instanceof DataCollector) {
+                            if (!collectors.contains(idp)){
+                                collectors.add((DataCollector)idp);
+                            }
+                            if (notAttachableDataCollector == null && !((DataCollector) idp).isAttachable()) {
+                                notAttachableDataCollector = ((DataCollector) idp);
+                            }
+                        }
+                        List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
+                        for (Indicator i : indicators) {
+                            boolean wasSubscribed = idp.subscribe(i);
+                            if (wasSubscribed) {
+                                target.addTargetListener(idp);
+                                log.info("I have subscribed indicator " + i + " to indicatorDataProvider " + idp);
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         for (DataCollector toolCollector : collectors) {
             DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(toolCollector);
@@ -330,34 +361,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             target.addTargetListener(toolCollector);
         }
 
-        for (DLightTool tool : validTools) {
-            // Try to subscribe every IndicatorDataProvider to every Indicator
-            //there can be the situation when IndicatorDataProvider is collector
-            //and not attacheble
-            List<IndicatorDataProvider> idps = context.getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
-            if (idps != null) {
-                for (IndicatorDataProvider idp : idps) {
-                    if (idp.getValidationStatus().isValid()) {
-                        if (idp instanceof DLightTarget.ExecutionEnvVariablesProvider) {
-                            context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) idp);
-                        }
-                        if (idp instanceof DataCollector) {
-                            if (notAttachableDataCollector == null && !((DataCollector) idp).isAttachable()) {
-                                notAttachableDataCollector = ((DataCollector) idp);
-                            }
-                        }
-                        List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
-                        for (Indicator i : indicators) {
-                            boolean wasSubscribed = idp.subscribe(i);
-                            if (wasSubscribed) {
-                                target.addTargetListener(idp);
-                                log.info("I have subscribed indicator " + i + " to indicatorDataProvider " + idp);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        
 
         //and now if we have collectors which cannot be attached let's substitute target
         //the question is is it possible in case target is the whole system: WebTierTarget
