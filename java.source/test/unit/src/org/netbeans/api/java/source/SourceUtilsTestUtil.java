@@ -94,7 +94,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
     private static SourceUtilsTestUtil DEFAULT_LOOKUP = null;
     
     public SourceUtilsTestUtil() {
-        Assert.assertNull(DEFAULT_LOOKUP);
+//        Assert.assertNull(DEFAULT_LOOKUP);
         DEFAULT_LOOKUP = this;
     }
     
