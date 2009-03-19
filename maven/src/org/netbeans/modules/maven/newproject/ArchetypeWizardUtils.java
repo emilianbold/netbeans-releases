@@ -340,7 +340,7 @@ public class ArchetypeWizardUtils {
                 NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
                 if (nbprj != null) { //#147006 how can this happen?
                     // maybe when the archetype contains netbeans specific project files?
-                    prj.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
+                    prj.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource();
                 }
             }
         }

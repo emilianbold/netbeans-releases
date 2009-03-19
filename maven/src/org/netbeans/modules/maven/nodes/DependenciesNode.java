@@ -358,6 +358,11 @@ public class DependenciesNode extends AbstractNode {
                 ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
                        pnl.getGroupId(), pnl.getArtifactId(), version,
                        null, pnl.getScope(), null,false);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource();
+                    }
+                });
             }
         }
     }
@@ -417,11 +422,11 @@ public class DependenciesNode extends AbstractNode {
             setEnabled(false);
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
+                    project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource();
                 }
             });
         }
-    }  
+    }
     
     private static boolean showNonClasspath() {
         Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
