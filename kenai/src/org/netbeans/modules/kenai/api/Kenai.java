@@ -93,7 +93,11 @@ public final class Kenai {
 
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
-    public static synchronized Kenai getDefault() {
+    /**
+     * Singleton instance
+     * @return
+     */
+     public static synchronized Kenai getDefault() {
         if (instance == null) {
             try {
                 Kenai.url = new URL(System.getProperty("kenai.com.url", "https://kenai.com"));
@@ -312,7 +316,7 @@ public final class Kenai {
      * @return
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    KenaiProjectFeature createProjectFeature(
+    KenaiFeature createProjectFeature(
             String projectName,
             String name,
             String display_name,
@@ -334,7 +338,7 @@ public final class Kenai {
                 repository_url,
                 browse_url,
                 service);
-        return new KenaiProjectFeature(prj);
+        return new KenaiFeature(prj);
     }
 
     String checkName(String name) throws KenaiException {

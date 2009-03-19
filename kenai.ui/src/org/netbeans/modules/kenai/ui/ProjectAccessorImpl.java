@@ -48,9 +48,9 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiProjectFeature;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.ui.spi.LoginHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
@@ -121,7 +121,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
     @Override
     public ActionListener getOpenWikiAction(ProjectHandle project) {
-        KenaiProjectFeature[] wiki = ((ProjectHandleImpl)project).getKenaiProject().getFeatures(KenaiFeature.WIKI);
+        KenaiFeature[] wiki = ((ProjectHandleImpl)project).getKenaiProject().getFeatures(Type.WIKI);
         if (wiki.length==1) {
             return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
         }
@@ -130,7 +130,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
     @Override
     public ActionListener getOpenDownloadsAction(ProjectHandle project) {
-        KenaiProjectFeature[] wiki = ((ProjectHandleImpl)project).getKenaiProject().getFeatures(KenaiFeature.DOWNLOADS);
+        KenaiFeature[] wiki = ((ProjectHandleImpl)project).getKenaiProject().getFeatures(Type.DOWNLOADS);
         if (wiki.length==1) {
             return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
         }

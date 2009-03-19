@@ -65,12 +65,45 @@ public final class KenaiService {
         return sli.display_name;
     }
 
-    public KenaiFeature getType() {
-        return KenaiFeature.forId(sli.type);
+    public Type getType() {
+        return Type.forId(sli.type);
     }
 
     @Override
     public String toString() {
         return "KenaiService " + getName();
+    }
+
+    public static enum Type {
+
+        FORUM("forum"),
+        ISSUES("issues"),
+        LISTS("lists"),
+        SOURCE("scm"),
+        WIKI("wiki"),
+        CHAT("chat"),
+        DOWNLOADS("downloads"),
+        UNKNOWN("unknown");
+        private String id;
+
+        Type(String id) {
+            this.id = id;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public static Type forId(String id) {
+            if (id.equals(SOURCE.id)) {
+                return SOURCE;
+            } else {
+                try {
+                    return Type.valueOf(id.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return UNKNOWN;
+                }
+            }
+        }
     }
 }
