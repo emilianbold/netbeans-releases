@@ -1138,7 +1138,8 @@ public class J2MEProjectGenerator {
             this.projectLocationFile = projectLocationFile;
             this.configurations = configurations;
             //hotfix for issue 147403 - get this out of the event thread
-            ((J2MEProject) project).getRequestProcessor().post(this);
+            //((J2MEProject) project).getRequestProcessor().post(this);
+            run();
         }
 
         public void run() {

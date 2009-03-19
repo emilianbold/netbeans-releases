@@ -53,7 +53,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;

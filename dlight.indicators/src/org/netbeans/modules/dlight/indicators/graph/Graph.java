@@ -63,7 +63,6 @@ public class Graph extends JComponent {
         addAncestorListener(new AncestorListener() {
             public void ancestorAdded(AncestorEvent event) {
                 graph.setSize(getWidth(), getHeight());
-                graph.setBackgroundColor(getBackground());
             }
             public void ancestorRemoved(AncestorEvent event) {}
             public void ancestorMoved(AncestorEvent event) {}

@@ -42,47 +42,88 @@
  *
  * Created on Mar 17, 2009, 11:41:42 AM
  */
-
 package org.netbeans.modules.cnd.gizmo;
 
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
+import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author mt154047
  */
-public class GizmoOptionsPanel extends javax.swing.JPanel{
+public class GizmoOptionsPanel extends javax.swing.JPanel implements ExplorerManager.Provider {
 
+    private final ExplorerManager manager = new ExplorerManager();
     private final GizmoProjectOptions options;
+
     /** Creates new form GizmoOptionsPanel */
     public GizmoOptionsPanel(GizmoProjectOptions options) {
         initComponents();
         this.options = options;
+        manager.setRootContext(new AbstractNode(new DLightConfigurationChildren(options.getSelectedTools())));
         dataCollectorName.setModel(new DefaultComboBoxModel(new String[]{"SunStudio", "DTrace"}));//NOI18N
         dataCollectorName.setSelectedItem(options.getDataCollectorName());
-        jCheckBox1.setSelected(options.getDataCollectorEnabled());
+        useCollectorsCheckBox.setSelected(options.getDataCollectorEnabled());
         dataCollectorName.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 GizmoOptionsPanel.this.options.setDataCollectorName("" + dataCollectorName.getSelectedItem());//NOI18N
-                if ("DTrace".equals("" + dataCollectorName.getSelectedItem())){//NOI18N
+                if ("DTrace".equals("" + dataCollectorName.getSelectedItem())) {//NOI18N
                     GizmoOptionsPanel.this.options.setUserInteractionRequiredActionsEnabled(true);
-                }else{
+                } else {
                     GizmoOptionsPanel.this.options.setUserInteractionRequiredActionsEnabled(false);
                 }
             }
         });
 
-        jCheckBox1.addChangeListener(new ChangeListener() {
+        useCollectorsCheckBox.addActionListener(new ActionListener() {
 
-            public void stateChanged(ChangeEvent e) {
-                GizmoOptionsPanel.this.options.setDataCollectorEnabled(jCheckBox1.isSelected());
+            public void actionPerformed(ActionEvent e) {
+                GizmoOptionsPanel.this.options.setDataCollectorEnabled(useCollectorsCheckBox.isSelected());
             }
         });
+        //fill in toolsPanel with tools Names
+        //if there is no tools in options we should get them from the GizmoConfigurationOptions
 
+        btnRemove.setEnabled(false);
+        btnAdd.setEnabled(false);
+        btnUp.setEnabled(false);
+        btnDown.setEnabled(false);
+        btnRemove.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                //throw new UnsupportedOperationException("Not supported yet.");
+                //remove from the list
+                Node[] nodes  = manager.getSelectedNodes();
+                if (nodes == null || nodes.length == 0){
+                    return;
+                }
+                manager.getRootContext().getChildren().remove(nodes);
+                //and now
+
+                Node[] allNodes = manager.getRootContext().getChildren().getNodes();
+                String[] result = new String[allNodes.length];
+                for (int i = 0; i < result.length; i++){
+                    result[i] = allNodes[i].getDisplayName();
+                }
+                GizmoOptionsPanel.this.options.setSelectedTools(result);
+                manager.setRootContext(new AbstractNode(new DLightConfigurationChildren(GizmoOptionsPanel.this.options.getSelectedTools())));
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -95,52 +136,166 @@ public class GizmoOptionsPanel extends javax.swing.JPanel{
     private void initComponents() {
 
         dataCollectorName = new javax.swing.JComboBox();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jCheckBox1 = new javax.swing.JCheckBox();
+        useCollectorsCheckBox = new javax.swing.JCheckBox();
+        btnAdd = new javax.swing.JButton();
+        btnRemove = new javax.swing.JButton();
+        btnUp = new javax.swing.JButton();
+        btnDown = new javax.swing.JButton();
+        toolsListView = new org.openide.explorer.view.ListView();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(GizmoOptionsPanel.class, "GizmoOptionsPanel.jLabel1.text")); // NOI18N
+        useCollectorsCheckBox.setText(org.openide.util.NbBundle.getMessage(GizmoOptionsPanel.class, "GizmoOptionsPanel.useCollectorsCheckBox.text")); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(GizmoOptionsPanel.class, "GizmoOptionsPanel.jLabel2.text")); // NOI18N
+        btnAdd.setText(org.openide.util.NbBundle.getMessage(GizmoOptionsPanel.class, "GizmoOptionsPanel.btnAdd.text")); // NOI18N
 
-        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(GizmoOptionsPanel.class, "GizmoOptionsPanel.jCheckBox1.text")); // NOI18N
+        btnRemove.setText(org.openide.util.NbBundle.getMessage(GizmoOptionsPanel.class, "GizmoOptionsPanel.btnRemove.text")); // NOI18N
+
+        btnUp.setText(org.openide.util.NbBundle.getMessage(GizmoOptionsPanel.class, "GizmoOptionsPanel.btnUp.text")); // NOI18N
+
+        btnDown.setText(org.openide.util.NbBundle.getMessage(GizmoOptionsPanel.class, "GizmoOptionsPanel.btnDown.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
-                    .add(jLabel2))
-                .add(40, 40, 40)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jCheckBox1)
-                    .add(dataCollectorName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(90, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(toolsListView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(btnRemove, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(btnUp, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(btnDown, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(btnAdd, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .add(layout.createSequentialGroup()
+                        .add(useCollectorsCheckBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(dataCollectorName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(48, 48, 48)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(jCheckBox1))
-                .add(27, 27, 27)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jLabel1)
-                    .add(dataCollectorName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(181, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(btnAdd)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(btnRemove)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(btnUp)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(btnDown))
+                    .add(toolsListView, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(dataCollectorName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(useCollectorsCheckBox))
+                .addContainerGap(131, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAdd;
+    private javax.swing.JButton btnDown;
+    private javax.swing.JButton btnRemove;
+    private javax.swing.JButton btnUp;
     private javax.swing.JComboBox dataCollectorName;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
+    private org.openide.explorer.view.ListView toolsListView;
+    private javax.swing.JCheckBox useCollectorsCheckBox;
     // End of variables declaration//GEN-END:variables
 
-   
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
+
+    class DLightConfigurationChildren extends Children.Keys {
+        private final  DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
+        private List<String> names;
+
+        public DLightConfigurationChildren(String[] toolNames) {
+            //if it is null then use DLightConfiguration
+            if (toolNames != null){
+                names = new ArrayList<String>();
+                names.addAll(Arrays.asList(toolNames));
+                return;
+            }
+            List<DLightTool> list = gizmoConfiguration.getToolsSet();
+            names = new ArrayList<String>();
+            for (int i = 0, size = list.size(); i < size; i ++){
+                names.add(list.get(i).getName());
+            }
+            setKeys(names);
+        }
+
+        @Override
+        protected Node[] createNodes(Object arg0) {
+            return new Node[]{new DLightToolNode(gizmoConfiguration.getToolByName((String)arg0))};
+
+        }
+
+        @Override
+        public boolean remove(Node[] nodes) {
+            if (nodes == null || nodes.length == 0){
+                return false;
+            }
+            boolean hasBeenRemoved = false;
+            for (int i = 0; i < nodes.length; i++){
+                String nodeName = nodes[i].getDisplayName();
+                if (names.contains(nodeName)){
+                    names.remove(nodeName);
+                    hasBeenRemoved = true;
+                }
+            }
+            if (hasBeenRemoved){
+                setKeys(names);
+            }
+            return hasBeenRemoved;
+            
+        }
+
+
+
+
+        @Override
+        protected void addNotify() {
+//    List<DTraceletProfile> keys = new ArrayList<DTraceletProfile>(list);
+            setKeys(names);
+        }
+    }
+
+    class DLightToolNode extends AbstractNode{
+
+        private final DLightTool dlightTool ;
+
+        DLightToolNode(DLightTool tool){
+            super(Children.LEAF);
+            this.dlightTool = tool;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return dlightTool.getName();
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            return "<h3>" + getDisplayName() + "</h3>";
+        }
+
+
+
+        @Override
+        public Image getIcon(int type) {
+            if (!dlightTool.hasIcon()){
+                return super.getIcon(type);
+            }
+            return ImageUtilities.loadImage(dlightTool.getIconPath());
+        }
+
+
+
+
+    }
+
 }

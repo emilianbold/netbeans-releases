@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIComponent.ComponentType;
@@ -121,6 +122,8 @@ public abstract class ABEAbstractNode extends AbstractNode
     boolean uiNode = false;
     private InstanceContent icont = new InstanceContent();
     private boolean readOnly = false;
+
+    private PropertyChangeListener awtPCL = new XAMUtils.AwtPropertyChangeListener(this);
     
     /**
      * Creates a new instance of ABEAbstractNode
@@ -317,15 +320,18 @@ public abstract class ABEAbstractNode extends AbstractNode
             return;
         this.axiComponent = axiComponent;
         axiComponent.getModel().addPropertyChangeListener(
-                WeakListeners.propertyChange(this, axiComponent.getModel())
-                );
+                WeakListeners.propertyChange(awtPCL, axiComponent.getModel()));
     }
     
     public Datatype getDatatype() {
         return datatype;
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        //
+        assert SwingUtilities.isEventDispatchThread();
+        //
         if (evt.getSource() == axiComponent &&
                 evt.getPropertyName().equals(AXIContainer.PROP_NAME)) {
             Object oldValue = evt.getOldValue();

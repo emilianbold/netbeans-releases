@@ -1726,6 +1726,24 @@ abstract public class CsmCompletionQuery {
                                 if (compResolver.refresh() && compResolver.resolve(varPos, mtdName, openingSource)) {
                                     compResolver.getResult().addResulItemsToCol(mtdList);
                                 }
+                                if (!last) {
+                                    Collection<? extends CsmObject> candidates = new ArrayList<CsmObject>();
+                                    compResolver.setResolveTypes(CompletionResolver.RESOLVE_VARIABLES | CompletionResolver.RESOLVE_LOCAL_VARIABLES);
+                                    if (compResolver.refresh() && compResolver.resolve(varPos, mtdName, true)) {
+                                        compResolver.getResult().addResulItemsToCol(candidates);
+                                    }
+                                    for (CsmObject object : candidates) {
+                                        if (CsmKindUtilities.isVariable(object)) {
+                                            CsmType varType = ((CsmVariable) object).getType();
+                                            if (varType != null) {
+                                                CsmFunction funCall = CsmCompletionQuery.getOperator(varType.getClassifier(), contextFile, CsmFunction.OperatorKind.CAST);
+                                                if (funCall != null) {
+                                                    mtdList.add(funCall);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             } else {
                                 // if prev expression was resolved => get it's class
                                 if (lastType != null) {
@@ -1747,6 +1765,12 @@ abstract public class CsmCompletionQuery {
                                                     if (CsmKindUtilities.isFunctionPointerType(fldType)) {
                                                         // that was a function-type field
                                                         lastType = fldType;
+                                                    }
+                                                    if (fldType != null) {
+                                                        CsmFunction funCall = CsmCompletionQuery.getOperator(fldType.getClassifier(), contextFile, CsmFunction.OperatorKind.CAST);
+                                                        if (funCall != null) {
+                                                            lastType = funCall.getReturnType();
+                                                        }
                                                     }
                                                 }
                                             }

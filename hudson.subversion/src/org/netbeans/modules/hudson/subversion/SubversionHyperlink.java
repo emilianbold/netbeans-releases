@@ -88,6 +88,7 @@ class SubversionHyperlink implements OutputListener {
     }
 
     public void outputLineAction(OutputEvent ev) {
+        Helper.noteWillShowDiff(path);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 String repo = findRepo(module);

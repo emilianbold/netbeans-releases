@@ -71,13 +71,14 @@ import org.openide.util.RequestProcessor.Task;
  */
 public class RepositoryController extends BugtrackingController implements DocumentListener, ActionListener {
     private BugzillaRepository repository;
-    private RepositoryPanel panel = new RepositoryPanel();
+    private RepositoryPanel panel;
     private String errorMessage;
     private boolean validateError;
     private boolean populating;
 
     RepositoryController(BugzillaRepository repository) {
         this.repository = repository;
+        panel = new RepositoryPanel(this);
         panel.nameField.getDocument().addDocumentListener(this);
         panel.userField.getDocument().addDocumentListener(this);
         panel.urlField.getDocument().addDocumentListener(this);

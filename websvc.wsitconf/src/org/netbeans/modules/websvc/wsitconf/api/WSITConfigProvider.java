@@ -40,13 +40,23 @@
  */
 package org.netbeans.modules.websvc.wsitconf.api;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.undo.UndoManager;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -54,11 +64,19 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.wsitconf.*;
 import org.netbeans.modules.websvc.wsitconf.ui.client.ClientTopComponent;
 import org.netbeans.modules.websvc.wsitconf.ui.service.ServiceTopComponent;
+import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -176,5 +194,53 @@ public final class WSITConfigProvider extends Object {
         }
         return false;        
     }
-    
+
+    public WSStackVersion getHighestWSStackVersion(Project project) {
+
+        J2eePlatform platform = ServerUtils.getJ2eePlatform(project);
+
+        WSStackVersion version = null;
+        WSStack<JaxWs> wsStack = platform == null ? null : JaxWsStackProvider.getJaxWsStack(platform);
+
+        if (wsStack != null) {
+            version = wsStack.getVersion();
+        }
+        InputStream is = null;
+        BufferedReader r = null;
+        try {
+            SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(), ClassPath.COMPILE);
+            FileObject wsimportFO = classPath.findResource("com/sun/tools/ws/version.properties"); //NOI18N
+            if (wsimportFO != null && wsimportFO.isValid()) {
+                is = wsimportFO.getInputStream();
+                r = new BufferedReader(new InputStreamReader(is));
+                String ln = null;
+                String ver = null;
+                while ((ln = r.readLine()) != null) {
+                    String line = ln.trim();
+                    if (line.startsWith("major-version=")) {        //NOI18N
+                        ver = line.substring(14);break;
+                    }
+                }
+                WSStackVersion projectVersion = WSStackFactory.createWSStackVersion(ver);
+                if (projectVersion.compareTo(version) > 0) {
+                    version = projectVersion;
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            try {
+                if (r != null) r.close();
+                if (is != null) is.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        return version;
+    }
+
 }
