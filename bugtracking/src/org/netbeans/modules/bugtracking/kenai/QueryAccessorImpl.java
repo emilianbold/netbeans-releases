@@ -59,7 +59,7 @@ import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiProjectFeature;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
@@ -244,10 +244,10 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             if(project == null) {
                 return null;
             }
-            KenaiProjectFeature[] features = project.getFeatures(KenaiFeature.ISSUES);
+            KenaiFeature[] features = project.getFeatures(KenaiService.Type.ISSUES);
             String url = null;
             String issueUrl = null;
-            for (KenaiProjectFeature f : features) {
+            for (KenaiFeature f : features) {
                 if(!f.getName().equals("jira") &&
                    !f.getLocation().toString().contains(JIRA_SUBSTRING)) // XXX UGLY WORKAROUND HACK -> actually getService should return if it's bugzilla - see also issue #160505
                 {
