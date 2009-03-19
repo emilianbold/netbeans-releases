@@ -81,6 +81,7 @@ public class GoToSupportTest extends NbTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
     }
@@ -512,7 +513,7 @@ public class GoToSupportTest extends NbTestCase {
         assertTrue(wasCalled[0]);
         
         wasCalled[0] = false;
-        
+      
         performTest("package test; public class Test<T> {public Test(int x){} public void test() {int ii = 0; new Test<Object>(ii);}}", 107, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -530,7 +531,7 @@ public class GoToSupportTest extends NbTestCase {
         assertTrue(wasCalled[0]);
         
         wasCalled[0] = false;
-        
+      
         performTest("package test; public class Test<T> {public Test(int x){} public void test() {int ii = 0; new Test<Object>(ii);}}", 100, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -945,7 +946,7 @@ public class GoToSupportTest extends NbTestCase {
         source = testDir.createData("Test.java");
         
         FileObject auxiliarySource = testDir.createData("Auxiliary.java");
-        
+
         TestUtilities.copyStringToFile(source, sourceCode);
         TestUtilities.copyStringToFile(auxiliarySource, "package test; public class Auxiliary {}"); //test go to "syntetic" constructor
         
@@ -955,8 +956,9 @@ public class GoToSupportTest extends NbTestCase {
         DataObject od = DataObject.find(source);
         EditorCookie ec = od.getCookie(EditorCookie.class);
         Document doc = ec.openDocument();
-        
+
         doc.putProperty(Language.class, JavaTokenId.language());
+        doc.putProperty("mimeType", "text/x-java");
         
         if (tooltip)
             return GoToSupport.getGoToElementTooltip(doc, offset, false);
