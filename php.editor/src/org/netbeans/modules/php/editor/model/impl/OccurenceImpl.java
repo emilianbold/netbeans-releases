@@ -113,7 +113,7 @@ class OccurenceImpl implements Occurence {
                     allDeclarations = indexScope.findInterfaces(geModelElement().getName());
                     break;
                 case METHOD:
-                    allDeclarations = indexScope.findMethods((ClassScopeImpl) geModelElement().getInScope(),
+                    allDeclarations = indexScope.findMethods((TypeScopeImpl) geModelElement().getInScope(),
                             geModelElement().getName());
                     break;
                 case FIELD:

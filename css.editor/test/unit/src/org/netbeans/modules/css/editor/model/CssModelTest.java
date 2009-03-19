@@ -43,6 +43,7 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.editor.test.TestBase;
+import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -75,9 +76,10 @@ public class CssModelTest extends TestBase {
         });
 
         Result result = _result[0];
+        assertTrue(result instanceof CssParserResult);
         assertNotNull(result);
 
-        CssModel model = CssModel.create(result);
+        CssModel model = CssModel.create((CssParserResult)result);
         assertNotNull(model);
 
         List<CssRule> rules = model.rules();

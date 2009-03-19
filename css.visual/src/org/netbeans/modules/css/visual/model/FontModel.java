@@ -258,7 +258,7 @@ public class FontModel{
     
     public static class WebFontList extends DefaultListModel{
         public WebFontList(){
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             String[] webFontValues = CssProperties.getWebFontValues();
             for (int i=0; i<webFontValues.length; i++) {
                 addElement(webFontValues[i]);
@@ -268,7 +268,7 @@ public class FontModel{
     
     public static class FontFamilyList extends DefaultListModel{
         public FontFamilyList(){
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             String[] FontfamilyValues = CssProperties.getFontFamilyValues();
             for (int i=0; i<FontfamilyValues.length; i++) {
                 addElement(FontfamilyValues[i]);
@@ -278,7 +278,7 @@ public class FontModel{
     
     public static class FontFamilySetList extends DefaultListModel{
         public FontFamilySetList(){
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             String[] FontfamilySetValues = CssProperties.getFontFamilySetValues();
             for (int i=0; i<FontfamilySetValues.length; i++) {
                 addElement(FontfamilySetValues[i]);
@@ -288,7 +288,7 @@ public class FontModel{
     
     public static class FontSizeList extends DefaultListModel{
         public FontSizeList(){
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             String[] FontSizeValues = CssProperties.getFontSizeValues();
             for (int i=0; i<FontSizeValues.length; i++) {
                 addElement(FontSizeValues[i]);
@@ -308,7 +308,7 @@ public class FontModel{
     public static class FontStyleList extends DefaultComboBoxModel{
         public FontStyleList(){
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.FONT_STYLE);
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             for(int i=0; i< propValues.length; i++){
                 addElement(propValues[i]);
             }
@@ -318,7 +318,7 @@ public class FontModel{
     public static class FontWeightList extends DefaultComboBoxModel{
         public FontWeightList(){
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.FONT_WEIGHT);
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             for(int i=0; i< propValues.length; i++){
                 addElement(propValues[i]);
             }
@@ -329,7 +329,7 @@ public class FontModel{
     public static class FontVariantList extends DefaultComboBoxModel{
         public FontVariantList(){
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.FONT_VARIANT);
-            addElement(CssRuleContent.NOT_SET);
+            addElement(Utils.NOT_SET);
             for(int i=0; i< propValues.length; i++){
                 addElement(propValues[i]);
             }

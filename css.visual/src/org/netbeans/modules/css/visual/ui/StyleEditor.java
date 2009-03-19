@@ -78,7 +78,7 @@ abstract public class StyleEditor extends JPanel {
     /** Called by StyleBuilderPanel to set the UI panel property values. */
     public void setContent(CssRuleContext content) {
         this.content = content;
-        setCssPropertyValues(content.selectedRule().ruleContent());
+        setCssPropertyValues(content.selectedRuleContent());
     }
     
     protected CssRuleContext content() {

@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.css.gsf.CSSGSFParserResult;
+import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CSSParserConstants;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
@@ -52,7 +52,6 @@ import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.css.parser.Token;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.Parser.Result;
 
 /**
  * A domain object model representing CSS file backed up by 
@@ -67,25 +66,24 @@ public final class CssModel {
     
     private final List<CssRule> rules = new ArrayList<CssRule>(10);
     private Snapshot snapshot;
-    private SimpleNode root;
 
     
-    public static CssModel create(Result result) {
-        if(!(result instanceof CSSGSFParserResult)) {
-            throw new IllegalArgumentException("Passed non-css parser result instance.");
-        } else {
-            return new CssModel(result.getSnapshot(), ((CSSGSFParserResult)result).root());
-        }
+    public static CssModel create(CssParserResult result) {
+         return new CssModel(result.getSnapshot(), result.root());
     }
 
 
     private CssModel(Snapshot snapshot, SimpleNode root) {
         this.snapshot = snapshot;
-        this.root = root;
         updateModel(snapshot, root);
     }
 
     //--- API methods ---
+
+    /** @return an instance of the source Snapshot of the parser result used to construct this model. */
+    public Snapshot getSnapshot() {
+        return snapshot;
+    }
 
     /** @return List of {@link CssRule}s or null if the document hasn't been parsed yet. */
     public List<CssRule> rules() {
@@ -115,8 +113,6 @@ public final class CssModel {
 
     private synchronized void updateModel(final Snapshot snapshot, SimpleNode root) {
         synchronized (rules) {
-            List<CssRule> oldRules = rules;
-
             NodeVisitor styleRuleVisitor = new NodeVisitor() {
 
                 public void visit(SimpleNode node) {

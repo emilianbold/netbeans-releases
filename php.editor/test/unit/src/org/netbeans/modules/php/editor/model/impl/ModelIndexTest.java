@@ -54,7 +54,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.IndexScope;
@@ -88,7 +87,6 @@ public class ModelIndexTest extends ModelTestBase {
             f.delete();
         }
 
-        FileUtil.setMIMEType("php", PHPLanguage.PHP_MIME_TYPE);
         Logger.global.setFilter(new Filter() {
 
             public boolean isLoggable(LogRecord record) {
