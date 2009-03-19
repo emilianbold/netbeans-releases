@@ -24,7 +24,6 @@ import org.openide.util.NbBundle;
 public class PortTypeEditorPanel extends javax.swing.JPanel {
     
     private List<PortType> mPortTypes;
-    private PortType mPortType;
         
     Map<PortType, QName> mapPTtoQName = new HashMap<PortType, QName>();
 
@@ -40,11 +39,10 @@ public class PortTypeEditorPanel extends javax.swing.JPanel {
         NameSpaceLabel.setEditable(false);
         
         mPortTypes = portTypes;
-        mPortType = portType;
 
-        QName qName;
         for(PortType pt : portTypes) {
             if (pt != null) {
+                QName qName;
                 if(CasaWrapperModel.isDummyPortType(pt)) {
                     qName = new QName(Constants.EMPTY_STRING,Constants.EMPTY_STRING); 
                 } else {
@@ -54,12 +52,16 @@ public class PortTypeEditorPanel extends javax.swing.JPanel {
                 mapPTtoQName.put(pt, qName);
             }
         }
-        qName = new QName("","");
-        if(portType != null) {
-             qName = mapPTtoQName.get(portType);
-             mPortTypesComboBox.setSelectedItem(qName);
+        
+        QName selectedQName; 
+        if (portType == null || CasaWrapperModel.isDummyPortType(portType)) {
+            selectedQName = new QName(Constants.EMPTY_STRING,Constants.EMPTY_STRING); 
+        } else {
+            selectedQName = new QName(portType.getModel().getDefinitions().getTargetNamespace(), portType.getName()); //mapPTtoQName.get(portType);
         }
-        updateLables(qName);
+        mPortTypesComboBox.setSelectedItem(selectedQName);
+        updateLables(selectedQName);
+        
         mPortTypesComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 QName qName = (QName) mPortTypesComboBox.getSelectedItem();

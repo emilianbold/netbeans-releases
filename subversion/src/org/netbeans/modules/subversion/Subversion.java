@@ -60,6 +60,7 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
@@ -110,6 +111,11 @@ public class Subversion {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion");
 
     private Result<? extends SvnHook> hooksResult;
+    private Result<? extends HyperlinkProvider> hpResult;
+    /**
+     * Hyperlink providers available for the commit message TooltipWindow
+     */
+    private List<HyperlinkProvider> hyperlinkProviders;
 
     public static synchronized Subversion getInstance() {
         if (instance == null) {
@@ -136,8 +142,9 @@ public class Subversion {
         fileStatusCache.addVersioningListener(svcs);
         addPropertyChangeListener(svcs);
 
-
         hooksResult = (Result<? extends SvnHook>) Lookup.getDefault().lookupResult(SvnHook.class);
+        hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
+        setHyperlinkProviders();
     }
 
     /**
@@ -516,4 +523,21 @@ public class Subversion {
         return ret;
     }
 
+    private void setHyperlinkProviders () {
+        Collection<? extends HyperlinkProvider> providersCol = hpResult.allInstances();
+        List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
+        providersList.addAll(providersCol);
+        hyperlinkProviders = Collections.unmodifiableList(providersList);
+    }
+
+    /**
+     *
+     * @return registered hyperlink providers
+     */
+    public List<HyperlinkProvider> getHyperlinkProviders() {
+        if (hyperlinkProviders == null) {
+            setHyperlinkProviders();
+        }
+        return hyperlinkProviders;
+    }
 }

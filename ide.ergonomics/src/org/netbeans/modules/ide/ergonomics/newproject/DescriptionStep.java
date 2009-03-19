@@ -235,9 +235,9 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             iterator = readWizard(fo);
             // reset and warn, seems like 100 millis isn't enough!
             if (iterator instanceof FeatureOnDemanWizardIterator) {
-                iterator = null;
-                if ((++i) == 10) break; // seems we will go to NPE :-(
                 Logger.getLogger(DescriptionStep.class.getName()).warning(iterator.getClass().getName());
+                iterator = null;
+                if (++i == 10) break; // seems we will go to NPE :-(
             }
         }
         iterator.initialize (wd);

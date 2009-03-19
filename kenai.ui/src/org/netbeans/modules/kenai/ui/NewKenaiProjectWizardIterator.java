@@ -262,7 +262,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
             }
             for (Iterator<String> it = errMap.keySet().iterator(); it.hasNext(); ) {
                 String fld = it.next();
-                sb.append(fld.substring(0, 1).toUpperCase() + fld.substring(1, fld.length()) + " " + errMap.get(fld));
+                sb.append(errMap.get(fld));
             }
             errMsg = sb.toString();
         } else {

@@ -46,6 +46,7 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
@@ -63,30 +64,39 @@ import javax.swing.JViewport;
 import org.openide.util.NbBundle;
 
 /**
- * TODO: use better layout mgr
+ * 
  * 
  * @author Milan
  */
 public class ListRendererPanel extends javax.swing.JPanel {
 
-    private KenaiSearchPanel.KenaiProjectSearchInfo kenaiProject;
+    private KenaiSearchPanel.KenaiProjectSearchInfo searchInfo;
 
     /** Creates new form ListRendererPanel */
     public ListRendererPanel(JList jlist, KenaiSearchPanel.KenaiProjectSearchInfo kp, int index, 
             boolean isSelected, boolean hasFocus, KenaiSearchPanel.PanelType pType) {
 
         initComponents();
-        kenaiProject = kp;
+        searchInfo = kp;
 
-        projectNameLabel.setText("<html><b>" + kenaiProject.kenaiProject.getDisplayName() + " (" + kenaiProject.kenaiProject.getName() + ")</b></html>");
-        projectDescLabel.setText(highlighthPattern(kenaiProject.kenaiProject.getDescription(), kenaiProject.searchPattern));
+        MultiLabel projectDescLabel = new MultiLabel();
+        descPanel.add(projectDescLabel, BorderLayout.CENTER);
+
+        projectNameLabel.setText("<html><b>" + searchInfo.kenaiProject.getDisplayName() + " (" + searchInfo.kenaiProject.getName() + ")</b></html>");
+        projectDescLabel.setText(searchInfo.kenaiProject.getDescription());//highlighthPattern(searchInfo.kenaiProject.getDescription(), searchInfo.searchPattern));
+        tagsLabel.setText("Tags: " + searchInfo.kenaiProject.getTags());
 
         if (isSelected) {
             setBackground(jlist.getSelectionBackground());
-            innerDescPanel.setBackground(jlist.getSelectionBackground());
+            descPanel.setBackground(jlist.getSelectionBackground());
         } else {
-            setBackground(jlist.getBackground());
-            innerDescPanel.setBackground(jlist.getBackground());
+            if (index % 2 == 0) {
+                setBackground(new Color(225, 225, 225));
+                descPanel.setBackground(new Color(225, 225, 225));
+            } else {
+                setBackground(jlist.getBackground());
+                descPanel.setBackground(jlist.getBackground());
+            }
         }
 
         Graphics2D g2d = (Graphics2D) new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).getGraphics();
@@ -109,7 +119,6 @@ public class ListRendererPanel extends javax.swing.JPanel {
             parent = parent.getParent();
         }
         return new Dimension(width, super.getPreferredSize().height + 10);
-        //return new Dimension(width - (int) (0.65 * width), super.getPreferredSize().height + 15);
     }
 
     private String highlighthPattern(String txt, String ptrn) {
@@ -132,39 +141,67 @@ public class ListRendererPanel extends javax.swing.JPanel {
     private void initComponents() {
         GridBagConstraints gridBagConstraints;
 
-        innerDescPanel = new JPanel();
-        projectDescLabel = new JLabel();
+        repoPathLabel = new JLabel();
         projectNameLabel = new JLabel();
+        tagsLabel = new JLabel();
+        detailsLabel = new JLabel();
+        descPanel = new JPanel();
 
         setLayout(new GridBagLayout());
 
-        innerDescPanel.setLayout(new BorderLayout());
-
-        projectDescLabel.setText(NbBundle.getMessage(ListRendererPanel.class, "ListRendererPanel.projectDescLabel.text")); // NOI18N
-        innerDescPanel.add(projectDescLabel, BorderLayout.CENTER);
-
+        repoPathLabel.setText(NbBundle.getMessage(ListRendererPanel.class, "ListRendererPanel.repoPathLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new Insets(4, 4, 3, 0);
-        add(innerDescPanel, gridBagConstraints);
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(4, 6, 0, 0);
+        add(repoPathLabel, gridBagConstraints);
 
         projectNameLabel.setText(NbBundle.getMessage(ListRendererPanel.class, "ListRendererPanel.projectNameLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(4, 4, 0, 0);
+        gridBagConstraints.insets = new Insets(4, 6, 0, 0);
         add(projectNameLabel, gridBagConstraints);
+
+        tagsLabel.setText(NbBundle.getMessage(ListRendererPanel.class, "ListRendererPanel.tagsLabel.text")); // NOI18N
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new Insets(10, 6, 4, 0);
+        add(tagsLabel, gridBagConstraints);
+
+        detailsLabel.setText(NbBundle.getMessage(ListRendererPanel.class, "ListRendererPanel.detailsLabel.text")); // NOI18N
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = GridBagConstraints.EAST;
+        gridBagConstraints.insets = new Insets(10, 10, 4, 6);
+        add(detailsLabel, gridBagConstraints);
+
+        descPanel.setLayout(new BorderLayout());
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new Insets(8, 6, 0, 0);
+        add(descPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JPanel innerDescPanel;
-    private JLabel projectDescLabel;
+    private JPanel descPanel;
+    private JLabel detailsLabel;
     private JLabel projectNameLabel;
+    private JLabel repoPathLabel;
+    private JLabel tagsLabel;
     // End of variables declaration//GEN-END:variables
 
     private String getSubstrWithElipsis(String text, FontMetrics fm, int reqWidth, float charWidth, Graphics2D context) {

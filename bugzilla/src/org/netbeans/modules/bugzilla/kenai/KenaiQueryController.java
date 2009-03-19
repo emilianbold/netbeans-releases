@@ -49,10 +49,12 @@ import org.netbeans.modules.bugzilla.query.QueryController;
  */
 public class KenaiQueryController extends QueryController {
     private String product;
+    private boolean predefinedQuery;
 
-    public KenaiQueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, String product) {
+    public KenaiQueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, String product, boolean predefinedQuery) {
         super(repository, query, urlParameters);
         this.product = product;
+        this.predefinedQuery = predefinedQuery;
     }
 
     @Override
@@ -65,9 +67,11 @@ public class KenaiQueryController extends QueryController {
     protected void enableFields(boolean bl) {
         super.enableFields(bl);
 
-        // overide - for predefined kenai queries are those always disabled
-        panel.modifyButton.setEnabled(false);
-        panel.removeButton.setEnabled(false);
+        if(predefinedQuery) {
+            // overide - for predefined kenai queries are those always disabled
+            panel.modifyButton.setEnabled(false);
+            panel.removeButton.setEnabled(false);
+        }
     }
 
 

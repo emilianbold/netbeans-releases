@@ -111,4 +111,9 @@ public class ScriptingProjectsPropertiesDialogTest extends PerformanceTestCase {
         doMeasurement();
     }
 
+    public void testScriptingProjectProperties() {
+        projectName = Projects.SCRIPTING_PROJECT;
+        doMeasurement();
+    }
+
 }

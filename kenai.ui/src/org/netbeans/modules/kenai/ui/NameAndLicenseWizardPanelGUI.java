@@ -539,7 +539,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     }
 
     private String checkForInfos() {
-        if (!Utilities.isLoggedIn()) {
+        if (!Utilities.isUserLoggedIn()) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.needLogin");
         } else if (getProjectName().trim().equals("")) {

@@ -635,6 +635,7 @@ made subject to such option by the copyright holder.
                 <junit showoutput="true" fork="yes" dir="${{basedir}}" failureproperty="tests.failed" errorproperty="tests.failed">
                     <classpath refid="unit.test.classpath"/>
                     <sysproperty key="NetBeansUserDir" value="${{netbeans.user}}"/>
+                    <sysproperty key="org.netbeans.modules.compapp.catd.context" value="${{org.netbeans.modules.compapp.catd.context}}"/>
                     <!-- 
                     Netbeans JUnit Test Results Window will look for TEST-{TestClassName}.xml to parse and display
                     Hence
@@ -659,6 +660,7 @@ made subject to such option by the copyright holder.
                     <classpath refid="unit.test.classpath"/>
                     <sysproperty key="NetBeansUserDir" value="${{netbeans.user}}"/>
                     <sysproperty key="inDebug" value="${{inDebug}}"/>
+                    <sysproperty key="org.netbeans.modules.compapp.catd.context" value="${{org.netbeans.modules.compapp.catd.context}}"/>
                     <!-- 
                     Netbeans JUnit Test Results Window will look for TEST-{TestClassName}.xml to parse and display
                     Hence
@@ -795,10 +797,10 @@ made subject to such option by the copyright holder.
                         <xsl:attribute name="file">${reference.<xsl:value-of select="$subproj"/>.dist_se}</xsl:attribute>
                     </basename> 
                     -->
-                    <basename>
-                        <xsl:attribute name="property"><xsl:value-of select="$subproj"/><xsl:text>.su.name</xsl:text></xsl:attribute>
-                        <xsl:attribute name="file">${project.<xsl:value-of select="$subproj"/>}</xsl:attribute>
-                    </basename>
+                    <property>
+                        <xsl:attribute name="name"><xsl:value-of select="$subproj"/><xsl:text>.su.name</xsl:text></xsl:attribute>
+                        <xsl:attribute name="value"><xsl:value-of select="$subproj"/></xsl:attribute>
+                    </property>
                     <unzip>
                         <xsl:attribute name="src">${reference.<xsl:value-of select="$subproj"/>.dist_se}</xsl:attribute>
                         <!--<xsl:attribute name="src">${project.<xsl:value-of select="$subproj"/>}/build/${<xsl:value-of select="$subproj"/>.se.jar.name}</xsl:attribute>-->

@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.ruby.FindersHelper.FinderMethod;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.openide.filesystems.FileObject;
@@ -252,13 +253,7 @@ final class DatabasePropertiesIndexer {
             Map<String, FileObject> fileUrls,
             Set<String> currentCols) {
 
-        List<FindersHelper.FinderMethod> finders = new ArrayList<FindersHelper.FinderMethod>();
-        for (String finderPrefix : FindersHelper.FINDER_PREFIXES) {
-            if (prefix.startsWith(finderPrefix) || finderPrefix.startsWith(prefix)) {
-                finders.addAll(FindersHelper.getFinderSignatures(finderPrefix, currentCols));
-            }
-        }
-
+        List<FinderMethod> finders = new ArrayList<FinderMethod>(FindersHelper.getFinderSignatures(prefix, currentCols));
 
         for (FindersHelper.FinderMethod finder : finders) {
             String methodName = finder.getName();

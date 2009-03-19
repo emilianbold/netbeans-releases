@@ -81,13 +81,26 @@ public class SVGListModelFooter extends CodeClassInitHeaderFooterPresenter {
             section.getWriter().write("java.util.Vector vector = new java.util.Vector();\n");  //NOI18N
             if (getComponent().getType().equals(SVGListCD.TYPEID)) {
                 for (PropertyValue propertyValue : list) {
-                    String item = (String) propertyValue.getComponent().readProperty(SVGListElementEventSourceCD.PROP_STRING).getPrimitiveValue();
-                    section.getWriter().write("vector.addElement(\"" + item + "\");\n");
+                    PropertyValue  itemValue  = propertyValue.getComponent().readProperty(SVGListElementEventSourceCD.PROP_STRING);
+                    String item = null;
+                    if (itemValue.getKind() == PropertyValue.Kind.USERCODE) {
+                        item = itemValue.getUserCode();
+                    } else {
+                        item = (String) itemValue.getPrimitiveValue().toString();
+                    }
+                    if (itemValue.getKind() == PropertyValue.Kind.USERCODE) {
+                        section.getWriter().write("vector.addElement(" + item + ");\n");
+                    } else {
+                        section.getWriter().write("vector.addElement(\"" + item + "\");\n");
+                    }
                 }
             } else if (getComponent().getType().equals(SVGComboBoxCD.TYPEID)) {
                 for (PropertyValue propertyValue : list) {
-                    String item = propertyValue.getPrimitiveValue().toString();
-                    section.getWriter().write("vector.addElement(\"" + item + "\");\n");
+                    if (propertyValue.getKind() == PropertyValue.Kind.USERCODE) {
+                        section.getWriter().write("vector.addElement(" + propertyValue.getUserCode() + ");\n");
+                    } else {
+                        section.getWriter().write("vector.addElement(\"" + propertyValue.getPrimitiveValue().toString() + "\");\n");
+                    }
                 }
             }
             section.getWriter().write(CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ".setModel(");

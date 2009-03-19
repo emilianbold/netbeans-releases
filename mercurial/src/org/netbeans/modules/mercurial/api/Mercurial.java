@@ -39,10 +39,15 @@
 
 package org.netbeans.modules.mercurial.api;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
+import org.netbeans.modules.mercurial.ui.log.SearchHistoryAction;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -108,4 +113,43 @@ public class Mercurial {
                                  pushUrl).waitFinished();
     }
 
+    /**
+     * Opens search history panel with a specific DiffResultsView, which does not moves accross differences but initially fixes on the given line.
+     * Right panel shows current local changes if the file, left panel shows revisions in the file's repository.
+     * Do not run in AWT, IllegalStateException is thrown.
+     * Validity of the arguments is checked and result is returned as a return value
+     * @param path requested file absolute path. Must be a versioned file (not a folder), otherwise false is returned and the panel would not open
+     * @param lineNumber requested line number to fix on
+     * @return true if suplpied arguments are valid and the search panel is opened, otherwise false
+     */
+    public static boolean showFileHistory (final String path, final int lineNumber) {
+        assert !EventQueue.isDispatchThread();
+
+        final File file = FileUtil.normalizeFile(new File(path));
+        if (!file.exists()) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Trying to show history for non-existent file {0}", file.getAbsolutePath());
+            return false;
+        }
+        if (!file.isFile()) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Trying to show history for a folder {0}", file.getAbsolutePath());
+            return false;
+        }
+        if (!org.netbeans.modules.mercurial.Mercurial.getInstance().isManaged(file)) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.INFO, "Trying to show history for an unmanaged file {0}", file.getAbsolutePath());
+            return false;
+        }
+        if(!org.netbeans.modules.mercurial.Mercurial.getInstance().isGoodVersion()) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.INFO, "Mercurial client is unavailable");
+            return false;
+        }
+        /**
+         * Open in AWT
+         */
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                SearchHistoryAction.openSearch(file, lineNumber);
+            }
+        });
+        return true;
+    }
 }

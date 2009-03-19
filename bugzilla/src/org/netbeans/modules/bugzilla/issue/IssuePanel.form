@@ -43,19 +43,14 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jSeparator1" alignment="1" pref="819" max="32767" attributes="0"/>
-          <Component id="dummyCommentsPanel" alignment="0" pref="819" max="32767" attributes="0"/>
+          <Component id="separator" alignment="1" pref="500" max="32767" attributes="0"/>
+          <Component id="dummyCommentsPanel" alignment="0" pref="500" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="headerLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="799" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace pref="753" max="32767" attributes="0"/>
-              <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="1" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="attachmentsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
@@ -74,9 +69,10 @@
                   <Component id="dummyLabel2" alignment="1" min="-2" max="-2" attributes="0"/>
                   <Component id="addCommentLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                   <Component id="osLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="summaryLabel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="dummyAttachmentsPanel" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="submitButton" linkSize="3" min="-2" max="-2" attributes="0"/>
@@ -135,8 +131,14 @@
                           </Group>
                       </Group>
                   </Group>
-                  <Component id="scrollPane1" alignment="0" pref="645" max="32767" attributes="0"/>
+                  <Component id="scrollPane1" alignment="0" pref="382" max="32767" attributes="0"/>
+                  <Component id="summaryField" alignment="0" pref="382" max="32767" attributes="0"/>
               </Group>
+              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace pref="450" max="32767" attributes="0"/>
+              <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -168,7 +170,7 @@
                           <Component id="versionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
+                  <Component id="refreshButton" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -237,27 +239,32 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <Component id="attachmentsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="dummyLabel2" linkSize="2" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="dummyAttachmentsPanel" min="-2" max="-2" attributes="0"/>
+                  <Component id="dummyAttachmentsPanel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="summaryField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="summaryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="addCommentLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="scrollPane1" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="submitButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jSeparator1" min="-2" max="-2" attributes="0"/>
+              <Component id="separator" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="dummyCommentsPanel" pref="19" max="32767" attributes="0"/>
+              <Component id="dummyCommentsPanel" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -551,7 +558,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="645" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="382" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -561,7 +568,7 @@
         </DimensionLayout>
       </Layout>
     </Container>
-    <Component class="javax.swing.JSeparator" name="jSeparator1">
+    <Component class="javax.swing.JSeparator" name="separator">
     </Component>
     <Component class="javax.swing.JLabel" name="headerLabel">
     </Component>
@@ -637,6 +644,15 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="osComboActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="summaryField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="summaryLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.summaryLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

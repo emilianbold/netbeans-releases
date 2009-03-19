@@ -77,7 +77,7 @@ public class KenaiRepository extends BugzillaRepository {
 
     @Override
     public Query createQuery() {
-        KenaiQuery q = new KenaiQuery(null, this, null, product, false);
+        KenaiQuery q = new KenaiQuery(null, this, null, product, false, false);
         return q;
     }
 
@@ -105,6 +105,7 @@ public class KenaiRepository extends BugzillaRepository {
                     this,
                     url.toString(),
                     product,
+                    true,
                     true);
 
             url = new StringBuffer();
@@ -116,6 +117,7 @@ public class KenaiRepository extends BugzillaRepository {
                     this,
                     url.toString(),
                     product,
+                    true,
                     true);
 
             definedQueries = new Query[] {myIssues, allIssues};

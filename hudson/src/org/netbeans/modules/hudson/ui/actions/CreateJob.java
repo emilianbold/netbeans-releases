@@ -39,12 +39,16 @@
 
 package org.netbeans.modules.hudson.ui.actions;
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
+import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonInstance;
@@ -84,15 +88,23 @@ public class CreateJob extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         final CreateJobPanel panel = new CreateJobPanel();
         DialogDescriptor dd = new DialogDescriptor(panel, "New Continuous Build"); // XXX I18N
+        final AtomicReference<Dialog> dialog = new AtomicReference<Dialog>();
+        JButton createButton = new JButton("Create"); // XXX I18N
+        createButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        finalizeJob(panel.instance, panel.creator, panel.name(), panel.selectedProject());
+                        dialog.get().dispose();
+                    }
+                });
+            }
+        });
         panel.init(dd, instance);
-        Object result = DialogDisplayer.getDefault().notify(dd);
-        if (result == NotifyDescriptor.OK_OPTION) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    finalizeJob(panel.instance, panel.creator, panel.name(), panel.selectedProject());
-                }
-            });
-        }
+        dd.setOptions(new Object[] {createButton, NotifyDescriptor.CANCEL_OPTION});
+        dd.setClosingOptions(new Object[] {NotifyDescriptor.CANCEL_OPTION});
+        dialog.set(DialogDisplayer.getDefault().createDialog(dd));
+        dialog.get().setVisible(true);
     }
 
     private void finalizeJob(HudsonInstance instance, ProjectHudsonJobCreator creator, String name, Project project) {

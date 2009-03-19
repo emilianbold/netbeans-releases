@@ -40,6 +40,7 @@
 package org.netbeans.modules.mercurial;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -187,7 +188,20 @@ public abstract class AbstractHgTest extends NbTestCase {
         FileObject wd = FileUtil.toFileObject(getWorkDir());
         FileObject fo = wd.createData(name);
         return FileUtil.toFile(fo);
-    }    
+    }
+
+    protected void write(File file, String str) throws IOException {
+        FileWriter w = null;
+        try {
+            w = new FileWriter(file);
+            w.write(str);
+            w.flush();
+        } finally {
+            if (w != null) {
+                w.close();
+            }
+        }
+    }
     
     private static class VersionCheckBlocker extends Handler {
         boolean versionChecked = false;

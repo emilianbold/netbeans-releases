@@ -28,6 +28,7 @@
 package org.netbeans.modules.subversion;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Arrays;
@@ -147,6 +148,10 @@ public class TestKit {
         getClient().commit(new File[]{ folder }, "commit", true);
     }
 
+    public static void delete(File file) throws SVNClientException {
+        getClient().remove(new File[]{ file }, true);
+    }
+    
     public static void add(File file) throws SVNClientException {
         ISVNStatus status = getSVNStatus(file);
         if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
@@ -162,6 +167,19 @@ public class TestKit {
                     add(f);
                 }
             }            
+        }
+    }
+
+    public static void write(File file, String str) throws IOException {
+        FileWriter w = null;
+        try {
+            w = new FileWriter(file);
+            w.write(str);
+            w.flush();
+        } finally {
+            if (w != null) {
+                w.close();
+            }
         }
     }
 
