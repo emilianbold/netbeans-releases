@@ -154,7 +154,7 @@ public class SVGListCD extends ComponentDescriptor{
 
         @Override
         protected void designChanged(DesignEvent event) {
-            if (getComponent().getParentComponent() == null) {
+            if (getComponent() == null || getComponent().getParentComponent() == null) {
                 return;
             }
             final FlowNodeDescriptor nodeToUpdate = getComponent().getParentComponent().getPresenter(FlowInfoNodePresenter.class).getNodeDescriptor();
