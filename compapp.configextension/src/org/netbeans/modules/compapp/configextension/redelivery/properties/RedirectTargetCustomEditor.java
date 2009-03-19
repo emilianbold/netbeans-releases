@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.compapp.configextension.redelivery.properties;
 
-import org.netbeans.modules.compapp.configextension.redelivery.*;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +49,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaLink;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 /**
@@ -88,9 +88,9 @@ public class RedirectTargetCustomEditor extends javax.swing.JPanel
         Endpoint endpoint = value.getEndpoint();
         String operationName = value.getOperationName();
         endpointComboBox.setSelectedItem(endpoint);   
-        operationComboBox.setSelectedItem(operationName);
         
         endpointChanged(null);
+        operationComboBox.setSelectedItem(operationName);
     }
 
     /** This method is called from within the constructor to
@@ -186,8 +186,8 @@ private void endpointChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
                     String linkHref = link.getHref();
                     PortType portType =
                             model.getWSDLComponentFromXLinkHref(linkHref, PortType.class);
-                    String portTypeName = portType.getName();
-                    if (portTypeName.equals(epInterfaceQName.getLocalPart())) {
+                    String portTypeNS = ((WSDLModel)portType.getModel()).getDefinitions().getTargetNamespace();
+                    if (new QName(portTypeNS, portType.getName()).equals(epInterfaceQName)) {
                         for (Operation operation : portType.getOperations()) {
                             operationNames.add(operation.getName());
                         }

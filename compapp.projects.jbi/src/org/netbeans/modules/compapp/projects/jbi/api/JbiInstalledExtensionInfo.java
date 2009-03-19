@@ -84,6 +84,11 @@ public class JbiInstalledExtensionInfo {
     /**
      * DOCUMENT ME!
      */
+    public static final String EXT_SUBTYPE = "extensionSubType"; // NOI18N
+
+    /**
+     * DOCUMENT ME!
+     */
     public static final String EXT_TARGET = "extensionTarget"; // NOI18N
 
     /**
@@ -112,6 +117,10 @@ public class JbiInstalledExtensionInfo {
      * DOCUMENT ME!
      */
     public static final String ITEM_CODEGEN = "codegen"; // NOI18N
+    /**
+     * DOCUMENT ME!
+     */
+    public static final String ITEM_DEFAULT_VALUE = "defaultValue"; // NOI18N
     /**
      * DOCUMENT ME!
      */
@@ -181,11 +190,12 @@ public class JbiInstalledExtensionInfo {
                     String name = extsDO.getName();
                     String displayName = extsDO.getNodeDelegate().getDisplayName();
                     String desc = getLocalizedFileObjectAttribute(extsDO.getPrimaryFile(), ITEM_DESC);
-                    String file = ""; // NOI18N
-                    String type = ""; // NOI18N
-                    String target = ""; // NOI18N
-                    String ns = ""; // NOI18N
-                    String provider = ""; // NOI18N
+                    String file = null; 
+                    String type = null; 
+                    String subType = null; 
+                    String target = null; 
+                    String ns = null; 
+                    String provider = null; 
                     URL icon = null;
 
                     FileObject compFO = extsDO.getPrimaryFile();
@@ -197,6 +207,8 @@ public class JbiInstalledExtensionInfo {
                             file = (String) attrObj;
                         } else if (attrName.equals(EXT_TYPE)) {
                             type = (String) attrObj;
+                        } else if (attrName.equals(EXT_SUBTYPE)) {
+                            subType = (String) attrObj;
                         } else if (attrName.equals(EXT_TARGET)) {
                             target = (String) attrObj;
                         } else if (attrName.equals(EXT_NAMESPACE)) {
@@ -211,7 +223,7 @@ public class JbiInstalledExtensionInfo {
                     List[] children = processElement((DataFolder)extsDO);
 
                     @SuppressWarnings("unchecked")
-                    JbiExtensionInfo extInfo = new JbiExtensionInfo(name, displayName, type, 
+                    JbiExtensionInfo extInfo = new JbiExtensionInfo(name, displayName, type, subType,
                             target, file, ns, desc, icon, provider, children[0]);
                     singleton.extensionList.add(extInfo);
                     singleton.extensionMap.put(name, extInfo);
@@ -255,12 +267,14 @@ public class JbiInstalledExtensionInfo {
             } else {
                 String childType = (String) childFO.getAttribute(ITEM_TYPE);
                 String codeGen = (String) childFO.getAttribute(ITEM_CODEGEN);
+                String defaultValue = (String) childFO.getAttribute(ITEM_DEFAULT_VALUE);
                 JbiExtensionAttribute attr = new JbiExtensionAttribute(
                         childName, 
                         childDisplayName,
                         childType, 
                         childDescription,
-                        !("false".equalsIgnoreCase(codeGen))); // NOI18N
+                        !("false".equalsIgnoreCase(codeGen)),
+                        defaultValue); // NOI18N
                 attrs.add(attr);
             }
         }

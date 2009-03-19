@@ -155,9 +155,11 @@ public class CallbackProjectExtensionProperty
             chooser = ProjectChooser.projectChooser();
 
             String value =  (String) getValue();
-            File file = new File(value);
-            if (file.exists()) {
-                chooser.setSelectedFile(file);
+            if (value != null) {
+                File file = new File(value);
+                if (file.exists()) {
+                    chooser.setSelectedFile(file);
+                }
             }
             return chooser;
         }

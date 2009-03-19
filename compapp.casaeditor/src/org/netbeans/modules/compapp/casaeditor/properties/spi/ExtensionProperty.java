@@ -88,7 +88,8 @@ public class ExtensionProperty<T> extends BaseCasaProperty<T> {
     
     protected String getStringValue() {
         CasaExtensibilityElement casaEE = (CasaExtensibilityElement) getComponent();
-        return casaEE.getAttribute(getName());
+        String ret = casaEE.getAttribute(getName());
+        return ret == null ? "" : ret;  // NOI18N
     }
 
     public void setValue(T value)
@@ -104,7 +105,8 @@ public class ExtensionProperty<T> extends BaseCasaProperty<T> {
             // value into the CASA model.
             getModel().addExtensibilityElement(extensionPointComponent, firstEE);
         } else {
-            getModel().setExtensibilityElementAttribute(lastEE, getName(), value.toString());
+            String stringValue = value == null ? "" : value.toString(); // NOI18N
+            getModel().setExtensibilityElementAttribute(lastEE, getName(), stringValue);
         }
     }
 }

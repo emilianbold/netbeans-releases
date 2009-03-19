@@ -42,34 +42,43 @@
 package org.netbeans.modules.sun.manager.jbi.editors;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.table.TableCellEditor;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptor;
+import org.netbeans.modules.sun.manager.jbi.management.model.constraint.EnumerationConstraint;
+import org.netbeans.modules.sun.manager.jbi.management.model.constraint.JBIComponentConfigurationConstraint;
+import org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxExclusiveConstraint;
+import org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxInclusiveConstraint;
+import org.netbeans.modules.sun.manager.jbi.management.model.constraint.MinExclusiveConstraint;
+import org.netbeans.modules.sun.manager.jbi.management.model.constraint.MinInclusiveConstraint;
+import org.netbeans.modules.sun.manager.jbi.nodes.property.SchemaBasedConfigPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.util.StackTraceUtil;
+import org.netbeans.modules.xml.wsdl.bindingsupport.appconfig.spi.ApplicationConfigurationEditorProvider;
+import org.netbeans.modules.xml.wsdl.bindingsupport.appconfigeditor.ApplicationConfigurationEditorProviderFactory;
+import org.netbeans.modules.xml.wsdl.bindingsupport.appconfigeditor.ui.ApplicationConfigurationUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -78,12 +87,17 @@ import org.openide.util.NbBundle;
  *
  * @author jqian
  */
-public class TabularDataCellEditorFactory {
+public class TabularDataCellEditorFactory {    
     
-    private static final TableCellEditor STRING_EDITOR = new StringCellEditor();
-    private static final TableCellEditor BOOLEAN_EDITOR = new BooleanCellEditor();
-    private static final TableCellEditor DOUBLE_EDITOR = new NumberCellEditor();
+    // For Application Variable:
+    private static final TableCellEditor STRING_EDITOR = new StringCellEditor(); //DefaultCellEditor(new JTextField());
+    private static final TableCellEditor STRING_TYPE_BOOLEAN_EDITOR = new StringTypeBooleanCellEditor();
+    private static final TableCellEditor STRING_TYPE_NUMBER_EDITOR = new StringTypeNumberCellEditor();
     private static final TableCellEditor PASSWORD_EDITOR = new PasswordCellEditor();
+    
+    // For Applicaiton Configuration:
+    private static final TableCellEditor INTEGER_EDITOR = new IntegerCellEditor();
+    private static final TableCellEditor BOOLEAN_EDITOR = new DefaultCellEditor(new JCheckBox()); 
 //    private static final TableCellEditor TABULAR_DATA_EDITOR = 
 //            new TabularDataActionTableCellEditor(new TabularDataCellEditor());
     
@@ -93,16 +107,29 @@ public class TabularDataCellEditorFactory {
     private static final Map<ApplicationVariableType, TableCellEditor> avTypeMap = 
             new HashMap<ApplicationVariableType, TableCellEditor>();
     
-    static {
+    static {        
         classMap.put(String.class, STRING_EDITOR);
-        classMap.put(Number.class, DOUBLE_EDITOR);
+        classMap.put(Integer.class, INTEGER_EDITOR);
         classMap.put(Boolean.class, BOOLEAN_EDITOR);
+//        classMap.put(Number.class, DOUBLE_EDITOR);
 //        classMap.put(TabularData.class, TABULAR_DATA_EDITOR);
         
         avTypeMap.put(ApplicationVariableType.STRING, STRING_EDITOR);
-        avTypeMap.put(ApplicationVariableType.NUMBER, DOUBLE_EDITOR);
-        avTypeMap.put(ApplicationVariableType.BOOLEAN, BOOLEAN_EDITOR);
+        avTypeMap.put(ApplicationVariableType.NUMBER, STRING_TYPE_NUMBER_EDITOR);
+        avTypeMap.put(ApplicationVariableType.BOOLEAN, STRING_TYPE_BOOLEAN_EDITOR);
         avTypeMap.put(ApplicationVariableType.PASSWORD, PASSWORD_EDITOR);
+    }       
+    
+    public static TableCellEditor getEditor(Class clazz, 
+            JBIComponentConfigurationDescriptor descriptor) {
+        /*if (clazz.equals(TabularData.class)) {
+            return new TabularDataActionTableCellEditor(
+                    new TabularDataCellEditor(), descriptor, isWritable);
+        } else */if (descriptor != null) {
+            return getEditor(descriptor);
+        } else {
+            return getEditor(clazz);
+        }        
     }
     
     public static TableCellEditor getEditor(Class clazz) {
@@ -115,15 +142,82 @@ public class TabularDataCellEditorFactory {
         return ret;
     }
     
-    public static TableCellEditor getEditor(Class clazz, 
-            JBIComponentConfigurationDescriptor descriptor, boolean isWritable) {
-        if (clazz.equals(TabularData.class)) {
-            return new TabularDataActionTableCellEditor(
-                    new TabularDataCellEditor(), descriptor, isWritable);
-        } else {
-            return getEditor(clazz);
-        }
+    private static TableCellEditor getEditor(JBIComponentConfigurationDescriptor descriptor) {
         
+        QName typeQName = descriptor.getTypeQName();
+
+        List<JBIComponentConfigurationConstraint> constraints =
+                descriptor.getConstraints();
+   
+        if (descriptor.isEncrypted()) {
+            return PASSWORD_EDITOR;
+        } else if (JBIComponentConfigurationDescriptor.XSD_STRING.equals(typeQName)) {
+            if (constraints.size() == 0) {
+                return STRING_EDITOR;
+            } else if (constraints.size() == 1 &&
+                    constraints.get(0) instanceof EnumerationConstraint) {
+                List<String> options =
+                        ((EnumerationConstraint) constraints.get(0)).getOptions();
+                return new DefaultCellEditor(new JComboBox(options.toArray()));
+            }
+        } else if (JBIComponentConfigurationDescriptor.XSD_INT.equals(typeQName) ||
+                JBIComponentConfigurationDescriptor.XSD_BYTE.equals(typeQName) ||
+                JBIComponentConfigurationDescriptor.XSD_SHORT.equals(typeQName) ||
+                JBIComponentConfigurationDescriptor.XSD_POSITIVE_INTEGER.equals(typeQName) ||
+                JBIComponentConfigurationDescriptor.XSD_NEGATIVE_INTEGER.equals(typeQName) ||
+                JBIComponentConfigurationDescriptor.XSD_NON_POSITIVE_INTEGER.equals(typeQName) ||
+                JBIComponentConfigurationDescriptor.XSD_NON_NEGATIVE_INTEGER.equals(typeQName)) {
+
+            int minInc, maxInc;
+
+            if (JBIComponentConfigurationDescriptor.XSD_BYTE.equals(typeQName)) {
+                minInc = Byte.MIN_VALUE;
+                maxInc = Byte.MAX_VALUE;
+            } else if (JBIComponentConfigurationDescriptor.XSD_SHORT.equals(typeQName)) {
+                minInc = Short.MIN_VALUE;
+                maxInc = Short.MAX_VALUE;
+            } else if (JBIComponentConfigurationDescriptor.XSD_INT.equals(typeQName)) {
+                minInc = Integer.MIN_VALUE;
+                maxInc = Integer.MAX_VALUE;
+            } else if (JBIComponentConfigurationDescriptor.XSD_POSITIVE_INTEGER.equals(typeQName)) {
+                minInc = 1;
+                maxInc = Integer.MAX_VALUE;
+            } else if (JBIComponentConfigurationDescriptor.XSD_NEGATIVE_INTEGER.equals(typeQName)) {
+                minInc = Integer.MIN_VALUE;
+                maxInc = -1;
+            } else if (JBIComponentConfigurationDescriptor.XSD_NON_POSITIVE_INTEGER.equals(typeQName)) {
+                minInc = Integer.MIN_VALUE;
+                maxInc = 0;
+            } else { //if (JBIComponentConfigurationDescriptor.XSD_NON_NEGATIVE_INTEGER.equals(typeQName)) {
+                minInc = 0;
+                maxInc = Integer.MAX_VALUE;
+            }
+
+            for (JBIComponentConfigurationConstraint constraint : constraints) {
+                if (constraint instanceof MinInclusiveConstraint) {
+                    minInc = Math.max(minInc,
+                            (int) ((MinInclusiveConstraint) constraint).getValue());
+                } else if (constraint instanceof MaxInclusiveConstraint) {
+                    maxInc = Math.min(maxInc,
+                            (int) ((MaxInclusiveConstraint) constraint).getValue());
+                } else if (constraint instanceof MinExclusiveConstraint) {
+                    minInc = Math.max(minInc,
+                            (int) ((MinInclusiveConstraint) constraint).getValue() + 1);
+                } else if (constraint instanceof MaxExclusiveConstraint) {
+                    maxInc = Math.min(maxInc,
+                            (int) ((MaxInclusiveConstraint) constraint).getValue() - 1);
+                } else {
+                    throw new RuntimeException("Constraint not supported yet: " +
+                            constraint.getClass().getName());
+                }
+            }
+            return new IntegerCellEditor(minInc, maxInc);
+        } else if (JBIComponentConfigurationDescriptor.XSD_BOOLEAN.equals(typeQName)) {
+            return BOOLEAN_EDITOR;
+        }
+
+        System.err.println("WARNING: (schema-based) TabularDataCellEditorFactory: Unsupported type: " + typeQName);
+        return STRING_EDITOR;
     }
     
     public static TableCellEditor getEditor(ApplicationVariableType avType) {
@@ -142,74 +236,18 @@ public class TabularDataCellEditorFactory {
      * A generic editor.
      */
     private static class GenericCellEditor extends DefaultCellEditor {
-        
-        Class[] argTypes = new Class[]{String.class};
-        Constructor constructor;
-        Object value;
-        
+                
         public GenericCellEditor() {
             super(new JTextField());
             getComponent().setName("Table.editor"); // NOI18N
             setClickCountToStart(1);
         }
-        
-        @Override
-        public boolean stopCellEditing() {
-            String s = (String)super.getCellEditorValue();
-            // Here we are dealing with the case where a user
-            // has deleted the string value in a cell, possibly
-            // after a failed validation. Return null, so that
-            // they have the option to replace the value with
-            // null or use escape to restore the original.
-            // For Strings, return "" for backward compatibility.
-            if ("".equals(s)) {  // NOI18N
-                if (constructor.getDeclaringClass() == String.class) {
-                    value = s;
-                }
-                super.stopCellEditing();
-            }
-            
-            try {
-                value = constructor.newInstance(new Object[]{s});
-            } catch (Exception e) {
-                ((JComponent)getComponent()).setBorder(new LineBorder(Color.red));
-                return false;
-            }
-            return super.stopCellEditing();
-        }
-        
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value,
-                boolean isSelected,
-                int row, int column) {
-            this.value = null;
-            ((JComponent)getComponent()).setBorder(new LineBorder(Color.black));
-            try {
-                Class type = table.getColumnClass(column);
-                // Since our obligation is to produce a value which is
-                // assignable for the required type it is OK to use the
-                // String constructor for columns which are declared
-                // to contain Objects. A String is an Object.
-                if (type == Object.class) {
-                    type = String.class;
-                }
-                constructor = type.getConstructor(argTypes);
-            } catch (Exception e) {
-                return null;
-            }
-            return super.getTableCellEditorComponent(table, value, isSelected, row, column);
-        }
-        
-        @Override
-        public Object getCellEditorValue() {
-            return value;
-        }
     }
     
     /**
-     * A number editor
+     * A (string type) number editor for Application Variable.
      */
-    private static class NumberCellEditor extends GenericCellEditor {
+    private static class StringTypeNumberCellEditor extends GenericCellEditor {
         
         private static final Border myBorder = new EmptyBorder(1, 4, 1, 1);
                         
@@ -224,14 +262,16 @@ public class TabularDataCellEditorFactory {
         }
         
         @Override
-        public Object getCellEditorValue() {
+        public String getCellEditorValue() {
+            String value = (String)super.getCellEditorValue();
+            
             if (value != null && ((String)value).trim().length() > 0) {
                 try {
                     Double.parseDouble((String)value);
                     return value;
                 } catch (NumberFormatException e) {
                     String msg = NbBundle.getMessage(
-                            TabularDataCellEditorFactory.class, 
+                            TabularDataCellEditorFactory.class,
                             "MSG_INVALID_NUMBER", value); // NOI18N
                     if (StackTraceUtil.isCalledBy("*", "vetoableChange")) { // NOI18N
                         // called by SimpleTabularDataEditor$1.vetoableChange()
@@ -243,27 +283,97 @@ public class TabularDataCellEditorFactory {
                     }
                 }
             }
-            
+    
             return ""; // FIXME: restore the old value // NOI18N
         }
     }
     
     /**
-     * A boolean editor.
+     * An integer editor.
      */
-    private static class BooleanCellEditor extends DefaultCellEditor {
+    private static class IntegerCellEditor extends GenericCellEditor {
         
-        public BooleanCellEditor() {
-            super(new JCheckBox());
+        private static final Border myBorder = new EmptyBorder(1, 4, 1, 1);
+        private int minInclusiveValue;
+        private int maxInclusiveValue;
+                
+        IntegerCellEditor() {
+            this(Integer.MIN_VALUE, Integer.MAX_VALUE);
+        }
+        
+        IntegerCellEditor(int minInclusiveValue, int maxInclusiveValue) {
+            this.minInclusiveValue = minInclusiveValue;
+            this.maxInclusiveValue = maxInclusiveValue;            
+        }
+        
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                boolean isSelected,
+                int row, int column) {
+            Component component = super.getTableCellEditorComponent(
+                    table, value, isSelected, row, column);
+            ((JComponent)component).setBorder(myBorder);
+            return component;
         }
         
         @Override
         public Object getCellEditorValue() {
+            String stringValue = (String)super.getCellEditorValue();
+            
+            Integer intValue = 0;
+            
+            try {
+                intValue = Integer.parseInt((String)stringValue);
+            } catch (NumberFormatException e) {
+                String msg = NbBundle.getMessage(
+                        TabularDataCellEditorFactory.class, 
+                        "MSG_INVALID_NUMBER", stringValue); // NOI18N
+                if (StackTraceUtil.isCalledBy("*", "vetoableChange")) { // NOI18N
+                    // called by SimpleTabularDataEditor$1.vetoableChange()
+                    throw new RuntimeException(msg);
+                } else {
+                    NotifyDescriptor d = new NotifyDescriptor.Message(msg,
+                            NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                }
+                return stringValue; // keep the invalid value in the cell
+            }
+            
+             if (intValue < minInclusiveValue || intValue > maxInclusiveValue) {
+                 String msg = NbBundle.getMessage(SchemaBasedConfigPropertySupportFactory.class, // FIXME
+                        "MSG_INVALID_INTEGER", intValue, // NOI18N
+                        minInclusiveValue, maxInclusiveValue);
+                 if (StackTraceUtil.isCalledBy("*", "vetoableChange")) { // NOI18N
+                    // called by SimpleTabularDataEditor$1.vetoableChange()
+                    throw new RuntimeException(msg);
+                } else {
+                    NotifyDescriptor d = new NotifyDescriptor.Message(msg,
+                            NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                }
+                return stringValue; // keep the invalid value in the cell
+            }
+            
+            return intValue;
+        }
+    }
+            
+    /**
+     * A (string type) boolean editor.
+     */
+    private static class StringTypeBooleanCellEditor extends DefaultCellEditor {
+        
+        public StringTypeBooleanCellEditor() {
+            super(new JCheckBox());
+        }
+        
+        @Override
+        public String getCellEditorValue() {
             Boolean b = (Boolean) super.getCellEditorValue();
             return b.toString();
         }
     }
-    
+        
     /**
      * A password editor.
      */
@@ -291,7 +401,7 @@ public class TabularDataCellEditorFactory {
             setClickCountToStart(1);
             ((JComponent)getComponent()).setBorder(myBorder);
         }
-    }
+    }    
     
     /**
      * A tabular data editor.
@@ -332,110 +442,4 @@ public class TabularDataCellEditorFactory {
     }
 }
 
-abstract class AbstractActionTableCellEditorDecorator 
-        implements TableCellEditor, ActionListener {
 
-    private TableCellEditor realEditor;
-    private JButton editButton = new JButton("..."); // NOI18N
-    protected JTable table;
-    protected int row;
-    protected int column;
-
-    public AbstractActionTableCellEditorDecorator(TableCellEditor realEditor) {
-        this.realEditor = realEditor;
-        editButton.addActionListener(this);
-
-        editButton.setFocusable(false);
-        editButton.setFocusPainted(false);
-        editButton.setMargin(new Insets(0, 0, 0, 0));
-    }
-
-    public Component getTableCellEditorComponent(JTable table, Object value, 
-            boolean isSelected, int row, int column) {
-        JPanel panel = new JPanel(new BorderLayout());
-        
-        Component editorComponent = realEditor.getTableCellEditorComponent(
-                table, value, isSelected, row, column);
-        panel.add(editorComponent);
-        panel.add(editButton, BorderLayout.EAST);
-        this.table = table;
-        this.row = row;
-        this.column = column;
-        
-        return panel;
-    }
-
-    public Object getCellEditorValue() {
-        return realEditor.getCellEditorValue();
-    }
-
-    public boolean isCellEditable(EventObject anEvent) {
-        return realEditor.isCellEditable(anEvent);
-    }
-
-    public boolean shouldSelectCell(EventObject anEvent) {
-        return realEditor.shouldSelectCell(anEvent);
-    }
-
-    public boolean stopCellEditing() {
-        return realEditor.stopCellEditing();
-    }
-
-    public void cancelCellEditing() {
-        realEditor.cancelCellEditing();
-    }
-
-    public void addCellEditorListener(CellEditorListener l) {
-        realEditor.addCellEditorListener(l);
-    }
-
-    public void removeCellEditorListener(CellEditorListener l) {
-        realEditor.removeCellEditorListener(l);
-    }
-
-    public final void actionPerformed(ActionEvent e) {
-        realEditor.cancelCellEditing();
-        editCell(table, row, column);
-    }
-
-    protected abstract void editCell(JTable table, int row, int column);
-}
-
-class TabularDataActionTableCellEditor 
-        extends AbstractActionTableCellEditorDecorator {
-    
-    private JBIComponentConfigurationDescriptor descriptor;
-    private boolean isWritable;
-
-    public TabularDataActionTableCellEditor(TableCellEditor realEditor,
-            boolean isWritable) {
-        this(realEditor, null, isWritable);
-    }
-    
-    public TabularDataActionTableCellEditor(TableCellEditor realEditor,
-            JBIComponentConfigurationDescriptor descriptor,
-            boolean isWritable) {
-        super(realEditor);
-        this.descriptor = descriptor;
-        this.isWritable = isWritable;
-    }
-
-    protected void editCell(JTable table, int row, int column) {
-        Object value = table.getValueAt(row, column);
-        TabularData tabularData = (TabularData)value;
-        
-        SimpleTabularDataCustomEditor editorPanel = 
-                new SimpleTabularDataCustomEditor(tabularData,
-                "title", "description", descriptor, isWritable); 
-        
-        int result = JOptionPane.showOptionDialog(table, 
-                    editorPanel, 
-                    table.getColumnName(column), 
-                    JOptionPane.OK_CANCEL_OPTION, 
-                    JOptionPane.PLAIN_MESSAGE, 
-                    null, null, null);
-        if (result == JOptionPane.OK_OPTION) {
-            table.setValueAt(editorPanel.getPropertyValue(), row, column);
-        }
-    }
-}

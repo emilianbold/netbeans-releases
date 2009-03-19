@@ -71,14 +71,14 @@ public class ServiceUnitDescriptorEnhancer {
     public static void decorateEndpoints(Document jbiDocument, Document casaDocument) {
         NodeList consumesNodeList = 
                 jbiDocument.getElementsByTagName(JBI_CONSUMES_ELEM_NAME);
-        for (int i = 0; i < consumesNodeList.getLength(); i++) {
+        for (int i = consumesNodeList.getLength() - 1; i >= 0; i--) {
             Element consumes = (Element) consumesNodeList.item(i);
             decorateEndpointElement(jbiDocument, consumes, casaDocument);
         }
         
         NodeList providesNodeList = 
                 jbiDocument.getElementsByTagName(JBI_PROVIDES_ELEM_NAME);
-        for (int i = 0; i < providesNodeList.getLength(); i++) {
+        for (int i = providesNodeList.getLength() - 1; i >= 0; i--) {
             Element provides = (Element) providesNodeList.item(i);
             decorateEndpointElement(jbiDocument, provides, casaDocument);
         }

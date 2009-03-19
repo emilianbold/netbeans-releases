@@ -51,7 +51,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.openide.util.Exceptions;
 
 /**
  * Implementation of AbstractIndenter for tag based languages.
@@ -64,6 +63,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     private boolean inOpeningTagAttributes;
     private boolean inUnformattableTagContent;
     private int attributesIndent;
+    private int firstPreservedLineIndent = -1;
 
     public MarkupAbstractIndenter(Language<T1> language, Context context) {
         super(language, context);
@@ -98,6 +98,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
     abstract protected boolean isPreservedLine(Token<T1> token, IndenterContextData<T1> context);
 
+    abstract protected int getPreservedLineInitialIndentation(JoinedTokenSequence<T1> ts) throws BadLocationException;
+
     abstract protected boolean isForeignLanguageStartToken(Token<T1> token, JoinedTokenSequence<T1> ts);
 
     abstract protected boolean isForeignLanguageEndToken(Token<T1> token, JoinedTokenSequence<T1> ts);
@@ -116,7 +118,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
     @Override
     protected int getFormatStableStart(JoinedTokenSequence<T1> ts, int startOffset, int endOffset,
-            AbstractIndenter.OffsetRanges rangesToIgnore) {
+            AbstractIndenter.OffsetRanges rangesToIgnore) throws BadLocationException {
 
         // find open tag (with manadatory close tag) we are inside and use it
         // as formatting start; by "we are inside" is meant that all tags between
@@ -152,15 +154,11 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             }
 
             if (isStartTagSymbol(tk) || isForeignLanguageStartToken(tk, ts)) {
-                try {
                     int firstNonWhite = Utilities.getRowFirstNonWhite(getDocument(), ts.offset());
                     if (firstNonWhite != -1 && firstNonWhite == ts.offset()) {
                         foundOffset = ts.offset();
                         break;
                     }
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
             }
         } while (ts.movePrevious());
         if (foundOffset == -1) {
@@ -181,7 +179,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             // so can result in wrong pair matching:
             if (isCloseTagNameToken(tk) && !isClosingTagOptional(getTokenName(tk)) && !isOpeningTagOptional(getTokenName(tk))) {
                 int rangeEnd;
-                if (ts.moveNext()) {
+                // if document is being editted end tag symbol might be accidentally missing:
+                if (ts.moveNext() && isEndTagSymbol(ts.token())) {
                     // add ">":
                     assert isEndTagSymbol(ts.token()) : "token="+ts.token()+" ts="+ts;
                     rangeEnd = ts.offset()+getTokenName(ts.token()).length();
@@ -192,7 +191,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 // find tag open and keep searching backwards ignoring it:
                 if (moveToOpeningTag(ts)) {
                     int rangeStart;
-                    if (ts.movePrevious()) {
+                    // if document is being editted end tag symbol might be accidentally missing:
+                    if (ts.movePrevious() && isStartTagSymbol(ts.token())) {
                         // add "<"
                         assert isStartTagSymbol(ts.token()) : "token="+ts.token()+" ts="+ts;
                         rangeStart = ts.offset();
@@ -326,7 +326,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     }
 
     @Override
-    protected List<IndentCommand> getLineIndent(IndenterContextData<T1> context, List<IndentCommand> preliminaryNextLineIndent) {
+    protected List<IndentCommand> getLineIndent(IndenterContextData<T1> context, List<IndentCommand> preliminaryNextLineIndent)
+            throws BadLocationException {
         Stack<MarkupItem> fileStack = getStack();
         List<IndentCommand> iis = new ArrayList<IndentCommand>();
         getIndentFromState(iis, true, context.getLineStartOffset());
@@ -395,7 +396,14 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 }
             }
             if (isPreservedLine(token, context)) {
-                iis.add(new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset()));
+                if (firstPreservedLineIndent == -1) {
+                    firstPreservedLineIndent = getPreservedLineInitialIndentation(ts);
+                }
+                IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
+                ic.setFixedIndentSize(firstPreservedLineIndent);
+                iis.add(ic);
+            } else {
+                firstPreservedLineIndent = -1;
             }
             if (isForeignLanguageStartToken(token, ts)) {
                 iis.add(new IndentCommand(IndentCommand.Type.BLOCK_START, context.getLineStartOffset()));
@@ -517,8 +525,13 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
 
     private void addTags(List<MarkupItem> lineItems) {
-        // if a tag was opened and closed within one line then it can be ignored:
-        lineItems = eliminateTagsOpenedAndClosedOnOneLine(lineItems);
+
+//  for now disable this: it does not work in case when opened and closed tag
+//  closes a previous tag with option end; in that scenario if opened and closed
+//  tags are ignored we are missing knowledge that option end should have been generated
+//
+//        // if a tag was opened and closed within one line then it can be ignored:
+//        lineItems = eliminateTagsOpenedAndClosedOnOneLine(lineItems);
 
         for (MarkupItem newItem : lineItems) {
             if (!newItem.virtual) {

@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.schema.abe.navigator;
 
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.SwingUtilities;
 import org.openide.util.RequestProcessor;
@@ -59,6 +60,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorContent;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
 
 /**
  * Navigator component containing a tree of abe components along with
@@ -69,7 +71,9 @@ import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorContent;
 public class NavigatorContent extends AbstractXMLNavigatorContent {
     /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
-    
+
+    private PropertyChangeListener mPCL;
+
     /**
      * Creates a new instance of SchemaNavigatorContent.
      */
@@ -78,6 +82,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent {
 	treeView = new BeanTreeView();
 	treeView.setRootVisible(false);
 	explorerManager.addPropertyChangeListener(this);
+    mPCL = new XAMUtils.AwtPropertyChangeListener(this);
     }
     
     public void navigate(final DataObject dobj) {
@@ -130,11 +135,16 @@ public class NavigatorContent extends AbstractXMLNavigatorContent {
     // TODO add explorer manager listener to trigger navigation in
     // main view
     
+    @Override
     public boolean requestFocusInWindow() {
 	return treeView.requestFocusInWindow();
     }
             
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        //
+        assert SwingUtilities.isEventDispatchThread();
+        //
         String property = evt.getPropertyName();
         if(AXIModel.STATE_PROPERTY.equals(property)) {
             onModelStateChanged(evt);
@@ -178,8 +188,8 @@ public class NavigatorContent extends AbstractXMLNavigatorContent {
                 return null;
             AXIModel model = AXIModelFactory.getDefault().getModel(modelCookie.getModel());
             if(model != null) {
-                model.removePropertyChangeListener(this);
-                model.addPropertyChangeListener(this);
+                model.removePropertyChangeListener(mPCL);
+                model.addPropertyChangeListener(mPCL);
             }
             
             return model;

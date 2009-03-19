@@ -1592,7 +1592,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 		|	LITERAL_friend	{fd=true;}
 		|	literal_stdcall
         |   { LT(1).getText().equals(LITERAL___global_ext) == true}? ID
-        |   (options {greedy=true;} : attribute_specification)
+        |   (options {greedy=true;} : attribute_specification!)
 		)*
 		(	
                         (options {greedy=true;} :type_attribute_specification)?
@@ -2129,42 +2129,49 @@ function_direct_declarator [boolean definition]
         
 protected
 function_direct_declarator_2 [boolean definition] 
-	{String q; CPPParser.TypeQualifier tq;}
-	:
-		/* predicate indicate that plain ID is ok here; this counteracts any
-		 * other predicate that gets hoisted (along with this one) that
-		 * indicates that an ID is a type or whatever.  E.g.,
-		 * another rule testing isTypeName() alone, implies that the
-		 * the ID *MUST* be a type name.  Combining isTypeName() and
-		 * this predicate in an OR situation like this one:
-		 * ( declaration_specifiers ... | function_declarator ... )
-		 * would imply that ID can be a type name OR a plain ID.
-		 */
+    {String q; CPPParser.TypeQualifier tq;}
+    :
+    /* predicate indicate that plain ID is ok here; this counteracts any
+     * other predicate that gets hoisted (along with this one) that
+     * indicates that an ID is a type or whatever.  E.g.,
+     * another rule testing isTypeName() alone, implies that the
+     * the ID *MUST* be a type name.  Combining isTypeName() and
+     * this predicate in an OR situation like this one:
+     * ( declaration_specifiers ... | function_declarator ... )
+     * would imply that ID can be a type name OR a plain ID.
+     */
 /*
 		(	// fix prompted by (isdigit)() in xlocnum
 			LPAREN q = qualified_id { declaratorID(q, qiFun); } RPAREN
 		|
 			q = qualified_id { declaratorID(q, qiFun);}
 		)
-*/              q = idInBalanceParensHard { declaratorID(q, qiFun);}
+*/
+        q = idInBalanceParensHard { declaratorID(q, qiFun);}
+        function_parameters
+    ;
 
-		LPAREN
-		{
-		    //functionParameterList();
-		    if (K_and_R == false) {
-			    in_parameter_list = true;
-		    }
-		}
-		(parameter_list)? 
-		{
-		    if (K_and_R == false) {
-	  		in_parameter_list = false;
-		    } else {
-			in_parameter_list = true;
-		    }
-		}
-		RPAREN
-	;
+function_parameters
+    :
+    LPAREN
+    (
+        (LPAREN) => function_parameters
+    |
+        {   //functionParameterList();
+            if (K_and_R == false) {
+                in_parameter_list = true;
+            }
+        }
+        (parameter_list)?
+        {   if (K_and_R == false) {
+                in_parameter_list = false;
+            } else {
+                in_parameter_list = true;
+            }
+        }
+    )
+    RPAREN
+    ;
 
 protected
 function_params
@@ -3105,6 +3112,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   POINTERTO
             |   NOT    
             |   TILDE
+            |   ELLIPSIS
 
             |   balanceParensInExpression
             |   balanceSquaresInExpression

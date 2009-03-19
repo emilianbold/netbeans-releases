@@ -134,13 +134,13 @@ public class ScriptingNodePopupTest extends PerformanceTestCase {
     public void test_RHTML_NodePopup() {
         testProject = Projects.RAILS_PROJECT;
         docName = "rhtml20kb.rhtml";
-        testNode(new Node(getProjectNode(testProject),"Unit Tests"+"|"+docName));
+        testNode(new Node(getProjectNode(testProject),"Test Files|unit"+"|"+docName));
     }
 
     public void test_YML_NodePopup() {
         testProject = Projects.RAILS_PROJECT;
         docName = "yaml20kb.yml";        
-        testNode(new Node(getProjectNode(testProject),"Unit Tests"+"|"+docName));
+        testNode(new Node(getProjectNode(testProject),"Test Files|unit"+"|"+docName));
     }
 
     public void test_JS_NodePopup() {

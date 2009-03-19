@@ -29,14 +29,14 @@
               </Group>
               <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
           </Group>
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace pref="14" max="32767" attributes="0"/>
-              <Component id="jSeparator1" pref="375" max="32767" attributes="0"/>
-          </Group>
           <Group type="102" attributes="0">
               <EmptySpace min="12" pref="12" max="12" attributes="0"/>
               <Component id="autoInsertIncludeDirectives" min="-2" max="-2" attributes="1"/>
               <EmptySpace pref="37" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jSeparator1" pref="377" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

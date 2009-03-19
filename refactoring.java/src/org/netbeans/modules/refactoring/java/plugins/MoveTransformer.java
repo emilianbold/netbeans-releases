@@ -106,7 +106,7 @@ public class MoveTransformer extends RefactoringVisitor {
                 if (isElementMoving(el)) {
                     elementsAlreadyImported.add(el);
                     String newPackageName = getTargetPackageName(el);
-                    String cuPackageName = workingCopy.getCompilationUnit().getPackageName().toString();
+                    String cuPackageName = RetoucheUtils.getPackageName(workingCopy.getCompilationUnit());
                     
                     if (!"".equals(newPackageName)) {
                         if (cuPackageName.equals(newPackageName)) { //remove newly created import from same package

@@ -51,6 +51,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -68,11 +69,13 @@ import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
+import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
 import org.netbeans.modules.hudson.ui.wizard.InstanceDialog;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.NotificationLineSupport;
+import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -86,14 +89,14 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
 
     private Set<String> takenNames;
     private NotificationLineSupport notifications;
-    private NotifyDescriptor descriptor;
+    private DialogDescriptor descriptor;
     private Set<Project> manuallyAddedProjects = new HashSet<Project>();
     ProjectHudsonJobCreator creator;
     HudsonInstance instance;
 
     CreateJobPanel() {}
 
-    void init(NotifyDescriptor descriptor, HudsonInstance instance) {
+    void init(DialogDescriptor descriptor, HudsonInstance instance) {
         this.descriptor = descriptor;
         this.notifications = descriptor.createNotificationLineSupport();
         initComponents();
@@ -141,13 +144,23 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
             notifications.setErrorMessage("This name is taken. Pick another."); // XXX I18N
             return;
         }
-        String problem = creator.error();
-        if (problem != null) {
-            notifications.setErrorMessage(problem);
-            return;
-        }
         if (ProjectHudsonProvider.getDefault().findAssociation(p) != null) {
             notifications.setWarningMessage("This project already seems to be associated with a Hudson job."); // XXX I18N
+        }
+        ConfigurationStatus status = creator.status();
+        if (status.getErrorMessage() != null) {
+            notifications.setErrorMessage(status.getErrorMessage());
+            return;
+        } else if (status.getWarningMessage() != null) {
+            notifications.setWarningMessage(status.getWarningMessage());
+        }
+        JButton button = status.getExtraButton();
+        if (button != null) {
+            descriptor.setAdditionalOptions(new Object[] {button});
+            descriptor.setClosingOptions(new Object[] {button, NotifyDescriptor.CANCEL_OPTION});
+        } else {
+            descriptor.setAdditionalOptions(new Object[0]);
+            descriptor.setClosingOptions(new Object[] {NotifyDescriptor.CANCEL_OPTION});
         }
         descriptor.setValid(true);
     }

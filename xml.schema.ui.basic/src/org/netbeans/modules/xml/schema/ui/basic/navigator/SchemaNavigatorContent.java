@@ -44,6 +44,7 @@ package org.netbeans.modules.xml.schema.ui.basic.navigator;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorContent;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -82,6 +84,8 @@ public class SchemaNavigatorContent extends AbstractXMLNavigatorContent  impleme
     /** Explorer root node **/
     private Node explorerRoot;
     
+    private PropertyChangeListener mPCL;
+
     static {
         // Present a read-only view of the schema components.
         lookup = Lookups.singleton(new ReadOnlyCookie(true));
@@ -92,6 +96,7 @@ public class SchemaNavigatorContent extends AbstractXMLNavigatorContent  impleme
      */
     public SchemaNavigatorContent() {
         super();
+        mPCL = new XAMUtils.AwtPropertyChangeListener(this);
         setLayout(new BorderLayout());
     }
     
@@ -147,6 +152,7 @@ public class SchemaNavigatorContent extends AbstractXMLNavigatorContent  impleme
         }
     }
     
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -159,8 +165,8 @@ public class SchemaNavigatorContent extends AbstractXMLNavigatorContent  impleme
                 return null;
             SchemaModel model = modelCookie.getModel();
             if(model != null) {
-                model.removePropertyChangeListener(this);
-                model.addPropertyChangeListener(this);
+                model.removePropertyChangeListener(mPCL);
+                model.addPropertyChangeListener(mPCL);
             }
             return model;
         } catch (IOException ioe) {
@@ -210,6 +216,9 @@ public class SchemaNavigatorContent extends AbstractXMLNavigatorContent  impleme
     
     @Override
     public void propertyChange(PropertyChangeEvent event) {
+        //
+        assert SwingUtilities.isEventDispatchThread();
+        //
         String property = event.getPropertyName();
         if(SchemaModel.STATE_PROPERTY.equals(property)) {
             onModelStateChanged(event);

@@ -70,11 +70,11 @@ public class JobCreator implements ProjectHudsonJobCreatorFactory {
                 return new JPanel();
             }
 
-            public String error() {
+            public ConfigurationStatus status() {
                 if (scm == null) {
                     return Helper.noSCMError();
                 }
-                return null;
+                return ConfigurationStatus.valid();
             }
 
             public void addChangeListener(ChangeListener listener) {}

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.memory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
@@ -65,22 +66,10 @@ import org.openide.util.NbBundle;
  */
 public final class MemoryToolConfigurationProvider implements DLightToolConfigurationProvider {
 
-    private static final boolean dataCollectorsEnabled =
-            Util.getBoolean("dlight.memory.details", true); // NOI18N
-    /**
-     * This flag works only in the case we do NOT use collector.
-     * If it is true, we use LL indicator data provider,
-     * if it is false, we use DTrace-based indicator data provider
-     */
-    private static final boolean useLLIndicatorDataProvider =
-            Util.getBoolean("dlight.memory.LL", false); // NOI18N
-    private static final String SUNSTUDIO = "sunstudio"; // NOI18N
     private static final String TOOL_NAME = loc("MemoryTool.ToolName"); // NOI18N
     private static final Column totalColumn;
     private static final DataTableMetadata rawTableMetadata;
 //    /** this is for the case of using DTrace for indicator only  */
-//    private static final DataTableMetadata indicatorTableMetadata;
-    String collector = System.getProperty("dlight.memory.collector", "dtrace");//NOI188N
 
 
     static {
@@ -119,35 +108,19 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     public DLightToolConfiguration create() {
         DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(TOOL_NAME);
 
-        if (dataCollectorsEnabled) {
-            // Use either SunStudio or DTrace ...
-            if (collector.equals(SUNSTUDIO)) {
-                DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
-                toolConfiguration.addDataCollectorConfiguration(dcc);
-            } else {
-                MultipleDTDCConfiguration mdcc = initDtraceDataCollectorConfiguration();
-                toolConfiguration.addDataCollectorConfiguration(mdcc);
-                // it's an indicator data provider as well!
-                toolConfiguration.addIndicatorDataProviderConfiguration(mdcc);
-            }
-        }
+        DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
+        toolConfiguration.addDataCollectorConfiguration(dcc);
+        MultipleDTDCConfiguration mdcc = initDtraceDataCollectorConfiguration();
+        toolConfiguration.addDataCollectorConfiguration(mdcc);
+        // it's an indicator data provider as well!
+        toolConfiguration.addIndicatorDataProviderConfiguration(mdcc);
+        toolConfiguration.addIndicatorDataProviderConfiguration(
+            initDtraceIndicatorDataProviderConfiguration());
 
-        if (collector.equals(SUNSTUDIO)) {
-            toolConfiguration.addIndicatorDataProviderConfiguration(
-                    initSunStudioIndicatorDataProviderConfiguration());
-        } else if (useLLIndicatorDataProvider) {
-            LLDataCollectorConfiguration lldcc = initLLDataCollectorConfiguration();
+        toolConfiguration.addIndicatorDataProviderConfiguration(initSunStudioIndicatorDataProviderConfiguration());
+        LLDataCollectorConfiguration lldcc = initLLDataCollectorConfiguration();
 //                toolConfiguration.addDataCollectorConfiguration(lldcc);
-            toolConfiguration.addIndicatorDataProviderConfiguration(lldcc);
-        } else {
-            if (!dataCollectorsEnabled) {
-                toolConfiguration.addIndicatorDataProviderConfiguration(
-                        initDtraceIndicatorDataProviderConfiguration());
-            } else {
-                // This means that IndicatorDataProvider is already defined
-            }
-        }
-
+        toolConfiguration.addIndicatorDataProviderConfiguration(lldcc);
         toolConfiguration.addIndicatorConfiguration(initIndicatorConfiguration());
 
         return toolConfiguration;
@@ -197,39 +170,32 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private LLDataCollectorConfiguration initLLDataCollectorConfiguration() {
 
         LLDataCollectorConfiguration memIndicatorDataProvider =
-                new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.MEM);
+            new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.MEM);
 
         return memIndicatorDataProvider;
     }
 
     private IndicatorConfiguration initIndicatorConfiguration() {
         IndicatorMetadata indicatorMetadata = null;
-        if (collector.equals(SUNSTUDIO)) {
-            indicatorMetadata = new IndicatorMetadata(Arrays.asList(SunStudioDCConfiguration.c_leakSize));
-        } else if (useLLIndicatorDataProvider) {
-            indicatorMetadata = new IndicatorMetadata(LLDataCollectorConfiguration.MEM_TABLE.getColumns());
-        } else {
-            indicatorMetadata = new IndicatorMetadata(Arrays.asList(totalColumn));
-        }
+        List<Column> indicatorColumns = new ArrayList<Column>();
+        indicatorColumns.add(SunStudioDCConfiguration.c_leakSize);
+        indicatorColumns.addAll(LLDataCollectorConfiguration.MEM_TABLE.getColumns());
+        indicatorColumns.addAll(Arrays.asList(totalColumn));
+        indicatorMetadata = new IndicatorMetadata(indicatorColumns);
 
         MemoryIndicatorConfiguration indicatorConfiguration =
                 new MemoryIndicatorConfiguration(indicatorMetadata); // NOI18N
 
-        if (dataCollectorsEnabled) {
-            if (collector.equals(SUNSTUDIO)) {
-                DataTableMetadata detailedViewTableMetadata =
-                        SunStudioDCConfiguration.getMemTableMetadata(
-                        SunStudioDCConfiguration.c_name,
-                        SunStudioDCConfiguration.c_leakSize,
-                        SunStudioDCConfiguration.c_leakCount);
+        DataTableMetadata detailedViewTableMetadata =
+            SunStudioDCConfiguration.getMemTableMetadata(
+            SunStudioDCConfiguration.c_name,
+            SunStudioDCConfiguration.c_leakSize,
+            SunStudioDCConfiguration.c_leakCount);
 
-                indicatorConfiguration.setVisualizerConfiguration(
-                        new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata, SunStudioDCConfiguration.c_name.getColumnName()));
-            } else {
-                indicatorConfiguration.setVisualizerConfiguration(getDetails(rawTableMetadata));
-            }
-        }
+        indicatorConfiguration.addVisualizerConfiguration(
+            new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata, SunStudioDCConfiguration.c_name.getColumnName()));
 
+        indicatorConfiguration.addVisualizerConfiguration(getDetails(rawTableMetadata));
         return indicatorConfiguration;
     }
 

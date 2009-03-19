@@ -51,7 +51,6 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -311,10 +310,12 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 final FileObject targetFile = generateJaxWSImplFromTemplate(pkg, false);
 
                 // execute wsimport goal
-                RunConfig cfg = RunUtils.createRunConfig(FileUtil.toFile(project.getProjectDirectory()), project, "wsimport",
-                        Collections.singletonList("jaxws:wsimport"));
+                RunConfig cfg = RunUtils.createRunConfig(
+                        FileUtil.toFile(project.getProjectDirectory()),
+                        project,
+                        "JAX-WS:wsimport", //NOI18N
+                        Collections.singletonList("org.codehaus.mojo:jaxws-maven-plugin:wsimport")); //NOI18N
                 ExecutorTask task = RunUtils.executeMaven(cfg);
-
                 try {
                     task.waitFinished(60000);
                 } catch (InterruptedException ex) {

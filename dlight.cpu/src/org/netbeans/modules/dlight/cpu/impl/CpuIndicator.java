@@ -86,15 +86,14 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
 
             Color colorSys = Color.RED;
             Color colorUsr = Color.BLUE;
+            Color borderColor = new Color(0x77, 0x88, 0x88);
 
             graph = new PercentageGraph(
                     new GraphDescriptor(colorSys, "System"),
                     new GraphDescriptor(colorUsr, "User"));
-            graph.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-            Dimension d = new Dimension(66, 32);
-            graph.setPreferredSize(d);
-            graph.setMaximumSize(d);
-            graph.setMinimumSize(d);
+            graph.setBorder(BorderFactory.createLineBorder(borderColor));
+            graph.setMinimumSize(new Dimension(66, 32));
+            graph.setPreferredSize(new Dimension(150, 80));
 
             lblSysLabel = new JLabel(NbBundle.getMessage(getClass(), "label.sys"));
             lblSysValue = new JLabel();
@@ -107,32 +106,35 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
             lblUsrValue.setForeground(colorUsr);
 
             panel = new JPanel();
-            panel.setLayout(new GridBagLayout());
+            panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+            panel.add(graph);
+
+            JPanel legend = new JPanel(new GridBagLayout());
+            legend.setBackground(Color.WHITE);
+            legend.setBorder(BorderFactory.createLineBorder(borderColor));
+            legend.setMinimumSize(new Dimension(120, 32));
+            legend.setMaximumSize(new Dimension(120, Integer.MAX_VALUE));
+            legend.setPreferredSize(new Dimension(100, 80));
 
             GridBagConstraints c = new GridBagConstraints();
-            c.gridx = c.gridy = 0;
-            c.gridheight = 2;
-            panel.add(graph, c);
-
-            c = new GridBagConstraints();
             c.insets = new Insets(0, 6, 0, 0);
             c.anchor = GridBagConstraints.WEST;
             c.gridy = 0;
-
+            c.gridx = 0;
+            legend.add(lblSysLabel, c);
             c.gridx = 1;
-            panel.add(lblSysLabel, c);
-            c.gridx = 2;
-            panel.add(lblSysValue, c);
+            legend.add(lblSysValue, c);
 
-            c = new GridBagConstraints();
             c.insets = new Insets(0, 6, 0, 0);
             c.anchor = GridBagConstraints.WEST;
             c.gridy = 1;
 
+            c.gridx = 0;
+            legend.add(lblUsrLabel, c);
             c.gridx = 1;
-            panel.add(lblUsrLabel, c);
-            c.gridx = 2;
-            panel.add(lblUsrValue, c);
+            legend.add(lblUsrValue, c);
+
+            panel.add(legend);
 
             MouseListener ml = new MouseAdapter() {
                 @Override

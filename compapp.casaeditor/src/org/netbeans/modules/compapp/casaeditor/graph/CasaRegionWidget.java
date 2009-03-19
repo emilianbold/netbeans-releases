@@ -53,8 +53,6 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.InnerGlowBorderDrawer;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,8 +65,6 @@ public class CasaRegionWidget extends LayerWidget {
     
     private static final int    BORDER_WIDTH  = 1;
     
-    private static final Color  TITLE_COLOR   = new Color(168, 168, 168);
-    private static final Font   TITLE_FONT    = new Font("Dialog", Font.BOLD, 18);  // NOI18N
     private static final int    TITLE_Y_POS   = 20;
     
     private static final Color  BANNER_COLOR  = Color.GRAY;

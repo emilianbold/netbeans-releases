@@ -534,7 +534,7 @@ public class JavaWsdlMapper {
         return new QName(portNameQNameARR[1], portNameQNameARR[0]);
     }
     
-    private static String getPackageFromClass(String fqClassName) {
+    public static String getPackageFromClass(String fqClassName) {
         return fqClassName.substring(0, fqClassName.lastIndexOf('.'));
     }    
 

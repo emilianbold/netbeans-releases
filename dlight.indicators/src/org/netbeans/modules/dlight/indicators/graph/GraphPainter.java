@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.dlight.indicators.graph;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 
 /**
  * A delegate that is responsible for painting,
@@ -54,7 +57,7 @@ import java.awt.Graphics;
  */
 //package-local
 class GraphPainter {
-
+    private final static Stroke outlineStroke = new BasicStroke(2.0f);
     private boolean optimize = Boolean.getBoolean("percentage.graph.optimize");
 
     private Color gridColor = Color.LIGHT_GRAY;
@@ -297,6 +300,10 @@ class GraphPainter {
      * Should be called under synchronized (dataLock)
      */
     private void paintGraph(Graphics g, int left, int top, int width, int height) {
+        Graphics2D g2 = ((Graphics2D)g);
+        Stroke oldStroke = g2.getStroke();
+
+        g2.setStroke(outlineStroke);
         if (TRACE) System.err.printf("\npaintGraph: %d %d %d %d data:\n%s\n", left, top, width, height, data);
         if (height < 1) {
             return;
@@ -308,6 +315,7 @@ class GraphPainter {
             //paintedDataCount++;
         }
         paintedDataCount = arrivedDataCount;
+        g2.setStroke(oldStroke);
     }
 
     private void paintVLine(int[] currData, int x, int top, int height, Graphics g) {

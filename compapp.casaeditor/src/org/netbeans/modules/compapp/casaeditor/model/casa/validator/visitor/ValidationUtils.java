@@ -119,7 +119,7 @@ public class ValidationUtils {
     } //-- isNCName
     
     /**
-     * Checks the the given character to determine if it is
+     * Checks the given character to determine if it is
      * a valid NCNameChar as defined by the W3C XML
      * Namespaces recommendation
      * @param ch the char to check

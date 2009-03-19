@@ -174,7 +174,19 @@ public final class DLightTool implements Validateable<DLightTarget> {
         return toolName;
     }
 
-    final List<DataCollector> getCollectors() {
+    /**
+     * Returns all collector
+     * @return
+     */
+    public final List<DataCollector> getCollectors() {
+        return dataCollectors;
+    }
+
+    /**
+     * Returns all collector
+     * @return
+     */
+    final List<DataCollector> getCollectorsByName(String name) {
         return dataCollectors;
     }
 
@@ -184,7 +196,11 @@ public final class DLightTool implements Validateable<DLightTarget> {
         }
     }
 
-    List<IndicatorDataProvider> getIndicatorDataProviders() {
+    public List<IndicatorDataProvider> getIndicatorDataProviders() {
+        return indicatorDataProviders;
+    }
+
+    List<IndicatorDataProvider> getIndicatorDataProviders(String name) {
         return indicatorDataProviders;
     }
 
