@@ -1430,6 +1430,17 @@ abstract public class CsmCompletionQuery {
                             lastType = CsmCompletion.BOOLEAN_TYPE;
                             // nobreak;
 
+                        case PLUS:
+                        case MINUS:
+                            if (findType && mtdList.isEmpty() && lastType == null) {
+                                if (item.getParameterCount() > 0) {
+                                    lastType = resolveType(item.getParameter(0));
+                                    staticOnly = false;
+                                }
+                                break;
+                            }
+                            // nobreak;
+                            
                         case LTLT: // Always binary
                         case GTGT:
 //                    case RUSHIFT:
@@ -1439,8 +1450,6 @@ abstract public class CsmCompletionQuery {
                         case BAR:
                         case CARET:
                         case PERCENT:
-                        case PLUS:
-                        case MINUS:
                             if (findType && !mtdList.isEmpty()) {
                                 List<CsmType> typeList = getTypeList(item, 0);
                                 Collection<CsmFunction> filtered = CompletionSupport.filterMethods(mtdList, typeList, false);
