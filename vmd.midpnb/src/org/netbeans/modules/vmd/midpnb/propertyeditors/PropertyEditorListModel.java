@@ -42,14 +42,18 @@ package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
@@ -106,9 +110,27 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
         }
         if (component.get().getType() == SVGListCD.TYPEID && kind != PropertyValue.Kind.USERCODE) {
             return true;
-        } else {
-            return false;
+        } else if (component.get().getType() == SVGListCD.TYPEID && kind == PropertyValue.Kind.USERCODE) {
+            component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+                public void run() {
+                    component.get().writeProperty(SVGListCD.PROP_ELEMENTS, PropertyValue.createNull());
+                    Collection<DesignComponent> children = new HashSet<DesignComponent>(component.get().getComponents());
+                    for (DesignComponent child : children) {
+                        component.get().getDocument().deleteComponent(child);
+                    }
+                }
+            });
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    if (myCustomEditor != null) {
+                        myCustomEditor.removeElemnts();
+                    }
+                }
+            });
         }
+        return false;
     }
 
     @Override

@@ -106,11 +106,17 @@ public class SVGListPropertyCustomEditor extends javax.swing.JPanel {
     void cleanUp() {
     }
 
+    void removeElemnts() {
+        myTextArea.setText(null);
+        myTextArea.removeAll();
+    }
+
     void setValue(PropertyValue value) {
         List<PropertyValue> list = value.getArray();
         if (list == null || !list.iterator().hasNext()) {
             return;
         }
+        myTextArea.setText(null);
         myTextArea.removeAll();
         if (list.iterator().next().getType() != SVGListElementEventSourceCD.TYPEID) {
             int i = 0;
