@@ -40,13 +40,11 @@ package org.netbeans.modules.refactoring.java.test;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
-import javax.xml.crypto.dsig.keyinfo.PGPData;
 import junit.framework.Test;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -57,7 +55,6 @@ import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
-import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
@@ -76,7 +73,7 @@ public class MoveClassPerfTest extends RefPerfTestCase {
         super(name);
     }
 
-    public void testRenamePackage()
+    public void testMoveActionSet()
             throws IOException, InterruptedException, ExecutionException {
         // logging is used to obtain data about consumed time
         Logger timer = Logger.getLogger("TIMER.RefactoringSession");
@@ -86,17 +83,20 @@ public class MoveClassPerfTest extends RefPerfTestCase {
         timer = Logger.getLogger("TIMER.RefactoringPrepare");
         timer.setLevel(Level.FINE);
         timer.addHandler(getHandler());
-
+        
+        // check that no javac created during refactoring is left in the memory
         Log.enableInstances(Logger.getLogger("TIMER"), "JavacParser", Level.FINEST);
+        
         final FileObject testFile = getProjectDir().getFileObject("/src/org/gjt/sp/jedit/ActionSet.java");
         JavaSource src = JavaSource.forFileObject(testFile);
-        System.err.println(src.getClasspathInfo());
         final MoveRefactoring[] moveRef = new MoveRefactoring[1];
+        final CharSequence REFACTORED_OBJ = "org.gjt.sp.jedit.ActionSet";
+
         src.runUserActionTask(new Task<CompilationController>() {
 
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
-                TypeElement klass = controller.getElements().getTypeElement("org.gjt.sp.jedit.ActionSet");
+                TypeElement klass = controller.getElements().getTypeElement(REFACTORED_OBJ);
                 moveRef[0] = new MoveRefactoring(Lookups.singleton(testFile));
                 ClasspathInfo cpi = RetoucheUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
                 moveRef[0].getContext().add(cpi);
@@ -110,17 +110,17 @@ public class MoveClassPerfTest extends RefPerfTestCase {
         rs.doRefactoring(true);
         Collection<RefactoringElement> elems = rs.getRefactoringElements();
         StringBuilder sb = new StringBuilder();
-                sb.append("Symbol: '").append("java.lang.Runnable").append("'");
+        sb.append("Symbol: '").append(REFACTORED_OBJ).append("'");
         sb.append('\n').append("Number of usages: ").append(elems.size()).append('\n');
         try {
             long prepare = getHandler().get("refactoring.prepare");
             NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
-            d.name = "refactoring.prepare"+" (" + "java.lang.Runnable" + ", usages:" + elems.size() + ")";
+            d.name = "refactoring.prepare"+" (" + REFACTORED_OBJ + ", usages:" + elems.size() + ")";
             d.value = prepare;
             d.unit = "ms";
             d.runOrder = 0;
             sb.append("Prepare phase: ").append(prepare).append(" ms.\n");
-            Utilities.processUnitTestsResults(FindUsagesPerfTest.class.getCanonicalName(), d);
+            Utilities.processUnitTestsResults(MoveClassPerfTest.class.getCanonicalName(), d);
             System.err.println("Time: " + prepare);
         } catch (Exception ex) {
             sb.append("Cannot collect usages: ").append(ex.getCause());
@@ -136,6 +136,6 @@ public class MoveClassPerfTest extends RefPerfTestCase {
     }
 
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(MoveClassPerfTest.class, "testRenamePackage").gui(true));
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(MoveClassPerfTest.class, "testMoveActionSet").gui(true));
     }
 }
