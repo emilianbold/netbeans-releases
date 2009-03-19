@@ -59,7 +59,7 @@ public abstract class CsmOperatorKindResolver {
      * Static method to obtain the CsmOperatorKindResolver implementation.
      * @return the resolver
      */
-    public static synchronized CsmOperatorKindResolver getDefault() {
+    public static CsmOperatorKindResolver getDefault() {
         return DEFAULT;
     }
     

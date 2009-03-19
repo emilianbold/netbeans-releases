@@ -64,7 +64,8 @@ public abstract class CsmIncludeHierarchyResolver {
     /** Static method to obtain the resolver.
      * @return the resolver
      */
-    public static synchronized CsmIncludeHierarchyResolver getDefault() {
+    public static CsmIncludeHierarchyResolver getDefault() {
+        /*no need for sync synchronized access*/
         if (defaultResolver != null) {
             return defaultResolver;
         }

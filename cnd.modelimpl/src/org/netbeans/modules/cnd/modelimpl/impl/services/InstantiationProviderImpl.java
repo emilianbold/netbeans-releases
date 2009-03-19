@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
  * @author Nick Krasilnikov
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.class)
-public class InstantiationProviderImpl extends CsmInstantiationProvider {
+public final class InstantiationProviderImpl extends CsmInstantiationProvider {
 
     @Override
     public CsmObject instantiate(CsmTemplate template, List<CsmType> params, CsmFile contextFile) {
