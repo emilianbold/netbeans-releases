@@ -302,7 +302,7 @@ public final class StandardLogger extends AntLogger {
         InputOutput io = session.getIO();
         if (IOColorLines.isSupported(io)) {
             try {
-                IOColorLines.println(io, msg, error ? Color.RED : Color.GREEN);
+                IOColorLines.println(io, msg, error ? Color.RED : Color.GREEN.darker().darker());
                 return;
             } catch (IOException x) {
                 ERR.log(Level.INFO, null, x);
