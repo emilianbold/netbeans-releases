@@ -180,7 +180,7 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
                   String typeName = document.getPeer().getAttribute("type");
                   typeName = removePrefix(typeName);
 
-                  if (typeName == null || typeName.equals("")) {
+                  if (typeName == null || typeName.length() == 0) {
                     NodeList list = document.getPeer().getElementsByTagName("xs:extension");
 
                     for (int i=0; i < list.getLength(); i++) {
@@ -253,7 +253,7 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
 
     // vlv # 105159
     private String removePrefix(String value) {
-      if (value == null) {
+      if (value == null || value.length() == 0) {
         return null;
       }
       int k = value.indexOf(":");
@@ -292,7 +292,7 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
     private boolean findInType(final String typeName, SchemaComponent sc, Schema schema) {
 //out("* findInType: " + typeName);
 //out("*      schema: " + schema);
-      if (typeName == null || typeName.equals("")) {
+      if (typeName == null || typeName.length() == 0) {
         return false;
       }
       myGlobalComplexType = null;

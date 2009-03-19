@@ -146,7 +146,7 @@ public class CachingSchemaSearchVisitor extends AbstractSchemaSearchVisitor {
                     String typeName = document.getPeer().getAttribute("type");
                     typeName = removePrefix(typeName);
 
-                    if (typeName == null || typeName.equals("")) {
+                    if (typeName == null || typeName.length() == 0) {
                         NodeList list = document.getPeer().
                                 getElementsByTagName("xs:extension");
 
