@@ -47,6 +47,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -81,6 +82,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     /** Position of cursor. Used to keep the value between deserialization
      * and initialization time. */
     private int cursorPosition = -1;
+
+    private StringBuffer sb = new StringBuffer(1024);
 
     // #20647. More important custom component.
 
@@ -380,10 +383,34 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
         
         private void initCustomEditor() {
+            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+            + " -- CloneableEditor.DoInitialize.initCustomEditor"
+            + " name:" + getName() + " th:" + Thread.currentThread().getName() + " ENTER");
             if (doc instanceof NbDocument.CustomEditor) {
                 NbDocument.CustomEditor ce = (NbDocument.CustomEditor) doc;
-                customComponent = ce.createEditor(tmp);
-
+                sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                + " -- CloneableEditor.DoInitialize.initCustomEditor"
+                + " tmp:" + tmp.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(tmp)));
+                sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                + " -- CloneableEditor.DoInitialize.initCustomEditor"
+                + " tmp.ui:" + tmp.getUI().getClass().getName());
+                try {
+                    customComponent = ce.createEditor(tmp);
+                } catch (NullPointerException ex) {
+                    Logger logger = Logger.getLogger("org.netbeans.ui.text");   // NOI18N
+                    LogRecord rec = new LogRecord(Level.INFO, "LOG_CLONEABLE_EDITOR");   // NOI18N
+                    rec.setLoggerName(logger.getName());
+                    String log;
+                    if (tmp instanceof QuietEditorPane) {
+                        log = ((QuietEditorPane) tmp).getLog();
+                    } else {
+                        log = "Pane is not QuietEditorPane";
+                    }
+                    rec.setParameters(new Object [] {sb.toString(), log});
+                    logger.log(rec);
+                    throw new IllegalStateException("Unexpected UI class:" + tmp.getUI().getClass().getName(), ex);
+                }
+                
                 if (customComponent == null) {
                     throw new IllegalStateException(
                         "Document:" + doc // NOI18N
@@ -410,6 +437,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
         
         private boolean initDocument() {
+            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+            + " -- CloneableEditor.DoInitialize.initDocument ENTER");
             EditorKit k;
             Document d;
             synchronized (this) {
@@ -448,14 +477,20 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 }
             }
             if (tmp.getDocument() == doc) {
+                sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                + " -- CloneableEditor.DoInitialize.initDocument RETURN FALSE 1");
                 return false;
             }
+            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+            + " -- CloneableEditor.DoInitialize.initDocument INVOKE tmp.setEditorKit(kit)");
             tmp.setEditorKit(kit);
             // #132669, do not fire prior setting the kit, which by itself sets a bogus document, etc.
             // if this is a problem please revert the change and initialize QuietEditorPane.working = FIRE
             // and reopen #132669
             tmp.setWorking(QuietEditorPane.FIRE);
             tmp.setDocument(doc);
+            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+            + " -- CloneableEditor.DoInitialize.initDocument RETURN TRUE 1");
             return true;
         }
         
@@ -464,6 +499,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             if (isInInitVisual) {
                 return;
             }
+            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+            + " -- CloneableEditor.DoInitialize.initVisual"
+            + " name:" + getName() + " th:" + Thread.currentThread().getName() + " ENTER");
             isInInitVisual = true;
             // wait for document and init it
             if (!initDocument()) {
@@ -566,6 +604,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         SwingUtilities.invokeLater(
             new Runnable() {
                 public void run() {
+                    sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                    + " -- CloneableEditor.componentClosed.run ENTER");
                     // #23486: pane could not be initialized yet.
                     if (pane != null) {
                         // #114608 - commenting out setting of the empty document
@@ -575,6 +615,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                         // #138611 - this calls kit.deinstall, which is what our kits expect,
                         // calling it with null does not impact performance, because the pane
                         // will not create new document and typically nobody listens on "editorKit" prop change
+                        sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                        + " -- CloneableEditor.componentClosed.run INVOKE pane.setEditorKit(null)");
                         pane.setEditorKit(null);
                     }
 

@@ -84,6 +84,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
@@ -110,6 +111,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private String[] targets = null;
     final OutputWriter out;
     final OutputWriter err;
+    final InputOutput io;
     private final int verbosity;
     private final String displayName;
     private final Runnable interestingOutputCallback;
@@ -166,11 +168,13 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         this.lastTask = lastTask;
     }
     
-    public NbBuildLogger(File origScript, OutputWriter out, OutputWriter err, int verbosity, String displayName, Runnable interestingOutputCallback, ProgressHandle handle) {
+    public NbBuildLogger(File origScript, OutputWriter out, OutputWriter err, int verbosity, String displayName,
+            Runnable interestingOutputCallback, ProgressHandle handle, InputOutput io) {
         thisSession = LoggerTrampoline.ANT_SESSION_CREATOR.makeAntSession(this);
         this.origScript = origScript;
         this.out = out;
         this.err = err;
+        this.io = io;
         this.verbosity = verbosity;
         this.displayName = displayName;
         this.interestingOutputCallback = interestingOutputCallback;
@@ -759,6 +763,10 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     public OutputListener createStandardHyperlink(URL file, String message, int line1, int column1, int line2, int column2) {
         verifyRunning();
         return new Hyperlink(file, message, line1, column1, line2, column2);
+    }
+
+    public InputOutput getIO() {
+        return io;
     }
     
     // Accessors for stuff which is specific to particular versions of Ant.

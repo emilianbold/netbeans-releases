@@ -48,7 +48,6 @@ import java.io.PrintStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,8 +56,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Handler;
@@ -68,6 +65,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
+import org.netbeans.junit.internal.NbModuleLogHandler;
 
 /** Collects log messages.
  *
@@ -281,7 +279,7 @@ public final class Log extends Handler {
         if (record.getLevel().intValue() < getLevel().intValue()) {
             return;
         }
-        StringBuffer sb = toString(record);
+        StringBuffer sb = NbModuleLogHandler.toString(record);
         try {
             getLog(record).println(sb.toString());
         } catch (LinkageError err) {
@@ -427,33 +425,4 @@ public final class Log extends Handler {
         }
         
     } // end of InstancesHandler
-
-    static StringBuffer toString(LogRecord record) {
-        StringBuffer sb = new StringBuffer();
-        sb.append('[');
-        sb.append(record.getLoggerName());
-        sb.append("] THREAD: ");
-        sb.append(Thread.currentThread().getName());
-        sb.append(" MSG: ");
-        String msg = record.getMessage();
-        ResourceBundle b = record.getResourceBundle();
-        if (b != null) {
-            try {
-                msg = b.getString(msg);
-            } catch (MissingResourceException ex) {
-                // ignore
-            }
-        }
-        if (msg != null && record.getParameters() != null) {
-            msg = MessageFormat.format(msg, record.getParameters());
-        }
-        sb.append(msg);
-        Throwable t = record.getThrown();
-        if (t != null) {
-            for (StackTraceElement s : t.getStackTrace()) {
-                sb.append("\n  ").append(s.toString());
-            }
-        }
-        return sb;
-    }
 }

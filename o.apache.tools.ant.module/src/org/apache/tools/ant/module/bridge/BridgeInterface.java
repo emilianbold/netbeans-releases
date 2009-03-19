@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.progress.ProgressHandle;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -66,9 +67,11 @@ public interface BridgeInterface {
      * @param displayName a user-presentable name for the session
      * @param interestingOutputCallback will be called if and when some interesting output appears, or input is requested
      * @param handle a progress handle to update if appropriate (switch to sleeping and back to indeterminate)
+     * @param io raw I/O handle for more advanced output
      * @return true if the build succeeded, false if it failed for any reason
      */
-    boolean run(File buildFile, List<String> targets, InputStream in, OutputWriter out, OutputWriter err, Map<String,String> properties, int verbosity, String displayName, Runnable interestingOutputCallback, ProgressHandle handle);
+    boolean run(File buildFile, List<String> targets, InputStream in, OutputWriter out, OutputWriter err, Map<String,String> properties,
+            int verbosity, String displayName, Runnable interestingOutputCallback, ProgressHandle handle, InputOutput io);
     
     /**
      * Try to stop a running build.
