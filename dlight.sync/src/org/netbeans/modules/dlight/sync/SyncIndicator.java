@@ -38,7 +38,9 @@
  */
 package org.netbeans.modules.dlight.sync;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JComponent;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -46,15 +48,20 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
 
 
 /**
- * Mmory usage indicator
+ * Thread usage indicator
  * @author Vladimir Kvashin
  */
 public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
     private SyncIndicatorPanel panel;
+    private final Set<String> acceptedColumnNames;
 
     public SyncIndicator(SyncIndicatorConfiguration configuration) {
         super(configuration);
+        this.acceptedColumnNames = new HashSet<String>();
+        for (Column column : getMetadataColumns()) {
+            acceptedColumnNames.add(column.getColumnName());
+        }
     }
 
     @Override
@@ -68,17 +75,14 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
     public void reset() {
     }
 
-    public void updated(List<DataRow> data) {
-        List<Column> indicatorColumns = getMetadataColumns();
+    public void updated(List<DataRow> rows) {
         int[][] values = new int[1][1];
-        for (DataRow row : data) {
-            String strValue = null;
-            for (Column column : indicatorColumns) {
-                strValue = row.getStringValue(column.getColumnName()); //TODO: change to Long
-                if (strValue != null) {
-                    values[0][0] = (int) Float.parseFloat(strValue);
+        for (DataRow row : rows) {
+            for (String column : row.getColumnNames()) {
+                if (acceptedColumnNames.contains(column)) {
+                    String value = row.getStringValue(column); //TODO: change to Long
+                    values[0][0] = (int) Float.parseFloat(value);
                     panel.updated(values);
-                    break;
                 }
             }
         }
