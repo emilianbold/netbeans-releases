@@ -662,5 +662,10 @@ public class GdbProxy {
     public void gdb_exit() {
         engine.sendCommand("-gdb-exit "); // NOI18N
         engine.stopSending();
+
+        // we need to finish all unfinished requests
+        for (CommandBuffer cb : map.values()) {
+            cb.error("gdb finished"); //NOI18N
+        }
     }
 } /* End of public class GdbProxy */

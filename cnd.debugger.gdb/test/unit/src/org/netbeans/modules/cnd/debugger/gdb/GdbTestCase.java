@@ -106,11 +106,15 @@ public abstract class GdbTestCase implements ContextProvider {
         }
         assert gdb != null;
 
-        debugger.testSuiteInit(gdb);
-        gdb.gdb_show("language"); // NOI18N
-        gdb.gdb_set("print repeat", "10"); // NOI18N
-        gdb.file_exec_and_symbols(path);
-        gdb.break_insert_temporary("main"); // NOI18N
+        try {
+            debugger.testSuiteInit(gdb);
+            gdb.gdb_show("language"); // NOI18N
+            gdb.gdb_set("print repeat", "10"); // NOI18N
+            gdb.file_exec_and_symbols(path);
+            gdb.break_insert_temporary("main"); // NOI18N
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     public void doFinish() {
