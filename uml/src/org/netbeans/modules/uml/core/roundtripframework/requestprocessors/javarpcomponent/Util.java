@@ -59,6 +59,7 @@ import java.io.File;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -161,7 +162,28 @@ public class Util {
     }
     
     public static boolean isTypeCompatibleWithElementSources(IClassifier type, IElement element, boolean verbose) {
-        return isTypeCompatibleWithElementSources(type.getName(), element, verbose);
+        if(type==null && element.getOwner()!=null && element.getOwner() instanceof IOperation)
+        {
+            //attempt to remove type from an operation, may be constructor creation
+            IOperation op=(IOperation) element.getOwner();
+            if(op.getOwner()!=null && op.getOwner() instanceof IClassifier)
+            {
+                IClassifier cl=(IClassifier) op.getOwner();
+                //good to compare names and do not allow null type for operations not constructors, but if name is changed at the same time, mit may be any
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if(type!=null)
+        {
+            return isTypeCompatibleWithElementSources(type.getName(), element, verbose);
+        }
+        else return false;
     }
     
     public static boolean isTypeCompatible(String type, File source, boolean verbose) {

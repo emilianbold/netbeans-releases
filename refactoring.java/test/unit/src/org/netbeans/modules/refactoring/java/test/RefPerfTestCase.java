@@ -73,7 +73,7 @@ public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
     
     FileObject projectDir;
 
-    final MyHandler handler;
+    private MyHandler handler;
     final List<PerformanceData> data;
 
     protected RefPerfTestCase(String name) {
@@ -160,9 +160,6 @@ public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
         try {
             absRefactoring.prepare(rs);
             Collection<RefactoringElement> elems = rs.getRefactoringElements();
-//            for (RefactoringElement refactoringElement : elems) {
-//                addRefactoringElement(refactoringElement);
-//            }
             rs.doRefactoring(true);
         } catch (Throwable t) {
             t.printStackTrace();
@@ -174,5 +171,8 @@ public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
         return data.toArray(new PerformanceData[0]);
     }
 
-}
+    public MyHandler getHandler() {
+        return handler;
+    }
 
+}

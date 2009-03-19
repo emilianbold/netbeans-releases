@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.junit.Log;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -197,6 +198,15 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
         FileObject inst = FileUtil.createData(root, "inst/class/" + Inst.class.getName().replace('.', '-') + ".instance");
         Lookup l = Lookups.forPath("inst/class");
         assertNotNull("Instance created", l.lookup(Inst.class));
+    }
+
+    public void testNoItemsForSillyPairs() throws Exception {
+        FileObject inst = FileUtil.createData(root, "silly/class/File.silly");
+        CharSequence log = Log.enable("org.openide.filesystems", Level.WARNING);
+        Lookup l = Lookups.forPath("silly/class");
+        Collection<?> c = l.lookupResult(Object.class).allItems();
+        assertTrue("No items created: " + c, c.isEmpty());
+        assertEquals("No warnings:\n" + log, 0, log.length());
     }
     
     public static final class Inst extends Object {

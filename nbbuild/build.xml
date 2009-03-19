@@ -559,7 +559,8 @@ Link to <A HREF="overview-summary.html">Non-frame version.</A>
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
-  <target name="build-nozip" depends="clean-cluster-flags,build-clusters,create-license-summary,create-netbeans-import" description="Build the IDE but do not create a final ZIP file.">
+  <target name="build-nozip" depends="clean-cluster-flags,build-clusters,create-license-summary,create-netbeans-import,finish-build" description="Build the IDE but do not create a final ZIP file."/>
+  <target name="finish-build" depends="init">
     <loadproperties srcFile="${clusters.list.file}" />
      
     <loadproperties srcfile="${netbeans.dest.dir}/moduleCluster.properties" />
@@ -599,6 +600,7 @@ Branding:
 Branch:   trunk
 Tag:
 ${hg.id.line}</echo>
+    <mkdir dir="${netbeans.dest.dir}/${nb.cluster.nb.dir}"/>
     <copy file="${netbeans.build.dir}/build_info" tofile="${netbeans.dest.dir}/${nb.cluster.nb.dir}/build_info" failonerror="true"/>
   </target>
   
@@ -1646,7 +1648,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
   <!-- keep this target name at least for a while for backward compat -jglick -->
   <target name="commitValidation" depends="all-commitValidation,check-commit-validation" if="run.validation">
-    <property name="build.test.results.dir" location="build/test/results"/>
+    <property name="build.test.results.dir" location="build/test/commit-validation/results"/>
     <property name="test.type" value="test"/>
     <delete dir="${build.test.results.dir}"/>
     <mkdir dir="${build.test.results.dir}"/>
@@ -2029,4 +2031,12 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             </modules>
         </optionsimport>
     </target>
+
+    <target name="test" description="Runs ${test.type} target in modules specified by ${test.modules}.">
+        <subant target="${test.type}" >
+            <property name="continue.after.failing.tests" value="true"/>
+            <dirset dir=".." includes="${test.modules}"/>
+        </subant>
+    </target>
+
 </project>

@@ -38,11 +38,17 @@
  */
 package org.netbeans.modules.web.core.syntax.gsf;
 
-import org.netbeans.modules.gsf.api.ParseEvent;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.PositionManager;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+
 
 /**
  * just fake class, we need the parser and the StructureScanner to enable 
@@ -50,19 +56,51 @@ import org.netbeans.modules.gsf.api.PositionManager;
  *
  * @author marek
  */
-public class JspGSFParser implements Parser {
+public class JspGSFParser extends Parser {
 
-    public void parseFiles(Job job) {
-        for (ParserFile file : job.files) {
-            ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
-            job.listener.started(beginEvent);
-            ParserResult result = new JspParserResult(this, file);
-            ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
-            job.listener.finished(doneEvent);
+    private Result fakeResult;
+
+    @Override
+    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        fakeResult = new JspFakeParserResult(snapshot);
+    }
+
+    @Override
+    public Result getResult(Task task) throws ParseException {
+        return fakeResult;
+    }
+
+    @Override
+    public void cancel() {
+        //do nothing
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener changeListener) {
+        //do nothing
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener changeListener) {
+        //do nothing
+    }
+
+    private static class JspFakeParserResult extends ParserResult {
+
+        public JspFakeParserResult(Snapshot s) {
+            super(s);
         }
+
+        @Override
+        public List<? extends Error> getDiagnostics() {
+            return Collections.EMPTY_LIST;
+        }
+
+        @Override
+        protected void invalidate() {
+            //do nothing
+        }
+
     }
 
-    public PositionManager getPositionManager() {
-        return null;
-    }
 }

@@ -6,6 +6,7 @@
     <description>Builds, tests, and runs the project PerformanceTestData.</description>
     <import file="nbproject/build-impl.xml"/>
     <import file="nbproject/profiler-build-impl.xml"/>
+    <import file="nbproject/profiler-build-impl.xml"/>
 
     <import file="nbproject/profiler-build-impl.xml"/>
     <target name="pre-init">

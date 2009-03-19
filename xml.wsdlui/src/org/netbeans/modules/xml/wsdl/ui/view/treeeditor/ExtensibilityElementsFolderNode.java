@@ -72,6 +72,7 @@ public class ExtensibilityElementsFolderNode extends FolderNode {
     private Definitions mDef = null;
     private Set<String> mSpecialTargetNamespaces;
 
+    
     public ExtensibilityElementsFolderNode(Definitions element) {
         this(element, null);
     }
@@ -96,7 +97,7 @@ public class ExtensibilityElementsFolderNode extends FolderNode {
             }
             return new ExtensibilityElementNewTypesFactory(WSDLExtensibilityElements.ELEMENT_DEFINITIONS).getNewTypes(mDef);
         }
-        return new NewType[]{};
+        return new NewType[] {};
     }
 
     @Override

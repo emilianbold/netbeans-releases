@@ -63,6 +63,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -271,6 +273,10 @@ public class StandardLoggerTest extends NbTestCase {
 
         public OutputListener createStandardHyperlink(URL file, String message, int line1, int column1, int line2, int column2) {
             return new MockHyperlink(file.toExternalForm(), message, line1, column1, line2, column2);
+        }
+
+        public InputOutput getIO() {
+            return IOProvider.getDefault().getIO("", true);
         }
 
         public void println(String message, boolean err, OutputListener listener) {

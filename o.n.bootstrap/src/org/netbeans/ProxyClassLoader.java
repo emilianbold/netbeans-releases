@@ -238,8 +238,13 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
                             String message = "Will not load class " + name + " arbitrarily from one of " +
                                     cls.getClassLoader() + " and " + pcl + " starting from " + this +
                                     "; see http://wiki.netbeans.org/DevFaqModuleCCE";
-                            LOGGER.warning(message);
-                            throw new ClassNotFoundException(message);
+                            ClassNotFoundException cnfe = new ClassNotFoundException(message);
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.log(Level.FINE, null, cnfe);
+                            } else {
+                                LOGGER.warning(message);
+                            }
+                            throw cnfe;
                         }
                     }
                 }
@@ -566,7 +571,8 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
     private static void printDefaultPackageWarning(String name) {
         if (!"commons-logging.properties".equals(name) &&
             !"jndi.properties".equals(name) &&
-            !"log4j.properties".equals(name)) { // NOI18N
+            !"log4j.properties".equals(name) &&
+            !"simplelog.properties".equals(name)) { // NOI18N
             LOGGER.log(Level.INFO, null, new IllegalStateException("You are trying to access file: " + name + " from the default package. Please see http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#default_package"));
         }
     }

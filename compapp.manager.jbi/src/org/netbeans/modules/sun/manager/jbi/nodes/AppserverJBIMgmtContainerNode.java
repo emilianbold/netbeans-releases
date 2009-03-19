@@ -55,9 +55,11 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
+import org.netbeans.modules.sun.manager.jbi.util.StackTraceUtil;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
@@ -86,41 +88,7 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
         setShortDescription(Utils.getTooltip(shortDescription));
         // Use non-HTML version in the property sheet's description area.
         setValue("nodeDescription", shortDescription); // NOI18N 
-
-        try {
-            NotificationService notificationService = controller.getNotificationService();
-            if (notificationService != null) {
-                notificationService.addNotificationEventListener(new EventNotificationListener() {
-
-                    public void processNotification(EventNotification eventNotification) {
-                        Notification notification = eventNotification.getNotification();
-                        CompositeDataSupport userData = (CompositeDataSupport) notification.getUserData();
-                        String notificationSourceType = (String) userData.get("SourceType"); // NOI18N
-                        if (needRefresh(notificationSourceType)) {
-                            refresh();
-                        }
-                    }
-                });
-            }
-        } catch (ManagementRemoteException ex) {
-            //Exceptions.printStackTrace(ex);
-            logger.warning("Cannot get notification service: " + ex.getMessage()); // NOI18N
-        }
     }
-
-    /**
-     * Whether this container node needs to be refreshed (that is, children
-     * regenerated) when a notification of the given source type is received
-     * from the runtime.
-     * 
-     * @param notificationSourceType  one of the following choices:
-     *              "ServiceEngine" | "BindingComponent" | "SharedLibrary" | 
-     *              "ServiceAssembly" | "ServiceUnit"
-     * 
-     * @return <code>true</code> if the children of this container node need
-     *         an update; <code>false</code> otherwise.
-     */
-    protected abstract boolean needRefresh(String notificationSourceType);
 
     /**
      * Return the actions associated with the menu drop down seen when
@@ -177,24 +145,31 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
 
         @Override
         protected void addNotify() {
+//            // When doing auto refresh after lifecycle event happened, 
+//            // we want it appear more natually w/o the "Wait..." node intrusion.
+//            // Alternatively, we could use ThreadLocal.
+//            if (!StackTraceUtil.isCalledBy(
+//                    "org.netbeans.modules.sun.manager.jbi.nodes.AppserverJBIMgmtContainerNode$1",  // NOI18N
+//                    "processNotification")) { // NOI18N
             List<Node> keys = new ArrayList<Node>();
             keys.add(WaitNode.createWaitNode());
             setKeys(keys);
-
-            RequestProcessor.getDefault().post(new Runnable() {
+//            }
+            
+            postToRequestProcessorThread(new Runnable() {
                 public void run() {
                     try {
                         final Node[] keys = cfactory.getChildrenObject(getNode(), type);
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
                                 setKeys(keys);
-                            }                            
+                            }
                         });
                     } catch (ManagementRemoteException e) {
                         getLogger().log(Level.FINE, e.getMessage(), e);
                     }
                 }
-            }, 0);
+            });
         }
 
         @Override

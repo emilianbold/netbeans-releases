@@ -72,7 +72,6 @@ import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
@@ -149,8 +148,8 @@ final class MultiPassCompileWorker extends CompileWorker {
                     if (jt == null) {
                         jt = JavacParser.createJavacTask(javaContext.cpInfo, diagnosticListener, javaContext.sourceLevel, cnffOraculum);
 //                            jt.setTaskListener(listener);
-                        if (JavaCustomIndexer.LOG.isLoggable(Level.FINER)) {
-                            JavaCustomIndexer.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.cpInfo.toString()); //NOI18N
+                        if (JavaIndex.LOG.isLoggable(Level.FINER)) {
+                            JavaIndex.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.cpInfo.toString()); //NOI18N
                         }
                     }
                     Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active.jfo});
@@ -258,12 +257,12 @@ final class MultiPassCompileWorker extends CompileWorker {
                 } catch (CouplingAbort a) {
                     //coupling error
                     //TODO: check if the source sig file ~ the source java file:
-                    RepositoryUpdater.couplingAbort(a, active.jfo);
+                    TreeLoader.dumpCouplingAbort(a, active.jfo);
                     jt = null;
                     diagnosticListener.cleanDiagnostics();
                     state = 0;
                 } catch (Throwable t) {
-                    if (JavaCustomIndexer.LOG.isLoggable(Level.FINEST)) {
+                    if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                         final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
                         final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                         final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
@@ -274,7 +273,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                     classPath == null  ? null : classPath.toString(),
                                     sourcePath == null ? null : sourcePath.toString()
                                     );
-                        JavaCustomIndexer.LOG.log(Level.FINEST, message, t);  //NOI18N
+                        JavaIndex.LOG.log(Level.FINEST, message, t);  //NOI18N
                     }
                     if (t instanceof ThreadDeath) {
                         throw (ThreadDeath) t;
@@ -313,7 +312,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                 }
             }
             if (state == 1) {
-                JavaCustomIndexer.LOG.warning("Not enough memory to compile folder: " + FileUtil.getFileDisplayName(context.getRoot())); // NOI18N
+                JavaIndex.LOG.warning("Not enough memory to compile folder: " + FileUtil.getFileDisplayName(context.getRoot())); // NOI18N
             }
         } finally {
             LowMemoryNotifier.getDefault().removeLowMemoryListener(mem);

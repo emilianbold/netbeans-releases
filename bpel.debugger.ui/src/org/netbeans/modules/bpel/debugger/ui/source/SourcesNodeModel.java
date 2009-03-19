@@ -21,6 +21,12 @@ package org.netbeans.modules.bpel.debugger.ui.source;
 
 import java.io.File;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.bpel.debugger.api.SourcePath;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -32,10 +38,19 @@ import org.openide.util.NbBundle;
 /**
  * @author   Jan Jancura
  */
-public class SourcesNodeModel implements NodeModel {
+public class SourcesNodeModel implements CheckNodeModel {
 
     public static final String SOURCE_ROOT =
         "org/netbeans/modules/bpel/debugger/ui/resources/image/execution/PROCESS";
+
+    private SourcePath              sourcePath;
+    // set of filters
+    private Set                     enabledSourceRoots = new HashSet ();
+    private Set                     disabledSourceRoots = new HashSet ();
+    
+    public SourcesNodeModel(ContextProvider lookupProvider) {
+        sourcePath = lookupProvider.lookupFirst(null, SourcePath.class);
+    }
     
     
     public String getDisplayName (Object o) throws UnknownTypeException {
@@ -64,4 +79,57 @@ public class SourcesNodeModel implements NodeModel {
 
     public void removeModelListener (ModelListener l) {
     }
+
+    public boolean isCheckable(Object node) throws UnknownTypeException {
+        return true;
+    }
+
+    public boolean isCheckEnabled(Object node) throws UnknownTypeException {
+        return true;
+    }
+
+    public Boolean isSelected(Object node) throws UnknownTypeException {
+        if (node instanceof String) {
+            return Boolean.valueOf(isEnabled((String)node));
+        } else {
+            throw new UnknownTypeException (node);
+        }
+    }
+
+    public void setSelected(Object node, Boolean selected) throws UnknownTypeException {
+        if (node instanceof String) {
+            setEnabled ((String) node, selected.booleanValue ());
+            return;
+        } else {
+            throw new UnknownTypeException (node);
+        }
+    }
+
+    // other methods ...........................................................
+
+    private boolean isEnabled (String root) {
+        String[] sourceRoots = sourcePath.getSelectedSources ();
+        int i, k = sourceRoots.length;
+        for (i = 0; i < k; i++)
+            if (sourceRoots [i].equals (root)) return true;
+        return false;
+    }
+
+    private void setEnabled (String root, boolean enabled) {
+        Set sourceRoots = new HashSet (Arrays.asList (
+            sourcePath.getSelectedSources ()
+        ));
+        if (enabled) {
+            enabledSourceRoots.add (root);
+            disabledSourceRoots.remove (root);
+            sourceRoots.add (root);
+        } else {
+            disabledSourceRoots.add (root);
+            enabledSourceRoots.remove (root);
+            sourceRoots.remove (root);
+        }
+        String[] ss = new String [sourceRoots.size ()];
+        sourcePath.setSelectedSources ((String[]) sourceRoots.toArray (ss));
+    }
+
 }

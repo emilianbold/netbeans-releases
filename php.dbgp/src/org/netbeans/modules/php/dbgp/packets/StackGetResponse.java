@@ -47,7 +47,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.DebugSession.IDESessionBridge;
-import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
+import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.annotations.CallStackAnnotation;
 import org.netbeans.modules.php.dbgp.breakpoints.BreakpointModel;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
@@ -89,7 +89,7 @@ public class StackGetResponse extends DbgpResponse {
         List<Stack> stacks = getStackElements();
         annotateStackTrace(session , stacks);
         
-        DebugSession currentSession = StartActionProviderImpl.getInstance().
+        DebugSession currentSession = SessionManager.getInstance().
             getCurrentSession(session.getSessionId());
         // perform views update only if response appears in current session
         if ( currentSession != session ){

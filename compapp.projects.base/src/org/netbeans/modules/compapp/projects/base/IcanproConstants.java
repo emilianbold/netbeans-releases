@@ -33,5 +33,6 @@ public interface IcanproConstants {
     String ARTIFACT_TYPE_EJB_WS="j2ee_archive";
     String SOURCES_TYPE_JAVA = "java";
     String VALIDATION_FLAG = "allow.build.with.error"; //NOI18N
+    String BETA_FEATURES_FLAG = "allow.beta.features"; //NOI18N
 
 }

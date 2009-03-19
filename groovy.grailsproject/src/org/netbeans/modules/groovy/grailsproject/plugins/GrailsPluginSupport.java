@@ -284,6 +284,7 @@ public class GrailsPluginSupport {
         }
         executor.shutdown();
 
+        // TODO if we will support global plugins we have to refresh global plugins dir as well
         FileUtil.refreshFor(project.getBuildConfig().getProjectPluginsDir());
         return installed;
     }
@@ -399,6 +400,22 @@ public class GrailsPluginSupport {
 
         private final List<GrailsPlugin> plugins = Collections.synchronizedList(new ArrayList<GrailsPlugin>());
 
+        /**
+         * In 1.1 plugins are listen in following format so the pattern
+         * luckily works. So installed plugins are not captured.
+         *
+         * core repo
+         * ---------------------------------------
+         * name &lt;version&gt; -- description
+         *
+         * default repo
+         * ---------------------------------------
+         * name &lt;version&gt; -- description
+         *
+         * installed
+         * ---------------------------------------
+         * name version -- description
+        */
         private static final Pattern PLUGIN_PATTERN = Pattern.compile("(.+)[\\s]+<([\\w\\s.-]+)>[\\s]+--(.+)"); // NOI18N
 
         public void processLine(String line) {

@@ -75,7 +75,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
     public int run() {
         if (!isFailedOrCancelled()) {
-            log.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + key);
+            log.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + executionEnvironment);
             try {
                 channel = createChannel();
                 InputStream is = channel.getInputStream();
@@ -158,7 +158,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         String theCommand = cmdline.toString();
 
         if (!preserveCommand) {
-            theCommand = ShellUtils.wrapCommand(key, theCommand);
+            theCommand = ShellUtils.wrapCommand(executionEnvironment, theCommand);
         }
 
         echannel.setCommand(theCommand);

@@ -229,7 +229,7 @@ public final class Util {
                 newServlet.setServletName( servletName );
                 newServlet.setServletClass( servletClassFQN );
                 newServlet.setDescription( NbBundle.getMessage( Util.class, "TXT_servletElementDescription" ));
-                newServlet.setDisplayName( "Javon service for : " +servletClassFQN ); // NOI18N
+                newServlet.setDisplayName( "Javon service for  " +servletClassFQN ); // NOI18N
                 webApp.addServlet(newServlet);
 
                 final ServletMapping newServletMapping = (ServletMapping) webApp.createBean( "ServletMapping" ); //NOI18N

@@ -75,8 +75,6 @@ public abstract class IOColorLines {
      * Prints line with selected color
      * @param io IO to print to
      * @param text a string to print to the tab
-     *        Makes the UI respond appropriately, eg. stop the automatic scrolling
-     *        or highlight the hyperlink.
      * @param color a color for the line of text
      */
     public static void println(InputOutput io, CharSequence text, Color color) throws IOException {

@@ -286,6 +286,14 @@ public class CsmFinderImpl implements CsmFinder {
         return ret;
     }
 
+    public List<CsmObject> findStaticNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch) {
+        List<CsmObject> ret = new ArrayList<CsmObject>();
+        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
+        ret.addAll(contResolver.getFileLocalNamespaceFunctions(nmsp, csmFile, name, exactMatch));
+        ret.addAll(contResolver.getFileLocalNamespaceVariables(nmsp, csmFile, name, exactMatch));
+        return ret;
+    }
+
     @SuppressWarnings("unchecked")
     private boolean checkStopAfterAppendAllNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested, boolean searchFirst,
             boolean needFileLocal, CsmFile file,

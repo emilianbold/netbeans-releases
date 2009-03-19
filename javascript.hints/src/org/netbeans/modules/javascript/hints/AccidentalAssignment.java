@@ -47,16 +47,16 @@ import javax.swing.JComponent;
 import org.mozilla.nb.javascript.Node;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.EditList;
-import org.netbeans.modules.gsf.api.HintFix;
-import org.netbeans.modules.gsf.api.HintSeverity;
-import org.netbeans.modules.gsf.api.PreviewableFix;
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.PreviewableFix;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.javascript.editing.AstUtilities;
+import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.hints.infrastructure.JsErrorRule;
 import org.netbeans.modules.javascript.hints.infrastructure.JsRuleContext;
@@ -74,7 +74,7 @@ public class AccidentalAssignment extends JsErrorRule {
     }
 
     public void run(JsRuleContext context, Error error, List<Hint> result) {
-        CompilationInfo info = context.compilationInfo;
+        JsParseResult info = AstUtilities.getParseResult(context.parserResult);
         BaseDocument doc = context.doc;
 
         Node node = (Node) error.getParameters()[0];
@@ -87,7 +87,7 @@ public class AccidentalAssignment extends JsErrorRule {
             List<HintFix> fixList = new ArrayList<HintFix>(2);
             fixList.add(new ConvertAssignmentFix(context, node, error, false));
             fixList.add(new ConvertAssignmentFix(context, node, error, true));
-            Hint desc = new Hint(this, getDisplayName(), info.getFileObject(), range, fixList, 500);
+            Hint desc = new Hint(this, getDisplayName(), info.getSnapshot().getSource().getFileObject(), range, fixList, 500);
             result.add(desc);
         }
     }
@@ -152,7 +152,7 @@ public class AccidentalAssignment extends JsErrorRule {
 
         public EditList getEditList() throws Exception {
             BaseDocument doc = context.doc;
-            CompilationInfo info = context.compilationInfo;
+            JsParseResult info = AstUtilities.getParseResult(context.parserResult);
             EditList list = new EditList(doc);
             OffsetRange astRange = AstUtilities.getNameRange(assignment);
             OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);

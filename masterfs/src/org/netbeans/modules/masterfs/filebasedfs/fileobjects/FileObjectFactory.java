@@ -399,10 +399,6 @@ public final class FileObjectFactory {
     }
 
     private BaseFileObj create(final FileInfo fInfo) {
-        if (fInfo.isWindowsFloppy()) {
-            return null;
-        }
-
         if (!fInfo.isConvertibleToFileObject()) {
             return null;
         }

@@ -370,7 +370,7 @@ public class HgConfigFiles {
 
         if(system == null) {
             system = createIni();
-            Mercurial.LOG.log(Level.WARNING, "Could not load the file " + filePath + ". Falling back on hg defaults."); // NOI18N
+            Mercurial.LOG.log(Level.INFO, "Could not load the file " + filePath + ". Falling back on hg defaults."); // NOI18N
         }
         
         Ini global = null;

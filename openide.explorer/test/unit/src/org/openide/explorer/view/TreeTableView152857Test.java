@@ -42,11 +42,12 @@ package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeNode;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -74,8 +75,6 @@ public class TreeTableView152857Test extends NbTestCase {
         return false;
     }
 
-
-    @RandomlyFails // fails until fix issue #152857: Sorting in TreeTableView should not be done on Visualizers
     public void testRemoveNodeInTTV () throws InterruptedException {
         StringKeys children = new StringKeys (true);
         children.doSetKeys (new String [] {"1", "3", "2"});
@@ -94,6 +93,56 @@ public class TreeTableView152857Test extends NbTestCase {
         assertEquals ("Node on 0nd position is '1'", "1", ta.getChildAt (0).toString ());
         assertEquals ("Node on 1st position is '2'", "2", ta.getChildAt (1).toString ());
 
+        d.setVisible (false);
+    }
+
+    public void testSetSelectedRow () throws PropertyVetoException, InterruptedException, InvocationTargetException {
+        StringKeys children = new StringKeys (true);
+        children.doSetKeys (new String [] {"1", "3", "2"});
+        Node root = new TestNode (children, "root");
+        Node aChild = root.getChildren ().getNodeAt (1);
+        view = new TTV (root);
+        DialogDescriptor dd = new DialogDescriptor (view, "", false, null);
+        Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
+        d.setVisible (true);
+        Thread.sleep (1000);
+        SwingUtilities.invokeAndWait (new Runnable () {
+            public void run () {
+                view.view.tree.setSelectionRow (3);
+            }
+        });
+        Thread.sleep (1000);
+        Node [] selectedNodes = view.getExplorerManager ().getSelectedNodes ();
+        assertNotNull ("A child found", selectedNodes);
+        assertEquals ("Only once child", 1, selectedNodes.length);
+        Node aSelectedChild = selectedNodes [0];
+        assertEquals ("They are my children", aChild, aSelectedChild);
+        d.setVisible (false);
+    }
+
+    public void testSelectedNodes () throws PropertyVetoException, InterruptedException, InvocationTargetException {
+        StringKeys children = new StringKeys (true);
+        children.doSetKeys (new String [] {"1", "3", "2"});
+        Node root = new TestNode (children, "root");
+        Node aChild = root.getChildren ().getNodeAt (1);
+        view = new TTV (root);
+        DialogDescriptor dd = new DialogDescriptor (view, "", false, null);
+        Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
+        d.setVisible (true);
+        Thread.sleep (1000);
+        view.getExplorerManager ().setSelectedNodes (new Node [] { aChild });
+        final int rows [] = new int [1];
+        SwingUtilities.invokeAndWait (new Runnable () {
+
+            public void run () {
+                int [] selectedRows = view.view.tree.getSelectionRows ();
+                assertNotNull ("Some rows are selected", selectedRows);
+                assertEquals ("Only one selected row", 1, selectedRows.length);
+                rows [0] = selectedRows [0];
+            }
+        });
+        Thread.sleep (1000);
+        assertEquals ("Child on 3rd position was selected", 3, rows [0]);
         d.setVisible (false);
     }
 

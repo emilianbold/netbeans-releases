@@ -45,21 +45,16 @@ import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Index;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
-import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.nav.TestUtilities;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -80,7 +75,6 @@ public class PHPIndexTest extends NbTestCase {
     @Override
     public void setUp() throws Exception {
         FileObject f = FileUtil.getConfigFile(FOLDER + "/text/html");
-        
         if (f != null) {
             f.delete();
         }
@@ -111,15 +105,16 @@ public class PHPIndexTest extends NbTestCase {
         if (true) {
             return;
         }
-        performTest(new CancellableTask<CompilationInfo>() {
+        performTest(new UserTask() {
             public void cancel() {}
-            public void run(CompilationInfo parameter) throws Exception {
-                Index i = parameter.getIndex(PHPLanguage.PHP_MIME_TYPE);
-                PHPIndex phpIndex = PHPIndex.get(i);
-                PHPParseResult ppr = (PHPParseResult) parameter.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
 
-                Collection<IndexedClass> classes = phpIndex.getClasses(ppr, "te", NameKind.CASE_INSENSITIVE_PREFIX);
-                
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                PHPParseResult parameter = (PHPParseResult)resultIterator.getParserResult();
+                PHPIndex phpIndex = PHPIndex.get(parameter);
+
+                Collection<IndexedClass> classes = phpIndex.getClasses(parameter, "te", QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
+
                 assertEquals(1, classes.size());
             }
         },
@@ -133,15 +128,16 @@ public class PHPIndexTest extends NbTestCase {
         if (true) {
             return;
         }
-        performTest(new CancellableTask<CompilationInfo>() {
+        performTest(new UserTask() {
             public void cancel() {}
-            public void run(CompilationInfo parameter) throws Exception {
-                Index i = parameter.getIndex(PHPLanguage.PHP_MIME_TYPE);
-                PHPIndex phpIndex = PHPIndex.get(i);
-                PHPParseResult ppr = (PHPParseResult) parameter.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
+            
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                PHPParseResult parameter = (PHPParseResult)resultIterator.getParserResult();
+                PHPIndex phpIndex = PHPIndex.get(parameter);
+                Collection<IndexedClass> classes = phpIndex.getClasses(parameter,
+                        "TE", QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
 
-                Collection<IndexedClass> classes = phpIndex.getClasses(ppr, "TE", NameKind.CASE_INSENSITIVE_PREFIX);
-                
                 assertEquals(1, classes.size());
             }
         },
@@ -151,15 +147,16 @@ public class PHPIndexTest extends NbTestCase {
     }
     
     public void DISABLEDtestLookupCaseInsensitive() throws Exception {
-        performTest(new CancellableTask<CompilationInfo>() {
+        performTest(new UserTask() {
             public void cancel() {}
-            public void run(CompilationInfo parameter) throws Exception {
-                Index i = parameter.getIndex(PHPLanguage.PHP_MIME_TYPE);
-                PHPIndex phpIndex = PHPIndex.get(i);
-                PHPParseResult ppr = (PHPParseResult) parameter.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
+            
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                PHPParseResult parameter = (PHPParseResult)resultIterator.getParserResult();
+                PHPIndex phpIndex = PHPIndex.get(parameter);
 
-                Collection<IndexedClass> classes = phpIndex.getClasses(ppr, "te", NameKind.CASE_INSENSITIVE_PREFIX);
-                
+                Collection<IndexedClass> classes = phpIndex.getClasses(parameter, "te", QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
+
                 assertEquals(1, classes.size());
             }
         },
@@ -172,45 +169,46 @@ public class PHPIndexTest extends NbTestCase {
         return "test" + (index == (-1) ? "" : (char) ('a' + index)) + ".php";
     }
     
-    protected void performTest(final CancellableTask<CompilationInfo> task, String... code) throws Exception {
-        clearWorkDir();
-        FileUtil.refreshAll();
-        
-        FileObject workDir = FileUtil.toFileObject(getWorkDir());
-        FileObject cache = workDir.createFolder("cache");
-        FileObject folder = workDir.createFolder("src");
-        FileObject cluster = workDir.createFolder("cluster");
-        int index = -1;
-        
-        for (String c : code) {
-            FileObject f = FileUtil.createData(folder, computeFileName(index));
-            TestUtilities.copyStringToFile(f, c);
-            index++;
-        }
-        
-        System.setProperty("netbeans.user", FileUtil.toFile(cache).getAbsolutePath());
-        PHPIndex.setClusterUrl(cluster.getURL().toExternalForm());
-        CountDownLatch l = RepositoryUpdater.getDefault().scheduleCompilationAndWait(folder, folder);
-        
-        l.await();
-        
-        final FileObject test = folder.getFileObject("test.php");
-        
-        Document doc = openDocument(test);
-        
-        ClassPath empty = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClassPath source = ClassPathSupport.createClassPath(folder);
-        ClasspathInfo info = ClasspathInfo.create(empty, empty, source);
-        Source s = Source.create(info, test);
-        
-        s.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {}
-            public void run(CompilationController parameter) throws Exception {
-                parameter.toPhase(Phase.UP_TO_DATE);
-                
-                task.run(parameter);
-            }
-        }, true);
+    protected void performTest(final UserTask task, String... code) throws Exception {
+        assert false;
+//        clearWorkDir();
+//        FileUtil.refreshAll();
+//
+//        FileObject workDir = FileUtil.toFileObject(getWorkDir());
+//        FileObject cache = workDir.createFolder("cache");
+//        FileObject folder = workDir.createFolder("src");
+//        FileObject cluster = workDir.createFolder("cluster");
+//        int index = -1;
+//
+//        for (String c : code) {
+//            FileObject f = FileUtil.createData(folder, computeFileName(index));
+//            TestUtilities.copyStringToFile(f, c);
+//            index++;
+//        }
+//
+//        System.setProperty("netbeans.user", FileUtil.toFile(cache).getAbsolutePath());
+//        PHPIndex.setClusterUrl(cluster.getURL().toExternalForm());
+//        CountDownLatch l = RepositoryUpdater.getDefault().scheduleCompilationAndWait(folder, folder);
+//
+//        l.await();
+//
+//        final FileObject test = folder.getFileObject("test.php");
+//
+//        Document doc = openDocument(test);
+//
+//        ClassPath empty = ClassPathSupport.createClassPath(new FileObject[0]);
+//        ClassPath source = ClassPathSupport.createClassPath(folder);
+//        ClasspathInfo info = ClasspathInfo.create(empty, empty, source);
+//        Source s = Source.create(info, test);
+//
+//        s.runUserActionTask(new CancellableTask<CompilationController>() {
+//            public void cancel() {}
+//            public void run(CompilationController parameter) throws Exception {
+//                parameter.toPhase(Phase.UP_TO_DATE);
+//
+//                task.run(parameter);
+//            }
+//        }, true);
     }
 
     private static Document openDocument(FileObject fileObject) throws Exception {

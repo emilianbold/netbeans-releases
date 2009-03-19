@@ -41,7 +41,9 @@
 
 package org.apache.tools.ant.module.run;
 
+import java.awt.Color;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
@@ -61,6 +63,8 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.IOColorLines;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 
 /**
@@ -233,7 +237,7 @@ public final class StandardLogger extends AntLogger {
             time = mockTotalTime;
         }
         if (t == null) {
-            session.println(formatMessageWithTime("FMT_finished_target_printed", time), false, null);
+            formatColoredMessageWithTime(session, "FMT_finished_target_printed", false, time);
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StandardLogger.class, "FMT_finished_target_status", session.getDisplayName()));
         } else {
             if (isStopException(t.getCause())) {
@@ -263,10 +267,10 @@ public final class StandardLogger extends AntLogger {
                 }
             }
             if (isStopException(t)) {
-                event.getSession().println(formatMessageWithTime("FMT_target_stopped_printed", time), true, null);
+                formatColoredMessageWithTime(session, "FMT_target_stopped_printed", true, time);
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StandardLogger.class, "FMT_target_stopped_status", event.getSession().getDisplayName()));
             } else {
-                event.getSession().println(formatMessageWithTime("FMT_target_failed_printed", time), true, null); // #10305
+                formatColoredMessageWithTime(session, "FMT_target_failed_printed", true, time);
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StandardLogger.class, "FMT_target_failed_status", event.getSession().getDisplayName()));
             }
         }
@@ -290,11 +294,21 @@ public final class StandardLogger extends AntLogger {
      * Total time: {0} minutes
      *             {1} seconds
      */
-    private static String formatMessageWithTime(String key, long millis) {
+    private static void formatColoredMessageWithTime(AntSession session, String key, boolean error, long millis) {
         int secs = (int) (millis / 1000);
         int minutes = secs / 60;
         int seconds = secs % 60;
-        return NbBundle.getMessage(StandardLogger.class, key, minutes, seconds);
+        String msg = NbBundle.getMessage(StandardLogger.class, key, minutes, seconds);
+        InputOutput io = session.getIO();
+        if (IOColorLines.isSupported(io)) {
+            try {
+                IOColorLines.println(io, msg, error ? Color.RED : Color.GREEN);
+                return;
+            } catch (IOException x) {
+                ERR.log(Level.INFO, null, x);
+            }
+        }
+        session.println(msg, error, null);
     }
     
     @Override
@@ -307,8 +321,19 @@ public final class StandardLogger extends AntLogger {
         if (name != null) {
             // Avoid printing internal targets normally:
             int minlevel = (name.length() > 0 && name.charAt(0) == '-') ? AntEvent.LOG_VERBOSE : AntEvent.LOG_INFO;
-            if (event.getSession().getVerbosity() >= minlevel) {
-                event.getSession().println(NbBundle.getMessage(StandardLogger.class, "MSG_target_started_printed", name), false, null);
+            AntSession session = event.getSession();
+            if (session.getVerbosity() >= minlevel) {
+                String msg = NbBundle.getMessage(StandardLogger.class, "MSG_target_started_printed", name);
+                InputOutput io = session.getIO();
+                if (IOColorLines.isSupported(io)) {
+                    try {
+                        IOColorLines.println(io, msg, Color.GRAY);
+                    } catch (IOException x) {
+                        ERR.log(Level.INFO, null, x);
+                    }
+                } else {
+                    session.println(msg, false, null);
+                }
             }
         }
         event.consume();

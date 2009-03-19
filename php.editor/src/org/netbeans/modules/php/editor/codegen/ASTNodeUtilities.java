@@ -43,7 +43,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.nav.SemiAttribute;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
@@ -63,7 +63,7 @@ public class ASTNodeUtilities {
 
     private ASTNodeUtilities() {}
 
-    public static Set<String> getVariablesInScope(CompilationInfo info, int offset, final VariableAcceptor acceptor) {
+    public static Set<String> getVariablesInScope(ParserResult info, int offset, final VariableAcceptor acceptor) {
         List<ASTNode> path = NavUtils.underCaret(info, offset);
         Collections.reverse(path);
         SemiAttribute attr = SemiAttribute.semiAttribute(info);

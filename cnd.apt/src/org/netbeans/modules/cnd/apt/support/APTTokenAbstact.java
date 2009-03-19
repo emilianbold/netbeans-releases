@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -60,8 +61,8 @@ public abstract class APTTokenAbstact implements APTToken {
     public int getEndLine() {return -1;};
     public void setEndLine(int l) {};
     
-    public int getTextID() {return -1;};
-    public void setTextID(int id) {};
+    public CharSequence getTextID() {return CharSequenceKey.empty();};
+    public void setTextID(CharSequence id) {};
     
     public int getColumn() {return -1;};
     public void setColumn(int c) {};
@@ -98,7 +99,7 @@ public abstract class APTTokenAbstact implements APTToken {
         if (this.getOffset() != other.getOffset()) {
             return false;
         }
-        if (!this.getText().equals(other.getText())) {
+        if (!this.getTextID().equals(other.getTextID())) {
             return false;
         }
         return true;
@@ -109,7 +110,7 @@ public abstract class APTTokenAbstact implements APTToken {
         int hash = 7;
         hash = 59 * hash + this.getType();
         hash = 59 * hash + this.getOffset();
-        hash = 59 * hash + this.getText().hashCode();
+        hash = 59 * hash + this.getTextID().hashCode();
         return hash;
     }
 }

@@ -279,7 +279,7 @@ public class ConfigurationDescriptorProvider {
                 String cUsage = cLang ? "USE_C" : "NO_C"; // NOI18N
                 String fUsage = fLang ? "USE_FORTRAN" : "NO_FORTRAN"; // NOI18N
                 String aUsage = aLang ? "USE_ASM" : "NO_ASM"; // NOI18N
-                rec.setParameters(new Object[] { type, flavor, family, host, platform, toSizeString(allItems), toSizeString(size), ccUsage, cUsage, fUsage});
+                rec.setParameters(new Object[] { type, flavor, family, host, platform, toSizeString(allItems), toSizeString(size), ccUsage, cUsage, fUsage, aUsage});
                 rec.setLoggerName(logger.getName());
                 logger.log(rec);
         }

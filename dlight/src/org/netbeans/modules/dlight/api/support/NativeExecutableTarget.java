@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.api.support;
 
+import java.net.ConnectException;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -59,6 +60,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
+import org.openide.windows.InputOutput;
 
 /**
  * Wrapper of {@link @org-netbeans-modules-nativexecution@org/netbeans/modules/nativexecution/api/NativeTask.html}
@@ -69,16 +71,15 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private static final Logger log =
             DLightLogger.getLogger(NativeExecutableTarget.class);
     private final ExecutionEnvironment execEnv;
-    private Future<Integer> targetFutureResult;
-    private String cmd;
-    private String templateCMD;
+    private final String templateCMD;
+    private final Map<String, String> envs;
+    private final String workingDirectory;
+    private final ExternalTerminal externalTerminal;
+    private final String[] templateArgs;
+    private final InputOutput io;
     private String[] args;
-    private Map<String, String> envs;
-    private String workingDirectory;
-    private ExternalTerminal externalTerminal;
-    private String[] templateArgs;
-    private String extendedCMD;
-    private String[] extendedCMDArgs;
+    private String cmd;
+    private Future<Integer> targetFutureResult;
     private volatile int pid = -1;
     private volatile State state;
 
@@ -92,12 +93,17 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         this.externalTerminal = configuration.getExternalTerminal();
         this.templateCMD = this.cmd;
         this.args = configuration.getArgs();
-        if (this.args != null) {
-            this.templateArgs = new String[args.length];
+
+        String[] argsCopy = null;
+        if (args != null) {
+            argsCopy = new String[args.length];
             for (int i = 0; i < args.length; i++) {
-                templateArgs[i] = args[i];
+                argsCopy[i] = args[i];
             }
         }
+
+        this.templateArgs = argsCopy;
+        this.io = configuration.getIO();
     }
 
     public int getPID() {
@@ -159,8 +165,8 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
 
     public void substitute(String cmd, String[] args) {
         //  isSubstituted = true;
-        extendedCMD = cmd;
-        extendedCMDArgs = args;
+        String extendedCMD = cmd;
+        String[] extendedCMDArgs = args;
         String targetCMD = this.templateCMD;
         String[] targetArgs = this.templateArgs;
         this.cmd = extendedCMD;
@@ -182,20 +188,36 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private void start(ExecutionEnvVariablesProvider executionEnvProvider) {
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.controllable(true).frontWindow(true);
-        
+
         NativeProcessBuilder pb = new NativeProcessBuilder(execEnv, cmd);
         pb = pb.setArguments(args);
         pb = pb.addNativeProcessListener(NativeExecutableTarget.this);
         pb = pb.setWorkingDirectory(workingDirectory);
         pb = pb.addEnvironmentVariables(envs);
-        
+
         if (externalTerminal != null) {
             pb = pb.useExternalTerminal(externalTerminal);
             descr = descr.inputVisible(false);
+        } else {
+            pb = pb.unbufferOutput(true);
+            descr = descr.inputVisible(true);
         }
-        
-        if (executionEnvProvider != null && executionEnvProvider.getExecutionEnv() != null) {
-            pb = pb.addEnvironmentVariables(executionEnvProvider.getExecutionEnv());
+
+        if (executionEnvProvider != null) {
+            try {
+                Map<String, String> env = executionEnvProvider.getExecutionEnv(this);
+                if (env != null && !env.isEmpty()) {
+                    pb = pb.addEnvironmentVariables(env);
+                }
+            } catch (ConnectException ex) {
+                // TODO: can it happen here?
+                log.severe(ex.getMessage());
+            }
+        }
+
+        if (io != null) {
+            io.setInputVisible(true);
+            descr = descr.inputOutput(io);
         }
 
         final ExecutionService es = ExecutionService.newService(

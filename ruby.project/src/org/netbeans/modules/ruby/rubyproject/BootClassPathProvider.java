@@ -45,11 +45,11 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -59,7 +59,7 @@ import org.openide.filesystems.FileObject;
  * 
  * @author Tor Norbye
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider.class, position=10005)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.classpath.ClassPathProvider.class, position=10005)
 public class BootClassPathProvider implements ClassPathProvider {
     
     private Map<FileObject, WeakReference<ClassPath>> sourceClassPathsCache =

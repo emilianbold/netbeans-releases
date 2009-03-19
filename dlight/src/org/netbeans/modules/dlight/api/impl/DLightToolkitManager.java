@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.api.impl;
 
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 
 /**
  *
@@ -48,8 +49,11 @@ import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightS
  */
 public interface DLightToolkitManager {
   DLightSessionHandler createSession(DLightTarget target, String configurationName);
+
+  DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration);
   
   void startSession(DLightSessionHandler reference);
 
   void stopSession(DLightSessionHandler reference);
 }
+

@@ -39,29 +39,19 @@
 
 package org.netbeans.modules.project.ui;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.Log;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.modules.project.ui.actions.TestSupport.TestProject;
-import org.netbeans.spi.project.ProjectFactory;
-import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openidex.search.SearchInfo;
 
 /** 

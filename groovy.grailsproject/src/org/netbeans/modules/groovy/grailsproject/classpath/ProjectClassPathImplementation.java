@@ -84,6 +84,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
 
     private File pluginsDir;
 
+    private File globalPluginsDir;
+
     private PluginsLibListener listenerPluginsLib;
 
     private ProjectClassPathImplementation(GrailsProjectConfig projectConfig) {
@@ -148,7 +150,13 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         }
 
         // TODO philosophical question: Is the global plugin boot or compile classpath?
-        File globalPluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getGlobalPluginsDir();
+        File oldGlobalPluginsDir = globalPluginsDir;
+        File currentGlobalPluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getGlobalPluginsDir();
+        if (globalPluginsDir == null || !globalPluginsDir.equals(currentGlobalPluginsDir)) {
+            LOGGER.log(Level.FINE, "Project plugins dir changed from {0} to {1}", new Object[]{pluginsDir, currentPluginsDir});
+            this.globalPluginsDir = currentGlobalPluginsDir;
+        }
+
         if (globalPluginsDir != null && globalPluginsDir.isDirectory()) {
             addPlugins(globalPluginsDir, result, null);
         }
@@ -157,18 +165,27 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
             File libDir = FileUtil.normalizeFile(new File(projectRoot, "lib")); // NOI18N
 
             listenerPluginsLib = new PluginsLibListener(this);
-
-            // it is weakly referenced
             FileUtil.addFileChangeListener(listenerPluginsLib, libDir);
         }
-        if (oldPluginsDir == null || !oldPluginsDir.equals(currentPluginsDir)) {
-            if (oldPluginsDir != null) {
-                FileUtil.removeFileChangeListener(listenerPluginsLib, oldPluginsDir);
-            }
-            FileUtil.addFileChangeListener(listenerPluginsLib, pluginsDir);
-        }
+
+        // project plugins listener
+        updateListener(listenerPluginsLib, oldPluginsDir, currentPluginsDir);
+
+        // global plugins listener
+        updateListener(listenerPluginsLib, oldGlobalPluginsDir, currentGlobalPluginsDir);
 
         return Collections.unmodifiableList(result);
+    }
+
+    private void updateListener(FileChangeListener listener, File oldDir, File newDir) {
+        if (oldDir == null || !oldDir.equals(newDir)) {
+            if (oldDir != null) {
+                FileUtil.removeFileChangeListener(listener, oldDir);
+            }
+            if (newDir != null) {
+                FileUtil.addFileChangeListener(listener, newDir);
+            }
+        }
     }
 
     private void addPlugins(File dir, List<PathResourceImplementation> result, Set<String> names) {

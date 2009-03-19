@@ -225,7 +225,6 @@ public class GraphView extends JPanel {
         // not want that to appear in the button label.
         showHideMessageToggle.setText(null);
         showHideMessageToggle.setRolloverEnabled(true);
-
         if (border != null) {
             showHideMessageToggle.setBorder(border);
         }

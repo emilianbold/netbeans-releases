@@ -90,12 +90,6 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       <branding name="nb"/>
     </locjar>
 
-    <locjar warnMissingDir="true"
-      basedir="openide.dialogs/src"
-      jarfile="${cluster}/modules/org-openide-dialogs.jar">
-      <branding name="nb"/>
-    </locjar>
-      
   </target>
   
   <!-- ML stuff; can it be deleted now? May be obsolete. -->
@@ -177,16 +171,6 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
         <branding name="nb"/>
       </locjar>
 
-      <mkdir dir="build/classes-ml/openide.dialogs/src"/>
-      <copy todir="build/classes-ml/openide.dialogs/src">
-          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/openide.dialogs/src">
-              <include name="**/*"/>
-          </fileset>
-      </copy>
-      <locjar basedir="build/classes-ml/openide.dialogs/src"
-              jarfile="${cluster}/modules/org-openide-dialogs.jar">
-        <branding name="nb"/>
-      </locjar>
     </target>
   
 </project>

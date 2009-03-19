@@ -106,8 +106,9 @@ public class TemplatePanel extends javax.swing.JPanel {
     
     private void initGUI() {
         String name = this.mlt.getName();
+        String description = this.mlt.getDescription();
         jRadioButton1.setText(name);
-        jRadioButton1.setToolTipText(name);
+        jRadioButton1.setToolTipText(description);
         jRadioButton1.setName(name);
         
         jRadioButton1.getAccessibleContext().setAccessibleName(name);

@@ -39,6 +39,7 @@
 
 package org.netbeans.junit;
 
+import org.netbeans.junit.internal.NbModuleLogHandler;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -59,6 +60,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
@@ -114,6 +117,8 @@ public class NbModuleSuite {
         final boolean gui;
         final boolean enableClasspathModules;
         final boolean honorAutoEager;
+        final Level failOnMessage;
+        final Level failOnException;
 
         private Configuration(
             List<String> clusterRegExp,
@@ -124,7 +129,9 @@ public class NbModuleSuite {
             boolean reuseUserDir,
             boolean gui,
             boolean enableCPModules,
-            boolean honorAutoEager
+            boolean honorAutoEager,
+            Level failOnMessage,
+            Level failOnException
         ) {
             this.clusterRegExp = clusterRegExp;
             this.moduleRegExp = moduleRegExp;
@@ -135,13 +142,15 @@ public class NbModuleSuite {
             this.gui = gui;
             this.enableClasspathModules = enableCPModules;
             this.honorAutoEager = honorAutoEager;
+            this.failOnException = failOnException;
+            this.failOnMessage = failOnMessage;
         }
 
         static Configuration create(Class<? extends TestCase> clazz) {            
             return new Configuration(
                 null, null, ClassLoader.getSystemClassLoader().getParent(),
                 Collections.<Item>emptyList(), clazz, false, true, true, false
-            );
+                , null, null);
         }
         
         /** Regular expression to match clusters that shall be enabled.
@@ -170,7 +179,7 @@ public class NbModuleSuite {
                 list, moduleRegExp, parentClassLoader, tests,
                 latestTestCaseClass, reuseUserDir, gui, enableClasspathModules,
                 honorAutoEager
-            );
+            , failOnMessage, failOnException);
         }
 
         /** By default only modules on classpath of the test are enabled, 
@@ -210,7 +219,7 @@ public class NbModuleSuite {
             return new Configuration(
                 this.clusterRegExp, arr, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir, gui,
-                enableClasspathModules, honorAutoEager);
+                enableClasspathModules, honorAutoEager, failOnMessage, failOnException);
         }
 
         Configuration classLoader(ClassLoader parent) {
@@ -218,7 +227,7 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, parent, tests,
                 latestTestCaseClass, reuseUserDir, gui, enableClasspathModules,
                 honorAutoEager
-            );
+            , failOnMessage, failOnException);
         }
 
         /** Adds new test name, or array of names into the configuration. By 
@@ -241,7 +250,7 @@ public class NbModuleSuite {
             return new Configuration(
                 clusterRegExp, moduleRegExp, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir, gui,
-                enableClasspathModules, honorAutoEager);
+                enableClasspathModules, honorAutoEager, failOnMessage, failOnException);
         }
         
         /** Adds new test class to run, together with a list of its methods
@@ -268,7 +277,7 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, parentClassLoader,
                 newTests, test, reuseUserDir, gui, enableClasspathModules,
                 honorAutoEager
-            );
+            , failOnMessage, failOnException);
         }
         
         /**
@@ -293,7 +302,7 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir,
                 gui, enableClasspathModules, honorAutoEager
-            );
+            , failOnMessage, failOnException);
         }
 
         /** By default all modules on classpath are enabled (so you can link
@@ -309,7 +318,7 @@ public class NbModuleSuite {
             return new Configuration(
                 clusterRegExp, moduleRegExp, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
-                gui, enable, honorAutoEager);
+                gui, enable, honorAutoEager, failOnMessage, failOnException);
         }
 
         /** By default the {@link #enableModules(java.lang.String)} method
@@ -328,7 +337,37 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
                 gui, enableClasspathModules, honor
-            );
+            , failOnMessage, failOnException);
+        }
+
+        /** Fails if there is a message sent to {@link Logger} with appropriate
+         * level or higher during the test run execution.
+         *
+         * @param level the minimal level of the message
+         * @return new configuration filled with this data
+         * @since 1.58
+         */
+        public Configuration failOnMessage(Level level) {
+            return new Configuration(
+                clusterRegExp, moduleRegExp, parentClassLoader,
+                tests, latestTestCaseClass, reuseUserDir,
+                gui, enableClasspathModules, honorAutoEager
+                , level, failOnException);
+        }
+
+        /** Fails if there is an exception reported to {@link Logger} with appropriate
+         * level or higher during the test run execution.
+         *
+         * @param level the minimal level of the message
+         * @return new configuration filled with this data
+         * @since 1.58
+         */
+        public Configuration failOnException(Level level) {
+            return new Configuration(
+                clusterRegExp, moduleRegExp, parentClassLoader,
+                tests, latestTestCaseClass, reuseUserDir,
+                gui, enableClasspathModules, honorAutoEager
+                , failOnMessage, level);
         }
 
         private void addLatest(List<Item> newTests) {
@@ -350,7 +389,7 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir, gui,
                 enableClasspathModules
-            ,honorAutoEager);
+            ,honorAutoEager, failOnMessage, failOnException);
         }
         
         /** Should the system run with GUI or without? The default behaviour
@@ -367,7 +406,7 @@ public class NbModuleSuite {
                 clusterRegExp, moduleRegExp, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir, gui,
                 enableClasspathModules
-            ,honorAutoEager);
+            ,honorAutoEager, failOnMessage, failOnException);
         }
 
         /**
@@ -380,7 +419,7 @@ public class NbModuleSuite {
             return new Configuration(
                 clusterRegExp, moduleRegExp, parentClassLoader, tests,
                 latestTestCaseClass, reuse, gui, enableClasspathModules
-            ,honorAutoEager);
+            ,honorAutoEager, failOnMessage, failOnException);
         }
     }
 
@@ -618,6 +657,8 @@ public class NbModuleSuite {
             if (!config.gui) {
                 args.add("--nogui");
             }
+
+            Test handler = NbModuleLogHandler.registerBuffer(config.failOnMessage, config.failOnException);
             m.invoke(null, (Object)args.toArray(new String[0]));
 
             ClassLoader global = Thread.currentThread().getContextClassLoader();
@@ -645,12 +686,20 @@ public class NbModuleSuite {
                         toRun.addTest(sndClazz.newInstance());
                     }
                 }
+
+                if (handler != null) {
+                    toRun.addTest(handler);
+                }
+
                 testCount = toRun.countTestCases();
                 toRun.run(result);
             } catch (ClassNotFoundException ex) {
                 result.addError(this, ex);
             } catch (NoClassDefFoundError ex) {
                 result.addError(this, ex);
+            }
+            if (handler != null) {
+                NbModuleLogHandler.finish();
             }
             
             Class<?> lifeClazz = global.loadClass("org.openide.LifecycleManager"); // NOI18N
@@ -894,6 +943,9 @@ public class NbModuleSuite {
                     if (res.startsWith("org.netbeans.junit.ide") || res.startsWith("org/netbeans/junit/ide")) {
                         return false;
                     }
+                    return true;
+                }
+                if (res.startsWith("META-INF/services/java.util.logging.Handler")) {
                     return true;
                 }
                 return false;

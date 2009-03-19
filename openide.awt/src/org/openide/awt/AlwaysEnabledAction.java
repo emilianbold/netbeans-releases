@@ -120,14 +120,14 @@ implements PropertyChangeListener, ContextAwareAction {
             if (icon instanceof Icon) {
                 return (Icon) icon;
             }
+            if (icon instanceof URL) {
+                icon = Toolkit.getDefaultToolkit().getImage((URL)icon);
+            }
             if (icon instanceof Image) {
                 return ImageUtilities.image2Icon((Image)icon);
             }
             if (icon instanceof String) {
                 return ImageUtilities.loadImageIcon((String)icon, false);
-            }
-            if (icon instanceof URL) {
-                return Toolkit.getDefaultToolkit().getImage((URL) icon);
             }
         }
         if ("iconBase".equals(name)) { // NOI18N
@@ -163,8 +163,12 @@ implements PropertyChangeListener, ContextAwareAction {
         }
         if (obj instanceof AlwaysEnabledAction) {
             final AlwaysEnabledAction other = (AlwaysEnabledAction) obj;
+            if (this == this.equals && other == other.equals) {
+                return (this == other);
+            }
+
             if (this.equals.equals(other.equals)) {
-                return false;
+                return true;
             }
         }
         return false;

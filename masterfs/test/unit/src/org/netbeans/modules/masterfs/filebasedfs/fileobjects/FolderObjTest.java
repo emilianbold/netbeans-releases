@@ -653,7 +653,6 @@ public class FolderObjTest extends NbTestCase {
         assertNotNull(f.getAbsolutePath(),FileBasedFileSystem.getInstance());
         
         while (f != null) {
-            if (new FileInfo (f).isWindowsFloppy()) continue;
             FileObject fo0 = FileBasedFileSystem.getFileObject(f);
             assertNotNull(f.getAbsolutePath(),fo0);
             

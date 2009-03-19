@@ -44,16 +44,13 @@ package org.netbeans.modules.java.j2seproject.ui.customizer;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
-import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
@@ -904,23 +901,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
     private void librariesBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_librariesBrowseActionPerformed
         if (!isSharable) {
-
-            List<String> libs = new ArrayList<String>();
-            List<String> jars = new ArrayList<String>();
-            collectLibs(uiProperties.JAVAC_CLASSPATH_MODEL, libs, jars);
-            collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs, jars);
-            collectLibs(uiProperties.RUN_CLASSPATH_MODEL, libs, jars);
-            collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs, jars);
-            libs.add("CopyLibs"); // #132201 - copylibs is integral part of j2seproject
-            String customTasksLibs = uiProperties.getProject().evaluator().getProperty(AntBuildExtender.ANT_CUSTOMTASKS_LIBS_PROPNAME);
-            if (customTasksLibs != null) {
-                String libIDs[] = customTasksLibs.split(",");
-                for (String libID : libIDs) {
-                    libs.add(libID.trim());
-                }
-            }
-            boolean result = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
-            if (result) {
+            if (uiProperties.makeSharable()) {
                 isSharable = true;
                 sharedLibrariesLabel.setEnabled(true);
                 librariesLocation.setEnabled(true);
@@ -944,28 +925,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         }
 }//GEN-LAST:event_librariesBrowseActionPerformed
    
-    
-    
-    private void collectLibs(DefaultListModel model, List<String> libs, List<String> jarReferences) {
-        for (int i = 0; i < model.size(); i++) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-                if (!item.isBroken() && !libs.contains(item.getLibrary().getName())) {
-                    libs.add(item.getLibrary().getName());
-                }
-            }
-            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                if (item.getReference() != null && item.getVariableBasedProperty() == null && !jarReferences.contains(item.getReference())) {
-                    //TODO reference is null for not yet persisted items.
-                    // there seems to be no way to generate a reference string without actually
-                    // creating and writing the property..
-                    jarReferences.add(item.getReference());
-                }
-            }
-        }
-
-    }
-    
     private void updateJars(DefaultListModel model) {
         for (int i = 0; i < model.size(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);

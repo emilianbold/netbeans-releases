@@ -45,9 +45,6 @@
 
 package org.netbeans.modules.autoupdate.pluginimporter;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -60,11 +57,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.swing.ImageIcon;
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
@@ -77,6 +71,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -95,7 +91,7 @@ public class ImportManager extends java.awt.Panel {
     private List<Boolean> checkedToImport = Collections.emptyList ();
     private List<UpdateElement> toInstall = Collections.emptyList ();
     private List<UpdateElement> toImport = Collections.emptyList ();
-    private JComponent statusLineIcon = null;
+    private Notification currentNotification = null;
     private JButton bImport;
     private JButton bNo;
 
@@ -140,10 +136,6 @@ public class ImportManager extends java.awt.Panel {
     }
 
     public void notifyAvailable () {
-        assert StatusLineImportIcon.statusPanel != null : "StatusLineIcon is not null!";
-        if (StatusLineImportIcon.statusPanel == null) {
-            return ;
-        }
         remindLater ();
         String msg = NbBundle.getMessage (ImportManager.class,
                 "ImportNotifier_PluginAvailableForImport", // NOI18N
@@ -151,63 +143,59 @@ public class ImportManager extends java.awt.Panel {
         String details = NbBundle.getMessage (ImportManager.class,
                 "ImportNotifier_PluginAvailableForImport_Details", // NOI18N
                 srcCluster);
-        if (statusLineIcon == null) {
-            attachRealFlashingIcon (StatusLineImportIcon.statusPanel);
+        MyAction a = new MyAction();
+        synchronized( this ) {
+            if( null != currentNotification ) {
+                currentNotification.clear();
+            }
+            Notification notification = NotificationDisplayer.getDefault().notify(msg,
+                    ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/pluginimporter/resources/import.png", false), //NOI18N
+                    details,
+                    a);
+            a.notification = notification;
+            currentNotification = notification;
         }
-        PluginManager.setStatusLineIconVisible (StatusLineImportIcon.statusPanel, createBalloonContent (msg, details), true);
     }
 
-    private void attachRealFlashingIcon (final JPanel p) {
-        ImageIcon img = ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/pluginimporter/resources/import.png", false); // NOI18N
+    private class MyAction extends AbstractAction {
         final JButton bRemindLaterButton = new JButton ();
         final JButton bImportButton = new JButton ();
         final JButton bNoButton = new JButton ();
-        Mnemonics.setLocalizedText (bRemindLaterButton, NbBundle.getMessage (ImportManager.class, "ImportNotifier_bRemindLater"));
-        Mnemonics.setLocalizedText (bImportButton, NbBundle.getMessage (ImportManager.class, "ImportNotifier_bImport"));
-        Mnemonics.setLocalizedText (bNoButton, NbBundle.getMessage (ImportManager.class, "ImportNotifier_bNo"));
-        Runnable onMouseClick = new Runnable () {
-            public void run () {
-                ImportManager ui = ImportManager.getInstance ();
-                ui.attachButtons (bImportButton, bNoButton);
-                DialogDescriptor dd = new DialogDescriptor (
-                        ui,
-                        NbBundle.getMessage (Installer.class, "Installer_DialogTitle"),
-                        true,
-                        new Object[] {bImportButton, bNoButton, bRemindLaterButton},
-                        NotifyDescriptor.OK_OPTION,
-                        DialogDescriptor.BOTTOM_ALIGN,
-                        null,
-                        null);
-                dd.setClosingOptions (new Object[] {bNoButton, bRemindLaterButton});
-                DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
-                if (bImportButton.equals (dd.getValue ()) || bNoButton.equals (dd.getValue ())) {
-                    ui.dontRemind ();
-                    SwingUtilities.invokeLater (new Runnable () {
-                        public void run () {
-                            PluginManager.setStatusLineIconVisible (p, null, false);
-                        }
-                    });
-                } else if (bRemindLaterButton.equals (dd.getValue ())) {
-                    ui.remindLater ();
-                }
-            }
-        };
-        statusLineIcon = PluginManager.createStatusLineIcon (img, onMouseClick);
-        p.removeAll ();
-        p.add (statusLineIcon);
-    }
-    private static JComponent createBalloonContent (String msg, String details) {
-        JPanel panel = new JPanel (new GridBagLayout ());
-        panel.setOpaque (false);
-        JLabel top = new JLabel (msg);
-        top.setIcon (ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/info_icon.png", false)); //NOI18N
-        top.setIconTextGap (10);
-        panel.add (top, new GridBagConstraints (0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST,
-                GridBagConstraints.NONE, new Insets (6, 0, 0, 0), 0, 0));
+        private Notification notification;
 
-        panel.add (new JLabel (details),
-                new GridBagConstraints (0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets (2, 0, 0, 0), 0, 0));
-        return panel;
+        public MyAction() {
+            Mnemonics.setLocalizedText (bRemindLaterButton, NbBundle.getMessage (ImportManager.class, "ImportNotifier_bRemindLater"));
+            Mnemonics.setLocalizedText (bImportButton, NbBundle.getMessage (ImportManager.class, "ImportNotifier_bImport"));
+            Mnemonics.setLocalizedText (bNoButton, NbBundle.getMessage (ImportManager.class, "ImportNotifier_bNo"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            ImportManager ui = ImportManager.getInstance ();
+            ui.attachButtons (bImportButton, bNoButton);
+            DialogDescriptor dd = new DialogDescriptor (
+                    ui,
+                    NbBundle.getMessage (Installer.class, "Installer_DialogTitle"),
+                    true,
+                    new Object[] {bImportButton, bNoButton, bRemindLaterButton},
+                    NotifyDescriptor.OK_OPTION,
+                    DialogDescriptor.BOTTOM_ALIGN,
+                    null,
+                    null);
+            dd.setClosingOptions (new Object[] {bNoButton, bRemindLaterButton});
+            DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
+            if (bImportButton.equals (dd.getValue ()) || bNoButton.equals (dd.getValue ())) {
+                ui.dontRemind ();
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        if( null != notification ) {
+                            notification.clear();
+                        }
+                    }
+                });
+            } else if (bRemindLaterButton.equals (dd.getValue ())) {
+                ui.remindLater ();
+            }
+        }
     }
 
     public void attachButtons (JButton bImport, JButton bNo) {

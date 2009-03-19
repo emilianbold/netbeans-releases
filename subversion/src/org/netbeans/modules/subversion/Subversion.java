@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -60,11 +60,10 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 
 /**
  * A singleton Subversion manager class, center of Subversion module. Use {@link #getInstance()} to get access
@@ -72,7 +71,7 @@ import org.openide.util.LookupListener;
  *
  * @author Maros Sandor
  */
-public class Subversion implements LookupListener {
+public class Subversion {
 
     /**
      * Fired when textual annotations and badges have changed. The NEW value is Set<File> of files that changed or NULL
@@ -112,6 +111,11 @@ public class Subversion implements LookupListener {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion");
 
     private Result<? extends SvnHook> hooksResult;
+    private Result<? extends HyperlinkProvider> hpResult;
+    /**
+     * Hyperlink providers available for the commit message TooltipWindow
+     */
+    private List<HyperlinkProvider> hyperlinkProviders;
 
     public static synchronized Subversion getInstance() {
         if (instance == null) {
@@ -138,13 +142,9 @@ public class Subversion implements LookupListener {
         fileStatusCache.addVersioningListener(svcs);
         addPropertyChangeListener(svcs);
 
-
         hooksResult = (Result<? extends SvnHook>) Lookup.getDefault().lookupResult(SvnHook.class);
-        hooksResult.addLookupListener(this);
-    }
-
-    public void resultChanged(LookupEvent ev) {
-        hooksResult = (Result<? extends SvnHook>) Lookup.getDefault().lookupResult(SvnHook.class);
+        hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
+        setHyperlinkProviders();
     }
 
     /**
@@ -228,6 +228,13 @@ public class Subversion implements LookupListener {
             username = rc.getUsername();
             password = rc.getPassword();
         }
+        return getClient(repositoryUrl, username, password, support);
+    }
+
+    public SvnClient getClient(SVNUrl repositoryUrl,
+                               String username,
+                               String password,
+                               SvnProgressSupport support) throws SVNClientException {
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support, /*null, */username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
         attachListeners(client);
         return client;
@@ -503,6 +510,9 @@ public class Subversion implements LookupListener {
     }
     
     public List<SvnHook> getHooks() {
+        if(hooksResult == null) {
+            return Collections.EMPTY_LIST;
+        }
         List<SvnHook> ret = new ArrayList<SvnHook>();
         Collection<? extends SvnHook> hooks = hooksResult.allInstances();
         if (hooks.size() > 0) {
@@ -513,4 +523,21 @@ public class Subversion implements LookupListener {
         return ret;
     }
 
+    private void setHyperlinkProviders () {
+        Collection<? extends HyperlinkProvider> providersCol = hpResult.allInstances();
+        List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
+        providersList.addAll(providersCol);
+        hyperlinkProviders = Collections.unmodifiableList(providersList);
+    }
+
+    /**
+     *
+     * @return registered hyperlink providers
+     */
+    public List<HyperlinkProvider> getHyperlinkProviders() {
+        if (hyperlinkProviders == null) {
+            setHyperlinkProviders();
+        }
+        return hyperlinkProviders;
+    }
 }

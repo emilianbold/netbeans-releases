@@ -149,9 +149,6 @@ public class CompletionTestBase extends NbTestCase {
             JavaCompletionProviderBasicTest.class.getResource("/org/netbeans/modules/defaults/mf-layer.xml")
         });
         Repository repository = new Repository(new MultiFileSystem(new FileSystem[] {FileUtil.createMemoryFileSystem(), system}));
-        File cacheFolder = new File(getWorkDir(), "var/cache/index");
-        cacheFolder.mkdirs();
-        IndexUtil.setCacheFolder(cacheFolder);
         final ClassPath bootPath = createClassPath(System.getProperty("sun.boot.class.path"));
         ClassPathProvider cpp = new ClassPathProvider() {
             public ClassPath findClassPath(FileObject file, String type) {
@@ -176,6 +173,9 @@ public class CompletionTestBase extends NbTestCase {
             }
         };
         Lkp.initLookups(new Object[] {repository, loader, cpp, mdp});
+        File cacheFolder = new File(getWorkDir(), "var/cache/index");
+        cacheFolder.mkdirs();
+        IndexUtil.setCacheFolder(cacheFolder);
         JEditorPane.registerEditorKitForContentType("text/x-java", "org.netbeans.modules.editor.java.JavaKit");
         final ClassPath sourcePath = ClassPathSupport.createClassPath(new FileObject[] {FileUtil.toFileObject(getDataDir())});
         final ClassIndexManager mgr  = ClassIndexManager.getDefault();
@@ -187,21 +187,21 @@ public class CompletionTestBase extends NbTestCase {
         final JavaSource js = JavaSource.create(cpInfo);
         assertNotNull(js);
         js.runUserActionTask(new Task<CompilationController>() {
-            public void run(CompilationController parameter) throws Exception {                
+            public void run(CompilationController parameter) throws Exception {
                 for (ClassPath.Entry entry : bootPath.entries()) {
                     final URL url = entry.getURL();
-                    final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);            
+                    final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
                     ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
                         public Void run() throws IOException, InterruptedException {
-                            BinaryAnalyser ba = cii.getBinaryAnalyser();            
+                            BinaryAnalyser ba = cii.getBinaryAnalyser();
                             ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));
                             ba.finish();
                             return null;
                         }
-                    });            
+                    });
                 }
             }
-        }, true);                        
+        }, true);
         Utilities.setCaseSensitive(true);
     }
     

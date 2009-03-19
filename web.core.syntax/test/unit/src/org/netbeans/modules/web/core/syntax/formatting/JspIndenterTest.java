@@ -40,11 +40,6 @@
 package org.netbeans.modules.web.core.syntax.formatting;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Semaphore;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
@@ -52,29 +47,21 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.html.editor.NbReaderProvider;
-import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.java.source.parsing.ClassParserFactory;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
-import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
 import org.netbeans.modules.web.core.syntax.JSPKit;
 import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.test.web.core.syntax.TestBase2;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -102,8 +89,7 @@ public class JspIndenterTest extends TestBase2 {
         AbstractIndenter.inUnitTestRun = true;
 
         MockLookup.init();
-        MockLookup.setInstances(create(), testLanguageProvider, new MockMimeLookup());
-        //MockServices.setServices(TestLanguageProvider.class, MockMimeLookup.class);
+        MockLookup.setInstances(testLanguageProvider);
 
         // init TestLanguageProvider
         Lookup.getDefault().lookup(TestLanguageProvider.class);
@@ -123,23 +109,8 @@ public class JspIndenterTest extends TestBase2 {
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, new JavacParserFactory(), new ClassParserFactory());
     }
 
-    // HACK to workaround #159622
-    public static AntBasedProjectType create() {
-        Map map = new HashMap();
-        map.put("type", "org.netbeans.modules.web.project");
-        map.put("iconResource", "org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif");
-        map.put("sharedName", "true");
-        map.put("sharedNamespace", "http://www.netbeans.org/ns/web-project/3");
-        map.put("privateName", "data");
-        map.put("privateNamespace", "http://www.netbeans.org/ns/web-project-private/1");
-        map.put("className", "org.netbeans.modules.web.project.WebProjectType");
-        map.put("methodName", "createProject");
-        return AntBasedProjectFactorySingleton.create(map);
-    }
-
     @Override
-    protected void configureIndenters(final BaseDocument document, final Formatter formatter,
-            final CompilationInfo compilationInfo, boolean indentOnly, String mimeType) throws BadLocationException {
+    protected void configureIndenters(Document document, Formatter formatter, boolean indentOnly, String mimeType) {
         // override it because I've already done in setUp()
     }
 
@@ -163,32 +134,6 @@ public class JspIndenterTest extends TestBase2 {
         }
     }
 
-    private void forceHTMLParsingAndWait(String file, String mimeType, Language language) throws Exception {
-        FileObject fo = getTestFile(file);
-        BaseDocument doc = getDocument(fo, mimeType, language);
-        LanguagePath htmlLP = LanguagePath.get(language);
-        Semaphore s = new Semaphore(1);
-        Listener l = new Listener(doc, s);
-        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(l);
-        s.acquire();
-        s.release();
-    }
-
-    private static class Listener extends EmbeddingUpdater {
-        private Semaphore s;
-        public Listener(Document doc, Semaphore s) throws InterruptedException {
-            super(doc);
-            this.s = s;
-            s.acquire();
-        }
-        @Override
-        public void parsingFinished(List<SyntaxElement> elements) {
-            super.parsingFinished(elements);
-            s.release();
-        }
-
-    }
-
     @Override
     protected boolean runInEQ() {
         return true;
@@ -199,7 +144,6 @@ public class JspIndenterTest extends TestBase2 {
     }
 
     public void testFormattingCase002() throws Exception {
-        forceHTMLParsingAndWait("FormattingProject/web/case002.jsp", "text/x-jsp", JspTokenId.language());
         reformatFileContents("FormattingProject/web/case002.jsp",new IndentPrefs(4,4));
     }
 
@@ -235,9 +179,20 @@ public class JspIndenterTest extends TestBase2 {
         reformatFileContents("FormattingProject/web/issue89174.jsp",new IndentPrefs(4,4));
     }
 
+    public void testFormattingIssue160098() throws Exception {
+        reformatFileContents("FormattingProject/web/issue160098.jsp",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingIssue160103() throws Exception {
+        reformatFileContents("FormattingProject/web/issue160103.jsp",new IndentPrefs(4,4));
+    }
+
     public void testIndentation() throws Exception {
 //        insertNewline("<style>\n     h1 {\n        <%= System.\n   somth() ^%>",
 //                      "<style>\n     h1 {\n        <%= System.\n   somth() \n        ^%>", null);
+
+        //#160092:
+        insertNewline("^<html>\n</html>\n", "\n^<html>\n</html>\n", null);
 
         insertNewline("<jsp:useBean>^", "<jsp:useBean>\n    ^", null);
         insertNewline("^<jsp:body>", "\n^<jsp:body>", null);
@@ -255,7 +210,8 @@ public class JspIndenterTest extends TestBase2 {
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>a\n^</jsp:useBean>", "<jsp:body>\n    <html>\n        <jsp:useBean>a\n\n        ^</jsp:useBean>", null);
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>a^</jsp:useBean>", "<jsp:body>\n    <html>\n        <jsp:useBean>a\n        ^</jsp:useBean>", null);
 
-        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>^", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>\n    ^", null);
+        insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>^",
+                      "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    </html>\n    ^", null);
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^</html>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n    ^</html>", null);
         insertNewline("<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>^<table>", "<jsp:body>\n    <html>\n        <jsp:useBean>\n        </jsp:useBean>\n        ^<table>", null);
 
@@ -264,6 +220,14 @@ public class JspIndenterTest extends TestBase2 {
 
         // TODO: impl matching of INDENT/RETURN and use it to properly match incorrect document:
         //insertNewline("<jsp:body>\n    <html>^</jsp:body>", "<jsp:body>\n    <html>\n^</jsp:body>", null);
+
+        insertNewline("<!--\n   comment\n^-->\n", "<!--\n   comment\n\n^-->\n", null);
+        insertNewline(
+            "<html> <!--^comment",
+            "<html> <!--\n       ^comment", null);
+        insertNewline(
+            "<html> <!--\n             ^comment",
+            "<html> <!--\n             \n       ^comment", null);
 
     }
 

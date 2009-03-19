@@ -100,7 +100,7 @@ public class MavenWSITEditor implements WSEditor, UndoManagerHolder {
     }
 
     public String getTitle() {
-        return NbBundle.getMessage(MavenWSITEditor.class, "EDITOR_TITLE"); //NOI18N
+        return NbBundle.getMessage(MavenWSITEditor.class, "QOS_EDITOR_TITLE"); //NOI18N
     }
 
     public JComponent createWSEditorComponent(Node node) {

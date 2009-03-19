@@ -43,13 +43,10 @@ package org.netbeans.modules.refactoring.php.findusages;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryConstants;
-import org.netbeans.modules.refactoring.php.findusages.RefactoringUtils;
-import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.HelpCtx;
@@ -67,9 +64,9 @@ public class WhereUsedQueryUI implements RefactoringUI {
     private ElementKind kind;
     private AbstractRefactoring delegate;
 
-    public WhereUsedQueryUI(WhereUsedSupport usage, CompilationInfo info) {
+    public WhereUsedQueryUI(WhereUsedSupport usage, ParserResult info) {
         this.query = new WhereUsedQuery(Lookups.singleton(usage));
-        this.query.getContext().add(RefactoringUtils.getClasspathInfoFor(usage.getFileObject()));
+//        this.query.getContext().add(RefactoringUtils.getClasspathInfoFor(usage.getFileObject()));
         this.element = usage;
         name = usage.getName();
         kind = usage.getElementKind();

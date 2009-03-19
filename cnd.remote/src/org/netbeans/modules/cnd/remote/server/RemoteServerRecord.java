@@ -44,7 +44,6 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
@@ -78,29 +77,7 @@ public class RemoteServerRecord implements ServerRecord {
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
      * in the AWT Event thread if called while adding a node from ToolsPanel, or in a different
      * thread if called during startup from cached information.
-     * 
-     * @param name
-     *
-     * TODO: deprecate and remove
      */
-    protected RemoteServerRecord(final String name) {
-        this(name, false);
-    }
-
-    /** TODO: deprecate and remove */
-    protected RemoteServerRecord(final String name, boolean connect) {
-        this(ExecutionEnvironmentFactory.getExecutionEnvironment(name), connect);
-//        this.name = name;
-//        int pos = name.indexOf('@');
-//        if (pos != -1) {
-//            user = name.substring(0, pos);
-//            server = name.substring(pos + 1);
-//        } else {
-//            user="";
-//            server = name;
-//        }
-    }
-
     protected RemoteServerRecord(ExecutionEnvironment env) {
         this(env, false);
     }
@@ -170,7 +147,7 @@ public class RemoteServerRecord implements ServerRecord {
                 state = State.OFFLINE;
                 reason = rss.getReason();
             } else {
-                RemotePathMap.getRemotePathMapInstance(getName()).init();
+                RemotePathMap.getRemotePathMapInstance(getExecutionEnvironment()).init();
                 state = State.ONLINE;
             }
         }

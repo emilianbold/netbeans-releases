@@ -154,11 +154,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private String recentRevision;
     
     /**
-     * File for revision associated with caret line.
-     */
-    private File recentFile;
-    
-    /**
      * Request processor to create threads that may be cancelled.
      */
     RequestProcessor requestProcessor = null;
@@ -168,15 +163,16 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      */
     private RequestProcessor.Task latestAnnotationTask = null;
 
-    /**
-     * Holds false if Rollback Changes action is NOT valid for current ievision, true otherwise. 
-     */ 
-    private boolean recentRevisionCanBeRolledBack;
 
     /**
      * The log messaages for the file stored in the AnnotationBar;
      */
     private HgLogMessage [] logs;
+
+    /**
+     * Repository root of annotated file
+     */
+    private File repositoryRoot;
 
     /**
      * Creates new instance initializing final fields.
@@ -189,7 +185,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         this.caret = textComponent.getCaret();
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     }
-    
+
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     /**
@@ -218,6 +214,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * Takes AnnotateLines and shows them.
      */
     public void annotationLines(File file, List<AnnotateLine> annotateLines) {
+        // set repository root for popup menu, now should be the right time
+        repositoryRoot = Mercurial.getInstance().getRepositoryRoot(getCurrentFile());
         final List<AnnotateLine> lines = new LinkedList<AnnotateLine>(annotateLines);
         int lineCount = lines.size();
         /** 0 based line numbers => 1 based line numbers*/
@@ -323,7 +321,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * @return the file related to the document, <code>null</code> if none
      * exists.
      */
-    private File getCurrentFile() {
+    File getCurrentFile() {
         File result = null;
         
         DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
@@ -355,8 +353,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             private void maybeShowPopup(MouseEvent e) {
                 if (e.isPopupTrigger()) {
                     e.consume();
-                    createPopup().show(e.getComponent(),
+                    createPopup(e).show(e.getComponent(),
                                e.getX(), e.getY());
+                } else if (e.getID() == MouseEvent.MOUSE_RELEASED && e.getButton() == MouseEvent.BUTTON1) {
+                    e.consume();
+                    showTooltipWindow(e);
                 }
             }
         });
@@ -366,18 +367,64 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     }
 
-    private JPopupMenu createPopup() {
+    /**
+     *
+     * @return
+     */
+    JTextComponent getTextComponent () {
+        return textComponent;
+    }
+
+    /**
+     *
+     * @param event
+     */
+    private void showTooltipWindow (MouseEvent event) {
+        Point p = new Point(event.getPoint());
+        SwingUtilities.convertPointToScreen(p, this);
+        Point p2 = new Point(p);
+        SwingUtilities.convertPointFromScreen(p2, textComponent);
+        
+        // annotation for target line
+        AnnotateLine al = null;
+        if (elementAnnotations != null) {
+            al = getAnnotateLine(getLineFromMouseEvent(event));
+        }
+
+        /**
+         * al.getCommitMessage() != null - since commit messages are initialized separately from the AL constructor
+         */
+        if (al != null && al.getCommitMessage() != null) {
+            TooltipWindow ttw = new TooltipWindow(this, al);
+            ttw.show(new Point(p.x - p2.x, p.y));
+        }
+    }
+
+    private JPopupMenu createPopup(MouseEvent e) {
         final ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
         final JPopupMenu popupMenu = new JPopupMenu();
 
-        final File file = getCurrentFile();
-        
         final JMenuItem diffMenu = new JMenuItem(loc.getString("CTL_MenuItem_DiffToRevision")); // NOI18N
+
+        // annotation for target line
+        AnnotateLine al = null;
+        if (elementAnnotations != null) {
+            al = getAnnotateLine(getLineFromMouseEvent(e));
+        }
+        // revision previous to target line's revision
+        final String revisionPerLine = al == null ? null : al.getRevision();
+        // used in menu Revert
+        final File file = getCurrentFile();
+        // used in diff menu, repository root set while computing revision
+        // denotes the path of the file in the showing revision
+        final File originalFile = al == null ? null : new File(repositoryRoot, al.getFileName());
+        final boolean revisionCanBeRolledBack = al == null ? false : al.canBeRolledBack();
+        
         diffMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (recentRevision != null) {
-                    if (getPreviousRevision(recentRevision) != null) {
-                        DiffAction.diff(recentFile, getPreviousRevision(recentRevision), recentRevision);
+                if (revisionPerLine != null) {
+                    if (getPreviousRevision(revisionPerLine) != null) {
+                        DiffAction.diff(originalFile, getPreviousRevision(revisionPerLine), revisionPerLine);
                     }
                 }
             }
@@ -387,11 +434,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         JMenuItem rollbackMenu = new JMenuItem(loc.getString("CTL_MenuItem_Revert")); // NOI18N
         rollbackMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                revert(file, recentRevision);
+                revert(file, revisionPerLine);
             }
         });
         popupMenu.add(rollbackMenu);
-        rollbackMenu.setEnabled(recentRevisionCanBeRolledBack);
+        rollbackMenu.setEnabled(revisionCanBeRolledBack);
 
         JMenuItem menu;
         menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations")); // NOI18N
@@ -407,11 +454,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         diffMenu.setVisible(false);
         rollbackMenu.setVisible(false);
         separator.setVisible(false);
-        if (recentRevision != null) {
-            if (getPreviousRevision(recentRevision) != null) {
+        if (revisionPerLine != null) {
+            if (getPreviousRevision(revisionPerLine) != null) {
                 String format = loc.getString("CTL_MenuItem_DiffToRevision"); // NOI18N
-                diffMenu.setText(MessageFormat.format(format, new Object [] { recentRevision, getPreviousRevision(recentRevision) }));
-                diffMenu.setVisible(true);
+                diffMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine, getPreviousRevision(revisionPerLine) }));
+                diffMenu.setVisible(originalFile != null);
                 rollbackMenu.setVisible(true);
                 separator.setVisible(true);
             }
@@ -504,7 +551,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         recentStatusMessage = loc.getString("CTL_StatusBar_WaitFetchAnnotation"); // NOI18N
         statusBar.setText(StatusBar.CELL_MAIN, recentStatusMessage);
         
-        recentRevisionCanBeRolledBack = false;
         // determine current line
         int line = -1;
         int offset = caret.getDot();
@@ -535,9 +581,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         String revision = al.getRevision();
         if (revision.equals(recentRevision) == false) {
             recentRevision = revision;
-            File file = Mercurial.getInstance().getRepositoryRoot(getCurrentFile());
-            recentFile = new File(file, al.getFileName());
-            recentRevisionCanBeRolledBack = al.canBeRolledBack();
+            repositoryRoot = Mercurial.getInstance().getRepositoryRoot(getCurrentFile());
             repaint();
 
             AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);

@@ -76,17 +76,13 @@ import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
-import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.modules.gsf.GsfEditorKitFactory.NextCharProvider;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
+import org.netbeans.modules.csl.core.SelectCodeElementAction;
+import org.netbeans.modules.csl.editor.InstantRenameAction;
+import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.gsfret.InstantRenameAction;
-import org.netbeans.modules.gsf.SelectCodeElementAction;
-import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
-import org.netbeans.editor.ext.html.HtmlIndenter;
-import org.netbeans.modules.gsf.ToggleBlockCommentAction;
 import org.netbeans.modules.html.editor.gsf.HtmlCommentHandler;
 import org.openide.util.Exceptions;
 
@@ -134,8 +130,8 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
 
         //listen on the HTML parser and recolor after changes
-        LanguagePath htmlLP = LanguagePath.get(HTMLTokenId.language());
-        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
+//        LanguagePath htmlLP = LanguagePath.get(HTMLTokenId.language());
+//        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
     }
 
     /** Called after the kit is installed into JEditorPane */
@@ -281,6 +277,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
                     if (!handled) {
                         super.insertString(doc, dotPos, caret, str, overwrite);
+                        insertedText = str;
                         handled = bracketCompletion.afterCharInserted(doc, dotPos, currentTarget,
                                 str.charAt(0));
                     }
@@ -291,7 +288,6 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
             super.insertString(doc, dotPos, caret, str, overwrite);
             insertedText = str;
-            HTMLAutoCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
         }
 
         @Override
@@ -380,7 +376,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
     }
 
-    public static class HTMLDeleteCharAction extends DeleteCharAction implements NextCharProvider {
+    public static class HTMLDeleteCharAction extends DeleteCharAction {
 
         private JTextComponent currentTarget;
         
@@ -390,13 +386,11 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            target.putClientProperty(NextCharProvider.class, this);
             try {
                 currentTarget = target;
                 super.actionPerformed(evt, target);
             } finally {
                 currentTarget = null;
-                target.putClientProperty(NextCharProvider.class, null);
             }
         }
 
@@ -413,7 +407,6 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             
             
             super.charBackspaced(doc, dotPos, caret, ch);
-            HTMLAutoCompletion.charDeleted(doc, dotPos, caret, ch);
         }
 
         public boolean getNextChar() {

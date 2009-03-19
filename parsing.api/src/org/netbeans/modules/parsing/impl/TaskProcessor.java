@@ -69,6 +69,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -168,7 +169,7 @@ public class TaskProcessor {
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
             StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
             if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
-                LOGGER.warning("Source.runUserTask called in AWT event thread by: " + stackTraceElement); // NOI18N
+                LOGGER.warning("ParserManager.parse called in AWT event thread by: " + stackTraceElement); // NOI18N
             }
         }
         final Request request = currentRequest.getTaskToCancel();
@@ -539,17 +540,16 @@ public class TaskProcessor {
         }
         return false;
     }
-    
-    private static StackTraceElement findCaller(StackTraceElement[] elements) {
+
+    /* test */ static StackTraceElement findCaller(StackTraceElement[] elements) {
         for (StackTraceElement e : elements) {
-            if (Source.class.getName().equals(e.getClassName())) {
+            if (TaskProcessor.class.getName().equals(e.getClassName()) ||
+                e.getClassName().startsWith(ParserManager.class.getName()) ||
+                e.getClassName().startsWith("java.lang.") //NOI18N
+            ) {
                 continue;
             }
-            
-            if (e.getClassName().startsWith("java.lang.")) {
-                continue;
-            }
-            
+
             return e;
         }        
         return null;
@@ -804,12 +804,6 @@ public class TaskProcessor {
             this.schedulerType = schedulerType;
         }
         
-        private Request () {  
-            task = null;
-            cache = null;
-            reschedule = bridge = false;
-        }
-        
         public @Override String toString () {            
             if (reschedule) {
                 return String.format("Periodic request to perform: %s on: %s",  //NOI18N
@@ -893,10 +887,10 @@ public class TaskProcessor {
         boolean setCurrentTask (Request reference) throws InterruptedException {
             boolean result = false;
             assert !parserLock.isHeldByCurrentThread();
-            assert reference == null || reference.cache == null || !Thread.currentThread().holdsLock(reference.cache.getSnapshot().getSource());
+            assert reference == null || reference.cache == null || !Thread.holdsLock(reference.cache.getSnapshot().getSource());
             synchronized (INTERNAL_LOCK) {
                 while (this.canceledReference!=null) {
-                    assert canceledReference.cache == null || !Thread.currentThread().holdsLock(canceledReference.cache.getSnapshot().getSource());
+                    assert canceledReference.cache == null || !Thread.holdsLock(canceledReference.cache.getSnapshot().getSource());
                     INTERNAL_LOCK.wait();
                 }
                 result = this.canceled.getAndSet(false);
@@ -1066,8 +1060,8 @@ public class TaskProcessor {
                 boolean _canceled = canceled.getAndSet(true);
                 if (!_canceled) {
                     for (Iterator<DeferredTask> it = todo.iterator(); it.hasNext();) {
-                        DeferredTask task = it.next();
-                        if (task.task == this.task) {
+                        DeferredTask t = it.next();
+                        if (t.task == this.task) {
                             it.remove();
                             return true;
                         }

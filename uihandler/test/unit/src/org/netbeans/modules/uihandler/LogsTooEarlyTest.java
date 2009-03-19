@@ -85,6 +85,7 @@ public class LogsTooEarlyTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath());
+        UIHandler.flushImmediatelly();
         clearWorkDir();
         
         Installer.clearLogs();

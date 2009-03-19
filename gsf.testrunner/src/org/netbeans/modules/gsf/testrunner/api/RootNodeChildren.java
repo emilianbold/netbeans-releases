@@ -71,6 +71,8 @@ final class RootNodeChildren extends Children.Array {
     private TestsuiteNode runningSuiteNode;
 
     private final TestSession session;
+
+    private List<TestsuiteNode> suiteNodes = new ArrayList<TestsuiteNode>();
     
     /**
      * Creates a new instance of ReportRootNode
@@ -95,20 +97,23 @@ final class RootNodeChildren extends Children.Array {
          */
         
         assert EventQueue.isDispatchThread();
-        assert runningSuiteName == null;
-        assert runningSuiteNode == null;
         
         runningSuiteName = suiteName;
         
         if (live) {
             runningSuiteNode = session.getNodeFactory().createTestSuiteNode(suiteName, filtered);
+            suiteNodes.add(runningSuiteNode);
             add(new Node[] {runningSuiteNode});
         }
         
         assert runningSuiteName != null;
         assert (runningSuiteNode != null) == live;
     }
-    
+
+    Collection<Report> getReports(){
+        return reports;
+    }
+
     /**
      */
     public TestsuiteNode displayReport(final Report report) {
@@ -123,37 +128,37 @@ final class RootNodeChildren extends Children.Array {
         if (reports == null) {
             reports = new ArrayList<Report>(10);
         }
-        reports.add(report);
+        if (!reports.contains(report))
+            reports.add(report);
 
         final boolean isPassedSuite = updateStatistics(report);
         
         if (runningSuiteName != null) {
-            runningSuiteName = null;
             
             if (live) {
-                if (filtered && isPassedSuite) {
+                if (filtered && isPassedSuite && report.completed) {
                     remove(new Node[] {runningSuiteNode});
                     correspondingNode = null;
                 } else {
                     runningSuiteNode.displayReport(report);
                     correspondingNode = runningSuiteNode;
                 }
-                runningSuiteNode = null;
             } else {
                 correspondingNode = null;
             }
         } else {
-            if (live && !(filtered && isPassedSuite)) {
+            if (live && !(filtered && isPassedSuite && report.completed)) {
                 add(new Node[] {
-                    correspondingNode = createNode(report)});
+                    correspondingNode = getNode(report)});
             } else {
                 correspondingNode = null;
             }
         }
-        
-        assert runningSuiteName == null;
-        assert runningSuiteNode == null;
-        
+
+        if (report.completed){
+            runningSuiteName = null;
+            runningSuiteNode = null;
+        }
         return correspondingNode;
     }
     
@@ -179,7 +184,7 @@ final class RootNodeChildren extends Children.Array {
                 int index = 0;
                 for (Report report : newReports) {
                     updateStatistics(report);
-                    nodesToAdd[index++] = createNode(report);
+                    nodesToAdd[index++] = getNode(report);
                 }
                 add(nodesToAdd);
             } else {
@@ -187,7 +192,7 @@ final class RootNodeChildren extends Children.Array {
                 for (Report report : newReports) {
                     boolean isFailed = updateStatistics(report);
                     if (isFailed) {
-                        toAdd.add(createNode(report));
+                        toAdd.add(getNode(report));
                     }
                 }
                 if (!toAdd.isEmpty()) {
@@ -210,13 +215,18 @@ final class RootNodeChildren extends Children.Array {
         
         /* Called from the EventDispatch thread */
         
-        final boolean isPassedSuite = !report.containsFailed();
-        if (isPassedSuite) {
-            passedSuites++;
-        } else {
-            failedSuites++;
+        boolean isPassedSuite;
+        passedSuites = 0;
+        failedSuites = 0;
+        for(Report rep: reports){
+            isPassedSuite = !rep.containsFailed();
+            if (isPassedSuite) {
+                passedSuites++;
+            } else {
+                failedSuites++;
+            }
         }
-        return isPassedSuite;
+        return !report.containsFailed();
     }
     
     // PENDING - synchronization
@@ -236,8 +246,6 @@ final class RootNodeChildren extends Children.Array {
     @Override
     protected void removeNotify() {
         super.removeNotify();
-        
-        remove(getNodes());               //PENDING
         live = false;
     }
     
@@ -249,23 +257,24 @@ final class RootNodeChildren extends Children.Array {
         final boolean filterOn = filtered;
         final int matchingNodesCount = filterOn ? failedSuites
                                                 : failedSuites + passedSuites;
-        final int nodesCount = (runningSuiteNode != null)
+        final int nodesCount = ((runningSuiteNode != null) && (reports == null || !reports.contains(runningSuiteNode.getReport())))
                                ? matchingNodesCount + 1
                                : matchingNodesCount;
         if (nodesCount != 0) {
-            final Node[] nodes = new Node[nodesCount];
-            final Iterator<Report> i = reports.iterator();
-            int index = 0;
-            while (index < matchingNodesCount) {
-                Report report = i.next();
+            List<TestsuiteNode> nodesToAdd = new ArrayList<TestsuiteNode>();
+            for(Report report: reports){
                 if (!filterOn || report.containsFailed()) {
-                    nodes[index++] = createNode(report);
+                    TestsuiteNode node = getNode(report);
+                    node.setFiltered(filtered);
+                    nodesToAdd.add(node);
                 }
+
             }
-            if (runningSuiteNode != null) {
-                nodes[index++] = runningSuiteNode;
+
+            if ((runningSuiteNode != null) && (reports == null || !reports.contains(runningSuiteNode.getReport()))) {
+                nodesToAdd.add(runningSuiteNode);
             }
-            add(nodes);
+            add(nodesToAdd.toArray(new TestsuiteNode[nodesToAdd.size()]));
         }
     }
     
@@ -277,8 +286,15 @@ final class RootNodeChildren extends Children.Array {
     
     /**
      */
-    private TestsuiteNode createNode(final Report report) {
-        return new TestsuiteNode(report, filtered);
+    private TestsuiteNode getNode(final Report report) {
+        for(TestsuiteNode node: suiteNodes){
+            if (node.getReport() == report){
+                return node;
+            }
+        }
+        TestsuiteNode node = new TestsuiteNode(report, filtered);
+        suiteNodes.add(node);
+        return node;
     }
     
     /**
@@ -304,23 +320,24 @@ final class RootNodeChildren extends Children.Array {
     
     /**
      */
-    private void removePassedSuites() {
+    private synchronized void removePassedSuites() {
         assert EventQueue.isDispatchThread();
         assert live;
-        
-        final Node[] nodesToRemove = new Node[passedSuites];
+
+        List<Node> nodesToRemove = new ArrayList<Node>();
         final Node[] nodes = getNodes();
         int nodesIndex = 0;
         for (int index = 0;
-                    index < nodesToRemove.length;
+                    index < passedSuites;
                     nodesIndex++) {
             TestsuiteNode node = (TestsuiteNode) nodes[nodesIndex];
             Report report = node.getReport();
             if (report == null) {
                 continue;
             }
-            if (!report.containsFailed()) {
-                nodesToRemove[index++] = node;
+            if (!report.containsFailed() && (node != runningSuiteNode)) {
+                nodesToRemove.add(node);
+                index++;
             } else {
                 node.setFiltered(filtered);
             }
@@ -332,7 +349,7 @@ final class RootNodeChildren extends Children.Array {
                    || report.containsFailed();
             ((TestsuiteNode) nodes[nodesIndex++]).setFiltered(filtered);
         }
-        remove(nodesToRemove);
+        remove(nodesToRemove.toArray(new Node[nodesToRemove.size()]));
     }
     
     /**

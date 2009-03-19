@@ -47,26 +47,74 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.OffsetRange;
 
 public class JspKeystrokeHandler implements KeystrokeHandler {
 
+    @Override
     public boolean beforeCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         return false;
     }
 
+    @Override
     public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+        if ('>' != ch) {
+            return false;
+        }
+        TokenSequence<JspTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, JspTokenId.language());
+        if (ts == null) {
+            return false;
+        }
+        ts.move(caretOffset);
+        boolean found = false;
+        while (ts.movePrevious()) {
+            if (ts.token().id() == JspTokenId.SYMBOL && (
+                    ts.token().text().toString().equals("<") ||
+                    ts.token().text().toString().equals("</"))) {
+                found = true;
+                break;
+            }
+            if (ts.token().id() == JspTokenId.SYMBOL && ts.token().text().toString().equals(">")) {
+                break;
+            }
+            if (ts.token().id() != JspTokenId.ATTRIBUTE &&
+                ts.token().id() != JspTokenId.ATTR_VALUE &&
+                ts.token().id() != JspTokenId.TAG &&
+                ts.token().id() != JspTokenId.ENDTAG &&
+                ts.token().id() != JspTokenId.SYMBOL &&
+                ts.token().id() != JspTokenId.EOL &&
+                ts.token().id() != JspTokenId.WHITESPACE) {
+                break;
+            }
+        }
+        if (!found) {
+            return false;
+        }
+        int lineStart = Utilities.getRowFirstNonWhite((BaseDocument)doc, ts.offset());
+        if (lineStart != ts.offset()) {
+            return false;
+        }
+        final Indent indent = Indent.get(doc);
+        indent.lock();
+        try {
+            indent.reindent(lineStart, caretOffset);
+        } finally {
+            indent.unlock();
+        }
         return false;
     }
 
+    @Override
     public boolean charBackspaced(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         return false;
     }
 
+    @Override
     public int beforeBreak(Document doc, int caretOffset, JTextComponent target) throws BadLocationException {
         // TODO: below whitespace skipping does not work because whitespace
         // tokens between JSP tokens are actually HTML tokens and not JSP tokens.
@@ -79,14 +127,7 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
         ts.move(caretOffset);
         String closingTagName = null;
         int end = -1;
-        while (ts.moveNext() && (ts.token().id() == JspTokenId.WHITESPACE ||
-                (ts.token().id() == JspTokenId.TEXT && ts.token().text().toString().trim().length() == 0))) {
-            // skip whitespace
-        }
-        if (ts.token() == null) {
-            return -1;
-        }
-        if (ts.token().id() == JspTokenId.SYMBOL &&
+        if (ts.moveNext() && ts.token().id() == JspTokenId.SYMBOL &&
                 ts.token().text().toString().equals("</")) {
             if (ts.moveNext() && ts.token().id() == JspTokenId.ENDTAG) {
                 closingTagName = ts.token().text().toString();
@@ -99,13 +140,6 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
             return  -1;
         }
         boolean foundOpening = false;
-        if (ts.token().id() == JspTokenId.WHITESPACE ||
-                (ts.token().id() == JspTokenId.TEXT && ts.token().text().toString().trim().length() == 0)) {
-            while (ts.movePrevious() && (ts.token().id() == JspTokenId.WHITESPACE ||
-                (ts.token().id() == JspTokenId.TEXT && ts.token().text().toString().trim().length() == 0))) {
-                // skip whitespace
-            }
-        }
         if (ts.token().id() == JspTokenId.SYMBOL &&
                 ts.token().text().toString().equals(">")) {
             while (ts.movePrevious()) {
@@ -123,19 +157,22 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
             //move caret
             target.getCaret().setDot(caretOffset);
             //and indent the line
-            indent.reindent(caretOffset - 1, end + 1);
+            indent.reindent(caretOffset + 1, end);
         }
         return -1;
     }
 
+    @Override
     public OffsetRange findMatching(Document doc, int caretOffset) {
         return OffsetRange.NONE;
     }
 
-    public List<OffsetRange> findLogicalRanges(CompilationInfo info, int caretOffset) {
+    @Override
+    public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         return new ArrayList<OffsetRange>();
     }
 
+    @Override
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
         return -1;
     }
