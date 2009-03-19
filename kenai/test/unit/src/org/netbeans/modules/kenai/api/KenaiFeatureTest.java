@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,70 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.kenai.api;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.kenai.FeatureData;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
 
 /**
  *
- * @author Maros Sandor
  * @author Jan Becicka
  */
-public final class KenaiProjectFeature {
+public class KenaiFeatureTest {
 
-    private FeatureData featureData;
-    private URL webL;
-    private URL loc;
-    
-    KenaiProjectFeature(FeatureData data) {
-        this.featureData = data;
-        try {
-            this.loc = featureData.url==null?null:new URL(featureData.url);
-            this.webL = featureData.web_url==null?null:new URL(featureData.web_url);
-        } catch (MalformedURLException malformedURLException) {
-            try {
-                this.webL = featureData.web_url == null ? null : new URL(System.getProperty("kenai.com.url", "https://kenai.com") + featureData.web_url);
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(KenaiProjectFeature.class.getName()).log(Level.SEVERE, malformedURLException.getMessage(), ex);
-            }
-            Logger.getLogger(KenaiProjectFeature.class.getName()).log(Level.FINE, malformedURLException.getMessage(), malformedURLException);
-        }
+    public KenaiFeatureTest() {
     }
 
-    public String getName() {
-        return featureData.name;
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
 
-    public KenaiFeature getType() {
-        return KenaiFeature.forId(featureData.type);
+    @AfterClass
+    public static void tearDownClass() throws Exception {
     }
 
-    public String getService() {
-        return featureData.service;
+    /**
+     * Test of getName method, of class KenaiFeature.
+     */
+    @Test
+    public void testType() {
+        System.out.println("getType");
+        assert Type.forId("foo").equals(Type.UNKNOWN);
     }
-
-    public URL getLocation() {
-        return loc;
-    }
-
-    public URL getWebLocation() {
-        return webL;
-    }
-
-    public String getDisplayName() {
-        return featureData.display_name;
-    }
-
-    @Override
-    public String toString() {
-        return "KenaiProjectFeature " + getName() + ", url=" + getLocation() ;
-    }
-
 }
+
