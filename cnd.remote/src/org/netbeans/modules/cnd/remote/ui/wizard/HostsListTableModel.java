@@ -169,7 +169,8 @@ class HostsListTableModel extends AbstractTableModel {
                         }
                     } catch (IOException ex) {
                         // it's quite normal if host denies to respond (firewall, etc)
-                        LOG.log(Level.INFO, null, ex);
+                        // so it doesn't make sense even to log this :)
+                        // LOG.log(Level.INFO, null, ex);
                     }
                 }
                 LOG.info("Finding " + count + " host(s) took " + ((System.currentTimeMillis() - n) / 1000) + "s");
