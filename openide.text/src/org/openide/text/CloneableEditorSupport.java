@@ -841,6 +841,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
             if (prepareDocumentRuntimeException != null) {
                 if (prepareDocumentRuntimeException instanceof DelegateIOExc) {
+                    Exception ex = new Exception();
+                    ERR.log(Level.INFO, "Outer callstack", ex);
                     throw (IOException) prepareDocumentRuntimeException.getCause();
                 }
 
