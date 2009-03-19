@@ -75,9 +75,9 @@ public class MakefileConfiguration {
     // Constructors
     public MakefileConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
-        buildCommandWorkingDir = new StringConfiguration(null, "ExistingProjectRoot"); // NOI18N
-        buildCommand = new StringConfiguration(null, "${MAKE} -f ExistingMakefile"); // NOI18N
-        cleanCommand = new StringConfiguration(null, "${MAKE} -f ExistingMakefile clean"); // NOI18N
+        buildCommandWorkingDir = new StringConfiguration(null, "."); // NOI18N
+        buildCommand = new StringConfiguration(null, "${MAKE}"); // NOI18N
+        cleanCommand = new StringConfiguration(null, "${MAKE} clean"); // NOI18N
         output = new StringConfiguration(null, ""); // NOI18N
     }
     
