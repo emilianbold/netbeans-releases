@@ -59,6 +59,7 @@ import java.util.TreeMap;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import org.openide.awt.Mnemonics;
 
@@ -102,6 +103,9 @@ public class NodeTableModel extends AbstractTableModel {
     /** listener on node properties changes, recreates displayed data */
     private PropertyChangeListener pcl = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
+
+            assert SwingUtilities.isEventDispatchThread();
+            
             //fireTableDataChanged();
             int row = rowForNode((Node) evt.getSource());
 

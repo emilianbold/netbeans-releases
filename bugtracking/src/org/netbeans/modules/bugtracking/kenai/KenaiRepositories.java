@@ -150,7 +150,7 @@ public class KenaiRepositories {
         }
     }
 
-    private KenaiProject getKenaiProject(ProjectHandle ph) {
+    static KenaiProject getKenaiProject(ProjectHandle ph) {
         // XXX cache ???
         try {
             return Kenai.getDefault().getProject(ph.getId());
