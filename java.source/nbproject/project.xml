@@ -475,6 +475,10 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                         <test/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.core.startup</code-name-base>
+                    </test-dependency>
+                    
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>
