@@ -280,7 +280,7 @@ public class GizmoOptionsPanel extends javax.swing.JPanel implements ExplorerMan
 
         @Override
         public String getHtmlDisplayName() {
-            return "<h3>" + getDisplayName() + "</h3>";
+            return "<h3>" + getDisplayName() + "</h3>"; //NOI18N
         }
 
 
