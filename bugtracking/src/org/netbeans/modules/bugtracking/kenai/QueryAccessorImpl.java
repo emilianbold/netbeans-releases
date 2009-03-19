@@ -132,9 +132,9 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
-            ActionListener l = getJiraListener(project);
-            if(l != null) {
-                return l;
+            FakeJiraSupport jira = FakeJiraSupport.create(project);
+            if(jira != null) {
+                return jira.getOpenProjectListener();
             }
             return null;
         }
@@ -155,9 +155,9 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         final Repository repo = KenaiRepositories.getInstance().getRepository(project, this);
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
-            ActionListener l = getJiraListener(project);
-            if(l != null) {
-                return l;
+            FakeJiraSupport jira = FakeJiraSupport.create(project);
+            if(jira != null) {
+                return jira.getCreateIssueListener();
             }
             return null;
         }
@@ -229,49 +229,79 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         }
     }
 
-    private ActionListener getJiraListener(ProjectHandle handle) {
-        KenaiProject project = KenaiRepositories.getKenaiProject(handle);
-        if(project == null) {
-            return null;
+    private static class FakeJiraSupport {
+        private static final String JIRA_SUBSTRING ="kenai.com/jira/";
+        private String projectUrl;
+        private String createIssueUrl;
+
+        private FakeJiraSupport(String projectUrl, String createIssueUrl) {
+            this.projectUrl = projectUrl;
+            this.createIssueUrl = createIssueUrl;
         }
-        KenaiProjectFeature[] features = project.getFeatures(KenaiFeature.ISSUES);
-        String jiraUrl= null;
-        for (KenaiProjectFeature f : features) {
-            if(!f.getName().equals("jira") &&
-               !f.getLocation().toString().contains("kenai.com/jira")) // XXX UGLY WORKAROUND HACK -> actually getService should return if it's bugzilla - see also issue #160505
-            {
+
+        static FakeJiraSupport create(ProjectHandle handle) {
+            KenaiProject project = KenaiRepositories.getKenaiProject(handle);
+            if(project == null) {
                 return null;
             }
-            // http://testkenai.com/jira/secure/CreateIssue!default.jspa?pname=
-
-            jiraUrl = f.getLocation().toString();
-            break;
-        }
-        if(jiraUrl == null) {
-            return null;
-        }
-        final URL url;
-        try {
-            url = new URL(jiraUrl);
-        } catch (MalformedURLException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            return null;
-        }
-        return new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
-                    public void run() {
-                        HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
-                        if (displayer != null) {
-                            displayer.showURL (url);
-                        } else {
-                            // XXX nice error message?
-                            BugtrackingManager.LOG.warning("No URLDisplayer found.");             // NOI18N
-                        }
-                    }
-                });
+            KenaiProjectFeature[] features = project.getFeatures(KenaiFeature.ISSUES);
+            String url = null;
+            String issueUrl = null;
+            for (KenaiProjectFeature f : features) {
+                if(!f.getName().equals("jira") &&
+                   !f.getLocation().toString().contains(JIRA_SUBSTRING)) // XXX UGLY WORKAROUND HACK -> actually getService should return if it's bugzilla - see also issue #160505
+                {
+                    return null;
+                }
+                url = f.getLocation().toString();
+                break;
             }
-        };
+            if(url == null) {
+                return null;
+            }
+            int idx = url.indexOf(JIRA_SUBSTRING);
+            if(idx > -1) {
+                issueUrl =
+                        url.substring(0, idx + JIRA_SUBSTRING.length()) +
+                        "secure/CreateIssue!default.jspa?pname=" +
+                        project.getName();
+
+            }
+            return new FakeJiraSupport(url, issueUrl);
+        }
+
+        ActionListener getCreateIssueListener() {
+            return getJiraListener(createIssueUrl);
+        }
+
+        ActionListener getOpenProjectListener() {
+            return getJiraListener(projectUrl);
+        }
+
+        private ActionListener getJiraListener(String urlString) {
+            final URL url;
+            try {
+                url = new URL(urlString);
+            } catch (MalformedURLException ex) {
+                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                return null;
+            }
+            return new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                        public void run() {
+                            HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
+                            if (displayer != null) {
+                                displayer.showURL (url);
+                            } else {
+                                // XXX nice error message?
+                                BugtrackingManager.LOG.warning("No URLDisplayer found.");             // NOI18N
+                            }
+                        }
+                    });
+                }
+            };
+        }
     }
 
 }
