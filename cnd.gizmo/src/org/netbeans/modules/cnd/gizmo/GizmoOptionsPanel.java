@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
@@ -209,7 +208,7 @@ public class GizmoOptionsPanel extends javax.swing.JPanel implements ExplorerMan
         return manager;
     }
 
-    class DLightConfigurationChildren extends Children.Keys {
+    class DLightConfigurationChildren extends Children.Keys<String> {
         private final  DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
         private List<String> names;
 
@@ -229,8 +228,8 @@ public class GizmoOptionsPanel extends javax.swing.JPanel implements ExplorerMan
         }
 
         @Override
-        protected Node[] createNodes(Object arg0) {
-            return new Node[]{new DLightToolNode(gizmoConfiguration.getToolByName((String)arg0))};
+        protected Node[] createNodes(String arg0) {
+            return new Node[]{new DLightToolNode(gizmoConfiguration.getToolByName(arg0))};
 
         }
 
@@ -280,7 +279,7 @@ public class GizmoOptionsPanel extends javax.swing.JPanel implements ExplorerMan
 
         @Override
         public String getHtmlDisplayName() {
-            return "<h3>" + getDisplayName() + "</h3>";
+            return "<h3>" + getDisplayName() + "</h3>"; //NOI18N
         }
 
 

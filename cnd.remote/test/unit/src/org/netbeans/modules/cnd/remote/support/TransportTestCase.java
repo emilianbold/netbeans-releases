@@ -68,7 +68,7 @@ public class TransportTestCase extends RemoteTestBase {
             final String randomString = "i am just a random string, it does not matter that I mean";
             RemoteCommandSupport rcs = new RemoteCommandSupport(getExecutionEnvironment(), "echo " + randomString);
             rcs.run();
-            rcs.disconnect();
+//            rcs.disconnect();
             assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getExecutionEnvironment() + "' returned " + rcs.getExitStatus();
             assert randomString.equals( rcs.getOutput().trim()) : "echo command on remote server '" + getExecutionEnvironment() + "' produced unexpected output: " + rcs.getOutput();
         } else {

@@ -375,6 +375,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                     }
                                     break;
 
+                                case WHITESPACE:
+                                case NEW_LINE:
+                                case LINE_COMMENT:
+                                case BLOCK_COMMENT:
+                                case DOXYGEN_COMMENT:
+                                    break;
+
                                 default: // Join
                                     if (top2.getParameterCount() == 0) {
                                         popExp(); // pop top
@@ -1948,6 +1955,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                     case WHITESPACE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
                         // just skip them
                         break;
 
@@ -2147,6 +2155,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                 case WHITESPACE:
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
+                case DOXYGEN_COMMENT:
                 case SEMICOLON:
                 case LBRACE:
                 case RBRACE:
