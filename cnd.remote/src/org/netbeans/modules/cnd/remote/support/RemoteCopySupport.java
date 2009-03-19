@@ -192,7 +192,9 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
         Future<Integer> result = CommonTasksSupport.uploadFile(localFile, executionEnvironment, remotePath, 0, null);
         try {
             Integer i = result.get();
-            return i.intValue() == 0;
+            if (i != null) {
+                return i.intValue() == 0;
+            }
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ExecutionException ex) {
