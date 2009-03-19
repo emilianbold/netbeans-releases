@@ -97,6 +97,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         // IZ#103462: Errors in template typedef processing:   'first' and 'second' are missed in Code Completion listbox
         performTest("iz103462_first_and_second_1.cc", 21, 16, "iz103462_first_and_second_1.cc", 3, 5);
     }
+
+    public void testIZ160659() throws Exception {
+        // IZ#160659 : Unresolved ids in case of specialization of templated class forward declaration
+        performTest("iz160659.cc", 11, 45, "iz160659.cc", 7, 12);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
