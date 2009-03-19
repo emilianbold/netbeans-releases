@@ -67,7 +67,7 @@ public class ParserQueueTest extends BaseTestCase {
         super.setUp();
         System.setProperty("cnd.modelimpl.persistent", "false");
         queue.startup();
-        helper = new TestModelHelper();
+        helper = new TestModelHelper(true);
         helper.initParsedProject(getTestCaseDataDir().getAbsolutePath());
         projectFiles.addAll(helper.getProject().getAllFileImpls());
         assertEquals(4, projectFiles.size());
@@ -76,7 +76,7 @@ public class ParserQueueTest extends BaseTestCase {
     @Override
     public void tearDown() throws Exception {
         projectFiles.clear();
-        helper.shutdown();
+        helper.shutdown(true);
         queue.shutdown();
         super.tearDown();
     }

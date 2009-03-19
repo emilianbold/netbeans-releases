@@ -68,7 +68,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.OperationConfigurationPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationType;
 import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
 import org.netbeans.modules.xml.wsdl.ui.wizard.OperationGenerator;
-import org.netbeans.modules.xml.wsdl.ui.wizard.WizardPortTypeConfigurationStep;
+import org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardConstants;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -127,37 +127,37 @@ public class PortTypeOperationNewType extends NewType {
                     
                     String operationName = opPanel.getOperationName();
                     OperationType ot = opPanel.getOperationType();
-                    configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_NAME, operationName);
-                    configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_TYPE, ot);
+                    configurationMap.put(WSDLWizardConstants.OPERATION_NAME, operationName);
+                    configurationMap.put(WSDLWizardConstants.OPERATION_TYPE, ot);
                     
                     String inputMessageName = opPanel.getInputMessageName();
                     String outputMessageName = opPanel.getOutputMessageName();
                     String faultMessageName = opPanel.getFaultMessageName();
                     
-                    configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_INPUT_MESSAGE, inputMessageName);
-                    configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_OUTPUT_MESSAGE, outputMessageName);
-                    configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_FAULT_MESSAGE, faultMessageName);
+                    configurationMap.put(WSDLWizardConstants.OPERATION_INPUT_MESSAGE, inputMessageName);
+                    configurationMap.put(WSDLWizardConstants.OPERATION_OUTPUT_MESSAGE, outputMessageName);
+                    configurationMap.put(WSDLWizardConstants.OPERATION_FAULT_MESSAGE, faultMessageName);
                     
                     List<PartAndElementOrTypeTableModel.PartAndElementOrType> inputParts = opPanel.getInputMessageParts();
                     List<PartAndElementOrTypeTableModel.PartAndElementOrType> outputParts = opPanel.getOutputMessageParts();
                     List<PartAndElementOrTypeTableModel.PartAndElementOrType> faultParts = opPanel.getFaultMessageParts();
                     Map<String, String> namespaceToPrefixMap = opPanel.getNamespaceToPrefixMap();
                     
-                    configurationMap.put(WizardPortTypeConfigurationStep.NAMESPACE_TO_PREFIX_MAP, namespaceToPrefixMap);
+                    configurationMap.put(WSDLWizardConstants.NAMESPACE_TO_PREFIX_MAP, namespaceToPrefixMap);
                    
                     //if inputMessage Name is new not an existing message name then populate part names as well
                     if(opPanel.isNewInputMessage()) {
-                        configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_INPUT, inputParts);
+                        configurationMap.put(WSDLWizardConstants.OPERATION_INPUT, inputParts);
                     }
                     
                     //if outputMessage Name is new not an existing message name then populate part names as well
                     if(opPanel.isNewOutputMessage()) {
-                        configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_OUTPUT, outputParts);
+                        configurationMap.put(WSDLWizardConstants.OPERATION_OUTPUT, outputParts);
                     }
                     
                     //if faultMessage Name is new not an existing message name then populate part names as well
                     if(opPanel.isNewFaultMessage()) {
-                        configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_FAULT, faultParts);
+                        configurationMap.put(WSDLWizardConstants.OPERATION_FAULT, faultParts);
                     }
                     model.startTransaction();
                     OperationGenerator opGen = new OperationGenerator(model, this.mPortType, configurationMap);

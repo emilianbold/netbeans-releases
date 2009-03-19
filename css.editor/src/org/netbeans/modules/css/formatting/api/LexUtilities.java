@@ -251,8 +251,9 @@ public class LexUtilities {
             List<TokenSequence<?>> tss2 = th.tokenSequenceList(lp, start, end);
             for (TokenSequence<?> ts2 : tss2) {
                 ts2.moveStart();
-                ts2.moveNext();
-                tss.add((TokenSequence<T1>)ts2);
+                if (ts2.moveNext()) {
+                    tss.add((TokenSequence<T1>)ts2);
+                }
             }
         }
         Collections.sort(tss, new Comparator<TokenSequence<T1>>() {

@@ -240,10 +240,10 @@ public class TSDiagramConverter
             etlpFO = FileUtil.findBrother(etldFO, FileExtensions.DIAGRAM_TS_PRESENTATION_EXT_NODOT);
             
             fisData = etldFO.getInputStream();
-            readerData = factory.createXMLStreamReader(fisData, "UTF-8");
+            readerData = factory.createXMLStreamReader(fisData);
 
             fisPres = etlpFO.getInputStream();
-            readerPres = factory.createXMLStreamReader(fisPres, "UTF-8");
+            readerPres = factory.createXMLStreamReader(fisPres);
         }
         
         catch (XMLStreamException ex)

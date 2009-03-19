@@ -6,6 +6,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -32,15 +33,15 @@ class MemoryIndicatorPanel extends JPanel {
 
         max = 0;
 
+        Color borderColor = new Color(0x77, 0x88, 0x88);
+
         measureKb = NbBundle.getMessage(getClass(), "measure.kb");
 //        measureMb = NbBundle.getMessage(getClass(), "measure.mb");
 
         graph = new Graph(100, new GraphDescriptor(graphColor, NbBundle.getMessage(getClass(), "graph.deccription")));
-        graph.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-        Dimension d = new Dimension(66, 32);
-        graph.setPreferredSize(d);
-        graph.setMaximumSize(d);
-        graph.setMinimumSize(d);
+        graph.setBorder(BorderFactory.createLineBorder(borderColor));
+        graph.setMinimumSize(new Dimension(66, 32));
+        graph.setPreferredSize(new Dimension(150, 80));
 
 //        JLabel tmpLabel = new JLabel();
 //        float fs = ((float) tmpLabel.getFont().getSize()) * 8f / 10f;
@@ -77,38 +78,35 @@ class MemoryIndicatorPanel extends JPanel {
 //        lblMaxMeasure.setBorder(BorderFactory.createLineBorder(Color.BLUE));
 //        lblMaxValue.setBorder(BorderFactory.createLineBorder(Color.CYAN));
 
-        setLayout(new GridBagLayout());
-        GridBagConstraints c;
+        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        add(graph);
 
-        c = new GridBagConstraints();
-        c.gridheight = 2;
+        JPanel legend = new JPanel(new GridBagLayout());
+        legend.setBackground(Color.WHITE);
+        legend.setBorder(BorderFactory.createLineBorder(borderColor));
+        legend.setMinimumSize(new Dimension(120, 32));
+        legend.setMaximumSize(new Dimension(120, Integer.MAX_VALUE));
+        legend.setPreferredSize(new Dimension(100, 80));
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(0, 6, 0, 0);
+        c.gridy = 0;
         c.gridx = 0;
-        c.gridy = 0;
-        add(graph, c);
-
-        c = new GridBagConstraints();
-        c.insets = new Insets(0, 6, 0, 0);
-        c.gridy = 0;
-
+        legend.add(lblCurrLabel, c);
         c.gridx = 1;
-        add(lblCurrLabel, c);
+        legend.add(lblCurrValue, c);
         c.gridx = 2;
-        add(lblCurrValue, c);
-        c.gridx = 3;
-        add(lblCurrMeasure, c);
+        legend.add(lblCurrMeasure, c);
 
-        c = new GridBagConstraints();
-        c.insets = new Insets(0, 6, 0, 0);
         c.gridy = 1;
-
+        c.gridx = 0;
+        legend.add(lblMaxLabel, c);
         c.gridx = 1;
-        add(lblMaxLabel, c);
+        legend.add(lblMaxValue, c);
         c.gridx = 2;
-        add(lblMaxValue, c);
-        c.gridx = 3;
-        add(lblMaxMeasure, c);
-       
-//       setBorder(BorderFactory.createLineBorder(Color.BLUE));
+        legend.add(lblMaxMeasure, c);
+
+        add(legend);
     }
 
     private void add(JComponent parent, JComponent child, GridBagConstraints c, int gridx, int gridy) {

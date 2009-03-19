@@ -41,6 +41,9 @@ package org.netbeans.modules.debugger.jpda.ui.options;
 
 final class JavaDebuggerPanel extends StorablePanel {
 
+    private static final String SHOW_FORMATTERS_PROP_NAME = "org.netbeans.modules.debugger.jpda.ui.options.SHOW_FORMATTERS";
+    private static final int FORMATTERS_INDEX = 2;
+
     private final JavaDebuggerOptionsPanelController controller;
 
     private StorablePanel[] categoryPanels;
@@ -61,8 +64,13 @@ final class JavaDebuggerPanel extends StorablePanel {
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
-        selectCategory(0);
-        categoriesList.setSelectedIndex(0);
+        String value = System.getProperty(SHOW_FORMATTERS_PROP_NAME);
+        int index = value != null && "true".equals(value) ? FORMATTERS_INDEX : 0; // NOI18N
+        selectCategory(index);
+        categoriesList.setSelectedIndex(index);
+        if (index == FORMATTERS_INDEX) {
+            System.setProperty(SHOW_FORMATTERS_PROP_NAME, "false"); // NOI18N
+        }
         // TODO listen to changes in form fields and call controller.changed()
     }
 
@@ -152,6 +160,12 @@ final class JavaDebuggerPanel extends StorablePanel {
     void load() {
         for (StorablePanel p : categoryPanels) {
             p.load();
+        }
+        String value = System.getProperty(SHOW_FORMATTERS_PROP_NAME);
+        if (value != null && "true".equals(value)) { //NOI18N
+            selectCategory(FORMATTERS_INDEX);
+            categoriesList.setSelectedIndex(FORMATTERS_INDEX);
+            System.setProperty(SHOW_FORMATTERS_PROP_NAME, "false"); // NOI18N
         }
         // TODO read settings and initialize GUI
         // Example:        

@@ -101,7 +101,7 @@ public interface Lines {
     /**
      * Get color for specified line
      * @param line A line number
-     * @return Color for specified line or null if no color is associated with this line
+     * @return Color for specified line (explicitly set or default)
      */
     Color getColorForLine(int line);
 

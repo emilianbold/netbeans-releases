@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.websvc.rest.projects;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -59,7 +60,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
-import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
@@ -67,8 +67,8 @@ import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRsStackProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -124,20 +124,19 @@ public class MavenProjectRestSupport extends RestSupport {
     public void extendBuildScripts() throws IOException {
     }
 
+    @Override
     public void ensureRestDevelopmentReady() throws IOException {
+        addResourceConfigToWebApp();
         addSwdpLibrary();
     }
 
+    @Override
     public void removeRestDevelopmentReadiness() throws IOException {
         removeResourceConfigFromWebApp();
-        removeSwdpLibrary(new String[]{
-                    ClassPath.COMPILE,
-                    ClassPath.EXECUTE
-                });
-        setProjectProperty(REST_SUPPORT_ON, "false");
-        ProjectManager.getDefault().saveProject(getProject());
+        removeSwdpLibrary(new String[]{ClassPath.COMPILE} );
     }
 
+    @Override
     public boolean isReady() {
         return isRestSupportOn() && hasSwdpLibrary() && hasRestServletAdaptor();
     }
@@ -200,11 +199,11 @@ public class MavenProjectRestSupport extends RestSupport {
         return null;
     }
 
-    public static ServletMapping getRestServletMapping(Project project) throws IOException {
+    private ServletMapping getRestServletMapping(Project project) throws IOException {
         return getRestServletMapping(getWebApp(project));
     }
 
-    public static ServletMapping getRestServletMapping(WebApp webApp) {
+    private ServletMapping getRestServletMapping(WebApp webApp) {
         for (ServletMapping sm : webApp.getServletMapping()) {
             if (REST_SERVLET_ADAPTOR.equals(sm.getServletName())) {
                 return sm;
@@ -292,7 +291,7 @@ public class MavenProjectRestSupport extends RestSupport {
         return getWebApp(project);
     }
 
-    public static WebApp getWebApp(Project project) throws IOException {
+    private WebApp getWebApp(Project project) throws IOException {
         FileObject fo = getWebXml(project);
         if (fo != null) {
             return DDProvider.getDefault().getDDRoot(fo);
@@ -300,18 +299,15 @@ public class MavenProjectRestSupport extends RestSupport {
         return null;
     }
 
-    public FileObject getWebXml() throws IOException {
-        return getWebXml(project);
-    }
-
-    public static FileObject getWebXml(Project project) throws IOException {
-        WebModuleImplementation jp = (WebModuleImplementation) project.getLookup().lookup(WebModuleImplementation.class);
-        if(jp == null) {
-            throw new IOException(
-                    NbBundle.getMessage(WebProjectRestSupport.class,
-                    "MSG_InvalidWebProject", project.getProjectDirectory()));
+    private FileObject getWebXml(Project project) throws IOException {
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml"); // NOI18N
+            if (dd != null && dd.exists()) {
+                return FileUtil.toFileObject(dd);
+            }
         }
-        return jp.getDeploymentDescriptor();
+        return null;
     }
 
     @Override
@@ -323,7 +319,7 @@ public class MavenProjectRestSupport extends RestSupport {
         return null;
     }
 
-    public FileObject getApplicationContextXml() {
+    private FileObject getApplicationContextXml() {
         J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
         FileObject[] fobjs = provider.getSourceRoots();
 
@@ -339,6 +335,7 @@ public class MavenProjectRestSupport extends RestSupport {
         return null;
     }
 
+    @Override
     public Datasource getDatasource(String jndiName) {
         J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
 
@@ -349,6 +346,11 @@ public class MavenProjectRestSupport extends RestSupport {
         }
 
         return null;
+    }
+
+    @Override
+    public boolean isRestSupportOn() {
+        return true;
     }
    
 }

@@ -39,11 +39,13 @@
 
 package org.netbeans.modules.html.editor.indent;
 
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.css.formatting.api.support.MarkupAbstractIndenter;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
@@ -73,8 +75,8 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     @Override
     protected boolean isOpenTagNameToken(Token<HTMLTokenId> token) {
-        return token.id() == HTMLTokenId.TAG_OPEN /*||
-                token.id() == HTMLTokenId.DECLARATION && token.text().toString().startsWith("<!DOCTYPE")*/;
+        return token.id() == HTMLTokenId.TAG_OPEN ||
+                (token.id() == HTMLTokenId.DECLARATION && token.text().toString().startsWith("<!DOCTYPE"));
     }
 
     @Override
@@ -102,8 +104,8 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     @Override
     protected boolean isEndTagClosingSymbol(Token<HTMLTokenId> token) {
         return (token.id() == HTMLTokenId.TAG_CLOSE_SYMBOL &&
-                token.text().toString().equals("/>")) /*||
-                (token.id() == HTMLTokenId.DECLARATION && token.text().toString().startsWith(">"))*/;
+                token.text().toString().equals("/>")) ||
+                (token.id() == HTMLTokenId.DECLARATION && token.text().toString().startsWith(">"));
     }
 
     @Override
@@ -141,9 +143,6 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     @Override
     protected Boolean isEmptyTag(String tagName) {
-//        if ("<!DOCTYPE".equals(tagName)) {
-//            return true;
-//        }
         Element elem = getDTD().getElement(tagName.toUpperCase());
         if (elem == null) {
             return false;
@@ -201,6 +200,35 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
             }
         }
         return false;
+    }
+
+    @Override
+    protected int getPreservedLineInitialIndentation(JoinedTokenSequence<HTMLTokenId> ts) 
+            throws BadLocationException {
+        int index = ts.index();
+        boolean found = false;
+        do {
+            if (isBlockCommentToken(ts.token())) {
+                String comment = ts.token().text().toString().trim();
+                if (comment.startsWith("<!--")) {
+                    found = true;
+                    break;
+                }
+            } else {
+                break;
+            }
+        } while (ts.movePrevious());
+        int indent = 0;
+        if (found) {
+            int lineStart = Utilities.getRowStart(getDocument(), ts.offset());
+            // TODO: can comment token start with spaces?? if yes then adjust
+            // column to point to first non-whitespace
+            int column = ts.offset();
+            indent = column - lineStart;
+        }
+        ts.moveIndex(index);
+        ts.moveNext();
+        return indent;
     }
 
     private boolean isOpeningTag(JoinedTokenSequence<HTMLTokenId> ts) {

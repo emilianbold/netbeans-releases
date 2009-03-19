@@ -77,7 +77,7 @@ public class CloseProjectWhenParsingLib extends RepositoryAccessTestBase  {
 	
 	int count = Integer.getInteger("test.close.project.when.parsing.libs.laps", 2);
 	
-	final TraceModelBase traceModel = new  TraceModelBase();
+	final TraceModelBase traceModel = new  TraceModelBase(true);
 	traceModel.setUseSysPredefined(true);
 	traceModel.processArguments(projectRoot.getAbsolutePath());
 	ModelImpl model = traceModel.getModel();

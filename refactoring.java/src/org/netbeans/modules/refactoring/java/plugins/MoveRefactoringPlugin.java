@@ -67,18 +67,21 @@ import org.openide.util.NbBundle;
 public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
 
     private Map packagePostfix = new HashMap();
-    AbstractRefactoring refactoring;
+    final AbstractRefactoring refactoring;
+    final boolean isRenameRefactoring;
     ArrayList<FileObject> filesToMove = new ArrayList<FileObject>();
     HashMap<FileObject,ElementHandle> classes;
     Map<FileObject, Set<FileObject>> whoReferences = new HashMap<FileObject, Set<FileObject>>();
     
     public MoveRefactoringPlugin(MoveRefactoring move) {
         this.refactoring = move;
+        this.isRenameRefactoring = false;
         setup(move.getRefactoringSource().lookupAll(FileObject.class), "", true);
     }
     
     public MoveRefactoringPlugin(RenameRefactoring rename) {
         this.refactoring = rename;
+        this.isRenameRefactoring = true;
         FileObject fo = rename.getRefactoringSource().lookup(FileObject.class);
         if (fo!=null) {
             setup(Collections.singletonList(fo), "", true);
@@ -105,7 +108,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
 
     @Override
     public Problem fastCheckParameters() {
-        if (refactoring instanceof RenameRefactoring) {
+        if (isRenameRefactoring) {
             //folder rename
             FileObject f = refactoring.getRefactoringSource().lookup(FileObject.class);
             if (f!=null) {
@@ -126,7 +129,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
             }
             return super.fastCheckParameters();
         }
-        if (refactoring instanceof MoveRefactoring) {
+        if (!isRenameRefactoring) {
             try {
                 for (FileObject f: filesToMove) {
                     if (!RetoucheUtils.isJavaFile(f))
@@ -196,7 +199,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     }
 
     private Problem checkProjectDeps(Set<FileObject> a) {
-        if (refactoring instanceof MoveRefactoring) {
+        if (!isRenameRefactoring) {
             Set<FileObject> sourceRoots = new HashSet<FileObject>();
             for (FileObject file : filesToMove) {
                 ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
@@ -311,15 +314,16 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     }
 
     String getNewPackageName() {
-        if (refactoring instanceof MoveRefactoring) {
-            return RetoucheUtils.getPackageName(((MoveRefactoring) refactoring).getTarget().lookup(URL.class));        
-        } else {
+        if (isRenameRefactoring) {
             return ((RenameRefactoring) refactoring).getNewName();
+        } else {
+            // XXX cache it !!!
+            return RetoucheUtils.getPackageName(((MoveRefactoring) refactoring).getTarget().lookup(URL.class));
         }
     }
     
     String getTargetPackageName(FileObject fo) {
-        if (refactoring instanceof RenameRefactoring) {
+        if (isRenameRefactoring) {
             if (refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class) !=null)
                 //package rename
                 return getNewPackageName();
@@ -334,6 +338,9 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                 return t;
             }
         } else if (packagePostfix != null) {
+            if (fo == null) {
+                return getNewPackageName();
+            }
             String postfix = (String) packagePostfix.get(fo);
             String packageName = concat(null, getNewPackageName(), postfix);
             return packageName;

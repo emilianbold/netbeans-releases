@@ -73,7 +73,9 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiProjectFeature;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -117,7 +119,6 @@ public class KenaiSearchPanel extends JPanel {
         }
 
     }
-
     
     public KenaiProject getSelectedProject() {
         KenaiProjectSearchInfo searchInfo = (KenaiProjectSearchInfo) kenaiProjectsList.getSelectedValue();
@@ -344,7 +345,7 @@ public class KenaiSearchPanel extends JPanel {
 
     // ----------
 
-    private static class KenaiProjectsListModel extends DefaultListModel implements Runnable {
+    private class KenaiProjectsListModel extends DefaultListModel implements Runnable {
 
         private Iterator<KenaiProject> projects;
         private String pattern;
@@ -360,7 +361,17 @@ public class KenaiSearchPanel extends JPanel {
         public void run() {
             if (projects != null) {
                 while(projects.hasNext()) {
-                    addElement(new KenaiProjectSearchInfo(projects.next(), pattern));
+                    KenaiProject project = projects.next();
+                    if (PanelType.OPEN.equals(panelType)) {
+                        addElement(new KenaiProjectSearchInfo(project, pattern));
+                    } else if (PanelType.BROWSE.equals(panelType)) {
+                        KenaiProjectFeature[] repos = project.getFeatures(KenaiFeature.SOURCE);
+                        for (KenaiProjectFeature repo : repos) {
+                            if (Utilities.SVN_REPO.equals(repo.getName()) || Utilities.HG_REPO.equals(repo.getName())) {
+                                addElement(new KenaiProjectSearchInfo(project, repo, pattern));
+                            }
+                        }
+                    }
                     if (Thread.interrupted()) {
                         return;
                     }
@@ -374,13 +385,17 @@ public class KenaiSearchPanel extends JPanel {
 
     }
 
+    private static class KenaiRepositoriesListModel extends DefaultListModel {
+
+        public KenaiRepositoriesListModel() {
+            
+        }
+
+    }
+
     // ----------
 
     private class KenaiProjectsListRenderer implements ListCellRenderer {
-
-        public KenaiProjectsListRenderer() {
-
-        }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             return new ListRendererPanel(list, ((KenaiProjectSearchInfo) value), index, isSelected, cellHasFocus, panelType);
@@ -393,10 +408,18 @@ public class KenaiSearchPanel extends JPanel {
     public static class KenaiProjectSearchInfo {
 
         public KenaiProject kenaiProject;
+        public KenaiProjectFeature kenaiFeature;
         public String searchPattern;
 
         public KenaiProjectSearchInfo(KenaiProject kprj, String ptrn) {
             kenaiProject = kprj;
+            searchPattern = ptrn;
+            kenaiFeature = null;
+        }
+
+        public KenaiProjectSearchInfo(KenaiProject kprj, KenaiProjectFeature ftr, String ptrn) {
+            kenaiProject = kprj;
+            kenaiFeature = ftr;
             searchPattern = ptrn;
         }
 

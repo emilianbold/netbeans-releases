@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -72,7 +71,6 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
-import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -124,19 +122,16 @@ public final class CLIODataCollector
         this.dataTablesMetadata = accessor.getDataTablesMetadata(configuration);
         this.envs = accessor.getDLightTargetExecutionEnv(configuration);
         this.displayedName = accessor.getName(configuration);
-        if (displayedName == null){
+        if (displayedName == null) {
             //lets create own name on the base of command
             int separatorIndex = this.command.lastIndexOf(File.separator);
-            displayedName =  separatorIndex == -1  || separatorIndex == command.length() -1?
-                command : this.command.substring(separatorIndex, command.length());
+            displayedName = separatorIndex == -1 || separatorIndex == command.length() - 1 ? command : this.command.substring(separatorIndex, command.length());
         }
     }
 
     public String getName() {
         return displayedName;
     }
-
-
 
     /**
      * The types of storage this collector supports
@@ -172,6 +167,7 @@ public final class CLIODataCollector
     }
 
     private void targetStarted(DLightTarget target) {
+        log.fine("Starting CLIODataCollector: " + command); // NOI18N
         resetIndicators();
 
         String cmd = command + " "; // NOI18N
@@ -182,7 +178,7 @@ public final class CLIODataCollector
         } else {
             cmd += argsTemplate;
         }
-
+        log.fine("Starting CLIODataCollector cmd: " + cmd); // NOI18N
         NativeProcessBuilder npb =
                 new NativeProcessBuilder(target.getExecEnv(), cmd);
 
@@ -263,27 +259,18 @@ public final class CLIODataCollector
         return NbBundle.getMessage(CLIODataCollector.class, key, params);
     }
 
-    public Future<ValidationStatus> validate(final DLightTarget target) {
-        Callable<ValidationStatus> validationTask =
-                new Callable<ValidationStatus>() {
+    public ValidationStatus validate(final DLightTarget target) {
+        if (validationStatus.isValid()) {
+            return validationStatus;
+        }
 
-                    public ValidationStatus call() throws Exception {
-                        if (validationStatus.isValid()) {
-                            return validationStatus;
-                        }
+        ValidationStatus oldStatus = validationStatus;
+        ValidationStatus newStatus = doValidation(target);
 
-                        ValidationStatus oldStatus = validationStatus;
-                        ValidationStatus newStatus = doValidation(target);
+        notifyStatusChanged(oldStatus, newStatus);
 
-                        notifyStatusChanged(oldStatus, newStatus);
-
-                        validationStatus = newStatus;
-                        return newStatus;
-                    }
-                };
-
-        return DLightExecutorService.submit(
-                validationTask, "Validate CLIODataCollector " + command); // NOI18N
+        validationStatus = newStatus;
+        return newStatus;
     }
 
     public void invalidate() {
@@ -358,7 +345,7 @@ public final class CLIODataCollector
         }
     }
 
-    public Map<String, String> getExecutionEnv() {
+    public Map<String, String> getExecutionEnv(DLightTarget target) {
         return envs;
     }
 

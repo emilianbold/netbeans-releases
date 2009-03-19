@@ -109,7 +109,7 @@ public final class PackageDisplayUtils {
         return getIcon( pkg, pkgname, isEmpty(pkg) );
     }
     
-    /** Performance optiomization if the the isEmpty status is alredy known.
+    /** Performance optiomization if the isEmpty status is alredy known.
      * 
      */
     public static Image getIcon(FileObject pkg, String pkgname, boolean empty ) {

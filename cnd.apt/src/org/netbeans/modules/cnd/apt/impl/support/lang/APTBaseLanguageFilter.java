@@ -172,11 +172,11 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
             origToken.setEndOffset(o);
         }
 
-        public int getTextID() {
+        public CharSequence getTextID() {
             return origToken.getTextID();
         }
 
-        public void setTextID(int id) {
+        public void setTextID(CharSequence id) {
             origToken.setTextID(id);
         }
 

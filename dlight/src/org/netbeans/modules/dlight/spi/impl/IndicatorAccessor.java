@@ -46,7 +46,7 @@ public abstract class IndicatorAccessor {
 
   public abstract String getMetadataColumnName(Indicator indicator, int idx);
 
-  public abstract VisualizerConfiguration getVisualizerConfiguration(Indicator indicator);
+  public abstract List<VisualizerConfiguration> getVisualizerConfigurations(Indicator indicator);
 
   public abstract void addIndicatorActionListener(Indicator indicator, IndicatorActionListener l);
 

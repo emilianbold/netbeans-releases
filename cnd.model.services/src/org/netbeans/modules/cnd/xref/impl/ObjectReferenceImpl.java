@@ -148,7 +148,7 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
     public CharSequence getText() {
         CsmFile file = getContainingFile();
         if (file != null) {
-            return TextCache.getString(file.getText(getStartOffset(), getEndOffset()));
+            return TextCache.getManager().getString(file.getText(getStartOffset(), getEndOffset()));
         }
         return "";
     }

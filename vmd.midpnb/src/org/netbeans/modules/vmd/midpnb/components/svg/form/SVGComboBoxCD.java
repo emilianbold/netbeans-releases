@@ -111,7 +111,7 @@ public class SVGComboBoxCD extends ComponentDescriptor{
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
-                new SVGCodeFooter( SVGComboBoxEventSourceCD.TYPEID )  ,
+                //new SVGCodeFooter( SVGComboBoxEventSourceCD.TYPEID )  ,
                 new SVGListModelFooter()
         );
     }

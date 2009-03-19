@@ -340,7 +340,7 @@ public final class SVGFileModel {
     }
 
     private SceneManager getSceneManager() {
-        return ((SVGDataObject) m_edSup.getDataObject()).getSceneManager();
+        return getDataObject().getSceneManager();
     }
 
     public Object getTransactionMonitor() {
@@ -463,18 +463,20 @@ public final class SVGFileModel {
         if (e instanceof BaseDocumentEvent) {
             BaseDocumentEvent bde = (BaseDocumentEvent) e;
             if (bde.isInRedo() || bde.isInUndo() || getTransactionCounter() == 0) {
-                synchronized (this) {
+                Thread.dumpStack();
+                // #159129. no sense in this synchronization.
+                //synchronized (this) {
                     if (!m_updateInProcess) {
                         m_updateInProcess = true;
                         SwingUtilities.invokeLater(new Runnable() {
 
                             public void run() {
                                 m_updateInProcess = false;
-                                ((SVGDataObject) m_edSup.getDataObject()).fireContentChanged();
+                                getDataObject().fireContentChanged();
                             }
                         });
                     }
-                }
+                //}
             }
         }
         setChanged(true);

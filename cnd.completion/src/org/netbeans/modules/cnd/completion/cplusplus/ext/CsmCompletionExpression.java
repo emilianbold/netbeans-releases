@@ -249,6 +249,7 @@ public class CsmCompletionExpression {
         OP[cppTokenIDsLength + CONSTANT] = 1;
         OP[cppTokenIDsLength + VARIABLE] = 1;
         OP[cppTokenIDsLength + UNARY_OPERATOR] = 15;
+        OP[cppTokenIDsLength + TERNARY_OPERATOR] = 3 | RIGHT_ASSOCIATIVE;
         OP[cppTokenIDsLength + DOT] = 1;
         OP[cppTokenIDsLength + DOT_OPEN] = 0; // stop
         OP[cppTokenIDsLength + ARROW] = 1;

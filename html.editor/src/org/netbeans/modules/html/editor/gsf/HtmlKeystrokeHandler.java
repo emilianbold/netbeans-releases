@@ -48,6 +48,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
@@ -66,22 +67,65 @@ import org.netbeans.modules.parsing.api.Snapshot;
 public class HtmlKeystrokeHandler implements KeystrokeHandler {
 
     //not used. HTMLKit coveres this functionality
+    @Override
     public boolean beforeCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         return false;
     }
 
     //not used. HTMLKit coveres this functionality
+    @Override
     public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         HTMLAutoCompletion.charInserted((BaseDocument)doc, caretOffset, target.getCaret(), ch);
+        if ('>' != ch) {
+            return false;
+        }
+        TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HTMLTokenId.language());
+        if (ts == null) {
+            return false;
+        }
+        ts.move(caretOffset);
+        boolean found = false;
+        while (ts.movePrevious()) {
+            if (ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
+                found = true;
+                break;
+            }
+            if (ts.token().id() != HTMLTokenId.ARGUMENT &&
+                ts.token().id() != HTMLTokenId.OPERATOR &&
+                ts.token().id() != HTMLTokenId.VALUE &&
+                ts.token().id() != HTMLTokenId.VALUE_CSS &&
+                ts.token().id() != HTMLTokenId.VALUE_JAVASCRIPT &&
+                ts.token().id() != HTMLTokenId.WS &&
+                ts.token().id() != HTMLTokenId.TAG_CLOSE &&
+                ts.token().id() != HTMLTokenId.TAG_OPEN) {
+                break;
+            }
+        }
+        if (!found) {
+            return false;
+        }
+        int lineStart = Utilities.getRowFirstNonWhite((BaseDocument)doc, ts.offset());
+        if (lineStart != ts.offset()) {
+            return false;
+        }
+        final Indent indent = Indent.get(doc);
+        indent.lock();
+        try {
+            indent.reindent(lineStart, caretOffset);
+        } finally {
+            indent.unlock();
+        }
         return false;
     }
 
     //not used. HTMLKit coveres this functionality
+    @Override
     public boolean charBackspaced(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         return false;
     }
 
     //not used. HTMLKit coveres this functionality
+    @Override
     public int beforeBreak(Document doc, int caretOffset, JTextComponent target) throws BadLocationException {
         TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HTMLTokenId.language());
         if (ts == null) {
@@ -90,14 +134,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         ts.move(caretOffset);
         String closingTagName = null;
         int end = -1;
-        while (ts.moveNext() && (ts.token().id() == HTMLTokenId.WS ||
-                (ts.token().id() == HTMLTokenId.TEXT && ts.token().text().toString().trim().length() == 0))) {
-            // skip whitespace
-        }
-        if (ts.token() == null) {
-            return -1;
-        }
-        if (ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL &&
+        if (ts.moveNext() && ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL &&
                 ts.token().text().toString().equals("</")) {
             if (ts.moveNext() && ts.token().id() == HTMLTokenId.TAG_CLOSE) {
                 closingTagName = ts.token().text().toString();
@@ -110,13 +147,6 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             return  -1;
         }
         boolean foundOpening = false;
-        if ((ts.token().id() == HTMLTokenId.WS ||
-                (ts.token().id() == HTMLTokenId.TEXT && ts.token().text().toString().trim().length() == 0))) {
-            while (ts.movePrevious() && (ts.token().id() == HTMLTokenId.WS ||
-                    (ts.token().id() == HTMLTokenId.TEXT && ts.token().text().toString().trim().length() == 0))) {
-                // skip whitespace
-            }
-        }
         if (ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL &&
                 ts.token().text().toString().equals(">")) {
             while (ts.movePrevious()) {
@@ -134,16 +164,18 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             //move caret
             target.getCaret().setDot(caretOffset);
             //and indent the line
-            indent.reindent(caretOffset - 1, end + 1);
+            indent.reindent(caretOffset + 1, end);
         }
         return -1;
     }
 
     //not used. HTMLBracesMatching coveres this functionality
+    @Override
     public OffsetRange findMatching(Document doc, int caretOffset) {
         return OffsetRange.NONE;
     }
 
+    @Override
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         HtmlParserResult result = (HtmlParserResult)info;
 
@@ -224,6 +256,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
     }
 
     //TODO implement
+    @Override
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
         return -1;
     }

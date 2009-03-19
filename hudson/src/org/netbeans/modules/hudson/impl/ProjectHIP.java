@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.hudson.impl;
 
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -58,7 +57,7 @@ class ProjectHIP extends HudsonInstanceProperties {
 
     private final Set<Project> providers = new HashSet<Project>();
     public ProjectHIP() {
-        super("", "");
+        super("", "", "0");
     }
 
     public void addProvider(Project prov) {
@@ -88,26 +87,18 @@ class ProjectHIP extends HudsonInstanceProperties {
         }
     }
 
-    public List<PropertyChangeListener> getCurrentListeners() {
-        List<PropertyChangeListener> lst = new ArrayList<PropertyChangeListener>();
-        synchronized (listeners) {
-            lst.addAll(listeners);
-        }
-        return lst;
-    }
-
     private void setPreferredJobs() {
-        String list = "";
+        List<String> names = new ArrayList<String>();
         for (Project prj : getProviders()) {
             ProjectHudsonProvider.Association assoc = ProjectHudsonProvider.getDefault().findAssociation(prj);
             if (assoc != null) {
                 String name = assoc.getJobName();
                 if (name != null) {
-                    list = list + "|" + name; //NOI18N
+                    names.add(name);
                 }
             }
         }
-        put(INSTANCE_PREF_JOBS, list);
+        put(INSTANCE_PREF_JOBS, join(names));
     }
 
 }

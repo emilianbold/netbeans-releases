@@ -58,12 +58,15 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
+import org.netbeans.spi.viewmodel.CheckNodeModel;
+import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -77,7 +80,7 @@ import org.openide.util.NbBundle;
 /**
  * @author   Jan Jancura
  */
-public class SourcesModel implements TreeModel, TableModel,
+public class SourcesModel implements TreeModel, CheckNodeModelFilter,
 NodeActionsProvider {
 
     private Listener                listener;
@@ -202,36 +205,42 @@ NodeActionsProvider {
     }
 
 
-    // TableModel ..............................................................
+    // CheckNodeModelFilter
 
-    public Object getValueAt (Object node, String columnID) throws
-    UnknownTypeException {
-        if ("use".equals (columnID)) {
-            if (node instanceof String)
-                return Boolean.valueOf (
-                    isEnabled ((String) node)
-                );
+    public boolean isCheckable(NodeModel original, Object node) throws UnknownTypeException {
+        return true;
+    }
+
+    public boolean isCheckEnabled(NodeModel original, Object node) throws UnknownTypeException {
+        return true;
+    }
+
+    public Boolean isSelected(NodeModel original, Object node) throws UnknownTypeException {
+        if (node instanceof String) {
+            return isEnabled ((String) node);
+        } else {
+            throw new UnknownTypeException (node);
+        }
+    }
+
+    public void setSelected(NodeModel original, Object node, Boolean selected) throws UnknownTypeException {
+        if (node instanceof String) {
+            setEnabled ((String) node, selected.booleanValue ());
+            return;
         }
         throw new UnknownTypeException (node);
     }
 
-    public boolean isReadOnly (Object node, String columnID) throws
-    UnknownTypeException {
-        if ( "use".equals (columnID) &&
-             (node instanceof String))
-            return false;
-        throw new UnknownTypeException (node);
+    public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
+        return original.getDisplayName(node);
     }
 
-    public void setValueAt (Object node, String columnID, Object value)
-    throws UnknownTypeException {
-        if ("use".equals (columnID)) {
-            if (node instanceof String) {
-                setEnabled ((String) node, ((Boolean) value).booleanValue ());
-                return;
-            }
-        }
-        throw new UnknownTypeException (node);
+    public String getIconBase(NodeModel original, Object node) throws UnknownTypeException {
+        return original.getIconBase(node);
+    }
+
+    public String getShortDescription(NodeModel original, Object node) throws UnknownTypeException {
+        return original.getShortDescription(node);
     }
 
 
@@ -372,63 +381,6 @@ NodeActionsProvider {
          */
         public Class getType () {
             return null;
-        }
-    }
-
-    /**
-     * Defines model for one table view column. Can be used together with
-     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
-     */
-    public static class SourcesUsedColumn extends AbstractColumn {
-
-        /**
-         * Returns unique ID of this column.
-         *
-         * @return unique ID of this column
-         */
-        public String getID () {
-            return "use";
-        }
-
-        /**
-         * Returns display name of this column.
-         *
-         * @return display name of this column
-         */
-        public String getDisplayName () {
-            return NbBundle.getBundle (SourcesModel.class).getString
-                ("CTL_SourcesModel_Column_Debugging_Name");
-        }
-
-        /**
-         * Returns type of column items.
-         *
-         * @return type of column items
-         */
-        public Class getType () {
-            return Boolean.TYPE;
-        }
-
-        /**
-         * Returns tooltip for given column. Default implementation returns
-         * <code>null</code> - do not use tooltip.
-         *
-         * @return  tooltip for given node or <code>null</code>
-         */
-        @Override
-        public String getShortDescription () {
-            return NbBundle.getBundle (SourcesModel.class).getString
-                ("CTL_SourcesModel_Column_Debugging_Desc");
-        }
-
-        /**
-         * True if column should be visible by default. Default implementation
-         * returns <code>true</code>.
-         *
-         * @return <code>true</code> if column should be visible by default
-         */
-        public boolean initiallyVisible () {
-            return true;
         }
     }
 

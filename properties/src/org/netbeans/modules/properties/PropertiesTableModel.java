@@ -72,7 +72,7 @@ public class PropertiesTableModel extends AbstractTableModel {
 
     /** Listens to changes on the bundle structure. */
     private PropertyBundleListener bundleListener;
-    
+
     /** Create a data node for a given data object.
      * The provided children object will be used to hold all child nodes.
      * @param structure model to work with
@@ -87,8 +87,8 @@ public class PropertiesTableModel extends AbstractTableModel {
         structure.addPropertyBundleListener(
             (PropertyBundleListener) WeakListeners.create(PropertyBundleListener.class, bundleListener, structure)                
         );
-        
-    }     
+
+    }
 
     /** Gets the class for a model. Overrides column class. */
     @Override
@@ -109,7 +109,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     /** Gets the value for the given row and column. Implements superclass abstract method. */
     public Object getValueAt(int row, int column) {
         BundleStructure bs = structure;
-        
+
         if(column == 0)
             // Get StringPair for key.
             return stringPairForKey(row);//bs.keyAt(row);
@@ -395,7 +395,8 @@ public class PropertiesTableModel extends AbstractTableModel {
 
                         for (int j=0 ; j < jt.getColumnModel().getColumnCount(); j++) {
                             TableColumn column = jt.getColumnModel().getColumn(j);
-                            column.setHeaderValue(jt.getModel().getColumnName(column.getModelIndex()));
+//                            column.setHeaderValue(jt.getModel().getColumnName(column.getModelIndex()));
+                            column.setHeaderValue(jt.getModel().getColumnName(j));
                         }
                     }
                 }

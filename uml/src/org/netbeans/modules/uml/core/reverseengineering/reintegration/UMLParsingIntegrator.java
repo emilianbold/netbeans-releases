@@ -57,8 +57,6 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -5638,20 +5636,25 @@ public class UMLParsingIntegrator
                 sub = (IClassifier)((IGeneralization)obj).getSpecific();
                 sup = (IClassifier)((IGeneralization)obj).getGeneral();
             }   
-	    else 
-	    {
-		continue;
-	    }
-	    if (sup != null) 
-	    {
-		HashSet<IClassifier> analyzedSet = analyzedPairs.get(sup);
-		if (analyzedSet == null) 
-		{
-		    analyzedSet = new HashSet<IClassifier>();
-		    analyzedPairs.put(sup, analyzedSet);
-		}		
-		util.buildExistingRedefinitions2(sup, sub, analyzedSet);      
-	    }
+            else
+            {
+            continue;
+            }
+            if (sup != null)
+            {
+                HashSet<IClassifier> analyzedSet = analyzedPairs.get(sup);
+                if (analyzedSet == null)
+                {
+                    analyzedSet = new HashSet<IClassifier>();
+                    analyzedPairs.put(sup, analyzedSet);
+                }
+                util.buildExistingRedefinitions2(sup, sub, analyzedSet);
+                if(util.getErrorsReport()!=null && util.getErrorsReport().length()>0)
+                {
+                        supervisor.log(ITaskSupervisor.SUMMARY,
+                INDENT + INDENT + REPORTPROBLEMS+"\n"+util.getErrorsReport());
+                }
+            }
         }
     }
     
@@ -8523,5 +8526,7 @@ public class UMLParsingIntegrator
         "Z"
     };
     
+    private final String REPORTPROBLEMS="There was some problems with source parsing, see report: ";
+
     private HashSet redef;
 }

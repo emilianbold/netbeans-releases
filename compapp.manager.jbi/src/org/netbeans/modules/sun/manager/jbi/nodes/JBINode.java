@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
+import javax.management.openmbean.CompositeDataSupport;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
@@ -345,9 +346,14 @@ public class JBINode extends AppserverJBIMgmtContainerNode {
 
         return new Attribute(loggerName, value);
     }
-
-    protected boolean needRefresh(String notificationSourceType) {
+    
+    protected boolean shouldProcessNotification(String sourceName, 
+            String sourceType, String eventType) {
         return false;
+    }
+    
+    protected void processNotificationData(CompositeDataSupport data) {
+        // no-op
     }
     
     @Override

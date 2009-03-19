@@ -50,6 +50,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 
 /**
  *
@@ -227,13 +229,13 @@ public class TypeFactory {
                             tokFirstId = tokFirstId.getNextSibling();
                         }
                         //TODO: we have AstRenderer.getNameTokens, it is better to use it here
-                        List<String> l = new ArrayList<String>();
+                        List<CharSequence> l = new ArrayList<CharSequence>();
                         int templateDepth = 0;
                         StringBuilder sb = new StringBuilder();
                         for( AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling() ) {
                             if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID ) {
                                 sb.append(namePart.getText());
-                                l.add(namePart.getText());
+                                l.add(NameCache.getManager().getString(namePart.getText()));
                                 //l.add(namePart.getText());
                             } else if( namePart.getType() == CPPTokenTypes.LESSTHAN ) {
                                 // the beginning of template parameters
@@ -246,8 +248,8 @@ public class TypeFactory {
                                 if( templateDepth == 0) {
                                     if (namePart.getType() == CPPTokenTypes.SCOPE) {
                                         // We're done here, start filling nested type
-                                        type.classifierText = sb;
-                                        type.qname = l.toArray(new String[l.size()]);
+                                        type.classifierText = QualifiedNameCache.getManager().getString(sb);
+                                        type.qname = l.toArray(new CharSequence[l.size()]);
                                         type = createType(namePart.getNextSibling(), file, ptrOperator, arrayDepth, TemplateUtils.checkTemplateType(type, scope), scope);
                                         break;
                                     } else {
@@ -273,8 +275,8 @@ public class TypeFactory {
                             }
                         }
                         if (type.classifierText == null) {
-                            type.classifierText = sb;
-                            type.qname = l.toArray(new String[l.size()]);
+                            type.classifierText = QualifiedNameCache.getManager().getString(sb);
+                            type.qname = l.toArray(new CharSequence[l.size()]);
                         }
                     }
                 } catch( Exception e ) {

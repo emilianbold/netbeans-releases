@@ -68,7 +68,7 @@ public class OperationInputNode extends OperationParameterNode<Input> {
     
     public OperationInputNode(Input wsdlConstruct) {
         super(wsdlConstruct);
-        ICON  =ImageUtilities.loadImage
+        ICON = ImageUtilities.loadImage
         ("org/netbeans/modules/xml/wsdl/ui/view/resources/input.png");
     }
     
