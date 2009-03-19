@@ -357,6 +357,10 @@ public class JaxWsUtils {
         String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
         if (addService) {
             serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported, false);
+            if (serviceID == null) {
+                Logger.getLogger(JaxWsUtils.class.getName()).log(Level.WARNING, "Failed to add service element to nbproject/jax-ws.xml. Either problem with downloading wsdl file or problem with writing into nbproject/jax-ws.xml.");
+                return;
+            }
         }
 
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
