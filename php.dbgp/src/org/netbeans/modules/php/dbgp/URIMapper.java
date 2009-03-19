@@ -73,7 +73,6 @@ abstract class URIMapper {
         //TODO: we could also implement mapper with UI asking the user to add info for
         //mapping instead of lsat resort mapper implemented by one to one
         MultiMapper mergedMapper = new MultiMapper();
-        Collections.reverse(pathMapping);
         for (Pair<String, String> pair : pathMapping) {
             //1. mapper provided by user via project UI if any
             String uriPath = pair.first;
@@ -90,7 +89,7 @@ abstract class URIMapper {
                 FileObject localFo = FileUtil.toFileObject(localFile);
                 if (localFo != null && localFo.isFolder()) {
                     URIMapper customMapper = URIMapper.createBasedInstance(remoteURI, localFile);
-                    mergedMapper.addAsFirstMapper(customMapper);
+                    mergedMapper.addAsLastMapper(customMapper);
                 }
             }
         }
@@ -99,7 +98,7 @@ abstract class URIMapper {
         //used for conversions
         URIMapper defaultMapper = createDefaultMapper(webServerURI, sourceFileObj, sourceRoot);
         if (defaultMapper != null) {
-            mergedMapper.addAsFirstMapper(defaultMapper);
+            mergedMapper.addAsLastMapper(defaultMapper);
         }
         //3. last resort just one to one mapper (should be called as last)
         mergedMapper.addAsLastMapper(createOneToOne());
