@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.Collections;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
@@ -68,6 +69,7 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
+import org.netbeans.modules.classfile.InvalidClassFormatException;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -276,6 +278,8 @@ public class DefaultClassPathProvider implements ClassPathProvider {
         } catch (FileNotFoundException fnf) {
             //Ignore it
             // The file was removed after checking it for isValid
+        } catch (InvalidClassFormatException icf) {
+            Logger.getLogger(DefaultClassPathProvider.class.getName()).warning(file.getPath() + ": " + icf.getLocalizedMessage());
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
