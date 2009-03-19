@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceXRef;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.InputLine;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
@@ -68,7 +69,8 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
     private static boolean running = false;
     private final boolean allReferences;
     private final boolean analyzeStatistics;
-    private Boolean reportUnresolved = Boolean.TRUE;
+    private final Boolean reportUnresolved;
+    private int numThreads = 1;
 
     public static Action getSmartCompletionAnalyzerAction() {
         return SharedClassObject.findObject(SmartCompletionAnalyzerAction.class, true);
@@ -86,57 +88,67 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         return SharedClassObject.findObject(AllUsagesAction.class, true);
     }
     
+    public static Action getAllReferencesPerformanceAction() {
+        return SharedClassObject.findObject(AllUsagesPerformanceAction.class, true);
+    }
+
     static final class SmartCompletionAnalyzerAction extends TestProjectReferencesAction {
 
         SmartCompletionAnalyzerAction() {
-            super(false, true);
+            super(false, true, null);
         }
     }
     
     static final class DirectUsageAction extends TestProjectReferencesAction {
         DirectUsageAction() {
-            super(false, false);
+            super(false, false, null);
         }
     }
     
     static final class AllUsagesAction extends TestProjectReferencesAction {
 
         AllUsagesAction() {
-            super(true, false, null);
+            super(true, false, Boolean.TRUE);
         }
     }
 
-    protected TestProjectReferencesAction(boolean allReferences, boolean analyzeStatistics) {
-        this(allReferences, analyzeStatistics, Boolean.TRUE);
+    static final class AllUsagesPerformanceAction extends TestProjectReferencesAction {
+
+        AllUsagesPerformanceAction() {
+            super(true, false, Boolean.FALSE);
+        }
     }
     
     protected TestProjectReferencesAction(boolean allReferences, boolean analyzeStatistics, Boolean reportUnresolved) {
         this.allReferences = allReferences;
         this.analyzeStatistics = analyzeStatistics;
         this.reportUnresolved = reportUnresolved;
+        this.numThreads = (reportUnresolved == Boolean.FALSE) ? Runtime.getRuntime().availableProcessors() : 1;
     }
 
     public String getName() {
         String nameKey;
         if (analyzeStatistics) {
             nameKey = "CTL_TestProjectSmartCCDirectUsageReferencesAction"; // NOI18N
+        } else if (reportUnresolved != null) {
+            nameKey = (reportUnresolved ? "CTL_TestProjectReferencesAction" : "CTL_TestProjectReferencesPerformanceAction"); // NOI18N
         } else {
-            nameKey = (allReferences ? "CTL_TestProjectReferencesAction" : "CTL_TestProjectDirectUsageReferencesAction"); // NOI18N
+            nameKey = "CTL_TestProjectDirectUsageReferencesAction"; // NOI18N
         }
         return NbBundle.getMessage(getClass(), nameKey); // NOI18N
     }
 
     protected void performAction(Collection<CsmProject> projects) {
-        Boolean oldReportUnresolved = reportUnresolved;
-        if (reportUnresolved == null) {
-            Object option = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                    "Report unresolved references?", //NOI18N
-                    "Test References")); //NOI18N
-            if (option == NotifyDescriptor.YES_OPTION) {
-                reportUnresolved = Boolean.TRUE;
-            } else if (option == NotifyDescriptor.NO_OPTION) {
-                reportUnresolved = Boolean.FALSE;
-            } else { // if (option == NotifyDescriptor.CANCEL_OPTION) {
+        if (reportUnresolved == Boolean.FALSE) {
+            final InputLine inputLine = new NotifyDescriptor.InputLine("Threads #:", "Test References", NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE); // NOI18N
+            inputLine.setInputText(Integer.toString(numThreads));
+            Object option = DialogDisplayer.getDefault().notify(inputLine); //NOI18N
+            try {
+                numThreads = Integer.parseInt(inputLine.getInputText());
+            } catch (NumberFormatException ex) {
+                numThreads = 1;
+            }
+            if (option == NotifyDescriptor.CANCEL_OPTION) {
                 return;
             }
         }
@@ -145,7 +157,6 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
                 testProject(p);
             }
         }
-        reportUnresolved = oldReportUnresolved;
     }
 
     
@@ -168,7 +179,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         Set<CsmReferenceKind> interestedElems = this.allReferences ? CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE : EnumSet.<CsmReferenceKind>of(CsmReferenceKind.DIRECT_USAGE);
             
         TraceXRef.traceProjectRefsStatistics(p, new TraceXRef.StatisticsParameters(interestedElems, analyzeStatistics,
-                (reportUnresolved == null) ? true : reportUnresolved.booleanValue()), out, err, new CsmProgressAdapter() {
+                (reportUnresolved == null) ? true : reportUnresolved.booleanValue(), numThreads), out, err, new CsmProgressAdapter() {
             private volatile int handled = 0;
             @Override
             public void projectFilesCounted(CsmProject project, int filesCount) {
