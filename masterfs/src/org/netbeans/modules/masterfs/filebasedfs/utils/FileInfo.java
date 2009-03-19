@@ -137,17 +137,6 @@ public final class FileInfo {
         return FileInfo.IS_WINDOWS;
     }
     
-    public boolean isFloppy() {
-        if (isFloppy == -1) {
-            isFloppy = (FileInfo.FILESYSTEMVIEW.isFloppyDrive(getFile())) ? 1 : 0;
-        }
-
-        return (isFloppy == 1) ? true : false;
-    }
-
-
-
-
     public boolean isConvertibleToFileObject() {
         if (isConvertibleToFileObject == -1) {
             isConvertibleToFileObject = (isSupportedFile() && exists()) ?  1 : 0;
@@ -158,8 +147,7 @@ public final class FileInfo {
 
     public boolean isSupportedFile() {
         return (!getFile().getName().equals(".nbattrs") &&
-                !WriteLockUtils.hasActiveLockFileSigns(getFile().getName()) &&
-                (getFile().getParent() != null || !isFloppy())) ;
+                !WriteLockUtils.hasActiveLockFileSigns(getFile().getName()));
     }
     
     public FileInfo getRoot() {
